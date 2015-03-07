@@ -8,6 +8,21 @@ from PyQt4.QtCore import *
 class UserWidget(QWidget):
     def __init__(self):
         super(UserWidget, self).__init__()
+        self.text_label = QLabel(u'用戶名')
+        self.layout = QVBoxLayout()
+
+        self.set_widgets_prop()
+        self.set_layouts_prop()
+        self.set_me()
+
+    def set_me(self):
+        self.setLayout(self.layout)
+
+    def set_widgets_prop(self):
+        self.text_label.setAlignment(Qt.AlignCenter)
+
+    def set_layouts_prop(self):
+        self.layout.addWidget(self.text_label)
 
 
 class PlayWidget(QWidget):
@@ -36,20 +51,26 @@ class PlayWidget(QWidget):
 class InfoWidget(QWidget):
     def __init__(self):
         super(InfoWidget, self).__init__()
-        self.text_label = QLabel(u'用戶名')
         self.layout = QVBoxLayout()
+        self.music_table_widget = QTableWidget(0, 1)
 
         self.set_me()
+        self.set_widgets_prop()
+        self.set_widgets_size()
         self.set_layouts_prop()
 
     def set_me(self):
         self.setLayout(self.layout)
 
+    def set_widgets_size(self):
+        pass
+
     def set_widgets_prop(self):
-        self.text_label.setAlignment(Qt.AlignCenter)
+        self.music_table_widget.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.music_table_widget.setHorizontalHeaderLabels([u'歌曲名'])
 
     def set_layouts_prop(self):
-        self.layout.addWidget(self.text_label)
+        self.layout.addWidget(self.music_table_widget)
 
 
 class MainWidget(QWidget):
@@ -75,7 +96,7 @@ class MainWidget(QWidget):
 
     def set_widgets_size(self):
         self.play_widget.setFixedHeight(100)
-        self.user_widget.setMaximumWidth(200)
+        self.user_widget.setFixedWidth(200)
 
     def set_layouts_prop(self):
         self.info_layout.addWidget(self.info_widget)
