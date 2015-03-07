@@ -3,6 +3,6 @@
 .idea
 .iml
 
-.pyc
-.swp
+*.pyc
+*.swp
 
