@@ -130,13 +130,11 @@ class MainWidget(QWidget):
         self.layout.addLayout(self.bottom_container)
 
     def load_favorite_music_list(self):
-        username = ''
-        password = ''
+        from setting import username, password
         self.user.login(username, password)
         pid = self.user.get_favorite_playlist_id()
-
-        data = [{'title': 'way back into love',
-                 'url': 'http://m1.music.126.net/KfNqSlCW2eoJ1LXtvpLThg==/1995613604419370.mp3'}]
+        # data = [{'title': 'way back into love',
+        #          'url': 'http://m1.music.126.net/KfNqSlCW2eoJ1LXtvpLThg==/1995613604419370.mp3'}]
 
         data = self.user.get_music_title_and_url(pid)
         table_widget = self.info_widget.music_table_widget
