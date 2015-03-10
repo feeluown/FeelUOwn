@@ -55,6 +55,7 @@ class PlayWidget(QWidget):
     def play(self):
         self.emit(SIGNAL('play'))
 
+
 class InfoWidget(QWidget):
     def __init__(self):
         super(InfoWidget, self).__init__()
@@ -75,9 +76,11 @@ class InfoWidget(QWidget):
         pass
 
     def set_widgets_prop(self):
-        self.music_table_widget.horizontalHeader().setResizeMode(0, QHeaderView.Stretch)
+        self.music_table_widget.horizontalHeader().setResizeMode(
+            0, QHeaderView.Stretch)
         self.music_table_widget.setHorizontalHeaderLabels([u'歌曲名'])
-        self.music_table_widget.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.music_table_widget.setEditTriggers(
+            QAbstractItemView.NoEditTriggers)
 
     def set_layouts_prop(self):
         self.layout.addWidget(self.music_table_widget)
@@ -87,6 +90,7 @@ class InfoWidget(QWidget):
         music = data.toPyObject()[0]
         # emit signal
         self.emit(SIGNAL('play'), music['url'])
+
 
 class MainWidget(QWidget):
     def __init__(self):
@@ -173,4 +177,3 @@ class MainWidget(QWidget):
                 self.play_widget.play_pause_btn.setText(u'暫停')
             else:   # other state
                 print 'no music'
-
