@@ -38,16 +38,26 @@ class UserWidget(QWidget):
 class PlayWidget(QWidget):
     def __init__(self):
         super(PlayWidget, self).__init__()
-        self.last_music_btn = QPushButton(u"上一首")
-        self.next_music_btn = QPushButton(u"下一首")
-        self.play_pause_btn = QPushButton(u"播放")
+        self.last_music_btn = QPushButton()
+        self.next_music_btn = QPushButton()
+        self.play_pause_btn = QPushButton()
         self.layout = QHBoxLayout()
 
         self.set_me()
         self.set_layouts_prop()
+        self.set_widgets_prop()
+        self.set_widgets_size()
 
     def set_me(self):
         self.setLayout(self.layout)
+
+    def set_widgets_prop(self):
+        self.play_pause_btn.setIcon(
+            self.style().standardIcon(QStyle.SP_MediaPlay))
+        self.last_music_btn.setIcon(
+            self.style().standardIcon(QStyle.SP_MediaSkipBackward))
+        self.next_music_btn.setIcon(
+            self.style().standardIcon(QStyle.SP_MediaSkipForward))
 
     def set_widgets_size(self):
         pass
@@ -63,7 +73,6 @@ class InfoWidget(QWidget):
         super(InfoWidget, self).__init__()
         self.layout = QVBoxLayout()
         self.music_table_widget = QTableWidget(1, 1)
-
 
         self.set_me()
         self.set_widgets_prop()
@@ -108,7 +117,6 @@ class UiMainWidget(object):
         self.bottom_container = QHBoxLayout()
         self.layout = QVBoxLayout(MainWidget)
         self.user = User()
-
 
         self.set_widgets_size()
         self.set_layouts_prop()

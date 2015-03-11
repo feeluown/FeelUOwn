@@ -3,7 +3,7 @@ __author__ = 'cosven'
 
 import sys
 from PyQt4.QtGui import *
-from views import MainWidget
+from controllers import MainWidget
 
 
 if __name__ == "__main__":

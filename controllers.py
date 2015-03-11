@@ -21,12 +21,17 @@ from views import UiMainWidget
 class MainWidget(QWidget):
     def __init__(self, parent=None):
         super(MainWidget, self).__init__(parent)
-        self.player = Phonon.createPlayer(Phonon.MusicCategory)
         self.ui = UiMainWidget()
         self.ui.setup_ui(self)
+
+        self.player = Phonon.createPlayer(Phonon.MusicCategory)
+
         self.set_signal_binding()
-        self.resize(800, 480)
+        self.set_self_prop()
         self.load_favorite_music_list()
+
+    def set_self_prop(self):
+        self.resize(800, 480)
 
     def set_signal_binding(self):
         self.ui.info_widget.music_table_widget.itemDoubleClicked.connect(
