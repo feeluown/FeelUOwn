@@ -23,7 +23,8 @@ class MainWidget(QWidget):
         super(MainWidget, self).__init__(parent)
         self.ui = UiMainWidget()
         self.ui.setup_ui(self)
-
+        # before mediaObject was created
+        QCoreApplication.setApplicationName("NetEaseMusic-ThirdParty");
         self.player = Phonon.createPlayer(Phonon.MusicCategory)
 
         self.set_signal_binding()
@@ -58,8 +59,13 @@ class MainWidget(QWidget):
             table_widget.setItem(row, 0, music_item)
             row += 1
 
-    def play_music(self):
-        print "play"
+    def play_music(self, item):
+        print 'play'
+        data = item.data(Qt.UserRole)
+        music = data.toPyObject()[0]
+        # emit signal
+        self.player.setCurrentSource(Phonon.MediaSource(music['url']))
+        self.player.play()
 
 
 if __name__ == "__main__":

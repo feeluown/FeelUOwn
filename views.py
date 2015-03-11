@@ -95,12 +95,6 @@ class InfoWidget(QWidget):
     def set_layouts_prop(self):
         self.layout.addWidget(self.music_table_widget)
 
-    def play_music(self, item):
-        data = item.data(Qt.UserRole)
-        music = data.toPyObject()[0]
-        # emit signal
-        self.emit(SIGNAL('play'), music['url'])
-
 
 class UiMainWidget(object):
     """
