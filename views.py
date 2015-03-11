@@ -1,9 +1,16 @@
 # -*- coding=utf8 -*-
 __author__ = 'cosven'
 
+"""
+ui design
+
+every basic widget (including user,info,play) class has three public \
+funcition to set child widget properties.
+"""
+
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
-from PyQt4.phonon import Phonon
+
 
 from higherapi import User
 
@@ -36,8 +43,6 @@ class PlayWidget(QWidget):
         self.play_pause_btn = QPushButton(u"播放")
         self.layout = QHBoxLayout()
 
-        self.play_pause_btn.clicked.connect(self.play)
-
         self.set_me()
         self.set_layouts_prop()
 
@@ -52,9 +57,6 @@ class PlayWidget(QWidget):
         self.layout.addWidget(self.play_pause_btn)
         self.layout.addWidget(self.next_music_btn)
 
-    def play(self):
-        self.emit(SIGNAL('play'))
-
 
 class InfoWidget(QWidget):
     def __init__(self):
@@ -62,7 +64,6 @@ class InfoWidget(QWidget):
         self.layout = QVBoxLayout()
         self.music_table_widget = QTableWidget(1, 1)
 
-        self.music_table_widget.itemDoubleClicked.connect(self.play_music)
 
         self.set_me()
         self.set_widgets_prop()
@@ -92,9 +93,11 @@ class InfoWidget(QWidget):
         self.emit(SIGNAL('play'), music['url'])
 
 
-class MainWidget(QWidget):
-    def __init__(self):
-        super(MainWidget, self).__init__()
+class UiMainWidget(object):
+    """
+    the main view
+    """
+    def setup_ui(self, MainWidget):
         self.info_widget = InfoWidget()
         self.user_widget = UserWidget()
         self.play_widget = PlayWidget()
@@ -103,21 +106,12 @@ class MainWidget(QWidget):
         self.play_layout = QHBoxLayout()
         self.top_container = QHBoxLayout()
         self.bottom_container = QHBoxLayout()
-        self.layout = QVBoxLayout()
+        self.layout = QVBoxLayout(MainWidget)
         self.user = User()
-        self.player = Phonon.createPlayer(Phonon.MusicCategory)
 
-        self.connect(self.info_widget, SIGNAL('play'), self.play)
-        self.connect(self.play_widget, SIGNAL('play'), self.play)
 
-        self.set_me()
         self.set_widgets_size()
         self.set_layouts_prop()
-        self.load_favorite_music_list()
-
-    def set_me(self):
-        self.setLayout(self.layout)
-        self.resize(800, 480)
 
     def set_widgets_size(self):
         self.play_widget.setFixedHeight(100)
@@ -132,48 +126,3 @@ class MainWidget(QWidget):
         self.bottom_container.addLayout(self.play_layout)
         self.layout.addLayout(self.top_container)
         self.layout.addLayout(self.bottom_container)
-
-    def load_favorite_music_list(self):
-        from setting import username, password
-        self.user.login(username, password)
-        pid = self.user.get_favorite_playlist_id()
-        # data = [{'title': 'way back into love',
-        #          'url': 'http://m1.music.126.net/KfNqSlCW2eoJ1LXtvpLThg==/1995613604419370.mp3'}]
-
-        data = self.user.get_music_title_and_url(pid)
-        table_widget = self.info_widget.music_table_widget
-        row_count = len(data)
-        table_widget.setRowCount(row_count)
-        row = 0
-        for music in data:
-            music_item = QTableWidgetItem(music['title'])
-            # to get pure dict from qvariant, so pay attension !
-            # stackoverflow: how to get the original python data from qvariant
-            music = QVariant((music, ))
-            music_item.setData(Qt.UserRole, music)
-            table_widget.setItem(row, 0, music_item)
-            row += 1
-
-    def load_userinfo(self):
-        pass
-
-    def play(self, url=None):
-        if url is not None:
-            # double click one item
-            self.player.stop()
-            self.player.setCurrentSource(Phonon.MediaSource(url))
-            self.player.play()
-            self.play_widget.play_pause_btn.setText(u'暫停')
-        else:
-            # click play_pause button
-            # do not use 'is' to do the judgement
-            if self.player.state() == Phonon.PlayingState:    # play state
-                print 'pause'
-                self.player.pause()
-                self.play_widget.play_pause_btn.setText(u'播放')
-            elif self.player.state() == Phonon.PausedState:    # pause state
-                print 'play'
-                self.player.play()
-                self.play_widget.play_pause_btn.setText(u'暫停')
-            else:   # other state
-                print 'no music'
