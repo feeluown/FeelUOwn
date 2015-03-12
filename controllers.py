@@ -94,6 +94,7 @@ class MainWidget(QWidget):
 
     def set_self_prop(self):
         self.resize(800, 480)
+        self.setWindowIcon(QIcon('icons/format.ico'))
         qss = "basic.qss"
         with open(qss, "r") as qssfile:
             self.setStyleSheet(qssfile.read())

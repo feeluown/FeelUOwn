@@ -1,0 +1,9 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Name=NetEaseMusic
+Comment=NetEaseMusic Launcher
+Exec=/usr/bin/env python "/home/ysw/PycharmProjects/NetEaseMusic/main.py"
+Icon=/home/ysw/PycharmProjects/NetEaseMusic/icons/format.png
+Terminal=false
+StartupNotify=true
