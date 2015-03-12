@@ -67,7 +67,7 @@ class NetEase:
         }
         try:
             return self.httpRequest('POST', action, data)
-        except:
+        except Exception, e:
             return {'code': 501}
 
     # 用户歌单
@@ -77,7 +77,7 @@ class NetEase:
         try:
             data = self.httpRequest('GET', action)
             return data['playlist']
-        except:
+        except Exception, e:
             return []
 
     # 搜索单曲(1)，歌手(100)，专辑(10)，歌单(1000)，用户(1002) *(type)*

@@ -7,18 +7,21 @@ ui design
 every basic widget (including user,info,play) class has three public \
 funcition to set child widget properties.
 """
+import sys
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
 
-
-from higherapi import User
+from PyQt4.phonon import Phonon
 
 
 class UserWidget(QWidget):
     def __init__(self):
         super(UserWidget, self).__init__()
-        self.text_label = QLabel(u'用戶名')
+        self.login_btn = QPushButton(u'网易通行证登陆')
+        self.text_label = QLabel(u'歌曲列表')
+        self.test_btn = QPushButton()
+        self.list_widget = QListWidget()
         self.layout = QVBoxLayout()
 
         self.set_widgets_prop()
@@ -29,10 +32,14 @@ class UserWidget(QWidget):
         self.setLayout(self.layout)
 
     def set_widgets_prop(self):
-        self.text_label.setAlignment(Qt.AlignCenter)
+        self.text_label.setAlignment(Qt.AlignLeft)
+        self.test_btn.setText(u'使用测试账号')
 
     def set_layouts_prop(self):
         self.layout.addWidget(self.text_label)
+        self.layout.addWidget(self.list_widget)
+        self.layout.addWidget(self.login_btn)
+        self.layout.addWidget(self.test_btn)
 
 
 class PlayWidget(QWidget):
@@ -41,6 +48,9 @@ class PlayWidget(QWidget):
         self.last_music_btn = QPushButton()
         self.next_music_btn = QPushButton()
         self.play_pause_btn = QPushButton()
+        self.text_label = QLabel()
+        self.time_lcd = QLCDNumber()
+        self.seek_slider = Phonon.SeekSlider(self)
         self.layout = QHBoxLayout()
 
         self.set_me()
@@ -58,6 +68,7 @@ class PlayWidget(QWidget):
             self.style().standardIcon(QStyle.SP_MediaSkipBackward))
         self.next_music_btn.setIcon(
             self.style().standardIcon(QStyle.SP_MediaSkipForward))
+        self.time_lcd.display('00:00')
 
     def set_widgets_size(self):
         pass
@@ -66,6 +77,9 @@ class PlayWidget(QWidget):
         self.layout.addWidget(self.last_music_btn)
         self.layout.addWidget(self.play_pause_btn)
         self.layout.addWidget(self.next_music_btn)
+        self.layout.addWidget(self.text_label)
+        self.layout.addWidget(self.seek_slider)
+        self.layout.addWidget(self.time_lcd)
 
 
 class InfoWidget(QWidget):
@@ -110,7 +124,6 @@ class UiMainWidget(object):
         self.top_container = QHBoxLayout()
         self.bottom_container = QHBoxLayout()
         self.layout = QVBoxLayout(MainWidget)
-        self.user = User()
 
         self.set_widgets_size()
         self.set_layouts_prop()

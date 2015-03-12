@@ -5,38 +5,41 @@ __author__ = 'cosven'
 class DataModel(object):
     def user(self):
         user_model = {
-            'uid': str,
-            'username': str,
-            'avatar': str
+            'uid': int,
+            'username': unicode,
+            'avatar': unicode
         }
         return user_model
 
     def music(self):
         music_model = {
-            'mid': str,
-            'title': str,
-            'artist': str,
-            'album': str,
-            'duration': str,
-            'mp3url': str
+            'id': int,
+            'name': unicode,
+            'artists': list,
+            'album': dict,
+            'duration': unicode,
+            'mp3Url': unicode
         }
         return music_model
 
     def playlist(self):
         playlist_model = {
-            'plid': str,
-            'name': str,
-            'category': str
+            'id': int,
+            'name': unicode
         }
+        return playlist_model
 
-    def generate_model_from_data(self, data, model_type):
+    def set_datamodel_from_data(self, data, datamodel):
         """
         before generating model, the data should be validated
+        requirement: the datastructure of model is similar with standard
         :param data: dict, input data
         :param type: string, the target model type
         """
-        model = {}
-        return model
+        # temperarily: no validation check
+        for key in datamodel:
+            datamodel[key] = data[key]
+        return datamodel
 
     def validate(self, data, model_type):
         """
