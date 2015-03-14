@@ -46,7 +46,7 @@ class LoginDialog(QDialog):
         password = str(self.password_widget.text())
         data = self.ne.login(username, password)
         if data['code'] is 200:
-            uid = data['profile']['userId']
+            uid = data['account']['id']
             self.emit(SIGNAL('loginsuccess'), uid)
             self.close()
         else:
