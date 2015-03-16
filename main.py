@@ -1,3 +1,4 @@
+#! /usr/bin/env python
 # -*- coding=utf8 -*-
 __author__ = 'cosven'
 
@@ -11,7 +12,10 @@ if __name__ == "__main__":
     app = QApplication(sys.argv)
     path = sys.path[0]
     os.chdir(path)
-    # float center
+
+    qss = "basic.qss"
+    with open(qss, "r") as qssfile:
+        app.setStyleSheet(qssfile.read())
     w = MainWidget()
     w.move((QApplication.desktop().width() - w.width())/2,(QApplication.desktop().height() - w.height())/2)
     w.show()

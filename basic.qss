@@ -1,3 +1,7 @@
+QWidget#main_widget{
+    background-color: white;
+}
+
 QLCDNumber {
     border: 0px;
 }

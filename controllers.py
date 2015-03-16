@@ -93,11 +93,21 @@ class MainWidget(QWidget):
         # self.load_user_playlist()
 
     def set_self_prop(self):
-        self.resize(800, 480)
+        self.setObjectName('main_widget')
+        self.resize(960, 580)
         self.setWindowIcon(QIcon('icons/format.ico'))
-        qss = "basic.qss"
-        with open(qss, "r") as qssfile:
-            self.setStyleSheet(qssfile.read())
+
+    def paintEvent(self, QPaintEvent):
+        """
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+        option = QStyleOption()
+        option.init(self)
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_signal_binding(self):
         self.ui.info_widget.music_table_widget.itemDoubleClicked.connect(

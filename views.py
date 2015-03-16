@@ -16,8 +16,8 @@ from PyQt4.phonon import Phonon
 
 
 class UserWidget(QWidget):
-    def __init__(self):
-        super(UserWidget, self).__init__()
+    def __init__(self, parent=None):
+        super(UserWidget, self).__init__(parent)
         self.login_btn = QPushButton(u'网易通行证登陆')
         self.text_label = QLabel(u'歌曲列表')
         self.test_btn = QPushButton()
@@ -43,8 +43,8 @@ class UserWidget(QWidget):
 
 
 class PlayWidget(QWidget):
-    def __init__(self):
-        super(PlayWidget, self).__init__()
+    def __init__(self, parent=None):
+        super(PlayWidget, self).__init__(parent)
         self.last_music_btn = QPushButton()
         self.next_music_btn = QPushButton()
         self.play_pause_btn = QPushButton()
@@ -54,11 +54,31 @@ class PlayWidget(QWidget):
         self.layout = QHBoxLayout()
 
         self.set_me()
-        self.set_layouts_prop()
         self.set_widgets_prop()
-        self.set_widgets_size()
+        self.set_layouts_prop()
+
+    def paintEvent(self, QPaintEvent):
+        """
+        If you subclass a custom widget from QWidget,
+        then in order to use the StyleSheets you need to provide a paintEvent to the custom widget :
+
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+
+        option = QStyleOption()
+        option.init(self)
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_me(self):
+        # it will conflict with stylesheet, stylesheet has the priority
+        # by default, autofill background with Qpalette.Window color(system color)
+        self.setAutoFillBackground(True)
+
+        self.setProperty('class', 'QWidget')
         self.setLayout(self.layout)
 
     def set_widgets_prop(self):
@@ -70,9 +90,6 @@ class PlayWidget(QWidget):
             self.style().standardIcon(QStyle.SP_MediaSkipForward))
         self.time_lcd.display('00:00')
 
-    def set_widgets_size(self):
-        pass
-
     def set_layouts_prop(self):
         self.layout.addWidget(self.last_music_btn)
         self.layout.addWidget(self.play_pause_btn)
@@ -83,21 +100,29 @@ class PlayWidget(QWidget):
 
 
 class InfoWidget(QWidget):
-    def __init__(self):
-        super(InfoWidget, self).__init__()
+    def __init__(self, parent=None):
+        super(InfoWidget, self).__init__(None)
         self.layout = QVBoxLayout()
         self.music_table_widget = QTableWidget(1, 1)
 
         self.set_me()
         self.set_widgets_prop()
-        self.set_widgets_size()
         self.set_layouts_prop()
 
     def set_me(self):
         self.setLayout(self.layout)
 
-    def set_widgets_size(self):
-        pass
+    def paintEvent(self, QPaintEvent):
+        """
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+        option = QStyleOption()
+        option.init(self)
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_widgets_prop(self):
         self.music_table_widget.horizontalHeader().setResizeMode(
@@ -121,14 +146,35 @@ class UiMainWidget(object):
         self.info_layout = QVBoxLayout()
         self.user_layout = QVBoxLayout()
         self.play_layout = QHBoxLayout()
-        self.top_container = QHBoxLayout()
-        self.bottom_container = QHBoxLayout()
+        self.show_container = QHBoxLayout()
+        self.control_container = QHBoxLayout()
         self.layout = QVBoxLayout(MainWidget)
 
+        self.set_widgets_prop()
         self.set_widgets_size()
         self.set_layouts_prop()
 
+    def set_widgets_prop(self):
+        self.info_widget.setObjectName('info_widget')
+        self.user_widget.setObjectName('user_widget')
+        self.play_widget.setObjectName('play_widget')
+
+    def paintEvent(self, QPaintEvent):
+        """
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+        option = QStyleOption()
+        option.init(self)
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
     def set_widgets_size(self):
+        """
+        set all widget specific size here, including child widget
+        """
         self.play_widget.setFixedHeight(100)
         self.user_widget.setFixedWidth(200)
 
@@ -136,8 +182,10 @@ class UiMainWidget(object):
         self.info_layout.addWidget(self.info_widget)
         self.user_layout.addWidget(self.user_widget)
         self.play_layout.addWidget(self.play_widget)
-        self.top_container.addLayout(self.user_layout)
-        self.top_container.addLayout(self.info_layout)
-        self.bottom_container.addLayout(self.play_layout)
-        self.layout.addLayout(self.top_container)
-        self.layout.addLayout(self.bottom_container)
+        self.show_container.addLayout(self.user_layout)
+        self.show_container.addLayout(self.info_layout)
+        self.control_container.addLayout(self.play_layout)
+        self.layout.addLayout(self.control_container)
+        self.layout.addLayout(self.show_container)
+
+        self.layout.setContentsMargins(0,0,0,0)
