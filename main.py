@@ -5,7 +5,7 @@ __author__ = 'cosven'
 import sys
 import os
 from PyQt4.QtGui import *
-from controllers import MainWidget
+from controllers import MainWidget, LoginDialog
 
 
 if __name__ == "__main__":

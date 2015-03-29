@@ -1,7 +1,130 @@
-QWidget#main_widget{
-    background-color: white;
+QSlider::groove:horizontal {
+    border: 1px solid #999999;
+    height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    border-radius: 2px;
+    margin: 2px 0;
 }
 
-QLCDNumber {
-    border: 0px;
+QSlider::handle:horizontal {
+    background: #993333;
+    border: 1px solid #5c5c5c;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}
+
+QTableWidget::item{ 
+    selection-background-color: #993333;
+}
+
+QWidget {
+    background-color: #222222;
+    color: #CCCCCC;
+}
+
+QWidget#play_widget {
+    border-bottom: 5px solid #993333;
+}
+
+QHeaderView::section {
+    font-size: 17px;
+    font-weight: normal;
+    background-color: #222222;
+    color: #CCCCCC;
+    border: 0px solid #993333;
+    margin-right: 10px;
+}
+
+QListWidget::item , QTableWidget::item {
+    outline: none;
+    background-color: #222222;
+    border: 0px solid #993333;
+    color: #CCCCCC;
+    border-radius: 8px;
+}
+QListWidget::item {
+    width: 180px;
+}
+QTableWidget::item {
+    text-align: center;
+    border-radius: 0px;
+}
+
+QListWidget::item:selected, QTableWidget::item:selected{
+    outline: none;
+    background-color: #993333;
+}
+
+
+QTableView QTableCornerButton::section {
+    background: #222222;
+}
+
+QPushButton {
+    border: 0px solid #993333;
+}
+
+QPushButton:pressed {
+    outline: none;
+    background-color: #222222;
+}
+
+QPushButton:focus {
+    outline: none;
+    background-color: #222222;
+}
+
+QWidget#main_widget{
+}
+
+QAbstractItemView {
+    background-color: #222222;
+    border: 0px solid #993333;
+}
+
+QWidget#play_widget {
+    background-color: #222222;
+}
+
+QLineEdit#search_edit {
+    border: 1px solid #993333;
+    border-radius: 5px;
+    selection-background-color: #993333;
+}
+
+QLineEdit#search_edit:focus {
+    border-color: #CCCCCC; 
+}
+
+QPushButton#search_btn {
+    border-image: url(icons/search_hover.png);
+    border: 0px solid #993333;
+}
+
+QPushButton#search_btn:hover{
+}
+
+QStatusBar {
+    color: #993333;
+    background-color: #222222;
+}
+
+QLabel{
+    color: #CCCCCC;
+}
+
+QLabel#playlist_title {
+    background-color: #222222;
+    font-size: 20px;
+}
+
+QScrollBar {
+    width: 0px;
+    height: 0px;
+}
+QDiaLog#login_dilog QPushButton {
+    border: 1px solid #993333;
+}
+#login_dialog QPushButton:hover {
+    color: #993333;
 }

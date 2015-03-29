@@ -5,6 +5,7 @@ import sys
 
 from PyQt4.QtGui import *
 from PyQt4.QtCore import *
+from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
 from api import NetEase
 from models import DataModel
@@ -30,6 +31,7 @@ class LoginDialog(QDialog):
         self.username_widget = QLineEdit()
         self.password_widget = QLineEdit()
         self.login_btn = QPushButton()
+        self.test_btn = QPushButton()
         self.layout = QVBoxLayout()
         self.ne = NetEase()
 
@@ -40,24 +42,30 @@ class LoginDialog(QDialog):
 
     def set_signal_binding(self):
         self.login_btn.clicked.connect(self.login)
+        self.test_btn.clicked.connect(self.test)
 
     def login(self, test=False):
         username = str(self.username_widget.text())
         password = str(self.password_widget.text())
         data = self.ne.login(username, password)
         if data['code'] is 200:
-            uid = data['account']['id']
-            self.emit(SIGNAL('loginsuccess'), uid)
+            self.emit(SIGNAL('loginsuccess'), data)
             self.close()
         else:
             self.hint_label.setText(u'登陆失败')
         return
 
+    def test(self):
+        self.emit(SIGNAL('logintest'), False)
+        self.close()
+
     def set_me(self):
+        self.setObjectName('login_dialog')
         self.setLayout(self.layout)
 
     def set_widgets_prop(self):
         self.login_btn.setText(u'登陆')
+        self.test_btn.setText(u'使用测试账号登录')
 
         self.username_lable.setText(u'用户名')
         self.password_lable.setText(u'密码')
@@ -72,6 +80,8 @@ class LoginDialog(QDialog):
         self.layout.addWidget(self.password_widget)
         self.layout.addWidget(self.hint_label)
         self.layout.addWidget(self.login_btn)
+        self.layout.addStretch(1)
+        self.layout.addWidget(self.test_btn)
 
 
 class MainWidget(QWidget):
@@ -83,16 +93,24 @@ class MainWidget(QWidget):
         self.ui.setup_ui(self)
 
         self.player = Phonon.createPlayer(Phonon.MusicCategory)
-        self.current_playing_widget = QTableWidget()
+        self.net_manager = QNetworkAccessManager()
+        self.searchShortcut = QShortcut(QKeySequence("Ctrl+F"), self)
         self.sources = []
         self.net_ease = NetEase()
         self.model = DataModel()
 
-        self.set_signal_binding()
         self.set_self_prop()
+        self.set_signal_binding()
+        self.init_table_widget()
         # self.load_user_playlist()
 
+    def init_table_widget(self):
+        self.ui.info_widget.music_table_widget.close()
+        self.ui.info_widget.music_search_widget.close()
+        self.ui.info_widget.current_playing_widget.close()
+
     def set_self_prop(self):
+        self.setWindowTitle('NetEaseMusic For Linux')
         self.setObjectName('main_widget')
         self.resize(960, 580)
         self.setWindowIcon(QIcon('icons/format.ico'))
@@ -110,8 +128,11 @@ class MainWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_signal_binding(self):
+        self.searchShortcut.activated.connect(self.set_search_focus)
         self.ui.info_widget.music_table_widget.itemDoubleClicked.connect(
             self.play_music)
+        self.ui.info_widget.music_search_widget.itemDoubleClicked.connect(
+            self.play_search_music)
         self.ui.user_widget.list_widget.itemDoubleClicked.connect(
             self.set_tablewidget_playlist)
         self.player.setTickInterval(1000)
@@ -125,8 +146,13 @@ class MainWidget(QWidget):
         self.ui.play_widget.next_music_btn.clicked.connect(
             self.next_music)
         self.ui.play_widget.seek_slider.setMediaObject(self.player)
-        self.ui.user_widget.login_btn.clicked.connect(self.show_login_widget)
-        self.ui.user_widget.test_btn.clicked.connect(self.login)
+        self.ui.play_widget.login_btn.clicked.connect(self.show_login_widget)
+        self.ui.play_widget.search_btn.clicked.connect(self.search)
+        self.ui.play_widget.search_edit.returnPressed.connect(self.search)
+        self.ui.play_widget.show_current_list.clicked.connect(self.show_current_playing_widget)
+
+    def set_search_focus(self):
+        self.ui.play_widget.search_edit.setFocus(True)
 
     def play_pause(self):
         if self.player.state() == Phonon.PlayingState:
@@ -137,12 +163,22 @@ class MainWidget(QWidget):
     def show_login_widget(self):
         d = LoginDialog(self)
         self.connect(d, SIGNAL('loginsuccess'), self.login)
+        self.connect(d, SIGNAL('logintest'), self.login)
         d.show()
 
-    def login(self, uid):
-        if uid is False:
+    def login(self, data):
+        if data is False:
             uid = '18731323'
-        self.ui.user_widget.login_btn.setText(u'当前登陆ID:%s' % uid)
+        else:
+            uid = data['account']['id']
+            try:
+                self.ui.status.showMessage(u'准备加载头像')
+                avatarUrl = data['profile']['avatarUrl']
+                self.net_manager.finished.connect(self.avatar_load_finish)
+                print avatarUrl
+                self.net_manager.get(QNetworkRequest(QUrl(avatarUrl)))
+            except:
+                self.ui.status.showMessage(u'加载头像失败')
         self.load_user_playlist(uid)
 
     def load_user_playlist(self, uid):
@@ -153,14 +189,67 @@ class MainWidget(QWidget):
             for playlist in playlists:
                 datamodel = self.model.playlist()
                 datamodel = self.model.set_datamodel_from_data(playlist, datamodel)
-                item = QListWidgetItem(datamodel['name'])
+                item = QListWidgetItem(QIcon('icons/playlist_1.png'), datamodel['name'])
                 list_widget.addItem(item)
                 data = QVariant((datamodel, ))
                 item.setData(Qt.UserRole, data)
         else:
             print 'network error'
 
+    def search(self):
+        print 'searching'
+        search_edit = self.ui.play_widget.search_edit
+
+        text= search_edit.text()
+        if text != '':
+            s = unicode(text.toUtf8(), 'utf8', 'ignore')
+            print s
+            data = self.net_ease.search(s.encode('utf8'))
+            songs = list()
+            if data['result']['songCount'] != 0:
+                songs = data['result']['songs']
+                self.set_search_widget(songs)
+                return
+            else:
+                self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲')
+                return
+
+    def set_search_widget(self, songs):
+        self.init_table_widget()
+        music_search = self.ui.info_widget.music_search_widget
+        music_search.show()
+
+        row_count = len(songs)
+        music_search.setRowCount(0)
+        music_search.setRowCount(row_count)
+        row = 0
+        for song in songs:
+            datamodel = self.model.search_result()
+            datamodel = self.model.set_datamodel_from_data(song, datamodel)
+            musicItem = QTableWidgetItem(datamodel['name'])
+            albumItem = QTableWidgetItem(datamodel['album']['name'])
+            if len(song['artists']) > 0:
+                artistName = song['artists'][0]['name']
+            artistItem = QTableWidgetItem(artistName)
+
+            music = QVariant((datamodel, ))
+            musicItem.setData(Qt.UserRole, music)
+
+            musicItem.setTextAlignment(Qt.AlignCenter)
+            artistItem.setTextAlignment(Qt.AlignCenter)
+            albumItem.setTextAlignment(Qt.AlignCenter)
+
+            music_search.setItem(row, 0, musicItem)
+            music_search.setItem(row, 1, artistItem)
+            music_search.setItem(row, 2, albumItem)
+            row += 1
+
+
     def set_tablewidget_playlist(self, item):
+        self.init_table_widget()
+        table_widget = self.ui.info_widget.music_table_widget
+        table_widget.show()
+
         data = item.data(Qt.UserRole)
         playlist = data.toPyObject()[0]
         plid = playlist['id']
@@ -170,7 +259,6 @@ class MainWidget(QWidget):
 
         # data = self.user.get_music_title_and_url(pid)
         data = self.net_ease.playlist_detail(plid)
-        table_widget = self.ui.info_widget.music_table_widget
         # table_widget.clear()
         if data is not []:
             row_count = len(data)
@@ -180,15 +268,71 @@ class MainWidget(QWidget):
             for music in data:
                 datamodel = self.model.music()
                 datamodel = self.model.set_datamodel_from_data(music, datamodel)
-                music_item = QTableWidgetItem(datamodel['name'])
+                musicItem = QTableWidgetItem(datamodel['name'])
+                musicItem = QTableWidgetItem(datamodel['name'])
+                albumItem = QTableWidgetItem(datamodel['album']['name'])
+                if len(datamodel['artists']) > 0:
+                    artistName = datamodel['artists'][0]['name']
+                artistItem = QTableWidgetItem(artistName)
                 # to get pure dict from qvariant, so pay attension !
                 # stackoverflow: how to get the original python data from qvariant
                 music = QVariant((datamodel, ))
-                music_item.setData(Qt.UserRole, music)
-                table_widget.setItem(row, 0, music_item)
+                musicItem.setData(Qt.UserRole, music)
+
+                musicItem.setTextAlignment(Qt.AlignCenter)
+                artistItem.setTextAlignment(Qt.AlignCenter)
+                albumItem.setTextAlignment(Qt.AlignCenter)
+
+                table_widget.setItem(row, 0, musicItem)
+                table_widget.setItem(row, 1, artistItem)
+                table_widget.setItem(row, 2, albumItem)
                 row += 1
         else:
             print 'network, no music, error plid'
+
+    def play_search_music(self, item):
+        music_search = self.ui.info_widget.music_search_widget
+        current_playing = self.ui.info_widget.current_playing_widget
+        current_row = music_search.row(item)
+        item = music_search.item(current_row, 0)    # only item 0 contain url
+        data = item.data(Qt.UserRole)
+        song = data.toPyObject()[0]
+        musics = self.net_ease.song_detail(song['id'])
+        source = Phonon.MediaSource(musics[0]['mp3Url'])
+        curr = self.player.currentSource()
+        if str(curr.url().toString()) != '':
+            index = self.sources.index(curr)
+            self.sources.insert(index + 1, source)
+        else:
+            self.sources.append(source)
+        rowCount = current_playing.rowCount()
+        current_playing.setRowCount(rowCount + 1)
+
+        datamodel = self.model.music()
+        datamodel = self.model.set_datamodel_from_data(musics[0], datamodel)
+
+        musicItem = QTableWidgetItem(datamodel['name'])
+        albumItem = QTableWidgetItem(datamodel['album']['name'])
+        if len(datamodel['artists']) > 0:
+            artistName = datamodel['artists'][0]['name']
+        artistItem = QTableWidgetItem(artistName)
+        # to get pure dict from qvariant, so pay attension !
+        # stackoverflow: how to get the original python data from qvariant
+        music = QVariant((datamodel, ))
+        musicItem.setData(Qt.UserRole, music)
+
+        musicItem.setTextAlignment(Qt.AlignCenter)
+        artistItem.setTextAlignment(Qt.AlignCenter)
+        albumItem.setTextAlignment(Qt.AlignCenter)
+
+        current_playing.setItem(rowCount, 0, musicItem)
+        current_playing.setItem(rowCount, 1, artistItem)
+        current_playing.setItem(rowCount, 2, albumItem)
+
+        self.player.stop()
+        self.player.setCurrentSource(source)
+        self.player.play()
+
 
     def play_music(self, item):
         """
@@ -199,7 +343,7 @@ class MainWidget(QWidget):
         self.player.clearQueue()
 
         music_table = self.ui.info_widget.music_table_widget
-        self.current_playing_widget = music_table
+        self.ui.info_widget.current_playing_widget = music_table
         self.sources = []
         for row in range(music_table.rowCount()):
             tmp_item = music_table.item(row, 0)
@@ -214,7 +358,7 @@ class MainWidget(QWidget):
     def tick(self, time):
         time_lcd = self.ui.play_widget.time_lcd
         displayTime = QTime(0, (time / 60000) % 60, (time / 1000) % 60)
-        time_lcd.display(displayTime.toString('mm:ss'))
+        time_lcd.setText(displayTime.toString('mm:ss'))
 
     def state_changed(self, new_state, old_state):
         time_lcd = self.ui.play_widget.time_lcd
@@ -227,11 +371,11 @@ class MainWidget(QWidget):
                 QMessageBox.warning(self, "Error",
                         self.player.errorString())
         elif new_state == Phonon.PlayingState:
-            play_pause_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
+            play_pause_btn.setIcon(QIcon('icons/play_hover.png'))
         elif new_state == Phonon.StoppedState:
-            time_lcd.display("00:00")
+            time_lcd.setText("00:00")
         elif new_state == Phonon.PausedState:
-            play_pause_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
+            play_pause_btn.setIcon(QIcon('icons/pause.png'))
 
     def source_changed(self, source):
         """
@@ -241,14 +385,32 @@ class MainWidget(QWidget):
         """
         # set time lcd
         time_lcd = self.ui.play_widget.time_lcd
-        time_lcd.display('00:00')
+        time_lcd.setText('00:00')
         # set text label
+        current_playing = self.ui.info_widget.current_playing_widget
         row = self.sources.index(source)
-        item = self.current_playing_widget.item(row, 0)
+        item = current_playing.item(row, 0)
+        current_playing.scrollToItem(item)
         data = item.data(Qt.UserRole)
         music = data.toPyObject()[0]
         text_label = self.ui.play_widget.text_label
         text_label.setText(music['name'])
+        self.net_manager.get(QNetworkRequest(QUrl(music['album']['picUrl'])))
+
+    def albumimg_load_finish(self, res):
+        img_label = self.ui.play_widget.img_label
+        img = QImage()
+        img.loadFromData(res.readAll())
+        img_label.setPixmap(QPixmap(img).scaled(50, 50))
+
+    def avatar_load_finish(self, res):
+        login_btn = self.ui.play_widget.login_btn
+        img = QImage()
+        img.loadFromData(res.readAll())
+        login_btn.setIcon(QIcon(QPixmap(img).scaled(40, 40)))
+        self.net_manager.finished.disconnect(self.avatar_load_finish)
+        self.net_manager.finished.connect(self.albumimg_load_finish)
+        self.ui.status.showMessage(u'加载头像成功')
 
     def about_to_finish(self):
         index = self.sources.index(self.player.currentSource()) + 1
@@ -272,6 +434,10 @@ class MainWidget(QWidget):
         else:
             self.player.setCurrentSource(self.sources[0])
         self.player.play()
+
+    def show_current_playing_widget(self):
+        self.init_table_widget()
+        self.ui.info_widget.current_playing_widget.show()
 
 
 if __name__ == "__main__":

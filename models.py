@@ -29,6 +29,19 @@ class DataModel(object):
         }
         return playlist_model
 
+    def search_result(self):
+        """
+        from search result: data['result']['songs']
+        """
+        search_list = {
+            'id': int,
+            'name': unicode,
+            'artists': list,
+            'album': dict
+        }
+        return search_list
+
+
     def set_datamodel_from_data(self, data, datamodel):
         """
         before generating model, the data should be validated
