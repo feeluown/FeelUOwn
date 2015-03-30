@@ -133,6 +133,8 @@ class MainWidget(QWidget):
             self.play_music)
         self.ui.info_widget.music_search_widget.itemDoubleClicked.connect(
             self.play_search_music)
+        self.ui.info_widget.current_playing_widget.itemDoubleClicked.connect(
+            self.play_current_music)
         self.ui.user_widget.list_widget.itemDoubleClicked.connect(
             self.set_tablewidget_playlist)
         self.player.setTickInterval(1000)
@@ -150,6 +152,13 @@ class MainWidget(QWidget):
         self.ui.play_widget.search_btn.clicked.connect(self.search)
         self.ui.play_widget.search_edit.returnPressed.connect(self.search)
         self.ui.play_widget.show_current_list.clicked.connect(self.show_current_playing_widget)
+
+    def play_current_music(self, item):
+        current_playing = self.ui.info_widget.current_playing_widget
+        current_row = current_playing.row(item)
+        self.player.stop()
+        self.player.setCurrentSource(self.sources[current_row])
+        self.player.play()
 
     def set_search_focus(self):
         self.ui.play_widget.search_edit.setFocus(True)
@@ -175,8 +184,9 @@ class MainWidget(QWidget):
                 self.ui.status.showMessage(u'准备加载头像')
                 avatarUrl = data['profile']['avatarUrl']
                 self.net_manager.finished.connect(self.avatar_load_finish)
-                print avatarUrl
+                self.load_user_playlist(uid)
                 self.net_manager.get(QNetworkRequest(QUrl(avatarUrl)))
+                return
             except:
                 self.ui.status.showMessage(u'加载头像失败')
         self.load_user_playlist(uid)
@@ -340,7 +350,6 @@ class MainWidget(QWidget):
         :param item:
         :return:
         """
-        self.player.clearQueue()
 
         music_table = self.ui.info_widget.music_table_widget
         current_row = music_table.row(item)
