@@ -300,11 +300,11 @@ class MainWidget(QWidget):
         musics = self.net_ease.song_detail(song['id'])
         source = Phonon.MediaSource(musics[0]['mp3Url'])
         curr = self.player.currentSource()
-        if str(curr.url().toString()) != '':
-            index = self.sources.index(curr)
-            self.sources.insert(index + 1, source)
-        else:
-            self.sources.append(source)
+        # if str(curr.url().toString()) != '':
+        #     index = self.sources.index(curr)
+        #     self.sources.insert(index + 1, source)
+        # else:
+        self.sources.append(source)
         rowCount = current_playing.rowCount()
         current_playing.setRowCount(rowCount + 1)
 
@@ -359,11 +359,11 @@ class MainWidget(QWidget):
 
         source = Phonon.MediaSource(datamodel['mp3Url'])
         curr = self.player.currentSource()
-        if str(curr.url().toString()) != '':
-            index = self.sources.index(curr)
-            self.sources.insert(index + 1, source)
-        else:
-            self.sources.append(source)
+        # if str(curr.url().toString()) != '':
+        #     index = self.sources.index(curr)
+        #     self.sources.insert(index + 1, source)
+        # else:
+        self.sources.append(source)
         # to get pure dict from qvariant, so pay attension !
         # stackoverflow: how to get the original python data from qvariant
         music = QVariant((datamodel, ))
