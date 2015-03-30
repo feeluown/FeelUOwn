@@ -119,7 +119,7 @@ class PlayWidget(QWidget):
         self.text_label.setText(u'未播放任何歌曲')
         self.text_label.setObjectName(u'music_title')
         self.text_label.setAlignment(Qt.AlignCenter)
-        self.img_label.setFixedSize(50, 50)
+        self.img_label.setFixedSize(40, 40)
         self.img_label.setAlignment(Qt.AlignCenter)
         self.seek_slider.setFixedWidth(500)
         self.time_lcd.setText('00:00')
