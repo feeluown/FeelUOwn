@@ -343,16 +343,42 @@ class MainWidget(QWidget):
         self.player.clearQueue()
 
         music_table = self.ui.info_widget.music_table_widget
-        self.ui.info_widget.current_playing_widget = music_table
-        self.sources = []
-        for row in range(music_table.rowCount()):
-            tmp_item = music_table.item(row, 0)
-            data = tmp_item.data(Qt.UserRole)
-            music = data.toPyObject()[0]
-            self.sources.append(Phonon.MediaSource(music['mp3Url']))
         current_row = music_table.row(item)
+        data = item.data(Qt.UserRole)
+        datamodel = data.toPyObject()[0]
+
+        current_playing = self.ui.info_widget.current_playing_widget
+        rowCount = current_playing.rowCount()
+        current_playing.setRowCount(rowCount + 1)
+
+        musicItem = QTableWidgetItem(datamodel['name'])
+        albumItem = QTableWidgetItem(datamodel['album']['name'])
+        if len(datamodel['artists']) > 0:
+            artistName = datamodel['artists'][0]['name']
+        artistItem = QTableWidgetItem(artistName)
+
+        source = Phonon.MediaSource(datamodel['mp3Url'])
+        curr = self.player.currentSource()
+        if str(curr.url().toString()) != '':
+            index = self.sources.index(curr)
+            self.sources.insert(index + 1, source)
+        else:
+            self.sources.append(source)
+        # to get pure dict from qvariant, so pay attension !
+        # stackoverflow: how to get the original python data from qvariant
+        music = QVariant((datamodel, ))
+        musicItem.setData(Qt.UserRole, music)
+
+        musicItem.setTextAlignment(Qt.AlignCenter)
+        artistItem.setTextAlignment(Qt.AlignCenter)
+        albumItem.setTextAlignment(Qt.AlignCenter)
+
+        current_playing.setItem(rowCount, 0, musicItem)
+        current_playing.setItem(rowCount, 1, artistItem)
+        current_playing.setItem(rowCount, 2, albumItem)
+
         self.player.stop()
-        self.player.setCurrentSource(self.sources[current_row])
+        self.player.setCurrentSource(source)
         self.player.play()
 
     def tick(self, time):
