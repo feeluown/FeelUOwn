@@ -81,7 +81,7 @@ class LoginDialog(QDialog):
         self.layout.addWidget(self.hint_label)
         self.layout.addWidget(self.login_btn)
         self.layout.addStretch(1)
-        self.layout.addWidget(self.test_btn)
+        # self.layout.addWidget(self.test_btn)
 
 
 class MainWidget(QWidget):
