@@ -218,8 +218,8 @@ class MainWidget(QWidget):
                 songs = data['result']['songs']
                 length = len(songs)
                 self.set_search_widget(songs)
-                self.ui.status.showMessage(u'搜索到 ' + length + ' 首歌曲',
-                                           1000)
+                self.ui.status.showMessage(u'搜索到 ' + str(length) + u' 首 ' +
+                                           text +u' 相关歌曲', 1000)
                 return
             else:
                 self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲', 1000)
