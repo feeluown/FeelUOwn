@@ -188,7 +188,7 @@ class MainWidget(QWidget):
                 self.net_manager.get(QNetworkRequest(QUrl(avatarUrl)))
                 return
             except:
-                self.ui.status.showMessage(u'加载头像失败')
+                self.ui.status.showMessage(u'加载头像失败', 1000)
         self.load_user_playlist(uid)
 
     def load_user_playlist(self, uid):
@@ -207,21 +207,22 @@ class MainWidget(QWidget):
             print 'network error'
 
     def search(self):
-        print 'searching'
         search_edit = self.ui.play_widget.search_edit
-
         text= search_edit.text()
+        self.ui.status.showMessage(u'正在搜索: ' + text)
         if text != '':
             s = unicode(text.toUtf8(), 'utf8', 'ignore')
-            print s
             data = self.net_ease.search(s.encode('utf8'))
             songs = list()
             if data['result']['songCount'] != 0:
                 songs = data['result']['songs']
+                length = len(songs)
                 self.set_search_widget(songs)
+                self.ui.status.showMessage(u'搜索到 ' + length + ' 首歌曲',
+                                           1000)
                 return
             else:
-                self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲')
+                self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲', 1000)
                 return
 
     def set_search_widget(self, songs):
@@ -445,7 +446,7 @@ class MainWidget(QWidget):
         login_btn.setIcon(QIcon(QPixmap(img).scaled(40, 40)))
         self.net_manager.finished.disconnect(self.avatar_load_finish)
         self.net_manager.finished.connect(self.albumimg_load_finish)
-        self.ui.status.showMessage(u'加载头像成功')
+        self.ui.status.showMessage(u'加载头像成功', 1000)
 
     def about_to_finish(self):
         index = self.sources.index(self.player.currentSource()) + 1
