@@ -75,7 +75,7 @@ class LoginDialog(QDialog):
     def set_widgets_prop(self):
         self.login_btn.setText(u'登陆')
 
-        self.username_lable.setText(u'用户名')
+        self.username_lable.setText(u'网易邮箱或者手机号')
         self.password_lable.setText(u'密码')
         self.username_widget.setPlaceholderText(u'请输入用户名')
         self.password_widget.setPlaceholderText(u'请输入密码')
@@ -158,6 +158,7 @@ class MainWidget(QWidget):
         self.ui.play_widget.search_btn.clicked.connect(self.search)
         self.ui.play_widget.search_edit.returnPressed.connect(self.search)
         self.ui.play_widget.show_current_list.clicked.connect(self.set_tablewidget_currentplayinglist)
+        self.net_manager.finished.connect(self.albumimg_load_finish)
 
     def play_currentplayinglist_music(self, item):
         current_playing = self.ui.info_widget.current_playing_widget
@@ -189,6 +190,7 @@ class MainWidget(QWidget):
                 self.ui.status.showMessage(u'准备加载头像')
                 avatarUrl = data['profile']['avatarUrl']
                 self.net_manager.finished.connect(self.avatar_load_finish)
+                self.net_manager.finished.disconnect(self.albumimg_load_finish)
                 self.load_user_playlist(uid)
                 self.net_manager.get(QNetworkRequest(QUrl(avatarUrl)))
                 return
