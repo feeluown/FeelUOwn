@@ -3,6 +3,8 @@
 .idea
 .iml
 
+*.mp3
+
 *.pyc
 *.swp
 

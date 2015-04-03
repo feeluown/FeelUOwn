@@ -1,4 +1,4 @@
-# -*- coding=utf8 -*-
+# -*- coding:utf8 -*-
 __author__ = 'cosven'
 
 import sys
@@ -99,6 +99,7 @@ class MainWidget(QWidget):
         self.ui = UiMainWidget()
         self.ui.setup_ui(self)
 
+        self.signal_mapper = QSignalMapper(self)
         self.player = Phonon.createPlayer(Phonon.MusicCategory)
         self.net_manager = QNetworkAccessManager()
         self.searchShortcut = QShortcut(QKeySequence("Ctrl+F"), self)
@@ -142,6 +143,8 @@ class MainWidget(QWidget):
         self.ui.info_widget.current_playing_widget.itemDoubleClicked.connect(
             self.play_currentplayinglist_music)
         self.ui.user_widget.list_widget.itemDoubleClicked.connect(
+            self.play_userlist)
+        self.ui.user_widget.list_widget.itemClicked.connect(
             self.set_tablewidget_userplaylist)
         self.player.setTickInterval(1000)
         self.player.tick.connect(self.tick)
@@ -158,7 +161,54 @@ class MainWidget(QWidget):
         self.ui.play_widget.search_btn.clicked.connect(self.search)
         self.ui.play_widget.search_edit.returnPressed.connect(self.search)
         self.ui.play_widget.show_current_list.clicked.connect(self.set_tablewidget_currentplayinglist)
+        self.ui.play_widget.help_btn.clicked.connect(self.show_help_info)
         self.net_manager.finished.connect(self.albumimg_load_finish)
+
+    def show_help_info(self):
+        print 'show help info'
+        with open('data/help.html') as f:
+            text = f.read()
+            text = text.decode('utf8')
+            message = QMessageBox(self)
+            message.setText(text)
+            message.setTextFormat(Qt.RichText)
+            message.show()
+        pass
+
+    def play_userlist(self, item):
+        userplaylist_widget = self.ui.user_widget.list_widget
+        data = item.data(Qt.UserRole)
+        playlist = data.toPyObject()[0]
+        pid = playlist['id']
+        res = self.net_ease.playlist_detail(pid)
+        # table_widget.clear()
+        if res is not []:
+            current_playing = self.ui.info_widget.current_playing_widget
+
+            # 清空当前播放列表
+            self.sources = []
+            current_playing.setRowCount(0)
+
+            # 把歌曲全部加入列表
+            for music in res:
+                datamodel = self.model.music()
+                music_model = self.model.set_datamodel_from_data(music, datamodel)
+
+                source = Phonon.MediaSource(music_model['mp3Url'])
+                self.add_music_to_sources(source)
+                self.add_music_to_currentplayinglist(music_model)
+
+            # 播放列表第一首歌
+            item = current_playing.item(0, 0)
+            self.play_currentplayinglist_music(item)
+
+            # 显示当前播放列表
+            self.init_table_widget()
+            current_playing.show()
+        else:
+            # 具体详细提示信息需要根据后台返回进行判断
+            # 以后可以进行优化
+            self.ui.status.showMessage(u'当前列表为空', 3000)
 
     def play_currentplayinglist_music(self, item):
         current_playing = self.ui.info_widget.current_playing_widget
@@ -442,7 +492,11 @@ class MainWidget(QWidget):
             self.player.enqueue(self.sources[0])
 
     def last_music(self):
-        index = self.sources.index(self.player.currentSource()) - 1
+        try:
+            index = self.sources.index(self.player.currentSource()) - 1
+        except ValueError:
+            self.ui.status.showMessage(u'当前播放列表为空', 2000)
+            return
         if index >= 0:
             self.player.setCurrentSource(self.sources[index])
         else:
@@ -450,7 +504,11 @@ class MainWidget(QWidget):
         self.player.play()
 
     def next_music(self):
-        index = self.sources.index(self.player.currentSource()) + 1
+        try:
+            index = self.sources.index(self.player.currentSource()) + 1
+        except ValueError:
+            self.ui.status.showMessage(u'当前播放列表为空', 2000)
+            return
         if len(self.sources) > index:
             self.player.setCurrentSource(self.sources[index])
         else:

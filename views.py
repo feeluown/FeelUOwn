@@ -43,6 +43,7 @@ class UserWidget(QWidget):
     def set_widgets_prop(self):
         self.text_label.setObjectName('playlist_title')
         self.list_widget.setWordWrap(True)
+        self.list_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.text_label.setAlignment(Qt.AlignLeft)
 
     def set_layouts_prop(self):
@@ -64,6 +65,7 @@ class PlayWidget(QWidget):
         self.search_btn = QPushButton()
         self.show_current_list = QPushButton()
         self.login_btn = QPushButton()
+        self.help_btn = QPushButton()
         self.edit_layout = QHBoxLayout()
         self.center_layout = QHBoxLayout()
         self.center_layout_l = QVBoxLayout()
@@ -100,6 +102,7 @@ class PlayWidget(QWidget):
         self.play_pause_btn.setIconSize(QSize(40, 40))
         self.last_music_btn.setIconSize(QSize(40, 40))
         self.next_music_btn.setIconSize(QSize(40, 40))
+        self.help_btn.setIconSize(QSize(25, 25))
         self.show_current_list.setIconSize(QSize(25, 25))
         self.show_current_list.setToolTip(u'正在播放列表')
         self.login_btn.setToolTip(u'登录')
@@ -108,6 +111,7 @@ class PlayWidget(QWidget):
         self.last_music_btn.setIcon(QIcon('icons/last_hover.png'))
         self.next_music_btn.setIcon(QIcon('icons/next_hover.png'))
         self.show_current_list.setIcon(QIcon('icons/current_play.png'))
+        self.help_btn.setIcon(QIcon('icons/help.png'))
 
         self.login_btn.setFixedSize(40, 40)
 
@@ -144,6 +148,7 @@ class PlayWidget(QWidget):
         self.layout.addWidget(self.search_edit)
         self.layout.addWidget(self.search_btn)
         self.layout.addWidget(self.show_current_list)
+        self.layout.addWidget(self.help_btn)
 
 
 class InfoWidget(QWidget):
