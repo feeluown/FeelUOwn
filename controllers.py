@@ -45,15 +45,30 @@ class LoginDialog(QDialog):
         self.test_btn.clicked.connect(self.test)
 
     def login(self, test=False):
-        username = str(self.username_widget.text())
+        phone_login = False      # 0: 网易通行证, 1: 手机号登陆
+        username = str(self.username_widget.text())     # 包含中文会出错
         password = str(self.password_widget.text())
-        data = self.ne.login(username, password)
-        if data['code'] is 200:
+
+        # judget if logining by using phone number
+        try:
+            int(username)
+            phone_login = True
+        except ValueError:
+            pass
+
+        data = self.ne.login(username, password, phone_login)
+
+        # judge if login successfully
+        # if not, why
+        print data['code'], type(data['code'])
+        if data['code'] == 200:
+            self.hint_label.setText(u'登陆成功')
             self.emit(SIGNAL('loginsuccess'), data)
             self.close()
-        else:
-            self.hint_label.setText(u'登陆失败')
-        return
+        elif data['code'] == 502:
+            self.hint_label.setText(u'用户名或密码错误')
+        elif data['code'] == 408:
+            self.hint_label.setText(u'网络连接超时')
 
     def test(self):
         self.emit(SIGNAL('logintest'), False)

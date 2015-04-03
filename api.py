@@ -58,17 +58,26 @@ class NetEase:
         return connection
 
     # 登录
-    def login(self, username, password):
+    def login(self, username, password, phone=False):
         action = 'http://music.163.com/api/login/'
+        phone_action = 'http://music.163.com/api/login/cellphone/'
         data = {
             'username': username,
             'password': hashlib.md5(password).hexdigest(),
             'rememberLogin': 'true'
         }
+        phone_data = {
+            'phone': username,
+            'password': hashlib.md5(password).hexdigest(),
+            'rememberLogin': 'true'
+        }
         try:
-            return self.httpRequest('POST', action, data)
+            if phone is True:
+                return self.httpRequest('POST', phone_action, phone_data)
+            else:
+                return self.httpRequest('POST', action, data)
         except Exception, e:
-            return {'code': 501}
+            return {'code': 408}
 
     # 用户歌单
     def user_playlist(self, uid, offset=0, limit=100):
