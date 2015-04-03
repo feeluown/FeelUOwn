@@ -31,7 +31,6 @@ class LoginDialog(QDialog):
         self.username_widget = QLineEdit()
         self.password_widget = QLineEdit()
         self.login_btn = QPushButton()
-        self.test_btn = QPushButton()
         self.layout = QVBoxLayout()
         self.ne = NetEase()
 
@@ -42,9 +41,8 @@ class LoginDialog(QDialog):
 
     def set_signal_binding(self):
         self.login_btn.clicked.connect(self.login)
-        self.test_btn.clicked.connect(self.test)
 
-    def login(self, test=False):
+    def login(self):
         phone_login = False      # 0: 网易通行证, 1: 手机号登陆
         username = str(self.username_widget.text())     # 包含中文会出错
         password = str(self.password_widget.text())
@@ -70,17 +68,12 @@ class LoginDialog(QDialog):
         elif data['code'] == 408:
             self.hint_label.setText(u'网络连接超时')
 
-    def test(self):
-        self.emit(SIGNAL('logintest'), False)
-        self.close()
-
     def set_me(self):
         self.setObjectName('login_dialog')
         self.setLayout(self.layout)
 
     def set_widgets_prop(self):
         self.login_btn.setText(u'登陆')
-        self.test_btn.setText(u'使用测试账号登录')
 
         self.username_lable.setText(u'用户名')
         self.password_lable.setText(u'密码')
@@ -96,7 +89,6 @@ class LoginDialog(QDialog):
         self.layout.addWidget(self.hint_label)
         self.layout.addWidget(self.login_btn)
         self.layout.addStretch(1)
-        # self.layout.addWidget(self.test_btn)
 
 
 class MainWidget(QWidget):
@@ -117,7 +109,6 @@ class MainWidget(QWidget):
         self.set_self_prop()
         self.set_signal_binding()
         self.init_table_widget()
-        # self.load_user_playlist()
 
     def init_table_widget(self):
         self.ui.info_widget.music_table_widget.close()
@@ -187,7 +178,6 @@ class MainWidget(QWidget):
     def show_login_widget(self):
         d = LoginDialog(self)
         self.connect(d, SIGNAL('loginsuccess'), self.login)
-        self.connect(d, SIGNAL('logintest'), self.login)
         d.show()
 
     def login(self, data):
