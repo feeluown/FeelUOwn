@@ -10,6 +10,7 @@ from controllers import MainWidget, LoginDialog
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setWindowIcon(QIcon('icons/format.ico'))
     path = sys.path[0]
     os.chdir(path)
 
