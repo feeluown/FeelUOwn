@@ -9,3 +9,5 @@
 *.swp
 
 *.desktop
+*.md~
+*.py~
