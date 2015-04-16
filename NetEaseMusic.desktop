@@ -1,0 +1,10 @@
+#!/usr/bin/env xdg-open
+[Desktop Entry]
+Type=Application
+Name=NetEaseMusic
+Comment=NetEaseMusic Launcher
+Exec=/home/cosven/PycharmProjects/NetEaseMusic/main.py
+Icon=/home/cosven/PycharmProjects/NetEaseMusic/icons/format.png
+Terminal=false
+StartupNotify=true
+

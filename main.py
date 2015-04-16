@@ -13,7 +13,7 @@ if __name__ == "__main__":
     path = sys.path[0]
     os.chdir(path)
 
-    qss = "basic.qss"
+    qss = "themes/default.qss"
     with open(qss, "r") as qssfile:
         app.setStyleSheet(qssfile.read())
     w = MainWidget()
