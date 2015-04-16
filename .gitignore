@@ -11,3 +11,5 @@
 *.desktop
 *.md~
 *.py~
+
+sphinx_doc/build
