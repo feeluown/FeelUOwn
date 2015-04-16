@@ -8,3 +8,6 @@
 *.pyc
 *.swp
 
+*.desktop
+*.md~
+*.py~

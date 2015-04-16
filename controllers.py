@@ -10,6 +10,8 @@ from PyQt4.QtNetwork import QNetworkAccessManager, QNetworkRequest
 from api import NetEase
 from models import DataModel
 
+from widgets.login_dialog import LoginDialog
+
 try:
     from PyQt4.phonon import Phonon
 except ImportError:
@@ -21,74 +23,6 @@ except ImportError:
     sys.exit(1)
 
 from views import UiMainWidget
-
-class LoginDialog(QDialog):
-    def __init__(self, parent=None):
-        super(LoginDialog, self).__init__(parent)
-        self.username_lable = QLabel()
-        self.password_lable = QLabel()
-        self.hint_label = QLabel()
-        self.username_widget = QLineEdit()
-        self.password_widget = QLineEdit()
-        self.login_btn = QPushButton()
-        self.layout = QVBoxLayout()
-        self.ne = NetEase()
-
-        self.set_signal_binding()
-        self.set_widgets_prop()
-        self.set_layouts_prop()
-        self.set_me()
-
-    def set_signal_binding(self):
-        self.login_btn.clicked.connect(self.login)
-
-    def login(self):
-        phone_login = False      # 0: 网易通行证, 1: 手机号登陆
-        username = str(self.username_widget.text())     # 包含中文会出错
-        password = str(self.password_widget.text())
-
-        # judget if logining by using phone number
-        try:
-            int(username)
-            phone_login = True
-        except ValueError:
-            pass
-
-        data = self.ne.login(username, password, phone_login)
-
-        # judge if login successfully
-        # if not, why
-        print data['code'], type(data['code'])
-        if data['code'] == 200:
-            self.hint_label.setText(u'登陆成功')
-            self.emit(SIGNAL('loginsuccess'), data)
-            self.close()
-        elif data['code'] == 502:
-            self.hint_label.setText(u'用户名或密码错误')
-        elif data['code'] == 408:
-            self.hint_label.setText(u'网络连接超时')
-
-    def set_me(self):
-        self.setObjectName('login_dialog')
-        self.setLayout(self.layout)
-
-    def set_widgets_prop(self):
-        self.login_btn.setText(u'登陆')
-
-        self.username_lable.setText(u'网易邮箱或者手机号')
-        self.password_lable.setText(u'密码')
-        self.username_widget.setPlaceholderText(u'请输入用户名')
-        self.password_widget.setPlaceholderText(u'请输入密码')
-        self.password_widget.setEchoMode(QLineEdit.Password)
-
-    def set_layouts_prop(self):
-        self.layout.addWidget(self.username_lable)
-        self.layout.addWidget(self.username_widget)
-        self.layout.addWidget(self.password_lable)
-        self.layout.addWidget(self.password_widget)
-        self.layout.addWidget(self.hint_label)
-        self.layout.addWidget(self.login_btn)
-        self.layout.addStretch(1)
 
 
 class MainWidget(QWidget):
