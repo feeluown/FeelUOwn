@@ -80,14 +80,3 @@ if __name__ == "__main__":
     }
     res = web.post(url, data)
     print res.read()
-    # url_add = 'http://music.163.com/api/playlist/manipulate/tracks'
-    # data_add = {
-    #     'tracks': '26599525', # music id
-    #     'pid': '16199365',    # playlist id
-    #     'trackIds': '["26599525"]', # music id str
-    #     'op': 'add'   # opation
-    # }
-    # res_add = web.post(url_add, data_add)
-    # print res_add.read()
-
-    # 完了可以试着查看自己网易云音乐相应列表歌曲

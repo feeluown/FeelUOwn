@@ -10,7 +10,7 @@ CopyRight (c) 2014 vellow <i@vellow.net>
 
 import re
 import json
-import requests
+from tools import MyWeb
 import hashlib
 
 
@@ -39,23 +39,18 @@ class NetEase:
         self.cookies = {
             'appver': '1.5.2'
         }
+        self.web = MyWeb()
 
     def httpRequest(self, method, action, query=None, urlencoded=None, callback=None, timeout=None):
         if (method == 'GET'):
-            url = action if (query == None) else (action + '?' + query)
-            connection = requests.get(url, headers=self.header, timeout=default_timeout)
+            res = self.web.get(action)
+            data = res.read()
 
         elif (method == 'POST'):
-            connection = requests.post(
-                action,
-                data=query,
-                headers=self.header,
-                timeout=default_timeout
-            )
-
-        connection.encoding = "UTF-8"
-        connection = json.loads(connection.text)
-        return connection
+            res = self.web.post(action, query)
+            data = res.read()
+        data= json.loads(data)
+        return data
 
     # 登录
     def login(self, username, password, phone=False):
@@ -77,6 +72,7 @@ class NetEase:
             else:
                 return self.httpRequest('POST', action, data)
         except Exception, e:
+            print e
             return {'code': 408}
 
     # 用户歌单
@@ -285,3 +281,29 @@ class NetEase:
             temp = channel_info
 
         return temp
+
+    def setMusicToPlaylist(self, mid, pid, op):
+        """
+        :param op: add or del
+        把mid这首音乐加入pid这个歌单列表当中去
+        1. 如果歌曲已经在列表当中，返回code为502
+        """
+        url_add = 'http://music.163.com/api/playlist/manipulate/tracks'
+        trackIds = '["' + str(mid) + '"]' 
+        data_add = {
+            'tracks': str(mid), # music id
+            'pid': str(pid),    # playlist id
+            'trackIds': trackIds, # music id str
+            'op': op   # opation
+        }
+        try:
+            return self.httpRequest('POST', url_add, data_add)
+        except Exception, e:
+            return {'code': 408}
+
+    def getRadioMusic(self):
+        url = 'http://music.163.com/api/radio/get'
+        try:
+            return self.httpRequest('GET', url)
+        except Exception, e:
+            return {'code': 408}

@@ -13,3 +13,5 @@
 *.py~
 
 sphinx_doc/build
+test.py
+user.json

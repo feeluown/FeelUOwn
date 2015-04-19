@@ -1,8 +1,11 @@
 # -*- coding:utf8 -*-
 __author__ = 'cosven'
 
-from PyQt4.QtGui import QLabel, QLineEdit, QDialog, QPushButton, QVBoxLayout
-from PyQt4.QtCore import SIGNAL
+import os
+import json
+
+from PyQt4.QtGui import *
+from PyQt4.QtCore import *
 
 from api import NetEase
 
@@ -24,25 +27,62 @@ class LoginDialog(QDialog):
         self.password_widget = QLineEdit()
         self.login_btn = QPushButton()
         self.layout = QVBoxLayout()
+        self.is_remember_chb = QCheckBox(u'记住账号')
+        self.filename = 'cache/user.json'
         self.ne = NetEase()
 
         self.__set_signal_binding()
         self.__set_widgets_prop()
         self.__set_layouts_prop()
         self.__set_me()
+        self.init_me()
 
     def __set_signal_binding(self):
         self.login_btn.clicked.connect(self.__login)
+
+    def init_me(self):
+        """
+        判断之前是否保存了用户名和密码:
+            保存了就是直接加载
+            没保存就pass
+        """
+        if os.path.exists(self.filename):
+            f = open(self.filename, 'r')
+            login_data = json.load(f)
+            f.close()
+            if login_data.has_key('is_remember') and login_data['is_remember']:
+                username = login_data['username']
+                password = login_data['password']
+                is_remember = login_data['is_remember']
+                self.username_widget.setText(username)
+                self.password_widget.setText(password)
+                self.is_remember_chb.setCheckState(is_remember)
+        return
+
+    def save_login_info(self, login_data):
+        if login_data['is_remember']:
+            f = open(self.filename, 'w')
+            jsondata = json.dumps(login_data)
+            f.write(jsondata)
+            f.close
+        else:
+            os.remove(self.filename)
 
     def __login(self):
         """登录
 
         在用户登录成功时，会发射("loginsuccess")信号
         """
+        login_data = {}
+
         phone_login = False      # 0: 网易通行证, 1: 手机号登陆
         username = str(self.username_widget.text())     # 包含中文会出错
         password = str(self.password_widget.text())
+        is_remember = self.is_remember_chb.checkState()     # 2: checked, 1: partial checked
 
+        login_data['username'] = username
+        login_data['password'] = password
+        login_data['is_remember'] = is_remember
         # judget if logining by using phone number
         try:
             int(username)
@@ -54,11 +94,12 @@ class LoginDialog(QDialog):
 
         # judge if __login successfully
         # if not, why
-        print data['code'], type(data['code'])
         if data['code'] == 200:
             self.hint_label.setText(u'登陆成功')
             self.emit(SIGNAL('loginsuccess'), data)
             self.close()
+            self.save_login_info(login_data)
+
         elif data['code'] == 408:
             self.hint_label.setText(u'网络连接超时')
         elif data['code'] == 501:
@@ -87,5 +128,6 @@ class LoginDialog(QDialog):
         self.layout.addWidget(self.password_lable)
         self.layout.addWidget(self.password_widget)
         self.layout.addWidget(self.hint_label)
+        self.layout.addWidget(self.is_remember_chb)
         self.layout.addWidget(self.login_btn)
         self.layout.addStretch(1)

@@ -13,11 +13,14 @@ from PyQt4.QtCore import *
 
 from PyQt4.phonon import Phonon
 
+from widgets.music_table_widget import MusicTableWidget
+
 
 class UserWidget(QWidget):
     def __init__(self, parent=None):
         super(UserWidget, self).__init__(parent)
-        self.text_label = QLabel(u'歌曲列表')
+        self.text_label = QLabel(u'歌单')
+        self.radio_btn = QPushButton(u'私人电台')
         self.list_widget = QListWidget()
         self.layout = QVBoxLayout()
 
@@ -42,6 +45,8 @@ class UserWidget(QWidget):
 
     def set_widgets_prop(self):
         self.text_label.setObjectName('playlist_title')
+        self.radio_btn.setObjectName('radio_btn')
+        self.radio_btn.setToolTip(u'播放私人电台')
         self.list_widget.setWordWrap(True)
         self.list_widget.setContextMenuPolicy(Qt.CustomContextMenu)
         self.text_label.setAlignment(Qt.AlignLeft)
@@ -49,7 +54,7 @@ class UserWidget(QWidget):
     def set_layouts_prop(self):
         self.layout.addWidget(self.text_label)
         self.layout.addWidget(self.list_widget)
-
+        self.layout.addWidget(self.radio_btn)
 
 class PlayWidget(QWidget):
     def __init__(self, parent=None):
@@ -58,6 +63,7 @@ class PlayWidget(QWidget):
         self.next_music_btn = QPushButton()
         self.play_pause_btn = QPushButton()
         self.text_label = QLabel()
+        self.add_to_favorite = QPushButton()
         self.img_label = QLabel()
         self.time_lcd = QLabel()
         self.seek_slider = Phonon.SeekSlider(self)
@@ -69,6 +75,7 @@ class PlayWidget(QWidget):
         self.edit_layout = QHBoxLayout()
         self.center_layout = QHBoxLayout()
         self.center_layout_l = QVBoxLayout()
+        self.center_layout_l_top = QHBoxLayout()
         self.layout = QHBoxLayout()
 
         self.set_me()
@@ -122,7 +129,7 @@ class PlayWidget(QWidget):
 
         self.text_label.setText(u'未播放任何歌曲')
         self.text_label.setObjectName(u'music_title')
-        self.text_label.setAlignment(Qt.AlignCenter)
+        self.text_label.setAlignment(Qt.AlignLeft)
         self.img_label.setFixedSize(40, 40)
         self.img_label.setAlignment(Qt.AlignCenter)
         self.seek_slider.setFixedWidth(500)
@@ -131,6 +138,9 @@ class PlayWidget(QWidget):
         self.search_edit.setFixedHeight(25)
         self.search_btn.setFixedSize(25, 25)
         self.search_edit.setPlaceholderText(u'搜索单曲')
+        
+        self.add_to_favorite.setObjectName(u'add_to_favorite')
+        self.add_to_favorite.setCheckable(True)
 
     def set_layouts_prop(self):
         self.layout.addWidget(self.login_btn)
@@ -139,10 +149,17 @@ class PlayWidget(QWidget):
         self.layout.addWidget(self.next_music_btn)
         self.layout.addStretch(1)
         self.center_layout.addWidget(self.img_label)
-        self.center_layout_l.addWidget(self.text_label)
+        self.center_layout_l.addStretch(1)
+        self.center_layout_l_top.addWidget(self.time_lcd)
+        self.center_layout_l_top.addStretch(1)
+        self.center_layout_l_top.addWidget(self.text_label, 1)
+        self.center_layout_l_top.addStretch(1)
+        self.center_layout_l_top.addWidget(self.add_to_favorite)
+        self.center_layout_l.addStretch(1)
+        self.center_layout_l.addLayout(self.center_layout_l_top)
         self.center_layout_l.addWidget(self.seek_slider)
+        self.center_layout_l.addStretch(1)
         self.center_layout.addLayout(self.center_layout_l)
-        self.center_layout.addWidget(self.time_lcd)
         self.layout.addLayout(self.center_layout)
         self.layout.addStretch(2)
         self.layout.addWidget(self.search_edit)
@@ -153,11 +170,12 @@ class PlayWidget(QWidget):
 
 class InfoWidget(QWidget):
     def __init__(self, parent=None):
-        super(InfoWidget, self).__init__(None)
+        super(InfoWidget, self).__init__(parent)
         self.layout = QVBoxLayout()
-        self.music_table_widget = QTableWidget(1, 3)
-        self.current_playing_widget = QTableWidget(0, 3)
-        self.music_search_widget = QTableWidget(1, 3)
+        self.title_label = QLabel(u'歌曲列表')
+        self.music_table_widget = MusicTableWidget()
+        self.current_playing_widget = MusicTableWidget()
+        self.music_search_widget = MusicTableWidget()
 
         self.set_me()
         self.set_widgets_prop()
@@ -179,36 +197,11 @@ class InfoWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_widgets_prop(self):
-        self.music_table_widget.horizontalHeader().setResizeMode(
-            QHeaderView.Stretch)
-        self.music_table_widget.setHorizontalHeaderLabels([u'歌曲名',
-                                                           u'歌手',
-                                                           u'专辑名'])
-        self.music_table_widget.setEditTriggers(
-            QAbstractItemView.NoEditTriggers)
-        self.music_table_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-
-        self.music_search_widget.setEditTriggers(
-            QAbstractItemView.NoEditTriggers)
-        self.music_search_widget.setHorizontalHeaderLabels([u'歌曲名',
-                                                            u'歌手',
-                                                            u'专辑名'])
-        self.music_search_widget.setEditTriggers(
-            QAbstractItemView.NoEditTriggers)
-        self.music_search_widget.horizontalHeader().setResizeMode(
-            QHeaderView.Stretch)
-        self.music_search_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
-
-        self.current_playing_widget.horizontalHeader().setResizeMode(
-            0, QHeaderView.Stretch)
-        self.current_playing_widget.setHorizontalHeaderLabels([u'歌曲名',
-                                                               u'歌手',
-                                                               u'专辑名'])
-        self.current_playing_widget.setEditTriggers(
-            QAbstractItemView.NoEditTriggers)
-        self.current_playing_widget.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.title_label.setObjectName('musiclist_title')
+        pass
 
     def set_layouts_prop(self):
+        self.layout.addWidget(self.title_label, 0, Qt.AlignTop)
         self.layout.addWidget(self.music_search_widget)
         self.layout.addWidget(self.music_table_widget)
         self.layout.addWidget(self.current_playing_widget)
