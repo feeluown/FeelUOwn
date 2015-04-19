@@ -133,7 +133,7 @@ class MainWidget(QWidget):
                 self.add_music_to_currentplayinglist(music_model)
 
             # 播放列表第一首歌
-            if self.player.getCurrentMusicId() == 0:
+            if self.player.getCurrentMusicId() == 0 or self.user['mode'] == 'normal':
                 item = current_playing.item(0, 0)
                 self.play_currentplayinglist_music(item)
             else:
@@ -198,7 +198,6 @@ class MainWidget(QWidget):
 
     @normal_mode
     def play_userlist(self, item):
-        userplaylist_widget = self.ui.user_widget.list_widget
         data = item.data(Qt.UserRole)
         playlist = data.toPyObject()[0]
         pid = playlist['id']
@@ -220,13 +219,13 @@ class MainWidget(QWidget):
                 self.add_music_to_sources(mid)
                 self.add_music_to_currentplayinglist(music_model)
 
-            # 播放列表第一首歌
-            item = current_playing.item(0, 0)
-            self.play_currentplayinglist_music(item)
-
             # 显示当前播放列表
             self.init_table_widget()
             current_playing.show()
+
+            # 播放列表第一首歌
+            item = current_playing.item(0, 0)
+            self.play_currentplayinglist_music(item)
         else:
             # 具体详细提示信息需要根据后台返回进行判断
             # 以后可以进行优化
