@@ -133,12 +133,8 @@ class MainWidget(QWidget):
                 self.add_music_to_currentplayinglist(music_model)
 
             # 播放列表第一首歌
-            if self.player.getCurrentMusicId() == 0 or self.user['mode'] == 'normal':
-                item = current_playing.item(0, 0)
-                self.play_currentplayinglist_music(item)
-            else:
-                mid = tracks[0]['id']
-                self.player.addMusicToPlay(mid)
+            item = current_playing.item(0, 0)
+            self.play_currentplayinglist_music(item)
 
             # 显示当前播放列表
             self.init_table_widget()
