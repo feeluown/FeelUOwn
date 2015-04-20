@@ -230,6 +230,7 @@ class MainWidget(QWidget):
     def play_currentplayinglist_music(self, item):
         current_playing = self.ui.info_widget.current_playing_widget
         current_row = current_playing.row(item)
+        print current_row, self.sources[current_row]
         self.player.setCurrentMusicId(self.sources[current_row])
 
     def set_search_focus(self):

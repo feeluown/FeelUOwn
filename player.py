@@ -31,13 +31,13 @@ class Player(Phonon.MediaObject):
         设置当前的musicid
         """
         source = self.getSourceByMid(mid)
-        self.stop()
-        self.setCurrentSource(source)
-        self.play()
         self.__music_id = mid
         # 下首歌的Id实际上会在About_to_finish函数重新赋值
         # 这里赋值一次是为了保证当前播放的mid和source对应
         self.__next_music_id = mid
+        self.stop()
+        self.setCurrentSource(source)
+        self.play()
 
     def getCurrentMusicId(self):
         return self.__next_music_id
