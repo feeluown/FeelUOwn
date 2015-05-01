@@ -64,7 +64,7 @@ class MainWidget(QWidget):
         self.user['is_login'] = False
         self.hide_widget_when_unverificated()
 
-        self.setWindowTitle('NetEaseMusic For Linux')
+        self.setWindowTitle('NetEaseMusic For Linux - ThirdParty')
         self.setObjectName('main_widget')
         self.resize(960, 580)
         self.setWindowIcon(QIcon('icons/format.ico'))
@@ -474,6 +474,9 @@ class MainWidget(QWidget):
         mid = self.set_next_music()
         if mid:
             self.player.addMusicToPlay(mid)
+            return
+        print u"在radio中搜索下一首"
+        return
 
     def last_music(self):
         try:
