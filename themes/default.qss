@@ -2,16 +2,32 @@
 /* QSlider */
 /* ****************************** */
 
-QSlider::groove:horizontal {
+QSlider::groove:horizontal {    /* 凹槽 */
     border: 1px solid #999999;
     height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
     border-radius: 2px;
     margin: 2px 0;
 }
 
-QSlider::handle:horizontal {
+QSlider::sub-page:horizontal {  /* 滑过的区域 */
+    border: 1px solid #999999;
+    background: #4F2F2F;
+    height: 8px;
+    border-radius: 2px;
+    margin: 2px 0;
+}
+
+QSlider::add-page:horizontal {  /* 剩余的部分, 未滑过的区域 */
+    border: 1px solid #999999;
+    background: #222222;
+    height: 8px;
+    border-radius: 2px;
+    margin: 2px 0;
+}
+
+QSlider::handle:horizontal {    /* 柄 */
     background: #993333;
-    border: 1px solid #5c5c5c;
+    border: 0px solid #cccccc;
     width: 18px;
     margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
     border-radius: 3px;
