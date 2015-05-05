@@ -195,7 +195,8 @@ class MainWidget(QWidget):
     @normal_mode
     def play_userlist(self, item):
         data = item.data(Qt.UserRole)
-        playlist = data.toPyObject()[0]
+        # playlist = data.toPyObject()[0]
+        playlist = data
         pid = playlist['id']
         res = self.net_ease.playlist_detail(pid)
         # table_widget.clear()
@@ -230,7 +231,6 @@ class MainWidget(QWidget):
     def play_currentplayinglist_music(self, item):
         current_playing = self.ui.info_widget.current_playing_widget
         current_row = current_playing.row(item)
-        print current_row, self.sources[current_row]
         self.player.setCurrentMusicId(self.sources[current_row])
 
     def set_search_focus(self):
@@ -287,10 +287,9 @@ class MainWidget(QWidget):
                 datamodel = self.model.set_datamodel_from_data(playlist, datamodel)
                 item = QListWidgetItem(QIcon('icons/playlist_1.png'), datamodel['name'])
                 list_widget.addItem(item)
-                data = QVariant((datamodel, ))
+                # data = QVariant((datamodel, ))
+                data = datamodel
                 item.setData(Qt.UserRole, data)
-        else:
-            print 'network error'
 
     def search(self):
         search_edit = self.ui.play_widget.search_edit
@@ -333,7 +332,8 @@ class MainWidget(QWidget):
         table_widget.show()
 
         data = item.data(Qt.UserRole)
-        playlist = data.toPyObject()[0]
+        # playlist = data.toPyObject()[0]
+        playlist = data
         plid = playlist['id']
 
         data = self.net_ease.playlist_detail(plid)
@@ -349,8 +349,6 @@ class MainWidget(QWidget):
                 
                 table_widget.setRowItems(datamodel, row)
                 row += 1
-        else:
-            print 'network, no music, error plid'
 
     def play_specific_music(self, mid):
         """
@@ -380,7 +378,8 @@ class MainWidget(QWidget):
         current_row = music_search.row(item)
         item = music_search.item(current_row, 0)    # only item 0 contain url
         data = item.data(Qt.UserRole)
-        song = data.toPyObject()[0]
+        # song = data.toPyObject()[0]
+        song = data
         musics = self.net_ease.song_detail(song['id'])
         datamodel = self.model.music()
         music_model = self.model.set_datamodel_from_data(musics[0], datamodel)
@@ -394,7 +393,8 @@ class MainWidget(QWidget):
         music_table = self.ui.info_widget.music_table_widget
         current_row = music_table.row(item)
         data = item.data(Qt.UserRole)
-        music_model = data.toPyObject()[0]
+        # music_model = data.toPyObject()[0]
+        music_model = data
 
         mid = music_model['id']
         self.add_music_to_sources(mid)
@@ -449,7 +449,8 @@ class MainWidget(QWidget):
         current_playing.setCurrentItem(item)
 
         data = item.data(Qt.UserRole)
-        music = data.toPyObject()[0]
+        # music = data.toPyObject()[0]
+        music = data
         text_label = self.ui.play_widget.text_label
         text_label.setText(music['name'])
         self.ui.status.showMessage(u'正在播放 %s' % music['name'])
@@ -475,7 +476,6 @@ class MainWidget(QWidget):
         if mid:
             self.player.addMusicToPlay(mid)
             return
-        print u"在radio中搜索下一首"
         return
 
     def last_music(self):

@@ -35,7 +35,8 @@ class MusicTableWidget(QTableWidget):
         artistItem = QTableWidgetItem(artistName)
         # to get pure dict from qvariant, so pay attension !
         # stackoverflow: how to get the original python data from qvariant
-        music = QVariant((datamodel, ))
+        # music = QVariant((datamodel, ))
+        music = datamodel
         musicItem.setData(Qt.UserRole, music)
 
         self.setItem(row, 0, musicItem)

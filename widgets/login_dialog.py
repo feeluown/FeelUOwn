@@ -50,7 +50,7 @@ class LoginDialog(QDialog):
             f = open(self.filename, 'r')
             login_data = json.load(f)
             f.close()
-            if login_data.has_key('is_remember') and login_data['is_remember']:
+            if 'is_remember' in login_data.keys() and login_data['is_remember']:
                 username = login_data['username']
                 password = login_data['password']
                 is_remember = login_data['is_remember']
@@ -78,7 +78,8 @@ class LoginDialog(QDialog):
         phone_login = False      # 0: 网易通行证, 1: 手机号登陆
         username = str(self.username_widget.text())     # 包含中文会出错
         password = str(self.password_widget.text())
-        is_remember = self.is_remember_chb.checkState()     # 2: checked, 1: partial checked
+        # 2: checked, 1: partial checked
+        is_remember = self.is_remember_chb.checkState()
 
         login_data['username'] = username
         login_data['password'] = password

@@ -6,26 +6,26 @@ class DataModel(object):
     def user(self):
         user_model = {
             'uid': int,
-            'username': unicode,
-            'avatar': unicode
+            'username': str,
+            'avatar': str
         }
         return user_model
 
     def music(self):
         music_model = {
             'id': int,
-            'name': unicode,
+            'name': str,
             'artists': list,
             'album': dict,
-            'duration': unicode,
-            'mp3Url': unicode
+            'duration': str,
+            'mp3Url': str
         }
         return music_model
 
     def playlist(self):
         playlist_model = {
             'id': int,
-            'name': unicode
+            'name': str
         }
         return playlist_model
 
@@ -35,7 +35,7 @@ class DataModel(object):
         """
         search_list = {
             'id': int,
-            'name': unicode,
+            'name': str,
             'artists': list,
             'album': dict
         }

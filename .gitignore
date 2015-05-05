@@ -17,3 +17,6 @@
 sphinx_doc/build
 test.py
 user.json
+
+*.bak
+*.vim-bookmarks

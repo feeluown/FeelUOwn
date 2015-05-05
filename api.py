@@ -49,6 +49,8 @@ class NetEase:
         elif (method == 'POST'):
             res = self.web.post(action, query)
             data = res.read()
+            print(data)
+        data = data.decode('utf-8')
         data= json.loads(data)
         return data
 
@@ -56,6 +58,7 @@ class NetEase:
     def login(self, username, password, phone=False):
         action = 'http://music.163.com/api/login/'
         phone_action = 'http://music.163.com/api/login/cellphone/'
+        password = password.encode('utf-8')
         data = {
             'username': username,
             'password': hashlib.md5(password).hexdigest(),
@@ -71,8 +74,8 @@ class NetEase:
                 return self.httpRequest('POST', phone_action, phone_data)
             else:
                 return self.httpRequest('POST', action, data)
-        except Exception, e:
-            print e
+        except Exception as e:
+            print(str(e))
             return {'code': 408}
 
     # 用户歌单
@@ -82,7 +85,7 @@ class NetEase:
         try:
             data = self.httpRequest('GET', action)
             return data['playlist']
-        except Exception, e:
+        except:
             return []
 
     # 搜索单曲(1)，歌手(100)，专辑(10)，歌单(1000)，用户(1002) *(type)*
@@ -298,12 +301,12 @@ class NetEase:
         }
         try:
             return self.httpRequest('POST', url_add, data_add)
-        except Exception, e:
+        except:
             return {'code': 408}
 
     def getRadioMusic(self):
         url = 'http://music.163.com/api/radio/get'
         try:
             return self.httpRequest('GET', url)
-        except Exception, e:
+        except:
             return {'code': 408}

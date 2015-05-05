@@ -13,9 +13,8 @@
 '''
 
 
-import urllib
-import urllib2
-import cookielib
+import urllib.request, urllib.parse, urllib.error
+import http.cookiejar
 
 
 class MyWeb():
@@ -29,11 +28,11 @@ class MyWeb():
             'Referer': 'http://music.163.com/song?id=26599525',
             "User-Agent": "Opera/8.0 (Macintosh; PPC Mac OS X; U; en)"
         }
-        self.cookie = cookielib.LWPCookieJar()
-        self.cookie_support = urllib2.HTTPCookieProcessor(self.cookie)
-        self.opener = urllib2.build_opener(self.cookie_support,
-                                           urllib2.HTTPHandler)
-        urllib2.install_opener(self.opener)
+        self.cookie = http.cookiejar.LWPCookieJar()
+        self.cookie_support = urllib.request.HTTPCookieProcessor(self.cookie)
+        self.opener = urllib.request.build_opener(self.cookie_support,
+                                                  urllib.request.HTTPHandler)
+        urllib.request.install_opener(self.opener)
 
     def post(self, posturl, dictdata):
         """
@@ -43,13 +42,14 @@ class MyWeb():
         :param dict dictdata: 发送的数据
         """
 
-        postdata = urllib.urlencode(dictdata)
-        request = urllib2.Request(posturl, postdata, self.header)
+        postdata = urllib.parse.urlencode(dictdata)
+        postdata = postdata.encode('utf-8')
+        request = urllib.request.Request(posturl, postdata, self.header)
         try:
-            content = urllib2.urlopen(request)
+            content = urllib.request.urlopen(request)
             return content
-        except Exception, e:
-            print ("post:" + str(e))
+        except Exception as e:
+            print(str(e))
             return None
 
     def get(self, url):
@@ -60,12 +60,11 @@ class MyWeb():
         :return content: 常使用read的方法来读取返回数据
         :rtype : instance or None
         """
-        request = urllib2.Request(url, None, self.header)
+        request = urllib.request.Request(url, None, self.header)
         try:
-            content = urllib2.urlopen(request)
+            content = urllib.request.urlopen(request)
             return content
-        except Exception, e:
-            print ("open:" + str(e))
+        except:
             return None
 
 
@@ -79,4 +78,3 @@ if __name__ == "__main__":
         'rememberLogin': 'true'
     }
     res = web.post(url, data)
-    print res.read()

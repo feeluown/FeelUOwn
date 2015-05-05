@@ -58,5 +58,5 @@ class Player(Phonon.MediaObject):
             music_model = self.model.set_datamodel_from_data(musics[0], datamodel)
             source = Phonon.MediaSource(music_model['mp3Url'])
             return source
-        except Exception, e:
-            print str(e)
+        except Exception as e:
+            print(str(e))
