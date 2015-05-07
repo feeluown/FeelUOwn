@@ -186,7 +186,7 @@ class MainWidget(QWidget):
     def show_help_info(self):
         with open('data/help.html') as f:
             text = f.read()
-            text = text.decode('utf8')
+            text = text
             message = QMessageBox(self)
             message.setText(text)
             message.setTextFormat(Qt.RichText)
@@ -296,7 +296,7 @@ class MainWidget(QWidget):
         text= search_edit.text()
         self.ui.status.showMessage(u'正在搜索: ' + text)
         if text != '':
-            s = unicode(text.toUtf8(), 'utf8', 'ignore')
+            s = text
             data = self.net_ease.search(s.encode('utf8'))
             songs = list()
             if data['result']['songCount'] != 0:
