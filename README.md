@@ -23,13 +23,3 @@ sudo apt-get install python-qt4-phonon
 
 此作品仅供学习参考，如有任何侵权，请通知作者。
 email: yinshaowen241\[at\]gmail\[dot\]com
-
-------------------------
-项目考虑使用QML进行接下来的开发
-
-### v0.1 截图
-![播放时](http://static.oschina.net/uploads/code/201503/13014648_ePj4.png)
-
-### v0.2 截图
-![播放中](http://static.oschina.net/uploads/code/201503/30080820_DJbG.png)
-
