@@ -9,7 +9,7 @@
 
 
 ## 依賴
-Python 2.7, PyQt4, PyQt4-phonon
+Python 3, PyQt4, PyQt4-phonon
 
 **Ubuntu下**
 
