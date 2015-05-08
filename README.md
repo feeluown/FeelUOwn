@@ -4,6 +4,9 @@
 
 > 简单的网易云音乐Linux客户端
 
+`2015-8-8`: **接下来，准备采用python3+Pyqt5进行重构, 不准备使用webkit,
+也暂时不使用qml**
+
 
 ## 依賴
 Python 2.7, PyQt4, PyQt4-phonon
