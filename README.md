@@ -11,11 +11,10 @@
 ## 依賴
 Python 3, PyQt4, PyQt4-phonon
 
+
+
 **Ubuntu下**
 
-```
-sudo apt-get install python-qt4
-sudo apt-get install python-qt4-phonon
 ```
 >
 如果你的ubuntu桌面可以显示图标，运行generateDesktopIcon.sh就可以生成桌面图标,
