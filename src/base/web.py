@@ -1,25 +1,12 @@
 # -*- coding:utf8 -*-
-'''
-# =============================================================================
-#      FileName: tools.py
-#          Desc: 模拟浏览器
-#        Author: cosven
-#         Email: yinshaowen241@gmail.com
-#      HomePage: www.cosven.com
-#       Version: 0.0.1
-#    LastChange: 2015-03-27 00:59:24
-#       History:
-# =============================================================================
-'''
-
 
 import urllib.request, urllib.parse, urllib.error
 import http.cookiejar
 
 
 class MyWeb():
-    """
-        模拟一个浏览器
+    """simulate a web browser
+    the simulated brower has two method: get and post.
     """
     def __init__(self):
         self.header = {
@@ -35,11 +22,10 @@ class MyWeb():
         urllib.request.install_opener(self.opener)
 
     def post(self, posturl, dictdata):
-        """
-        模拟post请求
+        """Load data from the server using a HTTP POST request.
 
-        :param string posturl: url地址
-        :param dict dictdata: 发送的数据
+        :param string posturl: the URL to which the request is sent.
+        :param dict dictdata: a dict object that is sent to the server with the request.
         """
 
         postdata = urllib.parse.urlencode(dictdata)
@@ -53,12 +39,10 @@ class MyWeb():
             return None
 
     def get(self, url):
-        """
-        模拟get请求
+        """Load data from the server using a HTTP GET request.
 
-        :param url: url地址
-        :return content: 常使用read的方法来读取返回数据
-        :rtype : instance or None
+        :param url: the URL to which the request is sent.
+        :return content: return HTTPResponse Objects, generally speaking, we use READ method.
         """
         request = urllib.request.Request(url, None, self.header)
         try:
