@@ -40,6 +40,38 @@ Python 3, PyQt5
 1. 调试输出模块
 2. 基本路径等配置
 
+## 开发注意事项
+1. 配置PYTHONPATH为`src`目录
+2. 确认安装了python3，pyqt5，pyqt5的multimedia库
+3. 尽量遵守google的python代码风格指南
+4. `TRY TO BE MORE PYTHONIC`
+
+
+```
+The Zen of Python, by Tim Peters
+
+Beautiful is better than ugly.
+Explicit is better than implicit.
+Simple is better than complex.
+Complex is better than complicated.
+Flat is better than nested.
+Sparse is better than dense.
+Readability counts.
+Special cases aren't special enough to break the rules.
+Although practicality beats purity.
+Errors should never pass silently.
+Unless explicitly silenced.
+In the face of ambiguity, refuse the temptation to guess.
+There should be one-- and preferably only one --obvious way to do it.
+Although that way may not be obvious at first unless you're Dutch.
+Now is better than never.
+Although never is often better than *right* now.
+If the implementation is hard to explain, it's a bad idea.
+If the implementation is easy to explain, it may be a good idea.
+Namespaces are one honking great idea -- let's do more of those!
+```
+
+
 -----------------------------------------
-此作品仅供学习参考，如有任何侵权，请通知作者。
-email: yinshaowen241\[at\]gmail\[dot\]com
+> 此作品仅供学习参考，如有任何侵权，请通知作者。
+> email: yinshaowen241\[at\]gmail\[dot\]com

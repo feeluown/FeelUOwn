@@ -1,4 +1,9 @@
-__author__ = 'ysw'
+# -*- coding:utf8 -*-
+
+"""
+common settings
+"""
+
 
 """
 path configuration
