@@ -3,6 +3,8 @@
 import urllib.request, urllib.parse, urllib.error
 import http.cookiejar
 
+from logger import LOG
+
 
 class MyWeb():
     """simulate a web browser
@@ -50,15 +52,3 @@ class MyWeb():
             return content
         except:
             return None
-
-
-if __name__ == "__main__":
-    import hashlib
-    web = MyWeb()
-    url = 'http://music.163.com/api/login/'
-    data = {
-        'username': 'username',  # email
-        'password': hashlib.md5('password').hexdigest(),  # password
-        'rememberLogin': 'true'
-    }
-    res = web.post(url, data)

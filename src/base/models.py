@@ -1,5 +1,4 @@
 # -*- coding=utf8 -*-
-__author__ = 'cosven'
 
 
 class DataModel(object):
