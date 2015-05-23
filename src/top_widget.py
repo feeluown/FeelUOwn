@@ -95,7 +95,8 @@ class TopWidget(QWidget):
         self.search_edit.setPlaceholderText(u'搜索单曲')
 
         self.slider_play.setFixedWidth(500)
-        self.slider_play.setFixedHeight(3)
+        self.slider_play.setFixedHeight(20)
+        self.slider_play.setOrientation(Qt.Horizontal)
         self.progress_info.setFixedHeight(4)
         
         self.add_to_favorite.setCheckable(True)

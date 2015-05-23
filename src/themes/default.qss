@@ -2,6 +2,7 @@
 /* QSlider */
 /* ****************************** */
 QSlider {
+  background: #CCCCCC;
 }
 
 QSlider::groove:horizontal {    /* 凹槽 */
