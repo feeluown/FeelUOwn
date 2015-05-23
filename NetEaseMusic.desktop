@@ -3,8 +3,8 @@
 Type=Application
 Name=NetEaseMusic
 Comment=NetEaseMusic Launcher
-Exec=/home/cosven/PycharmProjects/NetEaseMusic/main.py
-Icon=/home/cosven/PycharmProjects/NetEaseMusic/icons/format.png
+Exec=/home/ysw/code/NetEaseMusic/main.py
+Icon=/home/ysw/code/NetEaseMusic/icons/format.png
 Terminal=false
 StartupNotify=true
 
