@@ -13,7 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from widgets.music_table_widget import MusicTableWidget
-from src.setting import ICON_PATH
+from setting import ICON_PATH
 
 
 class UserWidget(QWidget):
@@ -221,15 +221,42 @@ class UiMainWidget(object):
         self.layout = QVBoxLayout(MainWidget)
 
         self.set_widgets_prop()
-        self.set_widgets_size()
         self.set_layouts_prop()
 
     def set_widgets_prop(self):
+        self.set_widgets_size()
+        self.set_object_name()
+
+    def set_object_name(self):
         self.info_widget.setObjectName('info_widget')
         self.user_widget.setObjectName('user_widget')
         self.play_widget.setObjectName('play_widget')
         self.play_widget.search_edit.setObjectName('search_edit')
         self.play_widget.search_btn.setObjectName('search_btn')
+
+    def set_widgets_size(self):
+        """
+        set all widget specific size here, including child widget
+        """
+        self.play_widget.setFixedHeight(80)
+        self.user_widget.setMaximumWidth(220)
+
+    def set_layouts(self):
+        self.info_layout.addWidget(self.info_widget)
+        self.user_layout.addWidget(self.user_widget)
+        self.play_layout.addWidget(self.play_widget)
+        self.show_container.addLayout(self.user_layout)
+        self.show_container.addLayout(self.info_layout)
+        self.control_container.addLayout(self.play_layout)
+        self.layout.addLayout(self.control_container)
+        self.layout.addLayout(self.show_container)
+        self.layout.addWidget(self.status)
+
+        self.set_layouts_prop()
+
+    def set_layouts_prop(self):
+        self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
 
     def paintEvent(self, QPaintEvent):
         """
@@ -241,23 +268,3 @@ class UiMainWidget(object):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
-
-    def set_widgets_size(self):
-        """
-        set all widget specific size here, including child widget
-        """
-        self.play_widget.setFixedHeight(80)
-        self.user_widget.setMaximumWidth(220)
-
-    def set_layouts_prop(self):
-        self.info_layout.addWidget(self.info_widget)
-        self.user_layout.addWidget(self.user_widget)
-        self.play_layout.addWidget(self.play_widget)
-        self.show_container.addLayout(self.user_layout)
-        self.show_container.addLayout(self.info_layout)
-        self.control_container.addLayout(self.play_layout)
-        self.layout.addLayout(self.control_container)
-        self.layout.addLayout(self.show_container)
-        self.layout.addWidget(self.status)
-        self.layout.setSpacing(0)
-        self.layout.setContentsMargins(0, 0, 0, 0)

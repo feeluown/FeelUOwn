@@ -1,6 +1,6 @@
 # -*- coding:utf8 -*-
 
-from src.base.logger import LOG
+from base.logger import LOG
 
 
 class DataModel(object):

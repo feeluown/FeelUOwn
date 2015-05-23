@@ -12,6 +12,6 @@
 """
 
 
-from src.plugin.neteasemusic import NetEase as Api
+from plugin.neteasemusic import NetEase as Api
 
 

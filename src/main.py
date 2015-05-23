@@ -9,8 +9,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from src.setting import QSS_PATH, ICON_PATH
-from src.controllers import MainWidget
+from setting import QSS_PATH, ICON_PATH
+from controllers import MainWidget
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)

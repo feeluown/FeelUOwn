@@ -8,13 +8,13 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
 
-from src.api import Api
-from src.base.models import DataModel
+from api import Api
+from base.models import DataModel
 
-from src.widgets.login_dialog import LoginDialog
+from widgets.login_dialog import LoginDialog
 
-from src.views import UiMainWidget
-from src.base.player import Player
+from views import UiMainWidget
+from base.player import Player
 
 
 class MainWidget(QWidget):
