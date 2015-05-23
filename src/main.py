@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import *
 from setting import QSS_PATH, ICON_PATH
 from controllers import MainWidget
 
+
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setWindowIcon(QIcon(ICON_PATH + 'format.ico'))
