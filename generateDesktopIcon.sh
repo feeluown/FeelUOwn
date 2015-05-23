@@ -27,9 +27,11 @@ sudo cp $desktopFilename ~/Desktop
 echo "让程序可以被系统搜索..."
 sudo cp $desktopFilename ~/.local/share/applications/
 
+cd ~/Desktop
+sudo chmod +x $desktopFilename
+
 if [ $? -eq 0 ]; then
     echo "全部完成!"
 else
     echo "貌似出现了什么错误..."
 fi
-
