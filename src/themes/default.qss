@@ -1,6 +1,8 @@
 /* ****************************** */
 /* QSlider */
 /* ****************************** */
+QSlider {
+}
 
 QSlider::groove:horizontal {    /* 凹槽 */
     border: 1px solid #999999;
@@ -253,4 +255,19 @@ QTableView QTableCornerButton::section {
     border-bottom: 1px solid #993333;
     border-top: 1px solid #993333;
     background: #222222;
+}
+
+
+/* ****************************** */
+/* QProgressBar */
+/* ****************************** */
+
+QProgressBar {
+    background-color: #CCCCCC;
+    border: 2px solid grey;
+    border-radius: 5px;
+}
+
+QProgressBar::chunk {
+    background-color: #05B8CC;
 }
