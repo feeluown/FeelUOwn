@@ -42,7 +42,7 @@ QWidget {
     color: #CCCCCC;
 }
 
-QWidget#play_widget {
+QWidget#top_widget {
     border-bottom: 5px solid #993333;
 }
 
@@ -87,7 +87,7 @@ QPushButton#radio_btn:hover {
 QWidget#main_widget{
 }
 
-QWidget#play_widget {
+QWidget#top_widget {
     background-color: #222222;
 }
 

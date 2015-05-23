@@ -4,7 +4,7 @@
 """
 ui design
 
-every basic widget (including user,info,play) class has three public \
+every basic widget class has three public \
 funcition to set child widget properties.
 """
 
@@ -25,44 +25,44 @@ class UiMainWidget(object):
     """
     def setup_ui(self, MainWidget):
         self.status = QStatusBar()
-        self.info_widget = RightWidget()
-        self.user_widget = LeftWidget()
-        self.play_widget = TopWidget()
-        self.info_layout = QVBoxLayout()
-        self.user_layout = QVBoxLayout()
-        self.play_layout = QHBoxLayout()
+        self.right_widget = RightWidget()
+        self.left_widget = LeftWidget()
+        self.top_widget = TopWidget()
+        self.right_layout = QVBoxLayout()
+        self.left_layout = QVBoxLayout()
+        self.top_layout = QHBoxLayout()
         self.show_container = QHBoxLayout()
         self.control_container = QHBoxLayout()
         self.layout = QVBoxLayout(MainWidget)
 
-        self.set_widgets_prop()
-        self.set_layouts_prop()
+        self.set_widgets()
+        self.set_layouts()
 
-    def set_widgets_prop(self):
+    def set_widgets(self):
         self.set_widgets_size()
         self.set_object_name()
 
     def set_object_name(self):
-        self.info_widget.setObjectName('info_widget')
-        self.user_widget.setObjectName('user_widget')
-        self.play_widget.setObjectName('play_widget')
-        self.play_widget.search_edit.setObjectName('search_edit')
-        self.play_widget.search_btn.setObjectName('search_btn')
+        self.right_widget.setObjectName('right_widget')
+        self.left_widget.setObjectName('left_widget')
+        self.top_widget.setObjectName('top_widget')
+        self.top_widget.search_edit.setObjectName('search_edit')
+        self.top_widget.search_btn.setObjectName('search_btn')
 
     def set_widgets_size(self):
         """
         set all widget specific size here, including child widget
         """
-        self.play_widget.setFixedHeight(80)
-        self.user_widget.setMaximumWidth(220)
+        self.top_widget.setFixedHeight(80)
+        self.left_widget.setMaximumWidth(220)
 
     def set_layouts(self):
-        self.info_layout.addWidget(self.info_widget)
-        self.user_layout.addWidget(self.user_widget)
-        self.play_layout.addWidget(self.play_widget)
-        self.show_container.addLayout(self.user_layout)
-        self.show_container.addLayout(self.info_layout)
-        self.control_container.addLayout(self.play_layout)
+        self.right_layout.addWidget(self.right_widget)
+        self.left_layout.addWidget(self.left_widget)
+        self.top_layout.addWidget(self.top_widget)
+        self.show_container.addLayout(self.left_layout)
+        self.show_container.addLayout(self.right_layout)
+        self.control_container.addLayout(self.top_layout)
         self.layout.addLayout(self.control_container)
         self.layout.addLayout(self.show_container)
         self.layout.addWidget(self.status)

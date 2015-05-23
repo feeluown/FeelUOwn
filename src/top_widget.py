@@ -12,7 +12,6 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from widgets.music_table_widget import MusicTableWidget
 from setting import ICON_PATH
 
 
@@ -125,4 +124,3 @@ class TopWidget(QWidget):
         self.layout.addWidget(self.search_btn)
         self.layout.addWidget(self.show_current_list)
         self.layout.addWidget(self.help_btn)
-

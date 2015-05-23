@@ -228,7 +228,7 @@ class UiMainWidget(object):
         self.set_layouts_prop()
 
     def set_widgets_prop(self):
-        self.info_widget.setObjectName('info_widget')
+        self.info_widget.setObjectName('right_widget')
         self.user_widget.setObjectName('user_widget')
         self.play_widget.setObjectName('play_widget')
         self.play_widget.search_edit.setObjectName('search_edit')

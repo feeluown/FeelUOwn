@@ -42,7 +42,7 @@ QWidget {
     color: #CCCCCC;
 }
 
-QWidget#play_widget {
+QWidget#top_widget {
     border-bottom: 5px solid #993333;
 }
 
@@ -61,7 +61,7 @@ QPushButton:focus {
 }
 
 QPushButton#add_to_favorite {
-    border-image: url(icons/heart.png);
+    border-image: url(../icons/heart.png);
     width: 12px;
     height: 12px;
     border: 0px solid #993333;
@@ -72,7 +72,7 @@ QPushButton#add_to_favorite:hover {
 }
 
 QPushButton#add_to_favorite:checked {
-    border-image: url(icons/heart_hover.png);
+    border-image: url(../icons/heart_hover.png);
 }
 
 QPushButton#radio_btn {
@@ -111,7 +111,7 @@ QLineEdit#search_edit:focus {
 /* ****************************** */
 
 QPushButton#search_btn {
-    border-image: url(icons/search_hover.png);
+    border-image: url(../icons/search_hover.png);
     border: 0px solid #993333;
 }
 

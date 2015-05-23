@@ -21,11 +21,21 @@ class MainWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         # set app name before mediaObject was created to avoid phonon problem
-        QCoreApplication.setApplicationName("NetEaseMusic-ThirdParty")
+        # QCoreApplication.setApplicationName("NetEaseMusic-ThirdParty")
         self.ui = UiMainWidget()
         self.ui.setup_ui(self)
         self.resize(960, 580)
 
+    def paintEvent(self, QPaintEvent):
+        """
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+        option = QStyleOption()
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
 if __name__ == "__main__":
     import sys
