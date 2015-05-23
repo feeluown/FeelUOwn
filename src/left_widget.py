@@ -35,6 +35,7 @@ class LeftWidget(QWidget):
         at the same time, if self is derived from QFrame, this isn't needed.
         """
         option = QStyleOption()
+        option.initFrom(self)
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)

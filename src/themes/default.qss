@@ -43,7 +43,7 @@ QWidget {
 }
 
 QWidget#top_widget {
-    border-bottom: 5px solid #993333;
+    border-bottom: 2px solid #CCCCCC;
 }
 
 QPushButton {
@@ -82,13 +82,6 @@ QPushButton#radio_btn {
 
 QPushButton#radio_btn:hover {
     color: #993333;
-}
-
-QWidget#main_widget{
-}
-
-QWidget#top_widget {
-    background-color: #222222;
 }
 
 /* ****************************** */
@@ -187,7 +180,6 @@ QHeaderView::section:horizontal {
     border: 0px solid #993333;
     border-bottom: 1px solid #993333;
     border-top: 1px solid #993333;
-    /* margin-right: 10px; */
     height: 24px;
     padding-top: 6px;
     font-size: 15px;

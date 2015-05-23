@@ -46,6 +46,7 @@ class UiMainWidget(object):
         self.right_widget.setObjectName('right_widget')
         self.left_widget.setObjectName('left_widget')
         self.top_widget.setObjectName('top_widget')
+        print('top_widget')
         self.top_widget.search_edit.setObjectName('search_edit')
         self.top_widget.search_btn.setObjectName('search_btn')
 

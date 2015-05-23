@@ -52,6 +52,7 @@ class TopWidget(QWidget):
         """
 
         option = QStyleOption()
+        option.initFrom(self)
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
