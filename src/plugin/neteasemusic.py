@@ -14,8 +14,8 @@ import re
 import json
 import hashlib
 
-from src.base.common import singleton
-from src.base.web import MyWeb
+from base.common import singleton
+from base.web import MyWeb
 
 # list去重
 def uniq(arr):

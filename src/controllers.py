@@ -24,6 +24,7 @@ class MainWidget(QWidget):
         QCoreApplication.setApplicationName("NetEaseMusic-ThirdParty")
         self.ui = UiMainWidget()
         self.ui.setup_ui(self)
+        self.resize(960, 580)
 
 
 if __name__ == "__main__":

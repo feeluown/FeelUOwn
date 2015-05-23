@@ -3,8 +3,8 @@
 import urllib.request, urllib.parse, urllib.error
 import http.cookiejar
 
-from src.base.logger import LOG
-from src.base.common import singleton
+from base.logger import LOG
+from base.common import singleton
 
 
 @singleton

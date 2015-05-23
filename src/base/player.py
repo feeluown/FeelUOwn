@@ -2,8 +2,8 @@
 
 from PyQt5.QtMultimedia import *
 
-from src.base.common import singleton
-from src.base.logger import LOG
+from base.common import singleton
+from base.logger import LOG
 
 @singleton
 class Player(QMediaPlayer):

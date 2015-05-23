@@ -2,7 +2,7 @@
 
 import logging
 
-from src import setting
+import setting
 
 
 """
