@@ -2,6 +2,8 @@
 
 """
 common settings
+
+FUTURE:  read setting from a json file
 """
 
 
@@ -22,5 +24,6 @@ MODE = DEBUG
 
 
 """
-
+theme configuration
 """
+QSS_PATH = 'themes/default.qss'

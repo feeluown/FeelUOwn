@@ -6,13 +6,16 @@
 https://github.com/bluetomlee/NetEase-MusicBox
 The MIT License (MIT)
 CopyRight (c) 2014 vellow <i@vellow.net>
+
+modified by
 """
 
 import re
 import json
-from tools import MyWeb
 import hashlib
 
+from src.base.common import singleton
+from src.base.web import MyWeb
 
 # list去重
 def uniq(arr):
@@ -20,10 +23,10 @@ def uniq(arr):
     arr2.sort(key=arr.index)
     return arr2
 
-
 default_timeout = 10
 
 
+@singleton
 class NetEase:
     def __init__(self):
         self.header = {
@@ -197,7 +200,7 @@ class NetEase:
         action = 'http://music.163.com/discover/djchannel?type=' + str(stype) + '&offset=' + str(
             offset) + '&limit=' + str(limit)
         try:
-            connection = requests.get(action, headers=self.header, timeout=default_timeout)
+            connection = self.httpRequest('GET', action, headers=self.header, timeout=default_timeout)
             connection.encoding = 'UTF-8'
             channelids = re.findall(r'/dj\?id=(\d+)', connection.text)
             channelids = uniq(channelids)
@@ -285,7 +288,7 @@ class NetEase:
 
         return temp
 
-    def setMusicToPlaylist(self, mid, pid, op):
+    def addMusicToPlaylist(self, mid, pid, op):
         """
         :param op: add or del
         把mid这首音乐加入pid这个歌单列表当中去

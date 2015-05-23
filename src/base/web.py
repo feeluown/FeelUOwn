@@ -3,9 +3,11 @@
 import urllib.request, urllib.parse, urllib.error
 import http.cookiejar
 
-from logger import LOG
+from src.base.logger import LOG
+from src.base.common import singleton
 
 
+@singleton
 class MyWeb():
     """simulate a web browser
     the simulated brower has two method: get and post.
@@ -37,7 +39,7 @@ class MyWeb():
             content = urllib.request.urlopen(request)
             return content
         except Exception as e:
-            print(str(e))
+            LOG.warning(str(e))
             return None
 
     def get(self, url):
@@ -50,5 +52,6 @@ class MyWeb():
         try:
             content = urllib.request.urlopen(request)
             return content
-        except:
+        except Exception as e:
+            LOG.warning(str(e))
             return None

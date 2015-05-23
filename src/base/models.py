@@ -1,17 +1,45 @@
 # -*- coding:utf8 -*-
 
+from src.base.logger import LOG
+
 
 class DataModel(object):
-    def user(self):
-        user_model = {
-            'uid': int,
-            'username': str,
-            'avatar': str
-        }
-        return user_model
+    def __init__(self, data, type=None):
+        super().__init__()
+        self.type = type    # such as: douban, neteasemusic ... for different music plugin
+        self.data_model = {}
+        self._model = {}
+        self.data = data
 
-    def music(self):
-        music_model = {
+    def get_model_type(self):
+        return self.type
+
+    def get_model(self):
+        return self.data_model
+
+    def init_model(self):
+        if self.validate() is True:
+            for key in self._model:
+                self.data_model[key] = self.data[key]
+
+    def validate(self):
+        """ check dict keys and data type
+        :return:
+        """
+        for key in self._model:
+            if key not in self.data:
+                raise KeyError('data should have key: ' + key)
+
+            if not isinstance(self.data[key], self._model[key]):
+                raise TypeError('Please check your object type')
+
+        return True
+
+
+class MusicModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type)
+        self._model = {
             'id': int,
             'name': str,
             'artists': list,
@@ -19,47 +47,26 @@ class DataModel(object):
             'duration': str,
             'mp3Url': str
         }
-        return music_model
+        self.init_model()
 
-    def playlist(self):
-        playlist_model = {
-            'id': int,
-            'name': str
+
+class UserModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type)
+        self._model = {
+            'uid': int,
+            'username': str,
+            'avatar': str
         }
-        return playlist_model
+        self.init_model()
 
-    def search_result(self):
-        """
-        from search result: data['result']['songs']
-        """
-        search_list = {
+
+class PlaylistModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type)
+        self._model = {
             'id': int,
             'name': str,
-            'artists': list,
-            'album': dict
+            'songs': list
         }
-        return search_list
-
-
-    def set_datamodel_from_data(self, data, datamodel):
-        """
-        before generating model, the data should be validated
-        requirement: the datastructure of model is similar with standard
-        :param data: dict, input data
-        :param type: string, the target model type
-        """
-        # temperarily: no validation check
-        for key in datamodel:
-            datamodel[key] = data[key]
-        return datamodel
-
-    def validate(self, data, model_type):
-        """
-        compare data with the standard model, to validate the data basicllay.
-        1. check those keys which data must contain
-        :param data: dict type,
-        :param model: dict type, standard data model. base on the doc
-        :return: if validated: true
-        """
-        return True
-
+        self.init_model()

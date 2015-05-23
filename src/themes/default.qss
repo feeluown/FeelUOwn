@@ -1,0 +1,264 @@
+/* ****************************** */
+/* QSlider */
+/* ****************************** */
+
+QSlider::groove:horizontal {    /* 凹槽 */
+    border: 1px solid #999999;
+    height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
+    border-radius: 2px;
+    margin: 2px 0;
+}
+
+QSlider::sub-page:horizontal {  /* 滑过的区域 */
+    border: 1px solid #999999;
+    background: #4F2F2F;
+    height: 8px;
+    border-radius: 2px;
+    margin: 2px 0;
+}
+
+QSlider::add-page:horizontal {  /* 剩余的部分, 未滑过的区域 */
+    border: 1px solid #999999;
+    background: #222222;
+    height: 8px;
+    border-radius: 2px;
+    margin: 2px 0;
+}
+
+QSlider::handle:horizontal {    /* 柄 */
+    background: #993333;
+    border: 0px solid #cccccc;
+    width: 18px;
+    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
+    border-radius: 3px;
+}
+
+/* ****************************** */
+/* QWidget */
+/* ****************************** */
+
+QWidget {
+    background-color: #222222;
+    color: #CCCCCC;
+}
+
+QWidget#play_widget {
+    border-bottom: 5px solid #993333;
+}
+
+QPushButton {
+    border: 0px solid #993333;
+}
+
+QPushButton:pressed {
+    outline: none;
+    background-color: #222222;
+}
+
+QPushButton:focus {
+    outline: none;
+    background-color: #222222;
+}
+
+QPushButton#add_to_favorite {
+    border-image: url(../icons/heart.png);
+    width: 12px;
+    height: 12px;
+    border: 0px solid #993333;
+    background-color: #222222;
+}
+
+QPushButton#add_to_favorite:hover {
+}
+
+QPushButton#add_to_favorite:checked {
+    border-image: url(../icons/heart_hover.png);
+}
+
+QPushButton#radio_btn {
+    font-size: 20px;
+    text-align: left;
+}
+
+QPushButton#radio_btn:hover {
+    color: #993333;
+}
+
+QWidget#main_widget{
+}
+
+QWidget#play_widget {
+    background-color: #222222;
+}
+
+/* ****************************** */
+/* QLineEdit */
+/* ****************************** */
+
+QLineEdit#search_edit {
+    border: 1px solid #993333;
+    border-radius: 5px;
+    selection-background-color: #993333;
+}
+
+QLineEdit#search_edit:focus {
+    border-color: #CCCCCC; 
+}
+
+
+/* ****************************** */
+/* QPushButton */
+/* ****************************** */
+
+QPushButton#search_btn {
+    border-image: url(../icons/search_hover.png);
+    border: 0px solid #993333;
+}
+
+QPushButton#search_btn:hover{
+}
+
+/* ****************************** */
+/* QStatusBar */
+/* ****************************** */
+
+QStatusBar {
+    color: #993333;
+    background-color: #222222;
+}
+
+
+/* ****************************** */
+/* QLabel */
+/* ****************************** */
+
+QLabel{
+    color: #CCCCCC;
+}
+
+QLabel#playlist_title, QLabel#musiclist_title {
+    background-color: #222222;
+    font-size: 20px;
+}
+
+
+/* ****************************** */
+/* QScrollBar */
+/* ****************************** */
+
+QScrollBar {
+    width: 0px;
+    height: 0px;
+}
+
+
+/* ****************************** */
+/* QDiaLog */
+/* ****************************** */
+QDiaLog#login_dilog QPushButton {
+    border: 1px solid #993333;
+}
+#login_dialog QPushButton:hover {
+    color: #993333;
+}
+
+/* ****************************** */
+/* QHeaderView */
+/* ****************************** */
+
+QHeaderView {
+}
+
+QHeaderView::section:vertical {
+    padding-left: 15px;
+    width: 40px;
+    background-color: #222222;
+    border: 0px solid #993333;
+}
+
+QHeaderView::section:vertical:checked {
+  background-color: #4F2F2F;
+}
+
+QHeaderView::section:horizontal {
+    font-weight: normal;
+    background-color: #222222;
+    color: #CCCCCC;
+    border: 0px solid #993333;
+    border-bottom: 1px solid #993333;
+    border-top: 1px solid #993333;
+    /* margin-right: 10px; */
+    height: 24px;
+    padding-top: 6px;
+    font-size: 15px;
+}
+
+/* ****************************** */
+/* QListWidget */
+/* ****************************** */
+
+QListWidget::item {
+    outline: none;
+    background-color: #222222;
+    color: #CCCCCC;
+    border-radius: 8px;
+}
+
+QListWidget::item {
+    width: 180px;
+}
+
+QListWidget::item:selected {
+    outline: none;
+    border: none;
+    background-color: #4F2F2F;
+}
+
+QListWidget::item:focus {
+    outline: none;
+    border: 0px;
+}
+
+
+/* ****************************** */
+/* QAbstractItemView */
+/* ****************************** */
+
+QAbstractItemView {
+    background-color: #222222;
+    border: 0px solid #993333;
+}
+
+
+/* ****************************** */
+/* QTableWidget */
+/* ****************************** */
+
+QTableWidget {
+    alternate-background-color: #252525;
+}
+
+QTableWidget::item{ 
+    text-align: left;
+    border-radius: 0px;
+    selection-background-color: #993333;
+    outline: none;
+    color: #CCCCCC;
+}
+
+QTableWidget::item:selected{
+    outline: none;
+    border: none;
+    background-color: #4F2F2F;
+}
+QTableWidget::item:focus {
+    outline: none;
+    border: 0px;
+}
+
+QTableView QTableCornerButton::section {
+    border: 0px solid #993333;
+    border-bottom: 1px solid #993333;
+    border-top: 1px solid #993333;
+    background: #222222;
+}

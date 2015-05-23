@@ -1,6 +1,4 @@
-# BigerBox
-
-> BigerBox 简称BB，将是一款为Linux定制的音乐播放器。它旨在为linuxer提供更好的音乐体验。
+# NeteaseMusic for linux - third party
 
 **项目主页**: <http://cosven.com/blog/5518934e126ac921c1f77a72>
 
