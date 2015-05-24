@@ -6,34 +6,24 @@ QSlider {
 }
 
 QSlider::groove:horizontal {    /* 凹槽 */
-    border: 1px solid #999999;
-    height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
     border-radius: 2px;
-    margin: 2px 0;
 }
 
 QSlider::sub-page:horizontal {  /* 滑过的区域 */
-    border: 1px solid #999999;
     background: #4F2F2F;
-    height: 8px;
     border-radius: 2px;
-    margin: 2px 0;
 }
 
 QSlider::add-page:horizontal {  /* 剩余的部分, 未滑过的区域 */
-    border: 1px solid #999999;
-    background: #222222;
-    height: 8px;
+    background: #999999;
     border-radius: 2px;
-    margin: 2px 0;
 }
 
 QSlider::handle:horizontal {    /* 柄 */
     background: #993333;
     border: 0px solid #cccccc;
-    width: 18px;
-    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
-    border-radius: 3px;
+    width: 8px;
+    margin-bottom: -5px;
 }
 
 /* ****************************** */
@@ -63,6 +53,24 @@ QPushButton:focus {
     background-color: #222222;
 }
 
+QPushButton#play_pause {
+    border-image: url(../icons/play_hover.png);
+    width: 30px;
+    height: 30px;
+}
+
+QPushButton#last {
+    border-image: url(../icons/last_hover.png);
+    width: 30px;
+    height: 30px;
+}
+
+QPushButton#next {
+    border-image: url(../icons/next_hover.png);
+    width: 30px;
+    height: 30px;
+}
+
 QPushButton#add_to_favorite {
     border-image: url(../icons/heart.png);
     width: 12px;
@@ -85,6 +93,26 @@ QPushButton#radio_btn {
 
 QPushButton#radio_btn:hover {
     color: #993333;
+}
+
+QPushButton#login_btn {
+    border-image: url(../icons/login.png);
+}
+
+QPushButton#login_btn:hover {
+    width: 50px;
+    height: 50px;
+    border-image: url(../icons/login_hover.png);
+}
+
+QPushButton#help_btn {
+    border-image: url(../icons/help.png);
+}
+
+QPushButton#help_btn:hover {
+    width: 50px;
+    height: 50px;
+    border-image: url(../icons/help_hover.png);
 }
 
 /* ****************************** */
@@ -181,8 +209,8 @@ QHeaderView::section:horizontal {
     background-color: #222222;
     color: #CCCCCC;
     border: 0px solid #993333;
-    border-bottom: 1px solid #993333;
-    border-top: 1px solid #993333;
+    border-bottom: 1px solid #999;
+    border-top: 1px solid #999;
     height: 24px;
     padding-top: 6px;
     font-size: 15px;
@@ -253,8 +281,8 @@ QTableWidget::item:focus {
 
 QTableView QTableCornerButton::section {
     border: 0px solid #993333;
-    border-bottom: 1px solid #993333;
-    border-top: 1px solid #993333;
+    border-bottom: 1px solid #999;
+    border-top: 1px solid #999;
     background: #222222;
 }
 
@@ -264,11 +292,9 @@ QTableView QTableCornerButton::section {
 /* ****************************** */
 
 QProgressBar {
-    background-color: #CCCCCC;
-    border: 2px solid grey;
-    border-radius: 5px;
+    border: 1px solid #999999;
 }
 
 QProgressBar::chunk {
-    background-color: #05B8CC;
+    background-color: #993333;
 }

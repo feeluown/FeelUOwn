@@ -20,7 +20,6 @@ class RightWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
-        self.title_label = QLabel(u'歌曲列表')
         self.music_table_widget = MusicTableWidget()
         self.current_playing_widget = MusicTableWidget()
         self.music_search_widget = MusicTableWidget()
@@ -45,11 +44,12 @@ class RightWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_widgets_prop(self):
-        self.title_label.setObjectName('musiclist_title')
         pass
 
     def set_layouts_prop(self):
-        self.layout.addWidget(self.title_label, 0, Qt.AlignTop)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
+
         self.layout.addWidget(self.music_search_widget)
         self.layout.addWidget(self.music_table_widget)
         self.layout.addWidget(self.current_playing_widget)

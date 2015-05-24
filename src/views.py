@@ -46,16 +46,14 @@ class UiMainWidget(object):
         self.right_widget.setObjectName('right_widget')
         self.left_widget.setObjectName('left_widget')
         self.top_widget.setObjectName('top_widget')
-        print('top_widget')
         self.top_widget.search_edit.setObjectName('search_edit')
-        self.top_widget.search_btn.setObjectName('search_btn')
 
     def set_widgets_size(self):
         """
         set all widget specific size here, including child widget
         """
-        self.top_widget.setFixedHeight(80)
-        self.left_widget.setMaximumWidth(220)
+        self.top_widget.setFixedHeight(50)
+        self.left_widget.setFixedWidth(200)
 
     def set_layouts(self):
         self.right_layout.addWidget(self.right_widget)
@@ -73,14 +71,3 @@ class UiMainWidget(object):
     def set_layouts_prop(self):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
-
-    def paintEvent(self, QPaintEvent):
-        """
-        self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.
-        at the same time, if self is derived from QFrame, this isn't needed.
-        """
-        option = QStyleOption()
-        painter = QPainter(self)
-        style = self.style()
-        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
