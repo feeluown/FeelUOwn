@@ -20,3 +20,6 @@ user.json
 
 *.bak
 *.vim-bookmarks
+
+__pycache__
+.ipynb_checkpoints
