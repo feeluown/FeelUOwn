@@ -44,14 +44,10 @@ class TopWidget(QWidget):
 
     def paintEvent(self, QPaintEvent):
         """
-        If you subclass a custom widget from QWidget,
-        then in order to use the StyleSheets you need to provide a paintEvent to the custom widget :
-
         self is derived from QWidget, Stylesheets don't work unless \
         paintEvent is reimplemented.
         at the same time, if self is derived from QFrame, this isn't needed.
         """
-
         option = QStyleOption()
         option.initFrom(self)
         painter = QPainter(self)
@@ -63,6 +59,14 @@ class TopWidget(QWidget):
         # by default, autofill background with Qpalette.Window color(system color)
         # self.setAutoFillBackground(True)
         self.setLayout(self.layout)
+        self.set_widgets_effects()
+
+    def set_widgets_effects(self):
+        self.dropShadowEffect = QGraphicsDropShadowEffect(self)
+        self.dropShadowEffect.setColor(QColor('#222'))
+        self.dropShadowEffect.setBlurRadius(3)
+        self.dropShadowEffect.setOffset(0, 2)
+        self.progress_info.setGraphicsEffect(self.dropShadowEffect)
 
     def set_widgets_prop(self):
 
@@ -79,13 +83,14 @@ class TopWidget(QWidget):
         self.time_lcd.setText('00:00')
         self.search_edit.setFixedHeight(25)
         self.search_edit.setPlaceholderText(u'搜索单曲')
+        self.search_edit.setAttribute(Qt.WA_MacShowFocusRect, False)
 
         self.slider_play.setFixedHeight(15)
         self.slider_play.setOrientation(Qt.Horizontal)
         self.slider_play.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.search_edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        self.progress_info.setFixedHeight(2)
+        self.progress_info.setFixedHeight(5)
         
         self.add_to_favorite.setCheckable(True)
 
@@ -98,6 +103,7 @@ class TopWidget(QWidget):
         self.login_btn.setObjectName('login_btn')
         self.help_btn.setObjectName('help_btn')
         self.text_label.setObjectName('music_title')
+        self.time_lcd.setObjectName('time_label')
         self.add_to_favorite.setObjectName('add_to_favorite')
         self.slider_play.setObjectName('slider_play')
         self.progress_info.setObjectName('progress_info')
@@ -143,4 +149,7 @@ class TopWidget(QWidget):
 
         self.layout.addLayout(self.top_layout)
         self.layout.addLayout(self.bottom_layout)
+        self.layout.addSpacing(3)
+
+
 

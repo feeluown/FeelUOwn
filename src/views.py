@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import *
 
 from widgets.music_table_widget import MusicTableWidget
 from setting import ICON_PATH
-from left_widget import LeftWidget
+from left_widget import LeftWidget, LeftScrollArea
 from right_widget import RightWidget
 from top_widget import TopWidget
 
@@ -26,7 +26,7 @@ class UiMainWidget(object):
     def setup_ui(self, MainWidget):
         self.status = QStatusBar()
         self.right_widget = RightWidget()
-        self.left_widget = LeftWidget()
+        self.left_widget = LeftScrollArea()
         self.top_widget = TopWidget()
         self.right_layout = QVBoxLayout()
         self.left_layout = QVBoxLayout()
@@ -42,6 +42,7 @@ class UiMainWidget(object):
         self.set_widgets_size()
         self.set_object_name()
 
+
     def set_object_name(self):
         self.right_widget.setObjectName('right_widget')
         self.left_widget.setObjectName('left_widget')
@@ -52,7 +53,7 @@ class UiMainWidget(object):
         """
         set all widget specific size here, including child widget
         """
-        self.top_widget.setFixedHeight(50)
+        self.top_widget.setFixedHeight(60)
         self.left_widget.setFixedWidth(200)
 
     def set_layouts(self):
@@ -71,3 +72,4 @@ class UiMainWidget(object):
     def set_layouts_prop(self):
         self.layout.setSpacing(0)
         self.layout.setContentsMargins(0, 0, 0, 0)
+        self.left_layout.setContentsMargins(0, 0, 0, 0)

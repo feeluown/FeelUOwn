@@ -26,6 +26,7 @@ class MainWidget(QWidget):
         self.ui.setup_ui(self)
         self.resize(960, 580)
 
+
     def paintEvent(self, QPaintEvent):
         """
         self is derived from QWidget, Stylesheets don't work unless \
