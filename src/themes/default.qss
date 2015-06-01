@@ -6,24 +6,27 @@ QSlider {
 }
 
 QSlider::groove:horizontal {    /* 凹槽 */
-    border-radius: 2px;
+    border: 0px solid #993333;
+    position: absolute;
+    top: -7px;
+    height: 8px;
 }
 
 QSlider::sub-page:horizontal {  /* 滑过的区域 */
     background: #4F2F2F;
-    border-radius: 2px;
+    background-color: #be4040;
 }
 
 QSlider::add-page:horizontal {  /* 剩余的部分, 未滑过的区域 */
     background: #999999;
-    border-radius: 2px;
 }
 
 QSlider::handle:horizontal {    /* 柄 */
     background: #993333;
     border: 0px solid #cccccc;
+    border-radius: 4px;
     width: 8px;
-    margin-bottom: -5px;
+    margin: -5px 0;
 }
 
 /* ****************************** */

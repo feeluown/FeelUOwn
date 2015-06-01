@@ -80,7 +80,7 @@ class TopWidget(QWidget):
         self.search_edit.setFixedHeight(25)
         self.search_edit.setPlaceholderText(u'搜索单曲')
 
-        self.slider_play.setFixedHeight(3)
+        self.slider_play.setFixedHeight(15)
         self.slider_play.setOrientation(Qt.Horizontal)
         self.slider_play.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.search_edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)

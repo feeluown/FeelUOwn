@@ -50,6 +50,6 @@ class RightWidget(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-        self.layout.addWidget(self.music_search_widget)
-        self.layout.addWidget(self.music_table_widget)
-        self.layout.addWidget(self.current_playing_widget)
+        # self.layout.addWidget(self.music_search_widget)
+        # self.layout.addWidget(self.music_table_widget)
+        # self.layout.addWidget(self.current_playing_widget)

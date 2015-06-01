@@ -23,6 +23,7 @@ class MyWeb():
         self.cookie_support = urllib.request.HTTPCookieProcessor(self.cookie)
         self.opener = urllib.request.build_opener(self.cookie_support,
                                                   urllib.request.HTTPHandler)
+        self.timeout = 1
         urllib.request.install_opener(self.opener)
 
     def post(self, posturl, dictdata):
@@ -39,8 +40,8 @@ class MyWeb():
             content = urllib.request.urlopen(request)
             return content
         except Exception as e:
-            LOG.warning(str(e))
-            return None
+            LOG.error(str(e))
+            return {'code': 408}
 
     def get(self, url):
         """Load data from the server using a HTTP GET request.
@@ -53,5 +54,5 @@ class MyWeb():
             content = urllib.request.urlopen(request)
             return content
         except Exception as e:
-            LOG.warning(str(e))
-            return None
+            LOG.error(str(e))
+            return {'code': 408}

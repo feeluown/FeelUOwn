@@ -1,17 +1,25 @@
 # -*- coding: utf8 -*-
 
-"""想支持多个平台，把多个平台的音乐资源集中起来
 
-两种方案
-1. 多个平台资源同时进行使用（难度较大）
-
-2. 平台之间可以切换
+from plugin.NetEase.normalize import NetEaseAPI as Api
 
 
-先默认使用网易云
 """
+class Api(object):
+    
+    interfaces = ('netease', )
 
+    def __init__(self):
+        super().__init__()
+        self.ne = NetEaseAPI()
 
-from plugin.neteasemusic import NetEase as Api
+    def login(self, username, pw, phone=False, is_remember=True):
+        return self.ne.login(username, pw, phone)
 
+    def get_song_detail(self, mid):
+        return self.ne.song_detail(mid)
 
+    def get_playlist_detail(self, pid):
+        return self.ne.playlist_detail(pid)
+
+"""
