@@ -16,7 +16,7 @@ echo "#!/usr/bin/env xdg-open
 Type=Application
 Name=NetEaseMusic
 Comment=NetEaseMusic Launcher
-Exec=$currentPath/main.py
+Exec=$currentPath/src/main.py
 Icon=$currentPath/icons/format.png
 Terminal=false
 StartupNotify=true

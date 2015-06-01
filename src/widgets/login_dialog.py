@@ -8,7 +8,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from plugin.neteasemusic import NetEase
+from plugin.NetEase.api import NetEase
 
 
 class LoginDialog(QDialog):

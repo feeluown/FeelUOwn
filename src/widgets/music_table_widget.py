@@ -10,7 +10,7 @@ class MusicTableWidget(QTableWidget):
 
     """
     def __init__(self, rows=0, columns=3, parent=None):
-        super(MusicTableWidget, self).__init__(rows, columns, parent)
+        super().__init__(rows, columns, parent)
         self.set_prop()
 
     def set_prop(self):

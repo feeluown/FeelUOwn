@@ -5,7 +5,7 @@ import hashlib
 from base.common import singleton
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel
-from api import NetEase
+from plugin.NetEase.api import NetEase
 
 
 def login_required(func):
