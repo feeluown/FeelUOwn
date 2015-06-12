@@ -29,6 +29,10 @@ class PlaylistWidget(QListWidget):
         width = self.sizeHintForColumn(0)
         return QSize(width, height)
 
+    def set_playlist_item(self, playlist_model):
+        
+        pass
+
     def debug(self):
         icon = QIcon(ICON_PATH + 'playlist.png')
         test1 = QListWidgetItem(icon, u'我的歌曲列表')

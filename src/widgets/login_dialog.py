@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 from base.network_manger import NetworkManger
 
-from plugin.NetEase.normalize import NetEaseAPI, get_url_type
+from api import Api
 from base.logger import LOG
 from base.models import url_type
 
@@ -46,7 +46,7 @@ class LoginDialog(QDialog):
         self.nm = NetworkManger(self)
 
         self.filename = CACHE_PATH + 'user.json'
-        self.ne = NetEaseAPI()
+        self.ne = Api()
 
         self.is_autofill = False
         self.is_need_captcha = False

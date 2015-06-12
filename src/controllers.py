@@ -15,7 +15,7 @@ from widgets.login_dialog import LoginDialog
 
 from views import UiMainWidget
 from base.player import Player
-
+from api import Api, get_url_type
 
 
 class MainWidget(QWidget):
@@ -26,7 +26,7 @@ class MainWidget(QWidget):
         self.ui = UiMainWidget()
         self.ui.setup_ui(self)
         self.resize(960, 580)
-
+        self.api = Api()
         self.init()
 
         self.state = {'is_login': False}
@@ -50,6 +50,11 @@ class MainWidget(QWidget):
     def init_signal_binding(self):
         self.ui.top_widget.login_btn.clicked.connect(self.pop_login)
 
+    """这部分写一些交互逻辑
+    """
+    def show_playlist(self):
+        pass
+
     """这部分写 pyqtSlot
     """
 
@@ -63,6 +68,9 @@ class MainWidget(QWidget):
     @pyqtSlot(dict)
     def on_login_success(self, data):
         self.state['is_login'] = True
+
+
+
 
 
 if __name__ == "__main__":
