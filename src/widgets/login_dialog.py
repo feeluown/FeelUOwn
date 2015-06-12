@@ -11,8 +11,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 from base.network_manger import NetworkManger
 
-from plugin.NetEase.normalize import NetEaseAPI
+from plugin.NetEase.normalize import NetEaseAPI, get_url_type
 from base.logger import LOG
+from base.models import url_type
 
 from setting import CACHE_PATH
 
@@ -148,7 +149,6 @@ class LoginDialog(QDialog):
             self.save_login_info(login_data)
         elif data['code'] == 415:
             self.hint_label.setText(u'需要验证码')
-            self.is_need_captcha = True
             LOG.info(u'本次登陆需要验证码')
             self.captcha_id = data['captchaId']
             self.show_captcha()
@@ -162,14 +162,17 @@ class LoginDialog(QDialog):
             self.hint_label.setText(u'未知错误')
 
     def show_captcha(self):
-        url = self.ne.get_captcha_url(self.captcha_id)
         self.is_need_captcha = True
-        self.nm.get(QNetworkRequest(QUrl(url)))
+        url = self.ne.get_captcha_url(self.captcha_id)
+        request = QNetworkRequest(QUrl(url))
+        self.nm.get(request)
         self.captcha_label.show()
         self.captcha_lineedit.show()
 
     @pyqtSlot(QNetworkReply)
     def on_nm_finished(self, res):
+        if get_url_type(res.request().url()) is not url_type[0]:    # url_type: captcha
+            return
         img = QImage()
         img.loadFromData(res.readAll())
         self.captcha_label.setPixmap(QPixmap(img))
@@ -180,7 +183,7 @@ class LoginDialog(QDialog):
 
     @pyqtSlot(dict, name='login_success')
     def on_login_success(self, data):
-        print('login_success')
+        self.nm.finished.disconnect(self.on_nm_finished)
 
     def __set_me(self):
         self.setObjectName('login_dialog')

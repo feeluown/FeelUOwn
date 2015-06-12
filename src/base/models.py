@@ -139,6 +139,7 @@ class AlbumModel(DataModel):
         }
         self.init_model()
 
+
 class BriefAlbumModel(DataModel):
     def __init__(self, data, type=None):
         super().__init__(data, type)
@@ -147,3 +148,10 @@ class BriefAlbumModel(DataModel):
             'name': str,
         }
         self.init_model()
+
+
+
+"""
+url type: 指的就是这个url里面的内容是什么。比如说：是 验证码，是用户头像，是专辑图片，是音乐....
+"""
+url_type = ('captchar', 'album_img', 'avatar_img', )

@@ -57,10 +57,11 @@ class MainWidget(QWidget):
     def pop_login(self):
         if self.state['is_login'] is False:
             w = LoginDialog(self)
-            self.connect(w, pyqtSignal('login_success'), self.on_login_success)
+            w.signal_login_sucess.connect(self.on_login_success)
             w.show()
-    @pyqtSlot(QNetworkReply)
-    def on_login_success(self):
+
+    @pyqtSlot(dict)
+    def on_login_success(self, data):
         self.state['is_login'] = True
 
 

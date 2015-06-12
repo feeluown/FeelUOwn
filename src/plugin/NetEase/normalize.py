@@ -8,6 +8,27 @@ from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
 from plugin.NetEase.api import NetEase
 
 
+"""
+这些函数返回的数据都需要以数据model中的东西为标准。
+
+比如说：
+- 返回一个url_type ， 这个url_type必须可以从数据模型中找到相对应的
+- 返回一个music，那么这个数据必须符合 music model.
+"""
+
+
+def get_url_type(url):
+        """根据一个url,判断当前这个url请求的内容是什么
+        1. 可以侧面解决一些QNetworkManger带来的问题
+        :return:
+        """
+        types = ('captcha', 'api')
+        url_l = url.split('/')  # ['http:', '', 'music.163.com' ...]
+        if url_l[3] == 'api':
+            return types[1]
+        else:
+            return types[0]
+
 def login_required(func):
     def wrapper(*args):
         this = args[0]
