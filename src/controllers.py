@@ -17,6 +17,7 @@ from views import UiMainWidget
 from base.player import Player
 
 
+
 class MainWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -26,6 +27,9 @@ class MainWidget(QWidget):
         self.ui.setup_ui(self)
         self.resize(960, 580)
 
+        self.init()
+
+        self.state = {'is_login': False}
 
     def paintEvent(self, QPaintEvent):
         """
@@ -38,6 +42,22 @@ class MainWidget(QWidget):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def init(self):
+        self.init_signal_binding()
+
+    def init_signal_binding(self):
+        self.ui.top_widget.login_btn.clicked.connect(self.pop_login)
+
+    """这部分写 pyqtSlot
+    """
+
+    @pyqtSlot()
+    def pop_login(self):
+        if self.state['is_login'] is False:
+            w = LoginDialog(self)
+            w.show()
+
 
 if __name__ == "__main__":
     import sys

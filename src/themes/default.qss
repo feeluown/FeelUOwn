@@ -240,6 +240,9 @@ QDiaLog#login_dilog QPushButton {
 #login_dialog QPushButton:hover {
     color: #993333;
 }
+#login_dialog QLineEdit {
+    border: 1px solid #993333;
+}
 
 /* ****************************** */
 /* QHeaderView */

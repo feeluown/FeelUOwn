@@ -72,6 +72,10 @@ class NetEase:
         else:
             return self.httpRequest('POST', action, data)
 
+    def get_captcha_url(self, captcha_id):
+        action = 'http://music.163.com/captcha?id=' + str(captcha_id)
+        return action
+
     # 用户歌单
     def user_playlist(self, uid, offset=0, limit=100):
         action = 'http://music.163.com/api/user/playlist/?offset=' + str(offset) + '&limit=' + str(

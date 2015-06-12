@@ -26,8 +26,6 @@ class WebView(QWebView):
 
     @pyqtSlot()
     def on_load_finished(self):
-        print('finish')
-        print(self.page())
         a = {'a': 'hello'}
         self.page().mainFrame().evaluateJavaScript('')
 

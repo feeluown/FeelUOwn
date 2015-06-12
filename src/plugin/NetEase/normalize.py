@@ -18,6 +18,10 @@ def login_required(func):
 
 
 def access_music(music_data):
+    """处理从服务获取的原始数据，对它的一些字段进行过滤和改名，返回符合标准的music数据
+    :param music_data:
+    :return:
+    """
     music_data['url'] = music_data['mp3Url']
     song = MusicModel(music_data).get_model()
 
@@ -38,6 +42,14 @@ def access_brief_music(music_data):
 
     song['album'] = BriefAlbumModel(song['album']).get_model()
     return song
+
+def access_user(user_data):
+    user_data['avatar'] = user_data['profile']['avatarUrl']
+    user_data['uid'] = user_data['account']['id']
+    user_data['username'] = user_data['profile']['nickname']
+    user = UserModel(user_data).get_model()
+    return user
+
 
 @singleton
 class NetEaseAPI(object):
@@ -60,18 +72,24 @@ class NetEaseAPI(object):
             data['message'] = u'貌似网络断了'
             flag = False
         else:
-            data['message'] = u'操作成功'
+            data['message'] = u'联网成功'
             flag = True
         return data, flag
 
     def login(self, username, password, phone=False):
         password = password.encode('utf-8')
         password = hashlib.md5(password).hexdigest()
+        print(username, password)
         data = self.ne.login(username, password, phone)
         data, flag = self.check_res(data)
-        if flag is True:
+        print(data)
+        if flag is not True:
+            return data
+
+        if data['code'] is 200:    # 如果联网成功
             self.uid = data['account']['id']
-        return UserModel(data).get_model()
+            data = access_user(data)
+        return data
 
     def auto_login(self, username, pw_encrypt, phone=False):
         """login into website with username and password which has been ecrypted
@@ -81,6 +99,9 @@ class NetEaseAPI(object):
         if flag is True:
             self.uid = data['account']['id']
         return data
+
+    def get_captcha_url(self, captcha_id):
+        self.ne.get_captcha_url(captcha_id)
 
     def get_song_detail(self, mid):
         data = self.ne.song_detail(mid)
