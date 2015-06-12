@@ -27,3 +27,10 @@ MODE = DEBUG
 theme configuration
 """
 QSS_PATH = 'themes/default.qss'
+
+
+"""
+web_assets configuration
+"""
+HTML_PATH = 'web_assets/'
+PUBLIC_PATH = 'web_assets/public/'

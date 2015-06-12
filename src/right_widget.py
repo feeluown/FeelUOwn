@@ -11,18 +11,16 @@ funcition to set child widget properties.
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from widgets.webview_show import WebView
 
-from widgets.music_table_widget import MusicTableWidget
-from setting import ICON_PATH
+from setting import ICON_PATH, HTML_PATH
 
 
 class RightWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.layout = QVBoxLayout()
-        self.music_table_widget = MusicTableWidget()
-        self.current_playing_widget = MusicTableWidget()
-        self.music_search_widget = MusicTableWidget()
+        self.webview = WebView()
 
         self.set_me()
         self.set_widgets_prop()
@@ -44,12 +42,13 @@ class RightWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_widgets_prop(self):
+        path = QFileInfo(HTML_PATH + 'album.html').absoluteFilePath()
+        print(path)
+        self.webview.load(QUrl.fromLocalFile(path))
         pass
 
     def set_layouts_prop(self):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-        # self.layout.addWidget(self.music_search_widget)
-        # self.layout.addWidget(self.music_table_widget)
-        # self.layout.addWidget(self.current_playing_widget)
+        self.layout.addWidget(self.webview)

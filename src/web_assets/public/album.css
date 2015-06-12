@@ -1,0 +1,33 @@
+@media screen and (max-width: 768px) {
+    .info_layout {
+        margin-top: 20px;
+    }
+
+    .album {
+        float: left;
+        width: 20%;
+        padding: 0px;
+    }
+
+    .desc {
+        padding-left: 50px;
+        float: right;
+        width: 80%;
+    }
+}
+@media screen and (min-width: 768px) {
+    .album {
+        width: 100%;
+    }
+    .desc {
+        padding-top: 50px;
+    }
+}
+
+
+.star {
+    background-image: url(../img/heart_hover.png);
+    width: 20px;
+    height: 20px;
+    background-size: cover;
+}
