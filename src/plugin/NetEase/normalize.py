@@ -32,6 +32,7 @@ def access_music(music_data):
     song['album'] = AlbumModel(song['album']).get_model()
     return song
 
+
 def access_brief_music(music_data):
 
     song = BriefMusicModel(music_data).get_model()
@@ -42,6 +43,7 @@ def access_brief_music(music_data):
 
     song['album'] = BriefAlbumModel(song['album']).get_model()
     return song
+
 
 def access_user(user_data):
     user_data['avatar'] = user_data['profile']['avatarUrl']
@@ -82,13 +84,13 @@ class NetEaseAPI(object):
         print(username, password)
         data = self.ne.login(username, password, phone)
         data, flag = self.check_res(data)
-        print(data)
         if flag is not True:
             return data
 
         if data['code'] is 200:    # 如果联网成功
             self.uid = data['account']['id']
             data = access_user(data)
+            data['code'] = 200
         return data
 
     def auto_login(self, username, pw_encrypt, phone=False):
@@ -96,12 +98,24 @@ class NetEaseAPI(object):
         """
         data = self.ne.login(username, pw_encrypt, phone)
         data, flag = self.check_res(data)
-        if flag is True:
+        if flag is not True:
+            return data
+
+        if data['code'] is 200:    # 如果联网成功
             self.uid = data['account']['id']
+            data = access_user(data)
+            data['code'] = 200
         return data
 
     def get_captcha_url(self, captcha_id):
-        self.ne.get_captcha_url(captcha_id)
+        return self.ne.get_captcha_url(captcha_id)
+
+    def confirm_captcha(self, captcha_id, text):
+        data = self.ne.confirm_captcha(captcha_id, text)
+        if data['result'] is False:
+            return data['result'], data['captchaId']
+        else:
+            return data['result'], None
 
     def get_song_detail(self, mid):
         data = self.ne.song_detail(mid)

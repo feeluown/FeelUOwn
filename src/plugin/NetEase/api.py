@@ -72,6 +72,11 @@ class NetEase:
         else:
             return self.httpRequest('POST', action, data)
 
+    def confirm_captcha(self, id, text):
+        action = 'http://music.163.com/api/image/captcha/verify/hf?id=' + str(id) + '&captcha=' + str(text)
+        data = self.httpRequest('GET', action)
+        return data
+
     def get_captcha_url(self, captcha_id):
         action = 'http://music.163.com/captcha?id=' + str(captcha_id)
         return action

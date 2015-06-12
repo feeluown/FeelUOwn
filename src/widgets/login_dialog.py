@@ -8,9 +8,14 @@ import hashlib
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from PyQt5.QtNetwork import *
+from base.network_manger import NetworkManger
 
 from plugin.NetEase.normalize import NetEaseAPI
 from base.logger import LOG
+
+from setting import CACHE_PATH
+
 
 class LoginDialog(QDialog):
     """登录对话框
@@ -20,7 +25,7 @@ class LoginDialog(QDialog):
     调用: 1. 在用户登录成功时，会发射("login_success")信号
     
     """
-    signal_login_sucess = pyqtSignal([dict])
+    signal_login_sucess = pyqtSignal([dict], name='login_success')
 
     def __init__(self, parent=None):
         super(LoginDialog, self).__init__(parent)
@@ -37,11 +42,15 @@ class LoginDialog(QDialog):
         self.layout = QVBoxLayout()
         self.is_remember_chb = QCheckBox(u'记住账号')
 
+        self.nm = NetworkManger(self)
 
-        self.filename = 'cache/user.json'
+        self.filename = CACHE_PATH + 'user.json'
         self.ne = NetEaseAPI()
 
         self.is_autofill = False
+        self.is_need_captcha = False
+        self.captcha_id = 0
+        self.user_data = 0
 
         self.__set_signal_binding()
         self.__set_widgets_prop()
@@ -52,25 +61,26 @@ class LoginDialog(QDialog):
     def __set_signal_binding(self):
         self.login_btn.clicked.connect(self.__login)
         self.password_widget.textChanged.connect(self.on_password_lineedit_changed)
+        self.nm.finished.connect(self.on_nm_finished)
+        self.signal_login_sucess.connect(self.on_login_success)
 
     def fill_content(self):
         """
         判断之前是否保存了用户名和密码:
             保存了就是直接加载
-            没保存就pass
         """
         if self.has_saved_userinfo():
             f = open(self.filename, 'r')
-            login_data = json.load(f)
+            login_data = dict()
+            try:
+                login_data = json.load(f)
+            except Exception as e:
+                LOG.error(str(e))
             f.close()
             if 'is_remember' in login_data.keys() and login_data['is_remember']:
-                username = login_data['username']
-                password = login_data['password']
-                is_remember = login_data['is_remember']
-                self.username_widget.setText(username)
-                self.password_widget.setText(password)
-                self.is_remember_chb.setCheckState(is_remember)
-
+                self.username_widget.setText(login_data['username'])
+                self.password_widget.setText(login_data['password'])
+                self.is_remember_chb.setCheckState(True)
                 self.is_autofill = True
 
     def has_saved_userinfo(self):
@@ -85,13 +95,11 @@ class LoginDialog(QDialog):
         if login_data['is_remember']:
             f = open(self.filename, 'w')
             if self.is_autofill is not True:    # 如果不是自动填充，说明密码时已经没有加密过
-                password = login_data['password']
+                password = login_data['password'].encode('utf-8')
                 login_data['password'] = hashlib.md5(password).hexdigest()
-
             jsondata = json.dumps(login_data)
             f.write(jsondata)
-            f.close
-
+            f.close()
         else:
             try:
                 os.remove(self.filename)
@@ -103,7 +111,15 @@ class LoginDialog(QDialog):
 
         在用户登录成功时，会发射("login_success")信号
         """
-        login_data = {}
+        data = {}
+        if self.is_need_captcha is True:
+            captcha_text = str(self.captcha_lineedit.text())
+            flag, self.captcha_id = self.ne.confirm_captcha(self.captcha_id, captcha_text)
+            if flag is not True:
+                self.hint_label.setText(u'验证码错误')
+                self.captcha_id = data['captchaId']
+                self.show_captcha()
+                return
 
         phone_login = False      # 0: 网易通行证, 1: 手机号登陆
         username = str(self.username_widget.text())     # 包含中文会出错
@@ -111,29 +127,31 @@ class LoginDialog(QDialog):
         # 2: checked, 1: partial checked
         is_remember = self.is_remember_chb.checkState()
 
-        login_data['username'] = username
-        login_data['password'] = password
-        login_data['is_remember'] = is_remember
+        login_data = {
+            'username': username,
+            'password': password,
+            'is_remember': is_remember
+        }
         # judget if logining by using phone number
-        try:
-            int(username)
+        if not type(username) == str:
             phone_login = True
-        except ValueError:
-            pass
-        data = self.ne.login(username, password, phone_login)
 
-        # print(type(data))
+        if not self.is_autofill:
+            data = self.ne.login(username, password, phone_login)
+        else:
+            data = self.ne.auto_login(username, password, phone_login)
 
-        # judge if __login successfully
-        # if not, why
         if data['code'] == 200:
             self.hint_label.setText(u'登陆成功')
-            self.emit(pyqtSignal('login_success'), data)
+            self.signal_login_sucess.emit(data)
             self.close()
             self.save_login_info(login_data)
-        elif data['code'] == 415:   # 需要验证码
-            url = self.ne.get_captcha_url(data['captchaId'])
-            self.show_captcha(url)
+        elif data['code'] == 415:
+            self.hint_label.setText(u'需要验证码')
+            self.is_need_captcha = True
+            LOG.info(u'本次登陆需要验证码')
+            self.captcha_id = data['captchaId']
+            self.show_captcha()
         elif data['code'] == 408:
             self.hint_label.setText(u'网络连接超时')
         elif data['code'] == 501:
@@ -143,13 +161,26 @@ class LoginDialog(QDialog):
         else:
             self.hint_label.setText(u'未知错误')
 
-    def show_captcha(self, url):
+    def show_captcha(self):
+        url = self.ne.get_captcha_url(self.captcha_id)
+        self.is_need_captcha = True
+        self.nm.get(QNetworkRequest(QUrl(url)))
         self.captcha_label.show()
         self.captcha_lineedit.show()
+
+    @pyqtSlot(QNetworkReply)
+    def on_nm_finished(self, res):
+        img = QImage()
+        img.loadFromData(res.readAll())
+        self.captcha_label.setPixmap(QPixmap(img))
 
     @pyqtSlot()
     def on_password_lineedit_changed(self):
         self.is_autofill = False
+
+    @pyqtSlot(dict, name='login_success')
+    def on_login_success(self, data):
+        print('login_success')
 
     def __set_me(self):
         self.setObjectName('login_dialog')
@@ -165,9 +196,10 @@ class LoginDialog(QDialog):
 
         self.username_widget.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.password_widget.setAttribute(Qt.WA_MacShowFocusRect, False)
+        self.setAttribute(Qt.WA_MacShowFocusRect, False)
 
-        self.captcha_label.close()
-        self.captcha_lineedit.close()
+        self.captcha_label.hide()
+        self.captcha_lineedit.hide()
 
         self.password_widget.setEchoMode(QLineEdit.Password)
 

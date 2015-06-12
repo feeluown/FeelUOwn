@@ -6,7 +6,7 @@ import sys
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
+from PyQt5.QtNetwork import *
 
 from api import Api
 from base.models import DataModel
@@ -45,6 +45,7 @@ class MainWidget(QWidget):
 
     def init(self):
         self.init_signal_binding()
+        self.setAttribute(Qt.WA_MacShowFocusRect, False)
 
     def init_signal_binding(self):
         self.ui.top_widget.login_btn.clicked.connect(self.pop_login)
@@ -56,7 +57,11 @@ class MainWidget(QWidget):
     def pop_login(self):
         if self.state['is_login'] is False:
             w = LoginDialog(self)
+            self.connect(w, pyqtSignal('login_success'), self.on_login_success)
             w.show()
+    @pyqtSlot(QNetworkReply)
+    def on_login_success(self):
+        self.state['is_login'] = True
 
 
 if __name__ == "__main__":
