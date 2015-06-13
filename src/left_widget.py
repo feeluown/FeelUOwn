@@ -12,8 +12,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from widgets.playlist_widget import PlaylistWidget
 from setting import ICON_PATH
+from widgets.playlist_widget import PlaylistWidget, PlaylistItem
+
 
 
 class LeftScrollArea(QScrollArea):
@@ -24,10 +25,11 @@ class LeftScrollArea(QScrollArea):
         self.set_widgets_prop()
 
     def set_widgets_prop(self):
-        # self.setWidgetResizable(True)
+        self.setWidgetResizable(True)
         self.ensureWidgetVisible(self.central_widget)
         self.setWidget(self.central_widget)
-        self.central_widget.setFixedWidth(180)
+        self.central_widget.setFixedWidth(200)
+
 
 class LeftWidget(QWidget):
     def __init__(self, parent=None):
@@ -47,11 +49,6 @@ class LeftWidget(QWidget):
         self.set_me()
 
     def paintEvent(self, QPaintEvent):
-        """
-        self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.
-        at the same time, if self is derived from QFrame, this isn't needed.
-        """
         option = QStyleOption()
         option.initFrom(self)
         painter = QPainter(self)
@@ -73,8 +70,8 @@ class LeftWidget(QWidget):
 
     def set_layouts_prop(self):
 
-        # self.layout.setContentsMargins(0, 0, 0, 0)
-        # self.layout.setSpacing(0)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setSpacing(0)
 
         self.layout.addWidget(self.create_title)
         self.layout.addWidget(self.create_list_widget)
@@ -83,5 +80,4 @@ class LeftWidget(QWidget):
         self.layout.addWidget(self.local_title)
         self.layout.addWidget(self.local_list_widget)
 
-        self.layout.addStretch(20)
-
+        self.layout.addStretch(1)

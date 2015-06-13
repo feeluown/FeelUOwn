@@ -8,12 +8,12 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 
-from api import Api
-from base.models import DataModel
 
 from widgets.login_dialog import LoginDialog
+from widgets.playlist_widget import PlaylistWidget, PlaylistItem
 
 from views import UiMainWidget
+from base.models import DataModel
 from base.player import Player
 from api import Api, get_url_type
 
@@ -52,8 +52,17 @@ class MainWidget(QWidget):
 
     """这部分写一些交互逻辑
     """
-    def show_playlist(self):
-        pass
+    def show_user_playlist(self):
+        playlists = self.api.get_user_playlist()
+        print(playlists)
+        for playlist in playlists:
+            w = PlaylistItem(self)
+            w.set_playlist_item(playlist)
+            if self.api.is_playlist_mine(playlist):
+                self.ui.left_widget.central_widget.create_list_widget.layout.addWidget(w)
+            else:
+                self.ui.left_widget.central_widget.collection_list_widget.layout.addWidget(w)
+
 
     """这部分写 pyqtSlot
     """
@@ -69,8 +78,7 @@ class MainWidget(QWidget):
     def on_login_success(self, data):
         self.state['is_login'] = True
 
-
-
+        self.show_user_playlist()
 
 
 if __name__ == "__main__":

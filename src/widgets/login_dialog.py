@@ -9,9 +9,9 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
-from base.network_manger import NetworkManger
+from base.network_manger import NetworkManager
 
-from api import Api
+from api import Api, get_url_type
 from base.logger import LOG
 from base.models import url_type
 
@@ -43,7 +43,7 @@ class LoginDialog(QDialog):
         self.layout = QVBoxLayout()
         self.is_remember_chb = QCheckBox(u'记住账号')
 
-        self.nm = NetworkManger(self)
+        self.nm = NetworkManager()
 
         self.filename = CACHE_PATH + 'user.json'
         self.ne = Api()
@@ -118,7 +118,6 @@ class LoginDialog(QDialog):
             flag, self.captcha_id = self.ne.confirm_captcha(self.captcha_id, captcha_text)
             if flag is not True:
                 self.hint_label.setText(u'验证码错误')
-                self.captcha_id = data['captchaId']
                 self.show_captcha()
                 return
 
@@ -171,7 +170,9 @@ class LoginDialog(QDialog):
 
     @pyqtSlot(QNetworkReply)
     def on_nm_finished(self, res):
-        if get_url_type(res.request().url()) is not url_type[0]:    # url_type: captcha
+        u_type = get_url_type(str(res.request().url().toString()))
+        print(u_type, url_type[0])
+        if u_type != url_type[0]:    # url_type: captcha
             return
         img = QImage()
         img.loadFromData(res.readAll())

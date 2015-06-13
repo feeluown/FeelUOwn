@@ -161,7 +161,10 @@ class NetEaseAPI(object):
     # @login_required     # 装饰器，挺好玩(装逼)的一个东西
     def get_user_playlist(self):
         data = self.ne.user_playlist(self.uid)
+
         for i, brief_playlist in enumerate(data):
+            brief_playlist['uid'] = brief_playlist['userId']
+            brief_playlist['type'] = brief_playlist['specialType']
             data[i] = BriefPlaylistModel(brief_playlist).get_model()
         return data
 
@@ -171,6 +174,11 @@ class NetEaseAPI(object):
         for i, song in enumerate(songs):
             songs[i] = access_brief_music(song)
         return songs
+
+    def is_playlist_mine(self, playlist_model):
+        if playlist_model['uid'] == self.uid:
+            return True
+        return False
 
 
 if __name__ == "__main__":

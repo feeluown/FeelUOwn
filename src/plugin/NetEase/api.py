@@ -16,6 +16,7 @@ import hashlib
 
 from base.common import singleton
 from base.web import MyWeb
+from base.logger import LOG
 
 # list去重
 def uniq(arr):
@@ -47,14 +48,17 @@ class NetEase:
     def httpRequest(self, method, action, query=None, urlencoded=None, callback=None, timeout=None):
         if (method == 'GET'):
             res = self.web.get(action)
-            data = res.read()
 
         elif (method == 'POST'):
             res = self.web.post(action, query)
+
+        try:
             data = res.read()
-            print(data)
-        data = data.decode('utf-8')
-        data= json.loads(data)
+            data = data.decode('utf-8')
+            data = json.loads(data)
+        except Exception as e:
+            LOG.warning(str(e))
+            data = res
         return data
 
     # 登录

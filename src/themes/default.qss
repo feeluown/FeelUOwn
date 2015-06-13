@@ -61,12 +61,34 @@ QWidget#top_widget {
 }
 
 QWidget#left_widget {
-    background-color: #272727272727;
+    background-color: #272727;
 }
 
 QWidget#right_widget {
-    background-color: #272727272727;
+    background-color: #272727;
 }
+
+QFrame#playlist_container {
+    padding-left: 15px;
+    border: 0px solid #993333;
+}
+
+QFrame#playlist_container:hover {
+    background-color: #333;
+    border-left:8px solid #993333;
+    border-top: 10px solid #333;
+    border-bottom: 10px solid #333;
+}
+
+QFrame#playlist_container_active {
+    padding-left: 11px;
+    border-left:4px solid #993333;
+    background-color: #333;
+}
+
+/* ****************************** */
+/* QPushButton */
+/* ****************************** */
 
 QPushButton {
     border: 0px solid #993333;
@@ -144,6 +166,16 @@ QPushButton#help_btn:hover {
     border-image: url(../icons/help_hover.png);
 }
 
+QPushButton#playlist_name {
+    font-size: 12px;
+    background-color: transparent;
+    text-align: left;
+}
+
+QPushButton#playlist_name:hover {
+
+}
+
 /* ****************************** */
 /* QLineEdit */
 /* ****************************** */
@@ -186,12 +218,25 @@ QStatusBar {
 
 
 QLabel#title{
-    color: #CCC;
+    color: #AAA;
+    font-size: 12px;
+    padding-left: 5px;
+    margin: 10px 0;
 }
 
 QLabel#playlist_title, QLabel#musiclist_title {
     font-size: 20px;
     background-color: #222222;
+}
+
+QLabel#playlist_img_favorite {
+    background-color: transparent;
+    border-image: url(../icons/playlist_favorite.png);
+}
+
+QLabel#playlist_img_mine {
+    background-color: transparent;
+    border-image: url(../icons/playlist_mine.png);
 }
 
 
@@ -367,4 +412,13 @@ QProgressBar::chunk {
 
 QScrollArea {
     border: 0px solid #993333;
+}
+
+/* ****************************** */
+/* QToolTip */
+/* ****************************** */
+
+QToolTip {
+    background-color: transparent;
+    color: #993333;
 }

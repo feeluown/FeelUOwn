@@ -112,7 +112,9 @@ class PlaylistModel(DataModel):
             'id': int,
             'name': str,
             'tracks': list,
-            'coverImgUrl': str
+            'coverImgUrl': str,
+            'type': int,  # 5 for favorite
+            'uid': int
         }
         self.init_model()
 
@@ -123,7 +125,9 @@ class BriefPlaylistModel(DataModel):
         self._model = {
             'id': int,
             'name': str,
-            'coverImgUrl': str
+            'coverImgUrl': str,
+            'type': int,
+            'uid': int
         }
         self.init_model()
 
@@ -154,4 +158,4 @@ class BriefAlbumModel(DataModel):
 """
 url type: 指的就是这个url里面的内容是什么。比如说：是 验证码，是用户头像，是专辑图片，是音乐....
 """
-url_type = ('captchar', 'album_img', 'avatar_img', )
+url_type = ('captcha', 'album_img', 'avatar_img', )

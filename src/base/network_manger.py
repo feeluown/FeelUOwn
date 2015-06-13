@@ -5,7 +5,7 @@ from base.common import singleton
 
 
 @singleton
-class NetworkManger(QNetworkAccessManager):
+class NetworkManager(QNetworkAccessManager):
     """
     One QNetworkAccessManager should be enough for the whole Qt application
     """
