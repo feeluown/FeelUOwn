@@ -82,6 +82,8 @@ class ArtistModel(DataModel):
             'name': str,
             'briefDesc': str
         }
+        self.init_model()
+
 
 class BriefArtistModel(DataModel):
     """
@@ -93,6 +95,7 @@ class BriefArtistModel(DataModel):
             'id': int,
             'name': str,
         }
+        self.init_model()
 
 class UserModel(DataModel):
     def __init__(self, data, type=None):

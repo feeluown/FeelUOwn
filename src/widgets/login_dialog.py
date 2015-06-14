@@ -171,7 +171,6 @@ class LoginDialog(QDialog):
     @pyqtSlot(QNetworkReply)
     def on_nm_finished(self, res):
         u_type = get_url_type(str(res.request().url().toString()))
-        print(u_type, url_type[0])
         if u_type != url_type[0]:    # url_type: captcha
             return
         img = QImage()

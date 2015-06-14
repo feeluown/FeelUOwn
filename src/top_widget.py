@@ -91,6 +91,7 @@ class TopWidget(QWidget):
         self.search_edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self.progress_info.setFixedHeight(5)
+        self.progress_info.setTextVisible(False)
         
         self.add_to_favorite.setCheckable(True)
 

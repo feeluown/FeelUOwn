@@ -9,38 +9,6 @@ from setting import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
 from api import get_url_type
 
 
-class PlaylistWidget_(QListWidget):
-    """
-    非常不好用！！！
-    """
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.set_widget_prop()
-
-    def paintEvent(self, QPaintEvent):
-        option = QStyleOption()
-        option.initFrom(self)
-        painter = QPainter(self)
-        style = self.style()
-        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
-
-    def set_widget_prop(self):
-        self.setWordWrap(True)
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.setSizeAdjustPolicy(QAbstractScrollArea.AdjustToContents)
-        self.setAttribute(Qt.WA_MacShowFocusRect, False)
-        self.setMinimumHeight(10)
-        self.resize(160, 10)
-
-    def add_playlist_item(self, playlist_model):
-        icon_path = PLAYLIST_MINE
-        if playlist_model['type'] == 5:
-            icon_path = PLAYLIST_FAVORITE
-        item = QListWidgetItem(QIcon(icon_path), playlist_model['name'])
-        self.addItem(item)
-
-
 class PlaylistWidget(QWidget):
     """自定义widget
 
@@ -53,7 +21,7 @@ class PlaylistWidget(QWidget):
         self.set_layout_prop()
         self.setLayout(self.layout)
 
-        self.debug()
+        # self.debug()
 
     def paintEvent(self, QPaintEvent):
         option = QStyleOption()
@@ -81,24 +49,38 @@ class PlaylistWidget(QWidget):
 
 class PlaylistItem(QFrame):
 
+    signal_text_btn_clicked = pyqtSignal([int], name='text_btn_clicked')  # 发送一个playlist的Id
+
     active_item = []
 
     @classmethod
     def set_active(cls, w):
-
+        """控制当前active的playlistitem
+        :param w: 将被active的playlistitem
+        :return:
+        """
         active_qss = """
             QFrame {
+                border-top: 0px;
+                border-bottom: 0px;
                 padding-left: 11px;
                 border-left:4px solid #993333;
                 background-color: #333;
             }
         """
+        normal_qss = """
+            QFrame {
+                border-top: 0px;
+                border-bottom: 0px;
+                padding-left: 15px;
+                border: 0px solid #993333;
+            }
+        """
 
         if len(cls.active_item) != 0:
-            print(cls.active_item)
-            cls.active_item[0].setObjectName('playlist_container')
+            cls.active_item[0].setStyleSheet(normal_qss)
             cls.active_item.pop()
-        w.setObjectName('playlist_container_active')
+        w.setStyleSheet(active_qss)
         cls.active_item.append(w)
 
     def __init__(self, parent=None):
@@ -110,6 +92,8 @@ class PlaylistItem(QFrame):
         self.icon_width = 16
         self.whole_width = 200
         self.whole_height = 30
+
+        self.data = {}
 
         self.init()
 
@@ -132,13 +116,14 @@ class PlaylistItem(QFrame):
 
     @pyqtSlot()
     def on_text_clicked(self):
-        print('clicked')
         PlaylistItem.set_active(self)
+        self.signal_text_btn_clicked.emit(self.data['id'])  # 信号中包含一个playlist id
 
     def set_playlist_item(self, playlist_model):
+        self.data = playlist_model
         if playlist_model['type'] == 5:
             self.icon_label.setObjectName('playlist_img_favorite')
-            self.setObjectName('playlist_container_active')
+            self.setObjectName('playlist_container')
         else:
             self.icon_label.setObjectName('playlist_img_mine')
 

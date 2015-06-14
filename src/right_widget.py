@@ -42,8 +42,7 @@ class RightWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_widgets_prop(self):
-        path = QFileInfo(HTML_PATH + 'album.html').absoluteFilePath()
-        self.webview.load(QUrl.fromLocalFile(path))
+        pass
 
     def set_layouts_prop(self):
         self.layout.setContentsMargins(0, 0, 0, 0)

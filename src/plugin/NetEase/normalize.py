@@ -47,8 +47,8 @@ def access_music(music_data):
     song = MusicModel(music_data).get_model()
 
     for i, artist in enumerate(song['artists']):
-        artist = ArtistModel(artist).get_model()
-        song['artists'][i] = artist
+        artist_ = ArtistModel(artist).get_model()
+        song['artists'][i] = artist_
 
     song['album'] = AlbumModel(song['album']).get_model()
     return song
@@ -102,7 +102,6 @@ class NetEaseAPI(object):
     def login(self, username, password, phone=False):
         password = password.encode('utf-8')
         password = hashlib.md5(password).hexdigest()
-        print(username, password)
         data = self.ne.login(username, password, phone)
         data, flag = self.check_res(data)
         if flag is not True:
@@ -153,7 +152,8 @@ class NetEaseAPI(object):
         :return:
         """
         data = self.ne.playlist_detail(pid)
-
+        data['uid'] = data['userId']
+        data['type'] = data['specialType']
         for i, track in enumerate(data['tracks']):
             data['tracks'][i] = access_music(track)
         return PlaylistModel(data).get_model()
