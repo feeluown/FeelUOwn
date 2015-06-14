@@ -18,6 +18,7 @@ class WebView(QWebView):
     """这个类的实例可能发出的信号。（也就是说，controller只能绑定这些信号，其他信号尽量不要绑定）
     loadProgress(int)
     """
+    signal_play = pyqtSignal([int])
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -27,9 +28,6 @@ class WebView(QWebView):
         self.js_queue = []  # 保存页面load完，要执行的js代码
 
     def init(self):
-        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
-        self.js_python.play(1)
-
         self.init_singal_binding()
         if MODE == DEBUG:
             self.settings().setAttribute(QWebSettings.DeveloperExtrasEnabled, True)
@@ -43,7 +41,7 @@ class WebView(QWebView):
 
     @pyqtSlot()
     def on_load_finished(self):
-
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
         for js_code in self.js_queue:
             self.page().mainFrame().evaluateJavaScript(js_code)
         self.js_queue.clear()
@@ -54,7 +52,7 @@ class WebView(QWebView):
     def play(self, pid):
         """
         """
-        print('play: ', pid)
+        self.signal_play.emit(pid)
 
 
     def run_js_interface(self, data=None):
@@ -76,4 +74,6 @@ class WebView(QWebView):
         path = QFileInfo(HTML_PATH + 'playlist.html').absoluteFilePath()
         js_code = 'window.fill_playlist(%s)' % data
         self.js_queue.append(js_code)
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
         self.load(QUrl.fromLocalFile(path))
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)

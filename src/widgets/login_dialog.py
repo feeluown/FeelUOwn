@@ -11,9 +11,8 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 from base.network_manger import NetworkManager
 
-from api import Api, get_url_type
+from api import Api
 from base.logger import LOG
-from base.models import url_type
 
 from setting import CACHE_PATH
 
@@ -170,9 +169,6 @@ class LoginDialog(QDialog):
 
     @pyqtSlot(QNetworkReply)
     def on_nm_finished(self, res):
-        u_type = get_url_type(str(res.request().url().toString()))
-        if u_type != url_type[0]:    # url_type: captcha
-            return
         img = QImage()
         img.loadFromData(res.readAll())
         self.captcha_label.setPixmap(QPixmap(img))

@@ -94,6 +94,8 @@ class TopWidget(QWidget):
         self.progress_info.setTextVisible(False)
         
         self.add_to_favorite.setCheckable(True)
+        self.play_pause_btn.setCheckable(True)
+        self.play_pause_btn.setChecked(True)
 
         self.set_object_name()
 

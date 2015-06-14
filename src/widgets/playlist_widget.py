@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 
 from setting import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
-from api import get_url_type
 
 
 class PlaylistWidget(QWidget):

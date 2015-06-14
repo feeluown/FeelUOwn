@@ -110,6 +110,10 @@ QPushButton#play_pause {
     height: 30px;
 }
 
+QPushButton#play_pause:checked {
+    border-image: url(../icons/pause_hover.png);
+}
+
 QPushButton#last {
     border-image: url(../icons/last_hover.png);
     width: 30px;

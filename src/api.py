@@ -2,7 +2,7 @@
 
 
 from plugin.NetEase.normalize import NetEaseAPI as Api
-from plugin.NetEase.normalize import get_url_type
+
 
 """
 class Api(object):
