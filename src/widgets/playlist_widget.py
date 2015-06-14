@@ -85,7 +85,13 @@ class PlaylistItem(QFrame):
 
     @classmethod
     def set_active(cls, w):
+
+        active_qss = """
+            
+        """
+
         if len(cls.active_item) != 0:
+            print(cls.active_item)
             cls.active_item[0].setObjectName('playlist_container')
             cls.active_item.pop()
         w.setObjectName('playlist_container_active')
@@ -94,7 +100,7 @@ class PlaylistItem(QFrame):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.icon_label = QLabel()
-        self.text_label = QPushButton()
+        self.text_btn = QPushButton()
         self.layout = QHBoxLayout()
 
         self.icon_width = 16
@@ -103,13 +109,15 @@ class PlaylistItem(QFrame):
 
         self.init()
 
-    def mousePressEvent(self, event):
-        # PlaylistItem.set_active(self)
-        print('press')
-        return True
+    def init(self):
+        self.set_widgets_props()
+        self.set_layout_props()
+        self.set_objects_name()
+        self.init_signal_binding()
+        self.setLayout(self.layout)
 
-    def mouseDoubleClickEvent(self, event):
-        print('doubel')
+    def init_signal_binding(self):
+        self.text_btn.clicked.connect(self.on_text_clicked)
 
     def paintEvent(self, event):
         option = QStyleOption()
@@ -118,11 +126,10 @@ class PlaylistItem(QFrame):
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
-    def init(self):
-        self.set_widgets_props()
-        self.set_layout_props()
-        self.set_objects_name()
-        self.setLayout(self.layout)
+    @pyqtSlot()
+    def on_text_clicked(self):
+        print('clicked')
+        PlaylistItem.set_active(self)
 
     def set_playlist_item(self, playlist_model):
         if playlist_model['type'] == 5:
@@ -131,20 +138,20 @@ class PlaylistItem(QFrame):
         else:
             self.icon_label.setObjectName('playlist_img_mine')
 
-        metrics = QFontMetrics(self.text_label.font())
-        text = metrics.elidedText(playlist_model['name'], Qt.ElideRight, self.text_label.width()-40)
-        self.text_label.setToolTip(playlist_model['name'])
-        self.text_label.setText(text)
+        metrics = QFontMetrics(self.text_btn.font())
+        text = metrics.elidedText(playlist_model['name'], Qt.ElideRight, self.text_btn.width()-40)
+        self.text_btn.setToolTip(playlist_model['name'])
+        self.text_btn.setText(text)
         # self.text_label.setText(playlist_model['name'])
 
     def set_objects_name(self):
-        self.text_label.setObjectName('playlist_name')
+        self.text_btn.setObjectName('playlist_name')
         self.setObjectName('playlist_container')
 
     def set_widgets_props(self):
         self.icon_label.setFixedSize(self.icon_width, self.icon_width)
         self.setFixedSize(self.whole_width, self.whole_height)
-        self.text_label.setFixedSize(self.whole_width-self.icon_width-10, self.whole_height)
+        self.text_btn.setFixedSize(self.whole_width-self.icon_width-10, self.whole_height)
         # self.text_label.setWordWrap(True)
 
     def set_layout_props(self):
@@ -152,7 +159,7 @@ class PlaylistItem(QFrame):
         self.layout.setSpacing(0)
         self.layout.addWidget(self.icon_label)
         self.layout.addSpacing(10)
-        self.layout.addWidget(self.text_label)
+        self.layout.addWidget(self.text_btn)
 
 
 if __name__ == "__main__":
@@ -165,11 +172,11 @@ if __name__ == "__main__":
 
     w = PlaylistItem()
     w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
-    w.text_label.setText('dsfasdfaname')
+    w.text_btn.setText('dsfasdfaname')
     all.layout.addWidget(w)
     w = PlaylistItem()
     w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
-    w.text_label.setText('dsfasdfaname')
+    w.text_btn.setText('dsfasdfaname')
     all.layout.addWidget(w)
     w.move((QApplication.desktop().width() - w.width())/2, (QApplication.desktop().height() - w.height())/2)
     all.show()
