@@ -87,7 +87,11 @@ class PlaylistItem(QFrame):
     def set_active(cls, w):
 
         active_qss = """
-            
+            QFrame {
+                padding-left: 11px;
+                border-left:4px solid #993333;
+                background-color: #333;
+            }
         """
 
         if len(cls.active_item) != 0:
