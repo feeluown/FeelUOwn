@@ -49,10 +49,10 @@ class WebView(QWebView):
     """给js调用的函数
     """
     @pyqtSlot(int)
-    def play(self, pid):
+    def play(self, mid):
         """
         """
-        self.signal_play.emit(pid)
+        self.signal_play.emit(mid)
 
 
     def run_js_interface(self, data=None):

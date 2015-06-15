@@ -87,7 +87,7 @@ class TopWidget(QWidget):
         self.img_label.setAlignment(Qt.AlignCenter)
         self.time_lcd.setText('00:00')
         self.search_edit.setFixedHeight(25)
-        self.search_edit.setPlaceholderText(u'搜索单曲')
+        self.search_edit.setPlaceholderText(u'暂时不能搜索')
         self.search_edit.setAttribute(Qt.WA_MacShowFocusRect, False)
 
         self.slider_play.setFixedHeight(15)

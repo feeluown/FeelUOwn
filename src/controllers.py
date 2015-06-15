@@ -35,8 +35,8 @@ class MainWidget(QWidget):
         self.ui.setup_ui(self)
 
         self.player = Player()
-        self.current_playlist_widget = MusicTableWidget()
 
+        self.current_playlist_widget = MusicTableWidget()
         self.status = self.ui.status
         self.trayicon = TrayIcon()
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
@@ -66,7 +66,7 @@ class MainWidget(QWidget):
 
     def init(self):
         self.setWindowIcon(QIcon(WINDOW_ICON))
-        self.setWindowTitle('无名音乐')
+        self.setWindowTitle('未名')
         self.trayicon.show()
         self.init_signal_binding()
         self.init_player()
@@ -86,6 +86,10 @@ class MainWidget(QWidget):
         self.ui.top_widget.next_music_btn.clicked.connect(self.next_music)
         self.ui.top_widget.slider_play.sliderMoved.connect(self.seek)
         self.ui.top_widget.show_current_list.clicked.connect(self.show_current_playlist)
+
+        self.current_playlist_widget.signal_play_music.connect(self.play)
+        self.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
+
         self.play_or_pause_btn.clicked.connect(self.play_or_pause)
 
         self.webview.loadProgress.connect(self.on_webview_progress)
@@ -95,6 +99,7 @@ class MainWidget(QWidget):
         self.player.stateChanged.connect(self.on_player_state_changed)
         self.player.positionChanged.connect(self.on_player_position_changed)
         self.player.durationChanged.connect(self.on_player_duration_changed)
+        self.player.signal_playlist_is_empty.connect(self.on_playlist_empty)
 
         self.network_manger.finished.connect(self.access_network_queue)
 
@@ -187,7 +192,8 @@ class MainWidget(QWidget):
 
     @pyqtSlot()
     def play_or_pause(self):
-        if self.player.mediaStatus() == QMediaPlayer.NoMedia:
+        if self.player.mediaStatus() == QMediaPlayer.NoMedia or \
+                self.player.mediaStatus() == QMediaPlayer.UnknownMediaStatus:
             self.play_or_pause_btn.setChecked(True)     # 暂停状态
             return
         self.player.play_or_pause()
@@ -228,8 +234,8 @@ class MainWidget(QWidget):
         self.progress.setValue(percent)
 
     @pyqtSlot(int)
-    def play(self, pid=None):
-        songs = self.api.get_song_detail(pid)
+    def play(self, mid=None):
+        songs = self.api.get_song_detail(mid)
         if len(songs) == 0:
             self.status.showMessage(u'这首音乐在地震中消失了')
             return
@@ -251,6 +257,10 @@ class MainWidget(QWidget):
 
         self.current_playlist_widget.add_item_from_model(music_model)
 
+        self.current_playlist_widget.focus_cell_by_mid(music_model['id'])
+
+        self.trayicon.showMessage(u'正在播放: ', music_model['name'])
+
     @pyqtSlot(int)
     def on_player_duration_changed(self, duration):
         self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
@@ -261,6 +271,16 @@ class MainWidget(QWidget):
             self.play_or_pause_btn.setChecked(False)
         else:
             self.play_or_pause_btn.setChecked(True)
+
+    @pyqtSlot(int)
+    def remove_music_from_list(self, mid):
+        self.player.remove_music(mid)
+
+    @pyqtSlot()
+    def on_playlist_empty(self):
+        self.ui.top_widget.text_label.setText(u'当前没有歌曲播放')
+        self.ui.top_widget.time_lcd.setText('00:00')
+        self.ui.top_widget.play_pause_btn.setChecked(True)
 
 
 if __name__ == "__main__":

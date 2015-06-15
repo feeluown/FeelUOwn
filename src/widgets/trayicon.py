@@ -17,22 +17,26 @@ class TrayIcon(QSystemTrayIcon):
         self.__menu = QMenu()
         self.__set_actions()
         self.__set_menu()
+        self.__init_prop()
+
+    def __init_prop(self):
+        self.__pause.setIcon(QIcon(ICON_PATH + "pause.png"))
 
     def __set_actions(self):
         self.__user = QAction(self.__menu)  #当前歌曲
         self.__user.setIcon(QIcon(ICON_PATH + "login.png"))
         ###############################################
-        self.__pause = QAction("Pause", self.__menu)    #暂停
+        self.__pause = QAction(u"播放", self.__menu)    #暂停
         self.__pause.triggered.connect(self.__play_or_pause)
-        self.__last = QAction("Last Song", self.__menu)     #上一曲
+        self.__last = QAction(u"上一首", self.__menu)     #上一曲
         self.__last.setIcon(QIcon(ICON_PATH + "last.png"))
         self.__last.triggered.connect(self.player.play_next)
-        self.__next = QAction("Next Song", self.__menu)     #下一曲
+        self.__next = QAction(u"下一首", self.__menu)     #下一曲
         self.__next.setIcon(QIcon(ICON_PATH + "next.png"))
         self.__next.triggered.connect(self.player.play_last)
         ###############################################
         self.__mode = QMenu(self.__menu)     #播放模式
-        self.__mode.setTitle("Play Mode")
+        self.__mode.setTitle(u"播放模式")
         self.__minimize = QMenu(self.__menu)     #最小化
         self.__minimize.setTitle("Minimize")
         ###############################################
@@ -60,11 +64,11 @@ class TrayIcon(QSystemTrayIcon):
         if self.player.state() == QMediaPlayer.PlayingState:
             self.player.pause()
             self.__pause.setIcon(QIcon(ICON_PATH + "pause.png"))
+            self.__pause.setText('play')
         elif self.player.state() == QMediaPlayer.PausedState:
             self.player.play()
             self.__pause.setIcon(QIcon(ICON_PATH + "play.png"))
-        else:
-            pass
+            self.__pause.setText('pause')
 
     def __set_menu(self):
         self.__menu.addAction(self.__pause)

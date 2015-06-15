@@ -186,6 +186,16 @@ QPushButton#show_current_list:hover {
     background-color: #CCC;
     border-radius: 15px;
 }
+
+QPushButton#remove_music {
+    border-image: url(../icons/trash_btn.png);
+    background-color: transparent;
+}
+
+QPushButton#remove_music:hover {
+    border-image: url(../icons/trash_btn_hover.png);
+}
+
 /* ****************************** */
 /* QLineEdit */
 /* ****************************** */

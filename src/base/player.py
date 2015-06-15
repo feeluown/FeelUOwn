@@ -20,11 +20,12 @@ class Player(QMediaPlayer):
     """
 
     signal_player_media_changed = pyqtSignal([dict], [QMediaContent])
+    signal_playlist_is_empty = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
         self.__music_list = list()      # 和播放列表同步，保存歌曲名，歌手等信息。（里面的对象是music_model）
-        self.__cache_list = list()      # key:music_id, value: media_content
+        self.__cache_list = list()      # {id:music_id, content: media_content}
         self.__playlist = QMediaPlaylist()  # 播放列表。里面的对象是qmediacontent
 
         self.setPlaylist(self.__playlist)
@@ -48,17 +49,40 @@ class Player(QMediaPlayer):
         self.__playlist.setPlaybackMode(mode)
 
     def add_music(self, music_model):
+        """向当前播放列表中添加一首音乐
+
+        1. 如果这首音乐已经存在于列表当中，返回Fasle 和 index.(添加失败)
+        2. 如果不存在，返回True 和 index=length-1.(添加成功)
+
+        这个函数保证了当前播放列表的歌曲不会重复
+
+        :param music_model:
+        :return:
+        """
+        if music_model in self.__music_list:
+            return False, self.__music_list.index(music_model)
         self.__music_list.append(music_model)
         media_content = self.get_media_content_from_model(music_model)
         self.__playlist.addMedia(media_content)
+        length = len(self.__music_list)
+        index = length - 1
+        return True, index
 
-    def remove_music(self, music_id):
+    def remove_music(self, mid):
         for i, music_model in enumerate(self.__music_list):
-            if music_id in music_model['id']:
+            if mid == music_model['id']:
                 self.__music_list.remove(music_model)
-                return self.__playlist.removeMedia(i)
+                if self.__playlist.currentIndex() == i:
+                    self.stop()
+                    self.__playlist.next()
+                self.__playlist.removeMedia(i)
             else:
                 return False
+
+        for cache in self.__cache_list:
+            if mid == cache['id']:
+                self.__cache_list.remove(cache)
+                return True
 
     def get_media_content_from_model(self, music_model):
         # if music_model['id'] in downloaded
@@ -66,41 +90,61 @@ class Player(QMediaPlayer):
 
         # 判断之前是否播放过，是否已经缓存下来，以后需要改变缓存的算法
         for i, each in enumerate(self.__cache_list):
-            print(mid, each['id'])
             if mid == each['id']:
                 LOG.info(music_model['name'] + ' has been cached')
                 return self.__cache_list[i]['content']
 
+        return self.cache_music(music_model)
+
+    def cache_music(self, music_model):
         url = music_model['url']
         media_content = QMediaContent(QUrl(url))
-
         cache = dict()
-        cache['id'] = mid
+        cache['id'] = music_model['id']
         cache['content'] = media_content
         self.__cache_list.append(cache)
-
-        return media_content
-
-    def cache_music(self, music_index):
-        music_model = self.__music_list[music_index]
-        # if mid in downloaded
-        media_content = self.get_media_content_from_model(music_model)
         return media_content
 
     def set_music_list(self, music_list):
         self.__music_list = music_list
 
+    def is_music_in_list(self, mid):
+        """
+        :param mid: 音乐的ID
+        :return:
+        """
+        for music in self.__music_list:
+            if mid == music['id']:
+                return True
+        return False
+
     def play(self, music_model=None):
+        """播放一首音乐
+        1. 如果music_model 不是None的话，就尝试将它加入当前播放列表，加入成功返回True, 否则返回False
+        :param music_model:
+        :return:
+        """
         if music_model is None:
             super().play()
-            return
+            return False
 
         # 播放一首特定的音乐
-        self.add_music(music_model)
-        super().stop()
-        self.__playlist.setCurrentIndex(len(self.__music_list) - 1)
-        super().play()
+        flag, index = self.add_music(music_model)
 
+        super().stop()
+        self.__playlist.setCurrentIndex(index)
+        super().play()
+        return flag
+
+    def when_playlist_empty(func):
+        def wrapper(self, *args, **kwargs):
+            if self.__playlist.isEmpty():
+                self.signal_playlist_is_empty.emit()
+                return
+            func(*args, **kwargs)
+        return wrapper
+
+    @when_playlist_empty
     def play_or_pause(self):
         if self.state() == QMediaPlayer.PlayingState:
             self.pause()
@@ -109,14 +153,17 @@ class Player(QMediaPlayer):
         else:
             pass
 
+    @when_playlist_empty
     def play_next(self):
         self.__playlist.next()
 
+    @when_playlist_empty
     def play_last(self):
         self.__playlist.previous()
 
     @pyqtSlot(int)
     def on_current_index_changed(self, index):
+        print(index)
         music_model = self.__music_list[index]
         self.signal_player_media_changed.emit(music_model)
 
