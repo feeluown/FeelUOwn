@@ -11,6 +11,7 @@ from PyQt5.QtNetwork import *
 from PyQt5.QtMultimedia import *
 
 from widgets.login_dialog import LoginDialog
+from widgets.music_table_widget import MusicTableWidget
 from widgets.playlist_widget import PlaylistWidget, PlaylistItem
 
 from views import UiMainWidget
@@ -33,6 +34,8 @@ class MainWidget(QWidget):
         self.ui.setup_ui(self)
 
         self.player = Player()
+        self.current_playlist_widget = MusicTableWidget()
+
         self.status = self.ui.status
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
         self.progress = self.ui.top_widget.progress_info
@@ -63,6 +66,7 @@ class MainWidget(QWidget):
         # self.setWindowIcon(QIcon(WINDOW_ICON))
         self.init_signal_binding()
         self.init_player()
+        self.init_current_playlist_widget()
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.resize(960, 580)
 
@@ -77,6 +81,7 @@ class MainWidget(QWidget):
         self.ui.top_widget.last_music_btn.clicked.connect(self.last_music)
         self.ui.top_widget.next_music_btn.clicked.connect(self.next_music)
         self.ui.top_widget.slider_play.sliderMoved.connect(self.seek)
+        self.ui.top_widget.show_current_list.clicked.connect(self.show_current_playlist)
         self.play_or_pause_btn.clicked.connect(self.play_or_pause)
 
         self.webview.loadProgress.connect(self.on_webview_progress)
@@ -88,6 +93,10 @@ class MainWidget(QWidget):
         self.player.durationChanged.connect(self.on_player_duration_changed)
 
         self.network_manger.finished.connect(self.access_network_queue)
+
+    def init_current_playlist_widget(self):
+        self.current_playlist_widget.resize(500, 200)
+        self.current_playlist_widget.close()
 
     """这部分写一些交互逻辑
     """
@@ -110,7 +119,12 @@ class MainWidget(QWidget):
         :param res:
         :return:
         """
-        return
+        img = QImage()
+        img.loadFromData(res.readAll())
+        pixmap = QPixmap(img)
+        self.ui.top_widget.login_btn.close()
+        self.ui.top_widget.login_label.show()
+        self.ui.top_widget.login_label.setPixmap(pixmap.scaled(55, 55))
 
     def set_music_icon(self, res):
         img = QImage()
@@ -118,6 +132,22 @@ class MainWidget(QWidget):
         pixmap = QPixmap(img)
         self.ui.top_widget.img_label.setPixmap(pixmap)
         self.setWindowIcon(QIcon(pixmap))
+
+    def show_current_playlist(self):
+        self.init_current_playlist_widget()
+        width = self.current_playlist_widget.width()
+        height = self.current_playlist_widget.height()
+        p_width = self.width()
+
+        geometry = self.geometry()
+        p_x, p_y = geometry.x(), geometry.y()
+
+        x = p_x + p_width - width
+        y = self.ui.top_widget.height() + p_y - 8
+
+        self.current_playlist_widget.setGeometry(x, y, 500, 300)
+        self.current_playlist_widget.show()
+        self.current_playlist_widget.setFocus(True)
 
     """某些操作
     """
@@ -214,6 +244,8 @@ class MainWidget(QWidget):
 
         self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl'])))
         self.network_queue.put(self.set_music_icon)    # 更换任务栏图标
+
+        self.current_playlist_widget.add_item_from_model(music_model)
 
     @pyqtSlot(int)
     def on_player_duration_changed(self, duration):
