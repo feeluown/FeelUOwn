@@ -18,6 +18,7 @@ Name=NetEaseMusic
 Comment=NetEaseMusic Launcher
 Exec=$currentPath/src/main.py
 Icon=$currentPath/icons/format.png
+Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
 StartupNotify=true
 " > $desktopFilename
