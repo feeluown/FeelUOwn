@@ -106,7 +106,8 @@ class Player(QMediaPlayer):
             self.pause()
         elif self.state() == QMediaPlayer.PausedState:
             self.play()
-        return
+        else:
+            pass
 
     def play_next(self):
         self.__playlist.next()
