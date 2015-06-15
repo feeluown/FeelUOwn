@@ -449,3 +449,12 @@ QToolTip {
     background-color: transparent;
     color: #993333;
 }
+
+
+/* ****************************** */
+/* QToolTip */
+/* ****************************** */
+QMenu {
+    background-color: #CCC;
+    color: #222;
+}

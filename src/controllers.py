@@ -11,6 +11,7 @@ from PyQt5.QtNetwork import *
 from PyQt5.QtMultimedia import *
 
 from widgets.login_dialog import LoginDialog
+from widgets.trayicon import TrayIcon
 from widgets.music_table_widget import MusicTableWidget
 from widgets.playlist_widget import PlaylistWidget, PlaylistItem
 
@@ -37,6 +38,7 @@ class MainWidget(QWidget):
         self.current_playlist_widget = MusicTableWidget()
 
         self.status = self.ui.status
+        self.trayicon = TrayIcon()
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
         self.progress = self.ui.top_widget.progress_info
         self.network_manger = NetworkManager()
@@ -53,7 +55,7 @@ class MainWidget(QWidget):
     def paintEvent(self, QPaintEvent):
         """
         self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.
+        paintEvent is reimplemented.y
         at the same time, if self is derived from QFrame, this isn't needed.
         """
         option = QStyleOption()
@@ -63,7 +65,9 @@ class MainWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def init(self):
-        # self.setWindowIcon(QIcon(WINDOW_ICON))
+        self.setWindowIcon(QIcon(WINDOW_ICON))
+        self.setWindowTitle('无名音乐')
+        self.trayicon.show()
         self.init_signal_binding()
         self.init_player()
         self.init_current_playlist_widget()

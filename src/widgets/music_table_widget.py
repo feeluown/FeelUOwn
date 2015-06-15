@@ -42,11 +42,11 @@ class MusicTableWidget(QTableWidget):
         artist_item = QTableWidgetItem(artist_name)
 
         duration = music_model['duration']
-        m = duration / 60000
-        s = (duration % 60000) / 1000
+        m = int(duration / 60000)
+        s = int((duration % 60000) / 1000)
         duration = str(m) + ':' + str(s);
         duration_item = QTableWidgetItem(duration)
-        
+
         music_item.setData(Qt.UserRole, music_model)
         row = self.rowCount()
         self.setRowCount(row + 1)
