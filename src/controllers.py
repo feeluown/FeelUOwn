@@ -116,7 +116,7 @@ class MainWidget(QWidget):
         img = QImage()
         img.loadFromData(res.readAll())
         pixmap = QPixmap(img)
-        self.ui.top_widget.img_label.setPixmap(pixmap)
+        self.ui.top_widget.img_label.setPixmap(pixmap.scaledToWidth(self.ui.top_widget.img_label.width()))
         self.setWindowIcon(QIcon(pixmap))
 
     """某些操作
