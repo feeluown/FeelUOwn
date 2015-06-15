@@ -27,7 +27,9 @@ class TopWidget(QWidget):
         self.time_lcd = QLabel()
         self.search_edit = QLineEdit()
         self.login_btn = QPushButton()
+        self.login_label = QLabel()
         self.help_btn = QPushButton()
+        self.show_current_list = QPushButton()
         self.slider_play = QSlider()
         self.progress_info = QProgressBar()
         self.edit_layout = QHBoxLayout()
@@ -72,8 +74,11 @@ class TopWidget(QWidget):
 
         self.login_btn.setToolTip(u'登录')
 
-        self.login_btn.setFixedSize(25, 25)
-        self.help_btn.setFixedSize(25, 25)
+        self.login_label.setFixedSize(55, 55)
+        self.login_btn.setFixedSize(55, 55)
+        self.help_btn.setFixedSize(30, 30)
+        self.show_current_list.setFixedSize(30, 30)
+        self.show_current_list.setToolTip(u'显示当前播放列表')
 
         self.text_label.setText(u'未播放任何歌曲')
         self.text_label.setAlignment(Qt.AlignCenter)
@@ -97,6 +102,8 @@ class TopWidget(QWidget):
         self.play_pause_btn.setCheckable(True)
         self.play_pause_btn.setChecked(True)
 
+        self.login_label.close()
+
         self.set_object_name()
 
     def set_object_name(self):
@@ -104,6 +111,7 @@ class TopWidget(QWidget):
         self.last_music_btn.setObjectName('last')
         self.next_music_btn.setObjectName('next')
         self.login_btn.setObjectName('login_btn')
+        self.login_label.setObjectName('login_label')
         self.help_btn.setObjectName('help_btn')
         self.text_label.setObjectName('music_title')
         self.time_lcd.setObjectName('time_label')
@@ -111,6 +119,7 @@ class TopWidget(QWidget):
         self.slider_play.setObjectName('slider_play')
         self.progress_info.setObjectName('progress_info')
         self.img_label.setObjectName('album_label')
+        self.show_current_list.setObjectName('show_current_list')
 
     def set_layouts_prop(self):
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -143,12 +152,14 @@ class TopWidget(QWidget):
         self.top_layout.addWidget(self.next_music_btn)
         self.top_layout.addSpacing(30)  # make table widget
         self.top_layout.addLayout(self.center_layout)
+        self.top_layout.addWidget(self.login_btn)
+        self.top_layout.addWidget(self.login_label)
         self.top_layout.addSpacing(30)  # make table widget
         self.top_layout.addWidget(self.search_edit)
         self.top_layout.addSpacing(20)
-        self.top_layout.addWidget(self.help_btn)
+        self.top_layout.addWidget(self.show_current_list)
         self.top_layout.addSpacing(5)
-        self.top_layout.addWidget(self.login_btn)
+        self.top_layout.addWidget(self.help_btn)
         self.top_layout.addSpacing(10)
 
         self.bottom_layout.addWidget(self.progress_info)
