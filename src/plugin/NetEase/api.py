@@ -120,7 +120,7 @@ class NetEase:
 
     # 歌单详情
     def playlist_detail(self, playlist_id):
-        action = 'http://music.163.com/api/playlist/detail?id=' + str(playlist_id)
+        action = 'http://music.163.com/api/playlist/detail?id=' + str(playlist_id) + '&offset=0&total=true&limit=1001'
         data = self.httpRequest('GET', action)
         return data['result']
 

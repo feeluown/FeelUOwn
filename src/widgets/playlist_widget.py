@@ -76,11 +76,15 @@ class PlaylistItem(QFrame):
             }
         """
 
+
         if len(cls.active_item) != 0:
+            if w is cls.active_item[0]:     # 判断是否重复点击
+                return False
             cls.active_item[0].setStyleSheet(normal_qss)
             cls.active_item.pop()
         w.setStyleSheet(active_qss)
         cls.active_item.append(w)
+        return True
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -115,8 +119,8 @@ class PlaylistItem(QFrame):
 
     @pyqtSlot()
     def on_text_clicked(self):
-        PlaylistItem.set_active(self)
-        self.signal_text_btn_clicked.emit(self.data['id'])  # 信号中包含一个playlist id
+        if PlaylistItem.set_active(self):
+            self.signal_text_btn_clicked.emit(self.data['id'])  # 信号中包含一个playlist id
 
     def set_playlist_item(self, playlist_model):
         self.data = playlist_model

@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import *
 
 from base.common import singleton
 from base.logger import LOG
-import setting
 
 
 @singleton
@@ -67,6 +66,7 @@ class Player(QMediaPlayer):
 
         # 判断之前是否播放过，是否已经缓存下来，以后需要改变缓存的算法
         for i, each in enumerate(self.__cache_list):
+            print(mid, each['id'])
             if mid == each['id']:
                 LOG.info(music_model['name'] + ' has been cached')
                 return self.__cache_list[i]['content']

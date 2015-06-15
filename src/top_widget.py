@@ -78,7 +78,7 @@ class TopWidget(QWidget):
         self.text_label.setText(u'未播放任何歌曲')
         self.text_label.setAlignment(Qt.AlignCenter)
         self.text_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.img_label.setFixedSize(40, 40)
+        self.img_label.setFixedSize(55, 55)
         self.img_label.setAlignment(Qt.AlignCenter)
         self.time_lcd.setText('00:00')
         self.search_edit.setFixedHeight(25)
@@ -110,6 +110,7 @@ class TopWidget(QWidget):
         self.add_to_favorite.setObjectName('add_to_favorite')
         self.slider_play.setObjectName('slider_play')
         self.progress_info.setObjectName('progress_info')
+        self.img_label.setObjectName('album_label')
 
     def set_layouts_prop(self):
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -117,13 +118,15 @@ class TopWidget(QWidget):
 
         self.center_layout.addSpacing(10)
         self.center_layout.addWidget(self.img_label)
+        self.center_layout.addSpacing(0)
 
+        self.center_layout_l_top.addSpacing(10)
         self.center_layout_l_top.addWidget(self.time_lcd)
         self.center_layout_l_top.addStretch(1)
         self.center_layout_l_top.addWidget(self.text_label, 1)
         self.center_layout_l_top.addStretch(1)
         self.center_layout_l_top.addWidget(self.add_to_favorite)
-        self.center_layout_l_top.addSpacing(3)
+        self.center_layout_l_top.addSpacing(10)
 
         self.center_layout_l.addWidget(self.slider_play)
         self.center_layout_l.addStretch(1)

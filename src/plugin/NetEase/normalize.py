@@ -1,7 +1,8 @@
 # -*- coding: utf8 -*-
 
-import hashlib
+import hashlib, time
 
+from base.logger import LOG
 from base.common import singleton
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel
@@ -58,6 +59,18 @@ def access_user(user_data):
     user_data['username'] = user_data['profile']['nickname']
     user = UserModel(user_data).get_model()
     return user
+
+
+def web_cache(func):
+    data = {}
+
+    def cache(this, *args, **kw):
+        if args[0] in data:
+            LOG.info('playlist: ' + data[args[0]]['name'] + ' has been cached')
+        else:
+            data[args[0]] = func(this, *args, **kw)
+        return data[args[0]]
+    return cache
 
 
 @singleton
@@ -131,18 +144,24 @@ class NetEaseAPI(object):
             songs.append(song)
         return songs
 
+    @web_cache
     def get_playlist_detail(self, pid):
         """貌似这个请求会比较慢
 
         :param pid:
         :return:
         """
-        data = self.ne.playlist_detail(pid)
+        LOG.info(time.ctime())
+        data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时严重
+        LOG.info(time.ctime())
+
         data['uid'] = data['userId']
         data['type'] = data['specialType']
+
         for i, track in enumerate(data['tracks']):
             data['tracks'][i] = access_music(track)
-        return PlaylistModel(data).get_model()
+        model = PlaylistModel(data).get_model()
+        return model
 
     # @login_required     # 装饰器，挺好玩(装逼)的一个东西
     def get_user_playlist(self):

@@ -15,7 +15,6 @@ from controllers import MainWidget
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
-    app.setWindowIcon(QIcon(ICON_PATH + 'format.ico'))
     path = sys.path[0]
     os.chdir(path)
 

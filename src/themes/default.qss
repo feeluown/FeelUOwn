@@ -243,6 +243,11 @@ QLabel#playlist_img_mine {
     border-image: url(../icons/playlist_mine.png);
 }
 
+QLabel#album_label {
+    border: 0px solid #993333;
+    position: absolute;
+    background-color: #333;
+}
 
 /* ****************************** */
 /* QScrollBar */

@@ -15,6 +15,8 @@ class MyWeb():
     def __init__(self):
         self.header = {
             'Host': 'music.163.com',
+            'Connection': 'keep-alive',
+            'cache-control': 'private',
             'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
             'Referer': 'http://music.163.com/song?id=26599525',
             "User-Agent": "Opera/8.0 (Macintosh; PPC Mac OS X; U; en)"

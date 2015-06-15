@@ -60,7 +60,8 @@ th {
 
 @media screen and (max-width: 768px) {
     .info_layout {
-        margin-top: 20px;
+        margin-top: 10px;
+        padding-bottom: 10px;
     }
 
     .album {

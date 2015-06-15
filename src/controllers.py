@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 __author__ = 'cosven'
 
-import sys
+import sys, time
 from queue import Queue
 
 from PyQt5.QtGui import *
@@ -21,6 +21,7 @@ from base.network_manger import NetworkManager
 from base.logger import LOG
 
 from api import Api
+from setting import WINDOW_ICON
 
 
 class MainWidget(QWidget):
@@ -59,6 +60,7 @@ class MainWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def init(self):
+        # self.setWindowIcon(QIcon(WINDOW_ICON))
         self.init_signal_binding()
         self.init_player()
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
@@ -74,6 +76,7 @@ class MainWidget(QWidget):
         self.ui.top_widget.login_btn.clicked.connect(self.pop_login)
         self.ui.top_widget.last_music_btn.clicked.connect(self.last_music)
         self.ui.top_widget.next_music_btn.clicked.connect(self.next_music)
+        self.ui.top_widget.slider_play.sliderMoved.connect(self.seek)
         self.play_or_pause_btn.clicked.connect(self.play_or_pause)
 
         self.webview.loadProgress.connect(self.on_webview_progress)
@@ -81,6 +84,8 @@ class MainWidget(QWidget):
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
+        self.player.positionChanged.connect(self.on_player_position_changed)
+        self.player.durationChanged.connect(self.on_player_duration_changed)
 
         self.network_manger.finished.connect(self.access_network_queue)
 
@@ -107,6 +112,13 @@ class MainWidget(QWidget):
         """
         return
 
+    def set_music_icon(self, res):
+        img = QImage()
+        img.loadFromData(res.readAll())
+        pixmap = QPixmap(img)
+        self.ui.top_widget.img_label.setPixmap(pixmap)
+        self.setWindowIcon(QIcon(pixmap))
+
     """某些操作
     """
     @pyqtSlot(QNetworkReply)
@@ -119,6 +131,11 @@ class MainWidget(QWidget):
 
     """这部分写 pyqtSlot
     """
+
+    @pyqtSlot(int)
+    def seek(self, seconds):
+        self.player.setPosition(seconds * 1000)
+
     @pyqtSlot()
     def pop_login(self):
         if self.state['is_login'] is False:
@@ -141,6 +158,12 @@ class MainWidget(QWidget):
             return
         self.player.play_or_pause()
 
+    @pyqtSlot(int)
+    def on_player_position_changed(self, ms):
+        time_text = QTime(0, (ms / 60000) % 60, (ms / 1000) % 60)
+        self.ui.top_widget.time_lcd.setText(time_text.toString())
+        self.ui.top_widget.slider_play.setValue(ms / 1000)
+
     @pyqtSlot(dict)
     def on_login_success(self, data):
         """
@@ -160,7 +183,9 @@ class MainWidget(QWidget):
     @pyqtSlot(int)
     def on_playlist_btn_clicked(self, pid):
         self.progress.setValue(0)   # 恢复0的状态
-        playlist_detail = self.api.get_playlist_detail(pid)
+
+        playlist_detail = self.api.get_playlist_detail(pid)  # 这个操作特别耗时
+
         self.progress.setValue(50)  # 暂时设为50，告诉用户它的操作成功了一半,但是之后的操作会再次归零
         self.webview.load_playlist(playlist_detail)
 
@@ -184,6 +209,15 @@ class MainWidget(QWidget):
             artists_name += artist['name']
         title = music_model['name'] + ' - ' + artists_name
         self.ui.top_widget.text_label.setText(title)
+        self.ui.top_widget.time_lcd.setText('00:00')
+        self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
+
+        self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl'])))
+        self.network_queue.put(self.set_music_icon)    # 更换任务栏图标
+
+    @pyqtSlot(int)
+    def on_player_duration_changed(self, duration):
+        self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
 
     @pyqtSlot(QMediaPlayer.State)
     def on_player_state_changed(self, state):
