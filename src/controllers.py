@@ -130,7 +130,7 @@ class MainWidget(QWidget):
         playlists = self.api.get_user_playlist()
         for playlist in playlists:
 
-            self.status.showMessage(u'正在缓存您的歌单列表', 10000)
+            # self.status.showMessage(u'正在缓存您的歌单列表', 10000)  # 会让程序整体等待10s
             pid = playlist['id']
             start_new_thread(self.api.get_playlist_detail, (pid, ))
 
@@ -167,7 +167,7 @@ class MainWidget(QWidget):
     def show_current_playlist(self):
         self.current_playlist_widget.resize(500, 200)
         if self.current_playlist_widget.isVisible():
-            self.current_playlist_widget.close()
+            self.current_playlist_widget.hide()
 
         width = self.current_playlist_widget.width()
         height = self.current_playlist_widget.height()
@@ -280,6 +280,8 @@ class MainWidget(QWidget):
 
     @pyqtSlot(dict)
     def on_player_media_changed(self, music_model):
+        self.player.stop()
+        self.player.play()
         artists = music_model['artists']
         artists_name = ''
         for artist in artists:
@@ -343,6 +345,7 @@ class MainWidget(QWidget):
                 return
             else:
                 self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲')
+                return
 
     @pyqtSlot(int)
     def on_web_load_progress(self, progress):

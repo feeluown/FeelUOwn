@@ -31,6 +31,7 @@ class MusicTableWidget(QTableWidget):
 
     def __init_signal_binding(self):
         self.cellDoubleClicked.connect(self.on_cell_double_clicked)
+        self.cellClicked.connect(self.on_remove_music_btn_clicked)
 
     def __set_prop(self):
         self.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
@@ -78,27 +79,37 @@ class MusicTableWidget(QTableWidget):
         self.setItem(row, 2, album_item)
         self.setItem(row, 3, duration_item)
 
-        btn = QPushButton(self)
-
+        btn = QLabel()
+        btn.setToolTip(u'从当前播放列表中移除')
         btn.setObjectName('remove_music')   # 为了应用QSS，不知道这种实现好不好
         self.setCellWidget(row, 4, btn)
-        btn.clicked.connect(self.__signal_mapper.map)
-        self.__signal_mapper.setMapping(btn, music_model['id'])
-        self.__signal_mapper.mapped.connect(self.on_remove_music_btn_clicked)
+        # btn.clicked.connect(self.__signal_mapper.map)
+        # self.__signal_mapper.setMapping(btn, music_model['id'])
+        # self.__signal_mapper.mapped.connect(self.on_remove_music_btn_clicked)
         self.setRowHeight(row, 30)
         self.setColumnWidth(4, 30)
 
-        self.__row_mid_map.append(music_model['id'])
+        self.__row_mid_map
+        row_mid = dict()
+        row_mid['mid'] = music_model['id']
+        row_mid['row'] = row
+        self.__row_mid_map.append(row_mid)
+
         return True
 
     def is_item_already_in(self, mid):
-        if mid in self.__row_mid_map:
-            return self.__row_mid_map.index(mid)
-        else:
-            return False
+        for each in self.__row_mid_map:
+            if each['mid'] == mid:
+                return each['row']
+
+        return False
 
     def focus_cell_by_mid(self, mid):
-        row = self.__row_mid_map.index(mid)
+        row = 0
+        for each in self.__row_mid_map:
+            if each['mid'] == mid:
+                row = each['row']
+
         self.setCurrentCell(row, 0)
         self.setCurrentItem(self.item(row, 0))
         self.scrollToItem(self.item(row, 0))
@@ -109,8 +120,12 @@ class MusicTableWidget(QTableWidget):
         music_model = item.data(Qt.UserRole)
         self.signal_play_music.emit(music_model['id'])
 
-    @pyqtSlot(int)
-    def on_remove_music_btn_clicked(self, mid):
-        row = self.__row_mid_map.index(mid)
+    @pyqtSlot(int, int)
+    def on_remove_music_btn_clicked(self, row, column):
+        if column != 4:
+            return
+        item = self.item(row, 0)
+        data = item.data(Qt.UserRole)
+        mid = data['id']
         self.removeRow(row)
         self.signal_remove_music_from_list.emit(mid)

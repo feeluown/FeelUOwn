@@ -72,13 +72,14 @@ class Player(QMediaPlayer):
     def remove_music(self, mid):
         for i, music_model in enumerate(self.__music_list):
             if mid == music_model['id']:
-                self.__music_list.remove(music_model)
                 if self.__playlist.currentIndex() == i:
+
                     self.stop()
                     self.__playlist.next()
+                    self.play()
                 self.__playlist.removeMedia(i)
-            else:
-                return False
+                self.__music_list.pop(i)
+                break
 
         for cache in self.__cache_list:
             if mid == cache['id']:
@@ -142,7 +143,7 @@ class Player(QMediaPlayer):
             if self.__playlist.isEmpty():
                 self.signal_playlist_is_empty.emit()
                 return
-            func(self, *args, **kwargs)
+            return func(self, *args, **kwargs)
         return wrapper
 
     def set_play_mode_random(self):
@@ -173,7 +174,6 @@ class Player(QMediaPlayer):
 
     @pyqtSlot(int)
     def on_current_index_changed(self, index):
-        print(index)
         music_model = self.__music_list[index]
         self.signal_player_media_changed.emit(music_model)
 

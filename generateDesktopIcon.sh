@@ -23,7 +23,15 @@ Terminal=false
 StartupNotify=true
 " > $desktopFilename
 echo "尝试生成桌面图标..."
-sudo cp $desktopFilename ~/Desktop
+if [ ! -d "~/桌面" ];then
+    echo "猜测：中文系统"
+    sudo cp $desktopFilename ~/桌面
+fi
+if [ ! -d "~/Desktop" ];then
+    echo "猜测：英文系统"
+    sudo cp $desktopFilename ~/Desktop
+fi
+
 
 echo "让程序可以被系统搜索..."
 sudo cp $desktopFilename ~/.local/share/applications/

@@ -187,10 +187,6 @@ QPushButton#show_current_list:hover {
     border-radius: 15px;
 }
 
-QPushButton#remove_music {
-    border-image: url(../icons/trash_btn.png);
-    background-color: transparent;
-}
 
 QPushButton#remove_music:hover {
     border-image: url(../icons/trash_btn_hover.png);
@@ -263,6 +259,11 @@ QLabel#album_label {
     border: 0px solid #993333;
     position: absolute;
     background-color: #333;
+}
+
+QLabel#remove_music {
+    border-image: url(../icons/trash_btn.png);
+    background-color: transparent;
 }
 
 /* ****************************** */
