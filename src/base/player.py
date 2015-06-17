@@ -142,7 +142,7 @@ class Player(QMediaPlayer):
             if self.__playlist.isEmpty():
                 self.signal_playlist_is_empty.emit()
                 return
-            func(*args, **kwargs)
+            func(self, *args, **kwargs)
         return wrapper
 
     def set_play_mode_random(self):

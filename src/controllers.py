@@ -165,7 +165,10 @@ class MainWidget(QWidget):
         self.setWindowIcon(QIcon(pixmap))
 
     def show_current_playlist(self):
-        self.init_current_playlist_widget()
+        self.current_playlist_widget.resize(500, 200)
+        if self.current_playlist_widget.isVisible():
+            self.current_playlist_widget.close()
+
         width = self.current_playlist_widget.width()
         height = self.current_playlist_widget.height()
         p_width = self.width()
