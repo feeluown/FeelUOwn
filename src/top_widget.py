@@ -43,6 +43,7 @@ class TopWidget(QWidget):
         self.set_me()
         self.set_widgets_prop()
         self.set_layouts_prop()
+        self.init_widget()
 
     def paintEvent(self, QPaintEvent):
         """
@@ -55,6 +56,10 @@ class TopWidget(QWidget):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def init_widget(self):
+        self.login_label.close()
+        self.add_to_favorite.close()
 
     def set_me(self):
         # it will conflict with stylesheet, stylesheet has the priority
@@ -87,7 +92,7 @@ class TopWidget(QWidget):
         self.img_label.setAlignment(Qt.AlignCenter)
         self.time_lcd.setText('00:00')
         self.search_edit.setFixedHeight(25)
-        self.search_edit.setPlaceholderText(u'暂时不能搜索')
+        self.search_edit.setPlaceholderText(u'搜索歌曲')
         self.search_edit.setAttribute(Qt.WA_MacShowFocusRect, False)
 
         self.slider_play.setFixedHeight(15)
@@ -99,10 +104,9 @@ class TopWidget(QWidget):
         self.progress_info.setTextVisible(False)
         
         self.add_to_favorite.setCheckable(True)
+
         self.play_pause_btn.setCheckable(True)
         self.play_pause_btn.setChecked(True)
-
-        self.login_label.close()
 
         self.set_object_name()
 
@@ -132,7 +136,9 @@ class TopWidget(QWidget):
         self.center_layout_l_top.addSpacing(10)
         self.center_layout_l_top.addWidget(self.time_lcd)
         self.center_layout_l_top.addStretch(1)
+        self.center_layout_l_top.addSpacing(10)
         self.center_layout_l_top.addWidget(self.text_label, 1)
+        self.center_layout_l_top.addSpacing(10)
         self.center_layout_l_top.addStretch(1)
         self.center_layout_l_top.addWidget(self.add_to_favorite)
         self.center_layout_l_top.addSpacing(10)

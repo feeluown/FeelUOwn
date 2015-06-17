@@ -3,6 +3,7 @@ __author__ = 'cosven'
 
 import sys, time
 from queue import Queue
+from _thread import start_new_thread
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -21,6 +22,7 @@ from base.models import DataModel
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.logger import LOG
+from base.web import MyWeb
 
 from api import Api
 from setting import WINDOW_ICON
@@ -38,19 +40,23 @@ class MainWidget(QWidget):
 
         self.current_playlist_widget = MusicTableWidget()
         self.status = self.ui.status
-        self.trayicon = TrayIcon()
+        self.trayicon = TrayIcon(self)
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
         self.progress = self.ui.top_widget.progress_info
         self.network_manger = NetworkManager()
 
+        self.search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
+
         self.play_or_pause_btn = self.ui.top_widget.play_pause_btn
 
+        self.web = MyWeb()
         self.api = Api()
         self.network_queue = Queue()
 
         self.init()
 
-        self.state = {'is_login': False}
+        self.state = {'is_login': False,
+                      'current_mid': 0}
 
     def paintEvent(self, QPaintEvent):
         """
@@ -64,18 +70,20 @@ class MainWidget(QWidget):
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
+    def closeEvent(self, event):
+        self.hide()
+        event.ignore()
+        self.trayicon.showMessage(u"提示",
+                                  u'程序已最小化到托盘，点击托盘可以进行操作')
+
     def init(self):
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('未名')
         self.trayicon.show()
         self.init_signal_binding()
-        self.init_player()
-        self.init_current_playlist_widget()
+        self.init_widgets()
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.resize(960, 580)
-
-    def init_player(self):
-        pass
 
     def init_signal_binding(self):
         """初始化部分信号绑定
@@ -87,31 +95,45 @@ class MainWidget(QWidget):
         self.ui.top_widget.slider_play.sliderMoved.connect(self.seek)
         self.ui.top_widget.show_current_list.clicked.connect(self.show_current_playlist)
 
+        self.ui.top_widget.search_edit.returnPressed.connect(self.search_music)
+        self.ui.top_widget.add_to_favorite.clicked.connect(self.set_favorite)
+
         self.current_playlist_widget.signal_play_music.connect(self.play)
         self.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
 
         self.play_or_pause_btn.clicked.connect(self.play_or_pause)
 
-        self.webview.loadProgress.connect(self.on_webview_progress)
+        # self.webview.loadProgress.connect(self.on_webview_progress)
         self.webview.signal_play.connect(self.play)
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
+        self.player.stateChanged.connect(self.trayicon.on_player_state_changed)
         self.player.positionChanged.connect(self.on_player_position_changed)
         self.player.durationChanged.connect(self.on_player_duration_changed)
         self.player.signal_playlist_is_empty.connect(self.on_playlist_empty)
 
         self.network_manger.finished.connect(self.access_network_queue)
 
-    def init_current_playlist_widget(self):
+        self.search_shortcut.activated.connect(self.set_search_focus)
+
+        self.web.signal_load_progress.connect(self.on_web_load_progress)
+
+    def init_widgets(self):
         self.current_playlist_widget.resize(500, 200)
         self.current_playlist_widget.close()
+        self.progress.setRange(0, 100)
 
     """这部分写一些交互逻辑
     """
     def show_user_playlist(self):
         playlists = self.api.get_user_playlist()
         for playlist in playlists:
+
+            self.status.showMessage(u'正在缓存您的歌单列表', 10000)
+            pid = playlist['id']
+            start_new_thread(self.api.get_playlist_detail, (pid, ))
+
             w = PlaylistItem(self)
             w.set_playlist_item(playlist)
 
@@ -157,6 +179,18 @@ class MainWidget(QWidget):
         self.current_playlist_widget.setGeometry(x, y, 500, 300)
         self.current_playlist_widget.show()
         self.current_playlist_widget.setFocus(True)
+
+    def judge_favorite(self, mid):
+        if self.api.is_favorite_music(mid):
+            self.ui.top_widget.add_to_favorite.setChecked(True)
+        else:
+            self.ui.top_widget.add_to_favorite.setChecked(False)
+
+    def set_favorite(self):
+        if self.ui.top_widget.add_to_favorite.isChecked():
+            self.api.set_music_to_favorite(self.state['current_mid'], 'add')
+        else:
+            self.api.set_music_to_favorite(self.state['current_mid'], 'del')
 
     """某些操作
     """
@@ -212,6 +246,8 @@ class MainWidget(QWidget):
         :return:
         """
         self.state['is_login'] = True
+        self.ui.top_widget.add_to_favorite.show()
+
         avatar_url = data['avatar']
         request = QNetworkRequest(QUrl(avatar_url))
         self.network_manger.get(request)
@@ -220,13 +256,11 @@ class MainWidget(QWidget):
 
         self.show_user_playlist()
 
+
     @pyqtSlot(int)
     def on_playlist_btn_clicked(self, pid):
-        self.progress.setValue(0)   # 恢复0的状态
-
         playlist_detail = self.api.get_playlist_detail(pid)  # 这个操作特别耗时
 
-        self.progress.setValue(50)  # 暂时设为50，告诉用户它的操作成功了一半,但是之后的操作会再次归零
         self.webview.load_playlist(playlist_detail)
 
     @pyqtSlot(int)
@@ -237,7 +271,7 @@ class MainWidget(QWidget):
     def play(self, mid=None):
         songs = self.api.get_song_detail(mid)
         if len(songs) == 0:
-            self.status.showMessage(u'这首音乐在地震中消失了')
+            self.status.showMessage(u'这首音乐在地震中消失了', 4000)
             return
         self.player.play(songs[0])
 
@@ -248,7 +282,10 @@ class MainWidget(QWidget):
         for artist in artists:
             artists_name += artist['name']
         title = music_model['name'] + ' - ' + artists_name
+        # metrics = QFontMetrics(self.ui.top_widget.font())
+        # title = metrics.elidedText(title, Qt.ElideRight, self.ui.top_widget.text_label.width() - 40)
         self.ui.top_widget.text_label.setText(title)
+
         self.ui.top_widget.time_lcd.setText('00:00')
         self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
 
@@ -260,6 +297,10 @@ class MainWidget(QWidget):
         self.current_playlist_widget.focus_cell_by_mid(music_model['id'])
 
         self.trayicon.showMessage(u'正在播放: ', music_model['name'])
+
+        self.state['current_mid'] = music_model['id']
+        if self.state['is_login']:
+            self.judge_favorite(music_model['id'])
 
     @pyqtSlot(int)
     def on_player_duration_changed(self, duration):
@@ -281,6 +322,29 @@ class MainWidget(QWidget):
         self.ui.top_widget.text_label.setText(u'当前没有歌曲播放')
         self.ui.top_widget.time_lcd.setText('00:00')
         self.ui.top_widget.play_pause_btn.setChecked(True)
+
+    @pyqtSlot()
+    def set_search_focus(self):
+        self.ui.top_widget.search_edit.setFocus()
+
+    @pyqtSlot()
+    def search_music(self):
+        text = self.ui.top_widget.search_edit.text()
+        if text != '':
+            self.status.showMessage(u'正在搜索: ' + text)
+            songs = self.api.search(text)
+            self.webview.load_search_result(songs)
+            length = len(songs)
+            if length != 0:
+                self.status.showMessage(u'搜索到 ' + str(length) + u' 首 ' + text + u' 相关歌曲')
+                return
+            else:
+                self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲')
+
+    @pyqtSlot(int)
+    def on_web_load_progress(self, progress):
+        QApplication.processEvents()
+        self.progress.setValue(progress)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,7 @@
 # -*- coding:utf8 -*-
 
-import urllib.request, urllib.parse, urllib.error
+from PyQt5.QtCore import QObject, pyqtSignal
+import urllib
 import http.cookiejar
 
 from base.logger import LOG
@@ -8,11 +9,14 @@ from base.common import singleton
 
 
 @singleton
-class MyWeb():
+class MyWeb(QObject):
     """simulate a web browser
     the simulated brower has two method: get and post.
     """
+    signal_load_progress = pyqtSignal([int])
+
     def __init__(self):
+        super().__init__()
         self.header = {
             'Host': 'music.163.com',
             'Connection': 'keep-alive',
@@ -39,8 +43,8 @@ class MyWeb():
         postdata = postdata.encode('utf-8')
         request = urllib.request.Request(posturl, postdata, self.header)
         try:
-            content = urllib.request.urlopen(request)
-            return content
+            response = urllib.request.urlopen(request)
+            return self.show_progress(response)
         except Exception as e:
             LOG.error(str(e))
             return {'code': 408}
@@ -53,8 +57,29 @@ class MyWeb():
         """
         request = urllib.request.Request(url, None, self.header)
         try:
-            content = urllib.request.urlopen(request)
-            return content
+            response = urllib.request.urlopen(request)
+            return self.show_progress(response)
         except Exception as e:
             LOG.error(str(e))
             return {'code': 408}
+
+    def show_progress(self, response):
+        content = bytes()
+        try:
+            total_size = response.getheader('Content-Length').strip()
+        except:
+            LOG.info('This response have no content-length')
+            return response.read()
+        chunk_size = 8192
+        total_size = int(total_size)
+        bytes_so_far = 0
+
+        while 1:
+            chunk = response.read(chunk_size)
+            content += chunk
+            bytes_so_far += len(chunk)
+            progress = round(bytes_so_far * 1.0 / total_size * 100)
+            self.signal_load_progress.emit(progress)
+            if not chunk:
+                break
+        return content

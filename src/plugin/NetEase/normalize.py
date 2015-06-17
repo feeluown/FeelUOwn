@@ -8,6 +8,8 @@ from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel
 from plugin.NetEase.api import NetEase
 
+from _thread import start_new_thread
+
 
 """
 这些函数返回的数据都需要以数据model中的东西为标准。
@@ -61,15 +63,19 @@ def access_user(user_data):
     return user
 
 
-def web_cache(func):
-    data = {}
+def web_cache_playlist(func):
+    cache_data = {}
 
     def cache(this, *args, **kw):
-        if args[0] in data:
-            LOG.info('playlist: ' + data[args[0]]['name'] + ' has been cached')
+        if len(args) > 1:
+            if not args[1]:    # 不使用缓存
+                cache_data[args[0]] = func(this, *args, **kw)
         else:
-            data[args[0]] = func(this, *args, **kw)
-        return data[args[0]]
+            if args[0] in cache_data:
+                LOG.info('playlist: ' + cache_data[args[0]]['name'] + ' has been cached')
+            else:
+                cache_data[args[0]] = func(this, *args, **kw)
+        return cache_data[args[0]]
     return cache
 
 
@@ -83,13 +89,13 @@ class NetEaseAPI(object):
     def __init__(self):
         super().__init__()
         self.ne = NetEase()
-        self.uid = 18731323
+        self.uid = 0
+        self.favorite_pid = 0   # 喜欢列表
 
     def get_uid(self):
         return self.uid
 
     def check_res(self, data):
-        flag = True
         if data['code'] == 408:
             data['message'] = u'貌似网络断了'
             flag = False
@@ -144,15 +150,15 @@ class NetEaseAPI(object):
             songs.append(song)
         return songs
 
-    @web_cache
-    def get_playlist_detail(self, pid):
+    @web_cache_playlist
+    def get_playlist_detail(self, pid, cache=True):
         """貌似这个请求会比较慢
 
         :param pid:
         :return:
         """
         LOG.info(time.ctime())
-        data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时严重
+        data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
         LOG.info(time.ctime())
 
         data['uid'] = data['userId']
@@ -161,6 +167,7 @@ class NetEaseAPI(object):
         for i, track in enumerate(data['tracks']):
             data['tracks'][i] = access_music(track)
         model = PlaylistModel(data).get_model()
+        LOG.info('Update playlist cache finish: ' + model['name'])
         return model
 
     # @login_required     # 装饰器，挺好玩(装逼)的一个东西
@@ -170,6 +177,10 @@ class NetEaseAPI(object):
         for i, brief_playlist in enumerate(data):
             brief_playlist['uid'] = brief_playlist['userId']
             brief_playlist['type'] = brief_playlist['specialType']
+
+            if brief_playlist['type'] == 5:
+                self.favorite_pid = brief_playlist['id']
+
             data[i] = BriefPlaylistModel(brief_playlist).get_model()
         return data
 
@@ -184,6 +195,38 @@ class NetEaseAPI(object):
         if playlist_model['uid'] == self.uid:
             return True
         return False
+
+    def is_favorite_music(self, mid):
+        data = self.get_playlist_detail(self.favorite_pid)
+        tracks = data['tracks']
+        for track in tracks:
+            if track['id'] == mid:
+                return True
+
+        return False
+
+    def set_music_to_playlist(self, mid, pid, op):
+        """
+
+        :param mid:
+        :param pid:
+        :param op: 'add' or 'del'
+        :return:
+        """
+        data = self.ne.addMusicToPlaylist(mid, pid, op)
+
+        start_new_thread(self.get_playlist_detail, (pid, False, ))
+        # self.get_playlist_detail(pid, False)
+
+        if data['code'] == 200:
+            LOG.info(op + ' ' + str(mid) + u' success')
+            return True
+        else:
+            LOG.info(op + ' ' + str(mid) + u' failed')
+            return False
+
+    def set_music_to_favorite(self, mid, op):
+        self.set_music_to_playlist(mid, self.favorite_pid, op)
 
 
 if __name__ == "__main__":

@@ -23,6 +23,10 @@ class TrayIcon(QSystemTrayIcon):
         self.__pause.setIcon(QIcon(ICON_PATH + "pause.png"))
 
     def __set_actions(self):
+        self.__show = QAction(u"显示主窗口", self.__menu)
+        self.__show.setIcon(QIcon(ICON_PATH + "format.png"))
+        self.__show.triggered.connect(self.show_main_widget)
+        ###############################################
         self.__user = QAction(self.__menu)  #当前歌曲
         self.__user.setIcon(QIcon(ICON_PATH + "login.png"))
         ###############################################
@@ -37,6 +41,17 @@ class TrayIcon(QSystemTrayIcon):
         ###############################################
         self.__mode = QMenu(self.__menu)     #播放模式
         self.__mode.setTitle(u"播放模式")
+
+        self.__mode_random = QAction(u"随机随机", self.__mode)
+        self.__mode_random.triggered.connect(self.player.set_play_mode_random)
+
+        self.__mode_loop = QAction(u"重复播放", self.__mode)
+        self.__mode_loop.triggered.connect(self.player.set_play_mode_loop)
+
+        self.__mode_one_in_loop = QAction(u"单曲循环", self.__mode)
+        self.__mode_one_in_loop.triggered.connect(self.player.set_play_mode_one_in_loop)
+
+
         self.__minimize = QMenu(self.__menu)     #最小化
         self.__minimize.setTitle("Minimize")
         ###############################################
@@ -71,24 +86,46 @@ class TrayIcon(QSystemTrayIcon):
             self.__pause.setText('pause')
 
     def __set_menu(self):
+        self.__menu.addAction(self.__show)
+        self.__menu.addSeparator()
         self.__menu.addAction(self.__pause)
         self.__menu.addAction(self.__last)
         self.__menu.addAction(self.__next)
         self.__menu.addSeparator()
 
         self.__menu.addMenu(self.__mode)
+        self.__mode.addAction(self.__mode_loop)
+        self.__mode.addAction(self.__mode_one_in_loop)
+        self.__mode.addAction(self.__mode_random)
         self.__menu.addMenu(self.__minimize)
         self.__menu.addSeparator()
 
-        self.__menu.addAction(self.__close_lyrics)
-        self.__menu.addAction(self.__lock__lyrics)
-        self.__menu.addSeparator()
-
-        self.__menu.addAction(self.__settings)
-        self.__menu.addSeparator()
+        # self.__menu.addAction(self.__close_lyrics)
+        # self.__menu.addAction(self.__lock__lyrics)
+        # self.__menu.addSeparator()
+        #
+        # self.__menu.addAction(self.__settings)
+        # self.__menu.addSeparator()
 
         self.__menu.addAction(self.__quit)
         self.setContextMenu(self.__menu)
+
+    def show_main_widget(self):
+        pw = self.parent()
+        if pw.isVisible():
+            pw.hide()
+        else:
+            pw.show()
+
+    @pyqtSlot(QMediaPlayer.State)
+    def on_player_state_changed(self, state):
+        if self.player.state() == QMediaPlayer.PlayingState:
+            self.__pause.setIcon(QIcon(ICON_PATH + "play.png"))
+            self.__pause.setText('pause')
+        elif self.player.state() == QMediaPlayer.PausedState:
+            self.__pause.setIcon(QIcon(ICON_PATH + "pause.png"))
+            self.__pause.setText('play')
+
 
 
 if __name__ == "__main__":

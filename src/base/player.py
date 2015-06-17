@@ -24,6 +24,7 @@ class Player(QMediaPlayer):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+
         self.__music_list = list()      # 和播放列表同步，保存歌曲名，歌手等信息。（里面的对象是music_model）
         self.__cache_list = list()      # {id:music_id, content: media_content}
         self.__playlist = QMediaPlaylist()  # 播放列表。里面的对象是qmediacontent
@@ -143,6 +144,15 @@ class Player(QMediaPlayer):
                 return
             func(*args, **kwargs)
         return wrapper
+
+    def set_play_mode_random(self):
+        self.__playlist.setPlaybackMode(4)
+
+    def set_play_mode_loop(self):
+        self.__playlist.setPlaybackMode(3)
+
+    def set_play_mode_one_in_loop(self):
+        self.__playlist.setPlaybackMode(1)
 
     @when_playlist_empty
     def play_or_pause(self):

@@ -3,6 +3,7 @@ html, body {
     overflow-x: hidden;
     padding: 10px;
     font-size: 14px;
+    -webkit-user-select: none !important;
 }
 
 
