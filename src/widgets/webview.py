@@ -29,6 +29,7 @@ class WebView(QWebView):
 
     def init(self):
         self.init_singal_binding()
+        self.setContextMenuPolicy(Qt.NoContextMenu)
         if MODE == DEBUG:
             self.settings().setAttribute(QWebSettings.DeveloperExtrasEnabled, True)
 

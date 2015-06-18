@@ -20,7 +20,7 @@ mode configuration
 """
 DEBUG = True   # 1 for debug
 PRODUCTION = False  # 0 for Production Environment
-MODE = DEBUG
+MODE = PRODUCTION
 
 
 """

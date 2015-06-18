@@ -18,6 +18,10 @@ class TrayIcon(QSystemTrayIcon):
         self.__set_actions()
         self.__set_menu()
         self.__init_prop()
+        self.__init_signal_binding()
+
+    def __init_signal_binding(self):
+        self.activated.connect(self.on_activated)
 
     def __init_prop(self):
         self.__pause.setIcon(QIcon(ICON_PATH + "pause.png"))
@@ -126,6 +130,10 @@ class TrayIcon(QSystemTrayIcon):
             self.__pause.setIcon(QIcon(ICON_PATH + "pause.png"))
             self.__pause.setText('play')
 
+    @pyqtSlot(QSystemTrayIcon.ActivationReason)
+    def on_activated(self, reason):
+        if reason == QSystemTrayIcon.DoubleClick or reason == QSystemTrayIcon.Trigger:
+            self.show_main_widget()
 
 
 if __name__ == "__main__":
