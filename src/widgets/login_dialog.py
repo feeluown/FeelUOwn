@@ -141,7 +141,7 @@ class LoginDialog(QDialog):
             data = self.ne.auto_login(username, password, phone_login)
 
         if data['code'] == 200:
-            self.hint_label.setText(u'登陆成功')
+            self.hint_label.setText(u'登录成功')
             self.signal_login_sucess.emit(data)
             self.close()
             self.save_login_info(login_data)
@@ -186,7 +186,7 @@ class LoginDialog(QDialog):
         self.setLayout(self.layout)
 
     def __set_widgets_prop(self):
-        self.login_btn.setText(u'登陆')
+        self.login_btn.setText(u'登录')
 
         self.username_lable.setText(u'网易邮箱或者手机号')
         self.password_lable.setText(u'密码')
