@@ -39,7 +39,7 @@ class Player(QMediaPlayer):
 
     def init_signal_binding(self):
         self.__playlist.currentIndexChanged.connect(self.on_current_index_changed)
-        pass
+        self.error.connect(self.on_error_occured)
 
     def set_play_mode(self, mode=3):
         # item once: 0
@@ -177,6 +177,16 @@ class Player(QMediaPlayer):
         music_model = self.__music_list[index]
         self.signal_player_media_changed.emit(music_model)
 
+    @pyqtSlot(QMediaPlayer.Error)
+    def on_error_occured(self, error):
+        self.parent().traticon.showMessage(u'很抱歉，播放器出现错误')
+        if error == 2 or error == 1 or error == 5:
+            m = QMessageBox(QMessageBox.Warning, u"错误提示", "可能缺少解码器，请参考项目主页\
+            https://git.oschina.net/zjuysw/NetEaseMusic 安装依赖", QMessageBox.Yes | QMessageBox.No)
+            if m.exec() == QMessageBox.Yes:
+                QApplication.quit()
+            else:
+                LOG.error(u'播放器出现error, 类型为' + str(error))
 
 
 if __name__ == "__main__":
