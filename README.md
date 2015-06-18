@@ -21,6 +21,15 @@ sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreame
 ```
 如果在安装完这些包之后，还是没有声音，可以提交相关issue
 
+### 安装使用
+
+```
+git clone https://git.oschina.net/zjuysw/NetEaseMusic.git
+cd NetEaseMusic
+sh generateDesktopIcon.sh
+```
+
+然后就可以搜索 NetEaseMusic, 就可以从系统程序中找到
 
 
 ## 程序架构
