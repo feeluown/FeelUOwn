@@ -26,3 +26,4 @@ __pycache__
 *.DS_Store
 *.un~
 *.desktop
+app.command
