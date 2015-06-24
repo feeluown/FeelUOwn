@@ -132,8 +132,7 @@ class LoginDialog(QDialog):
             'is_remember': is_remember
         }
         # judget if logining by using phone number
-        if not type(username) == str:
-            phone_login = True
+        phone_login = username.isdigit()
 
         if not self.is_autofill:
             data = self.ne.login(username, password, phone_login)

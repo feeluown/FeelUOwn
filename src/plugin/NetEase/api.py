@@ -72,8 +72,14 @@ class NetEase:
             'rememberLogin': 'true'
         }
 
+        phone_data = {
+            'phone': username,
+            'password': pw_encrypt,
+            'rememberLogin': 'true'
+        }
+
         if phone is True:
-            return self.http_request('POST', phone_action, data)
+            return self.http_request('POST', phone_action, phone_data)
         else:
             return self.http_request('POST', action, data)
 
