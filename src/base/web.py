@@ -44,7 +44,8 @@ class MyWeb(QObject):
         request = urllib.request.Request(posturl, postdata, self.header)
         try:
             response = urllib.request.urlopen(request)
-            return self.show_progress(response)
+            res = self.show_progress(response)
+            return res
         except Exception as e:
             LOG.error(str(e))
             return {'code': 408}
@@ -68,7 +69,7 @@ class MyWeb(QObject):
         try:
             total_size = response.getheader('Content-Length').strip()
         except:
-            LOG.info('This response have no content-length')
+            LOG.info(u'这个网络response没有Content-Length字段')
             return response.read()
         chunk_size = 8192
         total_size = int(total_size)

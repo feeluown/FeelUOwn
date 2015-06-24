@@ -100,7 +100,7 @@ class NetEaseAPI(object):
             data['message'] = u'貌似网络断了'
             flag = False
         else:
-            data['message'] = u'联网成功'
+            # data['message'] = u'联网成功'
             flag = True
         return data, flag
 

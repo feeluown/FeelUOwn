@@ -126,26 +126,29 @@ class LoginDialog(QDialog):
         # 2: checked, 1: partial checked
         is_remember = self.is_remember_chb.checkState()
 
+        # judget if logining by using phone number
+        if username.isdigit() and len(username) == 11:
+            username = int(username)
+            phone_login = True
+            LOG.info(u"正在使用手机号进行登录")
+
         login_data = {
             'username': username,
             'password': password,
             'is_remember': is_remember
         }
-        # judget if logining by using phone number
-        phone_login = username.isdigit()
 
         if not self.is_autofill:
             data = self.ne.login(username, password, phone_login)
         else:
             data = self.ne.auto_login(username, password, phone_login)
-
         if data['code'] == 200:
             self.hint_label.setText(u'登录成功')
             self.signal_login_sucess.emit(data)
             self.close()
             self.save_login_info(login_data)
-        elif data['code'] == 415:
-            self.hint_label.setText(u'需要验证码')
+        elif data['code'] == 415:   # 需要验证码
+            self.hint_label.setText(data['message'])
             LOG.info(u'本次登陆需要验证码')
             self.captcha_id = data['captchaId']
             self.show_captcha()
@@ -155,6 +158,8 @@ class LoginDialog(QDialog):
             self.hint_label.setText(u'用户名错误')
         elif data['code'] == 502:
             self.hint_label.setText(u'密码错误')
+        elif data['code'] == 509:
+            self.hint_label.setText(u'你可能正在使用手机号登陆，密码错误几次之后，你可能需要等待几分钟再登录')
         else:
             self.hint_label.setText(u'未知错误')
 
