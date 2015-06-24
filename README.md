@@ -1,6 +1,6 @@
 # NeteaseMusic for linux - third party
 
-**项目主页**: <http://cosven.com/blog/5518934e126ac921c1f77a72>
+**项目主页**: 
 
 **欢迎有兴趣的小伙伴合作开发**
 
@@ -27,6 +27,13 @@ sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreame
 git clone https://git.oschina.net/zjuysw/NetEaseMusic.git
 cd NetEaseMusic
 ./install.sh
+```
+
+### 更新
+```
+cd NetEaseMusic
+# 运行update脚本
+./update.sh
 ```
 
 然后就可以搜索 NetEaseMusic, 就可以从系统程序中找到
