@@ -5,7 +5,7 @@
 #   相关issue: http://git.oschina.net/zjuysw/NetEaseMusic/issues/3
 ##############################
 
-echo "正在生成图标......"
+echo "1. 正在生成图标......"
 
 desktopFilename='NetEaseMusic.desktop'
 touch $desktopFilename
@@ -22,22 +22,25 @@ Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
 StartupNotify=true
 " > $desktopFilename
-echo "尝试生成桌面图标..."
-if [ ! -d "~/桌面" ];then
+echo "2. 尝试生成桌面图标..."
+desktop_cn=""
+desktop_en=""
+if [ -d ~/桌面 ];then
     echo "猜测：中文系统"
     sudo cp $desktopFilename ~/桌面
+    cd ~/桌面
+    sudo chmod +x $desktopFilename
 fi
-if [ ! -d "~/Desktop" ];then
+if [ -d ~/Desktop ];then
     echo "猜测：英文系统"
     sudo cp $desktopFilename ~/Desktop
+    cd ~/Desktop
+    sudo chmod +x $desktopFilename
 fi
 
-
-echo "让程序可以被系统搜索..."
+echo "3. 让程序可以被系统搜索..."
 sudo cp $desktopFilename ~/.local/share/applications/
 
-cd ~/Desktop
-sudo chmod +x $desktopFilename
 
 if [ $? -eq 0 ]; then
     echo "全部完成!"

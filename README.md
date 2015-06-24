@@ -26,7 +26,7 @@ sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreame
 ```
 git clone https://git.oschina.net/zjuysw/NetEaseMusic.git
 cd NetEaseMusic
-sh generateDesktopIcon.sh
+./install.sh
 ```
 
 然后就可以搜索 NetEaseMusic, 就可以从系统程序中找到
