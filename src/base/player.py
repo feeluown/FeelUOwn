@@ -151,7 +151,8 @@ class Player(QMediaPlayer):
         def wrapper(self, *args, **kwargs):
             if self.__playlist.isEmpty():
                 self.signal_playlist_is_empty.emit()
-                return
+                return 
+            print(self, *args)
             return func(self, *args, **kwargs)
         return wrapper
 
@@ -165,7 +166,7 @@ class Player(QMediaPlayer):
         self.__playlist.setPlaybackMode(1)
 
     @when_playlist_empty
-    def play_or_pause(self):
+    def play_or_pause(self, flag=True):
         if self.state() == QMediaPlayer.PlayingState:
             self.pause()
         elif self.state() == QMediaPlayer.PausedState:
@@ -174,13 +175,15 @@ class Player(QMediaPlayer):
             pass
 
     @when_playlist_empty
-    def play_next(self):
+    @pyqtSlot()
+    def play_next(self, flag=True):
         # self.stop()
         self.__playlist.next()
         # self.play()
 
     @when_playlist_empty
-    def play_last(self):
+    @pyqtSlot()
+    def play_last(self, flag=True):
         self.__playlist.previous()
 
     @pyqtSlot(int)
