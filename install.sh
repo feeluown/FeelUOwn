@@ -7,15 +7,15 @@
 
 echo "1. 正在生成图标......"
 
-desktopFilename='NetEaseMusic.desktop'
+desktopFilename='FeelUOwn.desktop'
 touch $desktopFilename
 currentPath=`dirname $(readlink -f $0)`
 
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
 Type=Application
-Name=NetEaseMusic
-Comment=NetEaseMusic Launcher
+Name=FeelUOwn
+Comment=FeelUOwn Launcher
 Exec=$currentPath/src/main.py
 Icon=$currentPath/icons/format.png
 Categories=AudioVideo;Audio;Player;Qt;
