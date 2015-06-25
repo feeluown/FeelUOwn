@@ -26,7 +26,7 @@ sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreame
 ### 安装使用
 
 ```
-git clone https://git.oschina.net/zjuysw/NetEaseMusic.git
+git clone https://github.com/cosven/FeelUOwn.git
 cd FeelUOwn
 ./install.sh
 ```
