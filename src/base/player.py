@@ -113,6 +113,7 @@ class Player(QMediaPlayer):
 
     def set_music_list(self, music_list):
         self.__music_list = []
+        self.__playlist.clear()
         self.play(music_list[0])
         for music in music_list:
             self.add_music(music)
