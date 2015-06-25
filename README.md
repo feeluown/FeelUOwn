@@ -25,7 +25,7 @@ sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreame
 
 ```
 git clone https://git.oschina.net/zjuysw/NetEaseMusic.git
-cd NetEaseMusic
+cd FeelUOwn
 ./install.sh
 ```
 
