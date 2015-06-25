@@ -87,6 +87,7 @@ class TopWidget(QWidget):
 
         self.text_label.setText(u'未播放任何歌曲')
         self.text_label.setAlignment(Qt.AlignCenter)
+        self.text_label.setMaximumWidth(300)
         self.text_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.img_label.setFixedSize(55, 55)
         self.img_label.setAlignment(Qt.AlignCenter)

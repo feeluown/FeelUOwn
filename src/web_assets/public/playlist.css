@@ -5,7 +5,12 @@ button {
 
 tr,  td {
     border: 0px !important;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    max-width: 200px;
 }
+
 
 th {
     color: #993333;

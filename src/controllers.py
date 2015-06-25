@@ -300,10 +300,10 @@ class MainWidget(QWidget):
         for artist in artists:
             artists_name += artist['name']
         title = music_model['name'] + ' - ' + artists_name
-        # metrics = QFontMetrics(self.ui.top_widget.font())
-        # title = metrics.elidedText(title, Qt.ElideRight, self.ui.top_widget.text_label.width() - 40)
-        self.ui.top_widget.text_label.setText(title)
         self.setWindowTitle(title)
+        metrics = QFontMetrics(self.ui.top_widget.font())
+        title = metrics.elidedText(title, Qt.ElideRight, 300 - 40)
+        self.ui.top_widget.text_label.setText(title)
 
         self.ui.top_widget.time_lcd.setText('00:00')
         self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
