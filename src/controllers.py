@@ -114,6 +114,7 @@ class MainWidget(QWidget):
         self.player.durationChanged.connect(self.on_player_duration_changed)
         self.player.signal_playlist_is_empty.connect(self.on_playlist_empty)
         self.player.signal_playback_mode_changed.connect(self.on_playback_mode_changed)
+        self.player.signal_player_error.connect(self.on_player_error_occured)
 
         self.network_manger.finished.connect(self.access_network_queue)
 
@@ -378,7 +379,9 @@ class MainWidget(QWidget):
         elif playback_mode == 4:
             self.trayicon.showMessage(u"通知", u"切换到随机播放模式")
 
-
+    @pyqtSlot(str)
+    def on_player_error_occured(self, message):
+        self.trayicon.showMessage(u'播放器错误', message, QSystemTrayIcon.Warning)
 
 if __name__ == "__main__":
     import sys
