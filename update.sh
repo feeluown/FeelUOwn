@@ -7,8 +7,8 @@ read flag
 if [ "$flag" = "y" ]; then
   echo "更新中......"
   git init
-  git remote add origin https://git.oschina.net/zjuysw/NetEaseMusic.git
-  git remote set-url origin https://git.oschina.net/zjuysw/NetEaseMusic.git
+  git remote add origin git@github.com:cosven/FeelUOwn.git
+  git remote set-url origin git@github.com:cosven/FeelUOwn.git
   git fetch --all
   git reset --hard origin/master
   if [ $? -eq 0 ]; then
