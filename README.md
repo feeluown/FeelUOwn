@@ -1,4 +1,4 @@
-# NeteaseMusic for linux - third party
+# FeelUOwn
 
 **项目主页**: 
 
@@ -31,12 +31,12 @@ cd NetEaseMusic
 
 ### 更新
 ```
-cd NetEaseMusic
+cd FeelUOwn
 # 运行update脚本
 ./update.sh
 ```
 
-然后就可以搜索 NetEaseMusic, 就可以从系统程序中找到
+然后就可以搜索 FeelUOwn, 就可以从系统程序中找到
 
 
 ## 程序架构
