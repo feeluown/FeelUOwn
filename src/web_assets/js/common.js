@@ -10,6 +10,9 @@ window.fill_playlist = function(playlist_data){
     var countEle = $('#count');
     var tbodyEle = $('#tracks');
 
+    var playAllBtnEle = $('#play_all');
+    playAllBtnEle.attr('pid', playlist_data['id']);
+
     var img_url = playlist_data.coverImgUrl;
 
     imgEle.attr('src', img_url);
@@ -141,5 +144,10 @@ window.fill_search = function(songs){
 }
 
 $(document).ready(function(){
-
+    $('#play_all').on('click', function(){
+        var playAllBtnEle = $('#play_all');
+        var pid = playAllBtnEle.attr('pid');
+        pid = parseInt(pid);
+        js_python.play_playlist(pid);
+    });
 });

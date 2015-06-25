@@ -89,30 +89,50 @@ class MusicTableWidget(QTableWidget):
         self.setRowHeight(row, 30)
         self.setColumnWidth(4, 30)
 
-        self.__row_mid_map
         row_mid = dict()
         row_mid['mid'] = music_model['id']
         row_mid['row'] = row
-        self.__row_mid_map.append(row_mid)
 
         return True
 
-    def is_item_already_in(self, mid):
-        for each in self.__row_mid_map:
-            if each['mid'] == mid:
-                return each['row']
+    def set_playlist(self, playlist_detail):
+        tracks = playlist_detail['tracks']
+        self.setRowCount(0)
+        for track in tracks:
+            self.add_item_from_model(track)
 
+    def is_item_already_in(self, mid):
+        row = self.find_row_by_mid(mid)
+        if row is not None:
+            return row
         return False
 
     def focus_cell_by_mid(self, mid):
-        row = 0
-        for each in self.__row_mid_map:
-            if each['mid'] == mid:
-                row = each['row']
-
+        row = self.find_row_by_mid(mid)
         self.setCurrentCell(row, 0)
         self.setCurrentItem(self.item(row, 0))
         self.scrollToItem(self.item(row, 0))
+
+    def find_row_by_mid(self, mid):
+        row = False
+        total = self.rowCount()
+        i = 0
+        while i < total:
+            item = self.item(i, 0)
+            data = item.data(Qt.UserRole)
+            tmp_mid = data['id']
+            if tmp_mid == mid:
+                row = i
+                break
+            i += 1
+        return row
+
+    def find_mid_by_row(self, row):
+        item = self.item(row, 0)
+        data = item.data(Qt.UserRole)
+        mid = data['mid']
+        return mid
+
 
     @pyqtSlot(int, int)
     def on_cell_double_clicked(self, row, column):
@@ -124,8 +144,10 @@ class MusicTableWidget(QTableWidget):
     def on_remove_music_btn_clicked(self, row, column):
         if column != 4:
             return
+
         item = self.item(row, 0)
         data = item.data(Qt.UserRole)
         mid = data['id']
+        row = self.find_row_by_mid(mid)
         self.removeRow(row)
         self.signal_remove_music_from_list.emit(mid)

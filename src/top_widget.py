@@ -165,7 +165,7 @@ class TopWidget(QWidget):
         self.top_layout.addSpacing(20)
         self.top_layout.addWidget(self.show_current_list)
         self.top_layout.addSpacing(5)
-        self.top_layout.addWidget(self.help_btn)
+        # self.top_layout.addWidget(self.help_btn)
         self.top_layout.addSpacing(10)
 
         self.bottom_layout.addWidget(self.progress_info)

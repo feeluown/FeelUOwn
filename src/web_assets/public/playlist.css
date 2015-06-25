@@ -1,3 +1,8 @@
+button {
+    border: 0;
+    margin: 0;
+}
+
 tr,  td {
     border: 0px !important;
 }
@@ -47,6 +52,19 @@ th {
 #count {
 }
 
+.play_all {
+    color: #CCCCCC;
+    background-color: #993333;
+    padding: 5px 10px;
+    border-radius: 10px;
+    transition: 0.3s;
+}
+
+.play_all:hover {
+    cursor: pointer !important;
+    transform: scale(1.1, 1.1)
+}
+
 .info_tag {
     font-size: 12px;
     margin-right: 10px;
@@ -61,7 +79,7 @@ th {
 @media screen and (max-width: 768px) {
     .info_layout {
         margin-top: 10px;
-        padding-bottom: 10px;
+        padding-bottom: 22%;
     }
 
     .album {

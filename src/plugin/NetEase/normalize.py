@@ -157,9 +157,9 @@ class NetEaseAPI(object):
         :param pid:
         :return:
         """
-        LOG.info(time.ctime())
+        # LOG.info(time.ctime())
         data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
-        LOG.info(time.ctime())
+        # LOG.info(time.ctime())
 
         data['uid'] = data['userId']
         data['type'] = data['specialType']

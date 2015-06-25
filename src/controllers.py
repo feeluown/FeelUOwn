@@ -78,7 +78,7 @@ class MainWidget(QWidget):
 
     def init(self):
         self.setWindowIcon(QIcon(WINDOW_ICON))
-        self.setWindowTitle('未名')
+        self.setWindowTitle('FeelUOwn')
         self.trayicon.show()
         self.init_signal_binding()
         self.init_widgets()
@@ -105,6 +105,7 @@ class MainWidget(QWidget):
 
         # self.webview.loadProgress.connect(self.on_webview_progress)
         self.webview.signal_play.connect(self.play)
+        self.webview.signal_play_playlist.connect(self.play_playlist)
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
@@ -112,6 +113,7 @@ class MainWidget(QWidget):
         self.player.positionChanged.connect(self.on_player_position_changed)
         self.player.durationChanged.connect(self.on_player_duration_changed)
         self.player.signal_playlist_is_empty.connect(self.on_playlist_empty)
+        self.player.signal_playback_mode_changed.connect(self.on_playback_mode_changed)
 
         self.network_manger.finished.connect(self.access_network_queue)
 
@@ -128,6 +130,8 @@ class MainWidget(QWidget):
     """
     def show_user_playlist(self):
         playlists = self.api.get_user_playlist()
+        self.status.showMessage(u'正在缓存部分数据，请您等待3-4s', 5000)
+        # self.trayicon.showMessage(u'正在缓存部分数据，请您等待3-4s')
         for playlist in playlists:
 
             # self.status.showMessage(u'正在缓存您的歌单列表', 10000)  # 会让程序整体等待10s
@@ -278,10 +282,19 @@ class MainWidget(QWidget):
             return
         self.player.play(songs[0])
 
+    @pyqtSlot(int)
+    def play_playlist(self, pid):
+        playlist_detail = self.api.get_playlist_detail(pid)
+        if len(playlist_detail['tracks']) == 0:
+            self.status.showMessage(u'该列表没有歌曲', 2000)
+            return
+        self.current_playlist_widget.set_playlist(playlist_detail)
+        self.player.set_music_list(playlist_detail['tracks'])
+
     @pyqtSlot(dict)
     def on_player_media_changed(self, music_model):
-        self.player.stop()
-        self.player.play()
+        # self.player.stop()
+        # self.player.play()
         artists = music_model['artists']
         artists_name = ''
         for artist in artists:
@@ -299,7 +312,6 @@ class MainWidget(QWidget):
         self.network_queue.put(self.set_music_icon)    # 更换任务栏图标
 
         self.current_playlist_widget.add_item_from_model(music_model)
-
         self.current_playlist_widget.focus_cell_by_mid(music_model['id'])
 
         self.trayicon.showMessage(u'正在播放: ', music_model['name'])
@@ -352,6 +364,20 @@ class MainWidget(QWidget):
     def on_web_load_progress(self, progress):
         QApplication.processEvents()
         self.progress.setValue(progress)
+
+    @pyqtSlot(QMediaPlaylist.PlaybackMode)
+    def on_playback_mode_changed(self, playback_mode):
+        if playback_mode == 0:
+            self.trayicon.showMessage(u"通知", u"切换到单曲播放模式")
+        elif playback_mode == 1:
+            self.trayicon.showMessage(u"通知", u"切换到单曲循环模式")
+        elif playback_mode == 2:
+            self.trayicon.showMessage(u"通知", u"切换到顺序播放模式")
+        elif playback_mode == 3:
+            self.trayicon.showMessage(u"通知", u"切换到全部循环模式")
+        elif playback_mode == 4:
+            self.trayicon.showMessage(u"通知", u"切换到随机播放模式")
+
 
 
 if __name__ == "__main__":

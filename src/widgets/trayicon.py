@@ -7,8 +7,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtMultimedia import QMediaPlayer
 from setting import ICON_PATH
 from base.player import Player
+from base.common import singleton
 
 
+@singleton
 class TrayIcon(QSystemTrayIcon):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -115,11 +117,14 @@ class TrayIcon(QSystemTrayIcon):
         self.setContextMenu(self.__menu)
 
     def show_main_widget(self):
-        pw = self.parent()
+        pw = self.get_main_widget()
         if pw.isVisible():
             pw.hide()
         else:
             pw.show()
+
+    def get_main_widget(self):
+        return self.parent()
 
     @pyqtSlot(QMediaPlayer.State)
     def on_player_state_changed(self, state):

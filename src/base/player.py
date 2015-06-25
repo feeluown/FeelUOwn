@@ -21,6 +21,7 @@ class Player(QMediaPlayer):
 
     signal_player_media_changed = pyqtSignal([dict], [QMediaContent])
     signal_playlist_is_empty = pyqtSignal()
+    signal_playback_mode_changed = pyqtSignal([QMediaPlaylist.PlaybackMode])
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -39,6 +40,7 @@ class Player(QMediaPlayer):
 
     def init_signal_binding(self):
         self.__playlist.currentIndexChanged.connect(self.on_current_index_changed)
+        self.__playlist.playbackModeChanged.connect(self.on_playback_mode_changed)
         self.error.connect(self.on_error_occured)
 
     def set_play_mode(self, mode=3):
@@ -60,8 +62,9 @@ class Player(QMediaPlayer):
         :param music_model:
         :return:
         """
-        if music_model in self.__music_list:
-            return False, self.__music_list.index(music_model)
+        for i, music in enumerate(self.__music_list):
+            if music_model['id'] == music['id']:
+                return False, i
         self.__music_list.append(music_model)
         media_content = self.get_media_content_from_model(music_model)
         self.__playlist.addMedia(media_content)
@@ -73,10 +76,11 @@ class Player(QMediaPlayer):
         for i, music_model in enumerate(self.__music_list):
             if mid == music_model['id']:
                 if self.__playlist.currentIndex() == i:
-
-                    self.stop()
+                    self.__playlist.removeMedia(i)
+                    self.__music_list.pop(i)
+                    LOG.info(u'移除当前正在播放的歌曲')
                     self.__playlist.next()
-                    self.play()
+                    break
                 self.__playlist.removeMedia(i)
                 self.__music_list.pop(i)
                 break
@@ -108,7 +112,10 @@ class Player(QMediaPlayer):
         return media_content
 
     def set_music_list(self, music_list):
-        self.__music_list = music_list
+        self.__music_list = []
+        self.play(music_list[0])
+        for music in music_list:
+            self.add_music(music)
 
     def is_music_in_list(self, mid):
         """
@@ -166,7 +173,9 @@ class Player(QMediaPlayer):
 
     @when_playlist_empty
     def play_next(self):
+        # self.stop()
         self.__playlist.next()
+        # self.play()
 
     @when_playlist_empty
     def play_last(self):
@@ -188,44 +197,6 @@ class Player(QMediaPlayer):
             else:
                 LOG.error(u'播放器出现error, 类型为' + str(error))
 
-
-if __name__ == "__main__":
-    import sys
-    from base.models import MusicModel
-
-    app = QApplication(sys.argv)
-    w = QWidget()
-    
-    p = Player()
-
-    url = 'http://m1.music.126.net/ci1d94nRmgrWaF4IxpZXLQ==/2022001883489851.mp3'  # way back into love
-    url = 'http://m1.music.126.net/Gybpf5bX9zfNesjXxZl3qw==/2053887720715417.mp3'  # secret base
-    url = 'http://m1.music.126.net/3wDUT2VE7NLeb8ceq9ejFA==/1164382813825096.mp3'
-
-    data = {
-        'id': 1234,
-        'name': 'secret base',
-        'artists': ['unknown'],
-        'album': {'name': 'test'},
-        'duration': 2000,
-        'url': url
-    }
-    music_model1 = MusicModel(data)
-    p.add_music(music_model1)
-
-    url = 'http://m1.music.126.net/ci1d94nRmgrWaF4IxpZXLQ==/2022001883489851.mp3'  # way back into love
-    data = {
-        'id': 1234,
-        'name': 'secret base',
-        'artists': ['unknown'],
-        'album': {'name': 'test'},
-        'duration': 2000,
-        'url': url
-    }
-    music_model2 = MusicModel(data)
-    p.add_music(music_model2)
-
-    p.play()
-    
-    w.show()
-    sys.exit(app.exec_())
+    @pyqtSlot(QMediaPlaylist.PlaybackMode)
+    def on_playback_mode_changed(self, playback_mode):
+        self.signal_playback_mode_changed.emit(playback_mode)

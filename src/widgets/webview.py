@@ -19,6 +19,7 @@ class WebView(QWebView):
     loadProgress(int)
     """
     signal_play = pyqtSignal([int])
+    signal_play_playlist = pyqtSignal([int])
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -29,9 +30,10 @@ class WebView(QWebView):
 
     def init(self):
         self.init_singal_binding()
-        self.setContextMenuPolicy(Qt.NoContextMenu)
         if MODE == DEBUG:
             self.settings().setAttribute(QWebSettings.DeveloperExtrasEnabled, True)
+        else:
+            self.setContextMenuPolicy(Qt.NoContextMenu)
 
     def init_singal_binding(self):
         self.loadFinished.connect(self.on_load_finished)
@@ -47,7 +49,7 @@ class WebView(QWebView):
             self.page().mainFrame().evaluateJavaScript(js_code)
         self.js_queue.clear()
 
-    """给js调用的函数
+    """给js调用的函数, 需要加上pyqtSlot装饰器
     """
     @pyqtSlot(int)
     def play(self, mid):
@@ -55,6 +57,9 @@ class WebView(QWebView):
         """
         self.signal_play.emit(mid)
 
+    @pyqtSlot(int)
+    def play_playlist(self, pid):
+        self.signal_play_playlist.emit(pid)
 
     def run_js_interface(self, data=None):
         """
