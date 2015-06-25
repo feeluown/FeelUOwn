@@ -30,17 +30,47 @@ if [ -d ~/桌面 ];then
     sudo cp $desktopFilename ~/桌面
     cd ~/桌面
     sudo chmod +x $desktopFilename
+
+    if [ -f NetEaseMusic.desktop ]; then
+        echo "检测到您的系统存在桌面图标NetEaseMusic，这很可能是之前过时的桌面图标文件"
+        echo "您确定删除这个旧的图标文件么？ 确定请输入 y，否则输入 n"
+        echo "确认: 'y/n'"
+        echo -n "> "
+        read flag
+        if [ "$flag" = "y" ]; then
+            sudo rm NetEaseMusic.desktop
+            if [ -f ~/.local/share/applications/NetEaseMusic.desktop ]; then
+                sudo rm ~/.local/share/applications/NetEaseMusic.desktop
+            fi
+        fi
+    fi
 fi
 if [ -d ~/Desktop ];then
     echo "猜测：英文系统"
     sudo cp $desktopFilename ~/Desktop
     cd ~/Desktop
     sudo chmod +x $desktopFilename
+
+    if [ -f NetEaseMusic.desktop ]; then
+        echo "检测到您的系统存在桌面图标NetEaseMusic，这很可能是之前过时的桌面图标文件"
+        echo "您确定删除这个旧的图标文件么？ 确定请输入 y，否则输入 n"
+        echo "确认: 'y/n'"
+        echo -n "> "
+        read flag
+        if [ "$flag" = "y" ]; then
+            sudo rm NetEaseMusic.desktop
+            if [ -f ~/.local/share/applications/NetEaseMusic.desktop ]; then
+                sudo rm ~/.local/share/applications/NetEaseMusic.desktop
+            fi
+        fi
+    fi
+    
 fi
 
 echo "3. 让程序可以被系统搜索..."
 sudo cp $desktopFilename ~/.local/share/applications/
 
+echo "==============================="
 
 if [ $? -eq 0 ]; then
     echo "全部完成!"
