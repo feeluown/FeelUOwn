@@ -20,6 +20,6 @@ else
   echo "取消更新!"
 fi
 echo "正在重新生成桌面图标..."
-install.sh
+./install.sh
 
 exit 0
