@@ -8,13 +8,14 @@ from PyQt5.QtMultimedia import QMediaPlayer
 from setting import ICON_PATH
 from base.player import Player
 from base.common import singleton
+from setting import WINDOW_ICON
 
 
 @singleton
 class TrayIcon(QSystemTrayIcon):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setIcon(QIcon(ICON_PATH + "format.png"))
+        self.setIcon(QIcon(WINDOW_ICON))
         self.player = Player()
         self.__menu = QMenu()
         self.__set_actions()
@@ -30,7 +31,7 @@ class TrayIcon(QSystemTrayIcon):
 
     def __set_actions(self):
         self.__show = QAction(u"显示主窗口", self.__menu)
-        self.__show.setIcon(QIcon(ICON_PATH + "format.png"))
+        self.__show.setIcon(QIcon(WINDOW_ICON))
         self.__show.triggered.connect(self.show_main_widget)
         ###############################################
         self.__user = QAction(self.__menu)  #当前歌曲

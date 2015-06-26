@@ -41,4 +41,4 @@ icon name
 PLAYLIST_FAVORITE = ICON_PATH + 'playlist_favorite.png'
 PLAYLIST_MINE = ICON_PATH + 'Format-Bullets-01-16.png'
 PLAYLIST_NORMAL = ICON_PATH + 'playlist_mine.png'
-WINDOW_ICON = ICON_PATH + 'format.png'
+WINDOW_ICON = ICON_PATH + 'FeelUOwn.png'
