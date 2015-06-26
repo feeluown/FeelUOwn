@@ -17,11 +17,24 @@ if setting.MODE == setting.DEBUG:
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s"
     )
 else:
-    logging.basicConfig(
-        level=logging.INFO,
-        format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-        filename=setting.LOGFILE,
-        filemode='w'
-    )
+    try:
+        logging.basicConfig(
+            level=logging.INFO,
+            format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
+            filename=setting.LOGFILE,
+            filemode='w'
+        )
+    except:
+        f = open(setting.LOGFILE, 'w')
+        f.write('Create log file')
+        f.close()
+
+        logging.basicConfig(
+            level=logging.INFO,
+            format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
+            filename=setting.LOGFILE,
+            filemode='w'
+        )
 
 LOG = logging.getLogger("log")
+
