@@ -70,13 +70,13 @@ class LoginDialog(QDialog):
             保存了就是直接加载
         """
         if self.has_saved_userinfo():
-            f = open(self.filename, 'r')
-            login_data = dict()
             try:
+                f = open(self.filename, 'r')
+                login_data = dict()
                 login_data = json.load(f)
+                f.close()
             except Exception as e:
                 LOG.error(str(e))
-            f.close()
             if 'is_remember' in login_data.keys() and login_data['is_remember']:
                 self.username_widget.setText(login_data['username'])
                 self.password_widget.setText(login_data['password'])
@@ -93,13 +93,16 @@ class LoginDialog(QDialog):
 
     def save_login_info(self, login_data):
         if login_data['is_remember']:
-            f = open(self.filename, 'w')
-            if self.is_autofill is not True:    # 如果不是自动填充，说明密码时已经没有加密过
-                password = login_data['password'].encode('utf-8')
-                login_data['password'] = hashlib.md5(password).hexdigest()
-            jsondata = json.dumps(login_data)
-            f.write(jsondata)
-            f.close()
+            try:
+                f = open(self.filename, 'w')
+                if self.is_autofill is not True:    # 如果不是自动填充，说明密码时已经没有加密过
+                    password = login_data['password'].encode('utf-8')
+                    login_data['password'] = hashlib.md5(password).hexdigest()
+                jsondata = json.dumps(login_data)
+                f.write(jsondata)
+                f.close()
+            except Exception as e:
+                LOG.error(str(e))
         else:
             try:
                 os.remove(self.filename)
