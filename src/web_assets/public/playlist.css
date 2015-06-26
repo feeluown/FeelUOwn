@@ -9,6 +9,8 @@ tr,  td {
     overflow: hidden;
     white-space: nowrap;
     max-width: 200px;
+    font-size: 12px;
+    padding: 8px 5px !important;
 }
 
 
