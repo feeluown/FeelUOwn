@@ -27,3 +27,4 @@ __pycache__
 *.un~
 *.desktop
 app.command
+*.log
