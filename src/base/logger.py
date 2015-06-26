@@ -18,7 +18,7 @@ if setting.MODE == setting.DEBUG:
     )
 else:
     logging.basicConfig(
-        level=logging.WARNING,
+        level=logging.INFO,
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
         filename=setting.LOGFILE,
         filemode='w'
