@@ -16,7 +16,7 @@ echo "#!/usr/bin/env xdg-open
 Type=Application
 Name=FeelUOwn
 Comment=FeelUOwn Launcher
-Exec=$currentPath/src/main.py 2>&1 | tee $currentPath/cache/error.log
+Exec=$currentPath/src/main.py
 Icon=$currentPath/icons/FeelUOwn.png
 Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
