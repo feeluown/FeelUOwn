@@ -10,14 +10,13 @@ echo "1. 正在生成图标......"
 desktopFilename='FeelUOwn.desktop'
 touch $desktopFilename
 currentPath=`dirname $(readlink -f $0)`
-chmod +x app.sh
 
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
 Type=Application
 Name=FeelUOwn
 Comment=FeelUOwn Launcher
-Exec=$currentPath/app.sh
+Exec=$currentPath/src/main.py 2>&1 | tee $currentPath/cache/error.log
 Icon=$currentPath/icons/FeelUOwn.png
 Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
