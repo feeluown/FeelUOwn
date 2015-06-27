@@ -5,7 +5,7 @@ echo "正在检查你是否安装一些系统工具..."
 
 git --version
 
-if [ $? -eq 0]; then
+if [ $? -eq 0 ]; then
     echo "您已经安装过 git 工具"
 else
     echo "您还没有安装过git工具，现在为您安装git？"
