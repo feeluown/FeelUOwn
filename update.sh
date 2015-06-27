@@ -36,6 +36,7 @@ if [ "$flag" = "y" ]; then
     echo "已经更新到最新版 !"
   else
     echo "貌似出现了什么错误..."
+    exit 0
   fi
 else
   echo "取消更新!"
