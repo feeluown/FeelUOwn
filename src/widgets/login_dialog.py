@@ -75,13 +75,13 @@ class LoginDialog(QDialog):
                 login_data = dict()
                 login_data = json.load(f)
                 f.close()
+                if 'is_remember' in login_data.keys() and login_data['is_remember']:
+                    self.username_widget.setText(login_data['username'])
+                    self.password_widget.setText(login_data['password'])
+                    self.is_remember_chb.setCheckState(True)
+                    self.is_autofill = True
             except Exception as e:
                 LOG.error(str(e))
-            if 'is_remember' in login_data.keys() and login_data['is_remember']:
-                self.username_widget.setText(login_data['username'])
-                self.password_widget.setText(login_data['password'])
-                self.is_remember_chb.setCheckState(True)
-                self.is_autofill = True
 
     def has_saved_userinfo(self):
         """判断之前是否有保存过的用户名与密码
