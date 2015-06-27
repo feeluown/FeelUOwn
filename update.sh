@@ -1,4 +1,25 @@
 #! /bin/sh
+
+
+echo "正在检查你是否安装一些系统工具..."
+
+git --version
+
+if [ $? -eq 0]; then
+    echo "您已经安装过 git 工具"
+else
+    echo "您还没有安装过git工具，现在为您安装git？"
+    echo "确认: 'y/n'"
+    echo -n "> "
+    read flag
+    if [ "$flag" = "y" ]; then
+        sudo apt-get install git
+    else
+        echo "取消安装git工具，更新中断"
+        exit 0
+    fi
+fi
+
 echo "正在更新 NetEaseMusic For Linux - ThirdParty"
 echo "这个操作会删除你在本地对代码的更改, 确定请输入 y"
 echo "确认: 'y/n'"
