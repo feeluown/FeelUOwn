@@ -20,7 +20,7 @@ else
     fi
 fi
 
-echo "正在更新 NetEaseMusic For Linux - ThirdParty"
+echo "正在更新 FeelUOwn"
 echo "这个操作会删除你在本地对代码的更改, 确定请输入 y"
 echo "确认: 'y/n'"
 echo -n "> "
