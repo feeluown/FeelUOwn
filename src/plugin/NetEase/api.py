@@ -83,8 +83,8 @@ class NetEase:
         else:
             return self.http_request('POST', action, data)
 
-    def confirm_captcha(self, id, text):
-        action = 'http://music.163.com/api/image/captcha/verify/hf?id=' + str(id) + '&captcha=' + str(text)
+    def confirm_captcha(self, captcha_id, text):
+        action = 'http://music.163.com/api/image/captcha/verify/hf?id=' + str(captcha_id) + '&captcha=' + str(text)
         data = self.http_request('GET', action)
         return data
 
@@ -138,10 +138,19 @@ class NetEase:
         return data['artists']
 
     # 歌手单曲
-    def artists(self, artist_id):
+    def artist_infos(self, artist_id):
+        """
+        :param artist_id: artist_id
+        :return: {
+            code: int,
+            artist: {artist},
+            more: boolean,
+            hotSongs: [songs]
+        }
+        """
         action = 'http://music.163.com/api/artist/' + str(artist_id)
         data = self.http_request('GET', action)
-        return data['hotSongs']
+        return data
 
     # album id --> song id set
     def album(self, album_id):

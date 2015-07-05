@@ -58,6 +58,7 @@ class MusicModel(DataModel):
         }
         self.init_model()
 
+
 class BriefMusicModel(DataModel):
     def __init__(self, data, type=None):
         super().__init__(data, type)
@@ -96,6 +97,7 @@ class BriefArtistModel(DataModel):
             'name': str,
         }
         self.init_model()
+
 
 class UserModel(DataModel):
     def __init__(self, data, type=None):
