@@ -302,6 +302,7 @@ class MainWidget(QWidget):
             artists_name += artist['name']
         title = music_model['name'] + ' - ' + artists_name
         self.setWindowTitle(title)
+        
         metrics = QFontMetrics(self.ui.top_widget.font())
         title = metrics.elidedText(title, Qt.ElideRight, 300 - 40)
         self.ui.top_widget.text_label.setText(title)
