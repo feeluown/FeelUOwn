@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 import json
+import ast
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -19,7 +20,7 @@ class WebView(QWebView):
     loadProgress(int)
     """
     signal_play = pyqtSignal([int])
-    signal_play_playlist = pyqtSignal([int])
+    signal_play_songs = pyqtSignal([list])
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -57,9 +58,11 @@ class WebView(QWebView):
         """
         self.signal_play.emit(mid)
 
-    @pyqtSlot(int)
-    def play_playlist(self, pid):
-        self.signal_play_playlist.emit(pid)
+    @pyqtSlot(str)
+    def play_songs(self, songs_str):
+        songs = json.loads(songs_str)
+        tracks = songs['tracks']
+        self.signal_play_songs.emit(tracks)
 
     def run_js_interface(self, data=None):
         """

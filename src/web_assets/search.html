@@ -8,46 +8,35 @@
         <link rel="stylesheet" href="public/base.css">
         <link rel="stylesheet" href="public/theme/base_default.css">
         <script src="js/jquery.min.js"></script>
+        <script src="js/angular.min.js"></script>
         <script src="js/bootstrap.min.js" ></script>
         <script src="js/common.js"></script>
     </head>
     <body>
-     <div class="container-fluid">
-            <div class="col-sm-12">
-                <table class="table table-condensed">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>歌曲名</th>
-                            <th>歌手</th>
-                            <th>专辑</th>
-                            <th>时长</th>
-                        </tr>
+    <div class="col-sm-12" ng-app="app_table" ng-controller="SongTable.initData" id="songs_table">
+        <table class="table table-condensed">
+            <thead>
+            <tr>
+                <th></th>
+                <th>歌曲名</th>
+                <th>歌手</th>
+                <th>专辑</th>
+                <th>时长</th>
+            </tr>
 
-                    </thead>
-                    <tbody id="tracks">
-                        <!--<tr class="song">-->
-                            <!--<td>-->
-                                <!--<div class="star"></div>-->
-                            <!--</td>-->
-                            <!--<td>secret base ~君がくれたもの~</td>-->
-                            <!--<td>Zone</td>-->
-                            <!--<td>ZONEトリビュート～</td>-->
-                            <!--<td>04:55</td>-->
-                        <!--</tr>-->
-                        <!--<tr class="song alternate">-->
-                            <!--<td>-->
-                                <!--<div class="star"></div>-->
-                            <!--</td>-->
-                            <!--<td>secret base ~君がくれたもの~</td>-->
-                            <!--<td>Zone</td>-->
-                            <!--<td>ZONEトリビュート～</td>-->
-                            <!--<td>04:55</td>-->
-                        <!--</tr>-->
-                    </tbody>
-                </table>
-            </div>
-        </div>
+            </thead>
+            <tbody id="tracks">
+            <tr id="{{ song.id }}" class="song" ng-controller="SongTable.fillSongsTable" ng-repeat="song in songs" ng-dblclick="window.play_music(song.id)" ng-click="window.play_music(song.id)" song>
+                <td>
+                    <div class="star"></div>
+                </td>
+                <td>{{ song.name }}</td>
+                <td ng-init="accessArtistsName(song.artists)">{{ artistName }}</td>
+                <td>{{ song.album.name }}</td>
+                <td ng-init="accessSongDuration(song.duration)">{{ duration }}</td>
+            </tr>
+            </tbody>
+        </table>
     </div>
     </body>
 </html>

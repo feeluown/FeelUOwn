@@ -105,7 +105,7 @@ class MainWidget(QWidget):
 
         # self.webview.loadProgress.connect(self.on_webview_progress)
         self.webview.signal_play.connect(self.play)
-        self.webview.signal_play_playlist.connect(self.play_playlist)
+        self.webview.signal_play_songs.connect(self.play_songs)
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
@@ -284,13 +284,12 @@ class MainWidget(QWidget):
         self.player.play(songs[0])
 
     @pyqtSlot(int)
-    def play_playlist(self, pid):
-        playlist_detail = self.api.get_playlist_detail(pid)
-        if len(playlist_detail['tracks']) == 0:
+    def play_songs(self, songs):
+        if len(songs) == 0:
             self.status.showMessage(u'该列表没有歌曲', 2000)
             return
-        self.current_playlist_widget.set_playlist(playlist_detail)
-        self.player.set_music_list(playlist_detail['tracks'])
+        self.current_playlist_widget.set_songs(songs)
+        self.player.set_music_list(songs)
 
     @pyqtSlot(dict)
     def on_player_media_changed(self, music_model):

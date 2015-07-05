@@ -95,8 +95,7 @@ class MusicTableWidget(QTableWidget):
 
         return True
 
-    def set_playlist(self, playlist_detail):
-        tracks = playlist_detail['tracks']
+    def set_songs(self, tracks):
         self.setRowCount(0)
         for track in tracks:
             self.add_item_from_model(track)

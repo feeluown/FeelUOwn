@@ -1,13 +1,9 @@
 var SongTable = {};
 var appTable = angular.module('app_table',[]);
 
-appTable.directive('song', function(){
+appTable.directive('song', function($compile){
     return {
         link: function($scope, $element){
-
-            setItemMusicId = function(mid, ele){
-                ele.attr('id', mid);
-            }
 
             setRowAlternate = function(even, ele){
                 // highlight row which is even
@@ -17,14 +13,19 @@ appTable.directive('song', function(){
             }
 
             setRowAlternate($scope.$even, $element);
-            // setItemMusicId($scope.$song.id, $element);
         }
+
+
     }
 });
 
 SongTable.initData = function($scope){
-    $scope.init = function(songs){
-        $scope.songs = songs;
+    $scope.init = function(playlist_data){
+        $scope.pid = playlist_data.pid;
+        $scope.songs = playlist_data.tracks;
+        $scope.name = playlist_data.name;
+        $scope.count = playlist_data.tracks.length;
+        $scope.coverImgUrl = playlist_data.coverImgUrl;
     }
 }
 
@@ -47,7 +48,28 @@ SongTable.fillSongsTable = function($scope){
     }
 }
 
+SongTable.bind_music_play = function(){
+    $('.song').on('dblclick', function(){
+        var sid = $(this).attr('id');
+        if (sid){
+            console.log('play : ', sid);
+        }
 
+        // js_python python的接口
+        js_python.play(parseInt(sid));
+    });
+
+    $('#play_all').on('click', function(){
+        var songs = {};
+        songs.tracks = window.songs;
+        var songsStr = JSON.stringify(songs);
+        js_python.play_songs(songsStr);
+    });
+}
+
+SongTable.tmpSaveSongsInfo = function(songs){
+    window.songs = songs.slice(0);
+}
 
 window.python_log = function(text){
     console.log(text);
@@ -56,97 +78,22 @@ window.python_log = function(text){
 }
 
 window.fill_playlist = function(playlist_data){
-    var imgEle = $('#coverImg');
-    var descEle = $('#name');
-    var countEle = $('#count');
-    var tbodyEle = $('#tracks');
+    angular.element($('#songs_table')).scope().init(playlist_data);
+    angular.element($('#songs_table')).scope().$apply();
 
-    var playAllBtnEle = $('#play_all');
-    playAllBtnEle.attr('pid', playlist_data['id']);
+    SongTable.tmpSaveSongsInfo(playlist_data.tracks);
+    SongTable.bind_music_play();
+}
 
-    var img_url = playlist_data.coverImgUrl;
-
-    imgEle.attr('src', img_url);
-    descEle.text(playlist_data['name']);
-
-    var tracks = playlist_data.tracks;
+window.fill_search = function(songs){
+    var tracks = songs;
+    var total = songs.length;
 
     angular.element($('#songs_table')).scope().init(tracks);
     angular.element($('#songs_table')).scope().$apply();
 
-    $('.song').on('dblclick', function(){
-        var sid = $(this).attr('id');
-        if (sid){
-            console.log('play : ', sid);
-        }
-
-        // js_python python的接口
-        js_python.play(parseInt(sid));
-    });
-}
-
-window.fill_search = function(songs){
-
-    var tbodyEle = $('#tracks');
-
-    var tracks = songs;
-    var total = songs.length;
-
-    for (var i=0; i<total; i++) {
-        var trEle = $("<tr class='song' />");
-        trEle.attr('id', tracks[i].id);
-        if (i%2 != 0){
-            trEle.addClass('alternate')
-        }
-
-        var tdEle = $("<td />");
-        trEle.append(tdEle);
-
-        var starEle = $("<div class='star' />");
-        tdEle.append(starEle);
-
-        var tdNameEle = $("<td />");
-        tdNameEle.text(tracks[i].name);
-        trEle.append(tdNameEle);
-
-        var tdArtistsEle = $("<td />");
-        var artists = tracks[i].artists;
-        var artistsName = '';
-        for (var j=0; j<artists.length; j++){
-            // console.log(artists[j].name);
-            if (artists[j].name != undefined){
-                artistsName += (artists[j].name + ' ');
-            }
-
-        }
-
-        tdArtistsEle.text(artistsName);
-        trEle.append(tdArtistsEle);
-
-        var tdAlbumEle = $("<td />");
-        tdAlbumEle.text(tracks[i].album.name);
-        trEle.append(tdAlbumEle);
-
-        var tdDurationEle = $("<td />");
-        var duration = tracks[i].duration;
-        var m = parseInt(duration / 60000);
-        var s = parseInt(parseInt(duration % 60000)/1000);
-        duration = m.toString() + ':' + s;
-        tdDurationEle.text(duration);
-        trEle.append(tdDurationEle);
-
-        tbodyEle.append(trEle);
-    }
-
-    $('.song').on('dblclick', function(){
-        var sid = $(this).attr('id');
-        if (sid){
-            console.log('play : ', sid);
-        }
-
-        // js_python python的接口
-        js_python.play(parseInt(sid));
-    });
+    SongTable.bind_music_play();
+    SongTable.tmpSaveSongsInfo(tracks);
 }
 
 $(function(){

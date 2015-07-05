@@ -14,26 +14,26 @@
     </head>
     <body>
      <div class="container-fluid">
-        <div class="row">
+        <div class="row" ng-app="app_table" ng-controller="SongTable.initData" id="songs_table">
             <div class="col-sm-3">
                 <div class="info_layout">
-                    <img alt="歌手图片" id="coverImg" class="album" src="img/album.png" />
+                    <img alt="专辑图片" id="coverImg" class="album" ng-attr-src="{{ coverImgUrl }}" />
                     <div class="desc">
                         <div class="section">
-                            <span class="kind_tag">歌手</span><span id="name">Mariah Carey</span>
+                            <span class="kind_tag">歌手</span><span id="name">{{ name }}</span>
                         </div>
                         <div class="h_spacer"></div>
                         <div class="section">
-                            <span class="info_tag">歌曲数</span><span id="count">0</span>
+                            <span class="info_tag">歌曲数</span><span id="count">{{ count }}</span>
                         </div>
                         <div class="h_spacer"></div>
                         <div class="section">
-                            <button class="play_all" id="play_all" pid="">播放全部</button>
+                            <button class="play_all" id="play_all">播放全部</button>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-sm-9" ng-app="app_table" ng-controller="SongTable.initData" id="songs_table">
+            <div class="col-sm-9">
                 <table class="table table-condensed">
                     <thead>
                         <tr>
@@ -46,7 +46,7 @@
 
                     </thead>
                     <tbody id="tracks">
-                        <tr id="{{ song.id }}" class="song" ng-controller="SongTable.fillSongsTable" ng-repeat="song in songs" song>
+                        <tr id="{{ song.id }}" class="song" ng-controller="SongTable.fillSongsTable" ng-repeat="song in songs" ng-dblclick="window.play_music(song.id)" ng-click="window.play_music(song.id)" song>
                             <td>
                                 <div class="star"></div>
                             </td>
