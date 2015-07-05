@@ -17,6 +17,9 @@ table {
     font-size: 13px;
 }
 
+.cursor_pointer:hover {
+    cursor: pointer;
+}
 
 /* scrollbar 样式控制 */
 ::-webkit-scrollbar

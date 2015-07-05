@@ -14,23 +14,24 @@ appTable.directive('song', function($compile){
 
             setRowAlternate($scope.$even, $element);
         }
-
-
     }
 });
 
 SongTable.initData = function($scope){
-    $scope.init = function(playlist_data){
-        $scope.pid = playlist_data.pid;
+   $scope.init_search = function(songs){
+        $scope.songs = songs;
+   }
+
+   $scope.init_playlist = function(playlist_data){
         $scope.songs = playlist_data.tracks;
         $scope.name = playlist_data.name;
         $scope.count = playlist_data.tracks.length;
         $scope.coverImgUrl = playlist_data.coverImgUrl;
-    }
+   }
 }
 
 SongTable.fillSongsTable = function($scope){
-    $scope.accessArtistsName = function(artists){
+    $scope.accessArtists = function(artists){
         var name = '';
         for (var i=0; i< artists.length; i++){
             if ( i>0 ){
@@ -39,6 +40,8 @@ SongTable.fillSongsTable = function($scope){
             name += artists[i].name + ' ';
         }
         $scope.artistName = name;
+
+        $scope.artistId = artists[0].id;
     }
 
     $scope.accessSongDuration = function(duration){
@@ -71,6 +74,16 @@ SongTable.tmpSaveSongsInfo = function(songs){
     window.songs = songs.slice(0);
 }
 
+searchArtist = function(self){
+    var artistId = parseInt($(self).attr('id'));
+    console.log(artistId);
+}
+
+searchAlbum = function(self){
+    var albumId = parseInt($(self).attr('id'));
+    console.log(albumId);
+}
+
 window.python_log = function(text){
     console.log(text);
     console.log ("hello");
@@ -78,7 +91,7 @@ window.python_log = function(text){
 }
 
 window.fill_playlist = function(playlist_data){
-    angular.element($('#songs_table')).scope().init(playlist_data);
+    angular.element($('#songs_table')).scope().init_playlist(playlist_data);
     angular.element($('#songs_table')).scope().$apply();
 
     SongTable.tmpSaveSongsInfo(playlist_data.tracks);
@@ -89,7 +102,7 @@ window.fill_search = function(songs){
     var tracks = songs;
     var total = songs.length;
 
-    angular.element($('#songs_table')).scope().init(tracks);
+    angular.element($('#songs_table')).scope().init_search(tracks);
     angular.element($('#songs_table')).scope().$apply();
 
     SongTable.bind_music_play();

@@ -38,10 +38,16 @@ class WebView(QWebView):
 
     def init_singal_binding(self):
         self.loadFinished.connect(self.on_load_finished)
+        self.linkClicked.connect(self.on_link_clicked)
 
     def load_css(self):
         all_css = QFileInfo(PUBLIC_PATH + 'all.css').absoluteFilePath()
         self.settings().setUserStyleSheetUrl(QUrl.fromLocalFile(all_css))
+
+    @pyqtSlot(QUrl)
+    def on_link_clicked(self, url):
+        print(url)
+        return False
 
     @pyqtSlot()
     def on_load_finished(self):

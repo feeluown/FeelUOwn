@@ -20,7 +20,7 @@
                     <img alt="专辑图片" id="coverImg" class="album" ng-attr-src="{{ coverImgUrl }}" />
                     <div class="desc">
                         <div class="section">
-                            <span class="kind_tag">歌手</span><span id="name">{{ name }}</span>
+                            <span class="kind_tag">歌单</span><span id="name">{{ name }}</span>
                         </div>
                         <div class="h_spacer"></div>
                         <div class="section">
@@ -51,8 +51,8 @@
                                 <div class="star"></div>
                             </td>
                             <td>{{ song.name }}</td>
-                            <td ng-init="accessArtistsName(song.artists)">{{ artistName }}</td>
-                            <td>{{ song.album.name }}</td>
+                            <td class="cursor_pointer" ng-init="accessArtists(song.artists)" ng-attr-id="{{ artistId }}" onclick="searchArtist(this)"> {{ artistName }}</td>
+                            <td class="cursor_pointer" onclick="searchAlbum(this)" ng-attr-id="{{ song.album.id }}">{{ song.album.name }}</td>
                             <td ng-init="accessSongDuration(song.duration)">{{ duration }}</td>
                         </tr>
                     </tbody>
