@@ -300,7 +300,9 @@ class MainWidget(QWidget):
 
         if common.judge_platform() == 'deepin':     # tested on 'deepin 2014.3'
             self.player.pause()
-            self.webview.load_mv(mv_model)
+            # self.webview.load_mv(mv_model)
+            import os
+            os.system('deepin-movie %s' % url_high)
             self.status.showMessage(u"已经将视频的播放地址复制到剪切板，你也可以使用你喜欢的播放器播放更加高清视频", 5000)
         else:
             self.status.showMessage(u"您的系统暂时还不支持播放。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
