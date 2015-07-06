@@ -15,7 +15,11 @@ def singleton(cls, *args, **kw):
 
 
 def judge_platform():
+    sys_info = platform.system()
+    return sys_info
+
+
+def judge_system():
     platform_info = platform.platform()
     info = platform_info.split('-')
-    system_name = info[-3]
-    return system_name.lower()
+    return info
