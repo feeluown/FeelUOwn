@@ -21,6 +21,8 @@ class WebView(QWebView):
     """
     signal_play = pyqtSignal([int])
     signal_play_songs = pyqtSignal([list])
+    signal_search_artist = pyqtSignal([int])
+    signal_search_album = pyqtSignal([int])
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -70,6 +72,14 @@ class WebView(QWebView):
         tracks = songs['tracks']
         self.signal_play_songs.emit(tracks)
 
+    @pyqtSlot(int)
+    def search_artist(self, aid):
+        self.signal_search_artist.emit(aid)
+
+    @pyqtSlot(int)
+    def search_album(self, aid):
+        self.signal_search_album.emit(aid)
+
     def run_js_interface(self, data=None):
         """
 
@@ -88,6 +98,22 @@ class WebView(QWebView):
         data = json.dumps(playlist_data)
         path = QFileInfo(HTML_PATH + 'playlist.html').absoluteFilePath()
         js_code = 'window.fill_playlist(%s)' % data
+        self.js_queue.append(js_code)
+        self.load(QUrl.fromLocalFile(path))
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
+
+    def load_album(self, album_detail):
+        data = json.dumps(album_detail)
+        path = QFileInfo(HTML_PATH + 'album.html').absoluteFilePath()
+        js_code = 'window.fill_album(%s)' % data
+        self.js_queue.append(js_code)
+        self.load(QUrl.fromLocalFile(path))
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
+
+    def load_artist(self, artist_detail):
+        data = json.dumps(artist_detail)
+        path = QFileInfo(HTML_PATH + 'artist.html').absoluteFilePath()
+        js_code = 'window.fill_artist(%s)' % data
         self.js_queue.append(js_code)
         self.load(QUrl.fromLocalFile(path))
         self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)

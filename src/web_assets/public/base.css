@@ -1,7 +1,7 @@
 html, body {
     width: 100%;
     overflow-x: hidden;
-    padding: 10px;
+    padding: 10px 0px 10px 10px;
     font-size: 14px;
     -webkit-user-select: none !important;
 }

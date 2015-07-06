@@ -27,7 +27,7 @@ class LoginDialog(QDialog):
     """
     signal_login_sucess = pyqtSignal([dict], name='login_success')
 
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super(LoginDialog, self).__init__(parent)
         self.username_lable = QLabel()
         self.password_lable = QLabel()
@@ -61,7 +61,6 @@ class LoginDialog(QDialog):
     def __set_signal_binding(self):
         self.login_btn.clicked.connect(self.__login)
         self.password_widget.textChanged.connect(self.on_password_lineedit_changed)
-        self.nm.finished.connect(self.on_nm_finished)
         self.signal_login_sucess.connect(self.on_login_success)
 
     def fill_content(self):
@@ -154,7 +153,12 @@ class LoginDialog(QDialog):
             self.hint_label.setText(data['message'])
             LOG.info(u'本次登陆需要验证码')
             self.captcha_id = data['captchaId']
-            self.show_captcha()
+            self.captcha_label.show()
+            self.captcha_lineedit.show()
+            url = self.ne.get_captcha_url(data['captchaId'])
+            request = QNetworkRequest(QUrl(url))
+            self.nm.get(request)
+            self.parent().network_queue.put(self.show_captcha)
         elif data['code'] == 408:
             self.hint_label.setText(u'网络连接超时')
         elif data['code'] == 501:
@@ -166,16 +170,8 @@ class LoginDialog(QDialog):
         else:
             self.hint_label.setText(u'未知错误')
 
-    def show_captcha(self):
+    def show_captcha(self, res):
         self.is_need_captcha = True
-        url = self.ne.get_captcha_url(self.captcha_id)
-        request = QNetworkRequest(QUrl(url))
-        self.nm.get(request)
-        self.captcha_label.show()
-        self.captcha_lineedit.show()
-
-    @pyqtSlot(QNetworkReply)
-    def on_nm_finished(self, res):
         img = QImage()
         img.loadFromData(res.readAll())
         self.captcha_label.setPixmap(QPixmap(img))

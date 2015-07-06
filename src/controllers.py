@@ -106,6 +106,8 @@ class MainWidget(QWidget):
         # self.webview.loadProgress.connect(self.on_webview_progress)
         self.webview.signal_play.connect(self.play)
         self.webview.signal_play_songs.connect(self.play_songs)
+        self.webview.signal_search_artist.connect(self.search_artist)
+        self.webview.signal_search_album.connect(self.search_album)
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
@@ -290,6 +292,16 @@ class MainWidget(QWidget):
             return
         self.current_playlist_widget.set_songs(songs)
         self.player.set_music_list(songs)
+
+    @pyqtSlot(int)
+    def search_artist(self, aid):
+        artist_detail_model = self.api.get_artist_detail(aid)
+        self.webview.load_artist(artist_detail_model)
+
+    @pyqtSlot(int)
+    def search_album(self, aid):
+        album_detail_model = self.api.get_album_detail(aid)
+        self.webview.load_album(album_detail_model)
 
     @pyqtSlot(dict)
     def on_player_media_changed(self, music_model):

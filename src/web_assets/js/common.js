@@ -28,6 +28,20 @@ SongTable.initData = function($scope){
         $scope.count = playlist_data.tracks.length;
         $scope.coverImgUrl = playlist_data.coverImgUrl;
    }
+
+   $scope.init_artist = function(artist_detail){
+        $scope.songs = artist_detail.hotSongs;
+        $scope.name = artist_detail.name;
+        $scope.count = artist_detail.hotSongs.length;
+        $scope.coverImgUrl = artist_detail.picUrl;
+   }
+
+   $scope.init_album = function(album_detail){
+        $scope.songs = album_detail.songs;
+        $scope.name = album_detail.name;
+        $scope.count = album_detail.songs.length;
+        $scope.coverImgUrl = album_detail.picUrl;
+   }
 }
 
 SongTable.fillSongsTable = function($scope){
@@ -74,20 +88,36 @@ SongTable.tmpSaveSongsInfo = function(songs){
     window.songs = songs.slice(0);
 }
 
-searchArtist = function(self){
+window.searchArtist = function(self){
     var artistId = parseInt($(self).attr('id'));
-    console.log(artistId);
+    js_python.search_artist(artistId);
 }
 
-searchAlbum = function(self){
+window.searchAlbum = function(self){
     var albumId = parseInt($(self).attr('id'));
-    console.log(albumId);
+    js_python.search_album(albumId);
 }
 
 window.python_log = function(text){
     console.log(text);
     console.log ("hello");
     $('.album').hide();
+}
+
+window.fill_album = function(album_detail){
+    angular.element($('#songs_table')).scope().init_album(album_detail);
+    angular.element($('#songs_table')).scope().$apply();
+
+    SongTable.tmpSaveSongsInfo(album_detail.songs);
+    SongTable.bind_music_play();
+}
+
+window.fill_artist = function(artist_detail){
+    angular.element($('#songs_table')).scope().init_artist(artist_detail);
+    angular.element($('#songs_table')).scope().$apply();
+
+    SongTable.tmpSaveSongsInfo(artist_detail.hotSongs);
+    SongTable.bind_music_play();
 }
 
 window.fill_playlist = function(playlist_data){
@@ -110,5 +140,5 @@ window.fill_search = function(songs){
 }
 
 $(function(){
-    console.log('common js');
+
 });

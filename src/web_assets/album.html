@@ -4,29 +4,34 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="stylesheet" href="css/bootstrap.min.css">
-        <link rel="stylesheet" href="public/album.css">
+        <link rel="stylesheet" href="public/playlist.css">
         <link rel="stylesheet" href="public/base.css">
         <link rel="stylesheet" href="public/theme/base_default.css">
         <script src="js/jquery.min.js"></script>
+        <script src="js/angular.min.js"></script>
         <script src="js/bootstrap.min.js" ></script>
         <script src="js/common.js"></script>
     </head>
     <body>
      <div class="container-fluid">
-        <div class="row">
+        <div class="row" ng-app="app_table" ng-controller="SongTable.initData" id="songs_table">
             <div class="col-sm-3">
                 <div class="info_layout">
-                    <img alt="140x140" class="album" src="http://p3.music.126.net/4WPHzC1bn3XQ0TS-UKUc7Q==/750966441792993.jpg" />
-                    <p class="desc">
-                        席琳·迪翁（Celine Dion），1968年3月30日生于加拿大魁北克省，加拿大歌手。
-                        1980年，12岁的席琳·迪翁步入歌坛，15岁时推出首支法文单曲，1990年，推出首张英文专辑《UNISON》。
-                        1996年为美国亚特兰大奥运会演唱了主题曲《The Power of The Dream》。
-                        1997年为电影《泰坦尼克号》献唱片尾曲《My Heart Will Go On》，并获得第70届奥斯卡最佳电影歌曲奖。
-                        2008年5月22日，席琳·迪翁在巴黎接受法国总统萨科齐亲自颁发的Legion d'Honneur骑士勋章。
-                        2013年，席琳·迪翁受央视春晚邀请担任表演嘉宾，与宋祖英合唱中国民曲《茉莉花》；同年发行专辑《Love Me Back To Life》。
-                    </p>
+                    <img alt="专辑图片" id="coverImg" class="album" ng-attr-src="{{ coverImgUrl }}" />
+                    <div class="desc">
+                        <div class="section">
+                            <span class="kind_tag">专辑</span><span id="name">{{ name }}</span>
+                        </div>
+                        <div class="h_spacer"></div>
+                        <div class="section">
+                            <span class="info_tag">歌曲数</span><span id="count">{{ count }}</span>
+                        </div>
+                        <div class="h_spacer"></div>
+                        <div class="section">
+                            <button class="play_all" id="play_all">播放全部</button>
+                        </div>
+                    </div>
                 </div>
-
             </div>
             <div class="col-sm-9">
                 <table class="table table-condensed">
@@ -40,15 +45,15 @@
                         </tr>
 
                     </thead>
-                    <tbody>
-                        <tr class="">
+                    <tbody id="tracks">
+                        <tr id="{{ song.id }}" class="song" ng-controller="SongTable.fillSongsTable" ng-repeat="song in songs" ng-dblclick="window.play_music(song.id)" ng-click="window.play_music(song.id)" song>
                             <td>
                                 <div class="star"></div>
                             </td>
-                            <td>secret base ~君がくれたもの~</td>
-                            <td>Zone</td>
-                            <td>ZONEトリビュート～</td>
-                            <td>04:55</td>
+                            <td>{{ song.name }}</td>
+                            <td class="cursor_pointer" ng-init="accessArtists(song.artists)" ng-attr-id="{{ artistId }}" onclick="searchArtist(this)"> {{ artistName }}</td>
+                            <td class="cursor_pointer" onclick="searchAlbum(this)" ng-attr-id="{{ song.album.id }}">{{ song.album.name }}</td>
+                            <td ng-init="accessSongDuration(song.duration)">{{ duration }}</td>
                         </tr>
                     </tbody>
                 </table>

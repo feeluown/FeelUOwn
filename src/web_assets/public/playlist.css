@@ -81,8 +81,6 @@ th {
     color: #CCC;
 }
 
-
-
 @media screen and (max-width: 768px) {
     .info_layout {
         margin-top: 10px;
@@ -107,6 +105,13 @@ th {
     }
     .desc {
         padding-top: 50px;
+    }
+
+    .col-sm-9 {
+        display: block;
+        height: 100%;
+        overflow-y: scroll;
+        overflow-x: hidden;
     }
 }
 

@@ -195,8 +195,8 @@ class Player(QMediaPlayer):
     def on_error_occured(self, error):
         self.pause()
         if error == 2 or error == 5:
-            m = QMessageBox(QMessageBox.Warning, u"错误提示", "可能缺少解码器，请参考项目主页\
-            https://git.oschina.net/zjuysw/NetEaseMusic 安装依赖", QMessageBox.Yes | QMessageBox.No)
+            m = QMessageBox(QMessageBox.Warning, u"错误提示", "第一次运行出现该错误可能是由于缺少解码器，请参考项目主页\
+            https://github.com/cosven/FeelUOwn 安装依赖。\n 如果不是第一次运行，那就可能是网络已经断开，请检查您的网络连接", QMessageBox.Yes | QMessageBox.No)
             if m.exec() == QMessageBox.Yes:
                 QApplication.quit()
             else:

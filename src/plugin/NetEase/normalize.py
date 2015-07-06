@@ -5,7 +5,8 @@ import hashlib, time
 from base.logger import LOG
 from base.common import singleton
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
-    AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel
+    AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
+    AlbumDetailModel, ArtistDetailModel
 from plugin.NetEase.api import NetEase
 
 from _thread import start_new_thread
@@ -191,6 +192,25 @@ class NetEaseAPI(object):
             songs[i] = access_brief_music(song)
         return songs
 
+    def get_artist_detail(self, artist_id):
+        data = self.ne.artist_infos(artist_id)
+        for i, track in enumerate(data['hotSongs']):
+            data['hotSongs'][i] = access_music(track)
+
+        for each_key in data['artist']:
+            data[each_key] = data['artist'][each_key]
+
+        model = ArtistDetailModel(data).get_model()
+        return model
+
+    def get_album_detail(self, album_id):
+        data = self.ne.album_infos(album_id)
+        album = data['album']
+        for i, track in enumerate(album['songs']):
+            album['songs'][i] = access_music(track)
+        model = AlbumDetailModel(album).get_model()
+        return model
+
     def is_playlist_mine(self, playlist_model):
         if playlist_model['uid'] == self.uid:
             return True
@@ -202,12 +222,10 @@ class NetEaseAPI(object):
         for track in tracks:
             if track['id'] == mid:
                 return True
-
         return False
 
     def set_music_to_playlist(self, mid, pid, op):
         """
-
         :param mid:
         :param pid:
         :param op: 'add' or 'del'

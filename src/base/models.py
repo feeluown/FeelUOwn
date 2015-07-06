@@ -72,6 +72,19 @@ class BriefMusicModel(DataModel):
         self.init_model()
 
 
+class ArtistDetailModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type=None)
+        self._model = {
+            'id': int,
+            'name': str,
+            'picUrl': str,
+            'briefDesc': str,
+            'hotSongs': list
+        }
+        self.init_model()
+
+
 class ArtistModel(DataModel):
     """
 
@@ -133,6 +146,19 @@ class BriefPlaylistModel(DataModel):
             'coverImgUrl': str,
             'type': int,
             'uid': int
+        }
+        self.init_model()
+
+
+class AlbumDetailModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type)
+        self._model = {
+            'id': int,
+            'name': str,
+            'briefDesc': str,
+            'picUrl': str,
+            'songs': list
         }
         self.init_model()
 

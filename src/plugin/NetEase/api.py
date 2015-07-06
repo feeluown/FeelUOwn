@@ -137,7 +137,7 @@ class NetEase:
         data = self.http_request('GET', action)
         return data['artists']
 
-    # 歌手单曲
+    # 歌手相关
     def artist_infos(self, artist_id):
         """
         :param artist_id: artist_id
@@ -153,10 +153,17 @@ class NetEase:
         return data
 
     # album id --> song id set
-    def album(self, album_id):
+    def album_infos(self, album_id):
+        """
+        :param album_id:
+        :return: {
+            code: int,
+            album: { album }
+        }
+        """
         action = 'http://music.163.com/api/album/' + str(album_id)
         data = self.http_request('GET', action)
-        return data['album']['songs']
+        return data
 
     # song ids --> song urls ( details )
     def songs_detail(self, ids, offset=0):

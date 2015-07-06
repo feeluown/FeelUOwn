@@ -24,7 +24,7 @@
                         </div>
                         <div class="h_spacer"></div>
                         <div class="section">
-                            <span class="info_tag">歌曲数</span><span id="count">{{ count }}</span>
+                            <span class="info_tag">精选歌曲</span><span id="count">{{ count }}</span>
                         </div>
                         <div class="h_spacer"></div>
                         <div class="section">
@@ -43,7 +43,6 @@
                             <th>专辑</th>
                             <th>时长</th>
                         </tr>
-
                     </thead>
                     <tbody id="tracks">
                         <tr id="{{ song.id }}" class="song" ng-controller="SongTable.fillSongsTable" ng-repeat="song in songs" ng-dblclick="window.play_music(song.id)" ng-click="window.play_music(song.id)" song>
