@@ -291,7 +291,7 @@ class MainWidget(QWidget):
 
     @pyqtSlot(int)
     def play_mv(self, mvid):
-        self.player.pause()
+
         mv_model = self.api.get_mv_detail(mvid)
 
         url_high = mv_model['url_high']
@@ -299,6 +299,7 @@ class MainWidget(QWidget):
         clipboard.setText(url_high)
 
         if common.judge_platform() == 'deepin':     # tested on 'deepin 2014.3'
+            self.player.pause()
             self.webview.load_mv(mv_model)
             self.status.showMessage(u"已经将视频的播放地址复制到剪切板，你也可以使用你喜欢的播放器播放更加高清视频", 5000)
         else:
