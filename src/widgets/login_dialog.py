@@ -61,7 +61,6 @@ class LoginDialog(QDialog):
     def __set_signal_binding(self):
         self.login_btn.clicked.connect(self.__login)
         self.password_widget.textChanged.connect(self.on_password_lineedit_changed)
-        self.signal_login_sucess.connect(self.on_login_success)
 
     def fill_content(self):
         """
@@ -182,10 +181,6 @@ class LoginDialog(QDialog):
     @pyqtSlot()
     def on_password_lineedit_changed(self):
         self.is_autofill = False
-
-    @pyqtSlot(dict, name='login_success')
-    def on_login_success(self, data):
-        self.nm.finished.disconnect(self.on_nm_finished)
 
     def __set_me(self):
         self.setObjectName('login_dialog')

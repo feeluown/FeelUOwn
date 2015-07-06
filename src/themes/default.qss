@@ -52,6 +52,7 @@ QGroupBox::title {
 /* ****************************** */
 
 QWidget {
+    /* font: regular "WenQuanYi Micro Hei", "Monospace", "Times New Roman"; */
     background-color: #272727;
     color: #CCCCCC;
 }
