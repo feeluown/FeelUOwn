@@ -24,7 +24,7 @@ Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
 StartupNotify=true
 " > $desktopFilename
-echo "生成桌面图标..."
+echo "生成桌面图标"
 desktop_cn=""
 desktop_en=""
 if [ -d ~/桌面 ];then
@@ -68,7 +68,7 @@ if [ -d ~/Desktop ];then
     fi
 fi
 
-echo "生成系统图标..."
+echo "生成系统图标"
 sudo cp $desktopFilename ~/.local/share/applications/
 
 echo "==============================="
@@ -92,5 +92,5 @@ fi
 if [ $? -eq 0 ]; then
     echo "全部完成!"
 else
-    echo "貌似出现了什么错误..."
+    echo "貌似出现了什么错误"
 fi
