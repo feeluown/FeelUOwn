@@ -1,7 +1,7 @@
 var SongTable = {};
 var appTable = angular.module('app_table',[]);
 
-appTable.directive('song', function($compile){
+appTable.directive('song', function(){
     return {
         link: function($scope, $element){
 
@@ -13,6 +13,16 @@ appTable.directive('song', function($compile){
             }
 
             setRowAlternate($scope.$even, $element);
+        }
+    }
+});
+
+appTable.directive('mvbtn', function(){
+    return {
+        link: function($scope, $element, $attributes){
+            if (parseInt($attributes.id) == 0){
+                $element.hide();
+            }
         }
     }
 });
@@ -74,6 +84,13 @@ SongTable.bind_music_play = function(){
 
         // js_python python的接口
         js_python.play(parseInt(sid));
+    });
+
+    $('.mv_flag').on('click', function(self){
+        var mvid = parseInt($(this).attr('id'));
+        if (mvid !=0 ){
+            js_python.play_mv(mvid);
+        }
     });
 
     $('#play_all').on('click', function(){
@@ -138,6 +155,11 @@ window.fill_search = function(songs){
     SongTable.bind_music_play();
     SongTable.tmpSaveSongsInfo(tracks);
 }
+
+window.play_mv = function(url){
+    $('#video_mv').find('#mv_src').attr('src', url);
+}
+
 
 $(function(){
 

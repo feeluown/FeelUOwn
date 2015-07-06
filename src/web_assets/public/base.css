@@ -21,6 +21,16 @@ table {
     cursor: pointer;
 }
 
+.mv_flag {
+    margin-right: 10px;
+    font-size: 6px;
+    color: #CCC;
+    background-color: #993333;
+    width: 20px;
+    height: 10px;
+    display: inline-block;
+}
+
 /* scrollbar 样式控制 */
 ::-webkit-scrollbar
 {

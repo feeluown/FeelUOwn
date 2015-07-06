@@ -279,3 +279,7 @@ class NetEase:
     def getRadioMusic(self):
         url = 'http://music.163.com/api/radio/get'
         return self.http_request('GET', url)
+
+    def get_mv_detail(self, mvid):
+        url = 'http://music.163.com/api/mv/detail?id=' + str(mvid)
+        return self.http_request('GET', url)

@@ -43,6 +43,18 @@ class DataModel(object):
             return None
 
 
+class MvModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type)
+        self._model = {
+            'id': int,
+            'url_low': str,
+            'url_middle': str,
+            'url_high': str
+        }
+        self.init_model()
+
+
 class MusicModel(DataModel):
     """
     """
@@ -54,7 +66,8 @@ class MusicModel(DataModel):
             'artists': list,
             'album': dict,
             'duration': int,
-            'url': str
+            'url': str,
+            'mvid': int
         }
         self.init_model()
 

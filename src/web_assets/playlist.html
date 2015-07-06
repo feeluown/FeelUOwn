@@ -50,7 +50,7 @@
                             <td>
                                 <div class="star"></div>
                             </td>
-                            <td>{{ song.name }}</td>
+                            <td><Button id="{{ song.mvid }}" ng-attr-id="{{ song.mvid }}" class="mv_flag" mvbtn>MV</Button>{{ song.name }}</td>
                             <td class="cursor_pointer" ng-init="accessArtists(song.artists)" ng-attr-id="{{ artistId }}" onclick="searchArtist(this)"> {{ artistName }}</td>
                             <td class="cursor_pointer" onclick="searchAlbum(this)" ng-attr-id="{{ song.album.id }}">{{ song.album.name }}</td>
                             <td ng-init="accessSongDuration(song.duration)">{{ duration }}</td>

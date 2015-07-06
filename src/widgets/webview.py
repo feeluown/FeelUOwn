@@ -23,6 +23,7 @@ class WebView(QWebView):
     signal_play_songs = pyqtSignal([list])
     signal_search_artist = pyqtSignal([int])
     signal_search_album = pyqtSignal([int])
+    signal_play_mv = pyqtSignal([int])
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -65,6 +66,10 @@ class WebView(QWebView):
         """
         """
         self.signal_play.emit(mid)
+
+    @pyqtSlot(int)
+    def play_mv(self, mvid):
+        self.signal_play_mv.emit(mvid)
 
     @pyqtSlot(str)
     def play_songs(self, songs_str):
@@ -122,6 +127,14 @@ class WebView(QWebView):
         data = json.dumps(songs)
         path = QFileInfo(HTML_PATH + 'search.html').absoluteFilePath()
         js_code = 'window.fill_search(%s)' % data
+        self.js_queue.append(js_code)
+        self.load(QUrl.fromLocalFile(path))
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
+
+    def load_mv(self, mv_model):
+        url = mv_model['url_middle']
+        path = QFileInfo(HTML_PATH + 'mv.html').absoluteFilePath()
+        js_code = 'window.play_mv("%s")' % url
         self.js_queue.append(js_code)
         self.load(QUrl.fromLocalFile(path))
         self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)

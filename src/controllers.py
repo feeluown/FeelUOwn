@@ -24,6 +24,8 @@ from base.network_manger import NetworkManager
 from base.logger import LOG
 from base.web import MyWeb
 
+from base import common
+
 from api import Api
 from setting import WINDOW_ICON
 
@@ -97,6 +99,7 @@ class MainWidget(QWidget):
 
         self.ui.top_widget.search_edit.returnPressed.connect(self.search_music)
         self.ui.top_widget.add_to_favorite.clicked.connect(self.set_favorite)
+        self.ui.top_widget.play_mv_btn.clicked.connect(self.play_song_mv)
 
         self.current_playlist_widget.signal_play_music.connect(self.play)
         self.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
@@ -108,6 +111,7 @@ class MainWidget(QWidget):
         self.webview.signal_play_songs.connect(self.play_songs)
         self.webview.signal_search_artist.connect(self.search_artist)
         self.webview.signal_search_album.connect(self.search_album)
+        self.webview.signal_play_mv.connect(self.play_mv)
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
@@ -286,6 +290,27 @@ class MainWidget(QWidget):
         self.player.play(songs[0])
 
     @pyqtSlot(int)
+    def play_mv(self, mvid):
+        self.player.pause()
+        mv_model = self.api.get_mv_detail(mvid)
+
+        url_high = mv_model['url_high']
+        clipboard = QApplication.clipboard()
+        clipboard.setText(url_high)
+
+        if common.judge_platform() == 'deepin':     # tested on 'deepin 2014.3'
+            self.webview.load_mv(mv_model)
+            self.status.showMessage(u"已经将视频的播放地址复制到剪切板，你也可以使用你喜欢的播放器播放更加高清视频", 5000)
+        else:
+            self.status.showMessage(u"您的系统暂时还不支持播放。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
+
+    def play_song_mv(self):
+        mid = self.state['current_mid']
+        music_model = self.api.get_song_detail(mid)[0]
+        mvid = music_model['mvid']
+        self.play_mv(int(mvid))
+
+    @pyqtSlot(int)
     def play_songs(self, songs):
         if len(songs) == 0:
             self.status.showMessage(u'该列表没有歌曲', 2000)
@@ -330,8 +355,17 @@ class MainWidget(QWidget):
         self.trayicon.showMessage(u'正在播放: ', music_model['name'])
 
         self.state['current_mid'] = music_model['id']
+
+        self.judge_song_has_mv(music_model)
         if self.state['is_login']:
             self.judge_favorite(music_model['id'])
+
+    def judge_song_has_mv(self, music_model):
+        if music_model['mvid'] != 0:
+            self.ui.top_widget.play_mv_btn.show()
+            return
+        self.ui.top_widget.play_mv_btn.close()
+
 
     @pyqtSlot(int)
     def on_player_duration_changed(self, duration):

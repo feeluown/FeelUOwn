@@ -23,6 +23,7 @@ class TopWidget(QWidget):
         self.play_pause_btn = QPushButton()
         self.text_label = QLabel()
         self.add_to_favorite = QPushButton()
+        self.play_mv_btn = QPushButton('MV')
         self.img_label = QLabel()
         self.time_lcd = QLabel()
         self.search_edit = QLineEdit()
@@ -60,6 +61,7 @@ class TopWidget(QWidget):
     def init_widget(self):
         self.login_label.close()
         self.add_to_favorite.close()
+        self.play_mv_btn.close()
 
     def set_me(self):
         # it will conflict with stylesheet, stylesheet has the priority
@@ -125,6 +127,7 @@ class TopWidget(QWidget):
         self.progress_info.setObjectName('progress_info')
         self.img_label.setObjectName('album_label')
         self.show_current_list.setObjectName('show_current_list')
+        self.play_mv_btn.setObjectName('play_mv_btn')
 
     def set_layouts_prop(self):
         self.layout.setContentsMargins(0, 0, 0, 0)
@@ -141,6 +144,8 @@ class TopWidget(QWidget):
         self.center_layout_l_top.addWidget(self.text_label, 1)
         self.center_layout_l_top.addSpacing(10)
         self.center_layout_l_top.addStretch(1)
+        self.center_layout_l_top.addWidget(self.play_mv_btn)
+        self.center_layout_l_top.addSpacing(10)
         self.center_layout_l_top.addWidget(self.add_to_favorite)
         self.center_layout_l_top.addSpacing(10)
 

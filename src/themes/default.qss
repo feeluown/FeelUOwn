@@ -193,6 +193,17 @@ QPushButton#remove_music:hover {
     border-image: url(../icons/trash_btn_hover.png);
 }
 
+QPushButton#play_mv_btn {
+    border-radius: 4px;
+    background-color: #993333;
+    font-size: 8px;
+    padding: 2px 5px;
+}
+
+QPushButton#play_mv_btn:hover {
+    color: #222;
+}
+
 /* ****************************** */
 /* QLineEdit */
 /* ****************************** */

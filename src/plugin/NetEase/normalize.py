@@ -6,7 +6,7 @@ from base.logger import LOG
 from base.common import singleton
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
-    AlbumDetailModel, ArtistDetailModel
+    AlbumDetailModel, ArtistDetailModel, MvModel
 from plugin.NetEase.api import NetEase
 
 from _thread import start_new_thread
@@ -245,6 +245,20 @@ class NetEaseAPI(object):
 
     def set_music_to_favorite(self, mid, op):
         self.set_music_to_playlist(mid, self.favorite_pid, op)
+
+    def get_mv_detail(self, mvid):
+        data = self.ne.get_mv_detail(mvid)
+        data = data['data']
+        brs = sorted(data['brs'].keys(), key=lambda num: int(num))
+        data['url_low'] = data['brs'][brs[0]]
+        data['url_high'] = data['brs'][brs[-1]]
+        if len(brs) >= 2:
+            data['url_middle'] = data['brs'][brs[-2]]
+        else:
+            data['url_middle'] = data['brs'][brs[-1]]
+        model = MvModel(data).get_model()
+        return model
+
 
 
 if __name__ == "__main__":

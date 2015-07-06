@@ -12,7 +12,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from setting import QSS_PATH, ICON_PATH, LOGFILE
+from setting import QSS_PATH, ICON_PATH, LOGFILE, \
+    MODE, DEBUG
 
 from controllers import MainWidget
 
@@ -23,6 +24,11 @@ if __name__ == "__main__":
     qss = QSS_PATH
     with open(qss, "r") as qssfile:
         app.setStyleSheet(qssfile.read())
+
+    if MODE != DEBUG:
+        f_handler = open(LOGFILE, 'w')
+        sys.stdout = f_handler
+        sys.stderr = f_handler
 
     w = MainWidget()
     w.move((QApplication.desktop().width() - w.width())/2, (QApplication.desktop().height() - w.height())/2)
