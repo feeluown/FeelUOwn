@@ -5,7 +5,9 @@
 #   相关issue: http://git.oschina.net/zjuysw/NetEaseMusic/issues/3
 ##############################
 
-echo "1. 正在生成图标......"
+echo "---------------------------"
+echo "脚本适用于Debian系的Linux"
+echo "---------------------------"
 
 desktopFilename='FeelUOwn.desktop'
 touch $desktopFilename
@@ -22,7 +24,7 @@ Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
 StartupNotify=true
 " > $desktopFilename
-echo "2. 尝试生成桌面图标..."
+echo "生成桌面图标..."
 desktop_cn=""
 desktop_en=""
 if [ -d ~/桌面 ];then
@@ -64,13 +66,28 @@ if [ -d ~/Desktop ];then
             fi
         fi
     fi
-    
 fi
 
-echo "3. 让程序可以被系统搜索..."
+echo "生成系统图标..."
 sudo cp $desktopFilename ~/.local/share/applications/
 
 echo "==============================="
+
+vlc --version > /dev/null
+if [ $? -eq 0 ]; then
+    echo "好消息：您已经安装了 VLC 播放器"
+else
+    echo "VLC播放器可以用来播放MV，您还没有安装过，如果您使用Ubuntu，建议您安装它；如果您使用Deepin，你可以不安装"
+    echo "现在为您安装VLC播放器吗 ？"
+    echo "确认: 'y/n'"
+    echo -n "> "
+    read flag
+    if [ "$flag" = "y" ]; then
+        sudo apt-get install vlc
+    else
+        echo "取消安装 VLC播放器"
+    fi
+fi
 
 if [ $? -eq 0 ]; then
     echo "全部完成!"
