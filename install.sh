@@ -73,7 +73,7 @@ sudo cp $desktopFilename ~/.local/share/applications/
 
 echo "==============================="
 
-vlc --version > /dev/null
+vlc --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo "好消息：您已经安装了 VLC 播放器"
 else

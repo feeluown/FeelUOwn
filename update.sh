@@ -4,20 +4,20 @@ echo "---------------------------"
 echo "这些脚本适用于Debian系的Linux"
 echo "---------------------------"
 
-echo "正在检查你是否安装一些系统工具..."
+echo "正在检查你是否安装一些更新需要的工具..."
 
 git --version > /dev/null 2>&1
 if [ $? -eq 0 ]; then
-    echo "好消息：您已经安装过 git 工具"
+    echo ""
 else
     echo "您还没有安装过git工具，现在为您安装git？"
-    echo "确认: 'y/n'"
+    echo -n "确认: 'y/n' "
     echo -n "> "
     read flag
     if [ "$flag" = "y" ]; then
         sudo apt-get install git
     else
-        echo "取消安装git工具，更新中断..."
+        echo "您选择取消安装git工具，更新中断..."
         exit 0
     fi
 fi
@@ -43,7 +43,10 @@ if [ "$flag" = "y" ]; then
 else
   echo "取消更新!"
 fi
-echo "正在重新生成桌面图标..."
+
+echo ""
+
+echo "重新生成桌面图标"
 ./install.sh
 
 exit 0
