@@ -152,6 +152,7 @@ class LoginDialog(QDialog):
             self.close()
             self.save_login_info(login_data)
         elif data['code'] == 415:   # 需要验证码
+            self.is_need_captcha = True
             self.hint_label.setText(data['message'])
             LOG.info(u'本次登陆需要验证码')
             self.captcha_id = data['captchaId']
@@ -173,7 +174,6 @@ class LoginDialog(QDialog):
             self.hint_label.setText(u'未知错误')
 
     def show_captcha(self, res):
-        self.is_need_captcha = True
         img = QImage()
         img.loadFromData(res.readAll())
         self.captcha_label.setPixmap(QPixmap(img))
