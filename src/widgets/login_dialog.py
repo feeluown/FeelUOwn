@@ -119,7 +119,10 @@ class LoginDialog(QDialog):
             flag, self.captcha_id = self.ne.confirm_captcha(self.captcha_id, captcha_text)
             if flag is not True:
                 self.hint_label.setText(u'验证码错误')
-                self.show_captcha()
+                url = self.ne.get_captcha_url(data['captchaId'])
+                request = QNetworkRequest(QUrl(url))
+                self.nm.get(request)
+                self.parent().network_queue.put(self.show_captcha)
                 return
 
         phone_login = False      # 0: 网易通行证, 1: 手机号登陆
