@@ -1,6 +1,7 @@
 # FeelUOwn
 
 从之前的 “网易云音乐 For Linux(第三方版)” 项目发展过来
+之前的项目托管地址：<https://git.oschina.net/zjuysw/NetEaseMusic>
 
 **项目主页**: 
 

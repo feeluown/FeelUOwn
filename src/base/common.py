@@ -14,12 +14,12 @@ def singleton(cls, *args, **kw):
     return _singleton
 
 
-def judge_platform():
+def judge_system():
     sys_info = platform.system()
     return sys_info
 
 
-def judge_system():
+def judge_platform():
     platform_info = platform.platform()
     info = platform_info.split('-')
     return info

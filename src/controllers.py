@@ -300,22 +300,26 @@ class MainWidget(QWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(url_high)
 
-        if common.judge_platform().lower() == 'Linux'.lower():
-            if common.judge_system()[-3].lower() == 'deepin':
+        if common.judge_system().lower() == 'Linux'.lower():
+            if common.judge_platform()[-3].lower() == 'deepin':
                 self.player.pause()
                 self.status.showMessage(u"准备调用 deepin-movie 播放器播放mv...", 5000)
-                subprocess.Popen(['deepin-movie', url_middle])
-            elif common.judge_system()[-3].lower() == 'ubuntu':
+                subprocess.Popen(['deepin-movie', url_high])
+            elif common.judge_platform()[-3].lower() == 'ubuntu':
                 self.player.pause()
                 self.status.showMessage(u"你的系统是Ubuntu，准备调用 vlc 播放器播放mv...", 5000)
-                subprocess.Popen(['vlc', url_middle, '--play-and-exit', '-f'])
+                subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
             else:
                 self.player.pause()
                 self.status.showMessage(u"准备调用 vlc 播放器播放mv...", 5000)
-                subprocess.Popen(['vlc', url_middle, '--play-and-exit', '-f'])
+                subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
+        elif common.judge_system().lower() == 'Darwin'.lower():
+            self.player.pause()
+            self.status.showMessage(u"准备调用 QuickTime Player 播放mv", 4000)
+            subprocess.Popen(['open', '-a', 'QuickTime Player', url_high])
         else:
             self.status.showMessage(u"您的系统不是Linux。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
-            self.webview.load_mv(mv_model)
+            # self.webview.load_mv(mv_model)
 
     def play_song_mv(self):
         mid = self.state['current_mid']
