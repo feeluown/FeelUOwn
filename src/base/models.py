@@ -196,3 +196,13 @@ class BriefAlbumModel(DataModel):
             'name': str,
         }
         self.init_model()
+
+class LyricModel(DataModel):
+    def __init__(self, data, type=None):
+        super().__init__(data, type)
+        self._model = {
+            'time_sequence': list,
+            'lyric': list,
+            'translate_lyric': list
+        }
+        self.init_model()

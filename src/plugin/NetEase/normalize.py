@@ -1,12 +1,13 @@
 # -*- coding: utf8 -*-
 
 import hashlib, time
+import re
 
 from base.logger import LOG
 from base.common import singleton
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
-    AlbumDetailModel, ArtistDetailModel, MvModel
+    AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
 from plugin.NetEase.api import NetEase
 
 from _thread import start_new_thread
@@ -259,6 +260,34 @@ class NetEaseAPI(object):
         model = MvModel(data).get_model()
         return model
 
+    def get_lyric_detail(self, music_id):
+        data = self.ne.get_lyric_by_musicid(music_id)
+        if 'lrc' not in data.keys():
+            return None
+
+        re_express = re.compile("\[\d+:\d+\.\d+\]")
+        lyric = data['lrc']['lyric']
+        lyric_l = re_express.split(lyric)
+        data['lyric'] = lyric_l
+
+        time_s = re_express.findall(lyric)
+        for i, each in enumerate(time_s):
+            m = int(each[1:3]) * 60000
+            s = float(each[4:9]) * 1000
+            time_s[i] = int(m + s)
+        data['time_sequence'] = list(time_s)
+        data['time_sequence'].insert(0, 0)
+
+        if data['tlyric']['lyric']:
+            translate_lyric = data['tlyric']['lyric']
+            tlyric_l = re_express.split(translate_lyric)
+            data['translate_lyric'] = tlyric_l
+        else:
+            data['translate_lyric'] = []
+
+        model = LyricModel(data).get_model()
+
+        return model
 
 
 if __name__ == "__main__":

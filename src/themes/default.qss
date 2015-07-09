@@ -193,14 +193,14 @@ QPushButton#remove_music:hover {
     border-image: url(../icons/trash_btn_hover.png);
 }
 
-QPushButton#play_mv_btn {
+QPushButton#play_mv_btn, QPushButton#show_lyric_btn {
     border-radius: 4px;
     background-color: #993333;
     font-size: 8px;
     padding: 2px 5px;
 }
 
-QPushButton#play_mv_btn:hover {
+QPushButton#play_mv_btn:hover, QPushButton#show_lyric_btn:hover {
     color: #222;
 }
 
@@ -251,6 +251,15 @@ QLabel#title{
     padding-left: 5px;
     margin: 10px 0;
 }
+
+
+QLabel#lyric_label {
+    border-radius: 10px;
+    color: #993333;
+    background-color: rgba(0, 0, 0, 0.5);
+    font-size: 20px;
+}
+
 
 QLabel#playlist_title, QLabel#musiclist_title {
     font-size: 20px;

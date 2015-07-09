@@ -15,6 +15,7 @@ from PyQt5.QtMultimedia import *
 from widgets.login_dialog import LoginDialog
 from widgets.trayicon import TrayIcon
 from widgets.music_table_widget import MusicTableWidget
+from widgets.lyric_widget import LyricWidget
 from widgets.playlist_widget import PlaylistWidget, PlaylistItem
 
 from views import UiMainWidget
@@ -42,6 +43,8 @@ class MainWidget(QWidget):
         self.player = Player()
 
         self.current_playlist_widget = MusicTableWidget()
+        self.lyric_widget = LyricWidget(u'没有正在播放的歌曲')
+
         self.status = self.ui.status
         self.trayicon = TrayIcon(self)
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
@@ -101,6 +104,7 @@ class MainWidget(QWidget):
         self.ui.top_widget.search_edit.returnPressed.connect(self.search_music)
         self.ui.top_widget.add_to_favorite.clicked.connect(self.set_favorite)
         self.ui.top_widget.play_mv_btn.clicked.connect(self.play_song_mv)
+        self.ui.top_widget.show_lyric_btn.clicked.connect(self.show_hide_lyric)
 
         self.current_playlist_widget.signal_play_music.connect(self.play)
         self.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
@@ -144,7 +148,6 @@ class MainWidget(QWidget):
 
             # self.status.showMessage(u'正在缓存您的歌单列表', 10000)  # 会让程序整体等待10s
             pid = playlist['id']
-            start_new_thread(self.api.get_playlist_detail, (pid, ))
 
             w = PlaylistItem(self)
             w.set_playlist_item(playlist)
@@ -154,6 +157,7 @@ class MainWidget(QWidget):
 
             if self.api.is_playlist_mine(playlist):
                 self.ui.left_widget.central_widget.create_list_widget.layout.addWidget(w)
+                start_new_thread(self.api.get_playlist_detail, (pid, ))
             else:
                 self.ui.left_widget.central_widget.collection_list_widget.layout.addWidget(w)
 
@@ -250,9 +254,19 @@ class MainWidget(QWidget):
     @pyqtSlot(int)
     def on_player_position_changed(self, ms):
         time_text = QTime(0, (ms / 60000) % 60, (ms / 1000) % 60)
-        self.ui.top_widget.time_lcd.setText(time_text.toString())
+        self.ui.top_widget.time_lcd.setText(time_text.toString("mm:ss"))
         self.ui.top_widget.slider_play.setValue(ms / 1000)
 
+        if self.lyric_widget.isVisible():
+            if self.lyric_widget.has_lyric():
+                self.lyric_widget.sync_lyric(ms)
+            else:
+                lyric_model = self.api.get_lyric_detail(self.state['current_mid'])
+                if lyric_model:
+                    self.lyric_widget.set_lyric(lyric_model)
+                    self.lyric_widget.sync_lyric(ms)
+                else:
+                    self.lyric_widget.setText(u'歌曲没有歌词')
     @pyqtSlot(dict)
     def on_login_success(self, data):
         """
@@ -327,6 +341,12 @@ class MainWidget(QWidget):
         mvid = music_model['mvid']
         self.play_mv(int(mvid))
 
+    def show_hide_lyric(self):
+        if self.lyric_widget.isVisible():
+            self.lyric_widget.hide()
+        else:
+            self.lyric_widget.show()
+
     @pyqtSlot(int)
     def play_songs(self, songs):
         if len(songs) == 0:
@@ -359,6 +379,7 @@ class MainWidget(QWidget):
         metrics = QFontMetrics(self.ui.top_widget.font())
         title = metrics.elidedText(title, Qt.ElideRight, 300 - 40)
         self.ui.top_widget.text_label.setText(title)
+        self.lyric_widget.reset_lyric()
 
         self.ui.top_widget.time_lcd.setText('00:00')
         self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
