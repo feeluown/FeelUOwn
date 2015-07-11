@@ -146,6 +146,7 @@ class LoginDialog(QDialog):
             data = self.ne.login(username, password, phone_login)
         else:
             data = self.ne.auto_login(username, password, phone_login)
+        print(data)
         if data['code'] == 200:
             self.hint_label.setText(u'登录成功')
             self.signal_login_sucess.emit(data)

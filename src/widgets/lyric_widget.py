@@ -27,7 +27,7 @@ class LyricWidget(QLabel):
         self.setAlignment(Qt.AlignCenter)
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        # self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setWindowOpacity(0.5)
 
         self.resize(width, height)
@@ -51,7 +51,7 @@ class LyricWidget(QLabel):
     def sync_lyric(self, ms):
         if self.has_lyric():
             for i, each in enumerate(self.__time_sequence):
-                if ms >= each:
+                if ms + 400 >= each:
                     lyric = self.__lyrics[i][:-1]
                     if self.__translate_lyric:
                         tlyric = self.__translate_lyric[i][:-1]

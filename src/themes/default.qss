@@ -256,7 +256,6 @@ QLabel#title{
 QLabel#lyric_label {
     border-radius: 10px;
     color: #993333;
-    background-color: rgba(0, 0, 0, 0.5);
     font-size: 20px;
 }
 

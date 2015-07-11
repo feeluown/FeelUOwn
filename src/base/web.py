@@ -22,8 +22,9 @@ class MyWeb(QObject):
             'Connection': 'keep-alive',
             'cache-control': 'private',
             'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
-            'Referer': 'http://music.163.com/song?id=26599525',
-            "User-Agent": "Opera/8.0 (Macintosh; PPC Mac OS X; U; en)"
+            'Referer': 'http://music.163.com/',
+            'cookie': 'appver=1.2.1; os=osx;',
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
         }
         self.cookie = http.cookiejar.LWPCookieJar()
         self.cookie_support = urllib.request.HTTPCookieProcessor(self.cookie)
