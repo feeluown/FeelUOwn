@@ -27,7 +27,7 @@ class LyricWidget(QLabel):
         self.setAlignment(Qt.AlignCenter)
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        # self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setWindowOpacity(0.5)
 
         self.resize(width, height)
@@ -57,15 +57,15 @@ class LyricWidget(QLabel):
                         tlyric = self.__translate_lyric[i][:-1]
                         lyric += "\n" + tlyric
                     self.setText(lyric)
-    #
-    # def mousePressEvent(self, event):
-    #     if event.button() == Qt.LeftButton:
-    #         self.drag_pos = event.globalPos() - self.pos()
-    #     event.accept()
-    #
-    # def mouseMoveEvent(self, event):
-    #     if event.buttons() == Qt.LeftButton:
-    #         self.move(event.globalPos() - self.drag_pos)
-    #         event.accept()
-    #     if event.buttons() == Qt.RightButton:
-    #         event.ignore()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton:
+            self.drag_pos = event.globalPos() - self.pos()
+        event.accept()
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() == Qt.LeftButton:
+            self.move(event.globalPos() - self.drag_pos)
+            event.accept()
+        if event.buttons() == Qt.RightButton:
+            event.ignore()
