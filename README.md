@@ -19,7 +19,7 @@ sudo apt-get install python3-pyqt5.qtwebkit
 
 ```
 sudo apt-get install libqt5multimedia5-plugins
-sudo apt-get install gstreamer0.10-plugin-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly
+sudo apt-get install gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly
 sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav
 ```
 
