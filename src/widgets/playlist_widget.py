@@ -74,6 +74,12 @@ class PlaylistItem(QFrame):
                 padding-left: 15px;
                 border: 0px solid #993333;
             }
+            QFrame#playlist_container:hover{
+                background-color: #333;
+                border-left:8px solid #993333;
+                border-top: 10px solid #333;
+                border-bottom: 10px solid #333;
+            }
         """
 
 
@@ -126,7 +132,6 @@ class PlaylistItem(QFrame):
         self.data = playlist_model
         if playlist_model['type'] == 5:
             self.icon_label.setObjectName('playlist_img_favorite')
-            self.setObjectName('playlist_container')
         else:
             self.icon_label.setObjectName('playlist_img_mine')
 

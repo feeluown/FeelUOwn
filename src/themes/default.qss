@@ -74,17 +74,17 @@ QFrame#playlist_container {
     border: 0px solid #993333;
 }
 
-QFrame#playlist_container:hover {
-    background-color: #333;
-    border-left:8px solid #993333;
-    border-top: 10px solid #333;
-    border-bottom: 10px solid #333;
-}
-
 QFrame#playlist_container_active {
     padding-left: 11px;
     border-left:4px solid #993333;
     background-color: #333;
+}
+
+QFrame#playlist_container:hover{
+    background-color: #333;
+    border-left:8px solid #993333;
+    border-top: 10px solid #333;
+    border-bottom: 10px solid #333;
 }
 
 /* ****************************** */
