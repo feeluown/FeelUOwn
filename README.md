@@ -25,6 +25,7 @@ sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreame
 
 ArchLinux下的包名可能有些不一样, 比如上面提到的gstreamer1.0-*这些包
 
+
 ```
 sudo pacman -S gst-plugins-good gst-plugins-bad gst-plugins-ugly
 ```
