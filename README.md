@@ -3,9 +3,17 @@
 从之前的 “网易云音乐 For Linux(第三方版)” 项目发展过来
 之前的项目托管地址：<https://git.oschina.net/zjuysw/NetEaseMusic>
 
-**项目主页**: 
-
 > 欢迎有兴趣的小伙伴进行合作开发，搭建基础的框架。也可以开发一些插件，比如说 添加一些数据可视化，增加一些炫酷的动画特效。等等
+
+** 近期开发计划 2015-7-21 **
+
+1. 使用 `asyncio` 对项目进行一定程度的重构
+2. 修补已知的严重BUG
+
+** 接下来打算 **
+
+- 添加设置功能
+- 添加数据缓存功能
 
 ## 目前依賴
 Python 3, PyQt5
@@ -15,7 +23,7 @@ sudo apt-get install python3-pyqt5.qtmultimedia
 sudo apt-get install python3-pyqt5.qtwebkit
 ```
 
-有的系统，比如说Ubuntu 还需要安装:（尤其那些播放不出声音来的）
+有的系统，比如说Ubuntu 还需要安装:（尤其那些播放不出声音来的，请把下面的依赖全部安装，以免出现未知的问题）
 
 ```
 sudo apt-get install libqt5multimedia5-plugins
