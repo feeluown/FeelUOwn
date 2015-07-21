@@ -15,12 +15,18 @@ sudo apt-get install python3-pyqt5.qtmultimedia
 sudo apt-get install python3-pyqt5.qtwebkit
 ```
 
-有的系统还需要安装:（尤其那些播放不出声音来的）
+有的系统，比如说Ubuntu 还需要安装:（尤其那些播放不出声音来的）
 
 ```
 sudo apt-get install libqt5multimedia5-plugins
 sudo apt-get install gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly
 sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav
+```
+
+ArchLinux下的包名可能有些不一样, 比如上面提到的gstreamer1.0-*这些包
+
+```
+sudo pacman -S gst-plugins-good gst-plugins-bad gst-plugins-ugly
 ```
 
 如果在安装完这些包之后，还是没有声音，可以提交相关issue
