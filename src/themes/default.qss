@@ -204,6 +204,23 @@ QPushButton#play_mv_btn:hover, QPushButton#show_lyric_btn:hover {
     color: #222;
 }
 
+QPushButton#playlist_fold_spread {
+    border-image: url(../icons/fold.png);
+    border-radius: 2px;
+}
+
+QPushButton#playlist_fold_spread:hover {
+    border-image: url(../icons/fold_hover.png);
+}
+
+QPushButton#playlist_fold_spread:checked {
+    border-image: url(../icons/spread.png);
+}
+
+QPushButton#playlist_fold_spread:checked:hover {
+    border-image: url(../icons/spread_hover.png);
+}
+
 /* ****************************** */
 /* QLineEdit */
 /* ****************************** */

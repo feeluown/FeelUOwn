@@ -16,18 +16,69 @@ class PlaylistWidget(QWidget):
         super().__init__(parent)
         self.layout = QVBoxLayout()
 
+        self.fold_animation = QPropertyAnimation(self, 'maximumHeight')
+        self.spread_animation = QPropertyAnimation(self, 'maximumHeight')
+        self.maximum_height = 500
+
+        self.Qss = False
+
+        self.__init_signal_binding()
+        self.__set_prop()
         self.set_widget_prop()
         self.set_layout_prop()
         self.setLayout(self.layout)
 
         # self.debug()
 
-    def paintEvent(self, QPaintEvent):
+    def paintEvent(self, event):
         option = QStyleOption()
         option.initFrom(self)
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def __init_signal_binding(self):
+        self.spread_animation.finished.connect(self.show)
+        self.fold_animation.finished.connect(self.hide)
+        pass
+
+    def __set_prop(self):
+        # set fold_animation properties
+        self.fold_animation.setDuration(300)
+        self.fold_animation.setStartValue(self.maximum_height)
+        self.fold_animation.setEndValue(0)
+
+        self.spread_animation.setDuration(300)
+        self.spread_animation.setStartValue(0)
+        self.spread_animation.setEndValue(self.maximum_height)
+
+    def fold_spread_with_animation(self):
+
+        if self.fold_animation.state() == QAbstractAnimation.Running:
+            self.fold_animation.stop()
+
+            self.spread_animation.setStartValue(self.height())
+            self.spread_animation.start()
+            return
+
+        if self.isVisible():  # hide the widget
+            if self.spread_animation.state() == QAbstractAnimation.Running:
+                self.spread_animation.stop()
+                self.fold_animation.setStartValue(self.height())
+            else:
+                self.fold_animation.setStartValue(self.maximum_height)
+
+            # self.fold_animation.setStartValue(self.height)
+            self.fold_animation.start()
+        else:
+            self.spread_animation.setStartValue(0)
+            self.show()
+
+    def showEvent(self, event):
+        self.spread_animation.start()
+
+    def hideEvent(self, event):
+        self.parent().update()
 
     def set_widget_prop(self):
         self.setContextMenuPolicy(Qt.CustomContextMenu)
@@ -165,16 +216,61 @@ if __name__ == "__main__":
     app.setWindowIcon(QIcon(ICON_PATH + 'format.ico'))
     path = sys.path[0]
     os.chdir(path)
-    all = PlaylistWidget()
+
+    window = QWidget()
+    layout = QVBoxLayout()
+    window.setLayout(layout)
+
+    button = QPushButton('Test')
+    button_add = QPushButton('Add')
+    bottom_label = QLabel('bottom')
+
+    all = PlaylistWidget(window)
 
     w = PlaylistItem()
     w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
     w.text_btn.setText('dsfasdfaname')
     all.layout.addWidget(w)
+
     w = PlaylistItem()
     w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
     w.text_btn.setText('dsfasdfaname')
     all.layout.addWidget(w)
+
+    w = PlaylistItem()
+    w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
+    w.text_btn.setText('dsfasdfaname')
+    all.layout.addWidget(w)
+
+    w = PlaylistItem()
+    w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
+    w.text_btn.setText('dsfasdfaname')
+    all.layout.addWidget(w)
+
+    w = PlaylistItem()
+    w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
+    w.text_btn.setText('dsfasdfaname')
+    all.layout.addWidget(w)
+
     w.move((QApplication.desktop().width() - w.width())/2, (QApplication.desktop().height() - w.height())/2)
-    all.show()
+
+    is_hidden = False
+
+    def add_new_widget():
+        global all
+        w = PlaylistItem()
+        w.icon_label.setPixmap(QPixmap('../../icons/playlist.png'))
+        w.text_btn.setText('haha')
+        all.layout.addWidget(w)
+
+    button.clicked.connect(all.fold_spread_with_animation)
+    button_add.clicked.connect(add_new_widget)
+
+    layout.addWidget(button)
+    layout.addWidget(button_add)
+    layout.addWidget(all)
+    layout.addWidget(bottom_label)
+    layout.addStretch(1)
+
+    window.show()
     sys.exit(app.exec_())

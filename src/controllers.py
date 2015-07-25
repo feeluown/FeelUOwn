@@ -45,6 +45,8 @@ class MainWidget(QWidget):
         self.current_playlist_widget = MusicTableWidget()
         self.lyric_widget = LyricWidget(u'没有正在播放的歌曲')
 
+        self.left_central_widget = self.ui.left_widget.central_widget
+
         self.status = self.ui.status
         self.trayicon = TrayIcon(self)
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
@@ -105,6 +107,14 @@ class MainWidget(QWidget):
         self.ui.top_widget.add_to_favorite.clicked.connect(self.set_favorite)
         self.ui.top_widget.play_mv_btn.clicked.connect(self.play_song_mv)
         self.ui.top_widget.show_lyric_btn.clicked.connect(self.show_hide_lyric)
+
+        self.left_central_widget.create_fold_spread_btn.clicked.connect(
+            self.ui.left_widget.central_widget.create_list_widget.fold_spread_with_animation)
+        self.left_central_widget.collection_fold_spread_btn.clicked.connect(
+            self.ui.left_widget.central_widget.collection_list_widget.fold_spread_with_animation)
+        self.left_central_widget.local_fold_spread_btn.clicked.connect(
+            self.ui.left_widget.central_widget.local_list_widget.fold_spread_with_animation)
+
 
         self.current_playlist_widget.signal_play_music.connect(self.play)
         self.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
