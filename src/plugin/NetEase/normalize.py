@@ -242,6 +242,7 @@ class NetEaseAPI(object):
             return True
         else:
             LOG.info(op + ' ' + str(mid) + u' failed')
+            LOG.info(data)
             return False
 
     def set_music_to_favorite(self, mid, op):

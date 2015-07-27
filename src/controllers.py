@@ -217,9 +217,14 @@ class MainWidget(QWidget):
 
     def set_favorite(self):
         if self.ui.top_widget.add_to_favorite.isChecked():
-            self.api.set_music_to_favorite(self.state['current_mid'], 'add')
+            if self.api.set_music_to_favorite(self.state['current_mid'], 'add'):
+                self.ui.top_widget.add_to_favorite.setChecked(True)
+                return True
         else:
-            self.api.set_music_to_favorite(self.state['current_mid'], 'del')
+            if self.api.set_music_to_favorite(self.state['current_mid'], 'del'):
+                self.ui.top_widget.add_to_favorite.setChecked(False)
+                return True
+        self.status.showMessage("网易云音乐API变化，暂时可能出现错误，请等待开发者修复！谢谢", 5000)
 
     """某些操作
     """
