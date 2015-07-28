@@ -280,7 +280,7 @@ class NetEaseAPI(object):
         data['time_sequence'].insert(0, 0)
 
         if 'tlyric' in data.keys():
-            if 'lyric' in data.keys(s):
+            if 'lyric' in data.keys():
                 translate_lyric = data['tlyric']['lyric']
                 tlyric_l = re_express.split(translate_lyric)
                 data['translate_lyric'] = tlyric_l
