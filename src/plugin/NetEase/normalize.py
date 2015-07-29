@@ -274,7 +274,7 @@ class NetEaseAPI(object):
         time_s = re_express.findall(lyric)
         for i, each in enumerate(time_s):
             m = int(each[1:3]) * 60000
-            s = float(each[4:9]) * 1000
+            s = float(each[4:-1]) * 1000
             time_s[i] = int(m + s)
         data['time_sequence'] = list(time_s)
         data['time_sequence'].insert(0, 0)
