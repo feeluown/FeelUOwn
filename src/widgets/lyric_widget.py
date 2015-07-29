@@ -53,7 +53,7 @@ class LyricWidget(QLabel):
             for i, each in enumerate(self.__time_sequence):
                 if ms + 400 >= each:
                     lyric = self.__lyrics[i][:-1]
-                    if self.__translate_lyric:
+                    if self.__translate_lyric and len(self.__translate_lyric) > i: # 翻译歌词比原歌词短
                         tlyric = self.__translate_lyric[i][:-1]
                         lyric += "\n" + tlyric
                     self.setText(lyric)
