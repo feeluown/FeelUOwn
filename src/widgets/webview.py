@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import QWebView
 from PyQt5.QtWebKit import QWebSettings
 
-from setting import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
+from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 
 
 class WebView(QWebView):

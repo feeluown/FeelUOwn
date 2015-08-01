@@ -13,7 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from widgets.music_table_widget import MusicTableWidget
-from setting import ICON_PATH
+from constants import ICON_PATH
 from left_widget import LeftWidget, LeftScrollArea
 from right_widget import RightWidget
 from top_widget import TopWidget

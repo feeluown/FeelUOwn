@@ -29,7 +29,9 @@ from base.web import MyWeb
 from base import common
 
 from api import Api
-from setting import WINDOW_ICON
+from constants import WINDOW_ICON
+
+global app_event_loop
 
 
 class MainWidget(QWidget):

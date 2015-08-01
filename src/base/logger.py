@@ -2,7 +2,7 @@
 
 import logging
 
-import setting
+import constants
 
 
 """
@@ -11,7 +11,7 @@ log messages for developers
 
 
 # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
-if setting.MODE == setting.DEBUG:
+if constants.MODE == constants.DEBUG:
     logging.basicConfig(
         level=logging.INFO,
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s"
@@ -21,18 +21,18 @@ else:
         logging.basicConfig(
             level=logging.INFO,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            filename=setting.LOGFILE,
+            filename=constants.LOGFILE,
             filemode='w'
         )
     except:
-        f = open(setting.LOGFILE, 'w')
+        f = open(constants.LOGFILE, 'w')
         f.write('Create log file')
         f.close()
 
         logging.basicConfig(
             level=logging.INFO,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            filename=setting.LOGFILE,
+            filename=constants.LOGFILE,
             filemode='w'
         )
 

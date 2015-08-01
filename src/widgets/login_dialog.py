@@ -14,7 +14,7 @@ from base.network_manger import NetworkManager
 from api import Api
 from base.logger import LOG
 
-from setting import CACHE_PATH
+from constants import CACHE_PATH
 
 
 class LoginDialog(QDialog):
@@ -146,7 +146,7 @@ class LoginDialog(QDialog):
             data = self.ne.login(username, password, phone_login)
         else:
             data = self.ne.auto_login(username, password, phone_login)
-        print(data)
+
         if data['code'] == 200:
             self.hint_label.setText(u'登录成功')
             self.signal_login_sucess.emit(data)
