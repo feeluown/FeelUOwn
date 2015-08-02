@@ -13,7 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from widgets.webview import WebView
 
-from setting import ICON_PATH, HTML_PATH
+from constants import ICON_PATH, HTML_PATH
 
 
 class RightWidget(QWidget):

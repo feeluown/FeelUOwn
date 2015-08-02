@@ -15,6 +15,7 @@ class DataModel(object):
         return self.type
 
     def get_model(self):
+        self.data_model['code'] = 200
         return self.data_model
 
     def init_model(self):

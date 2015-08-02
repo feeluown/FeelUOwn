@@ -4,22 +4,25 @@
 
 import sys
 import os
+import asyncio
 
 path = sys.path[0]
 os.chdir(path)
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from setting import QSS_PATH, ICON_PATH, LOGFILE, \
+from constants import QSS_PATH, LOGFILE, \
     MODE, DEBUG
 
 from controllers import MainWidget
+from quamash import QEventLoop
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+
+    app_event_loop = QEventLoop(app)
+    asyncio.set_event_loop(app_event_loop)
 
     qss = QSS_PATH
     with open(qss, "r") as qssfile:
@@ -33,7 +36,10 @@ if __name__ == "__main__":
     w = MainWidget()
     w.move((QApplication.desktop().width() - w.width())/2, (QApplication.desktop().height() - w.height())/2)
     w.show()
-    app.exec_()
+    # app.exec_()
+    print(app_event_loop)
+
+    app_event_loop.run_forever()
 
     sys.exit()
 

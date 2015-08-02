@@ -14,7 +14,7 @@ from base.network_manger import NetworkManager
 from api import Api
 from base.logger import LOG
 
-from setting import CACHE_PATH
+from constants import CACHE_PATH
 
 
 class LoginDialog(QDialog):
@@ -74,8 +74,8 @@ class LoginDialog(QDialog):
                 login_data = json.load(f)
                 f.close()
                 if 'is_remember' in login_data.keys() and login_data['is_remember']:
-                    self.username_widget.setText(login_data['username'])
-                    self.password_widget.setText(login_data['password'])
+                    self.username_widget.setText(str(login_data['username']))
+                    self.password_widget.setText(str(login_data['password']))
                     self.is_remember_chb.setCheckState(True)
                     self.is_autofill = True
             except Exception as e:
@@ -146,7 +146,7 @@ class LoginDialog(QDialog):
             data = self.ne.login(username, password, phone_login)
         else:
             data = self.ne.auto_login(username, password, phone_login)
-        print(data)
+
         if data['code'] == 200:
             self.hint_label.setText(u'登录成功')
             self.signal_login_sucess.emit(data)

@@ -1,6 +1,5 @@
 # -*- coding: utf8 -*-
 import json
-import ast
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -8,7 +7,9 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtWebKitWidgets import QWebView
 from PyQt5.QtWebKit import QWebSettings
 
-from setting import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
+from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
+
+from base.logger import LOG
 
 
 class WebView(QWebView):
@@ -65,24 +66,29 @@ class WebView(QWebView):
     def play(self, mid):
         """
         """
+        LOG.debug("play music: the music_id is " + str(mid))
         self.signal_play.emit(mid)
 
     @pyqtSlot(int)
     def play_mv(self, mvid):
+        LOG.debug("play mv: the mv_id is " + str(mvid))
         self.signal_play_mv.emit(mvid)
 
     @pyqtSlot(str)
     def play_songs(self, songs_str):
+        LOG.debug("play songs")
         songs = json.loads(songs_str)
         tracks = songs['tracks']
         self.signal_play_songs.emit(tracks)
 
     @pyqtSlot(int)
     def search_artist(self, aid):
+        LOG.debug("search artist info, the artist id is: " + str(aid))
         self.signal_search_artist.emit(aid)
 
     @pyqtSlot(int)
     def search_album(self, aid):
+        LOG.debug("search album info, the album id is: " + str(aid))
         self.signal_search_album.emit(aid)
 
     def run_js_interface(self, data=None):
@@ -95,6 +101,14 @@ class WebView(QWebView):
 
     """下面都是给controller调用的函数，最好不要在其他地方调用
     """
+
+    def show_loading_animation(self):
+        self.load_htmlfile("loading.html")
+
+    def load_htmlfile(self, filename):
+        path = QFileInfo(HTML_PATH + filename).absoluteFilePath()
+        self.load(QUrl.fromLocalFile(path))
+
     def load_playlist(self, playlist_data):
         """
         :param playlist_data:

@@ -49,7 +49,7 @@ class MyWeb(QObject):
             return res
         except Exception as e:
             LOG.error(str(e))
-            return {'code': 408}
+            return b'{"code": 408}'
 
     def get(self, url):
         """Load data from the server using a HTTP GET request.
@@ -63,7 +63,7 @@ class MyWeb(QObject):
             return self.show_progress(response)
         except Exception as e:
             LOG.error(str(e))
-            return {'code': 408}
+            return b'{"code": 408}'
 
     def show_progress(self, response):
         content = bytes()

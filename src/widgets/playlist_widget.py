@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 
-from setting import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
+from constants import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
 
 
 class PlaylistWidget(QWidget):

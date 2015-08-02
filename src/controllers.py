@@ -4,7 +4,7 @@ __author__ = 'cosven'
 import sys, time
 import subprocess
 from queue import Queue
-from _thread import start_new_thread
+import asyncio
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -28,8 +28,10 @@ from base.web import MyWeb
 
 from base import common
 
+from base.common import func_coroutine
+
 from api import Api
-from setting import WINDOW_ICON
+from constants import WINDOW_ICON
 
 
 class MainWidget(QWidget):
@@ -148,12 +150,35 @@ class MainWidget(QWidget):
         self.current_playlist_widget.close()
         self.progress.setRange(0, 100)
 
+
+    """这部分写一些工具
+    """
+    @classmethod
+    def is_response_ok(cls, data):
+        """check response status code
+        """
+        if not isinstance(data, dict):
+            return True
+
+        if data['code'] == 200:
+            return True
+
+        cls.show_network_error_message()
+        return False
+
+    @classmethod
+    def show_network_error_message(cls, text="异常: 网络或者远程服务器变动"):
+        cls.status.showMessage(text, 3000)
+
     """这部分写一些交互逻辑
     """
+    @func_coroutine
     def show_user_playlist(self):
         playlists = self.api.get_user_playlist()
-        self.status.showMessage(u'正在缓存部分数据，请您等待3-4s', 5000)
-        # self.trayicon.showMessage(u'正在缓存部分数据，请您等待3-4s')
+        if not self.is_response_ok(playlists):
+            self.show_network_error_message()
+            return
+
         for playlist in playlists:
 
             # self.status.showMessage(u'正在缓存您的歌单列表', 10000)  # 会让程序整体等待10s
@@ -167,7 +192,8 @@ class MainWidget(QWidget):
 
             if self.api.is_playlist_mine(playlist):
                 self.ui.left_widget.central_widget.create_list_widget.layout.addWidget(w)
-                start_new_thread(self.api.get_playlist_detail, (pid, ))
+                APP_EVENT_LOOP = asyncio.get_event_loop()
+                APP_EVENT_LOOP.call_soon(self.api.get_playlist_detail, pid)
             else:
                 self.ui.left_widget.central_widget.collection_list_widget.layout.addWidget(w)
 
@@ -215,16 +241,22 @@ class MainWidget(QWidget):
         else:
             self.ui.top_widget.add_to_favorite.setChecked(False)
 
-    def set_favorite(self):
+    @func_coroutine
+    def set_favorite(self, checked=True):
+        print("set_favorite function")
         if self.ui.top_widget.add_to_favorite.isChecked():
-            if self.api.set_music_to_favorite(self.state['current_mid'], 'add'):
-                self.ui.top_widget.add_to_favorite.setChecked(True)
-                return True
+            data = self.api.set_music_to_favorite(self.state['current_mid'], 'add')
+            if not self.is_response_ok(data):
+                return False
+            self.ui.top_widget.add_to_favorite.setChecked(True)
+            return True
         else:
-            if self.api.set_music_to_favorite(self.state['current_mid'], 'del'):
-                self.ui.top_widget.add_to_favorite.setChecked(False)
-                return True
-        self.status.showMessage("网易云音乐API变化，暂时可能出现错误，请等待开发者修复！谢谢", 5000)
+            data = self.api.set_music_to_favorite(self.state['current_mid'], 'del')
+            if not self.is_response_ok(data):
+                return False
+            self.ui.top_widget.add_to_favorite.setChecked(False)
+            return True
+        self.status.showMessage("添加到喜欢列表失败，暂时可能出现错误，请等待开发者修复！谢谢", 5000)
 
     """某些操作
     """
@@ -277,6 +309,9 @@ class MainWidget(QWidget):
                 self.lyric_widget.sync_lyric(ms)
             else:
                 lyric_model = self.api.get_lyric_detail(self.state['current_mid'])
+                if not self.is_response_ok(lyric_model):
+                    return
+
                 if lyric_model:
                     self.lyric_widget.set_lyric(lyric_model)
                     self.lyric_widget.sync_lyric(ms)
@@ -300,29 +335,38 @@ class MainWidget(QWidget):
 
         self.show_user_playlist()
 
-
+    @func_coroutine
     @pyqtSlot(int)
     def on_playlist_btn_clicked(self, pid):
-        playlist_detail = self.api.get_playlist_detail(pid)  # 这个操作特别耗时
-
+        playlist_detail = self.api.get_playlist_detail(pid)
+        if not self.is_response_ok(playlist_detail):
+            return
         self.webview.load_playlist(playlist_detail)
 
     @pyqtSlot(int)
     def on_webview_progress(self, percent):
         self.progress.setValue(percent)
 
+    @func_coroutine
     @pyqtSlot(int)
     def play(self, mid=None):
+        print("mid", mid)
         songs = self.api.get_song_detail(mid)
+        if not self.is_response_ok(songs):
+            return
+
         if len(songs) == 0:
             self.status.showMessage(u'这首音乐在地震中消失了', 4000)
             return
         self.player.play(songs[0])
 
+    @func_coroutine
     @pyqtSlot(int)
     def play_mv(self, mvid):
 
         mv_model = self.api.get_mv_detail(mvid)
+        if not self.is_response_ok(mv_model):
+            return
 
         url_high = mv_model['url_high']
         url_middle = mv_model['url_middle']
@@ -350,9 +394,14 @@ class MainWidget(QWidget):
             self.status.showMessage(u"您的系统不是Linux。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
             # self.webview.load_mv(mv_model)
 
+    @func_coroutine
     def play_song_mv(self):
         mid = self.state['current_mid']
-        music_model = self.api.get_song_detail(mid)[0]
+        data = self.api.get_song_detail(mid)
+        if not self.is_response_ok(data):
+            return
+        music_model = data[0]
+
         mvid = music_model['mvid']
         self.play_mv(int(mvid))
 
@@ -370,20 +419,26 @@ class MainWidget(QWidget):
         self.current_playlist_widget.set_songs(songs)
         self.player.set_music_list(songs)
 
+    @func_coroutine
     @pyqtSlot(int)
     def search_artist(self, aid):
         artist_detail_model = self.api.get_artist_detail(aid)
+        if not self.is_response_ok(artist_detail_model):
+            return
         self.webview.load_artist(artist_detail_model)
 
+    @func_coroutine
     @pyqtSlot(int)
     def search_album(self, aid):
         album_detail_model = self.api.get_album_detail(aid)
+        if not self.is_response_ok(album_detail_model):
+            return
         self.webview.load_album(album_detail_model)
 
     @pyqtSlot(dict)
     def on_player_media_changed(self, music_model):
-        # self.player.stop()
-        # self.player.play()
+        self.player.stop()
+        self.player.play()
         artists = music_model['artists']
         artists_name = ''
         for artist in artists:
@@ -445,19 +500,22 @@ class MainWidget(QWidget):
     def set_search_focus(self):
         self.ui.top_widget.search_edit.setFocus()
 
+    @func_coroutine
     @pyqtSlot()
     def search_music(self):
         text = self.ui.top_widget.search_edit.text()
         if text != '':
             self.status.showMessage(u'正在搜索: ' + text)
             songs = self.api.search(text)
+            if not self.is_response_ok(songs):
+                return
             self.webview.load_search_result(songs)
             length = len(songs)
             if length != 0:
-                self.status.showMessage(u'搜索到 ' + str(length) + u' 首 ' + text + u' 相关歌曲')
+                self.status.showMessage(u'搜索到 ' + str(length) + u' 首 ' + text + u' 相关歌曲', 5000)
                 return
             else:
-                self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲')
+                self.ui.status.showMessage(u'很抱歉，没有找到相关歌曲', 5000)
                 return
 
     @pyqtSlot(int)

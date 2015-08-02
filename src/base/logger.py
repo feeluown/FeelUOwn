@@ -2,18 +2,22 @@
 
 import logging
 
-import setting
+import constants
 
 
 """
 log messages for developers
+
+when to use LOG.debug() ？
+    debug mode is ready for developers.
+we use only LOG.info to record those errors or warning
 """
 
 
 # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
-if setting.MODE == setting.DEBUG:
+if constants.MODE == constants.DEBUG:
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s"
     )
 else:
@@ -21,18 +25,18 @@ else:
         logging.basicConfig(
             level=logging.INFO,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            filename=setting.LOGFILE,
+            filename=constants.LOGFILE,
             filemode='w'
         )
     except:
-        f = open(setting.LOGFILE, 'w')
+        f = open(constants.LOGFILE, 'w')
         f.write('Create log file')
         f.close()
 
         logging.basicConfig(
             level=logging.INFO,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            filename=setting.LOGFILE,
+            filename=constants.LOGFILE,
             filemode='w'
         )
 
