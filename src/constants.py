@@ -21,7 +21,7 @@ mode configuration
 DEBUG = True   # 1 for debug
 PRODUCTION = False  # 0 for Production Environment
 LOGFILE = CACHE_PATH + 'error.log'
-MODE = DEBUG
+MODE = PRODUCTION
 
 
 """

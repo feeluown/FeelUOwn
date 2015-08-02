@@ -7,7 +7,7 @@ import pickle
 from PyQt5.QtCore import QObject, pyqtSignal
 
 from base.logger import LOG
-from base.common import singleton
+from base.common import singleton, func_coroutine
 from constants import DATA_PATH
 
 
@@ -51,6 +51,7 @@ class MyWeb(QObject):
             res = requests.post(url, data=data, headers=self.headers, cookies=self.cookies)
             self.cookies.update(res.cookies.get_dict())
             requests.session().cookies = self.cookies
+            self.save_cookies()
             return res.json()
         except Exception as e:
             LOG.error(str(e))
@@ -88,6 +89,7 @@ class MyWeb(QObject):
                 self.signal_load_progress.emit(progress)
             return content
 
+    @func_coroutine
     def save_cookies(self):
         try:
             with open(DATA_PATH + "cookies.dat", "wb") as f:

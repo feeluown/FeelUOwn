@@ -66,7 +66,8 @@ class MainWidget(QWidget):
         self.init()
 
         self.state = {'is_login': False,
-                      'current_mid': 0}
+                      'current_mid': 0,
+                      'current_pid': 0}
 
     def paintEvent(self, QPaintEvent):
         """
@@ -123,7 +124,7 @@ class MainWidget(QWidget):
 
         self.play_or_pause_btn.clicked.connect(self.play_or_pause)
 
-        # self.webview.loadProgress.connect(self.on_webview_progress)
+        self.webview.loadProgress.connect(self.on_webview_progress)
         self.webview.signal_play.connect(self.play)
         self.webview.signal_play_songs.connect(self.play_songs)
         self.webview.signal_search_artist.connect(self.search_artist)
@@ -247,7 +248,8 @@ class MainWidget(QWidget):
         playlist_detail = self.api.get_playlist_detail(self.api.favorite_pid, cache=False)
         if not playlist_detail:
             return
-        self.webview.load_playlist(playlist_detail)
+        if self.state['current_pid'] == self.api.favorite_pid:
+            self.webview.load_playlist(playlist_detail)
         return True
 
 
@@ -335,6 +337,7 @@ class MainWidget(QWidget):
         if not self.is_response_ok(playlist_detail):
             return
         self.webview.load_playlist(playlist_detail)
+        self.state['current_pid'] = pid
 
     @pyqtSlot(int)
     def on_webview_progress(self, percent):
@@ -419,6 +422,7 @@ class MainWidget(QWidget):
         if not self.is_response_ok(artist_detail_model):
             return
         self.webview.load_artist(artist_detail_model)
+        self.state['current_pid'] = 0
 
     @func_coroutine
     @pyqtSlot(int)
@@ -427,6 +431,7 @@ class MainWidget(QWidget):
         if not self.is_response_ok(album_detail_model):
             return
         self.webview.load_album(album_detail_model)
+        self.state['current_pid'] = 0
 
     @pyqtSlot(dict)
     def on_player_media_changed(self, music_model):
@@ -504,6 +509,7 @@ class MainWidget(QWidget):
                 return
             PlaylistItem.de_active_all()
             self.webview.load_search_result(songs)
+            self.state['current_pid'] = 0
             length = len(songs)
             if length != 0:
                 self.status.showMessage(u'搜索到 ' + str(length) + u' 首 ' + text + u' 相关歌曲', 5000)

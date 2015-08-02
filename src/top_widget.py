@@ -69,14 +69,6 @@ class TopWidget(QWidget):
         # by default, autofill background with Qpalette.Window color(system color)
         # self.setAutoFillBackground(True)
         self.setLayout(self.layout)
-        self.set_widgets_effects()
-
-    def set_widgets_effects(self):
-        self.dropShadowEffect = QGraphicsDropShadowEffect(self)
-        self.dropShadowEffect.setColor(QColor('#222'))
-        self.dropShadowEffect.setBlurRadius(3)
-        self.dropShadowEffect.setOffset(0, 2)
-        self.progress_info.setGraphicsEffect(self.dropShadowEffect)
 
     def set_widgets_prop(self):
 
@@ -104,7 +96,7 @@ class TopWidget(QWidget):
         self.slider_play.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
         self.search_edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
-        self.progress_info.setFixedHeight(5)
+        self.progress_info.setFixedHeight(2)
         self.progress_info.setTextVisible(False)
         
         self.add_to_favorite.setCheckable(True)
