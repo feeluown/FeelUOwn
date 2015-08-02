@@ -7,13 +7,17 @@ import constants
 
 """
 log messages for developers
+
+when to use LOG.debug() ？
+    debug mode is ready for developers.
+we use only LOG.info to record those errors or warning
 """
 
 
 # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
 if constants.MODE == constants.DEBUG:
     logging.basicConfig(
-        level=logging.INFO,
+        level=logging.DEBUG,
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s"
     )
 else:

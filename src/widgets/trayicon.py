@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*
 
+import asyncio
+import sys
+
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
@@ -68,9 +71,10 @@ class TrayIcon(QSystemTrayIcon):
         self.__settings = QAction("Settings", self.__menu)  #系统设置
         ###############################################
         self.__quit = QAction("Quit", self.__menu)  #退出
-        self.__quit.triggered.connect(QApplication.quit)
+        self.__quit.triggered.connect(self.quit_app)
 
-    def paintEvent(self, QPaintEvent):
+
+    def paintEventE(self, QPaintEvent):
         """
         self is derived from QWidget, Stylesheets don't work unless \
         paintEvent is reimplemented.
@@ -81,6 +85,12 @@ class TrayIcon(QSystemTrayIcon):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def quit_app(self):
+        APP_EVENT_LOOP = asyncio.get_event_loop()
+        APP_EVENT_LOOP.stop()
+        QApplication.exit(0)
+        sys.exit(0)
 
     def __play_or_pause(self):
         if self.player.state() == QMediaPlayer.PlayingState:

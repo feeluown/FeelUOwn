@@ -1,7 +1,11 @@
 # -*- coding:utf8 -*-
 
 import platform
+import asyncio
 from base.logger import LOG
+
+
+
 
 
 def singleton(cls, *args, **kw):
@@ -12,6 +16,19 @@ def singleton(cls, *args, **kw):
             instances[cls] = cls(*args, **kw)
         return instances[cls]
     return _singleton
+
+
+def func_coroutine(func):
+    """make the decorated function run in EventLoop
+
+    """
+    def wrapper(*args, **kwargs):
+        LOG.debug("In func_coroutine: before call ")
+        LOG.debug("function name is : " + func.__name__)
+        APP_EVENT_LOOP = asyncio.get_event_loop()
+        APP_EVENT_LOOP.call_soon(func, *args)
+        LOG.debug("In func_coroutine: after call ")
+    return wrapper
 
 
 def judge_system():
