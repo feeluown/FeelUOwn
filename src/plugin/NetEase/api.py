@@ -26,23 +26,13 @@ def uniq(arr):
 
 default_timeout = 10
 
+"""
+TODO: add local cache
+"""
 
 @singleton
 class NetEase:
     def __init__(self):
-        self.header = {
-            'Accept': '*/*',
-            'Accept-Encoding': 'gzip,deflate,sdch',
-            'Accept-Language': 'zh-CN,zh;q=0.8,gl;q=0.6,zh-TW;q=0.4',
-            'Connection': 'keep-alive',
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'Host': 'music.163.com',
-            'Referer': 'http://music.163.com/search/',
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36'
-        }
-        self.cookies = {
-            'appver': '1.5.2'
-        }
         self.web = MyWeb()
 
     def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=None):
@@ -53,8 +43,6 @@ class NetEase:
             res = self.web.post(action, query)
 
         try:
-            # data = res.read()
-
             data = res.decode('utf-8')
             data = json.loads(data)
         except Exception as e:
@@ -79,10 +67,10 @@ class NetEase:
         }
 
         if phone is True:
-            res_data = self.http_request('POST', phone_action, phone_data)
+            res_data = self.web.post_and_updatecookies(phone_action, phone_data)
             return res_data
         else:
-            res_data = self.http_request('POST', action, data)
+            res_data = self.web.post_and_updatecookies(action, data)
             return res_data
 
     def confirm_captcha(self, captcha_id, text):
@@ -183,6 +171,15 @@ class NetEase:
             'op': op   # opation
         }
         return self.http_request('POST', url_add, data_add)
+
+    def set_music_favorite(self, mid, flag):
+        url = "http://music.163.com/api/song/like"
+        data = {
+            "trackId": mid,
+            "like": str(flag).lower(),
+            "time": 0
+        }
+        return self.http_request("POST", url, data)
 
     def getRadioMusic(self):
         url = 'http://music.163.com/api/radio/get'

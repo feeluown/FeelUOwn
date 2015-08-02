@@ -153,8 +153,7 @@ class MainWidget(QWidget):
 
     """这部分写一些工具
     """
-    @classmethod
-    def is_response_ok(cls, data):
+    def is_response_ok(self, data):
         """check response status code
         """
         if not isinstance(data, dict):
@@ -163,12 +162,11 @@ class MainWidget(QWidget):
         if data['code'] == 200:
             return True
 
-        cls.show_network_error_message()
+        self.show_network_error_message()
         return False
 
-    @classmethod
-    def show_network_error_message(cls, text="异常: 网络或者远程服务器变动"):
-        cls.status.showMessage(text, 3000)
+    def show_network_error_message(self, text="异常: 网络或者远程服务器变动"):
+        self.status.showMessage(text, 3000)
 
     """这部分写一些交互逻辑
     """
@@ -243,20 +241,15 @@ class MainWidget(QWidget):
 
     @func_coroutine
     def set_favorite(self, checked=True):
-        print("set_favorite function")
-        if self.ui.top_widget.add_to_favorite.isChecked():
-            data = self.api.set_music_to_favorite(self.state['current_mid'], 'add')
-            if not self.is_response_ok(data):
-                return False
-            self.ui.top_widget.add_to_favorite.setChecked(True)
-            return True
-        else:
-            data = self.api.set_music_to_favorite(self.state['current_mid'], 'del')
-            if not self.is_response_ok(data):
-                return False
-            self.ui.top_widget.add_to_favorite.setChecked(False)
-            return True
-        self.status.showMessage("添加到喜欢列表失败，暂时可能出现错误，请等待开发者修复！谢谢", 5000)
+        data = self.api.set_music_to_favorite(self.state['current_mid'], checked)
+        if not self.is_response_ok(data):
+            return False
+        playlist_detail = self.api.get_playlist_detail(self.api.favorite_pid, cache=False)
+        if not playlist_detail:
+            return
+        self.webview.load_playlist(playlist_detail)
+        return True
+
 
     """某些操作
     """
@@ -509,6 +502,7 @@ class MainWidget(QWidget):
             songs = self.api.search(text)
             if not self.is_response_ok(songs):
                 return
+            PlaylistItem.de_active_all()
             self.webview.load_search_result(songs)
             length = len(songs)
             if length != 0:

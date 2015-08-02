@@ -1,11 +1,14 @@
 # -*- coding:utf8 -*-
 
+import requests
+import json
+import pickle
+
 from PyQt5.QtCore import QObject, pyqtSignal
-import urllib
-import http.cookiejar
 
 from base.logger import LOG
 from base.common import singleton
+from constants import DATA_PATH
 
 
 @singleton
@@ -17,36 +20,38 @@ class MyWeb(QObject):
 
     def __init__(self):
         super().__init__()
-        self.header = {
+        self.headers = {
             'Host': 'music.163.com',
             'Connection': 'keep-alive',
-            'cache-control': 'private',
             'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
             'Referer': 'http://music.163.com/',
-            'cookie': 'appver=1.2.1; os=osx;',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
         }
-        self.cookie = http.cookiejar.LWPCookieJar()
-        self.cookie_support = urllib.request.HTTPCookieProcessor(self.cookie)
-        self.opener = urllib.request.build_opener(self.cookie_support,
-                                                  urllib.request.HTTPHandler)
-        self.timeout = 1
-        urllib.request.install_opener(self.opener)
 
-    def post(self, posturl, dictdata):
+        self.cookies = dict(appver="1.2.1", os="osx")
+
+    def post(self, url, data):
         """Load data from the server using a HTTP POST request.
 
         :param string posturl: the URL to which the request is sent.
         :param dict dictdata: a dict object that is sent to the server with the request.
         """
 
-        postdata = urllib.parse.urlencode(dictdata)
-        postdata = postdata.encode('utf-8')
-        request = urllib.request.Request(posturl, postdata, self.header)
+
         try:
-            response = urllib.request.urlopen(request)
-            res = self.show_progress(response)
-            return res
+            res = requests.post(url, data=data, headers=self.headers, cookies=self.cookies)
+            content = self.show_progress(res)
+            return content
+        except Exception as e:
+            LOG.error(str(e))
+            return b'{"code": 408}'
+
+    def post_and_updatecookies(self, url, data):
+        try:
+            res = requests.post(url, data=data, headers=self.headers, cookies=self.cookies)
+            self.cookies.update(res.cookies.get_dict())
+            requests.session().cookies = self.cookies
+            return res.json()
         except Exception as e:
             LOG.error(str(e))
             return b'{"code": 408}'
@@ -57,31 +62,47 @@ class MyWeb(QObject):
         :param url: the URL to which the request is sent.
         :return content: return HTTPResponse Objects, generally speaking, we use READ method.
         """
-        request = urllib.request.Request(url, None, self.header)
         try:
-            response = urllib.request.urlopen(request)
-            return self.show_progress(response)
+            res = requests.get(url, headers=self.headers)
+            content = self.show_progress(res)
+            return content
         except Exception as e:
             LOG.error(str(e))
             return b'{"code": 408}'
 
     def show_progress(self, response):
         content = bytes()
-        try:
-            total_size = response.getheader('Content-Length').strip()
-        except:
+        total_size = response.headers.get('content-length')
+        if total_size is None:
             LOG.info(u'这个网络response没有Content-Length字段')
-            return response.read()
-        chunk_size = 8192
-        total_size = int(total_size)
-        bytes_so_far = 0
+            content = response.content
+            return content
+        else:
+            total_size = int(total_size)
+            bytes_so_far = 0
 
-        while 1:
-            chunk = response.read(chunk_size)
-            content += chunk
-            bytes_so_far += len(chunk)
-            progress = round(bytes_so_far * 1.0 / total_size * 100)
-            self.signal_load_progress.emit(progress)
-            if not chunk:
-                break
-        return content
+            for chunk in response.iter_content():
+                content += chunk
+                bytes_so_far += len(chunk)
+                progress = round(bytes_so_far * 1.0 / total_size * 100)
+                self.signal_load_progress.emit(progress)
+            return content
+
+    def save_cookies(self):
+        try:
+            with open(DATA_PATH + "cookies.dat", "wb") as f:
+                pickle.dump(self.cookies, f)
+            return True
+        except Exception as e:
+            LOG.error(str(e))
+            return False
+
+    def load_cookies(self):
+        try:
+            with open(DATA_PATH + "cookies.data", "rb") as f:
+                self.cookies = pickle.load(f)
+                requests.session().cookies = self.cookies
+            return True
+        except Exception as e:
+            LOG.error(str(e))
+            return False

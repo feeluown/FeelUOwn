@@ -247,20 +247,11 @@ class NetEaseAPI(object):
                 return True
         return False
 
-    def set_music_to_playlist(self, mid, pid, op):
-        """
-        :param mid:
-        :param pid:
-        :param op: 'add' or 'del'
-        :return:
-        """
-        data = self.ne.addMusicToPlaylist(mid, pid, op)
+    def set_music_to_favorite(self, mid, flag):
+        data = self.ne.set_music_favorite(mid, flag)
         APP_EVENT_LOOP = asyncio.get_event_loop()
-        APP_EVENT_LOOP.call_soon(self.get_playlist_detail, (pid, False, ))
+        APP_EVENT_LOOP.call_soon(self.get_playlist_detail, self.favorite_pid, False)
         return data
-
-    def set_music_to_favorite(self, mid, op):
-        return self.set_music_to_playlist(mid, self.favorite_pid, op)
 
     def get_mv_detail(self, mvid):
         data = self.ne.get_mv_detail(mvid)

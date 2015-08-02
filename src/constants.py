@@ -12,7 +12,7 @@ path configuration
 """
 ICON_PATH = '../icons/'
 CACHE_PATH = '../cache/'
-DATA_PATH = '../DATA/'
+DATA_PATH = '../data/'
 
 
 """

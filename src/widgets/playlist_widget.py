@@ -103,13 +103,7 @@ class PlaylistItem(QFrame):
 
     active_item = []
 
-    @classmethod
-    def set_active(cls, w):
-        """控制当前active的playlistitem
-        :param w: 将被active的playlistitem
-        :return:
-        """
-        active_qss = """
+    active_qss = """
             QFrame {
                 border-top: 0px;
                 border-bottom: 0px;
@@ -118,30 +112,40 @@ class PlaylistItem(QFrame):
                 background-color: #333;
             }
         """
-        normal_qss = """
-            QFrame {
-                border-top: 0px;
-                border-bottom: 0px;
-                padding-left: 15px;
-                border: 0px solid #993333;
-            }
-            QFrame#playlist_container:hover{
-                background-color: #333;
-                border-left:8px solid #993333;
-                border-top: 10px solid #333;
-                border-bottom: 10px solid #333;
-            }
+    normal_qss = """
+        QFrame {
+            border-top: 0px;
+            border-bottom: 0px;
+            padding-left: 15px;
+            border: 0px solid #993333;
+        }
+        QFrame#playlist_container:hover{
+            background-color: #333;
+            border-left:8px solid #993333;
+            border-top: 10px solid #333;
+            border-bottom: 10px solid #333;
+        }
+    """
+
+    @classmethod
+    def set_active(cls, w):
+        """控制当前active的playlistitem
+        :param w: 将被active的playlistitem
         """
-
-
         if len(cls.active_item) != 0:
             if w is cls.active_item[0]:     # 判断是否重复点击
                 return False
-            cls.active_item[0].setStyleSheet(normal_qss)
+            cls.active_item[0].setStyleSheet(cls.normal_qss)
             cls.active_item.pop()
-        w.setStyleSheet(active_qss)
+        w.setStyleSheet(cls.active_qss)
         cls.active_item.append(w)
         return True
+
+    @classmethod
+    def de_active_all(cls):
+        for item in cls.active_item:
+            item.setStyleSheet(cls.normal_qss)
+            cls.active_item.remove(item)
 
     def __init__(self, parent=None):
         super().__init__(parent)
