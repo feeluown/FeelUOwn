@@ -10,9 +10,10 @@ path = sys.path[0]
 os.chdir(path)
 
 from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QIcon
 
 from constants import QSS_PATH, LOGFILE, \
-    MODE, DEBUG
+    MODE, DEBUG, WINDOW_ICON
 
 from controllers import MainWidget
 from quamash import QEventLoop
@@ -20,6 +21,9 @@ from quamash import QEventLoop
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    QApplication.setWindowIcon(QIcon(WINDOW_ICON))
+    QApplication.setWindowName("FeelUOwn")
+    QApplication.setApplicationVersion("v3.1.0")
 
     app_event_loop = QEventLoop(app)
     asyncio.set_event_loop(app_event_loop)
