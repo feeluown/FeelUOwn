@@ -10,7 +10,7 @@ echo "脚本适用于Debian系的Linux"
 echo "---------------------------"
 
 echo "准备安装相关python依赖"
-pip3 install -r requirements.txt
+sudo pip3 install -r requirements.txt
 echo "---------------------------"
 
 desktopFilename='FeelUOwn.desktop'
