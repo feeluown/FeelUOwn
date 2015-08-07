@@ -3,6 +3,8 @@
 从之前的 “网易云音乐 For Linux(第三方版)” 项目发展过来
 之前的项目托管地址：<https://git.oschina.net/zjuysw/NetEaseMusic>
 
+技术框架大致的说明： <http://www.cosven.com/2015/07/07/FeelUOwn-%E6%8A%80%E6%9C%AF%E9%98%B6%E6%AE%B5%E6%80%BB%E7%BB%93/>
+
 > 欢迎有兴趣的小伙伴进行合作开发，搭建基础的框架。也可以开发一些插件，比如说 添加一些数据可视化，增加一些炫酷的动画特效。等等
 
 ** 2015-8-2 **

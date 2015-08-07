@@ -1,2 +1,2 @@
-quamash>=0.5.2
+quamash
 requests
