@@ -28,6 +28,9 @@ class UiMainWidget(object):
         self.right_widget = RightWidget()
         self.left_widget = LeftScrollArea()
         self.top_widget = TopWidget()
+
+        self.progress_info= QProgressBar()
+
         self.right_layout = QVBoxLayout()
         self.left_layout = QVBoxLayout()
         self.top_layout = QHBoxLayout()
@@ -42,18 +45,20 @@ class UiMainWidget(object):
         self.set_widgets_size()
         self.set_object_name()
 
+        self.progress_info.setFixedHeight(2)
+        self.progress_info.setTextVisible(False)
 
     def set_object_name(self):
         self.right_widget.setObjectName('right_widget')
         self.left_widget.setObjectName('left_widget')
         self.top_widget.setObjectName('top_widget')
         self.top_widget.search_edit.setObjectName('search_edit')
+        self.progress_info.setObjectName('progress_info')
 
     def set_widgets_size(self):
         """
         set all widget specific size here, including child widget
         """
-        self.top_widget.setFixedHeight(60)
         self.left_widget.setFixedWidth(200)
 
     def set_layouts(self):
@@ -66,7 +71,7 @@ class UiMainWidget(object):
         self.layout.addLayout(self.control_container)
         self.layout.addLayout(self.show_container)
         self.layout.addWidget(self.status)
-
+        self.layout.addWidget(self.progress_info)
         self.set_layouts_prop()
 
     def set_layouts_prop(self):

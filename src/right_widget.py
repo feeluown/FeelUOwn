@@ -32,7 +32,7 @@ class RightWidget(QWidget):
     def paintEvent(self, QPaintEvent):
         """
         self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.
+        paintEvent is reimplemented.y
         at the same time, if self is derived from QFrame, this isn't needed.
         """
         option = QStyleOption()
@@ -42,6 +42,7 @@ class RightWidget(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def set_widgets_prop(self):
+        self.webview.setObjectName("webview")
         pass
 
     def set_layouts_prop(self):

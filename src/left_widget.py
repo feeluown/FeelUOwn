@@ -57,13 +57,6 @@ class LeftWidget(QWidget):
         self.set_layouts_prop()
         self.set_me()
 
-    def paintEvent(self, QPaintEvent):
-        option = QStyleOption()
-        option.initFrom(self)
-        painter = QPainter(self)
-        style = self.style()
-        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
-
     def set_me(self):
         self.setLayout(self.layout)
         self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)

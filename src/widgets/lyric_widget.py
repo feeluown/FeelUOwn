@@ -26,7 +26,7 @@ class LyricWidget(QLabel):
         self.setObjectName('lyric_label')
         self.setAlignment(Qt.AlignCenter)
 
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
         # self.setWindowOpacity(0.5)
 

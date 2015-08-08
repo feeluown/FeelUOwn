@@ -1,8 +1,8 @@
 /* ****************************** */
 /* QSlider */
 /* ****************************** */
-QSlider {
-  background: #CCCCCC;
+QSlider#slider_play {
+  background: transparent;
 }
 
 QSlider::groove:horizontal {    /* 凹槽 */
@@ -13,12 +13,13 @@ QSlider::groove:horizontal {    /* 凹槽 */
 }
 
 QSlider::sub-page:horizontal {  /* 滑过的区域 */
-    background: #4F2F2F;
-    background-color: #be4040;
+    background-color: qlineargradient(x1: 0, y1: 1,    x2: 1, y2: 0,
+        stop: 0 rgba(151, 40, 40, 0.8), stop: 1 #993333);
 }
 
 QSlider::add-page:horizontal {  /* 剩余的部分, 未滑过的区域 */
     background: #999999;
+    border-radius: 2px;
 }
 
 QSlider::handle:horizontal {    /* 柄 */
@@ -53,12 +54,14 @@ QGroupBox::title {
 
 QWidget {
     /* font: regular "WenQuanYi Micro Hei", "Monospace", "Times New Roman"; */
-    background-color: #272727;
+    background-color: transparent;
     color: #CCCCCC;
 }
 
-QWidget#top_widget {
-    border-bottom: 0px solid #AD0600;
+QWidget#top_widget, QWidget#music_show_container {
+    border-bottom: 1px solid rgba(153, 51, 51, 0.3);
+    background-color: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
+        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
 }
 
 QWidget#left_widget {
@@ -92,6 +95,7 @@ QFrame#playlist_container:hover{
 /* ****************************** */
 
 QPushButton {
+    background-color: transparent;
     border: 0px solid #993333;
 }
 
@@ -109,6 +113,7 @@ QPushButton#play_pause {
     border-image: url(../icons/play_hover.png);
     width: 30px;
     height: 30px;
+    border-radius: 15px;
 }
 
 QPushButton#play_pause:checked {
@@ -119,13 +124,20 @@ QPushButton#last {
     border-image: url(../icons/last_hover.png);
     width: 30px;
     height: 30px;
+    border-radius: 15px;
 }
 
 QPushButton#next {
     border-image: url(../icons/next_hover.png);
     width: 30px;
+    border-radius: 15px;
     height: 30px;
 }
+
+QPushButton#play_pause:hover, QPushButton#last:hover, QPushButton#next:hover {
+    background-color: #111;
+}
+
 
 QPushButton#add_to_favorite {
     border-image: url(../icons/heart.png);
@@ -152,11 +164,13 @@ QPushButton#radio_btn:hover {
 }
 
 QPushButton#login_btn {
-    border-image: url(../icons/login.png);
+    border: 1px solid #993333;
+    border-radius: 15px;
+    color: #993333;
 }
 
 QPushButton#login_btn:hover {
-    border-image: url(../icons/login_hover.png);
+    background-color: #111;
 }
 
 QPushButton#help_btn {
@@ -184,7 +198,7 @@ QPushButton#show_current_list {
 }
 
 QPushButton#show_current_list:hover {
-    background-color: #CCC;
+    background-color: #111;
     border-radius: 15px;
 }
 
@@ -226,13 +240,14 @@ QPushButton#playlist_fold_spread:checked:hover {
 /* ****************************** */
 
 QLineEdit#search_edit {
-    border: 1px solid #993333;
-    border-radius: 5px;
+    border: 1px dashed #993333;
+    padding-left: 8px;
+    border-radius: 10px;
     selection-background-color: #993333;
 }
 
 QLineEdit#search_edit:focus {
-    border-color: #CCCCCC; 
+    border: 1px solid #993333;
 }
 
 
@@ -253,7 +268,7 @@ QPushButton#search_btn:hover{
 /* ****************************** */
 
 QStatusBar {
-    color: #993333;
+    background-color: #272727;
 }
 
 
@@ -261,6 +276,9 @@ QStatusBar {
 /* QLabel */
 /* ****************************** */
 
+QLabel {
+    background-color: transparent;
+}
 
 QLabel#title{
     color: #AAA;
@@ -269,6 +287,9 @@ QLabel#title{
     margin: 10px 0;
 }
 
+QLabel#login_label {
+    border-radius: 15px;
+}
 
 QLabel#lyric_label {
     border-radius: 10px;
@@ -295,7 +316,6 @@ QLabel#playlist_img_mine {
 QLabel#album_label {
     border: 0px solid #993333;
     position: absolute;
-    background-color: #333;
 }
 
 QLabel#remove_music {
@@ -398,57 +418,52 @@ QAbstractItemView {
 /* ****************************** */
 
 QHeaderView {
-    background-color: #CCC;
-    color: #222;
-}
-
-QHeaderView::section:vertical {
-    background-color: #CCC;
-    color: #222;
-    padding-left: 15px;
-    width: 40px;
-    border: 0px solid #993333;
-}
-
-QHeaderView::section:vertical:checked {
-  background-color: #993333;
+    color: #CCC;
 }
 
 QHeaderView::section:horizontal {
-    background-color: #CCC;
-    font-weight: normal;
-    color: #222;
-    border: 0px solid #993333;
-    border-bottom: 1px solid #993333;
-    border-top: 0px solid #993333;
+    background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
+        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
+    color: #CCC;
+    border: 0px;
+    border-bottom: 1px solid rgba(153, 51, 51, 0.3);
     height: 24px;
-    padding-top: 6px;
-    font-size: 15px;
+    padding-left: 5px;
+    font-size: 12px;
+    font-weight: normal;
 }
 
+
+QTableView QTableCornerButton::section {
+    background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
+        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
+    border: 0px;
+    border-bottom: 1px solid rgba(153, 51, 51, 0.3);
+}
 
 /* ****************************** */
 /* QTableWidget */
 /* ****************************** */
 
 QTableWidget {
-    background-color: #CCC;
-    alternate-background-color: #CDCDCD;
+    background-color: #222;
+    alternate-background-color: #272727;
+    font-size: 11px;
 }
 
-QTableWidget::item{ 
-    text-align: left;
+QTableWidget::item{
+    padding: 3px 4px;
     border-radius: 0px;
     selection-background-color: #993333;
     outline: none;
-    color: #222;
+    color: #CCC;
 }
 
 QTableWidget::item:selected{
     outline: none;
     border: none;
     color: #CCC;
-    background-color: #993333;
+    background-color: #333;
 }
 
 QTableWidget::item:focus {
@@ -457,21 +472,12 @@ QTableWidget::item:focus {
 
 }
 
-QTableView QTableCornerButton::section {
-    border: 0px solid #993333;
-    border-bottom: 1px solid #993333;
-    border-top: 0px solid #993333;
-    background-color: #CCC;
-}
-
-
 /* ****************************** */
 /* QProgressBar */
 /* ****************************** */
 
 QProgressBar {
     border: 0px solid #999999;
-    /* background-color: #AD0600; */
     background-color: #444;
     border-radius: 1px;
     text-align: center;
@@ -494,8 +500,11 @@ QScrollArea {
 /* ****************************** */
 
 QToolTip {
-    background-color: transparent;
-    color: #993333;
+    background-color: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
+        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);;
+    color: #ccc;
+    border: 1px solid rgba(0,0,0, 0.4);
+    padding: -1px 4px;
 }
 
 

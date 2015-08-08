@@ -30,3 +30,4 @@ app.command
 *.log
 
 cookie*
+.coverage

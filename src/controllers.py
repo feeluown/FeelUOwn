@@ -52,7 +52,7 @@ class MainWidget(QWidget):
         self.status = self.ui.status
         self.trayicon = TrayIcon(self)
         self.webview = self.ui.right_widget.webview     # 常用的对象复制一下，方便使用
-        self.progress = self.ui.top_widget.progress_info
+        self.progress = self.ui.progress_info
         self.network_manger = NetworkManager()
 
         self.search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
@@ -69,17 +69,17 @@ class MainWidget(QWidget):
                       'current_mid': 0,
                       'current_pid': 0}
 
-    def paintEvent(self, QPaintEvent):
-        """
-        self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.y
-        at the same time, if self is derived from QFrame, this isn't needed.
-        """
-        option = QStyleOption()
-        option.initFrom(self)
-        painter = QPainter(self)
-        style = self.style()
-        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+    # def paintEvent(self, QPaintEvent):
+    #     """
+    #     self is derived from QWidget, Stylesheets don't work unless \
+    #     paintEvent is reimplemented.y
+    #     at the same time, if self is derived from QFrame, this isn't needed.
+    #     """
+    #     option = QStyleOption()
+    #     option.initFrom(self)
+    #     painter = QPainter(self)
+    #     style = self.style()
+    #     style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def closeEvent(self, event):
         self.hide()
@@ -151,6 +151,11 @@ class MainWidget(QWidget):
         self.current_playlist_widget.close()
         self.progress.setRange(0, 100)
 
+        self.shadow_effect = QGraphicsDropShadowEffect(self.progress)
+        self.shadow_effect.setColor(QColor("red"))
+        # self._shadow_effect.setYOffset(2)
+        self.shadow_effect.setBlurRadius(10)
+        self.progress.setGraphicsEffect(self.shadow_effect)
 
     """这部分写一些工具
     """
@@ -206,13 +211,15 @@ class MainWidget(QWidget):
         pixmap = QPixmap(img)
         self.ui.top_widget.login_btn.close()
         self.ui.top_widget.login_label.show()
-        self.ui.top_widget.login_label.setPixmap(pixmap.scaled(55, 55))
+
+        self.ui.top_widget.login_label.setPixmap(pixmap.scaled(55, 55, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
 
     def set_music_icon(self, res):
         img = QImage()
         img.loadFromData(res.readAll())
         pixmap = QPixmap(img)
-        self.ui.top_widget.img_label.setPixmap(pixmap.scaledToWidth(self.ui.top_widget.img_label.width()))
+        self.ui.top_widget.img_label.setPixmap(pixmap.scaled(self.ui.top_widget.img_label.size(),
+                                                             Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
         self.setWindowIcon(QIcon(pixmap))
 
     def show_current_playlist(self):

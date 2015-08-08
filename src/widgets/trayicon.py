@@ -74,17 +74,17 @@ class TrayIcon(QSystemTrayIcon):
         self.__quit.triggered.connect(self.quit_app)
 
 
-    def paintEventE(self, QPaintEvent):
-        """
-        self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.
-        at the same time, if self is derived from QFrame, this isn't needed.
-        """
-        option = QStyleOption()
-        option.initFrom(self)
-        painter = QPainter(self)
-        style = self.style()
-        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+    # def paintEventE(self, QPaintEvent):
+    #     """
+    #     self is derived from QWidget, Stylesheets don't work unless \
+    #     paintEvent is reimplemented.
+    #     at the same time, if self is derived from QFrame, this isn't needed.
+    #     """
+    #     option = QStyleOption()
+    #     option.initFrom(self)
+    #     painter = QPainter(self)
+    #     style = self.style()
+    #     style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def quit_app(self):
         APP_EVENT_LOOP = asyncio.get_event_loop()

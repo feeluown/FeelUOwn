@@ -10,7 +10,13 @@ echo "脚本适用于Debian系的Linux"
 echo "---------------------------"
 
 echo "准备安装相关python依赖"
-sudo pip3 install -r requirements.txt
+pip3 --version 2>&1
+if [ $? -eq 0 ]; then
+    sudo pip3 install -r requirements.txt
+else
+    echo "您的系统目前没有安装pip3"
+    sudo apt-get install python3-pip
+    sudo pip3 install -r requirements.txt
 echo "---------------------------"
 
 desktopFilename='FeelUOwn.desktop'
