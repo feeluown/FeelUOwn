@@ -152,7 +152,6 @@ class Player(QMediaPlayer):
             if self.__playlist.isEmpty():
                 self.signal_playlist_is_empty.emit()
                 return 
-            print(self, *args)
             return func(self, *args, **kwargs)
         return wrapper
 

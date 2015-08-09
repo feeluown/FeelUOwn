@@ -20,17 +20,17 @@ from widgets.playlist_widget import PlaylistWidget, PlaylistItem
 
 from views import UiMainWidget
 
+from plugin import NetEaseMusic
+
 from base.models import DataModel
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.logger import LOG
-from base.web import MyWeb
 
 from base import common
 
-from base.common import func_coroutine
+from base.common import func_coroutine, singleton
 
-from api import Api
 from constants import WINDOW_ICON
 
 
@@ -59,8 +59,7 @@ class MainWidget(QWidget):
 
         self.play_or_pause_btn = self.ui.top_widget.play_pause_btn
 
-        self.web = MyWeb()
-        self.api = Api()
+        self.api = None
         self.network_queue = Queue()
 
         self.init()
@@ -69,17 +68,23 @@ class MainWidget(QWidget):
                       'current_mid': 0,
                       'current_pid': 0}
 
-    # def paintEvent(self, QPaintEvent):
-    #     """
-    #     self is derived from QWidget, Stylesheets don't work unless \
-    #     paintEvent is reimplemented.y
-    #     at the same time, if self is derived from QFrame, this isn't needed.
-    #     """
-    #     option = QStyleOption()
-    #     option.initFrom(self)
-    #     painter = QPainter(self)
-    #     style = self.style()
-    #     style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+        APP_EVENT_LOOP = asyncio.get_event_loop()
+        APP_EVENT_LOOP.call_later(1, self._init_plugins)
+
+    def paintEvent(self, QPaintEvent):
+        """
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.y
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+        option = QStyleOption()
+        option.initFrom(self)
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def _init_plugins(self):
+        NetEaseMusic.init(self)
 
     def closeEvent(self, event):
         self.hide()
@@ -144,8 +149,6 @@ class MainWidget(QWidget):
 
         self.search_shortcut.activated.connect(self.set_search_focus)
 
-        self.web.signal_load_progress.connect(self.on_web_load_progress)
-
     def init_widgets(self):
         self.current_playlist_widget.resize(500, 200)
         self.current_playlist_widget.close()
@@ -177,7 +180,27 @@ class MainWidget(QWidget):
     """这部分写一些交互逻辑
     """
     @func_coroutine
+    def set_user(self, data):
+        avatar_url = data['avatar']
+        request = QNetworkRequest(QUrl(avatar_url))
+        self.network_manger.get(request)
+        self.network_queue.put(self.show_avatar)
+        self.show_user_playlist()
+
+    def set_login(self):
+        self.state['is_login'] = True
+        self.ui.top_widget.add_to_favorite.show()
+        self.ui.top_widget.login_btn.hide()
+
+    @func_coroutine
     def show_user_playlist(self):
+        while self.ui.left_widget.central_widget.create_list_widget.layout.takeAt(0):
+            item = self.ui.left_widget.central_widget.create_list_widget.layout.takeAt(0)
+            del item
+        while self.ui.left_widget.central_widget.collection_list_widget.layout.takeAt(0):
+            item = self.ui.left_widget.central_widget.create_list_widget.layout.takeAt(0)
+            del item
+
         playlists = self.api.get_user_playlist()
         if not self.is_response_ok(playlists):
             self.show_network_error_message()
@@ -196,8 +219,15 @@ class MainWidget(QWidget):
 
             if self.api.is_playlist_mine(playlist):
                 self.ui.left_widget.central_widget.create_list_widget.layout.addWidget(w)
-                APP_EVENT_LOOP = asyncio.get_event_loop()
-                APP_EVENT_LOOP.call_soon(self.api.get_playlist_detail, pid)
+                if pid == self.api.favorite_pid:
+                    @func_coroutine
+                    def load_favorite_playlist():
+                        favorite_playlist_detail = self.api.get_playlist_detail(pid)
+                        self.webview.load_playlist(favorite_playlist_detail)
+                    load_favorite_playlist()
+                else:
+                    APP_EVENT_LOOP = asyncio.get_event_loop()
+                    APP_EVENT_LOOP.call_soon(self.api.get_playlist_detail, pid)
             else:
                 self.ui.left_widget.central_widget.collection_list_widget.layout.addWidget(w)
 
@@ -209,7 +239,8 @@ class MainWidget(QWidget):
         img = QImage()
         img.loadFromData(res.readAll())
         pixmap = QPixmap(img)
-        self.ui.top_widget.login_btn.close()
+        if self.state['is_login']:
+            self.ui.top_widget.login_btn.close()
         self.ui.top_widget.login_label.show()
 
         self.ui.top_widget.login_label.setPixmap(pixmap.scaled(55, 55, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
@@ -248,13 +279,15 @@ class MainWidget(QWidget):
             self.ui.top_widget.add_to_favorite.setChecked(False)
 
     @func_coroutine
+    @pyqtSlot(bool)
     def set_favorite(self, checked=True):
         data = self.api.set_music_to_favorite(self.state['current_mid'], checked)
         if not self.is_response_ok(data):
+            self.ui.top_widget.add_to_favorite.setChecked(not checked)
             return False
         playlist_detail = self.api.get_playlist_detail(self.api.favorite_pid, cache=False)
         if not playlist_detail:
-            return
+            return False
         if self.state['current_pid'] == self.api.favorite_pid:
             self.webview.load_playlist(playlist_detail)
         return True
@@ -319,6 +352,7 @@ class MainWidget(QWidget):
                     self.lyric_widget.sync_lyric(ms)
                 else:
                     self.lyric_widget.setText(u'歌曲没有歌词')
+
     @pyqtSlot(dict)
     def on_login_success(self, data):
         """
@@ -326,16 +360,8 @@ class MainWidget(QWidget):
         :param data:
         :return:
         """
-        self.state['is_login'] = True
-        self.ui.top_widget.add_to_favorite.show()
-
-        avatar_url = data['avatar']
-        request = QNetworkRequest(QUrl(avatar_url))
-        self.network_manger.get(request)
-
-        self.network_queue.put(self.show_avatar)
-
-        self.show_user_playlist()
+        self.set_login()
+        self.set_user(data)
 
     @func_coroutine
     @pyqtSlot(int)
@@ -353,7 +379,6 @@ class MainWidget(QWidget):
     @func_coroutine
     @pyqtSlot(int)
     def play(self, mid=None):
-        print("mid", mid)
         songs = self.api.get_song_detail(mid)
         if not self.is_response_ok(songs):
             return
@@ -459,7 +484,7 @@ class MainWidget(QWidget):
         self.ui.top_widget.time_lcd.setText('00:00')
         self.ui.top_widget.slider_play.setRange(0, self.player.duration() / 1000)
 
-        self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl'])))
+        self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl']+"?param=55y55")))
         self.network_queue.put(self.set_music_icon)    # 更换任务栏图标
 
         self.current_playlist_widget.add_item_from_model(music_model)

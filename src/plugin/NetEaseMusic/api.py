@@ -10,12 +10,12 @@ CopyRight (c) 2014 vellow <i@vellow.net>
 modified by
 """
 
-import re
 import json
-import hashlib
+import requests
 
-from base.common import singleton
-from base.web import MyWeb
+from PyQt5.QtCore import pyqtSignal, QObject
+from constants import DATA_PATH
+from base.common import singleton, func_coroutine, write_json_into_file
 from base.logger import LOG
 
 # list去重
@@ -30,26 +30,77 @@ TODO: add local cache
 """
 
 @singleton
-class NetEase:
+class NetEase(QObject):
+
+    signal_load_progress = pyqtSignal([int])
+    cookies_filename = "netease_cookies.json"
+
     def __init__(self):
-        self.web = MyWeb()
+        super().__init__()
+        self.headers = {
+            'Host': 'music.163.com',
+            'Connection': 'keep-alive',
+            'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
+            'Referer': 'http://music.163.com/',
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36"
+                          " (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
+        }
+        self.cookies = dict(appver="1.2.1", os="osx")
 
-    def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=None):
-        if method == 'GET':
-            res = self.web.get(action)
+    def show_progress(self, response):
+        content = bytes()
+        total_size = response.headers.get('content-length')
+        if total_size is None:
+            LOG.info(u'这个网络response没有Content-Length字段')
+            content = response.content
+            return content
+        else:
+            total_size = int(total_size)
+            bytes_so_far = 0
 
-        elif method == 'POST':
-            res = self.web.post(action, query)
+            for chunk in response.iter_content():
+                content += chunk
+                bytes_so_far += len(chunk)
+                progress = round(bytes_so_far * 1.0 / total_size * 100)
+                self.signal_load_progress.emit(progress)
+            return content
 
+    def load_cookies(self):
         try:
-            data = res.decode('utf-8')
-            data = json.loads(data)
+            with open(DATA_PATH + self.cookies_filename) as f:
+                data_str = f.read()
+                self.cookies = json.loads(data_str)
         except Exception as e:
-            LOG.info(str(e))
-            data = res
-        return data
+            LOG.error(str(e))
 
-    # 登录
+    @func_coroutine
+    def save_cookies(self):
+        try:
+            write_json_into_file(self.cookies, DATA_PATH + self.cookies_filename)
+            LOG.info("Save cookies successfully")
+        except Exception as e:
+            LOG.error(str(e))
+            LOG.error("Save cookies failed")
+
+    def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=1):
+        try:
+            res = None
+            if method == "GET":
+                res = requests.get(action, headers=self.headers, cookies=self.cookies, timeout=timeout)
+            elif method == "POST":
+                res = requests.post(action, query, headers=self.headers, cookies=self.cookies, timeout=timeout)
+            elif method == "POST_UPDATE":
+                res = requests.post(action, query, headers=self.headers, cookies=self.cookies, timeout=timeout)
+                self.cookies.update(res.cookies.get_dict())
+                self.save_cookies()
+            content = self.show_progress(res)
+            content_str = content.decode('utf-8')
+            content_dict = json.loads(content_str)
+            return content_dict
+        except Exception as e:
+            LOG.error(str(e))
+            return {"code": 408}
+
     def login(self, username, pw_encrypt, phone=False):
         action = 'http://music.163.com/api/login/'
         phone_action = 'http://music.163.com/api/login/cellphone/'
@@ -66,11 +117,18 @@ class NetEase:
         }
 
         if phone is True:
-            res_data = self.web.post_and_updatecookies(phone_action, phone_data)
+            res_data = self.http_request("POST_UPDATE", phone_action, phone_data)
             return res_data
         else:
-            res_data = self.web.post_and_updatecookies(action, data)
+            res_data = self.http_request("POST_UPDATE", action, data)
             return res_data
+
+    def check_cookies(self):
+        url = "http://music.163.com/api/push/init"
+        data = self.http_request("POST_UPDATE", url, {})
+        if data['code'] == 200:
+            return True
+        return False
 
     def confirm_captcha(self, captcha_id, text):
         action = 'http://music.163.com/api/image/captcha/verify/hf?id=' + str(captcha_id) + '&captcha=' + str(text)

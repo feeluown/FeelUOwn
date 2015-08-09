@@ -1,15 +1,18 @@
 # -*- coding: utf8 -*-
 
+import os
 import hashlib, time
 import asyncio
 import re
 
+from constants import DATA_PATH
+
 from base.logger import LOG
-from base.common import singleton
+from base.common import singleton, write_json_into_file, func_coroutine
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
     AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
-from plugin.NetEase.api import NetEase
+from plugin.NetEaseMusic.api import NetEase
 
 from _thread import start_new_thread
 
@@ -36,25 +39,25 @@ def access_music(music_data):
     :return:
     """
     music_data['url'] = music_data['mp3Url']
-    song = MusicModel(music_data).get_model()
+    song = MusicModel(music_data).get_dict()
 
     for i, artist in enumerate(song['artists']):
-        artist_ = ArtistModel(artist).get_model()
+        artist_ = ArtistModel(artist).get_dict()
         song['artists'][i] = artist_
 
-    song['album'] = AlbumModel(song['album']).get_model()
+    song['album'] = AlbumModel(song['album']).get_dict()
     return song
 
 
 def access_brief_music(music_data):
 
-    song = BriefMusicModel(music_data).get_model()
+    song = BriefMusicModel(music_data).get_dict()
 
     for i, artist in enumerate(song['artists']):
-        artist = BriefArtistModel(artist).get_model()
+        artist = BriefArtistModel(artist).get_dict()
         song['artists'][i] = artist
 
-    song['album'] = BriefAlbumModel(song['album']).get_model()
+    song['album'] = BriefAlbumModel(song['album']).get_dict()
     return song
 
 
@@ -62,7 +65,7 @@ def access_user(user_data):
     user_data['avatar'] = user_data['profile']['avatarUrl']
     user_data['uid'] = user_data['account']['id']
     user_data['username'] = user_data['profile']['nickname']
-    user = UserModel(user_data).get_model()
+    user = UserModel(user_data).get_dict()
     return user
 
 
@@ -89,9 +92,11 @@ def web_cache_playlist(func):
 class NetEaseAPI(object):
     """
     根据标准的数据模型将 网易云音乐的数据 进行格式化
-
     这个类也需要管理一个数据库，这个数据库中缓存过去访问过的歌曲、列表、专辑图片等信息，以减少网络访问
     """
+
+    user_info_filename = "netease_userinfo.json"
+
     def __init__(self):
         super().__init__()
         self.ne = NetEase()
@@ -106,17 +111,26 @@ class NetEaseAPI(object):
             return True
         return False
 
+    def check_login_successful(self):
+        if self.ne.check_cookies():
+            return True
+        else:
+            return False
+
+    def set_user(self, data):
+        self.uid = data['uid']
+
     def login(self, username, password, phone=False):
         password = password.encode('utf-8')
         password = hashlib.md5(password).hexdigest()
         data = self.ne.login(username, password, phone)
-
         if not self.is_data_avaible(data):
             return data
 
         self.uid = data['account']['id']
         data = access_user(data)
         data['code'] = 200
+        self.save_user_info(data)
         return data
 
     def auto_login(self, username, pw_encrypt, phone=False):
@@ -129,6 +143,7 @@ class NetEaseAPI(object):
         self.uid = data['account']['id']
         data = access_user(data)
         data['code'] = 200
+        self.save_user_info(data)
         return data
 
     def get_captcha_url(self, captcha_id):
@@ -175,7 +190,7 @@ class NetEaseAPI(object):
 
         for i, track in enumerate(data['tracks']):
             data['tracks'][i] = access_music(track)
-        model = PlaylistModel(data).get_model()
+        model = PlaylistModel(data).get_dict()
         LOG.debug('Update playlist cache finish: ' + model['name'])
         return model
 
@@ -194,7 +209,7 @@ class NetEaseAPI(object):
             if brief_playlist['type'] == 5:
                 self.favorite_pid = brief_playlist['id']
 
-            result_playlist.append(BriefPlaylistModel(brief_playlist).get_model())
+            result_playlist.append(BriefPlaylistModel(brief_playlist).get_dict())
         return result_playlist
 
     def search(self, s, stype=1, offset=0, total='true', limit=60):
@@ -218,7 +233,7 @@ class NetEaseAPI(object):
         for each_key in data['artist']:
             data[each_key] = data['artist'][each_key]
 
-        model = ArtistDetailModel(data).get_model()
+        model = ArtistDetailModel(data).get_dict()
         return model
 
     def get_album_detail(self, album_id):
@@ -229,7 +244,7 @@ class NetEaseAPI(object):
         album = data['album']
         for i, track in enumerate(album['songs']):
             album['songs'][i] = access_music(track)
-        model = AlbumDetailModel(album).get_model()
+        model = AlbumDetailModel(album).get_dict()
         return model
 
     def is_playlist_mine(self, playlist_model):
@@ -249,8 +264,7 @@ class NetEaseAPI(object):
 
     def set_music_to_favorite(self, mid, flag):
         data = self.ne.set_music_favorite(mid, flag)
-        APP_EVENT_LOOP = asyncio.get_event_loop()
-        APP_EVENT_LOOP.call_soon(self.get_playlist_detail, self.favorite_pid, False)
+        self.get_playlist_detail(self.favorite_pid, False)
         return data
 
     def get_mv_detail(self, mvid):
@@ -266,7 +280,7 @@ class NetEaseAPI(object):
             data['url_middle'] = data['brs'][brs[-2]]
         else:
             data['url_middle'] = data['brs'][brs[-1]]
-        model = MvModel(data).get_model()
+        model = MvModel(data).get_dict()
         return model
 
     def get_lyric_detail(self, music_id):
@@ -300,9 +314,14 @@ class NetEaseAPI(object):
         else:
             data['translate_lyric'] = []
 
-        model = LyricModel(data).get_model()
+        model = LyricModel(data).get_dict()
 
         return model
+
+    @func_coroutine
+    def save_user_info(self, data_dict):
+        if write_json_into_file(data_dict, DATA_PATH + self.user_info_filename):
+            LOG.info("Save User info successfully")
 
 
 if __name__ == "__main__":

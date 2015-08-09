@@ -11,10 +11,10 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 from base.network_manger import NetworkManager
 
-from api import Api
 from base.logger import LOG
+from base.common import write_json_into_file
 
-from constants import CACHE_PATH
+from constants import DATA_PATH
 
 
 class LoginDialog(QDialog):
@@ -26,6 +26,7 @@ class LoginDialog(QDialog):
     
     """
     signal_login_sucess = pyqtSignal([dict], name='login_success')
+    pw_filename = "ne_un_pw.json"
 
     def __init__(self, parent):
         super(LoginDialog, self).__init__(parent)
@@ -44,8 +45,7 @@ class LoginDialog(QDialog):
 
         self.nm = NetworkManager()
 
-        self.filename = CACHE_PATH + 'user.json'
-        self.ne = Api()
+        self.ne = parent.api
 
         self.is_autofill = False
         self.is_need_captcha = False
@@ -69,14 +69,13 @@ class LoginDialog(QDialog):
         """
         if self.has_saved_userinfo():
             try:
-                f = open(self.filename, 'r')
-                login_data = dict()
+                f = open(DATA_PATH + self.pw_filename, 'r')
                 login_data = json.load(f)
                 f.close()
                 if 'is_remember' in login_data.keys() and login_data['is_remember']:
                     self.username_widget.setText(str(login_data['username']))
                     self.password_widget.setText(str(login_data['password']))
-                    self.is_remember_chb.setCheckState(True)
+                    self.is_remember_chb.setCheckState(2)
                     self.is_autofill = True
             except Exception as e:
                 LOG.error(str(e))
@@ -85,25 +84,24 @@ class LoginDialog(QDialog):
         """判断之前是否有保存过的用户名与密码
         :return:
         """
-        if os.path.exists(self.filename):
+        if os.path.exists(DATA_PATH + self.pw_filename):
             return True
         return False
 
     def save_login_info(self, login_data):
         if login_data['is_remember']:
             try:
-                f = open(self.filename, 'w')
+                f = open(DATA_PATH + self.pw_filename, 'w')
                 if self.is_autofill is not True:    # 如果不是自动填充，说明密码时已经没有加密过
                     password = login_data['password'].encode('utf-8')
                     login_data['password'] = hashlib.md5(password).hexdigest()
-                jsondata = json.dumps(login_data)
-                f.write(jsondata)
-                f.close()
+                data_json = json.dumps(login_data)
+                write_json_into_file(data_json, f)
             except Exception as e:
                 LOG.error(str(e))
         else:
             try:
-                os.remove(self.filename)
+                os.remove(DATA_PATH + self.pw_filename)
             except Exception as e:
                 LOG.warning(str(e))
 

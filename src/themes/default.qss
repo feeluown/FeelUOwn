@@ -292,7 +292,7 @@ QLabel#login_label {
 }
 
 QLabel#lyric_label {
-    background-color: rgba(20, 20, 20, 0.3);
+    background-color: rgba(20, 20, 20, 0.1);
     padding: 4px 10px;
     border-radius: 10px;
     color: #993333;
@@ -329,6 +329,10 @@ QLabel#remove_music {
 /* QScrollBar */
 /* ****************************** */
 
+QSCrollBar:horizontal {
+    height: 0px;
+}
+
 QScrollBar:vertical {
     margin: 0px 0;
     border: 0px solid grey;
@@ -364,14 +368,29 @@ QScrollBar::handle:vertical {
 /* ****************************** */
 /* QDialog */
 /* ****************************** */
-QDiaLog#login_dilog QPushButton {
+QDialog#login_dialog {
+    background-color: #272727;
+}
+
+QDialog QLineEdit {
+    font-size: 10px;
+    padding: 2px 5px;
+    border-radius: 4px;
+}
+
+#login_dialog QLineEdit:focus {
     border: 1px solid #993333;
 }
+
+QDialog#login_dialog QPushButton {
+    font-size: 16px;
+}
 #login_dialog QPushButton:hover {
+    font-size: 20px;
     color: #993333;
 }
 #login_dialog QLineEdit {
-    border: 1px solid #993333;
+    border: 1px dashed #993333;
 }
 
 

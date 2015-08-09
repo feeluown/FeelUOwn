@@ -17,7 +17,7 @@ we use only LOG.info to record those errors or warning
 # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
 if constants.MODE == constants.DEBUG:
     logging.basicConfig(
-        level=logging.DEBUG,
+        level=logging.INFO,
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s"
     )
 else:

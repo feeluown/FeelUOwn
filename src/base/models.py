@@ -14,7 +14,7 @@ class DataModel(object):
     def get_model_type(self):
         return self.type
 
-    def get_model(self):
+    def get_dict(self):
         self.data_model['code'] = 200
         return self.data_model
 
@@ -38,8 +38,8 @@ class DataModel(object):
 
     def __getitem__(self, item):
         # 没有实现setitem， 暂时没用到这个函数，以后可能废弃
-        if item in self.get_model():
-            return self.get_model()[item]
+        if item in self.get_dict():
+            return self.get_dict()[item]
         else:
             return None
 

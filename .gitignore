@@ -31,3 +31,7 @@ app.command
 
 cookie*
 .coverage
+
+# user data
+data/*.json
+cache/*.json

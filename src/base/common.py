@@ -2,10 +2,9 @@
 
 import platform
 import asyncio
+import json
+
 from base.logger import LOG
-
-
-
 
 
 def singleton(cls, *args, **kw):
@@ -29,6 +28,18 @@ def func_coroutine(func):
         APP_EVENT_LOOP.call_soon(func, *args)
         LOG.debug("In func_coroutine: after call ")
     return wrapper
+
+
+def write_json_into_file(data_json, filepath):
+    try:
+        with open(filepath, "w") as f:
+            data_str = json.dumps(data_json, indent=4)
+            f.write(data_str)
+        return True
+    except Exception as e:
+        LOG.error(str(e))
+        LOG.error("Write json into file failed")
+        return False
 
 
 def judge_system():

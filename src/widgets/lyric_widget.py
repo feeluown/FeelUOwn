@@ -79,6 +79,8 @@ class LyricWidget(QWidget):
         self.__time_sequence = []
 
     def set_lyric(self, lyric_model):
+        self.hide()
+        self.show()
         self.__time_sequence = lyric_model['time_sequence']
         self.__lyrics = lyric_model['lyric']
         self.__translate_lyric = lyric_model['translate_lyric']

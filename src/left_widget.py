@@ -21,6 +21,7 @@ class LeftScrollArea(QScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.central_widget = LeftWidget()
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff )
 
         self.set_widgets_prop()
 
@@ -98,7 +99,7 @@ class LeftWidget(QWidget):
         self.layout.addWidget(self.create_list_widget)
         self.layout.addLayout(self.collection_title_layout)
         self.layout.addWidget(self.collection_list_widget)
-        self.layout.addLayout(self.local_title_layout)
-        self.layout.addWidget(self.local_list_widget)
+        # self.layout.addLayout(self.local_title_layout)
+        # self.layout.addWidget(self.local_list_widget)
 
         self.layout.addStretch(1)
