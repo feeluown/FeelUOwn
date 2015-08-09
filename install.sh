@@ -17,6 +17,7 @@ else
     echo "您的系统目前没有安装pip3"
     sudo apt-get install python3-pip
     sudo pip3 install -r requirements.txt
+fi
 echo "---------------------------"
 
 desktopFilename='FeelUOwn.desktop'
