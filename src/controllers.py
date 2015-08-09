@@ -45,7 +45,7 @@ class MainWidget(QWidget):
         self.player = Player()
 
         self.current_playlist_widget = MusicTableWidget()
-        self.lyric_widget = LyricWidget(u'没有正在播放的歌曲')
+        self.lyric_widget = LyricWidget(self)
 
         self.left_central_widget = self.ui.left_widget.central_widget
 

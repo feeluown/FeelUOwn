@@ -292,6 +292,8 @@ QLabel#login_label {
 }
 
 QLabel#lyric_label {
+    background-color: rgba(20, 20, 20, 0.3);
+    padding: 4px 10px;
     border-radius: 10px;
     color: #993333;
     font-size: 20px;

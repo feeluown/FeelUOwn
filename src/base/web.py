@@ -55,7 +55,7 @@ class MyWeb(QObject):
             return res.json()
         except Exception as e:
             LOG.error(str(e))
-            return b'{"code": 408}'
+            return {"code": 408}
 
     def get(self, url):
         """Load data from the server using a HTTP GET request.
@@ -101,7 +101,7 @@ class MyWeb(QObject):
 
     def load_cookies(self):
         try:
-            with open(DATA_PATH + "cookies.data", "rb") as f:
+            with open(DATA_PATH + "cookies.dat", "rb") as f:
                 self.cookies = pickle.load(f)
                 requests.session().cookies = self.cookies
             return True
