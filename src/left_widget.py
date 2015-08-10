@@ -90,10 +90,13 @@ class LeftWidget(QWidget):
 
         self.create_title_layout.addWidget(self.create_title)
         self.create_title_layout.addWidget(self.create_fold_spread_btn)
+        self.create_title_layout.addSpacing(10)
         self.collection_title_layout.addWidget(self.collection_title)
         self.collection_title_layout.addWidget(self.collection_fold_spread_btn)
+        self.collection_title_layout.addSpacing(10)
         self.local_title_layout.addWidget(self.local_title)
         self.local_title_layout.addWidget(self.local_fold_spread_btn)
+        self.local_title_layout.addSpacing(10)
 
         self.layout.addLayout(self.create_title_layout)
         self.layout.addWidget(self.create_list_widget)
