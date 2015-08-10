@@ -421,7 +421,7 @@ class MainWidget(QWidget):
             # self.webview.load_mv(mv_model)
 
     @func_coroutine
-    def play_song_mv(self):
+    def play_song_mv(self, clicked=True):
         mid = self.state['current_mid']
         data = self.api.get_song_detail(mid)
         if not self.is_response_ok(data):
