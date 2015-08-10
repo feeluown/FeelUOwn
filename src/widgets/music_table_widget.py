@@ -48,7 +48,7 @@ class MusicTableWidget(QTableWidget):
         self.verticalHeader().hide()
         self.setFocusPolicy(Qt.StrongFocus)
 
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.Tool)
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 
         self.setAlternatingRowColors(True)
 
