@@ -37,15 +37,13 @@ from constants import WINDOW_ICON
 class MainWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
-        # set app name before mediaObject was created to avoid phonon problem
-        # QCoreApplication.setApplicationName("NetEaseMusic-ThirdParty")
         self.ui = UiMainWidget()    # 那些widget对象都通过self.ui.*.*来访问，感觉也不是很好
         self.ui.setup_ui(self)
 
         self.player = Player()
 
         self.current_playlist_widget = MusicTableWidget()
-        self.lyric_widget = LyricWidget(self)
+        self.lyric_widget = LyricWidget()
 
         self.left_central_widget = self.ui.left_widget.central_widget
 
