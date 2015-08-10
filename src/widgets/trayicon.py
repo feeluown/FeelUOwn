@@ -16,10 +16,11 @@ from constants import WINDOW_ICON
 
 @singleton
 class TrayIcon(QSystemTrayIcon):
-    def __init__(self, parent=None):
+    def __init__(self, parent):
         super().__init__(parent)
         self.setIcon(QIcon(WINDOW_ICON))
         self.player = Player()
+
         self.__menu = QMenu()
         self.__set_actions()
         self.__set_menu()
@@ -78,6 +79,10 @@ class TrayIcon(QSystemTrayIcon):
         APP_EVENT_LOOP.stop()
         QApplication.exit(0)
         sys.exit(0)
+
+    def showMessage(self, title, text, icon=None, timeout=0):
+        self.parent().status.showMessage("%s: %s" % (title,
+            text), 3000)
 
     def __play_or_pause(self):
         if self.player.state() == QMediaPlayer.PlayingState:
