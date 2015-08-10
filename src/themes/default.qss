@@ -533,6 +533,4 @@ QToolTip {
 /* QToolTip */
 /* ****************************** */
 QMenu {
-    background-color: #CCC;
-    color: #222;
 }
