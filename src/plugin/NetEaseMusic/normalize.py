@@ -1,8 +1,6 @@
 # -*- coding: utf8 -*-
 
-import os
-import hashlib, time
-import asyncio
+import hashlib
 import re
 
 from constants import DATA_PATH
@@ -13,8 +11,6 @@ from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
     AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
 from plugin.NetEaseMusic.api import NetEase
-
-from _thread import start_new_thread
 
 
 """
@@ -83,7 +79,11 @@ def web_cache_playlist(func):
             if args[0] in cache_data:
                 LOG.debug('playlist: ' + cache_data[args[0]]['name'] + ' has been cached')
             else:
-                cache_data[args[0]] = func(this, *args, **kw)
+                data = func(this, *args, **kw)
+                if data['code'] == 200:
+                    cache_data[args[0]] = data
+                else:
+                    LOG.info("cache playlist failed")
         return cache_data[args[0]]
     return cache
 
