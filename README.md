@@ -7,32 +7,20 @@
 
 > 欢迎有兴趣的小伙伴进行合作开发，搭建基础的框架。也可以开发一些插件，比如说 添加一些数据可视化，增加一些炫酷的动画特效。等等
 
-** 2015-8-2 **
-
-1. 使用 `asyncio` 对项目进行重构
-2. 提高程序的性能和稳定性
-
-> 最新程序使用了`asyncio`库的原因，所以要求python版本最低是3.3, 最好是3.4.
-> ( Ubuntu 14.04 和 deepin 2014.3 上面的python3版本默认已经是3.4了， 或者upgrade一下就行)， 其他版本的我还没有试过
-
-
-** 接下来打算 **
-
-- 添加设置功能
-- 添加数据缓存功能
-
 ## 目前依賴
 Python 3, PyQt5
 
 ```
 sudo apt-get install python3-pyqt5.qtmultimedia
 sudo apt-get install python3-pyqt5.qtwebkit
+sudo apt-get install libqt5multimedia5-plugins
+
+pip3 install -r requirements.txt
 ```
 
 有的系统，比如说Ubuntu 还需要安装:（尤其那些播放不出声音来的，请把下面的依赖全部安装，以免出现未知的问题）
 
 ```
-sudo apt-get install libqt5multimedia5-plugins
 sudo apt-get install gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly
 sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly gstreamer1.0-libav
 ```
