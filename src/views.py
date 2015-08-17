@@ -71,6 +71,10 @@ class UiMainWidget(object):
         self.PROGRESS = self.progress_info
         self.WEBVIEW = self.right_widget.webview
 
+        self.TOP_WIDGET = self.top_widget
+        self.LEFT_WIDGET = self.left_widget
+        self.RIGHT_WIDGET = self.right_widget
+
     def set_widgets(self):
         self.set_widgets_size()
         self.set_object_name()

@@ -53,9 +53,10 @@ class MainWidget(QWidget):
 
         self.init()
 
-        self.state = {'is_login': False,
-                      'current_mid': 0,
-                      'current_pid': 0}
+        self.state = {"is_login": False,
+                      "current_mid": 0,
+                      "current_pid": 0,
+                      "platform": ""}
 
         APP_EVENT_LOOP = asyncio.get_event_loop()
         APP_EVENT_LOOP.call_later(1, self._init_plugins)
@@ -254,7 +255,7 @@ class MainWidget(QWidget):
         p_x, p_y = geometry.x(), geometry.y()
 
         x = p_x + p_width - width
-        y = self.ui.top_widget.height() + p_y - 8
+        y = self.ui.TOP_WIDGET.height() + p_y - 8
 
         self.current_playlist_widget.setGeometry(x, y, 500, 300)
         self.current_playlist_widget.show()
@@ -464,7 +465,7 @@ class MainWidget(QWidget):
         title = music_model['name'] + ' - ' + artists_name
         self.setWindowTitle(title)
         
-        metrics = QFontMetrics(self.ui.top_widget.font())
+        metrics = QFontMetrics(self.ui.TOP_WIDGET.font())
         title = metrics.elidedText(title, Qt.ElideRight, 300 - 40)
         self.ui.SONG_NAME_LABEL.setText(title)
         self.lyric_widget.reset_lyric()
