@@ -154,6 +154,10 @@ class MainWidget(QWidget):
     def is_response_ok(self, data):
         """check response status code
         """
+        if data is None:
+            self.show_network_error_message()
+            return False
+
         if not isinstance(data, dict):
             return True
 
@@ -211,7 +215,7 @@ class MainWidget(QWidget):
                 if pid == self.api.favorite_pid:
                     @func_coroutine
                     def load_favorite_playlist(playlist_id):
-                        favorite_playlist_detail = self.api.get_playlist_detail(playlist_id)
+                        favorite_playlist_detail = self.api.get_playlist_detail(playlist_id, cache=False)
                         self.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
                     load_favorite_playlist(pid)
                 else:
@@ -275,7 +279,8 @@ class MainWidget(QWidget):
             self.ui.LOVE_SONG_BTN.setChecked(not checked)
             return False
         playlist_detail = self.api.get_playlist_detail(self.api.favorite_pid, cache=False)
-        if not playlist_detail:
+        if not self.is_response_ok(playlist_detail):
+            self.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
             return False
         if self.state['current_pid'] == self.api.favorite_pid:
             self.ui.WEBVIEW.load_playlist(playlist_detail)
