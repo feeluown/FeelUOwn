@@ -13,10 +13,6 @@ from base.logger import LOG
 
 
 class WebView(QWebView):
-    """
-
-    """
-
     """这个类的实例可能发出的信号。（也就是说，controller只能绑定这些信号，其他信号尽量不要绑定）
     loadProgress(int)
     """
@@ -145,10 +141,3 @@ class WebView(QWebView):
         self.load(QUrl.fromLocalFile(path))
         self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
 
-    def load_mv(self, mv_model):
-        url = mv_model['url_middle']
-        path = QFileInfo(HTML_PATH + 'mv.html').absoluteFilePath()
-        js_code = 'window.play_mv("%s")' % url
-        self.js_queue.append(js_code)
-        self.load(QUrl.fromLocalFile(path))
-        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)

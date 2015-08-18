@@ -81,7 +81,7 @@ class TrayIcon(QSystemTrayIcon):
         sys.exit(0)
 
     def showMessage(self, title, text, icon=None, timeout=0):
-        self.parent().status.showMessage("%s: %s" % (title,
+        self.parent().ui.STATUS_BAR.showMessage("%s: %s" % (title,
             text), 3000)
 
     def __play_or_pause(self):

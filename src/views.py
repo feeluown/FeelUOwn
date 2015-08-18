@@ -40,6 +40,40 @@ class UiMainWidget(object):
 
         self.set_widgets()
         self.set_layouts()
+        self._alias_name()
+
+    def _alias_name(self):
+        self.PLAY_OR_PAUSE = self.top_widget.play_pause_btn
+        self.PLAY_PREVIOUS_SONG_BTN = self.top_widget.last_music_btn
+        self.PLAY_NEXT_SONG_BTN = self.top_widget.next_music_btn
+        self.SEARCH_BOX = self.top_widget.search_edit
+        self.LOGIN_BTN = self.top_widget.login_btn
+        self.SHOW_CURRENT_SONGS = self.top_widget.show_current_list
+
+        self.ALBUM_IMG_LABEL = self.top_widget.music_info_container.album_img_label
+        self.SONG_COUNTDOWN_LABEL = self.top_widget.music_info_container.music_countdown_label
+        self.SONG_PROGRESS_SLIDER = self.top_widget.music_info_container.music_slider
+        self.SONG_NAME_LABEL = self.top_widget.music_info_container.music_name_label
+        self.LOVE_SONG_BTN = self.top_widget.music_info_container.love_music_btn
+        self.PLAY_MV_BTN = self.top_widget.music_info_container.play_mv_btn
+        self.SHOW_LYRIC_BTN = self.top_widget.music_info_container.show_lyric_btn
+        self.AVATAR_LABEL = self.top_widget.login_label
+
+        self.SPREAD_BTN_FOR_MY_LIST = self.left_widget.central_widget.create_fold_spread_btn
+        self.SPREAD_BTN_FOR_COLLECTION = self.left_widget.central_widget.collection_fold_spread_btn
+        self.SPREAD_BTN_FOR_LOCAL = self.left_widget.central_widget.local_fold_spread_btn
+
+        self.MY_LIST_WIDGET = self.left_widget.central_widget.create_list_widget
+        self.COLLECTION_LIST_WIDGET = self.left_widget.central_widget.collection_list_widget
+        self.LOCAL_LIST_WIDGET = self.left_widget.central_widget.local_list_widget
+        
+        self.STATUS_BAR = self.status
+        self.PROGRESS = self.progress_info
+        self.WEBVIEW = self.right_widget.webview
+
+        self.TOP_WIDGET = self.top_widget
+        self.LEFT_WIDGET = self.left_widget
+        self.RIGHT_WIDGET = self.right_widget
 
     def set_widgets(self):
         self.set_widgets_size()

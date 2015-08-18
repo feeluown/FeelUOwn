@@ -1,7 +1,7 @@
 /* ****************************** */
 /* QSlider */
 /* ****************************** */
-QSlider#slider_play {
+QSlider#music_slider {
   background: transparent;
 }
 
@@ -58,7 +58,7 @@ QWidget {
     color: #CCCCCC;
 }
 
-QWidget#top_widget, QWidget#music_show_container {
+QWidget#top_widget, QWidget#music_info_container {
     border-bottom: 1px solid rgba(153, 51, 51, 0.3);
     background-color: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
         stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
@@ -139,7 +139,7 @@ QPushButton#play_pause:hover, QPushButton#last:hover, QPushButton#next:hover {
 }
 
 
-QPushButton#add_to_favorite {
+QPushButton#love_music_btn{
     border-image: url(../icons/heart.png);
     width: 12px;
     height: 12px;
@@ -147,10 +147,10 @@ QPushButton#add_to_favorite {
     background-color: #272727;
 }
 
-QPushButton#add_to_favorite:hover {
+QPushButton#love_music_btn:hover {
 }
 
-QPushButton#add_to_favorite:checked {
+QPushButton#love_music_btn:checked {
     border-image: url(../icons/heart_hover.png);
 }
 
@@ -316,7 +316,7 @@ QLabel#playlist_img_mine {
     border-image: url(../icons/playlist_mine.png);
 }
 
-QLabel#album_label {
+QLabel#album_img_label {
     border: 0px solid #993333;
     position: absolute;
 }
