@@ -164,7 +164,7 @@ class MainWidget(QWidget):
         return False
 
     def show_network_error_message(self, text="异常: 网络或者远程服务器变动"):
-        self.ui.STATUS_BAR_BAR.showMessage(text, 3000)
+        self.ui.STATUS_BAR.showMessage(text, 3000)
 
     """这部分写一些交互逻辑
     """
