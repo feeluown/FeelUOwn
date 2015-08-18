@@ -6,10 +6,16 @@ import sys
 import os
 import asyncio
 
+from PyQt5.QtCore import QObject
+
+from qtconsole.rich_jupyter_widget import RichJupyterWidget
+from qtconsole.inprocess import QtInProcessKernelManager
+
+
 path = sys.path[0]
 os.chdir(path)
 
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
 from constants import QSS_PATH, LOGFILE, \
@@ -44,5 +50,3 @@ if __name__ == "__main__":
     app_event_loop.run_forever()
 
     sys.exit()
-
-
