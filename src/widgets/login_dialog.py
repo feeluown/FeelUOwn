@@ -30,8 +30,8 @@ class LoginDialog(QDialog):
 
     def __init__(self, parent):
         super(LoginDialog, self).__init__(parent)
-        self.username_lable = QLabel()
-        self.password_lable = QLabel()
+        self.username_label = QLabel()
+        self.password_label = QLabel()
         self.hint_label = QLabel()
         self.username_widget = QLineEdit()
         self.password_widget = QLineEdit()
@@ -188,8 +188,8 @@ class LoginDialog(QDialog):
     def __set_widgets_prop(self):
         self.login_btn.setText(u'登录')
 
-        self.username_lable.setText(u'网易邮箱或者手机号')
-        self.password_lable.setText(u'密码')
+        self.username_label.setText(u'网易邮箱或者手机号')
+        self.password_label.setText(u'密码')
         self.username_widget.setPlaceholderText(u'请输入用户名')
         self.password_widget.setPlaceholderText(u'请输入密码')
 
@@ -203,9 +203,9 @@ class LoginDialog(QDialog):
         self.password_widget.setEchoMode(QLineEdit.Password)
 
     def __set_layouts_prop(self):
-        self.layout.addWidget(self.username_lable)
+        self.layout.addWidget(self.username_label)
         self.layout.addWidget(self.username_widget)
-        self.layout.addWidget(self.password_lable)
+        self.layout.addWidget(self.password_label)
         self.layout.addWidget(self.password_widget)
         self.layout.addWidget(self.hint_label)
         self.layout.addWidget(self.captcha_label)
