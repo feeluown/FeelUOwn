@@ -51,7 +51,6 @@ class NetEase(QObject):
         content = bytes()
         total_size = response.headers.get('content-length')
         if total_size is None:
-            LOG.info(u'这个网络response没有Content-Length字段')
             content = response.content
             return content
         else:
@@ -82,7 +81,7 @@ class NetEase(QObject):
             LOG.error(str(e))
             LOG.error("Save cookies failed")
 
-    def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=1):
+    def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=10):
         try:
             res = None
             if method == "GET":
