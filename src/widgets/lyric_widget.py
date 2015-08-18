@@ -66,9 +66,7 @@ class LyricWidget(QWidget):
 
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
         self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
-        # self.setWindowOpacity(0.5)
 
         self.resize(width, height)
         self.move((QApplication.desktop().width() - width)/2, 40)
