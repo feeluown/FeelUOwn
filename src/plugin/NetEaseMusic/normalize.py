@@ -20,6 +20,7 @@ from plugin.NetEaseMusic.api import NetEase
 - 返回一个music，那么这个数据必须符合 music model.
 """
 
+
 def login_required(func):
     def wrapper(*args):
         this = args[0]
@@ -69,17 +70,18 @@ def web_cache_playlist(func):
     cache_data = {}
 
     def cache(*args, **kw):
-        if len(args) > 2:
-            if not args[2]:    # 不使用缓存
-                data = func(*args, **kw)
-                if data['code'] == 200:
-                    cache_data[args[1]] = data
-                else:
-                    LOG.info("刷新 某个歌单列表缓存 失败")
-                    return None
-        else:
+        def not_use_cache(*args, **kw):
+            LOG.info("trying to update a playlist cache")
+            data = func(*args, **kw)
+            if data['code'] == 200:
+                cache_data[args[1]] = data
+            else:
+                LOG.info("update playlist cache failed")
+                return None
+
+        def use_cache(*args, **kw):
             if args[1] in cache_data:
-                LOG.debug('playlist: ' + cache_data[args[1]]['name'] + ' has been cached')
+                LOG.info('playlist: ' + cache_data[args[1]]['name'] + ' has been cached')
             else:
                 data = func(*args, **kw)
                 if data['code'] == 200:
@@ -87,6 +89,10 @@ def web_cache_playlist(func):
                 else:
                     LOG.info("cache playlist failed")
                     return None
+        if "cache" in kw and not kw["cache"]:
+            not_use_cache(*args, **kw)
+        else:
+            use_cache(*args, **kw)
         return cache_data[args[1]]
     return cache
 
@@ -182,9 +188,7 @@ class NetEaseAPI(object):
         :param pid:
         :return:
         """
-        # LOG.info(time.ctime())
         data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
-        # LOG.info(time.ctime())
         if not self.is_data_avaible(data):
             return data
 
