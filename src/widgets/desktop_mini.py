@@ -5,16 +5,16 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 
-class FallDownScene(QGraphicsScene):
+class DesktopScene(QGraphicsScene):
     def __init__(self, parent=None):
         super().__init__(parent)
 
 
-class FallDownView(QGraphicsView):
+class DesktopView(QGraphicsView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._scene = FallDownScene(self)
+        self._scene = DesktopScene(self)
         self.setScene(self._scene)
         self.resize(600, 400)
 
@@ -25,11 +25,11 @@ class FallDownView(QGraphicsView):
         self.setStyleSheet("background: rgba(20, 20, 20, 0.3);")
 
 
-class FalldownContainer(QWidget):
+class DesktopContainer(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._view = FallDownView(self)
+        self._view = DesktopView(self)
 
         self.setWindowFlags(Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
@@ -44,6 +44,6 @@ class FalldownContainer(QWidget):
 if __name__ == "__main__":
     import sys
     app = QApplication(sys.argv)
-    w = FalldownContainer()
+    w = DesktopContainer()
     w.show()
     app.exec_()

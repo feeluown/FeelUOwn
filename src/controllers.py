@@ -216,6 +216,7 @@ class MainWidget(QWidget):
                     @func_coroutine
                     def load_favorite_playlist(playlist_id):
                         favorite_playlist_detail = self.api.get_playlist_detail(playlist_id, cache=False)
+                        self.state["current_pid"] = playlist_id
                         self.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
                     load_favorite_playlist(pid)
                 else:
@@ -283,6 +284,7 @@ class MainWidget(QWidget):
             self.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
             return False
         if self.state['current_pid'] == self.api.favorite_pid:
+            LOG.info("喜欢列表的歌曲发生变化")
             self.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
@@ -364,6 +366,7 @@ class MainWidget(QWidget):
         if not self.is_response_ok(playlist_detail):
             return
         self.ui.WEBVIEW.load_playlist(playlist_detail)
+        # TODO: change current_pid when webview changed
         self.state['current_pid'] = pid
 
     @pyqtSlot(int)
