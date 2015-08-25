@@ -19,7 +19,7 @@ from widgets.playlist_widget import PlaylistItem
 
 from views import UiMainWidget
 
-from plugin import NetEaseMusic
+from plugin import NetEaseMusic, Hotkey
 
 from base.player import Player
 from base.network_manger import NetworkManager
@@ -75,6 +75,7 @@ class MainWidget(QWidget):
 
     def _init_plugins(self):
         NetEaseMusic.init(self)
+        Hotkey.init(self)
 
     def closeEvent(self, event):
         self.hide()
