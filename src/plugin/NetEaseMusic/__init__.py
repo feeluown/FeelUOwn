@@ -41,7 +41,6 @@ def login_with_local_info():
             if "uid" in data_dict:
                 netease_normalize.set_user(data_dict)
                 CONTROLLER.set_user(data_dict)
-                CONTROLLER.trayicon.showMessage("O(∩_∩)O", "程序已经加载您上次的用户信息")
 
     if os.path.exists(DATA_PATH + netease_normalize.ne.cookies_filename):
         @func_coroutine
@@ -49,9 +48,6 @@ def login_with_local_info():
             netease_normalize.ne.load_cookies()
             if netease_normalize.check_login_successful():
                 CONTROLLER.set_login()
-                CONTROLLER.trayicon.showMessage("O(∩_∩)O", "登录成功\n 现在您将可以对歌单进行修改")
-            else:
-                CONTROLLER.trayicon.showMessage("0.0", "您的登录信息已经过期，请您手动登录", QSystemTrayIcon.Warning)
         check_cookies()
     else:
-        CONTROLLER.trayicon.showMessage("0.0", "找不到您的cookies文件，请您手动登录", QSystemTrayIcon.Warning)
+        LOG.info("找不到您的cookies文件，请您手动登录")

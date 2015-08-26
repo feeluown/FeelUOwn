@@ -13,6 +13,24 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 
+class LoginLabel(QLabel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.menu = QMenu()
+
+        self.setting_action = QAction("设置", self)
+        self.login_action = QAction("其他账号登入", self)
+        self.logout_action = QAction("登出", self)
+
+        self.menu.addAction(self.setting_action)
+        self.menu.addAction(self.login_action)
+        self.menu.addAction(self.logout_action)
+
+    def contextMenuEvent(self, event: QContextMenuEvent):
+        self.menu.exec(event.globalPos())
+
+
 class MusicInfoWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,6 +59,7 @@ class MusicInfoWidget(QWidget):
         self.album_img_label.setAlignment(Qt.AlignCenter)
         self.music_countdown_label.setText('00:00')
 
+        self.love_music_btn.setCheckable(True)
         self.love_music_btn.setChecked(True)
 
         self.music_slider.setFixedHeight(15)
@@ -104,7 +123,7 @@ class TopWidget(QWidget):
         self.play_pause_btn = QPushButton()
         self.search_edit = QLineEdit()
         self.login_btn = QPushButton("~")
-        self.login_label = QLabel()
+        self.login_label = LoginLabel()
         self.show_current_list = QPushButton()
         self.edit_layout = QHBoxLayout()
 

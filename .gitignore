@@ -35,3 +35,9 @@ cookie*
 # user data
 data/*.json
 cache/*.json
+
+# test image
+src/*.png
+src/*.jpg
+src/widgets/*.png
+src/widgets/*.jpg

@@ -531,7 +531,14 @@ QToolTip {
 
 
 /* ****************************** */
-/* QToolTip */
+/* QMenu */
 /* ****************************** */
 QMenu {
+    color: #CCC;
+    background-color: #272727;
+}
+
+QMenu:Hover {
+    background-color: #333;
+    color: #993333;
 }

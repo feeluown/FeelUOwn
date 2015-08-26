@@ -12,23 +12,17 @@ from PyQt5.QtNetwork import *
 from PyQt5.QtMultimedia import *
 
 from widgets.login_dialog import LoginDialog
-from widgets.trayicon import TrayIcon
 from widgets.music_table_widget import MusicTableWidget
 from widgets.lyric_widget import LyricWidget
 from widgets.playlist_widget import PlaylistItem
-
+from widgets.desktop_mini import DesktopMiniLayer
 from views import UiMainWidget
-
 from plugin import NetEaseMusic
-
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.logger import LOG
-
 from base import common
-
-from base.common import func_coroutine, singleton
-
+from base.common import func_coroutine
 from constants import WINDOW_ICON
 
 
@@ -40,10 +34,11 @@ class MainWidget(QWidget):
 
         self.player = Player()
 
+        self.desktop_mini = DesktopMiniLayer()
+
         self.current_playlist_widget = MusicTableWidget()
         self.lyric_widget = LyricWidget()
 
-        self.trayicon = TrayIcon(self)
         self.network_manger = NetworkManager()
 
         self.search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
@@ -75,17 +70,15 @@ class MainWidget(QWidget):
 
     def _init_plugins(self):
         NetEaseMusic.init(self)
+        pass
 
     def closeEvent(self, event):
-        self.hide()
-        event.ignore()
-        self.trayicon.showMessage(u"提示",
-                                  u'程序已最小化到托盘，点击托盘可以进行操作')
+        self.close()
+        event.accept()
 
     def init(self):
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('FeelUOwn')
-        self.trayicon.show()
         self.init_signal_binding()
         self.init_widgets()
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
@@ -127,7 +120,6 @@ class MainWidget(QWidget):
 
         self.player.signal_player_media_changed.connect(self.on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
-        self.player.stateChanged.connect(self.trayicon.on_player_state_changed)
         self.player.positionChanged.connect(self.on_player_position_changed)
         self.player.durationChanged.connect(self.on_player_duration_changed)
         self.player.signal_playlist_is_empty.connect(self.on_playlist_empty)
@@ -148,6 +140,8 @@ class MainWidget(QWidget):
         # self._shadow_effect.setYOffset(2)
         self.shadow_effect.setBlurRadius(10)
         self.ui.PROGRESS.setGraphicsEffect(self.shadow_effect)
+
+        self.desktop_mini.show()
 
     """这部分写一些工具
     """
@@ -216,6 +210,7 @@ class MainWidget(QWidget):
                     @func_coroutine
                     def load_favorite_playlist(playlist_id):
                         favorite_playlist_detail = self.api.get_playlist_detail(playlist_id, cache=False)
+                        self.state["current_pid"] = playlist_id
                         self.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
                     load_favorite_playlist(pid)
                 else:
@@ -245,6 +240,8 @@ class MainWidget(QWidget):
         self.ui.ALBUM_IMG_LABEL.setPixmap(pixmap.scaled(self.ui.ALBUM_IMG_LABEL.size(),
                                           Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
         self.setWindowIcon(QIcon(pixmap))
+        if self.desktop_mini.isVisible():
+            self.desktop_mini.content.setPixmap(pixmap)
 
     def show_current_playlist(self):
         self.current_playlist_widget.resize(500, 200)
@@ -283,6 +280,7 @@ class MainWidget(QWidget):
             self.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
             return False
         if self.state['current_pid'] == self.api.favorite_pid:
+            LOG.info("喜欢列表的歌曲发生变化")
             self.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
@@ -332,6 +330,7 @@ class MainWidget(QWidget):
         time_text = QTime(0, (ms / 60000) % 60, (ms / 1000) % 60)
         self.ui.SONG_COUNTDOWN_LABEL.setText(time_text.toString("mm:ss"))
         self.ui.SONG_PROGRESS_SLIDER.setValue(ms / 1000)
+        self.desktop_mini.content.set_value(ms / 1000)
 
         if self.lyric_widget.isVisible():
             if self.lyric_widget.has_lyric():
@@ -364,6 +363,7 @@ class MainWidget(QWidget):
         if not self.is_response_ok(playlist_detail):
             return
         self.ui.WEBVIEW.load_playlist(playlist_detail)
+        # TODO: change current_pid when webview changed
         self.state['current_pid'] = pid
 
     @pyqtSlot(int)
@@ -477,14 +477,14 @@ class MainWidget(QWidget):
 
         self.ui.SONG_COUNTDOWN_LABEL.setText('00:00')
         self.ui.SONG_PROGRESS_SLIDER.setRange(0, self.player.duration() / 1000)
+        self.desktop_mini.content.set_duration(self.player.duration() / 1000)
 
-        self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl']+"?param=55y55")))
+        self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl'] + "?param=200y200")))
         self.network_queue.put(self.set_music_icon)    # 更换任务栏图标
 
         self.current_playlist_widget.add_item_from_model(music_model)
         self.current_playlist_widget.focus_cell_by_mid(music_model['id'])
 
-        self.trayicon.showMessage(u'正在播放: ', music_model['name'])
 
         self.state['current_mid'] = music_model['id']
 
@@ -498,10 +498,11 @@ class MainWidget(QWidget):
             return
         self.ui.PLAY_MV_BTN.close()
 
-
     @pyqtSlot(int)
     def on_player_duration_changed(self, duration):
         self.ui.SONG_PROGRESS_SLIDER.setRange(0, self.player.duration() / 1000)
+        self.desktop_mini.content.set_duration(self.player.duration() / 1000)
+        LOG.info("song durtion changed")
 
     @pyqtSlot(QMediaPlayer.State)
     def on_player_state_changed(self, state):
@@ -551,20 +552,11 @@ class MainWidget(QWidget):
 
     @pyqtSlot(QMediaPlaylist.PlaybackMode)
     def on_playback_mode_changed(self, playback_mode):
-        if playback_mode == 0:
-            self.trayicon.showMessage(u"通知", u"切换到单曲播放模式")
-        elif playback_mode == 1:
-            self.trayicon.showMessage(u"通知", u"切换到单曲循环模式")
-        elif playback_mode == 2:
-            self.trayicon.showMessage(u"通知", u"切换到顺序播放模式")
-        elif playback_mode == 3:
-            self.trayicon.showMessage(u"通知", u"切换到全部循环模式")
-        elif playback_mode == 4:
-            self.trayicon.showMessage(u"通知", u"切换到随机播放模式")
+        pass
 
     @pyqtSlot(str)
     def on_player_error_occured(self, message):
-        self.trayicon.showMessage(u'播放器错误', message, QSystemTrayIcon.Warning)
+        pass
 
 if __name__ == "__main__":
     import sys
