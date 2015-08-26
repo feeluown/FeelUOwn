@@ -17,7 +17,7 @@ from widgets.lyric_widget import LyricWidget
 from widgets.playlist_widget import PlaylistItem
 from widgets.desktop_mini import DesktopMiniLayer
 from views import UiMainWidget
-from plugin import NetEaseMusic
+from plugin import NetEaseMusic, Hotkey
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.logger import LOG
@@ -70,7 +70,11 @@ class MainWidget(QWidget):
 
     def _init_plugins(self):
         NetEaseMusic.init(self)
+<<<<<<< HEAD
         pass
+=======
+        Hotkey.init(self)
+>>>>>>> mac_hotkey
 
     def closeEvent(self, event):
         self.close()
