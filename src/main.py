@@ -8,10 +8,6 @@ import asyncio
 
 from PyQt5.QtCore import QObject
 
-from qtconsole.rich_jupyter_widget import RichJupyterWidget
-from qtconsole.inprocess import QtInProcessKernelManager
-
-
 path = sys.path[0]
 os.chdir(path)
 

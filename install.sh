@@ -12,11 +12,11 @@ echo "---------------------------"
 echo "准备安装相关python依赖"
 pip3 --version 2>&1
 if [ $? -eq 0 ]; then
-    sudo pip3 install -r requirements.txt
+    sudo pip3 install -r requirements.txt -i http://pypi.douban.com/simple/
 else
     echo "您的系统目前没有安装pip3"
     sudo apt-get install python3-pip
-    sudo pip3 install -r requirements.txt
+    sudo pip3 install -r requirements.txt -i http://pypi.douban.com/simple/
 fi
 echo "---------------------------"
 
