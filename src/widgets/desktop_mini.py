@@ -1,111 +1,124 @@
 # -*- coding:utf8 -*-
 
-import sys
-
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
+from constants import ICON_PATH
+
+width, height = 200, 290
 
 
-width = height = 160
-
-
-class CirclePixmapItem(QGraphicsPixmapItem):
-    def __init__(self, pixmap=None):
-        super().__init__(pixmap)
-        if pixmap:
-            self._init_rotate_center()
-
-    def setPixmap(self, pixmap: QPixmap):
-        super().setPixmap(pixmap)
-        self._init_rotate_center()
-
-    def _init_rotate_center(self):
-        self.setTransformOriginPoint(self.pixmap().width()/2, self.pixmap().height()/2)
-
-
-class DesktopScene(QGraphicsScene):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-
-class DesktopView(QGraphicsView):
+class MiniWidget(QLabel):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setFixedSize(width, height)
+        self._layout = QVBoxLayout()
+        self.setLayout(self._layout)
 
-        self.img_ani = QVariantAnimation()
+        self.setPixmap(QPixmap(ICON_PATH + "FeelUOwn.png"))
 
-        self._scene = DesktopScene(self)
-        self.setScene(self._scene)
-
-        self._scene.setSceneRect(QRectF(QPointF(0, 0), QSizeF(self.size())))
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setAttribute(Qt.WA_TransparentForMouseEvents, True)
-
-        self.setStyleSheet("background: transparent;")
-
-        self.img_item = CirclePixmapItem()
-        self.img_item.setPixmap(QPixmap("desktop.jpg"))
-
-        self._scene.addItem(self.img_item)
+        self._duration = 0
+        self._value = 0
+        self._angle = 0
 
         self._init_props()
-        self._init_signal_binding()
-
-        self.img_ani.start()
-
-    def _init_props(self):
-        self.img_ani.setLoopCount(-1)
-        self.img_ani.setDuration(10000)
-        self.img_ani.setStartValue(QVariant(0.0))
-        self.img_ani.setEndValue(QVariant(360.0))
-
-    def _init_signal_binding(self):
-        self.img_ani.valueChanged.connect(self._rotate_img)
-
-    @pyqtSlot(QVariant)
-    def _rotate_img(self, angle):
-        self.img_item.setRotation(angle)
-
-    @pyqtSlot(QVariant)
-    def _show_song_progress(self, ms):
-        progress_item = QGraphicsEllipseItem(0, 0, width, height)
-        progress_item.setStartAngle(16*ms)
-        progress_item.setSpanAngle(16)
-        self._scene.addItem(progress_item)
-
-    @pyqtSlot()
-    def _on_song_changed(self):
-        self._scene.clear()
-
-
-class DesktopContainer(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self._drag_pos = (0, 0)
-        self.setFixedSize(width, height)
-
-        self._view = DesktopView(self)
-
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setMask(QRegion(0, 0, width, height, QRegion.Ellipse))
-
-        self._exit_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
-        self._init_signal_binding()
-
-    def _init_signal_binding(self):
-        self._exit_shortcut.activated.connect(self.close)
+        self._init_setting_part()
 
     def paintEvent(self, event: QPaintEvent):
-        if sys.platform == "darwin":
-            painter = QPainter(self)
-            painter.setCompositionMode(QPainter.CompositionMode_Clear)
-            painter.fillRect(self.rect(), Qt.transparent)
-            painter.setCompositionMode(QPainter.CompositionMode_SourceOver)
+        painter = QPainter(self)
+        painter.setRenderHints(QPainter.HighQualityAntialiasing | QPainter.SmoothPixmapTransform)
+        painter.setBrush(QColor("#222"))
+        painter.drawRect(0, 0, width, height-width)
+
+        slider_width = 6.0
+
+        painter.resetTransform()
+        painter.translate(self.width()/2, self.width()/2 + height-width)
+        # painter.rotate(self._angle)
+        painter.drawPixmap(-self.width()/2, -self.width()/2, self.pixmap().scaled(width, width))
+
+        painter.resetTransform()
+        pen_width = slider_width
+        rec = QRectF(pen_width/2, (height-width)+pen_width/2, width-pen_width, width-pen_width)
+        pen = QPen()
+        pen.setWidth(slider_width)
+        pen.setColor(QColor("#CCC"))
+        pen.setColor(QColor(200, 200, 200, 80))
+        painter.setPen(pen)
+        painter.drawArc(rec, 0, 360 * 16)
+
+        # pen_width = 4.0
+        # rec = QRectF(pen_width/2, (height-width)+pen_width/2, width-pen_width, width-pen_width)
+        # pen.setWidth(pen_width)
+        # painter.setPen(pen)
+        # painter.drawArc(rec, 0, 360 * 16)
+
+        if self._duration:
+            pen_width = slider_width
+            pen.setColor(QColor("#993333"))
+            pen.setWidth(slider_width)
+            rec = QRectF(pen_width/2, (height-width)+pen_width/2, width-pen_width, width-pen_width)
+            pen.setCapStyle(Qt.RoundCap)
+            painter.setPen(pen)
+            span_angle = -(self._value * 1.0 / self._duration) * 360 * 16
+            painter.drawArc(rec, 90*16, span_angle)
+
+    def set_duration(self, duration):
+        self._duration = duration
+
+    def set_value(self, second):
+        self._value = second
+        self.update()
+
+    def _init_setting_part(self):
+        pass
+
+    def _init_props(self):
+        self.setObjectName("setting_widget")
+
+
+class DesktopMiniContainer(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(width, height)
+        self.central_widget = MiniWidget(self)
+        self._layout = QHBoxLayout(self)
+        self.setLayout(self._layout)
+
+        self._layout.addWidget(self.central_widget)
+
+        self.setObjectName("setting_widget_container")
+        self.setStyleSheet("background: transparent;")
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+
+class DesktopMiniLayer(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedSize(width, height)
+        self._drag_pos = (0, 0)
+
+        self.container = DesktopMiniContainer(self)
+        self.content = self.container.central_widget
+        self._layout = QVBoxLayout(self)
+        self._exit_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+
+        self._exit_shortcut.activated.connect(self.close)
+
+        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.setLayout(self._layout)
+        self._layout.addWidget(self.container)
+
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        # self.setMask(QRegion(0, 0, self.width(), self.height(), QRegion.Ellipse))
+        self.setMask(QBitmap(ICON_PATH + "mask.bmp"))
+
+        self._init_position()
+
+    def _init_position(self):
+        self.move(QApplication.desktop().width() - self.width(), 0)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -121,8 +134,11 @@ class DesktopContainer(QWidget):
 
 
 if __name__ == "__main__":
-    import sys
+    import sys, os
     app = QApplication(sys.argv)
-    w = DesktopContainer()
+    with open("../themes/default.qss", "r") as qssfile:
+        app.setStyleSheet(qssfile.read())
+    w = DesktopMiniLayer()
+    w.setGeometry(100, 100, width, height)
     w.show()
-    sys.exit(app.exec_())
+    app.exec_()

@@ -44,7 +44,7 @@ class Player(QMediaPlayer):
         self.__playlist.playbackModeChanged.connect(self.on_playback_mode_changed)
         self.error.connect(self.on_error_occured)
 
-    def set_play_mode(self, mode=3):
+    def set_play_mode(self, mode=4):
         # item once: 0
         # item in loop: 1
         # sequential: 2
