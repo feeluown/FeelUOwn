@@ -46,7 +46,6 @@ class WebView(QWebView):
 
     @pyqtSlot(QUrl)
     def on_link_clicked(self, url):
-        print(url)
         return False
 
     @pyqtSlot()

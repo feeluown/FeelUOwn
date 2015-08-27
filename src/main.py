@@ -23,6 +23,7 @@ from quamash import QEventLoop
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
+    app.setQuitOnLastWindowClosed(True)
     QApplication.setWindowIcon(QIcon(WINDOW_ICON))
     QApplication.setApplicationName("FeelUOwn")
     QApplication.setApplicationVersion("v3.1.0")

@@ -32,7 +32,6 @@ class Player(QMediaPlayer):
         self.__playlist = QMediaPlaylist()  # 播放列表。里面的对象是qmediacontent
 
         self.setPlaylist(self.__playlist)
-
         self.init()
 
     def init(self):
@@ -171,7 +170,7 @@ class Player(QMediaPlayer):
         elif self.state() == QMediaPlayer.PausedState:
             self.play()
         else:
-            pass
+            self.__playlist.next()
 
     @when_playlist_empty
     @pyqtSlot()

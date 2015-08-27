@@ -2,6 +2,7 @@
 __author__ = 'cosven'
 
 import sys
+import os
 import subprocess
 from queue import Queue
 import asyncio
@@ -251,7 +252,7 @@ class MainWidget(QWidget):
     def show_current_playlist(self):
         self.current_playlist_widget.resize(500, 200)
         if self.current_playlist_widget.isVisible():
-            self.current_playlist_widget.hide()
+            self.current_playlist_widget.close()
 
         width = self.current_playlist_widget.width()
         height = self.current_playlist_widget.height()
@@ -440,13 +441,13 @@ class MainWidget(QWidget):
 
     def show_hide_lyric(self):
         if self.lyric_widget.isVisible():
-            self.lyric_widget.hide()
+            self.lyric_widget.close()
         else:
             self.lyric_widget.show()
 
     def show_hide_desktop_mini(self):
         if self.desktop_mini.isVisible():
-            self.desktop_mini.hide()
+            self.desktop_mini.close()
             self.show()
         else:
             self.desktop_mini.show()

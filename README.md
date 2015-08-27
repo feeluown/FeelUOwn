@@ -14,6 +14,7 @@ Python 3, PyQt5
 sudo apt-get install python3-pyqt5.qtmultimedia
 sudo apt-get install python3-pyqt5.qtwebkit
 sudo apt-get install libqt5multimedia5-plugins
+sudo apt-get install python3-xlib
 
 pip3 install -r requirements.txt
 ```
