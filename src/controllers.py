@@ -451,7 +451,7 @@ class MainWidget(QWidget):
             self.show()
         else:
             self.desktop_mini.show()
-            self.close()
+            self.hide()
 
     @pyqtSlot(int)
     def play_songs(self, songs):
