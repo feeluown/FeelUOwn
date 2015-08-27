@@ -6,7 +6,7 @@ echo "---------------------------"
 
 echo "正在检查你是否安装一些更新需要的工具..."
 
-git --version > /dev/null 2>&1
+git --version 1>/dev/null 2>&1
 if [ $? -eq 0 ]; then
     echo ""
 else
@@ -15,7 +15,7 @@ else
     echo -n "> "
     read flag
     if [ "$flag" = "y" ]; then
-        sudo apt-get install git
+        sudo apt-get install git 1>/dev/null 2>&1
     else
         echo "您选择取消安装git工具，更新中断..."
         exit 0
@@ -31,7 +31,7 @@ if [ "$flag" = "y" ]; then
   echo "更新中......"
   git init  1>/dev/null 2>&1
   git remote add origin https://github.com/cosven/FeelUOwn.git 1>/dev/null 2>&1
-  git remote set-url origin https://github.com/cosven/FeelUOwn.git 1>dev/null 2>&1
+  git remote set-url origin https://github.com/cosven/FeelUOwn.git 1>/dev/null 2>&1
   git fetch --all  1>/dev/null 2>&1
   git reset --hard origin/master 1>/dev/null 2>&1
   if [ $? -eq 0 ]; then
