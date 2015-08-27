@@ -16,6 +16,9 @@ class LyricWidget(QWidget):
         self._container = QWidget(self)
         self._container_layout = QVBoxLayout(self._container)
 
+        self._exit_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        self._exit_shortcut.activated.connect(self.close)
+
         self._layout = QVBoxLayout(self)
         self.__drag_pos = (0, 0)
         self.__init_attr()

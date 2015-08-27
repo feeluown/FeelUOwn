@@ -175,7 +175,7 @@ QPushButton#login_btn:hover {
 
 QPushButton#show_desktop_mini {
     font-size: 10px;
-    border: 0px;
+    border: 0px solid #222;;
     padding: 0px 2px;
     color: #CCC;
 }
@@ -283,6 +283,9 @@ QStatusBar {
     background-color: #272727;
 }
 
+QStatusBar::item {
+    border: 0px solid #222;
+}
 
 /* ****************************** */
 /* QLabel */
