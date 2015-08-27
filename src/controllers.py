@@ -1,6 +1,7 @@
 # -*- coding:utf8 -*-
 __author__ = 'cosven'
 
+import sys
 import subprocess
 from queue import Queue
 import asyncio
@@ -42,6 +43,7 @@ class MainWidget(QWidget):
         self.network_manger = NetworkManager()
 
         self.search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
+        self._exit_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
         self.api = None
         self.network_queue = Queue()
@@ -70,15 +72,10 @@ class MainWidget(QWidget):
 
     def _init_plugins(self):
         NetEaseMusic.init(self)
-<<<<<<< HEAD
-        pass
-=======
         Hotkey.init(self)
->>>>>>> mac_hotkey
 
     def closeEvent(self, event):
         self.close()
-        event.accept()
 
     def init(self):
         self.setWindowIcon(QIcon(WINDOW_ICON))
@@ -93,6 +90,7 @@ class MainWidget(QWidget):
         :return:
         """
         self.ui.LOGIN_BTN.clicked.connect(self.pop_login)
+        self.ui.QUIT_ACTION.triggered.connect(sys.exit)
         self.ui.PLAY_PREVIOUS_SONG_BTN.clicked.connect(self.last_music)
         self.ui.PLAY_NEXT_SONG_BTN.clicked.connect(self.next_music)
         self.ui.SONG_PROGRESS_SLIDER.sliderMoved.connect(self.seek)
@@ -109,6 +107,8 @@ class MainWidget(QWidget):
             self.ui.COLLECTION_LIST_WIDGET.fold_spread_with_animation)
         self.ui.SPREAD_BTN_FOR_LOCAL.clicked.connect(
             self.ui.LOCAL_LIST_WIDGET.fold_spread_with_animation)
+
+        self.ui.SHOW_DESKTOP_MINI.clicked.connect(self.show_hide_desktop_mini)
 
         self.current_playlist_widget.signal_play_music.connect(self.play)
         self.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
@@ -133,6 +133,10 @@ class MainWidget(QWidget):
         self.network_manger.finished.connect(self.access_network_queue)
 
         self.search_shortcut.activated.connect(self.set_search_focus)
+        self._exit_shortcut.activated.connect(self.showMinimized)
+
+        self.desktop_mini.content.set_song_like_signal.connect(self.set_favorite)
+        self.desktop_mini.close_signal.connect(self.show)
 
     def init_widgets(self):
         self.current_playlist_widget.resize(500, 200)
@@ -144,8 +148,6 @@ class MainWidget(QWidget):
         # self._shadow_effect.setYOffset(2)
         self.shadow_effect.setBlurRadius(10)
         self.ui.PROGRESS.setGraphicsEffect(self.shadow_effect)
-
-        self.desktop_mini.show()
 
     """这部分写一些工具
     """
@@ -244,8 +246,7 @@ class MainWidget(QWidget):
         self.ui.ALBUM_IMG_LABEL.setPixmap(pixmap.scaled(self.ui.ALBUM_IMG_LABEL.size(),
                                           Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
         self.setWindowIcon(QIcon(pixmap))
-        if self.desktop_mini.isVisible():
-            self.desktop_mini.content.setPixmap(pixmap)
+        self.desktop_mini.content.setPixmap(pixmap)
 
     def show_current_playlist(self):
         self.current_playlist_widget.resize(500, 200)
@@ -269,15 +270,21 @@ class MainWidget(QWidget):
     def judge_favorite(self, mid):
         if self.api.is_favorite_music(mid):
             self.ui.LOVE_SONG_BTN.setChecked(True)
+            self.desktop_mini.content.is_song_like = True
         else:
             self.ui.LOVE_SONG_BTN.setChecked(False)
+            self.desktop_mini.content.is_song_like = False
 
     @func_coroutine
     @pyqtSlot(bool)
     def set_favorite(self, checked=True):
+        if not self.state["current_mid"]:
+            return False
         data = self.api.set_music_to_favorite(self.state['current_mid'], checked)
+        self.desktop_mini.content.is_song_like = checked
         if not self.is_response_ok(data):
             self.ui.LOVE_SONG_BTN.setChecked(not checked)
+            self.desktop_mini.content.is_song_like = not checked
             return False
         playlist_detail = self.api.get_playlist_detail(self.api.favorite_pid, cache=False)
         if not self.is_response_ok(playlist_detail):
@@ -437,6 +444,14 @@ class MainWidget(QWidget):
         else:
             self.lyric_widget.show()
 
+    def show_hide_desktop_mini(self):
+        if self.desktop_mini.isVisible():
+            self.desktop_mini.hide()
+            self.show()
+        else:
+            self.desktop_mini.show()
+            self.close()
+
     @pyqtSlot(int)
     def play_songs(self, songs):
         if len(songs) == 0:
@@ -472,6 +487,8 @@ class MainWidget(QWidget):
         for artist in artists:
             artists_name += artist['name']
         title = music_model['name'] + ' - ' + artists_name
+        self.desktop_mini.content.set_song_name(music_model['name'])
+        self.desktop_mini.content.set_song_singer(artists_name)
         self.setWindowTitle(title)
         
         metrics = QFontMetrics(self.ui.TOP_WIDGET.font())
@@ -489,7 +506,6 @@ class MainWidget(QWidget):
         self.current_playlist_widget.add_item_from_model(music_model)
         self.current_playlist_widget.focus_cell_by_mid(music_model['id'])
 
-
         self.state['current_mid'] = music_model['id']
 
         self.judge_song_has_mv(music_model)
@@ -506,7 +522,6 @@ class MainWidget(QWidget):
     def on_player_duration_changed(self, duration):
         self.ui.SONG_PROGRESS_SLIDER.setRange(0, self.player.duration() / 1000)
         self.desktop_mini.content.set_duration(self.player.duration() / 1000)
-        LOG.info("song durtion changed")
 
     @pyqtSlot(QMediaPlayer.State)
     def on_player_state_changed(self, state):

@@ -8,15 +8,14 @@ every basic widget class has three public \
 funcition to set child widget properties.
 """
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from widgets.music_table_widget import MusicTableWidget
-from constants import ICON_PATH
-from left_widget import LeftWidget, LeftScrollArea
+from left_widget import LeftScrollArea
 from right_widget import RightWidget
 from top_widget import TopWidget
+from widgets.statusbar import StatusBar
+
+
 
 
 class UiMainWidget(object):
@@ -24,7 +23,7 @@ class UiMainWidget(object):
     the main view
     """
     def setup_ui(self, MainWidget):
-        self.status = QStatusBar()
+        self.status = StatusBar()
         self.right_widget = RightWidget()
         self.left_widget = LeftScrollArea()
         self.top_widget = TopWidget()
@@ -50,6 +49,8 @@ class UiMainWidget(object):
         self.LOGIN_BTN = self.top_widget.login_btn
         self.SHOW_CURRENT_SONGS = self.top_widget.show_current_list
 
+        self.SHOW_DESKTOP_MINI = self.status.desktop_mini_btn
+
         self.ALBUM_IMG_LABEL = self.top_widget.music_info_container.album_img_label
         self.SONG_COUNTDOWN_LABEL = self.top_widget.music_info_container.music_countdown_label
         self.SONG_PROGRESS_SLIDER = self.top_widget.music_info_container.music_slider
@@ -74,6 +75,8 @@ class UiMainWidget(object):
         self.TOP_WIDGET = self.top_widget
         self.LEFT_WIDGET = self.left_widget
         self.RIGHT_WIDGET = self.right_widget
+
+        self.QUIT_ACTION = self.top_widget.login_label.quit_action
 
     def set_widgets(self):
         self.set_widgets_size()

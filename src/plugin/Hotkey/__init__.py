@@ -17,7 +17,11 @@ def run_event_loop(player):
     from AppKit import NSKeyUp, NSSystemDefined, NSEvent
 
     def keyboard_tap_callback(proxy, type_, event, refcon):
-        key_event = NSEvent.eventWithCGEvent_(event)
+        try:
+            key_event = NSEvent.eventWithCGEvent_(event)
+        except:
+            LOG.info("mac event cast error")
+            return event
         if key_event.subtype() == 8:
             key_code = (key_event.data1() & 0xFFFF0000) >> 16
             key_state = (key_event.data1() & 0xFF00) >> 8

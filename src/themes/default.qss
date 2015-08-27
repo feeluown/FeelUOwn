@@ -173,6 +173,17 @@ QPushButton#login_btn:hover {
     background-color: #111;
 }
 
+QPushButton#show_desktop_mini {
+    font-size: 10px;
+    border: 0px;
+    padding: 0px 2px;
+    color: #CCC;
+}
+
+QPushButton#show_desktop_mini:hover {
+    color: #993333;
+}
+
 QPushButton#help_btn {
     border-image: url(../icons/help.png);
 }
@@ -516,19 +527,6 @@ QProgressBar::chunk {
 QScrollArea {
     border: 0px solid #993333;
 }
-
-/* ****************************** */
-/* QToolTip */
-/* ****************************** */
-
-QToolTip {
-    background-color: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
-        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);;
-    color: #ccc;
-    border: 1px solid rgba(0,0,0, 0.4);
-    padding: -1px 4px;
-}
-
 
 /* ****************************** */
 /* QMenu */

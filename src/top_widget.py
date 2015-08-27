@@ -19,17 +19,14 @@ class LoginLabel(QLabel):
 
         self.menu = QMenu()
 
-        self.setting_action = QAction("设置", self)
-        self.login_action = QAction("其他账号登入", self)
-        self.logout_action = QAction("登出", self)
-
-        self.menu.addAction(self.setting_action)
-        self.menu.addAction(self.login_action)
-        self.menu.addAction(self.logout_action)
+        self.quit_action = QAction("退出", self)
+        self.menu.addAction(self.quit_action)
 
     def contextMenuEvent(self, event: QContextMenuEvent):
         self.menu.exec(event.globalPos())
 
+    def mousePressEvent(self, event: QMouseEvent):
+        self.menu.exec(event.globalPos())
 
 class MusicInfoWidget(QWidget):
     def __init__(self, parent=None):

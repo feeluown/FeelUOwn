@@ -1,4 +1,6 @@
 # -*- coding:utf8 -*-
+
+import platform
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
@@ -64,7 +66,15 @@ class LyricWidget(QWidget):
         self._container.setLayout(self._container_layout)
         self.setLayout(self._layout)
 
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        operation_system = platform.linux_distribution()[0]
+        if platform.system() == "Linux":
+            if operation_system.lower() != "deepin" or operation_system.lower() != "ubuntu":
+                self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+            else:
+                self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        else:
+            self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
 
