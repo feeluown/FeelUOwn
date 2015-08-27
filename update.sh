@@ -29,11 +29,11 @@ echo -n "> "
 read flag
 if [ "$flag" = "y" ]; then
   echo "更新中......"
-  git init  > /dev/null 2>&1
-  git remote add origin https://github.com/cosven/FeelUOwn.git > /dev/null 2>&1
-  git remote set-url origin https://github.com/cosven/FeelUOwn.git > /dev/null 2>&1
-  git fetch --all  > /dev/null 2>&1
-  git reset --hard origin/master > /dev/null 2>&1
+  git init  1>/dev/null 2>&1
+  git remote add origin https://github.com/cosven/FeelUOwn.git 1>/dev/null 2>&1
+  git remote set-url origin https://github.com/cosven/FeelUOwn.git 1>dev/null 2>&1
+  git fetch --all  1>/dev/null 2>&1
+  git reset --hard origin/master 1>/dev/null 2>&1
   if [ $? -eq 0 ]; then
     echo "已经更新到最新版 !"
   else
