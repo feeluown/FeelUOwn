@@ -18,7 +18,7 @@ class PlaylistWidget(QWidget):
 
         self.fold_animation = QPropertyAnimation(self, QByteArray(b'maximumHeight'))
         self.spread_animation = QPropertyAnimation(self, QByteArray(b'maximumHeight'))
-        self.maximum_height = 800 # 大点，字不会挤到一起
+        self.maximum_height = 2000 # 大点，字不会挤到一起
 
         self.Qss = False
 
