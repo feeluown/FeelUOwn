@@ -1,8 +1,6 @@
 # -*- coding:utf8 -*-
-__author__ = 'cosven'
 
 import sys
-import os
 import subprocess
 from queue import Queue
 import asyncio
@@ -18,6 +16,7 @@ from widgets.music_table_widget import MusicTableWidget
 from widgets.lyric_widget import LyricWidget
 from widgets.playlist_widget import PlaylistItem
 from widgets.desktop_mini import DesktopMiniLayer
+from widgets.notify import NotifyWidget
 from views import UiMainWidget
 from plugin import NetEaseMusic, Hotkey
 from base.player import Player
@@ -41,10 +40,12 @@ class MainWidget(QWidget):
         self.current_playlist_widget = MusicTableWidget()
         self.lyric_widget = LyricWidget()
 
+        self.notify_widget = NotifyWidget()
+
         self.network_manger = NetworkManager()
 
         self.search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
-        self._exit_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
         self.api = None
         self.network_queue = Queue()
@@ -135,9 +136,11 @@ class MainWidget(QWidget):
         self.network_manger.finished.connect(self.access_network_queue)
 
         self.search_shortcut.activated.connect(self.set_search_focus)
-        self._exit_shortcut.activated.connect(self.showMinimized)
+        self._switch_mode_shortcut.activated.connect(self.show_hide_desktop_mini)
 
         self.desktop_mini.content.set_song_like_signal.connect(self.set_favorite)
+        self.desktop_mini.content.play_last_music_signal.connect(self.last_music)
+        self.desktop_mini.content.play_next_music_signal.connect(self.next_music)
         self.desktop_mini.close_signal.connect(self.show)
 
     def init_widgets(self):
@@ -452,6 +455,7 @@ class MainWidget(QWidget):
             self.show()
         else:
             self.desktop_mini.show()
+            self.notify_widget.show_message("Tips", "按ESC可以退出mini模式哦 ~")
             self.hide()
 
     @pyqtSlot(int)
@@ -574,10 +578,3 @@ class MainWidget(QWidget):
     @pyqtSlot(str)
     def on_player_error_occured(self, message):
         pass
-
-if __name__ == "__main__":
-    import sys
-    app = QApplication(sys.argv)
-    musicbox = MainWidget()
-    musicbox.show()
-    sys.exit(app.exec_())

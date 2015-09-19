@@ -13,6 +13,8 @@ class MiniWidget(QLabel):
     states = ("normal", "hover")
 
     set_song_like_signal = pyqtSignal([bool])
+    play_last_music_signal = pyqtSignal()
+    play_next_music_signal = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -77,11 +79,19 @@ class MiniWidget(QLabel):
             text_option.setWrapMode(QTextOption.WrapAnywhere)
             text_option.setAlignment(Qt.AlignCenter)
             painter.setPen(pen)
+
+            btn_pixmap_width, btn_pixmap_height = 12, 12
+            last_btn_top_left_point = QPoint(width/2-40, height-btn_pixmap_height-slider_width-30)
+            next_btn_top_left_point = QPoint(width/2+28, height-btn_pixmap_height-slider_width-30)
+            painter.drawPixmap(last_btn_top_left_point, QPixmap(ICON_PATH + "mini_last.png"))
+            painter.drawPixmap(next_btn_top_left_point,
+                               QPixmap(ICON_PATH + "mini_next.png"))
+
             if self.song_name and self.song_singer:
                 painter.drawText(rec, self.song_name + "\n\n" + self.song_singer, text_option)
 
-                pixmap_width, pixmap_height = 20, 19
-                top_left_point_pixmap = QPoint((width-pixmap_width)/2, height-pixmap_height-slider_width-10)
+                like_pixmap_width, like_pixmap_height = 20, 19
+                top_left_point_pixmap = QPoint((width-like_pixmap_width)/2, height-like_pixmap_height-slider_width-10)
                 if self.is_song_like:
                     painter.drawPixmap(top_left_point_pixmap, self._like_pixmap)
                 else:
@@ -106,10 +116,15 @@ class MiniWidget(QLabel):
     def mousePressEvent(self, event: QMouseEvent):
         # the size of rect should calculate from the painter event
         like_btn_rect = QRect(90, 255, 20, 19)
+        last_btn_rect = QRect(60, 242, 12, 12)
+        next_btn_rect = QRect(128, 242, 12, 12)
         if like_btn_rect.contains(event.pos()):
             self.set_song_like_signal.emit(not self.is_song_like)
+        elif last_btn_rect.contains(event.pos()):
+            self.play_last_music_signal.emit()
+        elif next_btn_rect.contains(event.pos()):
+            self.play_next_music_signal.emit()
         event.ignore()  # pass the event to the parent
-
 
     def enterEvent(self, event: QEvent):
         self._state = self.states[1]

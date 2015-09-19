@@ -26,4 +26,5 @@ def test_notify_widget(qtbot):
     from widgets.notify import NotifyWidget
     w = NotifyWidget()
     w.show()
+    w.show_message("Tips", "这是一个测试啦\n换个行也是可以的")
     qtbot.addWidget(w)
