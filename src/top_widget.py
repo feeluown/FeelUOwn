@@ -55,6 +55,7 @@ class MusicInfoWidget(QWidget):
         self.album_img_label.setFixedSize(55, 55)
         self.album_img_label.setAlignment(Qt.AlignCenter)
         self.music_countdown_label.setText('00:00')
+        self.music_countdown_label.setFixedWidth(50)
 
         self.love_music_btn.setCheckable(True)
         self.love_music_btn.setChecked(True)
@@ -99,7 +100,7 @@ class MusicInfoWidget(QWidget):
         music_function_container_sub_layout.addWidget(self.music_name_label)
         music_function_container_sub_layout.addStretch(1)
 
-        music_btns_layout = QHBoxLayout(music_function_container_sub)
+        music_btns_layout = QHBoxLayout()
         music_function_container_sub_layout.addLayout(music_btns_layout)
 
         music_btns_layout.addWidget(self.play_mv_btn)
