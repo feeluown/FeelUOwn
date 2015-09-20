@@ -55,6 +55,7 @@ class MusicInfoWidget(QWidget):
         self.album_img_label.setFixedSize(55, 55)
         self.album_img_label.setAlignment(Qt.AlignCenter)
         self.music_countdown_label.setText('00:00')
+        self.music_countdown_label.setFixedWidth(50)
 
         self.love_music_btn.setCheckable(True)
         self.love_music_btn.setChecked(True)
