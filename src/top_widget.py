@@ -99,7 +99,7 @@ class MusicInfoWidget(QWidget):
         music_function_container_sub_layout.addWidget(self.music_name_label)
         music_function_container_sub_layout.addStretch(1)
 
-        music_btns_layout = QHBoxLayout(music_function_container_sub)
+        music_btns_layout = QHBoxLayout()
         music_function_container_sub_layout.addLayout(music_btns_layout)
 
         music_btns_layout.addWidget(self.play_mv_btn)
