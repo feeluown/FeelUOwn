@@ -69,14 +69,16 @@ class LyricWidget(QWidget):
         self._container.setLayout(self._container_layout)
         self.setLayout(self._layout)
 
-        operation_system = platform.linux_distribution()[0]
-        if platform.system() == "Linux":
-            if operation_system.lower() != "deepin" or operation_system.lower() != "ubuntu":
-                self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-            else:
-                self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
-        else:
-            self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        #operation_system = platform.linux_distribution()[0]
+        #if platform.system() == "Linux":
+        #    if operation_system.lower() != "deepin" or operation_system.lower() != "ubuntu":
+        #        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
+        #    else:
+        #        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        #else:
+        #    self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint | Qt.Tool)
+        # pass windowmanager to keep our window on top
+        self.setWindowFlags(Qt.X11BypassWindowManagerHint)
 
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
