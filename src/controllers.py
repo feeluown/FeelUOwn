@@ -28,6 +28,7 @@ from constants import WINDOW_ICON
 
 
 class MainWidget(QWidget):
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.ui = UiMainWidget()    # 那些widget对象都通过self.ui.*.*来访问，感觉也不是很好
@@ -55,7 +56,8 @@ class MainWidget(QWidget):
         self.state = {"is_login": False,
                       "current_mid": 0,
                       "current_pid": 0,
-                      "platform": ""}
+                      "platform": "",
+                      "fm": False}
 
         APP_EVENT_LOOP = asyncio.get_event_loop()
         APP_EVENT_LOOP.call_later(1, self._init_plugins)
@@ -131,7 +133,6 @@ class MainWidget(QWidget):
         self.player.signal_playlist_is_empty.connect(self.on_playlist_empty)
         self.player.signal_playback_mode_changed.connect(
             self.ui.STATUS_BAR.playmode_switch_label.on_mode_changed)
-        self.player.signal_player_error.connect(self.on_player_error_occured)
 
         self.network_manger.finished.connect(self.access_network_queue)
 
@@ -142,6 +143,8 @@ class MainWidget(QWidget):
         self.desktop_mini.content.play_last_music_signal.connect(self.last_music)
         self.desktop_mini.content.play_next_music_signal.connect(self.next_music)
         self.desktop_mini.close_signal.connect(self.show)
+
+        self.ui.FM_ITEM.signal_text_btn_clicked.connect(self.load_fm)
 
     def init_widgets(self):
         self.current_playlist_widget.resize(500, 200)
@@ -157,8 +160,7 @@ class MainWidget(QWidget):
     """这部分写一些工具
     """
     def is_response_ok(self, data):
-        """check response status code
-        """
+        """check response status code"""
         if data is None:
             self.show_network_error_message()
             return False
@@ -192,11 +194,11 @@ class MainWidget(QWidget):
 
     @func_coroutine
     def show_user_playlist(self):
-        while self.ui.MY_LIST_WIDGET.layout.takeAt(0):
-            item = self.ui.MY_LIST_WIDGET.layout.takeAt(0)
+        while self.ui.MY_LIST_WIDGET.layout().takeAt(0):
+            item = self.ui.MY_LIST_WIDGET.layout().takeAt(0)
             del item
-        while self.ui.COLLECTION_LIST_WIDGET.layout.takeAt(0):
-            item = self.ui.MY_LIST_WIDGET.layout.takeAt(0)
+        while self.ui.COLLECTION_LIST_WIDGET.layout().takeAt(0):
+            item = self.ui.MY_LIST_WIDGET.layout().takeAt(0)
             del item
 
         playlists = self.api.get_user_playlist()
@@ -216,7 +218,7 @@ class MainWidget(QWidget):
             w.signal_text_btn_clicked.connect(self.on_playlist_btn_clicked)
 
             if self.api.is_playlist_mine(playlist):
-                self.ui.MY_LIST_WIDGET.layout.addWidget(w)
+                self.ui.MY_LIST_WIDGET.layout().addWidget(w)
                 if pid == self.api.favorite_pid:
                     @func_coroutine
                     def load_favorite_playlist(playlist_id):
@@ -228,7 +230,7 @@ class MainWidget(QWidget):
                     APP_EVENT_LOOP = asyncio.get_event_loop()
                     APP_EVENT_LOOP.call_soon(self.api.get_playlist_detail, pid)
             else:
-                self.ui.COLLECTION_LIST_WIDGET.layout.addWidget(w)
+                self.ui.COLLECTION_LIST_WIDGET.layout().addWidget(w)
 
     def show_avatar(self, res):
         """界面改版之后再使用
@@ -389,6 +391,7 @@ class MainWidget(QWidget):
     @func_coroutine
     @pyqtSlot(int)
     def play(self, mid=None):
+        self.exit_fm()
         songs = self.api.get_song_detail(mid)
         if not self.is_response_ok(songs):
             return
@@ -401,7 +404,6 @@ class MainWidget(QWidget):
     @func_coroutine
     @pyqtSlot(int)
     def play_mv(self, mvid):
-
         mv_model = self.api.get_mv_detail(mvid)
         if not self.is_response_ok(mv_model):
             return
@@ -460,6 +462,7 @@ class MainWidget(QWidget):
 
     @pyqtSlot(int)
     def play_songs(self, songs):
+        self.exit_fm()
         if len(songs) == 0:
             self.ui.STATUS_BAR.showMessage(u'该列表没有歌曲', 2000)
             return
@@ -524,6 +527,31 @@ class MainWidget(QWidget):
             return
         self.ui.PLAY_MV_BTN.close()
 
+    @pyqtSlot()
+    def load_fm(self):
+        """播放FM
+
+        1. webkit加载FM播放页面，可以有点动画和设计
+        2. 由于播放FM，要时常向服务器请求歌曲，所以逻辑跟正常播放时有点不一样
+        """
+        self.state['fm'] = True
+        self.player.change_player_mode()
+        self.notify_widget.show_message("Info", "进入FM播放模式")
+        FmMode.load(self)
+        self.player.signal_playlist_finished.connect(FmMode.on_next_music_required)
+
+    @pyqtSlot()
+    def exit_fm(self):
+        """如果从webview播放一首歌，就退出fm模式，暂时使用这个逻辑
+
+        TODO:
+        """
+        if self.state['fm']:
+            self.player.change_player_mode()
+            self.notify_widget.show_message("Info", "退出FM播放模式")
+            FmMode.exit()
+            self.state['fm'] = False
+
     @pyqtSlot(int)
     def on_player_duration_changed(self, duration):
         self.ui.SONG_PROGRESS_SLIDER.setRange(0, self.player.duration() / 1000)
@@ -575,6 +603,57 @@ class MainWidget(QWidget):
         QApplication.processEvents()
         self.ui.PROGRESS.setValue(progress)
 
-    @pyqtSlot(str)
-    def on_player_error_occured(self, message):
-        pass
+
+class FmMode():
+    """fm mode 一些说明
+    
+    当切换到fm播放模式的时候，每向服务器请求一次，服务器会返回几首歌曲
+    所以当这几首歌曲播放结束的时候，我们要向服务器请求下几首歌
+    """
+    _api = None
+    _player = None
+    _notify = None
+    _controller = None
+    _songs = []     # brief music model
+
+    @classmethod
+    def load(cls, controller):
+
+        cls._notify = NotifyWidget()
+
+        cls._controller = controller
+
+        cls._api = controller.api
+        cls._player = Player()
+        cls._player.stop()
+
+        cls.reset_song_list()
+
+    @classmethod
+    def reset_song_list(cls):
+        cls._player.clear_playlist()
+        if len(cls._songs) > 0:
+            song = cls._songs.pop()
+            mid = song['id']
+            music_model = cls._api.get_song_detail(mid)[0]
+            cls._player.set_music_list([music_model])
+        else:
+            cls._songs = cls._api.get_radio_songs()
+            if isinstance(cls._songs, list):
+                cls.reset_song_list()
+            else:
+                cls._player.stop()
+                cls._notify.show_message("Error", "网络异常，请检查网络连接")
+                cls._controller.exit_fm()
+
+    @classmethod
+    @pyqtSlot()
+    def on_next_music_required(cls):
+        cls.reset_song_list()
+
+    @classmethod
+    def exit(cls):
+        cls._player = None
+        cls._api = None
+        cls._notify = None
+        cls._controller = None

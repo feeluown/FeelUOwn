@@ -237,7 +237,7 @@ class NetEase(QObject):
         }
         return self.http_request("POST", url, data)
 
-    def getRadioMusic(self):
+    def get_radio_music(self):
         url = 'http://music.163.com/api/radio/get'
         return self.http_request('GET', url)
 

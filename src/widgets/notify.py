@@ -7,11 +7,13 @@ from PyQt5.QtWidgets import QWidget, QApplication, QShortcut, QVBoxLayout,\
     QFrame, QHBoxLayout, QLabel
 
 from constants import WINDOW_ICON
+from base.common import singleton
 
 
 width, height = 300, 80
 
 
+@singleton
 class NotifyWidget(QWidget):
     def __init__(self):
         super().__init__()

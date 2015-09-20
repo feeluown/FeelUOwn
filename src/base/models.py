@@ -29,6 +29,7 @@ class DataModel(object):
         """
         for key in self._model:
             if key not in self.data:
+                LOG.error(self.data)
                 raise KeyError('data should have key: ' + key)
 
             if not isinstance(self.data[key], self._model[key]):

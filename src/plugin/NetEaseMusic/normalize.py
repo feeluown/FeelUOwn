@@ -32,17 +32,18 @@ def login_required(func):
 
 def access_music(music_data):
     """处理从服务获取的原始数据，对它的一些字段进行过滤和改名，返回符合标准的music数据
+
     :param music_data:
     :return:
     """
     music_data['url'] = music_data['mp3Url']
     song = MusicModel(music_data).get_dict()
 
-    for i, artist in enumerate(song['artists']):
+    for i, artist in enumerate(music_data['artists']):
         artist_ = ArtistModel(artist).get_dict()
         song['artists'][i] = artist_
 
-    song['album'] = AlbumModel(song['album']).get_dict()
+    song['album'] = AlbumModel(music_data['album']).get_dict()
     return song
 
 
@@ -101,7 +102,8 @@ def web_cache_playlist(func):
 class NetEaseAPI(object):
     """
     根据标准的数据模型将 网易云音乐的数据 进行格式化
-    这个类也需要管理一个数据库，这个数据库中缓存过去访问过的歌曲、列表、专辑图片等信息，以减少网络访问
+    这个类也需要管理一个数据库，这个数据库中缓存过去访问过的\
+    歌曲、列表、专辑图片等信息，以减少网络访问
     """
 
     user_info_filename = "netease_userinfo.json"
@@ -116,6 +118,10 @@ class NetEaseAPI(object):
         return self.uid
 
     def is_data_avaible(self, data):
+        """判断api返回的数据是否可用
+        
+        TODO: 应该写成一个decorator
+        """
         if data is None:
             return False
         if data['code'] == 200:
@@ -327,6 +333,16 @@ class NetEaseAPI(object):
         model = LyricModel(data).get_dict()
 
         return model
+
+    def get_radio_songs(self):
+        data = self.ne.get_radio_music()
+        if not self.is_data_avaible(data):
+            return data
+    
+        songs = data['data']
+        for i, song in enumerate(songs):
+            songs[i] = access_brief_music(song)
+        return songs
 
     @func_coroutine
     def save_user_info(self, data_dict):

@@ -21,11 +21,9 @@ class PlaymodeSwitchLabel(QLabel):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._player = Player()
-
+        self.player = Player()
         self.resize(15, 15)
-
-        self._current_mode = self._player.playlist().playbackMode()
+        self._current_mode = self.player.playback_mode
         self._set_mode()
 
     def _set_mode(self):
@@ -44,9 +42,9 @@ class PlaymodeSwitchLabel(QLabel):
         elif self._current_mode == 3:
             self._current_mode = 4
         self._set_mode()
-        self._player.set_play_mode(self._current_mode)
+        self.player.set_play_mode(self._current_mode)
 
-    @pyqtSlot(QMediaPlaylist.PlaybackMode)
+    @pyqtSlot(int)
     def on_mode_changed(self, mode):
         if mode != self._current_mode:
             self._current_mode = mode
