@@ -4,7 +4,6 @@ import platform
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from base.common import singleton
 
 
 class LyricWidget(QWidget):
@@ -21,7 +20,7 @@ class LyricWidget(QWidget):
 
         self._layout = QVBoxLayout(self)
         self.__drag_pos = (0, 0)
-        self.__init_attr()
+        self._init_attr()
 
         self.__lyrics = []
         self.__translate_lyric = []
@@ -31,7 +30,7 @@ class LyricWidget(QWidget):
         self.__init_layout()
         self.close()
 
-    def paintEvent(self, QPaintEvent):
+    def paintEvent(self, event: QPaintEvent):
         """
         self is derived from QWidget, Stylesheets don't work unless \
         paintEvent is reimplemented.y
@@ -46,20 +45,20 @@ class LyricWidget(QWidget):
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
-    def setText(self, p_str):
+    def set_text(self, p_str):
         self._text_label.setText(p_str)
 
-    def setAlignment(self, align):
+    def set_alignment(self, align):
         self._text_label.setAlignment(align)
 
-    def __init_attr(self):
+    def _init_attr(self):
         height = 60
         width = 800
         self.setMouseTracking(False)
         self.setObjectName('lyric_label_container')
         self._text_label.setObjectName("lyric_label")
         self._text_label.setText("音乐感知生活")
-        self.setAlignment(Qt.AlignCenter)
+        self.set_alignment(Qt.AlignCenter)
 
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._container_layout.setContentsMargins(0, 0, 0, 0)
@@ -102,10 +101,11 @@ class LyricWidget(QWidget):
             for i, each in enumerate(self.__time_sequence):
                 if ms + 400 >= each:
                     lyric = self.__lyrics[i][:-1]
-                    if self.__translate_lyric and len(self.__translate_lyric) > i: # 翻译歌词比原歌词短
+                    # 翻译歌词比原歌词短
+                    if self.__translate_lyric and len(self.__translate_lyric) > i:
                         tlyric = self.__translate_lyric[i][:-1]
                         lyric += "\n" + tlyric
-                    self.setText(lyric)
+                    self.set_text(lyric)
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
@@ -122,3 +122,19 @@ class LyricWidget(QWidget):
     def __init_layout(self):
         self._container_layout.addWidget(self._text_label)
         self._layout.addWidget(self._container)
+
+    def show_lyric_while_visible(self, controller, ms):
+        """给controller调用的函数"""
+        if self.isVisible():
+            if self.has_lyric():
+                self.sync_lyric(ms)
+            else:
+                lyric_model = controller.api.get_lyric_detail(controller.state['current_mid'])
+                if not controller.is_response_ok(lyric_model):
+                    return
+
+                if lyric_model:
+                    self.set_lyric(lyric_model)
+                    self.sync_lyric(ms)
+                else:
+                    self.setText(u'歌曲没有歌词')

@@ -2,6 +2,7 @@
 
 import hashlib
 import re
+from functools import wraps
 
 from constants import DATA_PATH
 
@@ -70,12 +71,14 @@ def access_user(user_data):
 def web_cache_playlist(func):
     cache_data = {}
 
+    @wraps(func)
     def cache(*args, **kw):
         def not_use_cache(*args, **kw):
             LOG.info("trying to update a playlist cache")
             data = func(*args, **kw)
             if data['code'] == 200:
                 cache_data[args[1]] = data
+                return cache_data[args[1]]
             else:
                 LOG.info("update playlist cache failed")
                 return None
@@ -83,6 +86,7 @@ def web_cache_playlist(func):
         def use_cache(*args, **kw):
             if args[1] in cache_data:
                 LOG.info('playlist: ' + cache_data[args[1]]['name'] + ' has been cached')
+                return cache_data[args[1]]
             else:
                 data = func(*args, **kw)
                 if data['code'] == 200:
@@ -91,10 +95,9 @@ def web_cache_playlist(func):
                     LOG.info("cache playlist failed")
                     return None
         if "cache" in kw and not kw["cache"]:
-            not_use_cache(*args, **kw)
+            return not_use_cache(*args, **kw)
         else:
-            use_cache(*args, **kw)
-        return cache_data[args[1]]
+            return use_cache(*args, **kw)
     return cache
 
 

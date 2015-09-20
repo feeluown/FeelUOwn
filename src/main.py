@@ -17,16 +17,16 @@ from PyQt5.QtGui import QIcon
 from constants import QSS_PATH, LOGFILE, \
     MODE, DEBUG, WINDOW_ICON
 
-from controllers import MainWidget
+from controllers import Controller
 from quamash import QEventLoop
 
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
-    QApplication.setWindowIcon(QIcon(WINDOW_ICON))
-    QApplication.setApplicationName("FeelUOwn")
-    QApplication.setApplicationVersion("v3.1.0")
+    app.setWindowIcon(QIcon(WINDOW_ICON))
+    app.setApplicationName("FeelUOwn")
+    app.setApplicationVersion("v3.1.0")
 
     app_event_loop = QEventLoop(app)
     asyncio.set_event_loop(app_event_loop)
@@ -40,7 +40,7 @@ if __name__ == "__main__":
         sys.stdout = f_handler
         sys.stderr = f_handler
 
-    w = MainWidget()
+    w = Controller()
     w.move((QApplication.desktop().width() - w.width())/2, (QApplication.desktop().height() - w.height())/2)
     w.show()
 

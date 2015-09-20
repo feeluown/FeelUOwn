@@ -4,6 +4,7 @@ import sys
 import subprocess
 from queue import Queue
 import asyncio
+import platform
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -22,74 +23,59 @@ from plugin import NetEaseMusic, Hotkey
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.logger import LOG
-from base import common
 from base.common import func_coroutine
 from constants import WINDOW_ICON
 
 
-class MainWidget(QWidget):
+class Controller(QWidget):
+    state = {"is_login": False,
+             "current_mid": 0,
+             "current_pid": 0,
+             "platform": "",
+             "fm": False}
+
+    notify_widget = None
+    lyric_widget = None
+    desktop_mini = None
+    player = None
+    api = None
+    ui = None
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = UiMainWidget()    # 那些widget对象都通过self.ui.*.*来访问，感觉也不是很好
-        self.ui.setup_ui(self)
+        Controller.ui = UiMainWidget()
+        Controller.ui.setup_ui(self)
 
-        self.player = Player()
-
-        self.desktop_mini = DesktopMiniLayer()
-
-        self.current_playlist_widget = MusicTableWidget()
-        self.lyric_widget = LyricWidget()
-
-        self.notify_widget = NotifyWidget()
-
+        Controller.player = Player()
+        Controller.desktop_mini = DesktopMiniLayer()
+        Controller.lyric_widget = LyricWidget()
+        Controller.notify_widget = NotifyWidget()
         self.network_manger = NetworkManager()
+        self.current_playlist_widget = MusicTableWidget()
 
-        self.search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
+        self._search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
         self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
-        self.api = None
         self.network_queue = Queue()
 
-        self.init()
-
-        self.state = {"is_login": False,
-                      "current_mid": 0,
-                      "current_pid": 0,
-                      "platform": "",
-                      "fm": False}
+        self._init()
 
         APP_EVENT_LOOP = asyncio.get_event_loop()
         APP_EVENT_LOOP.call_later(1, self._init_plugins)
 
-    def paintEvent(self, QPaintEvent):
-        """
-        self is derived from QWidget, Stylesheets don't work unless \
-        paintEvent is reimplemented.y
-        at the same time, if self is derived from QFrame, this isn't needed.
-        """
-        option = QStyleOption()
-        option.initFrom(self)
-        painter = QPainter(self)
-        style = self.style()
-        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
-
     def _init_plugins(self):
-        NetEaseMusic.init(self)
+        NetEaseMusic.init(self, Controller)
         Hotkey.init(self)
 
-    def closeEvent(self, event):
-        self.close()
-
-    def init(self):
+    def _init(self):
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('FeelUOwn')
-        self.init_signal_binding()
-        self.init_widgets()
+        self._init_signal_binding()
+        self._init_widgets()
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.resize(960, 580)
 
-    def init_signal_binding(self):
+    def _init_signal_binding(self):
         """初始化部分信号绑定
         :return:
         """
@@ -98,9 +84,9 @@ class MainWidget(QWidget):
         self.ui.PLAY_PREVIOUS_SONG_BTN.clicked.connect(self.last_music)
         self.ui.PLAY_NEXT_SONG_BTN.clicked.connect(self.next_music)
         self.ui.SONG_PROGRESS_SLIDER.sliderMoved.connect(self.seek)
-        self.ui.SHOW_CURRENT_SONGS.clicked.connect(self.show_current_playlist)
+        self.ui.SHOW_CURRENT_SONGS.clicked.connect(self._show_current_playlist)
 
-        self.ui.SEARCH_BOX.returnPressed.connect(self.search_music)
+        self.ui.SEARCH_BOX.returnPressed.connect(self._search_music)
         self.ui.LOVE_SONG_BTN.clicked.connect(self.set_favorite)
         self.ui.PLAY_MV_BTN.clicked.connect(self.play_song_mv)
         self.ui.SHOW_LYRIC_BTN.clicked.connect(self.show_hide_lyric)
@@ -126,7 +112,7 @@ class MainWidget(QWidget):
         self.ui.WEBVIEW.signal_search_album.connect(self.search_album)
         self.ui.WEBVIEW.signal_play_mv.connect(self.play_mv)
 
-        self.player.signal_player_media_changed.connect(self.on_player_media_changed)
+        self.player.signal_player_media_changed.connect(self._on_player_media_changed)
         self.player.stateChanged.connect(self.on_player_state_changed)
         self.player.positionChanged.connect(self.on_player_position_changed)
         self.player.durationChanged.connect(self.on_player_duration_changed)
@@ -134,9 +120,9 @@ class MainWidget(QWidget):
         self.player.signal_playback_mode_changed.connect(
             self.ui.STATUS_BAR.playmode_switch_label.on_mode_changed)
 
-        self.network_manger.finished.connect(self.access_network_queue)
+        self.network_manger.finished.connect(self._access_network_queue)
 
-        self.search_shortcut.activated.connect(self.set_search_focus)
+        self._search_shortcut.activated.connect(self.set_search_focus)
         self._switch_mode_shortcut.activated.connect(self.show_hide_desktop_mini)
 
         self.desktop_mini.content.set_song_like_signal.connect(self.set_favorite)
@@ -146,23 +132,18 @@ class MainWidget(QWidget):
 
         self.ui.FM_ITEM.signal_text_btn_clicked.connect(self.load_fm)
 
-    def init_widgets(self):
+    def _init_widgets(self):
         self.current_playlist_widget.resize(500, 200)
         self.current_playlist_widget.close()
         self.ui.PROGRESS.setRange(0, 100)
 
-        self.shadow_effect = QGraphicsDropShadowEffect(self.ui.PROGRESS)
-        self.shadow_effect.setColor(QColor("red"))
-        # self._shadow_effect.setYOffset(2)
-        self.shadow_effect.setBlurRadius(10)
-        self.ui.PROGRESS.setGraphicsEffect(self.shadow_effect)
-
     """这部分写一些工具
     """
-    def is_response_ok(self, data):
+    @classmethod
+    def is_response_ok(cls, data):
         """check response status code"""
         if data is None:
-            self.show_network_error_message()
+            cls.notify_widget.show_message("一个不好的消息", "网络出现一点问题")
             return False
 
         if not isinstance(data, dict):
@@ -171,11 +152,25 @@ class MainWidget(QWidget):
         if data['code'] == 200:
             return True
 
-        self.show_network_error_message()
+        cls.notify_widget.show_message("一个不好的消息", "网络出现一点问题")
         return False
 
-    def show_network_error_message(self, text="异常: 网络或者远程服务器变动"):
-        self.ui.STATUS_BAR.showMessage(text, 3000)
+    @classmethod
+    def judge_favorite(cls, mid):
+        if cls.api.is_favorite_music(mid):
+            cls.ui.LOVE_SONG_BTN.setChecked(True)
+            cls.desktop_mini.content.is_song_like = True
+        else:
+            cls.ui.LOVE_SONG_BTN.setChecked(False)
+            cls.desktop_mini.content.is_song_like = False
+
+    @classmethod
+    def judge_song_has_mv(cls, music_model):
+        if music_model['mvid'] != 0:
+            cls.ui.PLAY_MV_BTN.show()
+            return True
+        cls.ui.PLAY_MV_BTN.close()
+        return False
 
     """这部分写一些交互逻辑
     """
@@ -184,8 +179,8 @@ class MainWidget(QWidget):
         avatar_url = data['avatar']
         request = QNetworkRequest(QUrl(avatar_url))
         self.network_manger.get(request)
-        self.network_queue.put(self.show_avatar)
-        self.show_user_playlist()
+        self.network_queue.put(self._show_avatar)
+        self._show_user_playlist()
 
     def set_login(self):
         self.state['is_login'] = True
@@ -193,7 +188,7 @@ class MainWidget(QWidget):
         self.ui.LOGIN_BTN.hide()
 
     @func_coroutine
-    def show_user_playlist(self):
+    def _show_user_playlist(self):
         while self.ui.MY_LIST_WIDGET.layout().takeAt(0):
             item = self.ui.MY_LIST_WIDGET.layout().takeAt(0)
             del item
@@ -203,18 +198,13 @@ class MainWidget(QWidget):
 
         playlists = self.api.get_user_playlist()
         if not self.is_response_ok(playlists):
-            self.show_network_error_message()
             return
 
         for playlist in playlists:
-
-            # self.ui.STATUS_BAR.showMessage(u'正在缓存您的歌单列表', 10000)  # 会让程序整体等待10s
             pid = playlist['id']
 
             w = PlaylistItem(self)
             w.set_playlist_item(playlist)
-
-            # 感觉这句话增加了耦合度, 暂时没找到好的解决办法
             w.signal_text_btn_clicked.connect(self.on_playlist_btn_clicked)
 
             if self.api.is_playlist_mine(playlist):
@@ -232,7 +222,7 @@ class MainWidget(QWidget):
             else:
                 self.ui.COLLECTION_LIST_WIDGET.layout().addWidget(w)
 
-    def show_avatar(self, res):
+    def _show_avatar(self, res):
         """界面改版之后再使用
         :param res:
         :return:
@@ -246,7 +236,7 @@ class MainWidget(QWidget):
 
         self.ui.AVATAR_LABEL.setPixmap(pixmap.scaled(55, 55, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
 
-    def set_music_icon(self, res):
+    def _set_music_icon(self, res):
         img = QImage()
         img.loadFromData(res.readAll())
         pixmap = QPixmap(img)
@@ -255,13 +245,12 @@ class MainWidget(QWidget):
         self.setWindowIcon(QIcon(pixmap))
         self.desktop_mini.content.setPixmap(pixmap)
 
-    def show_current_playlist(self):
+    def _show_current_playlist(self):
         self.current_playlist_widget.resize(500, 200)
         if self.current_playlist_widget.isVisible():
             self.current_playlist_widget.close()
 
         width = self.current_playlist_widget.width()
-        height = self.current_playlist_widget.height()
         p_width = self.width()
 
         geometry = self.geometry()
@@ -274,47 +263,36 @@ class MainWidget(QWidget):
         self.current_playlist_widget.show()
         self.current_playlist_widget.setFocus(True)
 
-    def judge_favorite(self, mid):
-        if self.api.is_favorite_music(mid):
-            self.ui.LOVE_SONG_BTN.setChecked(True)
-            self.desktop_mini.content.is_song_like = True
-        else:
-            self.ui.LOVE_SONG_BTN.setChecked(False)
-            self.desktop_mini.content.is_song_like = False
-
+    @classmethod
     @func_coroutine
     @pyqtSlot(bool)
-    def set_favorite(self, checked=True):
-        if not self.state["current_mid"]:
+    def set_favorite(cls, checked=True):
+        if not cls.state["current_mid"]:
             return False
-        data = self.api.set_music_to_favorite(self.state['current_mid'], checked)
-        self.desktop_mini.content.is_song_like = checked
-        if not self.is_response_ok(data):
-            self.ui.LOVE_SONG_BTN.setChecked(not checked)
-            self.desktop_mini.content.is_song_like = not checked
+        data = cls.api.set_music_to_favorite(cls.state['current_mid'], checked)
+        cls.desktop_mini.content.is_song_like = checked
+        if not cls.is_response_ok(data):
+            cls.ui.LOVE_SONG_BTN.setChecked(not checked)
+            cls.desktop_mini.content.is_song_like = not checked
             return False
-        playlist_detail = self.api.get_playlist_detail(self.api.favorite_pid, cache=False)
-        if not self.is_response_ok(playlist_detail):
-            self.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
+        playlist_detail = cls.api.get_playlist_detail(cls.api.favorite_pid, cache=False)
+        if not cls.is_response_ok(playlist_detail):
+            cls.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
             return False
-        if self.state['current_pid'] == self.api.favorite_pid:
+        if cls.state['current_pid'] == cls.api.favorite_pid:
             LOG.info("喜欢列表的歌曲发生变化")
-            self.ui.WEBVIEW.load_playlist(playlist_detail)
+            cls.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
-
-    """某些操作
+    """这部分写 pyqtSlot
     """
     @pyqtSlot(QNetworkReply)
-    def access_network_queue(self, res):
+    def _access_network_queue(self, res):
         if self.network_queue.empty():
             LOG.info('Nothing in network queue')
             return
         item = self.network_queue.get_nowait()
         item(res)
-
-    """这部分写 pyqtSlot
-    """
 
     @pyqtSlot(int)
     def seek(self, seconds):
@@ -327,21 +305,24 @@ class MainWidget(QWidget):
             w.signal_login_sucess.connect(self.on_login_success)
             w.show()
 
+    @classmethod
     @pyqtSlot()
-    def last_music(self):
-        self.player.play_last()
+    def last_music(cls):
+        cls.player.play_last()
 
+    @classmethod
     @pyqtSlot()
-    def next_music(self):
-        self.player.play_next()
+    def next_music(cls):
+        cls.player.play_next()
 
+    @classmethod
     @pyqtSlot()
-    def play_or_pause(self):
-        if self.player.mediaStatus() == QMediaPlayer.NoMedia or \
-                self.player.mediaStatus() == QMediaPlayer.UnknownMediaStatus:
-            self.ui.PLAY_OR_PAUSE.setChecked(True)     # 暂停状态
+    def play_or_pause(cls):
+        if cls.player.mediaStatus() == QMediaPlayer.NoMedia or \
+                cls.player.mediaStatus() == QMediaPlayer.UnknownMediaStatus:
+            cls.ui.PLAY_OR_PAUSE.setChecked(True)     # 暂停状态
             return
-        self.player.play_or_pause()
+        cls.player.play_or_pause()
 
     @pyqtSlot(int)
     def on_player_position_changed(self, ms):
@@ -350,19 +331,7 @@ class MainWidget(QWidget):
         self.ui.SONG_PROGRESS_SLIDER.setValue(ms / 1000)
         self.desktop_mini.content.set_value(ms / 1000)
 
-        if self.lyric_widget.isVisible():
-            if self.lyric_widget.has_lyric():
-                self.lyric_widget.sync_lyric(ms)
-            else:
-                lyric_model = self.api.get_lyric_detail(self.state['current_mid'])
-                if not self.is_response_ok(lyric_model):
-                    return
-
-                if lyric_model:
-                    self.lyric_widget.set_lyric(lyric_model)
-                    self.lyric_widget.sync_lyric(ms)
-                else:
-                    self.lyric_widget.setText(u'歌曲没有歌词')
+        self.lyric_widget.show_lyric_while_visible(Controller, ms)
 
     @pyqtSlot(dict)
     def on_login_success(self, data):
@@ -401,11 +370,12 @@ class MainWidget(QWidget):
             return
         self.player.play(songs[0])
 
+    @classmethod
     @func_coroutine
     @pyqtSlot(int)
-    def play_mv(self, mvid):
-        mv_model = self.api.get_mv_detail(mvid)
-        if not self.is_response_ok(mv_model):
+    def play_mv(cls, mvid):
+        mv_model = cls.api.get_mv_detail(mvid)
+        if not cls.is_response_ok(mv_model):
             return
 
         url_high = mv_model['url_high']
@@ -413,43 +383,36 @@ class MainWidget(QWidget):
         clipboard = QApplication.clipboard()
         clipboard.setText(url_high)
 
-        if common.judge_system().lower() == 'Linux'.lower():
-            if common.judge_platform()[-3].lower() == 'deepin':
-                self.player.pause()
-                self.ui.STATUS_BAR.showMessage(u"准备调用 deepin-movie 播放器播放mv...", 5000)
-                subprocess.Popen(['deepin-movie', url_high])
-            elif common.judge_platform()[-3].lower() == 'ubuntu':
-                self.player.pause()
-                self.ui.STATUS_BAR.showMessage(u"你的系统是Ubuntu，准备调用 vlc 播放器播放mv...", 5000)
-                subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
-            else:
-                self.player.pause()
-                self.ui.STATUS_BAR.showMessage(u"准备调用 vlc 播放器播放mv...", 5000)
-                subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
-        elif common.judge_system().lower() == 'Darwin'.lower():
-            self.player.pause()
-            self.ui.STATUS_BAR.showMessage(u"准备调用 QuickTime Player 播放mv", 4000)
+        if platform.system() == "Linux":
+            cls.player.pause()
+            cls.notify_widget.show_message("通知", "正在尝试调用VLC视频播放器播放MV")
+            subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
+        elif platform.system().lower() == 'Darwin'.lower():
+            cls.player.pause()
+            cls.ui.STATUS_BAR.showMessage(u"准备调用 QuickTime Player 播放mv", 4000)
             subprocess.Popen(['open', '-a', 'QuickTime Player', url_high])
         else:
-            self.ui.STATUS_BAR.showMessage(u"您的系统不是Linux。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
+            cls.ui.STATUS_BAR.showMessage(u"您的系统不是Linux。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
             # self.ui.WEBVIEW.load_mv(mv_model)
 
+    @classmethod
     @func_coroutine
-    def play_song_mv(self, clicked=True):
-        mid = self.state['current_mid']
-        data = self.api.get_song_detail(mid)
-        if not self.is_response_ok(data):
+    def play_song_mv(cls, clicked=True):
+        mid = cls.state['current_mid']
+        data = cls.api.get_song_detail(mid)
+        if not cls.is_response_ok(data):
             return
         music_model = data[0]
 
         mvid = music_model['mvid']
-        self.play_mv(int(mvid))
+        cls.play_mv(int(mvid))
 
-    def show_hide_lyric(self):
-        if self.lyric_widget.isVisible():
-            self.lyric_widget.close()
+    @classmethod
+    def show_hide_lyric(cls):
+        if cls.lyric_widget.isVisible():
+            cls.lyric_widget.close()
         else:
-            self.lyric_widget.show()
+            cls.lyric_widget.show()
 
     def show_hide_desktop_mini(self):
         if self.desktop_mini.isVisible():
@@ -458,7 +421,10 @@ class MainWidget(QWidget):
         else:
             self.desktop_mini.show()
             self.notify_widget.show_message("Tips", "按ESC可以退出mini模式哦 ~")
-            self.hide()
+            if platform.system().lower() == "darwin":
+                self.showMinimized()
+            else:
+                self.hide()
 
     @pyqtSlot(int)
     def play_songs(self, songs):
@@ -488,9 +454,7 @@ class MainWidget(QWidget):
         self.state['current_pid'] = 0
 
     @pyqtSlot(dict)
-    def on_player_media_changed(self, music_model):
-        self.player.stop()
-        self.player.play()
+    def _on_player_media_changed(self, music_model):
         artists = music_model['artists']
         artists_name = ''
         for artist in artists:
@@ -510,7 +474,7 @@ class MainWidget(QWidget):
         self.desktop_mini.content.set_duration(self.player.duration() / 1000)
 
         self.network_manger.get(QNetworkRequest(QUrl(music_model['album']['picUrl'] + "?param=200y200")))
-        self.network_queue.put(self.set_music_icon)    # 更换任务栏图标
+        self.network_queue.put(self._set_music_icon)    # 更换任务栏图标
 
         self.current_playlist_widget.add_item_from_model(music_model)
         self.current_playlist_widget.focus_cell_by_mid(music_model['id'])
@@ -520,12 +484,6 @@ class MainWidget(QWidget):
         self.judge_song_has_mv(music_model)
         if self.state['is_login']:
             self.judge_favorite(music_model['id'])
-
-    def judge_song_has_mv(self, music_model):
-        if music_model['mvid'] != 0:
-            self.ui.PLAY_MV_BTN.show()
-            return
-        self.ui.PLAY_MV_BTN.close()
 
     @pyqtSlot()
     def load_fm(self):
@@ -580,7 +538,7 @@ class MainWidget(QWidget):
 
     @func_coroutine
     @pyqtSlot()
-    def search_music(self):
+    def _search_music(self):
         text = self.ui.SEARCH_BOX.text()
         if text != '':
             self.ui.STATUS_BAR.showMessage(u'正在搜索: ' + text)
@@ -602,6 +560,21 @@ class MainWidget(QWidget):
     def on_web_load_progress(self, progress):
         QApplication.processEvents()
         self.ui.PROGRESS.setValue(progress)
+
+    def paintEvent(self, event: QPaintEvent):
+        """
+        self is derived from QWidget, Stylesheets don't work unless \
+        paintEvent is reimplemented.y
+        at the same time, if self is derived from QFrame, this isn't needed.
+        """
+        option = QStyleOption()
+        option.initFrom(self)
+        painter = QPainter(self)
+        style = self.style()
+        style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def closeEvent(self, event):
+        self.close()
 
 
 class FmMode():
@@ -635,16 +608,19 @@ class FmMode():
         if len(cls._songs) > 0:
             song = cls._songs.pop()
             mid = song['id']
-            music_model = cls._api.get_song_detail(mid)[0]
-            cls._player.set_music_list([music_model])
+            music_models = cls._api.get_song_detail(mid)
+            if not Controller.is_response_ok(music_models):
+                cls._controller.exit_fm()
+                return
+            cls._player.set_music_list([music_models[0]])
         else:
             cls._songs = cls._api.get_radio_songs()
-            if isinstance(cls._songs, list):
-                cls.reset_song_list()
-            else:
+            if not Controller.is_response_ok(cls._songs):
                 cls._player.stop()
                 cls._notify.show_message("Error", "网络异常，请检查网络连接")
                 cls._controller.exit_fm()
+            else:
+                cls.reset_song_list()
 
     @classmethod
     @pyqtSlot()

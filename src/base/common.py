@@ -40,14 +40,3 @@ def write_json_into_file(data_json, filepath):
         LOG.error(str(e))
         LOG.error("Write json into file failed")
         return False
-
-
-def judge_system():
-    sys_info = platform.system()
-    return sys_info
-
-
-def judge_platform():
-    platform_info = platform.platform()
-    info = platform_info.split('-')
-    return info

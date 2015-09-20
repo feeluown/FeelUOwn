@@ -4,8 +4,6 @@ import os
 import json
 import asyncio
 
-from PyQt5.QtWidgets import QSystemTrayIcon
-
 from .normalize import NetEaseAPI
 from base.logger import LOG
 from base.common import func_coroutine
@@ -16,7 +14,7 @@ netease_normalize = NetEaseAPI()
 CONTROLLER = None
 
 
-def init(controller):
+def init(controller, Controller):
     """init plugin """
     global CONTROLLER
 
@@ -25,6 +23,7 @@ def init(controller):
     CONTROLLER = controller
     netease_normalize.ne.signal_load_progress.connect(CONTROLLER.on_web_load_progress)
 
+    Controller.api = netease_normalize
     CONTROLLER.api = netease_normalize
     login_with_local_info()
 

@@ -20,7 +20,7 @@ class LeftScrollArea(QScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.central_widget = LeftWidget()
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff )
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.set_widgets_prop()
 
