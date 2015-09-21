@@ -109,11 +109,17 @@ class Player(QMediaPlayer):
         flag = self.add_music(music_model)
 
         media_content = self.get_media_content_from_model(music_model)
-        self._current_index = self._music_list.index(music_model)
+        self._current_index = self.get_index_by_model(music_model)
         super().stop()
         self.setMedia(media_content)
         super().play()
         return flag
+
+    def get_index_by_model(self, music_model):
+        for i, music in enumerate(self._music_list):
+            if music_model['id'] == music['id']:
+                return i
+        return None
 
     def play_or_pause(self):
         if len(self._music_list) is 0:
