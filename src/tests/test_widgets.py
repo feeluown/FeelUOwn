@@ -16,7 +16,7 @@ def test_setting_widget(qtbot):
 
 
 def test_music_table_widget(qtbot):
-    from widgets.music_table_widget import MusicTableWidget
+    from widgets.music_table import MusicTableWidget
     w = MusicTableWidget()
     w.show()
     qtbot.addWidget(w)
