@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtMultimedia import QMediaPlayer
 from constants import ICON_PATH
 from base.player import Player
-from base.common import singleton
+from base.utils import singleton
 from constants import WINDOW_ICON
 
 

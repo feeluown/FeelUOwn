@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QApplication, QShortcut, QVBoxLayout,\
     QFrame, QHBoxLayout, QLabel
 
 from constants import WINDOW_ICON
-from base.common import singleton
+from base.utils import singleton
 
 
 width, height = 300, 80

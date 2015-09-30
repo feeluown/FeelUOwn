@@ -13,7 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from constants import ICON_PATH
-from widgets.playlist_widget import SpreadWidget, PlaylistItem, RecommendItem
+from widgets.playlist import SpreadWidget, PlaylistItem, RecommendItem
 
 
 class LeftScrollArea(QScrollArea):

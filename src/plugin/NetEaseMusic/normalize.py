@@ -7,7 +7,7 @@ from functools import wraps
 from constants import DATA_PATH
 
 from base.logger import LOG
-from base.common import singleton, write_json_into_file, func_coroutine
+from base.utils import singleton, write_json_into_file, func_coroutine
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
     AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
@@ -20,52 +20,6 @@ from plugin.NetEaseMusic.api import NetEase
 比如说：
 - 返回一个music，那么这个数据必须符合 music model.
 """
-
-
-def login_required(func):
-    def wrapper(*args):
-        this = args[0]
-        if this.uid == 0:
-            return {'code': 401}    # Unauthorized
-        func(*args)
-    return wrapper
-
-
-def access_music(music_data):
-    """处理从服务获取的原始数据，对它的一些字段进行过滤和改名，返回符合标准的music数据
-
-    :param music_data:
-    :return:
-    """
-    music_data['url'] = music_data['mp3Url']
-    song = MusicModel(music_data).get_dict()
-
-    for i, artist in enumerate(music_data['artists']):
-        artist_ = ArtistModel(artist).get_dict()
-        song['artists'][i] = artist_
-
-    song['album'] = AlbumModel(music_data['album']).get_dict()
-    return song
-
-
-def access_brief_music(music_data):
-
-    song = BriefMusicModel(music_data).get_dict()
-
-    for i, artist in enumerate(song['artists']):
-        artist = BriefArtistModel(artist).get_dict()
-        song['artists'][i] = artist
-
-    song['album'] = BriefAlbumModel(song['album']).get_dict()
-    return song
-
-
-def access_user(user_data):
-    user_data['avatar'] = user_data['profile']['avatarUrl']
-    user_data['uid'] = user_data['account']['id']
-    user_data['username'] = user_data['profile']['nickname']
-    user = UserModel(user_data).get_dict()
-    return user
 
 
 def web_cache_playlist(func):
@@ -120,7 +74,8 @@ class NetEaseAPI(object):
     def get_uid(self):
         return self.uid
 
-    def is_data_avaible(self, data):
+    @staticmethod
+    def is_response_avaible(data):
         """判断api返回的数据是否可用
         
         TODO: 应该写成一个decorator
@@ -131,24 +86,32 @@ class NetEaseAPI(object):
             return True
         return False
 
+    @staticmethod
+    def is_response_ok(data):
+        """check response status code"""
+        if data is None:
+            return False
+        if not isinstance(data, dict):
+            return True
+        if data['code'] == 200:
+            return True
+        return False
+
     def check_login_successful(self):
         if self.ne.check_cookies():
             return True
         else:
             return False
 
-    def set_user(self, data):
-        self.uid = data['uid']
-
     def login(self, username, password, phone=False):
         password = password.encode('utf-8')
         password = hashlib.md5(password).hexdigest()
         data = self.ne.login(username, password, phone)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         self.uid = data['account']['id']
-        data = access_user(data)
+        data = self.access_data_user(data)
         data['code'] = 200
         self.save_user_info(data)
         return data
@@ -157,11 +120,11 @@ class NetEaseAPI(object):
         """login into website with username and password which has been ecrypted
         """
         data = self.ne.login(username, pw_encrypt, phone)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         self.uid = data['account']['id']
-        data = access_user(data)
+        data = self.access_data_user(data)
         data['code'] = 200
         self.save_user_info(data)
         return data
@@ -171,7 +134,7 @@ class NetEaseAPI(object):
 
     def confirm_captcha(self, captcha_id, text):
         data = self.ne.confirm_captcha(captcha_id, text)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         if data['result'] is False:
@@ -181,12 +144,12 @@ class NetEaseAPI(object):
 
     def get_song_detail(self, mid):
         data = self.ne.song_detail(mid)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         songs = []
         for each in data['songs']:
-            song = access_music(each)
+            song = self.access_music(each)
             songs.append(song)
         return songs
 
@@ -198,7 +161,7 @@ class NetEaseAPI(object):
         :return:
         """
         data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         data = data['result']
@@ -207,15 +170,14 @@ class NetEaseAPI(object):
         data['type'] = data['specialType']
 
         for i, track in enumerate(data['tracks']):
-            data['tracks'][i] = access_music(track)
+            data['tracks'][i] = self.access_music(track)
         model = PlaylistModel(data).get_dict()
         LOG.debug('Update playlist cache finish: ' + model['name'])
         return model
 
-    # @login_required     # 装饰器，挺好玩(装逼)的一个东西
     def get_user_playlist(self):
         data = self.ne.user_playlist(self.uid)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         playlist = data['playlist']
@@ -232,23 +194,23 @@ class NetEaseAPI(object):
 
     def search(self, s, stype=1, offset=0, total='true', limit=60):
         data = self.ne.search(s, stype=1, offset=0, total='true', limit=60)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
         if data['result']['songCount']:
             songs = data['result']['songs']
             for i, song in enumerate(songs):
-                songs[i] = access_brief_music(song)
+                songs[i] = self.access_music_brief(song)
             return songs
         else:
             return []
 
     def get_artist_detail(self, artist_id):
         data = self.ne.artist_infos(artist_id)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         for i, track in enumerate(data['hotSongs']):
-            data['hotSongs'][i] = access_music(track)
+            data['hotSongs'][i] = self.access_music(track)
 
         for each_key in data['artist']:
             data[each_key] = data['artist'][each_key]
@@ -258,12 +220,12 @@ class NetEaseAPI(object):
 
     def get_album_detail(self, album_id):
         data = self.ne.album_infos(album_id)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         album = data['album']
         for i, track in enumerate(album['songs']):
-            album['songs'][i] = access_music(track)
+            album['songs'][i] = self.access_music(track)
         model = AlbumDetailModel(album).get_dict()
         return model
 
@@ -274,7 +236,7 @@ class NetEaseAPI(object):
 
     def is_favorite_music(self, mid):
         data = self.get_playlist_detail(self.favorite_pid)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
         tracks = data['tracks']
         for track in tracks:
@@ -288,7 +250,7 @@ class NetEaseAPI(object):
 
     def get_mv_detail(self, mvid):
         data = self.ne.get_mv_detail(mvid)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         data = data['data']
@@ -304,7 +266,7 @@ class NetEaseAPI(object):
 
     def get_lyric_detail(self, music_id):
         data = self.ne.get_lyric_by_musicid(music_id)
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
 
         if 'lrc' not in data.keys():
@@ -339,18 +301,55 @@ class NetEaseAPI(object):
 
     def get_radio_songs(self):
         data = self.ne.get_radio_music()
-        if not self.is_data_avaible(data):
+        if not self.is_response_avaible(data):
             return data
     
         songs = data['data']
         for i, song in enumerate(songs):
-            songs[i] = access_brief_music(song)
+            songs[i] = self.access_music_brief(song)
         return songs
 
     @func_coroutine
     def save_user_info(self, data_dict):
         if write_json_into_file(data_dict, DATA_PATH + self.user_info_filename):
             LOG.info("Save User info successfully")
+
+    @staticmethod
+    def access_music(music_data):
+        """处理从服务获取的原始数据，对它的一些字段进行过滤和改名，返回符合标准的music数据
+
+        :param music_data:
+        :return:
+        """
+        music_data['url'] = music_data['mp3Url']
+        song = MusicModel(music_data).get_dict()
+
+        for i, artist in enumerate(music_data['artists']):
+            artist_ = ArtistModel(artist).get_dict()
+            song['artists'][i] = artist_
+
+        song['album'] = AlbumModel(music_data['album']).get_dict()
+        return song
+
+    @staticmethod
+    def access_music_brief(music_data):
+
+        song = BriefMusicModel(music_data).get_dict()
+
+        for i, artist in enumerate(song['artists']):
+            artist = BriefArtistModel(artist).get_dict()
+            song['artists'][i] = artist
+
+        song['album'] = BriefAlbumModel(song['album']).get_dict()
+        return song
+
+    @staticmethod
+    def access_data_user(user_data):
+        user_data['avatar'] = user_data['profile']['avatarUrl']
+        user_data['uid'] = user_data['account']['id']
+        user_data['username'] = user_data['profile']['nickname']
+        user = UserModel(user_data).get_dict()
+        return user
 
 
 if __name__ == "__main__":

@@ -5,6 +5,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+from interfaces import ControllerApi
+
 
 class LyricWidget(QWidget):
 
@@ -123,14 +125,14 @@ class LyricWidget(QWidget):
         self._container_layout.addWidget(self._text_label)
         self._layout.addWidget(self._container)
 
-    def show_lyric_while_visible(self, controller, ms):
+    def show_lyric_while_visible(self, ms):
         """给controller调用的函数"""
         if self.isVisible():
             if self.has_lyric():
                 self.sync_lyric(ms)
             else:
-                lyric_model = controller.api.get_lyric_detail(controller.state['current_mid'])
-                if not controller.is_response_ok(lyric_model):
+                lyric_model = ControllerApi.api.get_lyric_detail(ControllerApi.state['current_mid'])
+                if not ControllerApi.api.is_response_ok(lyric_model):
                     return
 
                 if lyric_model:

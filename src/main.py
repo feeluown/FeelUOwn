@@ -6,8 +6,6 @@ import sys
 import os
 import asyncio
 
-from PyQt5.QtCore import QObject
-
 path = sys.path[0]
 os.chdir(path)
 

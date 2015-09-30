@@ -12,7 +12,7 @@ from PyQt5.QtNetwork import *
 from base.network_manger import NetworkManager
 
 from base.logger import LOG
-from base.common import write_json_into_file
+from base.utils import write_json_into_file
 
 from constants import DATA_PATH
 

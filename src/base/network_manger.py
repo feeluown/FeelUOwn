@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest
-from base.common import singleton
+from base.utils import singleton
 
 
 @singleton

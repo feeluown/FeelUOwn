@@ -15,7 +15,7 @@ import requests
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from constants import DATA_PATH
-from base.common import singleton, func_coroutine, write_json_into_file
+from base.utils import singleton, func_coroutine, write_json_into_file
 from base.logger import LOG
 
 # list去重

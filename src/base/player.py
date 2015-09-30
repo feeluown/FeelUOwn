@@ -6,7 +6,7 @@ from PyQt5.QtMultimedia import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from base.common import singleton
+from base.utils import singleton
 from base.logger import LOG
 
 

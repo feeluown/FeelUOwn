@@ -73,6 +73,12 @@ class MusicModel(DataModel):
         }
         self.init_model()
 
+    @classmethod
+    def mv_available(cls, model):
+        if model['mvid'] != 0:
+            return True
+        return False
+
 
 class BriefMusicModel(DataModel):
     def __init__(self, data, type=None):

@@ -2,7 +2,7 @@
 
 
 from PyQt5.QtWidgets import *
-from widgets.playmode_label import PlaymodeSwitchLabel
+from widgets.playmode_switch import PlaymodeSwitchLabel
 
 
 class StatusBar(QStatusBar):

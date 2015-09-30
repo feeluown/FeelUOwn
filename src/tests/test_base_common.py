@@ -3,7 +3,7 @@
 
 import pytest
 
-from base.common import *
+from base.utils import *
 
 
 def test_singleton():
