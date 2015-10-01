@@ -6,7 +6,7 @@ import json
 from base.logger import LOG
 from base.utils import func_coroutine
 from constants import DATA_PATH
-from interfaces import ControllerApi
+from interfaces import ControllerApi, ViewOp
 
 from .normalize import NetEaseAPI
 
@@ -18,8 +18,6 @@ def init(controller):
 
     LOG.info("NetEase Plugin init")
 
-    netease_normalize.ne.signal_load_progress.connect(controller.on_web_load_progress)
-
     ControllerApi.api = netease_normalize
 
     if os.path.exists(DATA_PATH + netease_normalize.user_info_filename):
@@ -28,14 +26,14 @@ def init(controller):
             data_dict = json.loads(data)
             if "uid" in data_dict:
                 netease_normalize.uid = data_dict['uid']
-                controller.set_user(data_dict)
+                ViewOp.load_user_infos(data_dict)
 
     if os.path.exists(DATA_PATH + netease_normalize.ne.cookies_filename):
         @func_coroutine
         def check_cookies():
             netease_normalize.ne.load_cookies()
             if netease_normalize.check_login_successful():
-                controller.set_login()
+                ControllerApi.set_login()
         check_cookies()
     else:
         LOG.info("找不到您的cookies文件，请您手动登录")

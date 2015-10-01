@@ -84,6 +84,11 @@ class SpreadWidget(QWidget):
     def add_widget(self, *args, **kw):
         self._layout.addWidget(*args, **kw)
 
+    def empty_layout(self):
+        while self.layout().takeAt(0):
+            item = self.layout().takeAt(0)
+            del item
+
 
 class _BaseItem(QFrame):
     """左边是图案，右边是文字按钮的widget"""

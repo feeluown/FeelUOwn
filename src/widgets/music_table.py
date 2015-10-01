@@ -27,6 +27,8 @@ class MusicTableWidget(QTableWidget):
         self.__set_prop()
         self.__init_signal_binding()
 
+        self.resize(500, 200)
+
     def __set_objects_name(self):
         pass
 

@@ -83,6 +83,7 @@ class UiMainWidget(object):
 
         self.progress_info.setFixedHeight(2)
         self.progress_info.setTextVisible(False)
+        self.progress_info.setRange(0, 100)
 
     def set_object_name(self):
         self.right_widget.setObjectName('right_widget')
