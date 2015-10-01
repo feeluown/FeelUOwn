@@ -240,7 +240,7 @@ class Controller(QWidget):
                 ViewOp.ui.STATUS_BAR.showMessage(u'Oops，没有找到相关歌曲', 5000)
                 return
 
-    def paintEvent(self, event: QPaintEvent):
+    def paintEvent(self, event):
         """
         self is derived from QWidget, Stylesheets don't work unless \
         paintEvent is reimplemented.y
@@ -255,7 +255,7 @@ class Controller(QWidget):
 
 class FmMode(object):
     """fm mode 一些说明
-    
+
     当切换到fm播放模式的时候，每向服务器请求一次，服务器会返回几首歌曲
     所以当这几首歌曲播放结束的时候，我们要向服务器请求下几首歌
     """

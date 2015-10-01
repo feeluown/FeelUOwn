@@ -168,8 +168,10 @@ class ViewOp(object):
             self.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
+    @classmethod
     @pyqtSlot(dict)
-    def on_player_media_changed(self, music_model):
+    def on_player_media_changed(cls, music_model):
+        print (music_model)
         artists = music_model['artists']
         artists_name = ''
         for artist in artists:
@@ -188,7 +190,7 @@ class ViewOp(object):
         ControllerApi.desktop_mini.content.set_duration(ControllerApi.player.duration() / 1000)
 
         ControllerApi.network_manager.get(QNetworkRequest(QUrl(music_model['album']['picUrl'] + "?param=200y200")))
-        ControllerApi.network_manager.network_queue.put(ViewOp.set_music_icon)    # 更换任务栏图标
+        ControllerApi.network_manager.network_queue.put(ViewOp.set_music_icon)
 
         ControllerApi.current_playlist_widget.add_item_from_model(music_model)
         ControllerApi.current_playlist_widget.focus_cell_by_mid(music_model['id'])
