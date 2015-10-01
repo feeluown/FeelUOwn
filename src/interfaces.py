@@ -37,6 +37,8 @@ class ControllerApi(object):
     @classmethod
     def set_login(cls):
         cls.state['is_login'] = True
+        ViewOp.ui.LOVE_SONG_BTN.show()
+        ViewOp.ui.LOGIN_BTN.hide()
 
     @classmethod
     def play_mv_by_mvid(cls, mvid):

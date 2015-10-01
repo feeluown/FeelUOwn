@@ -145,8 +145,6 @@ class Controller(QWidget):
     @pyqtSlot(dict)
     def on_login_success(self, data):
         ControllerApi.set_login()
-        ViewOp.ui.LOVE_SONG_BTN.show()
-        ViewOp.ui.LOGIN_BTN.hide()
         ViewOp.load_user_infos(data)
 
     @pyqtSlot(int)
