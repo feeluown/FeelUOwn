@@ -1,10 +1,10 @@
-.. NetEaseMusic documentation master file, created by
-   sphinx-quickstart on Thu Apr 16 15:17:44 2015.
+.. feeluown documentation master file, created by
+   sphinx-quickstart on Fri Oct  2 20:55:54 2015.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to NetEaseMusic's documentation!
-========================================
+Welcome to feeluown's documentation!
+====================================
 
 Contents:
 
@@ -12,13 +12,20 @@ Contents:
    :maxdepth: 2
 
    controllers
-   api
-   models
-   tools
-   views
-   widgets
+   interfaces
+   left_widget
    modules
-   main
+   plugin.Cli
+   plugin.Hotkey
+   plugin.NetEaseMusic
+   plugin
+   right_widget
+   top_widget
+   views
+   base
+   constants
+
+
 
 
 Indices and tables
