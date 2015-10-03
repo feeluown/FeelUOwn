@@ -192,7 +192,7 @@ class Player(QMediaPlayer):
             else:
                 return self._current_index - 1
         else:
-            return random.choice(range(len(self.music_list)))
+            return random.choice(range(len(self._music_list)))
 
     @classmethod
     def set_play_mode(cls, mode=4):
