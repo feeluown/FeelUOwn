@@ -15,6 +15,7 @@ from base.logger import LOG
 from base.utils import write_json_into_file
 
 from constants import DATA_PATH
+from interfaces import ControllerApi
 
 
 class LoginDialog(QDialog):
@@ -45,7 +46,7 @@ class LoginDialog(QDialog):
 
         self.nm = NetworkManager()
 
-        self.ne = parent.api
+        self.ne = ControllerApi.api
 
         self.is_autofill = False
         self.is_need_captcha = False
