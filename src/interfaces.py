@@ -59,7 +59,7 @@ class ControllerApi(object):
             ViewOp.ui.STATUS_BAR.showMessage(u"准备调用 QuickTime Player 播放mv", 4000)
             subprocess.Popen(['open', '-a', 'QuickTime Player', url_high])
         else:
-            ViewOp.ui.STATUS_BAR.showMessage(u"您的系统不是Linux。程序已经将视频的播放地址复制到剪切板，你可以使用你喜欢的播放器播放视频", 5000)
+            ViewOp.ui.STATUS_BAR.showMessage(u"程序已经将视频的播放地址复制到剪切板", 5000)
 
     @classmethod
     def toggle_lyric_widget(cls):
@@ -80,6 +80,17 @@ class ControllerApi(object):
     @pyqtSlot(int)
     def seek(cls, seconds):
         cls.player.setPosition(seconds * 1000)
+
+    @classmethod
+    def play_specific_song_by_mid(cls, mid):
+        songs = ControllerApi.api.get_song_detail(mid)
+        if not ControllerApi.api.is_response_ok(songs):
+            return
+
+        if len(songs) == 0:
+            ControllerApi.notify_widget.show_message('Oops', '这首音乐在地震中消失了')
+            return
+        ControllerApi.player.play(songs[0])
 
 
 class ViewOp(object):
