@@ -158,16 +158,16 @@ class ViewOp(object):
         data = ControllerApi.api.set_music_to_favorite(ControllerApi.state['current_mid'], checked)
         ControllerApi.desktop_mini.content.is_song_like = checked
         if not ControllerApi.api.is_response_ok(data):
-            self.ui.LOVE_SONG_BTN.setChecked(not checked)
+            ViewOp.ui.LOVE_SONG_BTN.setChecked(not checked)
             ControllerApi.desktop_mini.content.is_song_like = not checked
             return False
         playlist_detail = ControllerApi.api.get_playlist_detail(ControllerApi.api.favorite_pid, cache=False)
         if not ControllerApi.api.is_response_ok(playlist_detail):
-            self.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
+            ViewOp.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
             return False
         if ControllerApi.state['current_pid'] == ControllerApi.api.favorite_pid:
             LOG.info("喜欢列表的歌曲发生变化")
-            self.ui.WEBVIEW.load_playlist(playlist_detail)
+            ViewOp.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
     @classmethod
