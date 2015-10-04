@@ -138,9 +138,10 @@ class ViewOp(object):
         else:
             cls.ui.PLAY_OR_PAUSE.setChecked(True)
 
+    @staticmethod
     @func_coroutine
     @pyqtSlot(bool)
-    def on_play_current_song_mv_clicked(self, clicked=True):
+    def on_play_current_song_mv_clicked(clicked=True):
         mid = ControllerApi.state['current_mid']
         data = ControllerApi.api.get_song_detail(mid)
         if not ControllerApi.api.is_response_ok(data):
@@ -150,9 +151,10 @@ class ViewOp(object):
         mvid = music_model['mvid']
         ControllerApi.play_mv_by_mvid(int(mvid))
 
+    @staticmethod
     @func_coroutine
     @pyqtSlot(bool)
-    def on_set_favorite_btn_clicked(self, checked=True):
+    def on_set_favorite_btn_clicked(checked=True):
         if not ControllerApi.state["current_mid"]:
             return False
         data = ControllerApi.api.set_music_to_favorite(ControllerApi.state['current_mid'], checked)
