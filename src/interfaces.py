@@ -85,12 +85,13 @@ class ControllerApi(object):
     def play_specific_song_by_mid(cls, mid):
         songs = ControllerApi.api.get_song_detail(mid)
         if not ControllerApi.api.is_response_ok(songs):
-            return
+            return False
 
         if len(songs) == 0:
-            ControllerApi.notify_widget.show_message('Oops', '这首音乐在地震中消失了')
-            return
+            LOG.info("music id %d is unavailable" % mid)
+            return False
         ControllerApi.player.play(songs[0])
+        return True
 
 
 class ViewOp(object):
@@ -149,9 +150,10 @@ class ViewOp(object):
         else:
             cls.ui.PLAY_OR_PAUSE.setChecked(True)
 
+    @staticmethod
     @func_coroutine
     @pyqtSlot(bool)
-    def on_play_current_song_mv_clicked(self, clicked=True):
+    def on_play_current_song_mv_clicked(clicked=True):
         mid = ControllerApi.state['current_mid']
         data = ControllerApi.api.get_song_detail(mid)
         if not ControllerApi.api.is_response_ok(data):
@@ -161,30 +163,30 @@ class ViewOp(object):
         mvid = music_model['mvid']
         ControllerApi.play_mv_by_mvid(int(mvid))
 
+    @staticmethod
     @func_coroutine
     @pyqtSlot(bool)
-    def on_set_favorite_btn_clicked(self, checked=True):
+    def on_set_favorite_btn_clicked(checked=True):
         if not ControllerApi.state["current_mid"]:
             return False
         data = ControllerApi.api.set_music_to_favorite(ControllerApi.state['current_mid'], checked)
         ControllerApi.desktop_mini.content.is_song_like = checked
         if not ControllerApi.api.is_response_ok(data):
-            self.ui.LOVE_SONG_BTN.setChecked(not checked)
+            ViewOp.ui.LOVE_SONG_BTN.setChecked(not checked)
             ControllerApi.desktop_mini.content.is_song_like = not checked
             return False
         playlist_detail = ControllerApi.api.get_playlist_detail(ControllerApi.api.favorite_pid, cache=False)
         if not ControllerApi.api.is_response_ok(playlist_detail):
-            self.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
+            ViewOp.ui.STATUS_BAR.showMessage("刷新 -喜欢列表- 失败")
             return False
         if ControllerApi.state['current_pid'] == ControllerApi.api.favorite_pid:
             LOG.info("喜欢列表的歌曲发生变化")
-            self.ui.WEBVIEW.load_playlist(playlist_detail)
+            ViewOp.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
     @classmethod
     @pyqtSlot(dict)
     def on_player_media_changed(cls, music_model):
-        print (music_model)
         artists = music_model['artists']
         artists_name = ''
         for artist in artists:

@@ -81,7 +81,7 @@ class NetEase(QObject):
             LOG.error(str(e))
             LOG.error("Save cookies failed")
 
-    def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=10):
+    def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=3):
         try:
             res = None
             if method == "GET":

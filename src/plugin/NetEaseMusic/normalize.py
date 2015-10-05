@@ -146,7 +146,7 @@ class NetEaseAPI(object):
         data = self.ne.song_detail(mid)
         if not self.is_response_avaible(data):
             return data
-
+        LOG.info("music id %d is available" % mid)
         songs = []
         for each in data['songs']:
             song = self.access_music(each)
@@ -303,7 +303,6 @@ class NetEaseAPI(object):
         data = self.ne.get_radio_music()
         if not self.is_response_avaible(data):
             return data
-    
         songs = data['data']
         for i, song in enumerate(songs):
             songs[i] = self.access_music_brief(song)
