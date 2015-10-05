@@ -98,9 +98,8 @@ class Player(QMediaPlayer):
     def play(self, music_model=None):
         """播放一首音乐
 
-        1. 如果music_model 不是None的话，就尝试将它加入当前播放列表，加入成功返回True, 否则返回False
-        :param music_model:
-        :return:
+        如果music_model 不是None的话，
+        就尝试将它加入当前播放列表，加入成功返回True, 否则返回False
         """
         if music_model is None:
             super().play()
@@ -142,8 +141,10 @@ class Player(QMediaPlayer):
             music_model = self._music_list[index]
             self._current_index = index
             self.play(music_model)
+            return True
         else:
             self.signal_playlist_is_empty.emit()
+            return False
 
     def play_last(self):
         index = self.get_previous_song_index()
@@ -151,8 +152,10 @@ class Player(QMediaPlayer):
             music_model = self._music_list[index]
             self._current_index = index
             self.play(music_model)
+            return True
         else:
             self.signal_playlist_is_empty.emit()
+            return False
 
     @pyqtSlot(QMediaPlayer.Error)
     def on_error_occured(self, error):

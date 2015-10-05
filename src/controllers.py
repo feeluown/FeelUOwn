@@ -155,14 +155,7 @@ class Controller(QWidget):
     @pyqtSlot(int)
     def on_play_song_clicked(self, mid=None):
         self.exit_fm()
-        songs = ControllerApi.api.get_song_detail(mid)
-        if not ControllerApi.api.is_response_ok(songs):
-            return
-
-        if len(songs) == 0:
-            ViewOp.ui.STATUS_BAR.showMessage(u'这首音乐在地震中消失了', 4000)
-            return
-        ControllerApi.player.play(songs[0])
+        ControllerApi.play_specific_song_by_mid(mid)
 
     def switch_desktop_mini(self):
         if ControllerApi.desktop_mini.isVisible():
