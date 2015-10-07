@@ -32,6 +32,7 @@ ArchLinux下的包名可能有些不一样, 比如上面提到的gstreamer1.0-*�
 
 ```
 sudo pacman -S gst-plugins-good gst-plugins-bad gst-plugins-ugly
+yaourt -S python-quamash-qt5
 ```
 
 如果在安装完这些包之后，还是没有声音，可以提交相关issue
