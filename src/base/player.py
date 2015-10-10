@@ -1,6 +1,7 @@
 # -*- coding:utf8 -*-
 
 import random
+import asyncio
 
 from PyQt5.QtMultimedia import *
 from PyQt5.QtCore import *
@@ -31,6 +32,8 @@ class Player(QMediaPlayer):
         self.error.connect(self.on_error_occured)
         self.mediaChanged.connect(self.on_media_changed)
         self.mediaStatusChanged.connect(self.on_media_status_changed)
+
+        self._app_event_loop = asyncio.get_event_loop()
 
     def change_player_mode(self):
         """fm 和 正常两种模式切换"""
@@ -167,8 +170,15 @@ class Player(QMediaPlayer):
                 QApplication.quit()
             else:
                 LOG.error(u'播放器出现error, 类型为' + str(error))
-        if error == QMediaPlayer.NetworkError or error == QMediaPlayer.ResourceError:
-            LOG.error(u'播放器出现错误。可能是网络连接失败，也有可能缺少解码器')
+        if error == QMediaPlayer.NetworkError:
+            latency = 3
+            if self._current_index >= 0 and len(self._music_list) > self._current_index:
+                self._app_event_loop.call_later(latency, self.play, self._music_list[self._current_index])
+                LOG.error(u'播放器出现错误：网络连接失败, {}秒后重试'.format(latency))
+            else:
+                LOG.error(u'播放器出现错误：网络连接失败')
+        elif error == QMediaPlayer.ResourceError:
+            LOG.error(u'播放器出现错误：缺少解码器')
         return
 
     def get_next_song_index(self):
