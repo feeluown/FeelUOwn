@@ -77,6 +77,8 @@ class Controller(QWidget):
         ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
         ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
         ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
+        ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
+        ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
 
         ViewOp.ui.PLAY_PREVIOUS_SONG_BTN.clicked.connect(ControllerApi.player.play_last)
         ViewOp.ui.PLAY_NEXT_SONG_BTN.clicked.connect(ControllerApi.player.play_next)
@@ -210,6 +212,26 @@ class Controller(QWidget):
         ViewOp.ui.SONG_NAME_LABEL.setText(u'当前没有歌曲播放')
         ViewOp.ui.SONG_COUNTDOWN_LABEL.setText('00:00')
         ViewOp.ui.PLAY_OR_PAUSE.setChecked(True)
+    
+    @staticmethod
+    @func_coroutine
+    @pyqtSlot(int)
+    def search_album(aid):
+        album_detail_model = ControllerApi.api.get_album_detail(aid)
+        if not ControllerApi.api.is_response_ok(album_detail_model):
+            return
+        ViewOp.ui.WEBVIEW.load_album(album_detail_model)
+        ControllerApi.state['current_pid'] = 0
+
+    @staticmethod
+    @func_coroutine
+    @pyqtSlot(int)
+    def search_artist(aid):
+        artist_detail_model = ControllerApi.api.get_artist_detail(aid)
+        if not ControllerApi.api.is_response_ok(artist_detail_model):
+            return
+        ViewOp.ui.WEBVIEW.load_artist(artist_detail_model)
+        ControllerApi.state['current_pid'] = 0
 
     @func_coroutine
     @pyqtSlot()
@@ -218,7 +240,7 @@ class Controller(QWidget):
         if text != '':
             ViewOp.ui.STATUS_BAR.showMessage(u'正在搜索: ' + text)
             songs = ControllerApi.api.search(text)
-            if not ControllerApi.api.is_response_ok(songs):
+            if not ControllerApi.api.api.is_response_ok(songs):
                 return
             PlaylistItem.de_active_all()
             ViewOp.ui.WEBVIEW.load_search_result(songs)

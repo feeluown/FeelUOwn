@@ -76,29 +76,15 @@ class WebView(QWebView):
         tracks = songs['tracks']
         self.signal_play_songs.emit(tracks)
 
-    @func_coroutine
     @pyqtSlot(int)
     def search_artist(self, aid):
         LOG.debug("search artist info, the artist id is: " + str(aid))
         self.signal_search_artist.emit(aid)
 
-        artist_detail_model = ControllerApi.api.get_artist_detail(aid)
-        if not ControllerApi.api.is_response_ok(artist_detail_model):
-            return
-        self.ui.WEBVIEW.load_artist(artist_detail_model)
-        ControllerApi.state['current_pid'] = 0
-
-    @func_coroutine
     @pyqtSlot(int)
     def search_album(self, aid):
         LOG.debug("search album info, the album id is: " + str(aid))
         self.signal_search_album.emit(aid)
-
-        album_detail_model = ControllerApi.api.get_album_detail(aid)
-        if not ControllerApi.api.is_response_ok(album_detail_model):
-            return
-        self.ui.WEBVIEW.load_album(album_detail_model)
-        ControllerApi.state['current_pid'] = 0
 
     def run_js_interface(self, data=None):
         """
