@@ -240,7 +240,7 @@ class Controller(QWidget):
         if text != '':
             ViewOp.ui.STATUS_BAR.showMessage(u'正在搜索: ' + text)
             songs = ControllerApi.api.search(text)
-            if not ControllerApi.api.api.is_response_ok(songs):
+            if not ControllerApi.api.is_response_ok(songs):
                 return
             PlaylistItem.de_active_all()
             ViewOp.ui.WEBVIEW.load_search_result(songs)

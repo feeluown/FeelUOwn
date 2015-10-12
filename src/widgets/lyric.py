@@ -27,7 +27,6 @@ class LyricWidget(QWidget):
         self.__lyrics = []
         self.__translate_lyric = []
         self.__time_sequence = []
-        # self.show()
 
         self.__init_layout()
         self.close()
