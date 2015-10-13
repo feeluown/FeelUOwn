@@ -34,6 +34,7 @@ class Player(QMediaPlayer):
         self.mediaStatusChanged.connect(self.on_media_status_changed)
 
         self._app_event_loop = asyncio.get_event_loop()
+        self._music_error_times = 0
 
     def change_player_mode(self):
         """fm 和 正常两种模式切换"""
@@ -173,11 +174,15 @@ class Player(QMediaPlayer):
                 LOG.error(u'播放器出现error, 类型为' + str(error))
         if error == QMediaPlayer.NetworkError:
             latency = 3
-            if self._current_index >= 0 and len(self._music_list) > self._current_index:
+
+            if self._music_error_times >= 3 or self._current_index < 0 or self._current_index >= len(self._music_list):
+                self._music_error_times = 0
+                self._app_event_loop.call_later(latency, self.play_next)
+                LOG.error(u'播放器出现错误：网络连接失败，{}秒后尝试播放下一首'.format(latency))
+            else:
+                self._music_error_times += 1
                 self._app_event_loop.call_later(latency, self.play, self._music_list[self._current_index])
                 LOG.error(u'播放器出现错误：网络连接失败, {}秒后重试'.format(latency))
-            else:
-                LOG.error(u'播放器出现错误：网络连接失败')
         elif error == QMediaPlayer.ResourceError:
             LOG.error(u'播放器出现错误：缺少解码器')
         return
