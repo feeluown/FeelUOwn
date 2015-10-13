@@ -139,7 +139,7 @@ class NetEase(QObject):
         return action
 
     # 用户歌单
-    def user_playlist(self, uid, offset=0, limit=100):
+    def user_playlist(self, uid, offset=0, limit=200):
         action = 'http://music.163.com/api/user/playlist/?offset=' + str(offset) + '&limit=' + str(
             limit) + '&uid=' + str(uid)
         res_data = self.http_request('GET', action)
