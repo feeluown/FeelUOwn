@@ -239,6 +239,8 @@ class ViewOp(object):
         if not ControllerApi.api.is_response_ok(playlists):
             return
 
+        playlist_num = len(playlists)
+
         for playlist in playlists:
             pid = playlist['id']
 
@@ -256,8 +258,9 @@ class ViewOp(object):
                         ViewOp.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
                     load_favorite_playlist(pid)
                 else:
-                    app_event_loop = asyncio.get_event_loop()
-                    app_event_loop.call_soon(ControllerApi.api.get_playlist_detail, pid)
+                    if playlist_num <= 50:
+                        app_event_loop = asyncio.get_event_loop()
+                        app_event_loop.call_soon(ControllerApi.api.get_playlist_detail, pid)
             else:
                 ViewOp.ui.COLLECTION_LIST_WIDGET.layout().addWidget(w)
 
