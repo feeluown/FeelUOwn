@@ -162,6 +162,7 @@ class Player(QMediaPlayer):
 
     @pyqtSlot(QMediaPlayer.Error)
     def on_error_occured(self, error):
+        self.setMedia(QMediaContent())
         self.pause()
         if error == QMediaPlayer.FormatError or error == QMediaPlayer.ServiceMissingError:
             m = QMessageBox(QMessageBox.Warning, u"错误提示", "第一次运行出现该错误可能是由于缺少解码器，请参考项目主页\
