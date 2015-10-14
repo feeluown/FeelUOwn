@@ -41,3 +41,6 @@ src/*.png
 src/*.jpg
 src/widgets/*.png
 src/widgets/*.jpg
+
+# node
+node_modules
