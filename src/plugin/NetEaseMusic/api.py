@@ -147,7 +147,7 @@ class NetEase(QObject):
 
     # 搜索单曲(1)，歌手(100)，专辑(10)，歌单(1000)，用户(1002) *(type)*
     def search(self, s, stype=1, offset=0, total='true', limit=60):
-        action = 'http://music.163.com/api/search/get/web'
+        action = 'http://music.163.com/api/search/get'
         data = {
             's': s,
             'type': stype,
