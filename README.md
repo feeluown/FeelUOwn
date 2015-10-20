@@ -59,6 +59,8 @@ cd FeelUOwn
 
 然后就可以搜索 FeelUOwn, 就可以从系统程序中找到
 
+### archlinux安装
+yaourt -S feeluown-git 
 
 ## Changelog
 
