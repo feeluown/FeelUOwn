@@ -308,6 +308,15 @@ class NetEaseAPI(object):
             songs[i] = self.access_music_brief(song)
         return songs
 
+    def get_simi_songs(self, mid, offset=0, limit=10):
+        data = self.ne.get_similar_song(mid, offset, limit)
+        if not self.is_response_avaible(data):
+            return data
+        songs = data['songs']
+        for i, song in enumerate(songs):
+            songs[i] = self.access_music(song)
+        return songs
+
     @func_coroutine
     def save_user_info(self, data_dict):
         if write_json_into_file(data_dict, DATA_PATH + self.user_info_filename):

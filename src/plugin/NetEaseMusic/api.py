@@ -271,3 +271,9 @@ class NetEase(QObject):
         # tv 表示翻译。-1：表示要翻译，1：不要
         url = 'http://music.163.com/api/song/lyric?' + 'id=' + str(mid) + '&lv=1&kv=1&tv=-1'
         return self.http_request('GET', url)
+
+    def get_similar_song(self, mid, offset=0, limit=10):
+        url = ("http://music.163.com/api/discovery/simiSong"
+               "?songid=%d&offset=%d&total=true&limit=%d"
+               % (mid, offset, limit))
+        return self.http_request('GET', url)
