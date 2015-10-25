@@ -32,7 +32,7 @@ class ControllerApi(object):
              "current_mid": 0,
              "current_pid": 0,
              "platform": "",
-             "fm": False}
+             "other_mode": False}
 
     @classmethod
     def set_login(cls):

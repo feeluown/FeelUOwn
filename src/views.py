@@ -55,6 +55,7 @@ class UiMainWidget(object):
         self.SONG_NAME_LABEL = self.top_widget.music_info_container.music_name_label
         self.LOVE_SONG_BTN = self.top_widget.music_info_container.love_music_btn
         self.PLAY_MV_BTN = self.top_widget.music_info_container.play_mv_btn
+        self.SIMI_SONGS_BTN = self.top_widget.music_info_container.similar_song_btn
         self.SHOW_LYRIC_BTN = self.top_widget.music_info_container.show_lyric_btn
         self.AVATAR_LABEL = self.top_widget.login_label
 

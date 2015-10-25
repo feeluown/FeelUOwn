@@ -39,6 +39,7 @@ class MusicInfoWidget(QWidget):
         self.love_music_btn = QPushButton()
         self.play_mv_btn = QPushButton("MV")
         self.show_lyric_btn = QPushButton("词")
+        self.similar_song_btn = QPushButton("相似")
 
         self.layout = QHBoxLayout()
         self.setLayout(self.layout)
@@ -73,6 +74,7 @@ class MusicInfoWidget(QWidget):
         self.love_music_btn.setObjectName("love_music_btn")
         self.play_mv_btn.setObjectName("play_mv_btn")
         self.show_lyric_btn.setObjectName("show_lyric_btn")
+        self.similar_song_btn.setObjectName('similar_song_btn')
         self.setObjectName("music_info_widget")
 
     def _customize_layout(self):
@@ -108,6 +110,8 @@ class MusicInfoWidget(QWidget):
         music_btns_layout.addWidget(self.show_lyric_btn)
         music_btns_layout.addSpacing(10)
         music_btns_layout.addWidget(self.love_music_btn)
+        music_btns_layout.addSpacing(10)
+        music_btns_layout.addWidget(self.similar_song_btn)
 
         self.layout.addWidget(self.album_img_label)
         self.layout.addWidget(music_function_container)

@@ -24,7 +24,7 @@ class Player(QMediaPlayer):
     _music_list = list()    # 里面的对象是music_model
     _current_index = 0
     playback_mode = 3
-    _fm_mode = False
+    _other_mode = False
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -41,10 +41,14 @@ class Player(QMediaPlayer):
         # when _music_error_times reached _MUSIC_ERROR_MAXIMUM, play next music
         self._MUSIC_ERROR_MAXIMUM = 3
 
-    def change_player_mode(self):
-        """fm 和 正常两种模式切换"""
-        self._fm_mode = ~self._fm_mode
-        self.playback_mode = 2 if self._fm_mode else 4
+    def change_player_mode_to_normal(self):
+        self._other_mode = False
+        self.playback_mode = 4
+        self.signal_playback_mode_changed.emit(self.playback_mode)
+
+    def change_player_mode_to_other(self):
+        self._other_mode = True
+        self.playback_mode = 2
         self.signal_playback_mode_changed.emit(self.playback_mode)
 
     @pyqtSlot(QMediaContent)
@@ -57,10 +61,10 @@ class Player(QMediaPlayer):
         if state == QMediaPlayer.EndOfMedia:
             self.finished.emit()
             self.stop()
-            if self._current_index == len(self._music_list) - 1 and self.playback_mode == 2:
+            if (self._current_index == len(self._music_list) - 1) and (self.playback_mode == 2):
                 self.signal_playlist_finished.emit()
                 LOG.info("播放列表播放完毕")
-            if not self._fm_mode:
+            if not self._other_mode:
                 self.play_next()
 
     def add_music(self, music_model):
@@ -172,7 +176,7 @@ class Player(QMediaPlayer):
         self.pause()
         if error == QMediaPlayer.FormatError or error == QMediaPlayer.ServiceMissingError:
             m = QMessageBox(QMessageBox.Warning, u"错误提示", "第一次运行出现该错误可能是由于缺少解码器，请参考项目主页\
-            https://github.com/cosven/FeelUOwn 安装依赖。\n 如果不是第一次运行，那就可能是网络已经断开，请检查您的网络连接", QMessageBox.Yes | QMessageBox.No)
+                https://github.com/cosven/FeelUOwn 安装依赖。\n 如果不是第一次运行，那就可能是网络已经断开，请检查您的网络连接", QMessageBox.Yes | QMessageBox.No)
             if m.exec() == QMessageBox.Yes:
                 QApplication.quit()
             else:
@@ -228,15 +232,15 @@ class Player(QMediaPlayer):
 
     @classmethod
     def set_play_mode_random(cls):
-        classmethod.playback_mode = 4
+        cls.playback_mode = 4
 
     @classmethod
     def set_play_mode_loop(cls):
-        classmethod.playback_mode = 3
+        cls.playback_mode = 3
 
     @classmethod
     def set_play_mode_one_in_loop(cls):
-        classmethod.playback_mode = 2
+        cls.playback_mode = 1
 
     @pyqtSlot(int)
     def on_playback_mode_changed(self, playback_mode):

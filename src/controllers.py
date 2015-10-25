@@ -20,6 +20,7 @@ from plugin import NetEaseMusic, Hotkey
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.utils import func_coroutine
+from c.modes import ModesManger
 from constants import WINDOW_ICON
 
 
@@ -49,6 +50,7 @@ class Controller(QWidget):
         self.setWindowTitle('FeelUOwn')
         self.resize(960, 580)
 
+        self.mode_manager = ModesManger()
         self._init_signal_binding()
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(1, self._init_plugins)
@@ -68,6 +70,7 @@ class Controller(QWidget):
 
         ViewOp.ui.SEARCH_BOX.returnPressed.connect(self._search_music)
         ViewOp.ui.LOVE_SONG_BTN.clicked.connect(ViewOp.on_set_favorite_btn_clicked)
+        ViewOp.ui.SIMI_SONGS_BTN.clicked.connect(self.mode_manager.change_to_simi)
 
         ViewOp.ui.SHOW_DESKTOP_MINI.clicked.connect(self.switch_desktop_mini)
 
@@ -107,7 +110,7 @@ class Controller(QWidget):
         ControllerApi.desktop_mini.content.play_next_music_signal.connect(ControllerApi.player.play_next)
         ControllerApi.desktop_mini.close_signal.connect(self.show)
 
-        ViewOp.ui.FM_ITEM.signal_text_btn_clicked.connect(self.load_fm)
+        ViewOp.ui.FM_ITEM.signal_text_btn_clicked.connect(self.mode_manager.change_to_fm)
 
         ControllerApi.current_playlist_widget.signal_play_music.connect(self.on_play_song_clicked)
         ControllerApi.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)
@@ -156,7 +159,7 @@ class Controller(QWidget):
     @func_coroutine
     @pyqtSlot(int)
     def on_play_song_clicked(self, mid=None):
-        self.exit_fm()
+        self.mode_manager.change_to_normal()
         ControllerApi.play_specific_song_by_mid(mid)
 
     def switch_desktop_mini(self):
@@ -171,37 +174,12 @@ class Controller(QWidget):
 
     @pyqtSlot(int)
     def on_play_songs(self, songs):
-        self.exit_fm()
+        self.mode_manager.change_to_normal()
         if len(songs) == 0:
             ViewOp.ui.STATUS_BAR.showMessage(u'该列表没有歌曲', 2000)
             return
         ControllerApi.current_playlist_widget.set_songs(songs)
         ControllerApi.player.set_music_list(songs)
-
-    @pyqtSlot()
-    def load_fm(self):
-        """播放FM
-
-        1. webkit加载FM播放页面，可以有点动画和设计
-        2. 由于播放FM，要时常向服务器请求歌曲，所以逻辑跟正常播放时有点不一样
-        """
-        ControllerApi.state['fm'] = True
-        ControllerApi.player.change_player_mode()
-        ControllerApi.notify_widget.show_message("Info", "进入FM播放模式")
-        FmMode.load(self)
-        ControllerApi.player.signal_playlist_finished.connect(FmMode.on_next_music_required)
-
-    @pyqtSlot()
-    def exit_fm(self):
-        """如果从webview播放一首歌，就退出fm模式，暂时使用这个逻辑
-
-        TODO:
-        """
-        if ControllerApi.state['fm']:
-            ControllerApi.player.change_player_mode()
-            ControllerApi.notify_widget.show_message("O(∩_∩)O", "退出FM播放模式")
-            FmMode.exit()
-            ControllerApi.state['fm'] = False
 
     @pyqtSlot(int)
     def remove_music_from_list(self, mid):
@@ -265,60 +243,3 @@ class Controller(QWidget):
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
-
-class FmMode(object):
-    """fm mode 一些说明
-
-    当切换到fm播放模式的时候，每向服务器请求一次，服务器会返回几首歌曲
-    所以当这几首歌曲播放结束的时候，我们要向服务器请求下几首歌
-    """
-    _api = None
-    _player = None
-    _notify = None
-    _controller = None
-    _songs = []     # brief music model
-
-    @classmethod
-    def load(cls, controller):
-
-        cls._notify = NotifyWidget()
-
-        cls._controller = controller
-
-        cls._api = ControllerApi.api
-        cls._player = Player()
-        cls._player.stop()
-
-        cls.reset_song_list()
-
-    @classmethod
-    def reset_song_list(cls):
-        cls._player.clear_playlist()
-        if len(cls._songs) > 0:
-            song = cls._songs.pop()
-            mid = song['id']
-            music_models = cls._api.get_song_detail(mid)
-            if not ControllerApi.api.is_response_ok(music_models):
-                cls._controller.exit_fm()
-                return
-            cls._player.set_music_list([music_models[0]])
-        else:
-            cls._songs = cls._api.get_radio_songs()
-            if not ControllerApi.api.is_response_ok(cls._songs):
-                cls._player.stop()
-                cls._notify.show_message("Error", "网络异常，请检查网络连接")
-                cls._controller.exit_fm()
-            else:
-                cls.reset_song_list()
-
-    @classmethod
-    @pyqtSlot()
-    def on_next_music_required(cls):
-        cls.reset_song_list()
-
-    @classmethod
-    def exit(cls):
-        cls._player = None
-        cls._api = None
-        cls._notify = None
-        cls._controller = None
