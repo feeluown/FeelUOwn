@@ -12,9 +12,9 @@ echo "---------------------------"
 echo "安装系统软件依赖"
 sudo apt-get install python3-xlib
 
-sudo apt-get install python3-pyqt5.qtmultimedia 1>/dev/null 2>&1
-sudo apt-get install python3-pyqt5.qtwebkit 1>/dev/null 2>&1
-sudo apt-get install libqt5multimedia5-plugins 1>/dev/null 2>&1
+sudo apt-get install python3-pyqt5.qtmultimedia
+sudo apt-get install python3-pyqt5.qtwebkit
+sudo apt-get install libqt5multimedia5-plugins
 
 echo "安装系统依赖完毕"
 
