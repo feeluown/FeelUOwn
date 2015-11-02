@@ -5,12 +5,15 @@
 
 技术框架大致的说明： <http://www.cosven.com/2015/07/07/FeelUOwn-%E6%8A%80%E6%9C%AF%E9%98%B6%E6%AE%B5%E6%80%BB%E7%BB%93/>
 
+## Ubuntu 14.04, 15.04安装
 
-### 最新进展
+> 运行下面3条命令，小白也可以正常使用。
 
-最近把UI从Qt往Html5迁移， 最新进展可以在 `html5-graceful-player` 上查看。
-
-> 欢迎有兴趣的小伙伴进行合作开发，搭建基础的框架。也可以开发一些插件，比如说 添加一些数据可视化，增加一些炫酷的动画特效。等等
+```
+git clone https://github.com/cosven/FeelUOwn.git
+cd FeelUOwn
+./install.sh
+```
 
 ## 目前依賴
 Python 3, PyQt5
