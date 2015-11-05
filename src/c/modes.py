@@ -43,10 +43,13 @@ class ModeBase(object):
     def load_(cls):
         cls._songs = []  # reinit songs list
         ControllerApi.player.signal_playlist_finished.connect(cls.on_next_music_required)
+        print(cls, "connect")
         cls.load()
 
     @classmethod
     def exit_(cls):
+        ControllerApi.player.signal_playlist_finished.disconnect(cls.on_next_music_required)
+        print(cls, "disconnect")
         cls._songs = []
         cls.exit()
 
@@ -114,6 +117,9 @@ class ModesManger(object):
     def change_to_fm(self):
         if self.current_mode == 2:
             SimiSongsMode.exit_()
+        elif self.current_mode == 1:
+            ControllerApi.notify_widget.show_message("提示", "你正处于FM模式")
+            return
         self.current_mode = 1
         ControllerApi.player.change_player_mode_to_other()
         FmMode.load_()
@@ -122,7 +128,7 @@ class ModesManger(object):
         PlaylistItem.de_active_all()
         if self.current_mode == 1:
             FmMode.exit_()
-        if self.current_mode == 2:
+        elif self.current_mode == 2:
             ControllerApi.notify_widget.show_message("提示", "你正处于单曲电台模式")
             return
         self.current_mode = 2
