@@ -15,7 +15,7 @@ from base.logger import LOG
 from base.utils import write_json_into_file
 
 from constants import DATA_PATH
-from interfaces import ControllerApi
+from controller_api import ControllerApi
 
 
 class LoginDialog(QDialog):

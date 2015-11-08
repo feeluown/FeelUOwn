@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from interfaces import ControllerApi
+from controller_api import ControllerApi
 
 
 class LyricWidget(QWidget):

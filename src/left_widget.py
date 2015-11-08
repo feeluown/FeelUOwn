@@ -48,6 +48,8 @@ class LeftWidget(QWidget):
         self.collection_fold_spread_btn = QPushButton()
         self.local_fold_spread_btn = QPushButton()
 
+        self.new_playlist_btn = QPushButton('+')
+
         self.recommend_list_widget = SpreadWidget()
         self.create_list_widget = SpreadWidget()
         self.collection_list_widget = SpreadWidget()
@@ -77,6 +79,8 @@ class LeftWidget(QWidget):
         self.collection_fold_spread_btn.setObjectName('playlist_fold_spread')
         self.local_fold_spread_btn.setObjectName('playlist_fold_spread')
 
+        self.new_playlist_btn.setObjectName('new_playlist_btn')
+
     def set_widgets_prop(self):
         self.set_objects_name()
 
@@ -96,6 +100,9 @@ class LeftWidget(QWidget):
         self.recommend_list_widget.add_widget(self.fm_item)
 
         self.create_title_layout.addWidget(self.create_title)
+        self.create_title_layout.addStretch(1)
+        self.create_title_layout.addWidget(self.new_playlist_btn)
+        self.create_title_layout.addSpacing(3)
         self.create_title_layout.addWidget(self.create_fold_spread_btn)
         self.create_title_layout.addSpacing(10)
         self.collection_title_layout.addWidget(self.collection_title)

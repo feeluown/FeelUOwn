@@ -12,6 +12,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+from widgets.add_to_playlist_btn import Add_to_playlist_btn
+
 
 class LoginLabel(QLabel):
     def __init__(self, parent=None):
@@ -37,6 +39,7 @@ class MusicInfoWidget(QWidget):
         self.music_slider = QSlider()
         self.music_name_label = QLabel()
         self.love_music_btn = QPushButton()
+        self.add_to_playlist_btn = Add_to_playlist_btn()
         self.play_mv_btn = QPushButton("MV")
         self.show_lyric_btn = QPushButton("词")
         self.similar_song_btn = QPushButton("相似")
@@ -71,6 +74,7 @@ class MusicInfoWidget(QWidget):
         self.music_countdown_label.setObjectName("music_countdown_label")
         self.music_slider.setObjectName("music_slider")
         self.music_name_label.setObjectName("music_name_label")
+        self.add_to_playlist_btn.setObjectName('add_to_playlist_btn')
         self.love_music_btn.setObjectName("love_music_btn")
         self.play_mv_btn.setObjectName("play_mv_btn")
         self.show_lyric_btn.setObjectName("show_lyric_btn")
@@ -98,6 +102,7 @@ class MusicInfoWidget(QWidget):
 
         music_function_container_sub_layout.addSpacing(10)
         music_function_container_sub_layout.addWidget(self.music_countdown_label)
+        music_function_container_sub_layout.addWidget(self.add_to_playlist_btn)
         music_function_container_sub_layout.addStretch(1)
         music_function_container_sub_layout.addWidget(self.music_name_label)
         music_function_container_sub_layout.addStretch(1)
@@ -124,7 +129,7 @@ class TopWidget(QWidget):
         self.next_music_btn = QPushButton()
         self.play_pause_btn = QPushButton()
         self.search_edit = QLineEdit()
-        self.login_btn = QPushButton("~")
+        self.login_btn = QPushButton("->")
         self.login_label = LoginLabel()
         self.show_current_list = QPushButton()
         self.edit_layout = QHBoxLayout()

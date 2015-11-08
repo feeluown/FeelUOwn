@@ -6,7 +6,8 @@ import json
 from base.logger import LOG
 from base.utils import func_coroutine
 from constants import DATA_PATH
-from interfaces import ControllerApi, ViewOp
+from controller_api import ControllerApi
+from view_api import ViewOp
 
 from .normalize import NetEaseAPI
 

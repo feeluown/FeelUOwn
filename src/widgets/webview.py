@@ -5,7 +5,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWebKitWidgets import QWebView
 from PyQt5.QtWebKit import QWebSettings
 
-from interfaces import ControllerApi
+from controller_api import ControllerApi
 from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 
 from base.logger import LOG

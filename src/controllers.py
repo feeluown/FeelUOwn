@@ -8,7 +8,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from interfaces import ControllerApi, ViewOp
+from controller_api import ControllerApi
+from view_api import ViewOp
 from widgets.login_dialog import LoginDialog
 from widgets.music_table import MusicTableWidget
 from widgets.lyric import LyricWidget
@@ -20,6 +21,7 @@ from plugin import NetEaseMusic, Hotkey
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.utils import func_coroutine
+from c.utils import show_start_tip
 from c.modes import ModesManger
 from constants import WINDOW_ICON
 
@@ -32,9 +34,11 @@ class Controller(QWidget):
         super().__init__(parent)
         Controller.ui = UiMainWidget()
         ViewOp.ui = Controller.ui
+        ViewOp.controller = ControllerApi
         Controller.ui.setup_ui(self)
 
         ControllerApi.player = Player()
+        ControllerApi.view = ViewOp
         ControllerApi.desktop_mini = DesktopMiniLayer()
         ControllerApi.lyric_widget = LyricWidget()
         ControllerApi.notify_widget = NotifyWidget()
@@ -43,7 +47,7 @@ class Controller(QWidget):
         ControllerApi.current_playlist_widget = MusicTableWidget()
 
         self._search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
-        self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
+        # self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setWindowIcon(QIcon(WINDOW_ICON))
@@ -54,14 +58,14 @@ class Controller(QWidget):
         self._init_signal_binding()
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(1, self._init_plugins)
+        show_start_tip()
 
     def _init_plugins(self):
-        NetEaseMusic.init(self)  # 特例，一般的插件初始化不传参数
+        NetEaseMusic.init(self)  # 特别意义的插件
         Hotkey.init()
 
     def _init_signal_binding(self):
         """初始化部分信号绑定
-        :return:
         """
         ViewOp.ui.LOGIN_BTN.clicked.connect(self.pop_login)
         ViewOp.ui.QUIT_ACTION.triggered.connect(sys.exit)
@@ -94,6 +98,7 @@ class Controller(QWidget):
             ViewOp.ui.COLLECTION_LIST_WIDGET.fold_spread_with_animation)
         ViewOp.ui.SPREAD_BTN_FOR_LOCAL.clicked.connect(
             ViewOp.ui.LOCAL_LIST_WIDGET.fold_spread_with_animation)
+        ViewOp.ui.NEW_PLAYLIST_BTN.clicked.connect(ViewOp.new_playlist)
 
         ControllerApi.player.signal_player_media_changed.connect(ViewOp.on_player_media_changed)
         ControllerApi.player.stateChanged.connect(ViewOp.on_player_state_changed)
@@ -120,7 +125,7 @@ class Controller(QWidget):
         ViewOp.ui.PROGRESS.setRange(0, 100)
 
         self._search_shortcut.activated.connect(ViewOp.ui.SEARCH_BOX.setFocus)
-        self._switch_mode_shortcut.activated.connect(self.switch_desktop_mini)
+        # self._switch_mode_shortcut.activated.connect(self.switch_desktop_mini)
 
     def _show_current_playlist(self):
         if ControllerApi.current_playlist_widget.isVisible():
@@ -242,4 +247,3 @@ class Controller(QWidget):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
-

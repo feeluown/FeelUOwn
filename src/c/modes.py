@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 
-from interfaces import ControllerApi
+from controller_api import ControllerApi
 
 from widgets.playlist_widget import PlaylistItem
 

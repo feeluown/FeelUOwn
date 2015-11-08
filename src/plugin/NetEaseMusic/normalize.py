@@ -244,9 +244,20 @@ class NetEaseAPI(object):
                 return True
         return False
 
+    def is_favorite_playlist(self, playlist_model):
+        if playlist_model['id'] == self.favorite_pid:
+            return True
+        return False
+
     def set_music_to_favorite(self, mid, flag):
         data = self.ne.set_music_favorite(mid, flag)
         return data
+
+    def add_song_to_playlist(self, mid, pid):
+        data = self.ne.add_music_to_playlist(mid, pid, 'add')
+        if not self.is_response_avaible(data):
+            return False
+        return True
 
     def get_mv_detail(self, mvid):
         data = self.ne.get_mv_detail(mvid)
@@ -316,6 +327,29 @@ class NetEaseAPI(object):
         for i, song in enumerate(songs):
             songs[i] = self.access_music(song)
         return songs
+
+    def update_playlist_name(self, pid, name):
+        data = self.ne.update_playlist_name(pid, name)
+        if not self.is_response_avaible(data):
+            return False
+        return True
+
+    def new_playlist(self, name):
+        data = self.ne.new_playlist(self.uid, name)
+        if not self.is_response_avaible(data):
+            return None
+        playlist = data['playlist']
+        playlist['uid'] = playlist['userId']
+        playlist['tracks'] = []
+        playlist['type'] = playlist['adType']
+        playlist_model = PlaylistModel(playlist)
+        return playlist_model
+    
+    def delete_playlist(self, pid):
+        data = self.ne.delete_playlist(pid)
+        if not self.is_response_avaible(data):
+            return False
+        return True
 
     @func_coroutine
     def save_user_info(self, data_dict):

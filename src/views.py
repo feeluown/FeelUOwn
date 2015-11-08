@@ -59,6 +59,7 @@ class UiMainWidget(object):
         self.SHOW_LYRIC_BTN = self.top_widget.music_info_container.show_lyric_btn
         self.AVATAR_LABEL = self.top_widget.login_label
 
+        self.NEW_PLAYLIST_BTN = self.left_widget.central_widget.new_playlist_btn
         self.SPREAD_BTN_FOR_MY_LIST = self.left_widget.central_widget.create_fold_spread_btn
         self.SPREAD_BTN_FOR_COLLECTION = self.left_widget.central_widget.collection_fold_spread_btn
         self.SPREAD_BTN_FOR_LOCAL = self.left_widget.central_widget.local_fold_spread_btn

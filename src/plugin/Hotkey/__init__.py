@@ -4,7 +4,7 @@ import sys
 import asyncio
 from _thread import start_new_thread
 
-from interfaces import ControllerApi
+from controller_api import ControllerApi
 
 
 def init():

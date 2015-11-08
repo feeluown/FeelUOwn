@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 
-from interfaces import ControllerApi, ViewOp
+from controller_api import ControllerApi, ViewOp
 from base.logger import LOG
 
 

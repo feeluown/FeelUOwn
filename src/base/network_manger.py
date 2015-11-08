@@ -4,7 +4,7 @@ from queue import Queue
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 
-from interfaces import ControllerApi
+from controller_api import ControllerApi
 from base.utils import singleton
 from base.logger import LOG
 

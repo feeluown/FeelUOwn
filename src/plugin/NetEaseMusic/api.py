@@ -18,12 +18,13 @@ from constants import DATA_PATH
 from base.utils import singleton, func_coroutine, write_json_into_file
 from base.logger import LOG
 
-# list去重
+
 def uniq(arr):
     arr2 = list(set(arr))
     arr2.sort(key=arr.index)
     return arr2
 
+uri = 'http://music.163.com/api'
 
 """
 TODO: add local cache
@@ -40,7 +41,7 @@ class NetEase(QObject):
         self.headers = {
             'Host': 'music.163.com',
             'Connection': 'keep-alive',
-            'Content-Type': "application/x-www-form-urlencoded; charset=UTF-8",
+            #'Content-Type': "application/json; charset=UTF-8",
             'Referer': 'http://music.163.com/',
             "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36"
                           " (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
@@ -87,9 +88,9 @@ class NetEase(QObject):
             if method == "GET":
                 res = requests.get(action, headers=self.headers, cookies=self.cookies, timeout=timeout)
             elif method == "POST":
-                res = requests.post(action, query, headers=self.headers, cookies=self.cookies, timeout=timeout)
+                res = requests.post(action, data=query, headers=self.headers, cookies=self.cookies, timeout=timeout)
             elif method == "POST_UPDATE":
-                res = requests.post(action, query, headers=self.headers, cookies=self.cookies, timeout=timeout)
+                res = requests.post(action, data=query, headers=self.headers, cookies=self.cookies, timeout=timeout)
                 self.cookies.update(res.cookies.get_dict())
                 self.save_cookies()
             content = self.show_progress(res)
@@ -157,13 +158,37 @@ class NetEase(QObject):
         }
         return self.http_request('POST', action, data)
 
-    # 歌单详情
     def playlist_detail(self, playlist_id):
         action = 'http://music.163.com/api/playlist/detail?id=' + str(playlist_id) + '&offset=0&total=true&limit=1001'
         res_data = self.http_request('GET', action)
         return res_data
 
-    # 歌手相关
+    def update_playlist_name(self, pid, name):
+        url = 'http://music.163.com/api/playlist/update/name'
+        data = {
+            'id': pid,
+            'name': name
+        }
+        res_data = self.http_request('POST', url, data)
+        return res_data
+
+    def new_playlist(self, uid, name='default'):
+        url = 'http://music.163.com/api/playlist/create'
+        data = {
+            'uid': uid,
+            'name': name
+        }
+        res_data = self.http_request('POST', url, data)
+        return res_data
+
+    def delete_playlist(self, pid):
+        url = 'http://music.163.com/api/playlist/delete'
+        data = {
+            'id': pid,
+            'pid': pid
+        }
+        return self.http_request('POST', url, data)
+
     def artist_infos(self, artist_id):
         """
         :param artist_id: artist_id
@@ -212,18 +237,18 @@ class NetEase(QObject):
 
         return channels
 
-    def addMusicToPlaylist(self, mid, pid, op):
+    def add_music_to_playlist(self, mid, pid, op):
         """
         :param op: add or del
         把mid这首音乐加入pid这个歌单列表当中去
         1. 如果歌曲已经在列表当中，返回code为502
         """
         url_add = 'http://music.163.com/api/playlist/manipulate/tracks'
-        trackIds = '["' + str(mid) + '"]' 
+        trackIds = '["' + str(mid) + '"]'
         data_add = {
-            'tracks': str(mid), # music id
+            'tracks': str(mid),  # music id
             'pid': str(pid),    # playlist id
-            'trackIds': trackIds, # music id str
+            'trackIds': trackIds,  # music id str
             'op': op   # opation
         }
         return self.http_request('POST', url_add, data_add)

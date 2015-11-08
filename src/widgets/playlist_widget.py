@@ -1,11 +1,13 @@
-# -*- coding=utf8 -*-
+# -*- coding:utf8 -*-
 
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 
+from base.utils import func_coroutine
 from constants import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
+from controller_api import ControllerApi
 
 
 class SpreadWidget(QWidget):
@@ -187,7 +189,24 @@ class PlaylistItem(_BaseItem):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self._edit_widget = QLineEdit(self)
+        self._layout.addWidget(self._edit_widget)
+        self._edit_widget.close()
+        self._edit_widget.setObjectName('playlist_name_edit')
+
         self.data = {}
+        self._menu = QMenu(self)
+        self.edit_action = QAction("编辑歌单名字", self)
+        self.delete_action = QAction(u'删除歌单', self)
+        self.update_action = QAction(u'更新歌单', self)
+        self._menu.addAction(self.edit_action)
+        self._menu.addAction(self.update_action)
+        self._menu.addAction(self.delete_action)
+
+        self.edit_action.triggered.connect(self.edit_mode)
+        self.delete_action.triggered.connect(self.delete_playlist)
+        self.update_action.triggered.connect(self.update_playlist)
+        self._edit_widget.returnPressed.connect(self.update_playlist_name)
 
     @pyqtSlot()
     def on_text_btn_clicked(self):
@@ -196,7 +215,7 @@ class PlaylistItem(_BaseItem):
 
     def set_playlist_item(self, playlist_model):
         self.data = playlist_model
-        if playlist_model['type'] == 5:
+        if ControllerApi.api.is_favorite_playlist(playlist_model):
             self._icon_label.setObjectName('playlist_img_favorite')
         else:
             self._icon_label.setObjectName('playlist_img_mine')
@@ -204,8 +223,62 @@ class PlaylistItem(_BaseItem):
         metrics = QFontMetrics(self._text_btn.font())
         text = metrics.elidedText(playlist_model['name'], Qt.ElideRight,
                                   self._text_btn.width()-40)
-        self._text_btn.setToolTip(playlist_model['name'])
         self._text_btn.setText(text)
+
+    def update_playlist_name(self):
+        text = self._edit_widget.text()
+        if text == '':
+            self._edit_widget.setPlaceholderText(u'歌单名字不能为空')
+            return
+        self._edit_widget.close()
+        self._text_btn.show()
+        self._text_btn.setText(text)
+        ControllerApi.api.update_playlist_name(self.data['id'], text)
+    
+    @func_coroutine
+    def update_playlist(self, clicked=True):
+        pid = self.data['id']
+        ControllerApi.api.get_playlist_detail(pid, cache=False)
+        ControllerApi.view.ui.STATUS_BAR.showMessage(u'正在后台更新歌单歌曲列表', 5000)
+
+    def delete_playlist(self):
+        m = QMessageBox(QMessageBox.Warning,'警告', '确认删除歌单么 ?', QMessageBox.Yes | QMessageBox.No)
+        if m.exec() != QMessageBox.Yes:
+            return False
+
+        pid = self.data['id']
+        flag = ControllerApi.api.delete_playlist(pid)
+        if flag:
+            ControllerApi.notify_widget.show_message('◕◡◔', '删除歌单成功')
+            self.close()
+            self.deleteLater()
+            return True
+        else:
+            ControllerApi.notify_widget.show_message('◕◠◔', '删除歌单失败')
+            return False
+
+    def edit_mode(self):
+        playlist_name = self._text_btn.text()
+        self._text_btn.close()
+        self._edit_widget.show()
+        self._edit_widget.setText(playlist_name)
+        self._edit_widget.setFocus()
+
+    def _display_mode(self):
+        self._text_btn.show()
+        self._edit_widget.close()
+
+    def contextMenuEvent(self, event):
+        if ControllerApi.api.is_playlist_mine(self.data):
+            self._menu.exec(event.globalPos())
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Escape:
+            text = self._edit_widget.text()
+            if text == '':
+                self._edit_widget.setPlaceholderText(u'歌单名字不能为空')
+                return event
+            self._display_mode()
 
 
 class RecommendItem(_BaseItem):
