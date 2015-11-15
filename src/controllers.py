@@ -80,7 +80,6 @@ class Controller(QWidget):
 
         ViewOp.ui.PLAY_OR_PAUSE.clicked.connect(ViewOp.on_play_or_pause_clicked)
 
-        ViewOp.ui.WEBVIEW.loadProgress.connect(self.on_webview_progress)
         ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
         ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
         ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
@@ -124,6 +123,8 @@ class Controller(QWidget):
         ControllerApi.current_playlist_widget.close()
         ViewOp.ui.PROGRESS.setRange(0, 100)
 
+        ControllerApi.player.signal_download_progress.connect(ViewOp.ui.PROGRESS.setValue)
+
         self._search_shortcut.activated.connect(ViewOp.ui.SEARCH_BOX.setFocus)
         # self._switch_mode_shortcut.activated.connect(self.switch_desktop_mini)
 
@@ -156,10 +157,6 @@ class Controller(QWidget):
     def on_login_success(self, data):
         ControllerApi.set_login()
         ViewOp.load_user_infos(data)
-
-    @pyqtSlot(int)
-    def on_webview_progress(self, percent):
-        ViewOp.ui.PROGRESS.setValue(percent)
 
     @func_coroutine
     @pyqtSlot(int)

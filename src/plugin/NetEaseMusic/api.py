@@ -15,7 +15,8 @@ import requests
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from constants import DATA_PATH
-from base.utils import singleton, func_coroutine, write_json_into_file
+from base.utils import singleton, func_coroutine, write_json_into_file, \
+    show_requests_progress
 from base.logger import LOG
 
 
@@ -29,6 +30,7 @@ uri = 'http://music.163.com/api'
 """
 TODO: add local cache
 """
+
 
 @singleton
 class NetEase(QObject):
@@ -47,23 +49,6 @@ class NetEase(QObject):
                           " (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
         }
         self.cookies = dict(appver="1.2.1", os="osx")
-
-    def show_progress(self, response):
-        content = bytes()
-        total_size = response.headers.get('content-length')
-        if total_size is None:
-            content = response.content
-            return content
-        else:
-            total_size = int(total_size)
-            bytes_so_far = 0
-
-            for chunk in response.iter_content():
-                content += chunk
-                bytes_so_far += len(chunk)
-                progress = round(bytes_so_far * 1.0 / total_size * 100)
-                self.signal_load_progress.emit(progress)
-            return content
 
     def load_cookies(self):
         try:
@@ -93,7 +78,7 @@ class NetEase(QObject):
                 res = requests.post(action, data=query, headers=self.headers, cookies=self.cookies, timeout=timeout)
                 self.cookies.update(res.cookies.get_dict())
                 self.save_cookies()
-            content = self.show_progress(res)
+            content = show_requests_progress(res, self.signal_load_progress)
             content_str = content.decode('utf-8')
             content_dict = json.loads(content_str)
             return content_dict

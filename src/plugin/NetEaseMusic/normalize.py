@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 
 import hashlib
+import requests
 import re
 from functools import wraps
 

@@ -12,14 +12,27 @@ os.chdir(path)
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 
-from constants import QSS_PATH, LOGFILE, \
-    MODE, DEBUG, WINDOW_ICON
+from constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
+    MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
 
 from controllers import Controller
 from quamash import QEventLoop
 
 
+def ensure_data_dir():
+    if not os.path.exists(FEELUOWN_PATH):
+        os.mkdir(FEELUOWN_PATH)
+    if not os.path.exists(CACHE_PATH):
+        os.mkdir(CACHE_PATH)
+    if not os.path.exists(DATA_PATH):
+        os.mkdir(DATA_PATH)
+    if not os.path.exists(SONGS_PATH):
+        os.mkdir(SONGS_PATH)
+
+
 if __name__ == "__main__":
+    ensure_data_dir()
+
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)
     app.setWindowIcon(QIcon(WINDOW_ICON))

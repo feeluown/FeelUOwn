@@ -1,18 +1,46 @@
 # -*- coding:utf8 -*-
 
+import os
 import random
 import asyncio
+from functools import wraps
+
+import requests
 
 from PyQt5.QtMultimedia import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from base.utils import singleton
+from constants import SONGS_PATH
+from base.utils import singleton, show_requests_progress
 from base.logger import LOG
+
+
+
+
+def cache_song(func):
+    @wraps(func)
+    def wrapper(player, song_model=None):
+        if song_model is None:
+            return func(player)
+        mid = song_model['id']
+        music_filename = str(mid) + '.mp3'
+        music_filepath = os.path.join(SONGS_PATH, music_filename)
+        if os.path.exists(music_filepath):
+            LOG.info("play cached song %s" % song_model['name'])
+        else:   # async cache song
+            app_event_loop = asyncio.get_event_loop()
+            LOG.info("will download song %s " % song_model['name'])
+            player.save_song(song_model, music_filepath)
+        song_model['url'] = music_filepath
+        return func(player, song_model)
+    return wrapper
 
 
 @singleton
 class Player(QMediaPlayer):
+    signal_download_progress = pyqtSignal([int])
+
     signal_player_media_changed = pyqtSignal([dict])
     signal_playlist_is_empty = pyqtSignal()
     signal_playback_mode_changed = pyqtSignal([int])
@@ -84,7 +112,10 @@ class Player(QMediaPlayer):
     @classmethod
     def get_media_content_from_model(cls, music_model):
         url = music_model['url']
-        media_content = QMediaContent(QUrl(url))
+        if url.startswith('http'):
+            media_content = QMediaContent(QUrl(url))
+        else:
+            media_content = QMediaContent(QUrl.fromLocalFile(url))
         return media_content
 
     def set_music_list(self, music_list):
@@ -220,6 +251,18 @@ class Player(QMediaPlayer):
                 return self._current_index - 1
         else:
             return random.choice(range(len(self._music_list)))
+
+    def save_song(self, song_model, filepath):
+        res = requests.get(song_model['url'], stream=True)
+        if res.status_code == 200:
+            print('status code 200')
+            content = show_requests_progress(res, self.signal_download_progress)
+            with open(filepath, 'wb') as f:
+                f.write(content)
+                LOG.info("save song %s successful" % song_model['name'])
+                return True
+        LOG.info("save song %s failed" % song_model['name'])
+        return False
 
     @classmethod
     def set_play_mode(cls, mode=4):

@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
-import platform
 import asyncio
 import json
+from functools import wraps
 
 from base.logger import LOG
 
@@ -40,3 +40,25 @@ def write_json_into_file(data_json, filepath):
         LOG.error(str(e))
         LOG.error("Write json into file failed")
         return False
+
+
+def show_requests_progress(response, signal=None):
+    content = bytes()
+    total_size = response.headers.get('content-length')
+    if total_size is None:
+        content = response.content
+        return content
+    else:
+        total_size = int(total_size)
+        bytes_so_far = 0
+
+        for chunk in response.iter_content(102400):
+            content += chunk
+            bytes_so_far += len(chunk)
+            progress = round(bytes_so_far * 1.0 / total_size * 100)
+            if signal is not None:
+                signal.emit(progress)
+            print(progress)
+        return content
+
+

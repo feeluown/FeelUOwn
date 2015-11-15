@@ -1,5 +1,8 @@
 # -*- coding:utf8 -*-
 
+import os
+
+
 """
 common settings
 
@@ -11,8 +14,11 @@ FUTURE:  read setting from a json file
 path configuration
 """
 ICON_PATH = '../icons/'
-CACHE_PATH = '../cache/'
-DATA_PATH = '../data/'
+
+FEELUOWN_PATH = os.path.expanduser('~') + '/.FeelUOwn'
+CACHE_PATH = FEELUOWN_PATH + '/cache/'
+DATA_PATH = FEELUOWN_PATH + '/data/'
+SONGS_PATH = FEELUOWN_PATH + '/songs'
 
 
 """
