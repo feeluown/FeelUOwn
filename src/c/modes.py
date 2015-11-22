@@ -23,10 +23,10 @@ class ModeBase(object):
             song = cls._songs.pop()
             mid = song['id']
             music_model = ControllerApi.api.get_song_detail(mid)
-            if not ControllerApi.api.is_response_ok(music_models):
+            if not ControllerApi.api.is_response_ok(music_model):
                 cls.exit_()
                 return
-            ControllerApi.player.set_music_list(music_model)
+            ControllerApi.player.set_music_list([music_model])
         else:
             cls._songs = cls.get_songs()
             if not ControllerApi.api.is_response_ok(cls._songs):

@@ -196,7 +196,6 @@ class NetEaseAPI(object):
                 break
         return True
 
-
     def search(self, s, stype=1, offset=0, total='true', limit=60):
         data = self.ne.search(s, stype=1, offset=0, total='true', limit=60)
         if not self.is_response_avaible(data):

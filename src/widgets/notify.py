@@ -49,7 +49,9 @@ class NotifyWidget(QWidget):
     def show_message(self, title, content, pixmap=None):
         if not self.isVisible():
             self.show()
+        self._animation.stop()
         self._animation.setCurrentTime(0)
+        self._animation.start()
         self.sub_widget.set_title(title)
         self.sub_widget.set_content(content)
         pixmap = pixmap if pixmap else QPixmap(WINDOW_ICON)

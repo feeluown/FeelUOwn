@@ -10,7 +10,6 @@ from PyQt5.QtWidgets import *
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy.ext.declarative import declarative_base
 
 from controller_api import ControllerApi
 from view_api import ViewOp
@@ -27,6 +26,7 @@ from base.utils import func_coroutine
 from base.logger import LOG
 from c.utils import show_start_tip
 from c.modes import ModesManger
+from c.version_manager import VersionManager
 from constants import WINDOW_ICON, DATABASE_SQLITE
 
 from plugin import NetEaseMusic, Hotkey
@@ -43,15 +43,11 @@ class Controller(QWidget):
         ui.setup_ui(self)
 
         engine = create_engine('sqlite:////%s' % DATABASE_SQLITE, echo=False)
-        Base.metadata.create_all(engine) 
+        Base.metadata.create_all(engine)
         Session = sessionmaker()
-        Session.configure(bind=engine) 
+        Session.configure(bind=engine)
         session = Session()
-
         LOG.info('db connected: %s' % DATABASE_SQLITE)
-
-
-
 
         ControllerApi.player = Player()
         ControllerApi.session = session
@@ -73,9 +69,12 @@ class Controller(QWidget):
 
         self.mode_manager = ModesManger()
         self._init_signal_binding()
+
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(1, self._init_plugins)
-        show_start_tip()
+        app_event_loop.call_later(2, show_start_tip)
+        app_event_loop.call_later(5, VersionManager.check_feeluown_release)
+        app_event_loop.call_later(20, VersionManager.check_feeluown_release)
 
     def _init_plugins(self):
         NetEaseMusic.init(self)  # 特别意义的插件
