@@ -1,18 +1,17 @@
 # -*- coding: utf8 -*-
 
 import hashlib
-import requests
+import pickle
 import re
-from functools import wraps
-
-from constants import DATA_PATH
 
 from base.logger import LOG
-from base.utils import singleton, write_json_into_file, func_coroutine
+from base.utils import singleton
 from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
     AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
-from plugin.NetEaseMusic.api import NetEase
+
+from .api import NetEase
+from .model import PlaylistDb, SongDb, UserDb
 
 
 """
@@ -23,39 +22,6 @@ from plugin.NetEaseMusic.api import NetEase
 """
 
 
-def web_cache_playlist(func):
-    cache_data = {}
-
-    @wraps(func)
-    def cache(*args, **kw):
-        def not_use_cache(*args, **kw):
-            LOG.info("trying to update a playlist cache")
-            data = func(*args, **kw)
-            if data['code'] == 200:
-                cache_data[args[1]] = data
-                return cache_data[args[1]]
-            else:
-                LOG.info("update playlist cache failed")
-                return None
-
-        def use_cache(*args, **kw):
-            if args[1] in cache_data:
-                LOG.info('playlist: ' + cache_data[args[1]]['name'] + ' has been cached')
-                return cache_data[args[1]]
-            else:
-                data = func(*args, **kw)
-                if data['code'] == 200:
-                    cache_data[args[1]] = data
-                else:
-                    LOG.info("cache playlist failed")
-                    return None
-        if "cache" in kw and not kw["cache"]:
-            return not_use_cache(*args, **kw)
-        else:
-            return use_cache(*args, **kw)
-    return cache
-
-
 @singleton
 class NetEaseAPI(object):
     """
@@ -64,42 +30,50 @@ class NetEaseAPI(object):
     歌曲、列表、专辑图片等信息，以减少网络访问
     """
 
-    user_info_filename = "netease_userinfo.json"
-
     def __init__(self):
         super().__init__()
-        self.ne = NetEase()
+
+        self.headers = {
+            'Host': 'music.163.com',
+            'Connection': 'keep-alive',
+            # 'Content-Type': "application/json; charset=UTF-8",
+            'Referer': 'http://music.163.com/',
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2)"
+                          " AppleWebKit/537.36 (KHTML, like Gecko)"
+                          " Chrome/33.0.1750.152 Safari/537.36"
+        }
+        self.cookies = dict(appver="1.2.1", os="osx")
         self.uid = 0
         self.favorite_pid = 0   # 喜欢列表
+
+        self.ne = NetEase(self.headers, self.cookies)
+
+    def set_uid(self, uid):
+        """uid will be set until login successful"""
+        self.uid = uid
 
     def get_uid(self):
         return self.uid
 
-    @staticmethod
-    def is_response_avaible(data):
-        """判断api返回的数据是否可用
-        
-        TODO: 应该写成一个decorator
-        """
-        if data is None:
-            return False
-        if data['code'] == 200:
-            return True
-        return False
+    def save_user_pw(self, username, password):
+        user = UserDb.get_user(self.uid)
+        if user is not None:
+            user.update(username=username, password=password)
+        LOG.info('Save user\'s username and password ')
 
-    @staticmethod
-    def is_response_ok(data):
-        """check response status code"""
-        if data is None:
-            return False
-        if not isinstance(data, dict):
-            return True
-        if data['code'] == 200:
-            return True
-        return False
+    def save_cookies(self):
+        user = UserDb.get_user(self.uid)
+        user.update(_cookies=pickle.dumps(self.ne.cookies))
+        LOG.info('Save user cookies')
 
-    def check_login_successful(self):
+    def save_login_time(self):
+        user = UserDb.get_user(self.uid)
+        user.record_login_time()
+        LOG.info('Save user login time')
+
+    def login_by_cookies(self):
         if self.ne.check_cookies():
+            self._on_login_success()
             return True
         else:
             return False
@@ -111,10 +85,10 @@ class NetEaseAPI(object):
         if not self.is_response_avaible(data):
             return data
 
-        self.uid = data['account']['id']
+        self.set_uid(data['account']['id'])
         data = self.access_data_user(data)
-        data['code'] = 200
-        self.save_user_info(data)
+        UserDb.create_or_update(self.uid, pickle.dumps(data))
+        self._on_login_success()
         return data
 
     def auto_login(self, username, pw_encrypt, phone=False):
@@ -124,11 +98,17 @@ class NetEaseAPI(object):
         if not self.is_response_avaible(data):
             return data
 
-        self.uid = data['account']['id']
+        self.set_uid(data['account']['id'])
         data = self.access_data_user(data)
-        data['code'] = 200
-        self.save_user_info(data)
+        user = UserDb.get_user(self.uid)
+        user.update(_basic_info=pickle.dumps(data))
+        self._on_login_success()
         return data
+
+    def _on_login_success(self):
+        self.save_cookies()
+        self.save_login_time()
+
 
     def get_captcha_url(self, captcha_id):
         return self.ne.get_captcha_url(captcha_id)
@@ -144,54 +124,78 @@ class NetEaseAPI(object):
             return data['result'], None
 
     def get_song_detail(self, mid):
+        if SongDb.exists(mid):
+            LOG.info("Read song %d from sqlite" % mid)
+            return SongDb.get_data(mid)
+
         data = self.ne.song_detail(mid)
         if not self.is_response_avaible(data):
             return data
-        LOG.info("music id %d is available" % mid)
         songs = []
         for each in data['songs']:
             song = self.access_music(each)
             songs.append(song)
-        return songs
+        model = songs[0]
 
-    @web_cache_playlist
+        song = SongDb(mid=mid, _data=pickle.dumps(model))
+        song.save()
+        LOG.info('Save music %d info into sqlite' % mid)
+
+        return model
+
     def get_playlist_detail(self, pid, cache=True):
-        """貌似这个请求会比较慢
+        if (cache is True) and PlaylistDb.exists(pid):
+            LOG.info("Read playlist %d info from sqlite" % (pid))
+            return PlaylistDb.get_data(pid)
 
-        :param pid:
-        :return:
-        """
         data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
         if not self.is_response_avaible(data):
             return data
 
         data = data['result']
-
         data['uid'] = data['userId']
         data['type'] = data['specialType']
-
         for i, track in enumerate(data['tracks']):
             data['tracks'][i] = self.access_music(track)
         model = PlaylistModel(data).get_dict()
-        LOG.debug('Update playlist cache finish: ' + model['name'])
+        
+        if PlaylistDb.exists(pid):
+            PlaylistDb.update_data(pid, model)
+        else:
+            playlist = PlaylistDb(pid=pid, _data=pickle.dumps(model))
+            playlist.save()
+
+        LOG.info('Save playlist %d info to sqlite' % pid)
         return model
 
     def get_user_playlist(self):
+        user = UserDb.get_user(self.uid)
+        if user.playlists is not None:
+            self._set_favorite_pid(user.playlists)
+            return user.playlists
+
         data = self.ne.user_playlist(self.uid)
         if not self.is_response_avaible(data):
             return data
 
         playlist = data['playlist']
-        result_playlist = []
+        result_playlists = []
         for i, brief_playlist in enumerate(playlist):
             brief_playlist['uid'] = brief_playlist['userId']
             brief_playlist['type'] = brief_playlist['specialType']
+            result_playlists.append(
+                BriefPlaylistModel(brief_playlist).get_dict())
+        self._set_favorite_pid(result_playlists)
+        user.update(_playlists=pickle.dumps(result_playlists))
+        return result_playlists
 
-            if brief_playlist['type'] == 5:
-                self.favorite_pid = brief_playlist['id']
+    def _set_favorite_pid(self, playlists):
+        for playlist in playlists:
+            if playlist['type'] == 5:
+                self.favorite_pid = playlist['id']
+                break
+        return True
 
-            result_playlist.append(BriefPlaylistModel(brief_playlist).get_dict())
-        return result_playlist
 
     def search(self, s, stype=1, offset=0, total='true', limit=60):
         data = self.ne.search(s, stype=1, offset=0, total='true', limit=60)
@@ -352,11 +356,6 @@ class NetEaseAPI(object):
             return False
         return True
 
-    @func_coroutine
-    def save_user_info(self, data_dict):
-        if write_json_into_file(data_dict, DATA_PATH + self.user_info_filename):
-            LOG.info("Save User info successfully")
-
     @staticmethod
     def access_music(music_data):
         """处理从服务获取的原始数据，对它的一些字段进行过滤和改名，返回符合标准的music数据
@@ -392,7 +391,32 @@ class NetEaseAPI(object):
         user_data['uid'] = user_data['account']['id']
         user_data['username'] = user_data['profile']['nickname']
         user = UserModel(user_data).get_dict()
+        user['code'] = 200
         return user
+
+    @staticmethod
+    def is_response_avaible(data):
+        """判断api返回的数据是否可用
+        
+        TODO: 应该写成一个decorator
+        """
+        if data is None:
+            return False
+        if data['code'] == 200:
+            return True
+        return False
+
+    @staticmethod
+    def is_response_ok(data):
+        """check response status code"""
+        if data is None:
+            return False
+        if not isinstance(data, dict):
+            return True
+        if data['code'] == 200:
+            return True
+        return False
+
 
 
 if __name__ == "__main__":

@@ -1,40 +1,27 @@
 # -*- coding: utf-8 -*-
 
-import os
-import json
-
 from base.logger import LOG
-from base.utils import func_coroutine
-from constants import DATA_PATH
 from controller_api import ControllerApi
 from view_api import ViewOp
 
 from .normalize import NetEaseAPI
+from .model import UserDb
 
 netease_normalize = NetEaseAPI()
 
 
 def init(controller):
-    """init plugin """
 
     LOG.info("NetEase Plugin init")
 
     ControllerApi.api = netease_normalize
 
-    if os.path.exists(DATA_PATH + netease_normalize.user_info_filename):
-        with open(DATA_PATH + netease_normalize.user_info_filename) as f:
-            data = f.read()
-            data_dict = json.loads(data)
-            if "uid" in data_dict:
-                netease_normalize.uid = data_dict['uid']
-                ViewOp.load_user_infos(data_dict)
-
-    if os.path.exists(DATA_PATH + netease_normalize.ne.cookies_filename):
-        @func_coroutine
-        def check_cookies():
-            netease_normalize.ne.load_cookies()
-            if netease_normalize.check_login_successful():
+    user = UserDb.get_last_login_user()
+    if user is not None:
+        netease_normalize.set_uid(user.uid)
+        user_data = user.basic_info
+        if user.cookies is not None:
+            netease_normalize.ne.load_cookies(user.cookies)
+            if netease_normalize.login_by_cookies():
                 ControllerApi.set_login()
-        check_cookies()
-    else:
-        LOG.info("找不到您的cookies文件，请您手动登录")
+                ViewOp.load_user_infos(user_data)

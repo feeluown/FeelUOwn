@@ -12,62 +12,29 @@ modified by
 
 import json
 import requests
+import pickle
 
 from PyQt5.QtCore import pyqtSignal, QObject
-from constants import DATA_PATH
-from base.utils import singleton, func_coroutine, write_json_into_file, \
-    show_requests_progress
+from base.utils import singleton, func_coroutine, show_requests_progress
 from base.logger import LOG
 
-
-def uniq(arr):
-    arr2 = list(set(arr))
-    arr2.sort(key=arr.index)
-    return arr2
+from .model import UserDb
 
 uri = 'http://music.163.com/api'
-
-"""
-TODO: add local cache
-"""
 
 
 @singleton
 class NetEase(QObject):
 
     signal_load_progress = pyqtSignal([int])
-    cookies_filename = "netease_cookies.json"
 
-    def __init__(self):
+    def __init__(self, headers=None, cookies=None):
         super().__init__()
-        self.headers = {
-            'Host': 'music.163.com',
-            'Connection': 'keep-alive',
-            #'Content-Type': "application/json; charset=UTF-8",
-            'Referer': 'http://music.163.com/',
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_2) AppleWebKit/537.36"
-                          " (KHTML, like Gecko) Chrome/33.0.1750.152 Safari/537.36"
-        }
-        self.cookies = dict(appver="1.2.1", os="osx")
-
-    def load_cookies(self):
-        try:
-            with open(DATA_PATH + self.cookies_filename) as f:
-                data_str = f.read()
-                self.cookies = json.loads(data_str)
-        except Exception as e:
-            LOG.error(str(e))
-
-    @func_coroutine
-    def save_cookies(self):
-        try:
-            write_json_into_file(self.cookies, DATA_PATH + self.cookies_filename)
-            LOG.info("Save cookies successfully")
-        except Exception as e:
-            LOG.error(str(e))
-            LOG.error("Save cookies failed")
+        self.headers = headers
+        self.cookies = cookies
 
     def http_request(self, method, action, query=None, urlencoded=None, callback=None, timeout=3):
+        LOG.info('method=%s url=%s query=%s' % (method, action, query))
         try:
             res = None
             if method == "GET":
@@ -77,7 +44,6 @@ class NetEase(QObject):
             elif method == "POST_UPDATE":
                 res = requests.post(action, data=query, headers=self.headers, cookies=self.cookies, timeout=timeout)
                 self.cookies.update(res.cookies.get_dict())
-                self.save_cookies()
             content = show_requests_progress(res, self.signal_load_progress)
             content_str = content.decode('utf-8')
             content_dict = json.loads(content_str)
@@ -85,6 +51,9 @@ class NetEase(QObject):
         except Exception as e:
             LOG.error(str(e))
             return {"code": 408}
+
+    def load_cookies(self, cookies):
+        self.cookies = cookies
 
     def login(self, username, pw_encrypt, phone=False):
         action = 'http://music.163.com/api/login/'

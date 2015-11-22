@@ -1,8 +1,6 @@
 # -*- coding:utf8 -*-
 __author__ = 'cosven'
 
-import os
-import json
 import hashlib
 
 from PyQt5.QtGui import *
@@ -12,10 +10,9 @@ from PyQt5.QtNetwork import *
 from base.network_manger import NetworkManager
 
 from base.logger import LOG
-from base.utils import write_json_into_file
 
-from constants import DATA_PATH
 from controller_api import ControllerApi
+from plugin.NetEaseMusic.model import UserDb
 
 
 class LoginDialog(QDialog):
@@ -61,50 +58,26 @@ class LoginDialog(QDialog):
 
     def __set_signal_binding(self):
         self.login_btn.clicked.connect(self.__login)
-        self.password_widget.textChanged.connect(self.on_password_lineedit_changed)
+        self.password_widget.textChanged.connect(
+            self.on_password_lineedit_changed)
 
     def fill_content(self):
         """
         判断之前是否保存了用户名和密码:
             保存了就是直接加载
         """
-        if self.has_saved_userinfo():
-            try:
-                f = open(DATA_PATH + self.pw_filename, 'r')
-                login_data = json.load(f)
-                f.close()
-                if 'is_remember' in login_data.keys() and login_data['is_remember']:
-                    self.username_widget.setText(str(login_data['username']))
-                    self.password_widget.setText(str(login_data['password']))
-                    self.is_remember_chb.setCheckState(2)
-                    self.is_autofill = True
-            except Exception as e:
-                LOG.error(str(e))
-
-    def has_saved_userinfo(self):
-        """判断之前是否有保存过的用户名与密码
-        :return:
-        """
-        if os.path.exists(DATA_PATH + self.pw_filename):
-            return True
-        return False
+        user = UserDb.get_last_login_user()
+        if user is not None:
+            self.username_widget.setText(str(user.username))
+            self.password_widget.setText(str(user.password))
+            self.is_remember_chb.setCheckState(2)
+            self.is_autofill = True
 
     def save_login_info(self, login_data):
         if login_data['is_remember']:
-            try:
-                f = open(DATA_PATH + self.pw_filename, 'w')
-                if self.is_autofill is not True:    # 如果不是自动填充，说明密码时已经没有加密过
-                    password = login_data['password'].encode('utf-8')
-                    login_data['password'] = hashlib.md5(password).hexdigest()
-                data_json = json.dumps(login_data)
-                write_json_into_file(data_json, f)
-            except Exception as e:
-                LOG.error(str(e))
-        else:
-            try:
-                os.remove(DATA_PATH + self.pw_filename)
-            except Exception as e:
-                LOG.warning(str(e))
+            if self.is_autofill is not True:    # 如果不是自动填充，说明密码时已经没有加密过
+                password = login_data['password'].encode('utf-8')
+                self.ne.save_user_pw(login_data['username'], hashlib.md5(password).hexdigest())
 
     def __login(self):
         """登录

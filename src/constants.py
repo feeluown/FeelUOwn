@@ -9,7 +9,6 @@ common settings
 FUTURE:  read setting from a json file
 """
 
-
 """
 path configuration
 """
@@ -19,7 +18,6 @@ FEELUOWN_PATH = os.path.expanduser('~') + '/.FeelUOwn'
 CACHE_PATH = FEELUOWN_PATH + '/cache/'
 DATA_PATH = FEELUOWN_PATH + '/data/'
 SONGS_PATH = FEELUOWN_PATH + '/songs'
-
 
 """
 mode configuration
@@ -49,3 +47,8 @@ PLAYLIST_FAVORITE = ICON_PATH + 'playlist_favorite.png'
 PLAYLIST_MINE = ICON_PATH + 'Format-Bullets-01-16.png'
 PLAYLIST_NORMAL = ICON_PATH + 'playlist_mine.png'
 WINDOW_ICON = ICON_PATH + 'FeelUOwn.png'
+
+"""
+sqlite database name
+"""
+DATABASE_SQLITE = CACHE_PATH + 'data.db'

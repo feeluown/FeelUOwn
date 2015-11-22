@@ -89,12 +89,11 @@ class ViewOp(object):
     @pyqtSlot(bool)
     def on_play_current_song_mv_clicked(cls, clicked=True):
         mid = cls.controller.state['current_mid']
-        data = cls.controller.api.get_song_detail(mid)
-        if not cls.controller.api.is_response_ok(data):
+        song = cls.controller.api.get_song_detail(mid)
+        print('song:', type(song))
+        if not cls.controller.api.is_response_ok(song):
             return
-        music_model = data[0]
-
-        mvid = music_model['mvid']
+        mvid = song['mvid']
         cls.controller.play_mv_by_mvid(int(mvid))
 
     @classmethod
@@ -185,12 +184,9 @@ class ViewOp(object):
             if cls.controller.api.is_playlist_mine(playlist):
                 ViewOp.ui.MY_LIST_WIDGET.layout().addWidget(w)
                 if pid == cls.controller.api.favorite_pid:
-                    @func_coroutine
-                    def load_favorite_playlist(playlist_id):
-                        favorite_playlist_detail = cls.controller.api.get_playlist_detail(playlist_id, cache=False)
-                        cls.controller.state["current_pid"] = playlist_id
-                        ViewOp.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
-                    load_favorite_playlist(pid)
+                    favorite_playlist_detail = cls.controller.api.get_playlist_detail(pid)
+                    cls.controller.state["current_pid"] = pid 
+                    ViewOp.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
                 else:
                     if playlist_num <= 50:
                         app_event_loop = asyncio.get_event_loop()
@@ -199,7 +195,6 @@ class ViewOp(object):
                 ViewOp.ui.COLLECTION_LIST_WIDGET.layout().addWidget(w)
 
     @classmethod
-    @func_coroutine
     @pyqtSlot(int)
     def on_playlist_btn_clicked(cls, pid):
         playlist_detail = cls.controller.api.get_playlist_detail(pid)

@@ -21,11 +21,12 @@ def func_coroutine(func):
     """make the decorated function run in EventLoop
 
     """
+    @wraps(func)
     def wrapper(*args, **kwargs):
         LOG.debug("In func_coroutine: before call ")
         LOG.debug("function name is : " + func.__name__)
-        APP_EVENT_LOOP = asyncio.get_event_loop()
-        APP_EVENT_LOOP.call_soon(func, *args)
+        app_event_loop = asyncio.get_event_loop()
+        app_event_loop.call_soon(func, *args)
         LOG.debug("In func_coroutine: after call ")
     return wrapper
 

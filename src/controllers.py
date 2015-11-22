@@ -8,6 +8,10 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+
 from controller_api import ControllerApi
 from view_api import ViewOp
 from widgets.login_dialog import LoginDialog
@@ -17,27 +21,40 @@ from widgets.playlist_widget import PlaylistItem
 from widgets.desktop_mini import DesktopMiniLayer
 from widgets.notify import NotifyWidget
 from views import UiMainWidget
-from plugin import NetEaseMusic, Hotkey
 from base.player import Player
 from base.network_manger import NetworkManager
 from base.utils import func_coroutine
+from base.logger import LOG
 from c.utils import show_start_tip
 from c.modes import ModesManger
-from constants import WINDOW_ICON
+from constants import WINDOW_ICON, DATABASE_SQLITE
+
+from plugin import NetEaseMusic, Hotkey
+from plugin.NetEaseMusic.model import Base
 
 
 class Controller(QWidget):
 
-    ui = None
-
     def __init__(self, parent=None):
         super().__init__(parent)
-        Controller.ui = UiMainWidget()
-        ViewOp.ui = Controller.ui
+        ui = UiMainWidget()
+        ViewOp.ui = ui
         ViewOp.controller = ControllerApi
-        Controller.ui.setup_ui(self)
+        ui.setup_ui(self)
+
+        engine = create_engine('sqlite:////%s' % DATABASE_SQLITE, echo=False)
+        Base.metadata.create_all(engine) 
+        Session = sessionmaker()
+        Session.configure(bind=engine) 
+        session = Session()
+
+        LOG.info('db connected: %s' % DATABASE_SQLITE)
+
+
+
 
         ControllerApi.player = Player()
+        ControllerApi.session = session
         ControllerApi.view = ViewOp
         ControllerApi.desktop_mini = DesktopMiniLayer()
         ControllerApi.lyric_widget = LyricWidget()

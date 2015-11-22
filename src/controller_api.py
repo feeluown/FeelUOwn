@@ -75,12 +75,9 @@ class ControllerApi(object):
 
     @classmethod
     def play_specific_song_by_mid(cls, mid):
-        songs = ControllerApi.api.get_song_detail(mid)
-        if not ControllerApi.api.is_response_ok(songs):
+        song = ControllerApi.api.get_song_detail(mid)
+        if not ControllerApi.api.is_response_ok(song):
             return False
 
-        if len(songs) == 0:
-            LOG.info("music id %d is unavailable" % mid)
-            return False
-        ControllerApi.player.play(songs[0])
+        ControllerApi.player.play(song)
         return True
