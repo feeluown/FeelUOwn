@@ -1,3 +1,3 @@
 quamash==0.5.3
-requests==2.8.1
+requests
 SQLAlchemy==1.0.9
