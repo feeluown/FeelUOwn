@@ -28,7 +28,13 @@ if [ $? -eq 0 ]; then
     sudo pip3 install -r requirements.txt -i http://pypi.douban.com/simple/
 else
     echo "您的系统目前没有安装pip3"
-    sudo apt-get install python3-pip
+    sudo easy_install-3.4 pip
+    if [ $? -eq 0 ]; then
+        echo "install pip for python3.4"
+    else
+        sudo apt-get install python3-pip
+        echo "install pip for python3"
+    fi
     sudo pip3 install -r requirements.txt -i http://pypi.douban.com/simple/
 fi
 echo "---------------------------"
