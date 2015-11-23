@@ -7,6 +7,7 @@
 
 ![](http://7xnn7w.com1.z0.glb.clouddn.com/v5.0a.png)
 
+
 ## Ubuntu 14.04, 15.04安装
 
 > 运行下面3条命令，小白也可以正常使用。
@@ -15,6 +16,16 @@
 git clone https://github.com/cosven/FeelUOwn.git
 cd FeelUOwn
 ./install.sh
+```
+
+## Fedora 安装
+```
+sudo dnf install python3-pip
+sudo dnf install python3-qt5
+sudo pip3 install -r requirements.txt
+sudo pip3 install python3-xlib
+
+# gstreamer 依赖还需要自己探索了，目前没搞清楚...
 ```
 
 ## 目前依賴
