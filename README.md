@@ -5,6 +5,8 @@
 
 技术框架大致的说明： <http://www.cosven.com/2015/07/07/FeelUOwn-%E6%8A%80%E6%9C%AF%E9%98%B6%E6%AE%B5%E6%80%BB%E7%BB%93/>
 
+![](http://7xnn7w.com1.z0.glb.clouddn.com/v5.0a.png)
+
 ## Ubuntu 14.04, 15.04安装
 
 > 运行下面3条命令，小白也可以正常使用。
