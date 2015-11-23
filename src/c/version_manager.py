@@ -8,7 +8,7 @@ from view_api import ViewOp
 
 
 class VersionManager(object):
-    current_version = 'v4.0a'
+    current_version = 'v5.0a'
 
     @classmethod
     def check_feeluown_release(cls):
