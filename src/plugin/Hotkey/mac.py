@@ -2,9 +2,11 @@
 __author__ = 'cosven'
 
 from base.logger import LOG
+from controller_api import ControllerApi
 
 
 def run_event_loop(player):
+    LOG.info("try to load mac hotkey event loop")
     import Quartz
     from AppKit import NSKeyUp, NSSystemDefined, NSEvent
 
@@ -12,7 +14,7 @@ def run_event_loop(player):
         if type_ < 0 or type_ > 0x7fffffff:
             LOG.error('Unkown mac event')
             Quartz.CFRunLoopRun()
-            return None
+            return run_event_loop(ControllerApi.player)
         try:
             key_event = NSEvent.eventWithCGEvent_(event)
         except:
