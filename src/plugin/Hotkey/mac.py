@@ -9,6 +9,10 @@ def run_event_loop(player):
     from AppKit import NSKeyUp, NSSystemDefined, NSEvent
 
     def keyboard_tap_callback(proxy, type_, event, refcon):
+        if type_ < 0 or type_ > 0x7fffffff:
+            LOG.error('Unkown mac event')
+            Quartz.CFRunLoopRun()
+            return None
         try:
             key_event = NSEvent.eventWithCGEvent_(event)
         except:
@@ -34,12 +38,14 @@ def run_event_loop(player):
         Quartz.kCGSessionEventTap,  # Session level is enough for our needs
         Quartz.kCGHeadInsertEventTap,  # Insert wherever, we do not filter
         Quartz.kCGEventTapOptionDefault,
-        Quartz.CGEventMaskBit(NSSystemDefined),  # NSSystemDefined for media keys
+        # NSSystemDefined for media keys
+        Quartz.CGEventMaskBit(NSSystemDefined),
         keyboard_tap_callback,
         None
     )
 
-    run_loop_source= Quartz.CFMachPortCreateRunLoopSource(None, tap, 0)
+    run_loop_source = Quartz.CFMachPortCreateRunLoopSource(
+        Quartz.kCFAllocatorDefault, tap, 0)
     Quartz.CFRunLoopAddSource(
         Quartz.CFRunLoopGetCurrent(),
         run_loop_source,
@@ -49,3 +55,4 @@ def run_event_loop(player):
     Quartz.CGEventTapEnable(tap, True)
     # and run! This won't return until we exit or are terminated.
     Quartz.CFRunLoopRun()
+    LOG.error('Mac hotkey exit event ')
