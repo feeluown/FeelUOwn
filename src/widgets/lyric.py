@@ -78,6 +78,7 @@ class LyricWidget(QWidget):
         self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
 
         self.resize(width, height)
+        self.setFixedSize(width, height)
         self.move((QApplication.desktop().width() - width)/2, 40)
 
     def reset_lyric(self):
