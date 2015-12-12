@@ -32,7 +32,7 @@ class NotifyWidget(QWidget):
         self.setAttribute(Qt.WA_MacAlwaysShowToolWindow)
 
         self.resize(width, height)
-        self.move(QApplication.desktop().width() - self.width() - 20, 40)
+        self.move(QApplication.primaryScreen().geometry().right() - self.width() - 20, 40)
         self.setLayout(self.layout)
 
         self._animation = QPropertyAnimation(self, b'windowOpacity')

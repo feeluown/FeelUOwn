@@ -79,7 +79,7 @@ class LyricWidget(QWidget):
 
         self.resize(width, height)
         self.setFixedSize(width, height)
-        self.move((QApplication.desktop().width() - width)/2, 40)
+        self.move((QApplication.primaryScreen().size().width() - width) / 2, 40);
 
     def reset_lyric(self):
         self.__lyrics = []
@@ -140,3 +140,4 @@ class LyricWidget(QWidget):
                     self.sync_lyric(ms)
                 else:
                     self.setText(u'歌曲没有歌词')
+
