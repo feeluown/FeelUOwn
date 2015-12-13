@@ -7,7 +7,7 @@ import os
 import asyncio
 
 path = sys.path[0]
-os.chdir(path)
+os.chdir(os.path.abspath(path))
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon

@@ -5,16 +5,12 @@ from base.logger import LOG
 from controller_api import ControllerApi
 
 
-def run_event_loop(player):
-    LOG.info("try to load mac hotkey event loop")
-    import Quartz
-    from AppKit import NSKeyUp, NSSystemDefined, NSEvent
-
-    def keyboard_tap_callback(proxy, type_, event, refcon):
+def keyboard_tap_callback(proxy, type_, event, refcon):
+        from AppKit import NSKeyUp, NSEvent
         if type_ < 0 or type_ > 0x7fffffff:
             LOG.error('Unkown mac event')
-            Quartz.CFRunLoopRun()
-            return run_event_loop(ControllerApi.player)
+            run_event_loop()
+            return event
         try:
             key_event = NSEvent.eventWithCGEvent_(event)
         except:
@@ -23,17 +19,23 @@ def run_event_loop(player):
         if key_event.subtype() == 8:
             key_code = (key_event.data1() & 0xFFFF0000) >> 16
             key_state = (key_event.data1() & 0xFF00) >> 8
-            if key_code is 16 or key_code is 19 or key_code is 20:
+            if key_code in (16, 19, 20):
                 # 16 for play-pause, 19 for next, 20 for previous
                 if key_state == NSKeyUp:
                     if key_code is 19:
-                        player.play_next()
+                        ControllerApi.player.play_next()
                     elif key_code is 20:
-                        player.play_last()
+                        ControllerApi.player.play_last()
                     elif key_code is 16:
-                        player.play_or_pause()
+                        ControllerApi.player.play_or_pause()
                 return None
         return event
+
+
+def run_event_loop():
+    LOG.info("try to load mac hotkey event loop")
+    import Quartz
+    from AppKit import NSSystemDefined
 
     # Set up a tap, with type of tap, location, options and event mask
     tap = Quartz.CGEventTapCreate(

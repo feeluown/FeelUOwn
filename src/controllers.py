@@ -59,7 +59,8 @@ class Controller(QWidget):
         ControllerApi.network_manager = NetworkManager()
         ControllerApi.current_playlist_widget = MusicTableWidget()
 
-        self._search_shortcut = QShortcut(QKeySequence("Ctrl+F"), self)
+        self._search_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
+        self._minimize_shortcut = QShortcut(QKeySequence('Ctrl+M'), self)
         # self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
@@ -142,6 +143,7 @@ class Controller(QWidget):
         ControllerApi.player.signal_download_progress.connect(ViewOp.ui.PROGRESS.setValue)
 
         self._search_shortcut.activated.connect(ViewOp.ui.SEARCH_BOX.setFocus)
+        self._minimize_shortcut.activated.connect(self.showMinimized)
         # self._switch_mode_shortcut.activated.connect(self.switch_desktop_mini)
 
     def _show_current_playlist(self):
@@ -208,7 +210,7 @@ class Controller(QWidget):
         ViewOp.ui.SONG_NAME_LABEL.setText(u'当前没有歌曲播放')
         ViewOp.ui.SONG_COUNTDOWN_LABEL.setText('00:00')
         ViewOp.ui.PLAY_OR_PAUSE.setChecked(True)
-    
+
     @staticmethod
     @func_coroutine
     @pyqtSlot(int)
