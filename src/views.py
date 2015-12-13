@@ -68,7 +68,7 @@ class UiMainWidget(object):
         self.MY_LIST_WIDGET = self.left_widget.central_widget.create_list_widget
         self.COLLECTION_LIST_WIDGET = self.left_widget.central_widget.collection_list_widget
         self.LOCAL_LIST_WIDGET = self.left_widget.central_widget.local_list_widget
-        
+
         self.STATUS_BAR = self.status
         self.PROGRESS = self.progress_info
         self.WEBVIEW = self.right_widget.webview
