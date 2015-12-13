@@ -208,7 +208,7 @@ class Controller(QWidget):
         ViewOp.ui.SONG_NAME_LABEL.setText(u'当前没有歌曲播放')
         ViewOp.ui.SONG_COUNTDOWN_LABEL.setText('00:00')
         ViewOp.ui.PLAY_OR_PAUSE.setChecked(True)
-    
+
     @staticmethod
     @func_coroutine
     @pyqtSlot(int)
@@ -260,3 +260,6 @@ class Controller(QWidget):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def closeEvent(self, event):
+        QApplication.quit()
