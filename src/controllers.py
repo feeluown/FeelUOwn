@@ -262,3 +262,6 @@ class Controller(QWidget):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def closeEvent(self, event):
+        QApplication.quit()
