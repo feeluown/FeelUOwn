@@ -50,8 +50,7 @@ if __name__ == "__main__":
         sys.stderr = f_handler
 
     w = Controller()
-    w.move((QApplication.desktop().width() - w.width())/2,
-           (QApplication.desktop().height() - w.height())/2)
+    w.move(QApplication.primaryScreen().geometry().center() - w.rect().center());
     w.show()
 
     app_event_loop.run_forever()
