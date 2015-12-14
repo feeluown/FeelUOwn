@@ -27,6 +27,8 @@ class LyricWidget(QWidget):
         self.__lyrics = []
         self.__translate_lyric = []
         self.__time_sequence = []
+        self._last_lyric_pos_index = -1
+        self._lyric_offset = 350
 
         self.__init_layout()
         self.close()
@@ -85,6 +87,7 @@ class LyricWidget(QWidget):
         self.__lyrics = []
         self.__translate_lyric = []
         self.__time_sequence = []
+        self._text_label.clear()
 
     def set_lyric(self, lyric_model):
         self.hide()
@@ -92,22 +95,42 @@ class LyricWidget(QWidget):
         self.__time_sequence = lyric_model['time_sequence']
         self.__lyrics = lyric_model['lyric']
         self.__translate_lyric = lyric_model['translate_lyric']
+        self._last_lyric_pos_index = -1
 
     def has_lyric(self):
         if self.__lyrics:
             return True
         return False
 
+    def set_lyric_by_position(self):
+        lyric = self.__lyrics[self._last_lyric_pos_index][:-1]
+        # 翻译歌词比原歌词短
+        if self.__translate_lyric and len(self.__translate_lyric) > self._last_lyric_pos_index:
+            tlyric = self.__translate_lyric[self._last_lyric_pos_index][:-1]
+            lyric += "\n" + tlyric
+
+        if lyric.strip().__len__() != 0:
+            self.set_text(lyric)
+
     def sync_lyric(self, ms):
-        if self.has_lyric():
-            for i, each in enumerate(self.__time_sequence):
-                if ms + 400 >= each:
-                    lyric = self.__lyrics[i][:-1]
-                    # 翻译歌词比原歌词短
-                    if self.__translate_lyric and len(self.__translate_lyric) > i:
-                        tlyric = self.__translate_lyric[i][:-1]
-                        lyric += "\n" + tlyric
-                    self.set_text(lyric)
+        if not self.has_lyric():
+            return
+
+        # move back
+        while self._last_lyric_pos_index >= 0 and self.__time_sequence[self._last_lyric_pos_index] > ms:
+            self._last_lyric_pos_index -= 1
+            self.set_lyric_by_position()
+
+        next_pos = self._last_lyric_pos_index + 1
+        if self.__time_sequence.__len__() <= next_pos or ms <= self.__time_sequence[next_pos] - self._lyric_offset:
+            return
+
+        # move next
+        while self.__time_sequence.__len__() > next_pos and ms > self.__time_sequence[next_pos] - self._lyric_offset:
+            next_pos += 1
+
+        self._last_lyric_pos_index = next_pos - 1
+        self.set_lyric_by_position()
 
     def mousePressEvent(self, event):
         if event.button() == Qt.LeftButton:
