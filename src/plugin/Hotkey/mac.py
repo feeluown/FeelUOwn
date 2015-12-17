@@ -1,6 +1,7 @@
 # -*- coding=utf8 -*-
 __author__ = 'cosven'
 
+import asyncio
 from base.logger import LOG
 from controller_api import ControllerApi
 
@@ -10,6 +11,7 @@ def keyboard_tap_callback(proxy, type_, event, refcon):
         if type_ < 0 or type_ > 0x7fffffff:
             LOG.error('Unkown mac event')
             run_event_loop()
+            LOG.error('restart mac key board event loop')
             return event
         try:
             key_event = NSEvent.eventWithCGEvent_(event)
@@ -49,7 +51,7 @@ def run_event_loop():
     )
 
     run_loop_source = Quartz.CFMachPortCreateRunLoopSource(
-        Quartz.kCFAllocatorDefault, tap, 0)
+        None, tap, 0)
     Quartz.CFRunLoopAddSource(
         Quartz.CFRunLoopGetCurrent(),
         run_loop_source,
@@ -59,4 +61,10 @@ def run_event_loop():
     Quartz.CGEventTapEnable(tap, True)
     # and run! This won't return until we exit or are terminated.
     Quartz.CFRunLoopRun()
+    return []
     LOG.error('Mac hotkey exit event ')
+
+
+@asyncio.coroutine
+def run():
+    yield from run_event_loop()
