@@ -8,9 +8,9 @@ from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtNetwork import QNetworkRequest
 from PyQt5.QtWidgets import QApplication
 
-from base.utils import func_coroutine
 from base.logger import LOG
 from base.models import MusicModel
+from base.utils import measure_time
 
 from widgets.playlist_widget import PlaylistItem
 
@@ -30,7 +30,7 @@ class ViewOp(object):
         cls.ui.AVATAR_LABEL.setPixmap(pixmap.scaled(width, width, Qt.IgnoreAspectRatio, Qt.SmoothTransformation))
 
     @classmethod
-    def set_music_icon(cls, res):
+    def set_music_cover_img(cls, res):
         img = QImage()
         img.loadFromData(res.readAll())
         pixmap = QPixmap(img)
@@ -85,7 +85,6 @@ class ViewOp(object):
             cls.ui.PLAY_OR_PAUSE.setChecked(True)
 
     @classmethod
-    @func_coroutine
     @pyqtSlot(bool)
     def on_play_current_song_mv_clicked(cls, clicked=True):
         mid = cls.controller.state['current_mid']
@@ -97,7 +96,6 @@ class ViewOp(object):
         cls.controller.play_mv_by_mvid(int(mvid))
 
     @classmethod
-    @func_coroutine
     @pyqtSlot(bool)
     def on_set_favorite_btn_clicked(cls, checked=True):
         if not cls.controller.state["current_mid"]:
@@ -138,7 +136,7 @@ class ViewOp(object):
         cls.controller.desktop_mini.content.set_duration(cls.controller.player.duration() / 1000)
 
         cls.controller.network_manager.get(QNetworkRequest(QUrl(music_model['album']['picUrl'] + "?param=200y200")))
-        cls.controller.network_manager.network_queue.put(ViewOp.set_music_icon)
+        cls.controller.network_manager.network_queue.put(ViewOp.set_music_cover_img)
 
         cls.controller.current_playlist_widget.add_item_from_model(music_model)
         cls.controller.current_playlist_widget.focus_cell_by_mid(music_model['id'])
@@ -158,7 +156,7 @@ class ViewOp(object):
                 cls.controller.desktop_mini.content.is_song_like = False
 
     @classmethod
-    @func_coroutine
+    @measure_time
     def load_user_infos(cls, data):
         avatar_url = data['avatar']
         request = QNetworkRequest(QUrl(avatar_url))
@@ -193,11 +191,13 @@ class ViewOp(object):
                         app_event_loop.call_soon(cls.controller.api.get_playlist_detail, pid)
             else:
                 ViewOp.ui.COLLECTION_LIST_WIDGET.layout().addWidget(w)
+        LOG.info('load user infos finished')
 
     @classmethod
     @pyqtSlot(int)
     def on_playlist_btn_clicked(cls, pid):
-        playlist_detail = cls.controller.api.get_playlist_detail(pid)
+        playlist_detail = cls.controller.api.get_playlist_detail(
+            pid, cache=False)
         if not cls.controller.api.is_response_ok(playlist_detail):
             return
         cls.ui.WEBVIEW.load_playlist(playlist_detail)

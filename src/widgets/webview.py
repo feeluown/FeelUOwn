@@ -9,19 +9,17 @@ from controller_api import ControllerApi
 from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 
 from base.logger import LOG
-from base.utils import func_coroutine
+from base.utils import measure_time
 
 
 class WebView(QWebView):
-    """这个类的实例可能发出的信号。（也就是说，controller只能绑定这些信号，其他信号尽量不要绑定）
-    loadProgress(int)
-    """
     signal_play = pyqtSignal([int])
     signal_play_songs = pyqtSignal([list])
     signal_search_artist = pyqtSignal([int])
     signal_search_album = pyqtSignal([int])
     signal_play_mv = pyqtSignal([int])
 
+    @measure_time
     def __init__(self, parent=None):
         super().__init__(parent)
 

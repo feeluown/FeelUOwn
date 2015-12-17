@@ -5,7 +5,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 
-from base.utils import func_coroutine
 from constants import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
 from controller_api import ControllerApi
 
@@ -235,7 +234,6 @@ class PlaylistItem(_BaseItem):
         self._text_btn.setText(text)
         ControllerApi.api.update_playlist_name(self.data['id'], text)
     
-    @func_coroutine
     def update_playlist(self, clicked=True):
         pid = self.data['id']
         ControllerApi.api.get_playlist_detail(pid, cache=False)

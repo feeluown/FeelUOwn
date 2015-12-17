@@ -20,11 +20,11 @@ from widgets.playlist_widget import PlaylistItem
 from widgets.desktop_mini import DesktopMiniLayer
 from widgets.notify import NotifyWidget
 from views import UiMainWidget
-from base.player import Player
-from base.network_manger import NetworkManager
-from base.utils import func_coroutine
 from base.logger import LOG
-from c.utils import show_start_tip
+from base.network_manger import NetworkManager
+from base.player import Player
+from base.utils import measure_time
+from c.tips_manager import TipsManager
 from c.modes import ModesManger
 from c.version_manager import VersionManager
 from constants import WINDOW_ICON, DATABASE_SQLITE
@@ -35,6 +35,7 @@ from plugin.NetEaseMusic.model import Base
 
 class Controller(QWidget):
 
+    @measure_time
     def __init__(self, parent=None):
         super().__init__(parent)
         ui = UiMainWidget()
@@ -42,7 +43,10 @@ class Controller(QWidget):
         ViewOp.controller = ControllerApi
         ui.setup_ui(self)
 
-        engine = create_engine('sqlite:////%s' % DATABASE_SQLITE, echo=False)
+        engine = create_engine(
+            'sqlite:////%s' % DATABASE_SQLITE,
+            connect_args={'check_same_thread': False},
+            echo=False)
         Base.metadata.create_all(engine)
         Session = sessionmaker()
         Session.configure(bind=engine)
@@ -66,16 +70,15 @@ class Controller(QWidget):
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('FeelUOwn')
-        self.resize(960, 580)
+        self.resize(960, 540)
 
         self.mode_manager = ModesManger()
         self._init_signal_binding()
 
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(1, self._init_plugins)
-        app_event_loop.call_later(2, show_start_tip)
-        app_event_loop.call_later(5, VersionManager.check_feeluown_release)
-        app_event_loop.call_later(20, VersionManager.check_feeluown_release)
+        app_event_loop.call_later(6, TipsManager.show_start_tip)
+        asyncio.Task(VersionManager.check_release())
 
     def _init_plugins(self):
         NetEaseMusic.init(self)  # 特别意义的插件
@@ -176,7 +179,6 @@ class Controller(QWidget):
         ControllerApi.set_login()
         ViewOp.load_user_infos(data)
 
-    @func_coroutine
     @pyqtSlot(int)
     def on_play_song_clicked(self, mid=None):
         self.mode_manager.change_to_normal()
@@ -212,9 +214,9 @@ class Controller(QWidget):
         ViewOp.ui.PLAY_OR_PAUSE.setChecked(True)
 
     @staticmethod
-    @func_coroutine
     @pyqtSlot(int)
     def search_album(aid):
+        loop = asyncio.get_event_loop()
         album_detail_model = ControllerApi.api.get_album_detail(aid)
         if not ControllerApi.api.is_response_ok(album_detail_model):
             return
@@ -222,7 +224,6 @@ class Controller(QWidget):
         ControllerApi.state['current_pid'] = 0
 
     @staticmethod
-    @func_coroutine
     @pyqtSlot(int)
     def search_artist(aid):
         artist_detail_model = ControllerApi.api.get_artist_detail(aid)
@@ -231,7 +232,6 @@ class Controller(QWidget):
         ViewOp.ui.WEBVIEW.load_artist(artist_detail_model)
         ControllerApi.state['current_pid'] = 0
 
-    @func_coroutine
     @pyqtSlot()
     def _search_music(self):
         text = ViewOp.ui.SEARCH_BOX.text()

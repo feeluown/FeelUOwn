@@ -12,13 +12,11 @@ modified by
 
 import json
 import requests
-import pickle
 
 from PyQt5.QtCore import pyqtSignal, QObject
-from base.utils import singleton, func_coroutine, show_requests_progress
+from base.utils import singleton, show_requests_progress
 from base.logger import LOG
 
-from .model import UserDb
 
 uri = 'http://music.163.com/api'
 

@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-import asyncio
 import json
+import time
 from functools import wraps
 
 from base.logger import LOG
@@ -15,20 +15,6 @@ def singleton(cls, *args, **kw):
             instances[cls] = cls(*args, **kw)
         return instances[cls]
     return _singleton
-
-
-def func_coroutine(func):
-    """make the decorated function run in EventLoop
-
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        LOG.debug("In func_coroutine: before call ")
-        LOG.debug("function name is : " + func.__name__)
-        app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_soon(func, *args)
-        LOG.debug("In func_coroutine: after call ")
-    return wrapper
 
 
 def write_json_into_file(data_json, filepath):
@@ -59,7 +45,15 @@ def show_requests_progress(response, signal=None):
             progress = round(bytes_so_far * 1.0 / total_size * 100)
             if signal is not None:
                 signal.emit(progress)
-            print(progress)
         return content
 
 
+def measure_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.process_time()
+        result = func(*args, **kwargs)
+        elapsed_time = time.process_time() - t
+        LOG.info('function %s executed time: %f s' % (func.__name__, elapsed_time))
+        return result
+    return wrapper

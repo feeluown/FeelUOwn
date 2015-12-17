@@ -1,8 +1,11 @@
 # -*- coding: utf8 -*-
 
+import asyncio
 import hashlib
 import pickle
 import re
+from functools import partial
+from threading import current_thread
 
 from base.logger import LOG
 from base.utils import singleton
@@ -143,12 +146,8 @@ class NetEaseAPI(object):
 
         return model
 
-    def get_playlist_detail(self, pid, cache=True):
-        if (cache is True) and PlaylistDb.exists(pid):
-            LOG.info("Read playlist %d info from sqlite" % (pid))
-            return PlaylistDb.get_data(pid)
-
-        data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
+    def update_playlist_detail(self, pid, data=None):
+        data = self.ne.playlist_detail(pid) if data is None else data
         if not self.is_response_avaible(data):
             return data
 
@@ -158,7 +157,7 @@ class NetEaseAPI(object):
         for i, track in enumerate(data['tracks']):
             data['tracks'][i] = self.access_music(track)
         model = PlaylistModel(data).get_dict()
-        
+
         if PlaylistDb.exists(pid):
             PlaylistDb.update_data(pid, model)
         else:
@@ -167,6 +166,20 @@ class NetEaseAPI(object):
 
         LOG.info('Save playlist %d info to sqlite' % pid)
         return model
+
+    # TODO: change param 'cache' name to others
+    def get_playlist_detail(self, pid, cache=True):
+        '''update playlist detail in sqlite if cache is false'''
+        if cache is False:
+            app_event_loop = asyncio.get_event_loop()
+            app_event_loop.run_in_executor(
+                None, partial(self.update_playlist_detail, pid))
+
+        if PlaylistDb.exists(pid):
+            LOG.info("Read playlist %d info from sqlite" % (pid))
+            return PlaylistDb.get_data(pid)
+        else:
+            return self.update_playlist_detail(pid)
 
     def get_user_playlist(self):
         user = UserDb.get_user(self.uid)
@@ -396,7 +409,7 @@ class NetEaseAPI(object):
     @staticmethod
     def is_response_avaible(data):
         """判断api返回的数据是否可用
-        
+
         TODO: 应该写成一个decorator
         """
         if data is None:
@@ -415,7 +428,6 @@ class NetEaseAPI(object):
         if data['code'] == 200:
             return True
         return False
-
 
 
 if __name__ == "__main__":

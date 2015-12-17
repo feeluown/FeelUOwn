@@ -61,10 +61,12 @@ def run_event_loop():
     Quartz.CGEventTapEnable(tap, True)
     # and run! This won't return until we exit or are terminated.
     Quartz.CFRunLoopRun()
+    LOG.error('Mac hotkey event loop exit')
     return []
-    LOG.error('Mac hotkey exit event ')
 
 
 @asyncio.coroutine
 def run():
-    yield from run_event_loop()
+    loop = asyncio.get_event_loop()
+    future = loop.run_in_executor(None, run_event_loop)
+    yield from future
