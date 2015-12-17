@@ -20,7 +20,7 @@ class VersionManager(object):
         try:
             loop = asyncio.get_event_loop()
             future = loop.run_in_executor(None,
-                partial(requests.get, url, timeout=3))
+                partial(requests.get, url, timeout=5))
             res = yield from future
             if not res.status_code == 200:
                 LOG.warning('connect to api.github.com timeout')

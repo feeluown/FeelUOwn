@@ -1,7 +1,7 @@
 # -*- coding:utf-8 -*-
 
-import asyncio
 import json
+import time
 from functools import wraps
 
 from base.logger import LOG
@@ -46,3 +46,14 @@ def show_requests_progress(response, signal=None):
             if signal is not None:
                 signal.emit(progress)
         return content
+
+
+def measure_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.process_time()
+        result = func(*args, **kwargs)
+        elapsed_time = time.process_time() - t
+        LOG.info('function %s executed time: %f s' % (func.__name__, elapsed_time))
+        return result
+    return wrapper

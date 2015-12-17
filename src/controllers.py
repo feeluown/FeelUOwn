@@ -20,9 +20,10 @@ from widgets.playlist_widget import PlaylistItem
 from widgets.desktop_mini import DesktopMiniLayer
 from widgets.notify import NotifyWidget
 from views import UiMainWidget
-from base.player import Player
-from base.network_manger import NetworkManager
 from base.logger import LOG
+from base.network_manger import NetworkManager
+from base.player import Player
+from base.utils import measure_time
 from c.tips_manager import TipsManager
 from c.modes import ModesManger
 from c.version_manager import VersionManager
@@ -34,6 +35,7 @@ from plugin.NetEaseMusic.model import Base
 
 class Controller(QWidget):
 
+    @measure_time
     def __init__(self, parent=None):
         super().__init__(parent)
         ui = UiMainWidget()
@@ -68,7 +70,7 @@ class Controller(QWidget):
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('FeelUOwn')
-        self.resize(1100, 680)
+        self.resize(960, 540)
 
         self.mode_manager = ModesManger()
         self._init_signal_binding()

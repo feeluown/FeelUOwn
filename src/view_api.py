@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import QApplication
 
 from base.logger import LOG
 from base.models import MusicModel
+from base.utils import measure_time
 
 from widgets.playlist_widget import PlaylistItem
 
@@ -155,6 +156,7 @@ class ViewOp(object):
                 cls.controller.desktop_mini.content.is_song_like = False
 
     @classmethod
+    @measure_time
     def load_user_infos(cls, data):
         avatar_url = data['avatar']
         request = QNetworkRequest(QUrl(avatar_url))
@@ -189,11 +191,13 @@ class ViewOp(object):
                         app_event_loop.call_soon(cls.controller.api.get_playlist_detail, pid)
             else:
                 ViewOp.ui.COLLECTION_LIST_WIDGET.layout().addWidget(w)
+        LOG.info('load user infos finished')
 
     @classmethod
     @pyqtSlot(int)
     def on_playlist_btn_clicked(cls, pid):
-        playlist_detail = cls.controller.api.get_playlist_detail(pid)
+        playlist_detail = cls.controller.api.get_playlist_detail(
+            pid, cache=False)
         if not cls.controller.api.is_response_ok(playlist_detail):
             return
         cls.ui.WEBVIEW.load_playlist(playlist_detail)
