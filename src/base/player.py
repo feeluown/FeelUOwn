@@ -69,6 +69,11 @@ class Player(QMediaPlayer):
         # when _music_error_times reached _MUSIC_ERROR_MAXIMUM, play next music
         self._MUSIC_ERROR_MAXIMUM = 3
 
+        self._refresh_timer = QTimer()
+        self._refresh_timer.setInterval(100)
+        self._refresh_timer.timeout.connect(self.__refresh_position)
+        self._refresh_timer.start()
+
     def change_player_mode_to_normal(self):
         self._other_mode = False
         self.playback_mode = 4
@@ -78,6 +83,9 @@ class Player(QMediaPlayer):
         self._other_mode = True
         self.playback_mode = 2
         self.signal_playback_mode_changed.emit(self.playback_mode)
+
+    def __refresh_position(self):
+        self.positionChanged.emit(self.position())
 
     @pyqtSlot(QMediaContent)
     def on_media_changed(self, media_content):
