@@ -9,7 +9,6 @@ from controller_api import ControllerApi
 from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 
 from base.logger import LOG
-from base.utils import func_coroutine
 
 
 class WebView(QWebView):

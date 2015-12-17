@@ -1,8 +1,11 @@
 # -*- coding: utf8 -*-
 
+import asyncio
 import hashlib
 import pickle
 import re
+from functools import partial
+from threading import current_thread
 
 from base.logger import LOG
 from base.utils import singleton
@@ -144,8 +147,12 @@ class NetEaseAPI(object):
         return model
 
     def get_playlist_detail(self, pid, cache=True):
+        LOG.info('curernt thread name %s' % current_thread().name)
         if (cache is True) and PlaylistDb.exists(pid):
             LOG.info("Read playlist %d info from sqlite" % (pid))
+            app_event_loop = asyncio.get_event_loop()
+            app_event_loop.run_in_executor(
+                None, partial(self.get_playlist_detail, pid, cache=False))
             return PlaylistDb.get_data(pid)
 
         data = self.ne.playlist_detail(pid)     # 当列表内容多的时候，耗时久
@@ -396,7 +403,7 @@ class NetEaseAPI(object):
     @staticmethod
     def is_response_avaible(data):
         """判断api返回的数据是否可用
-        
+
         TODO: 应该写成一个decorator
         """
         if data is None:
@@ -415,7 +422,6 @@ class NetEaseAPI(object):
         if data['code'] == 200:
             return True
         return False
-
 
 
 if __name__ == "__main__":

@@ -17,20 +17,6 @@ def singleton(cls, *args, **kw):
     return _singleton
 
 
-def func_coroutine(func):
-    """make the decorated function run in EventLoop
-
-    """
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        LOG.debug("In func_coroutine: before call ")
-        LOG.debug("function name is : " + func.__name__)
-        app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_soon(func, *args)
-        LOG.debug("In func_coroutine: after call ")
-    return wrapper
-
-
 def write_json_into_file(data_json, filepath):
     try:
         with open(filepath, "w") as f:
@@ -59,7 +45,4 @@ def show_requests_progress(response, signal=None):
             progress = round(bytes_so_far * 1.0 / total_size * 100)
             if signal is not None:
                 signal.emit(progress)
-            print(progress)
         return content
-
-
