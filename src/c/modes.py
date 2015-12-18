@@ -24,7 +24,7 @@ class ModeBase(object):
             mid = song['id']
             music_model = ControllerApi.api.get_song_detail(mid)
             if not ControllerApi.api.is_response_ok(music_model):
-                cls.exit_()
+                ControllerApi.notify_widget.show_message("Error", "网络异常，请检查网络连接")
                 return
             ControllerApi.player.set_music_list([music_model])
         else:
@@ -32,10 +32,8 @@ class ModeBase(object):
             if not ControllerApi.api.is_response_ok(cls._songs):
                 ControllerApi.player.stop()
                 ControllerApi.notify_widget.show_message("Error", "网络异常，请检查网络连接")
-                cls.exit_()
             elif cls._songs == []:
                 ControllerApi.notify_widget.show_message("|--|", "未知错误")
-                cls.exit_()
             else:
                 cls.reset_song_list()
 
@@ -43,13 +41,11 @@ class ModeBase(object):
     def load_(cls):
         cls._songs = []  # reinit songs list
         ControllerApi.player.signal_playlist_finished.connect(cls.on_next_music_required)
-        print(cls, "connect")
         cls.load()
 
     @classmethod
     def exit_(cls):
         ControllerApi.player.signal_playlist_finished.disconnect(cls.on_next_music_required)
-        print(cls, "disconnect")
         cls._songs = []
         cls.exit()
 
