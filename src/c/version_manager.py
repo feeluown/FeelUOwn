@@ -10,7 +10,7 @@ from view_api import ViewOp
 
 
 class VersionManager(object):
-    current_version = 'v6.0a'
+    current_version = 'v6.0a2'
 
     @classmethod
     @asyncio.coroutine
