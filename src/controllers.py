@@ -245,7 +245,8 @@ class Controller(QWidget):
             ControllerApi.state['current_pid'] = 0
             length = len(songs)
             if length != 0:
-                ViewOp.ui.STATUS_BAR.showMessage(u'O(∩_∩)O，搜索到 ' + str(length) + u' 首 ' + text + u' 相关歌曲', 5000)
+                ViewOp.ui.STATUS_BAR.showMessage(
+                    u'搜索到 %s 首 %s 相关歌曲' % (str(length), text), 5000)
                 return
             else:
                 ViewOp.ui.STATUS_BAR.showMessage(u'Oops，没有找到相关歌曲', 5000)

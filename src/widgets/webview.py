@@ -5,7 +5,6 @@ from PyQt5.QtCore import *
 from PyQt5.QtWebKitWidgets import QWebView
 from PyQt5.QtWebKit import QWebSettings
 
-from controller_api import ControllerApi
 from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 
 from base.logger import LOG
@@ -48,6 +47,7 @@ class WebView(QWebView):
 
     @pyqtSlot()
     def on_load_finished(self):
+        self.setFocus()
         self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
         for js_code in self.js_queue:
             self.page().mainFrame().evaluateJavaScript(js_code)
@@ -137,4 +137,3 @@ class WebView(QWebView):
         self.js_queue.append(js_code)
         self.load(QUrl.fromLocalFile(path))
         self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
-

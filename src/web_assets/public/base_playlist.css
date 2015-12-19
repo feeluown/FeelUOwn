@@ -25,6 +25,12 @@ th {
     background-color: #333;
 }
 
+.song:focus {
+  background-color: #373737;
+  border-bottom: 1px dashed #993333 !important;
+  outline: none;
+}
+
 .star {
     display: none;
 }

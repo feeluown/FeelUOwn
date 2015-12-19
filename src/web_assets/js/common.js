@@ -86,6 +86,27 @@ SongTable.bind_music_play = function(){
         js_python.play(parseInt(sid));
     });
 
+    $('.song').keydown(function(e){
+        var index = $('.song').index(this);
+        var sid = $(this).attr('id');
+        switch(e.which){
+            case 78:    // key: n
+                $('.song').eq(index + 1).focus();
+                break;
+            case 80:    // key: p
+                $('.song').eq(index - 1).focus()
+                break;
+            case 13:    // key: enter
+                js_python.play(parseInt(sid));
+                break;
+            default:
+                break;
+        }
+    });
+
+    $('.song').attr('tabindex', -1);
+    $('.song:first').focus();
+
     $('.mv_flag').on('click', function(self){
         var mvid = parseInt($(this).attr('id'));
         if (mvid !=0 ){
@@ -162,5 +183,13 @@ window.play_mv = function(url){
 
 
 $(function(){
-
+    $(document).keydown(function(e) {
+        var originScrollTop = $(document).scrollTop();
+        if (e.which === 74) {
+            $(document).scrollTop(originScrollTop + 40);
+        }
+        else if (e.which === 75) {
+            $(document).scrollTop(originScrollTop - 40);
+        }
+    })
 });
