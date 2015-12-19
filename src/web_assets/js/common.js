@@ -89,11 +89,12 @@ SongTable.bind_music_play = function(){
     $('.song').keydown(function(e){
         var index = $('.song').index(this);
         var sid = $(this).attr('id');
+
         switch(e.which){
-            case 78:    // key: n
+            case 74:    // key: j
                 $('.song').eq(index + 1).focus();
                 break;
-            case 80:    // key: p
+            case 75:    // key: k
                 $('.song').eq(index - 1).focus()
                 break;
             case 13:    // key: enter
@@ -183,13 +184,4 @@ window.play_mv = function(url){
 
 
 $(function(){
-    $(document).keydown(function(e) {
-        var originScrollTop = $(document).scrollTop();
-        if (e.which === 74) {
-            $(document).scrollTop(originScrollTop + 40);
-        }
-        else if (e.which === 75) {
-            $(document).scrollTop(originScrollTop - 40);
-        }
-    })
 });

@@ -13,7 +13,7 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
 from constants import ICON_PATH
-from widgets.playlist_widget import SpreadWidget, PlaylistItem, RecommendItem
+from widgets.playlist_widget import SpreadWidget, RecommendItem
 
 
 class LeftScrollArea(QScrollArea):
@@ -97,7 +97,7 @@ class LeftWidget(QWidget):
         self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
 
-        self.recommend_list_widget.add_widget(self.fm_item)
+        self.recommend_list_widget.layout().addWidget(self.fm_item)
 
         self.create_title_layout.addWidget(self.create_title)
         self.create_title_layout.addStretch(1)

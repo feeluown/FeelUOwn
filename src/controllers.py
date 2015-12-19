@@ -19,13 +19,14 @@ from widgets.lyric import LyricWidget
 from widgets.playlist_widget import PlaylistItem
 from widgets.desktop_mini import DesktopMiniLayer
 from widgets.notify import NotifyWidget
-from views import UiMainWidget
+from ui import UiMainWidget
 from base.logger import LOG
 from base.network_manger import NetworkManager
 from base.player import Player
 from base.utils import measure_time
-from c.tips_manager import TipsManager
+from c.focus_manager import FocusManager
 from c.modes import ModesManger
+from c.tips_manager import TipsManager
 from c.version_manager import VersionManager
 from constants import WINDOW_ICON, DATABASE_SQLITE
 
@@ -62,9 +63,10 @@ class Controller(QWidget):
 
         ControllerApi.network_manager = NetworkManager()
         ControllerApi.current_playlist_widget = MusicTableWidget()
-
+        
         self._search_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
         self._minimize_shortcut = QShortcut(QKeySequence('Ctrl+M'), self)
+        self._change_focus = QShortcut(QKeySequence('Ctrl+G'), self)
         # self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
@@ -146,6 +148,7 @@ class Controller(QWidget):
         ControllerApi.player.signal_download_progress.connect(ViewOp.ui.PROGRESS.setValue)
 
         self._search_shortcut.activated.connect(ViewOp.ui.SEARCH_BOX.setFocus)
+        self._change_focus.activated.connect(FocusManager.change_focus)
         self._minimize_shortcut.activated.connect(self.showMinimized)
         # self._switch_mode_shortcut.activated.connect(self.switch_desktop_mini)
 

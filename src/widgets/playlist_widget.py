@@ -19,8 +19,6 @@ class SpreadWidget(QWidget):
         self.spread_animation = QPropertyAnimation(self, QByteArray(b'maximumHeight'))
         self.maximum_height = 2000  # 大点，字不会挤到一起
 
-        self.Qss = False
-
         self._init_signal_binding()
         self._set_prop()
         self.set_widget_prop()
@@ -82,9 +80,6 @@ class SpreadWidget(QWidget):
 
         self._layout.addStretch(1)
 
-    def add_widget(self, *args, **kw):
-        self._layout.addWidget(*args, **kw)
-
     def empty_layout(self):
         while self.layout().takeAt(0):
             item = self.layout().takeAt(0)
@@ -97,6 +92,7 @@ class _BaseItem(QFrame):
     signal_text_btn_clicked = pyqtSignal()
 
     active_item = []
+    items = []
 
     active_qss = """
         QFrame#playlist_container {
@@ -106,6 +102,9 @@ class _BaseItem(QFrame):
             border-left:4px solid #993333;
             background-color: #333;
         }
+        QFrame#playlist_container:focus {
+            background-color: #444;
+        }
         """
     normal_qss = """
         QFrame#playlist_container {
@@ -113,6 +112,9 @@ class _BaseItem(QFrame):
             border-bottom: 0px;
             padding-left: 15px;
             border: 0px solid #993333;
+        }
+        QFrame#playlist_container:focus {
+            background-color: #444;
         }
         QFrame#playlist_container:hover{
             background-color: #333;
@@ -146,7 +148,11 @@ class _BaseItem(QFrame):
 
         self._text_btn.clicked.connect(self.on_text_btn_clicked)
         self._text_btn.setObjectName('playlist_name')   # in order to apply css
+        self.setFocusPolicy(Qt.StrongFocus)
         self.setObjectName('playlist_container')
+        self.setStyleSheet(self.normal_qss)
+
+        _BaseItem.items.append(self)
 
     @classmethod
     def set_active(cls, w):
@@ -170,8 +176,25 @@ class _BaseItem(QFrame):
             item.setStyleSheet(cls.normal_qss)
             cls.active_item.remove(item)
 
+    def focus_next(self):
+        index = self.items.index(self)
+        if index == len(self.items) - 1:
+            next_index = 0
+        else:
+            next_index = index + 1
+        self.items[next_index].setFocus()
+
+    def focus_previous(self):
+        index = self.items.index(self)
+        if index == 0:
+            pre_index = len(self.items) - 1
+        else:
+            pre_index = index - 1
+        self.items[pre_index].setFocus()
+
     @pyqtSlot()
     def on_text_btn_clicked(self):
+        self.setFocus()
         if _BaseItem.set_active(self):
             self.signal_text_btn_clicked.emit()
 
@@ -180,6 +203,38 @@ class _BaseItem(QFrame):
 
     def set_icon_pixmap(self, pixmap):
         self._icon_label.setPixmap(pixmap)
+
+    def _bind_select_shortcut(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_J:
+            self.focus_next()
+        elif key_code == Qt.Key_K:
+            self.focus_previous()
+        elif key_code in (Qt.Key_Enter, Qt.Key_Return):
+            self.on_text_btn_clicked()
+
+    def _ensure_visible(self):
+        '''hack'''
+        scrollarea = self.parent().parent().parent().parent()
+        y = self.y()
+        height = self.height()
+        p_y = self.parent().y()
+        p_p_y = self.parent().parent().y()
+        # scrollarea central widget's height
+        p_p_p_height = self.parent().parent().parent().height()
+
+        dis = (p_p_p_height + p_p_y) - (y + p_y + height)
+        if dis - 20 <= 0:
+            scrollarea.verticalScrollBar().setValue(-dis)
+        else:
+            scrollarea.verticalScrollBar().setValue(0)
+
+    def keyPressEvent(self, event):
+        self._bind_select_shortcut(event)
+
+    def focusInEvent(self, event):
+        super().focusInEvent(event)
+        self._ensure_visible()
 
 
 class PlaylistItem(_BaseItem):
@@ -195,7 +250,7 @@ class PlaylistItem(_BaseItem):
 
         self.data = {}
         self._menu = QMenu(self)
-        self.edit_action = QAction("编辑歌单名字", self)
+        self.edit_action = QAction(u"编辑歌单名字", self)
         self.delete_action = QAction(u'删除歌单', self)
         self.update_action = QAction(u'更新歌单', self)
         self._menu.addAction(self.edit_action)
@@ -209,6 +264,7 @@ class PlaylistItem(_BaseItem):
 
     @pyqtSlot()
     def on_text_btn_clicked(self):
+        self.setFocus()
         if PlaylistItem.set_active(self):
             self.signal_text_btn_clicked.emit(self.data['id'])
 
@@ -233,14 +289,15 @@ class PlaylistItem(_BaseItem):
         self._text_btn.show()
         self._text_btn.setText(text)
         ControllerApi.api.update_playlist_name(self.data['id'], text)
-    
+
     def update_playlist(self, clicked=True):
         pid = self.data['id']
         ControllerApi.api.get_playlist_detail(pid, cache=False)
         ControllerApi.view.ui.STATUS_BAR.showMessage(u'正在后台更新歌单歌曲列表', 5000)
 
     def delete_playlist(self):
-        m = QMessageBox(QMessageBox.Warning,'警告', '确认删除歌单么 ?', QMessageBox.Yes | QMessageBox.No)
+        m = QMessageBox(QMessageBox.Warning, '警告', '确认删除歌单么 ?',
+                        QMessageBox.Yes | QMessageBox.No)
         if m.exec() != QMessageBox.Yes:
             return False
 
@@ -271,7 +328,9 @@ class PlaylistItem(_BaseItem):
             self._menu.exec(event.globalPos())
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape:
+        super().keyPressEvent(event)
+        key_code = event.key()
+        if key_code == Qt.Key_Escape:
             text = self._edit_widget.text()
             if text == '':
                 self._edit_widget.setPlaceholderText(u'歌单名字不能为空')

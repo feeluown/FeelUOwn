@@ -26,8 +26,7 @@ th {
 }
 
 .song:focus {
-  background-color: #373737;
-  border-bottom: 1px dashed #993333 !important;
+  background-color: #444;
   outline: none;
 }
 
