@@ -79,7 +79,8 @@ class SimiSongsMode(ModeBase):
 
     @classmethod
     def load(cls):
-        ControllerApi.notify_widget.show_message("通知", "您已成功进入单曲电台\n接下来的歌曲将和这首歌风格类似")
+        ControllerApi.notify_widget.show_message(
+            "通知", "您已成功进入单曲电台\n接下来的歌曲将和这首歌风格类似")
         ControllerApi.player.stop()
         cls.reset_song_list()
 

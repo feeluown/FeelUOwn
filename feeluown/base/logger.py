@@ -2,7 +2,7 @@
 
 import logging
 
-import constants
+from feeluown.constants import MODE, DEBUG, LOGFILE
 
 
 """
@@ -15,7 +15,7 @@ we use only LOG.info to record those errors or warning
 
 
 # CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET
-if constants.MODE == constants.DEBUG:
+if MODE == DEBUG:
     logging.basicConfig(
         level=logging.INFO,
         format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s"
@@ -25,20 +25,19 @@ else:
         logging.basicConfig(
             level=logging.INFO,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            filename=constants.LOGFILE,
+            filename=LOGFILE,
             filemode='w'
         )
     except:
-        f = open(constants.LOGFILE, 'w')
+        f = open(LOGFILE, 'w')
         f.write('Create log file')
         f.close()
 
         logging.basicConfig(
             level=logging.INFO,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            filename=constants.LOGFILE,
+            filename=LOGFILE,
             filemode='w'
         )
 
 LOG = logging.getLogger("log")
-

@@ -182,7 +182,7 @@ class ViewOp(object):
                 ViewOp.ui.MY_LIST_WIDGET.layout().addWidget(w)
                 if pid == cls.controller.api.favorite_pid:
                     favorite_playlist_detail = cls.controller.api.get_playlist_detail(pid)
-                    cls.controller.state["current_pid"] = pid 
+                    cls.controller.state["current_pid"] = pid
                     ViewOp.ui.WEBVIEW.load_playlist(favorite_playlist_detail)
                 else:
                     if playlist_num <= 50:
@@ -202,3 +202,12 @@ class ViewOp(object):
         cls.ui.WEBVIEW.load_playlist(playlist_detail)
         # TODO: change current_pid when webview changed
         cls.controller.state['current_pid'] = pid
+
+    @classmethod
+    @pyqtSlot()
+    def on_recommend_item_clicked(cls):
+        songs = cls.controller.api.get_recommend_songs()
+        if not cls.controller.api.is_response_ok(songs):
+            return
+        cls.ui.WEBVIEW.load_recommend_songs(songs)
+        cls.controller.state['current_pid'] = 0

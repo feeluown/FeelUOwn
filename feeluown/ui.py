@@ -65,6 +65,7 @@ class UiMainWidget(object):
         self.SPREAD_BTN_FOR_LOCAL = self.left_widget.central_widget.local_fold_spread_btn
 
         self.FM_ITEM = self.left_widget.central_widget.fm_item
+        self.RECOMMEND_ITEM = self.left_widget.central_widget.recommend_item
         self.MY_LIST_WIDGET = self.left_widget.central_widget.create_list_widget
         self.COLLECTION_LIST_WIDGET = self.left_widget.central_widget.collection_list_widget
         self.LOCAL_LIST_WIDGET = self.left_widget.central_widget.local_list_widget

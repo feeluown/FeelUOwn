@@ -138,6 +138,7 @@ class Controller(QWidget):
         ControllerApi.desktop_mini.close_signal.connect(self.show)
 
         ViewOp.ui.FM_ITEM.signal_text_btn_clicked.connect(self.mode_manager.change_to_fm)
+        ViewOp.ui.RECOMMEND_ITEM.signal_text_btn_clicked.connect(ViewOp.on_recommend_item_clicked)
 
         ControllerApi.current_playlist_widget.signal_play_music.connect(self.on_play_song_clicked)
         ControllerApi.current_playlist_widget.signal_remove_music_from_list.connect(self.remove_music_from_list)

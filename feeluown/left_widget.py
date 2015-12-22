@@ -55,8 +55,12 @@ class LeftWidget(QWidget):
         self.collection_list_widget = SpreadWidget()
         self.local_list_widget = SpreadWidget()
 
-        self.fm_item = RecommendItem(self.recommend_list_widget, "私人FM", 
+        self.fm_item = RecommendItem(self.recommend_list_widget, "私人FM",
                                      QPixmap(ICON_PATH + 'fm.png'))
+        self.recommend_item = RecommendItem(
+            self.recommend_list_widget,
+            "每日推荐",
+            QPixmap(ICON_PATH + 'recommend.png'))
 
         self.layout = QVBoxLayout()
 
@@ -98,6 +102,7 @@ class LeftWidget(QWidget):
         self.layout.setSpacing(0)
 
         self.recommend_list_widget.layout().addWidget(self.fm_item)
+        self.recommend_list_widget.layout().addWidget(self.recommend_item)
 
         self.create_title_layout.addWidget(self.create_title)
         self.create_title_layout.addStretch(1)

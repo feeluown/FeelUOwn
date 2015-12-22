@@ -353,6 +353,15 @@ class NetEaseAPI(object):
             songs[i] = self.access_music(song)
         return songs
 
+    def get_recommend_songs(self):
+        data = self.ne.get_recommend_songs()
+        if not self.is_response_avaible(data):
+            return data
+        songs = data['recommend']
+        for i, song in enumerate(songs):
+            songs[i] = self.access_music_brief(song)
+        return songs
+
     def update_playlist_name(self, pid, name):
         data = self.ne.update_playlist_name(pid, name)
         if not self.is_response_avaible(data):
@@ -369,7 +378,7 @@ class NetEaseAPI(object):
         playlist['type'] = playlist['adType']
         playlist_model = PlaylistModel(playlist)
         return playlist_model
-    
+
     def delete_playlist(self, pid):
         data = self.ne.delete_playlist(pid)
         if not self.is_response_avaible(data):

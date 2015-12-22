@@ -136,3 +136,11 @@ class WebView(QWebView):
         self.js_queue.append(js_code)
         self.load(QUrl.fromLocalFile(path))
         self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)
+
+    def load_recommend_songs(self, songs):
+        data = json.dumps(songs)
+        path = QFileInfo(HTML_PATH + 'recommend.html').absoluteFilePath()
+        js_code = 'window.fill_search(%s)' % data
+        self.js_queue.append(js_code)
+        self.load(QUrl.fromLocalFile(path))
+        self.page().mainFrame().addToJavaScriptWindowObject('js_python', self)

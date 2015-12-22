@@ -255,3 +255,7 @@ class NetEase(QObject):
                "?songid=%d&offset=%d&total=true&limit=%d"
                % (mid, offset, limit))
         return self.http_request('GET', url)
+
+    def get_recommend_songs(self):
+        url = 'http://music.163.com/api/discovery/recommend/songs'
+        return self.http_request('GET', url)
