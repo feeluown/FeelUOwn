@@ -66,7 +66,8 @@ class Controller(QWidget):
         
         self._search_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
         self._minimize_shortcut = QShortcut(QKeySequence('Ctrl+M'), self)
-        self._change_focus = QShortcut(QKeySequence('Ctrl+G'), self)
+        self._pre_focus = QShortcut(QKeySequence('Ctrl+['), self)
+        self._next_focus = QShortcut(QKeySequence('Ctrl+]'), self)
         # self._switch_mode_shortcut = QShortcut(QKeySequence(Qt.Key_Escape), self)
 
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
@@ -148,7 +149,8 @@ class Controller(QWidget):
         ControllerApi.player.signal_download_progress.connect(ViewOp.ui.PROGRESS.setValue)
 
         self._search_shortcut.activated.connect(ViewOp.ui.SEARCH_BOX.setFocus)
-        self._change_focus.activated.connect(FocusManager.change_focus)
+        self._pre_focus.activated.connect(FocusManager.change_focus)
+        self._next_focus.activated.connect(FocusManager.change_focus)
         self._minimize_shortcut.activated.connect(self.showMinimized)
         # self._switch_mode_shortcut.activated.connect(self.switch_desktop_mini)
 

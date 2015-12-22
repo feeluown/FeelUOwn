@@ -185,8 +185,15 @@ class NetEaseAPI(object):
         user = UserDb.get_user(self.uid)
         if user.playlists is not None:
             self._set_favorite_pid(user.playlists)
+            app_event_loop = asyncio.get_event_loop()
+            app_event_loop.run_in_executor(
+                None, partial(self.update_user_playlists))
             return user.playlists
+        else:
+            return self.update_user_playlists()
 
+    def update_user_playlists(self):
+        user = UserDb.get_user(self.uid)
         data = self.ne.user_playlist(self.uid)
         if not self.is_response_avaible(data):
             return data
@@ -199,6 +206,7 @@ class NetEaseAPI(object):
             result_playlists.append(
                 BriefPlaylistModel(brief_playlist).get_dict())
         self._set_favorite_pid(result_playlists)
+        LOG.info('update user playlists info')
         user.update(_playlists=pickle.dumps(result_playlists))
         return result_playlists
 
