@@ -49,7 +49,7 @@ echo "#!/usr/bin/env xdg-open
 Type=Application
 Name=FeelUOwn
 Comment=FeelUOwn Launcher
-Exec=$pythonVersion $currentPath/src/main.py
+Exec=$pythonVersion $currentPath/feeluown/main.py
 Icon=$currentPath/icons/FeelUOwn.png
 Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false

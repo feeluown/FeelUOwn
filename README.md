@@ -152,7 +152,7 @@ yaourt -S feeluown-git
 1. 增强用户可交互性：左下角的statusbar的信息提示更加科学
 
 ## 开发注意事项
-1. 配置PYTHONPATH为`src`目录
+1. 配置PYTHONPATH为`feeluown`目录
 2. 确认安装了python3，pyqt5，pyqt5的multimedia库
 3. 尽量遵守google的python代码风格指南
 4. `TRY TO BE MORE PYTHONIC`

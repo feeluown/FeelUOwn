@@ -1,4 +1,4 @@
 #! /bin/sh
 
-cd src
+cd feeluown
 python3 main.py

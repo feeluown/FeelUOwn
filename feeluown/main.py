@@ -1,11 +1,12 @@
 #! /usr/bin/env python3
-# -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
 
 
 import sys
 import os
 import asyncio
 
+sys.path.append('..')
 path = sys.path[0]
 os.chdir(os.path.abspath(path))
 
@@ -50,7 +51,8 @@ if __name__ == "__main__":
         sys.stderr = f_handler
 
     w = Controller()
-    w.move(QApplication.primaryScreen().geometry().center() - w.rect().center());
+    w.move(QApplication.primaryScreen().geometry().center()
+           - w.rect().center())
     w.show()
 
     app_event_loop.run_forever()

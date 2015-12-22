@@ -37,10 +37,10 @@ data/*.json
 cache/*.json
 
 # test image
-src/*.png
-src/*.jpg
-src/widgets/*.png
-src/widgets/*.jpg
+feeluown/*.png
+feeluown/*.jpg
+feeluown/widgets/*.png
+feeluown/widgets/*.jpg
 
 # node
 node_modules
