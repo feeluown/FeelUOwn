@@ -2,7 +2,7 @@
 
 
 def test_view(qtbot):
-    from views import UiMainWidget
+    from ui import UiMainWidget
     from PyQt5.QtWidgets import QWidget
     w = QWidget()
     ui = UiMainWidget()
