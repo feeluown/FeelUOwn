@@ -6,8 +6,8 @@ from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import QWidget, QApplication, QShortcut, QVBoxLayout,\
     QFrame, QHBoxLayout, QLabel
 
-from constants import WINDOW_ICON
-from base.utils import singleton
+from feeluown.base.utils import singleton
+from feeluown.constants import WINDOW_ICON
 
 
 width, height = 300, 80

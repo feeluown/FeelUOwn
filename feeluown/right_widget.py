@@ -11,9 +11,8 @@ funcition to set child widget properties.
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from widgets.webview import WebView
 
-from constants import ICON_PATH, HTML_PATH
+from feeluown.widgets.webview import WebView
 
 
 class RightWidget(QWidget):

@@ -4,7 +4,8 @@ import platform
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
-from constants import ICON_PATH
+
+from feeluown.constants import ICON_PATH
 
 width, height = 200, 290
 

@@ -2,8 +2,9 @@
 __author__ = 'cosven'
 
 import asyncio
-from base.logger import LOG
-from controller_api import ControllerApi
+
+from feeluown.base.logger import LOG
+from feeluown.controller_api import ControllerApi
 
 
 def keyboard_tap_callback(proxy, type_, event, refcon):

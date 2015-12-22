@@ -2,8 +2,8 @@
 
 
 def test_view(qtbot):
-    from ui import UiMainWidget
     from PyQt5.QtWidgets import QWidget
+    from feeluown.ui import UiMainWidget
     w = QWidget()
     ui = UiMainWidget()
     ui.setup_ui(w)

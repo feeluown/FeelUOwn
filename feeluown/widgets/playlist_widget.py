@@ -5,8 +5,8 @@ from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
 
-from constants import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
-from controller_api import ControllerApi
+from feeluown.constants import ICON_PATH, PLAYLIST_FAVORITE, PLAYLIST_MINE
+from feeluown.controller_api import ControllerApi
 
 
 class SpreadWidget(QWidget):

@@ -12,7 +12,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from widgets.add_to_playlist_btn import Add_to_playlist_btn
+from feeluown.widgets.add_to_playlist_btn import Add_to_playlist_btn
 
 
 class LoginLabel(QLabel):

@@ -4,7 +4,7 @@ import json
 import time
 from functools import wraps
 
-from base.logger import LOG
+from .logger import LOG
 
 
 def singleton(cls, *args, **kw):

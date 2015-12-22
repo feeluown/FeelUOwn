@@ -11,9 +11,9 @@ from PyQt5.QtMultimedia import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from constants import SONGS_PATH
-from base.utils import singleton, show_requests_progress
-from base.logger import LOG
+from feeluown.constants import SONGS_PATH
+from .utils import singleton, show_requests_progress
+from .logger import LOG
 
 
 

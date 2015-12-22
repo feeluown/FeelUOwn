@@ -7,12 +7,11 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtNetwork import *
-from base.network_manger import NetworkManager
 
-from base.logger import LOG
-
-from controller_api import ControllerApi
-from plugin.NetEaseMusic.model import UserDb
+from feeluown.base.network_manger import NetworkManager
+from feeluown.base.logger import LOG
+from feeluown.controller_api import ControllerApi
+from feeluown.plugin.NetEaseMusic.model import UserDb
 
 
 class LoginDialog(QDialog):

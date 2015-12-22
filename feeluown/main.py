@@ -12,12 +12,11 @@ os.chdir(os.path.abspath(path))
 
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
-
-from constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
-    MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
-
-from controllers import Controller
 from quamash import QEventLoop
+
+from feeluown.constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
+    MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
+from feeluown.controllers import Controller
 
 
 def ensure_data_dir():

@@ -11,27 +11,27 @@ from PyQt5.QtWidgets import *
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
-from controller_api import ControllerApi
-from view_api import ViewOp
-from widgets.login_dialog import LoginDialog
-from widgets.music_table import MusicTableWidget
-from widgets.lyric import LyricWidget
-from widgets.playlist_widget import PlaylistItem
-from widgets.desktop_mini import DesktopMiniLayer
-from widgets.notify import NotifyWidget
-from ui import UiMainWidget
-from base.logger import LOG
-from base.network_manger import NetworkManager
-from base.player import Player
-from base.utils import measure_time
-from c.focus_manager import FocusManager
-from c.modes import ModesManger
-from c.tips_manager import TipsManager
-from c.version_manager import VersionManager
-from constants import WINDOW_ICON, DATABASE_SQLITE
+from feeluown.controller_api import ControllerApi
+from feeluown.view_api import ViewOp
+from feeluown.widgets.login_dialog import LoginDialog
+from feeluown.widgets.music_table import MusicTableWidget
+from feeluown.widgets.lyric import LyricWidget
+from feeluown.widgets.playlist_widget import PlaylistItem
+from feeluown.widgets.desktop_mini import DesktopMiniLayer
+from feeluown.widgets.notify import NotifyWidget
+from feeluown.ui import UiMainWidget
+from feeluown.base.logger import LOG
+from feeluown.base.network_manger import NetworkManager
+from feeluown.base.player import Player
+from feeluown.base.utils import measure_time
+from feeluown.c.focus_manager import FocusManager
+from feeluown.c.modes import ModesManger
+from feeluown.c.tips_manager import TipsManager
+from feeluown.c.version_manager import VersionManager
+from feeluown.constants import WINDOW_ICON, DATABASE_SQLITE
 
-from plugin import NetEaseMusic, Hotkey
-from plugin.NetEaseMusic.model import Base
+from feeluown.plugin import NetEaseMusic, Hotkey
+from feeluown.plugin.NetEaseMusic.model import Base
 
 
 class Controller(QWidget):
@@ -63,7 +63,7 @@ class Controller(QWidget):
 
         ControllerApi.network_manager = NetworkManager()
         ControllerApi.current_playlist_widget = MusicTableWidget()
-        
+
         self._search_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
         self._minimize_shortcut = QShortcut(QKeySequence('Ctrl+M'), self)
         self._pre_focus = QShortcut(QKeySequence('Ctrl+['), self)
@@ -73,7 +73,7 @@ class Controller(QWidget):
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('FeelUOwn')
-        self.resize(960, 540)
+        self.resize(960, 600)
 
         self.mode_manager = ModesManger()
         self._init_signal_binding()

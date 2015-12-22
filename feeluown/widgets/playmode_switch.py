@@ -4,8 +4,9 @@ from PyQt5.QtMultimedia import QMediaPlaylist
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QLabel
-from base.player import Player
-from constants import ICON_PATH
+
+from feeluown.base.player import Player
+from feeluown.constants import ICON_PATH
 
 
 # item once: 0

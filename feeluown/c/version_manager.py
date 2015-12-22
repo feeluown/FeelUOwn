@@ -4,9 +4,9 @@ import asyncio
 import requests
 from functools import partial
 
-from base.logger import LOG
-from controller_api import ControllerApi
-from view_api import ViewOp
+from feeluown.base.logger import LOG
+from feeluown.controller_api import ControllerApi
+from feeluown.view_api import ViewOp
 
 
 class VersionManager(object):

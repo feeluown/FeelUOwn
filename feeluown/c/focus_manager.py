@@ -2,8 +2,8 @@
 
 from PyQt5.QtWidgets import QApplication
 
-from view_api import ViewOp
-from widgets.playlist_widget import _BaseItem
+from feeluown.view_api import ViewOp
+from feeluown.widgets.playlist_widget import _BaseItem
 
 
 class FocusManager(object):

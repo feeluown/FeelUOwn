@@ -7,9 +7,9 @@ import re
 from functools import partial
 from threading import current_thread
 
-from base.logger import LOG
-from base.utils import singleton
-from base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
+from feeluown.base.logger import LOG
+from feeluown.base.utils import singleton
+from feeluown.base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
     AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
 

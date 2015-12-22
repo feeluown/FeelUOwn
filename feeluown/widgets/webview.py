@@ -5,10 +5,9 @@ from PyQt5.QtCore import *
 from PyQt5.QtWebKitWidgets import QWebView
 from PyQt5.QtWebKit import QWebSettings
 
-from constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
-
-from base.logger import LOG
-from base.utils import measure_time
+from feeluown.base.logger import LOG
+from feeluown.base.utils import measure_time
+from feeluown.constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 
 
 class WebView(QWebView):

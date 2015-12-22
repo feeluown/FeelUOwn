@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from base.logger import LOG
-from controller_api import ControllerApi
-from view_api import ViewOp
+from feeluown.base.logger import LOG
+from feeluown.controller_api import ControllerApi
+from feeluown.view_api import ViewOp
 
 from .normalize import NetEaseAPI
 from .model import UserDb

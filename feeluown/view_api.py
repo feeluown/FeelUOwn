@@ -8,11 +8,10 @@ from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtNetwork import QNetworkRequest
 from PyQt5.QtWidgets import QApplication
 
-from base.logger import LOG
-from base.models import MusicModel
-from base.utils import measure_time
-
-from widgets.playlist_widget import PlaylistItem
+from feeluown.base.logger import LOG
+from feeluown.base.models import MusicModel
+from feeluown.base.utils import measure_time
+from feeluown.widgets.playlist_widget import PlaylistItem
 
 
 class ViewOp(object):

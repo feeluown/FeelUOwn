@@ -7,7 +7,7 @@ import pickle
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, PickleType, DateTime
 
-from controller_api import ControllerApi
+from feeluown.controller_api import ControllerApi
 
 
 Base = declarative_base()

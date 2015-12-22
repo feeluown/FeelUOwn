@@ -3,7 +3,7 @@
 
 import pytest
 
-from base.utils import *
+from feeluown.base.utils import *
 
 
 def test_singleton():

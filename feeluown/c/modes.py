@@ -1,8 +1,7 @@
 # -*- coding: utf8 -*-
 
-from controller_api import ControllerApi
-
-from widgets.playlist_widget import PlaylistItem
+from feeluown.controller_api import ControllerApi
+from feeluown.widgets.playlist_widget import PlaylistItem
 
 
 class ModeBase(object):

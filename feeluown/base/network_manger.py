@@ -4,9 +4,9 @@ from queue import Queue
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
 
-from controller_api import ControllerApi
-from base.utils import singleton
-from base.logger import LOG
+from feeluown.controller_api import ControllerApi
+from .utils import singleton
+from .logger import LOG
 
 
 @singleton

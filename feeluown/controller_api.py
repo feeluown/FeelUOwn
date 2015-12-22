@@ -6,8 +6,6 @@ import subprocess
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication
 
-from base.logger import LOG
-
 
 class ControllerApi(object):
     """暴露给plugin或者其他外部模块的接口和数据

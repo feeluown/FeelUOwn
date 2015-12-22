@@ -5,7 +5,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from controller_api import ControllerApi
+from feeluown.controller_api import ControllerApi
 
 
 class LyricWidget(QWidget):

@@ -2,8 +2,8 @@
 
 import random
 
-from controller_api import ControllerApi
-from tips import tips
+from feeluown.controller_api import ControllerApi
+from feeluown.tips import tips
 
 
 class TipsManager(object):

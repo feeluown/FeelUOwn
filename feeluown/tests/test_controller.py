@@ -1,8 +1,9 @@
 # -*- coding:utf8 -*-
 import asyncio
 from quamash import QEventLoop
-from controllers import Controller
 from PyQt5.QtWidgets import QApplication
+
+from feeluown.controllers import Controller
 
 
 def test_controller_start():

@@ -3,7 +3,8 @@
 from functools import partial
 
 from PyQt5.QtWidgets import QPushButton, QMenu, QAction
-from controller_api import ControllerApi
+
+from feeluown.controller_api import ControllerApi
 
 
 class Add_to_playlist_btn(QPushButton):

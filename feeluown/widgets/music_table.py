@@ -4,7 +4,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from base.logger import LOG
+from feeluown.base.logger import LOG
 
 
 class MusicTableWidget(QTableWidget):

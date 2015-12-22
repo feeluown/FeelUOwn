@@ -12,8 +12,8 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 
-from constants import ICON_PATH
-from widgets.playlist_widget import SpreadWidget, RecommendItem
+from feeluown.constants import ICON_PATH
+from feeluown.widgets.playlist_widget import SpreadWidget, RecommendItem
 
 
 class LeftScrollArea(QScrollArea):

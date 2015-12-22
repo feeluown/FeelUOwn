@@ -10,10 +10,10 @@ funcition to set child widget properties.
 
 from PyQt5.QtWidgets import *
 
-from left_widget import LeftScrollArea
-from right_widget import RightWidget
-from top_widget import TopWidget
-from widgets.statusbar import StatusBar
+from feeluown.left_widget import LeftScrollArea
+from feeluown.right_widget import RightWidget
+from feeluown.top_widget import TopWidget
+from feeluown.widgets.statusbar import StatusBar
 
 
 class UiMainWidget(object):
