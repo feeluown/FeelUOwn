@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QLabel
 
 from feeluown.base.player import Player
+from feeluown.base.logger import LOG
 from feeluown.constants import ICON_PATH
 
 
@@ -47,6 +48,8 @@ class PlaymodeSwitchLabel(QLabel):
 
     @pyqtSlot(int)
     def on_mode_changed(self, mode):
+        LOG.info('current play mode is %d.'
+                 ' 1 for single in loop, 3 for loop, 4 for random' % mode)
         if mode != self._current_mode:
             self._current_mode = mode
             self._switch_mode()

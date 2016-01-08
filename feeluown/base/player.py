@@ -272,28 +272,23 @@ class Player(QMediaPlayer):
         LOG.info("save song %s failed" % song_model['name'])
         return False
 
-    @classmethod
-    def set_play_mode(cls, mode=4):
+    def set_play_mode(self, mode=4):
         # item once: 0
         # item in loop: 1
         # sequential: 2
         # loop: 3
         # random: 4
-        cls.playback_mode = mode
+        self.playback_mode = mode
+        self.signal_playback_mode_changed.emit(self.playback_mode)
 
-    @classmethod
-    def set_play_mode_random(cls):
-        cls.playback_mode = 4
+    def set_play_mode_random(self):
+        self.playback_mode = 4
+        self.signal_playback_mode_changed.emit(self.playback_mode)
 
-    @classmethod
-    def set_play_mode_loop(cls):
-        cls.playback_mode = 3
+    def set_play_mode_loop(self):
+        self.playback_mode = 3
+        self.signal_playback_mode_changed.emit(self.playback_mode)
 
-    @classmethod
-    def set_play_mode_one_in_loop(cls):
-        cls.playback_mode = 1
-
-    @pyqtSlot(int)
-    def on_playback_mode_changed(self, playback_mode):
-        self.set_play_mode(playback_mode)
-        self.signal_playback_mode_changed.emit(playback_mode)
+    def set_play_mode_one_in_loop(self):
+        self.playback_mode = 1
+        self.signal_playback_mode_changed.emit(self.playback_mode)
