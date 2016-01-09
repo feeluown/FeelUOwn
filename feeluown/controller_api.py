@@ -6,6 +6,8 @@ import subprocess
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication
 
+from feeluown.base.logger import LOG
+
 
 class ControllerApi(object):
     """暴露给plugin或者其他外部模块的接口和数据
@@ -40,16 +42,21 @@ class ControllerApi(object):
         clipboard = QApplication.clipboard()
         clipboard.setText(url_high)
 
+        cls.view.ui.STATUS_BAR.showMessage(u"程序已经将视频的播放地址复制到剪切板", 5000)
         if platform.system() == "Linux":
             ControllerApi.player.pause()
             ControllerApi.notify_widget.show_message("通知", "正在尝试调用VLC视频播放器播放MV")
-            subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
+            try:
+                subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
+            except Exception as e:
+                LOG.error('call vlc player failed')
         elif platform.system().lower() == 'Darwin'.lower():
             ControllerApi.player.pause()
-            cls.view.ui.STATUS_BAR.showMessage(u"准备调用 QuickTime Player 播放mv", 4000)
-            subprocess.Popen(['open', '-a', 'QuickTime Player', url_high])
-        else:
-            cls.view.ui.STATUS_BAR.showMessage(u"程序已经将视频的播放地址复制到剪切板", 5000)
+            ControllerApi.notify_widget.show_message("通知", "准备调用 QuickTime Player 播放mv")
+            try:
+                subprocess.Popen(['open', '-a', 'QuickTime Player', url_high])
+            except Exception as e:
+                LOG.error('call quicktime player failed')
 
     @classmethod
     def toggle_lyric_widget(cls):
