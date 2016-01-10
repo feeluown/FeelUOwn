@@ -18,6 +18,8 @@ cd FeelUOwn
 ./install.sh
 ```
 
+Ubuntu 15.10 点击图标没反应请参考 #74 #81 的临时解决方案。
+
 ## Fedora 安装
 ```
 sudo dnf install python3-pip
