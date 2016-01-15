@@ -8,7 +8,9 @@ from feeluown.controller_api import ControllerApi
 
 
 def keyboard_tap_callback(proxy, type_, event, refcon):
-        from AppKit import NSKeyUp, NSEvent
+        from AppKit import NSKeyUp, NSEvent, NSBundle
+        NSBundle.mainBundle().infoDictionary()['NSAppTransportSecurity'] =\
+            dict(NSAllowsArbitraryLoads=True)
         if type_ < 0 or type_ > 0x7fffffff:
             LOG.error('Unkown mac event')
             run_event_loop()
