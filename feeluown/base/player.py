@@ -52,6 +52,7 @@ class Player(QMediaPlayer):
     _music_list = list()    # 里面的对象是music_model
     _current_index = 0
     playback_mode = 3
+    last_playback_mode = 3
     _other_mode = False
 
     def __init__(self, parent=None):
@@ -75,14 +76,18 @@ class Player(QMediaPlayer):
         self._refresh_timer.start()
 
     def change_player_mode_to_normal(self):
+        LOG.info('退出特殊的播放模式')
         self._other_mode = False
-        self.playback_mode = 4
-        self.signal_playback_mode_changed.emit(self.playback_mode)
+        self.set_play_mode(self.last_playback_mode)
 
     def change_player_mode_to_other(self):
+        # player mode: such as fm mode, different from playback mode
+        LOG.info('进入特殊的播放模式')
         self._other_mode = True
-        self.playback_mode = 2
-        self.signal_playback_mode_changed.emit(self.playback_mode)
+        self.set_play_mode(2)
+
+    def _record_playback_mode(self):
+        self.last_playback_mode = self.playback_mode
 
     def __refresh_position(self):
         self.positionChanged.emit(self.position())
@@ -97,7 +102,8 @@ class Player(QMediaPlayer):
         if state == QMediaPlayer.EndOfMedia:
             self.finished.emit()
             self.stop()
-            if (self._current_index == len(self._music_list) - 1) and (self.playback_mode == 2):
+            if (self._current_index == len(self._music_list) - 1) and\
+                    self._other_mode:
                 self.signal_playlist_finished.emit()
                 LOG.info("播放列表播放完毕")
             if not self._other_mode:
@@ -186,7 +192,7 @@ class Player(QMediaPlayer):
     def play_next(self):
         index = self.get_next_song_index()
         if index is not None:
-            if index == 0 and self.playback_mode == 2:
+            if index == 0 and self._other_mode:
                 self.signal_playlist_finished.emit()
                 LOG.info("播放列表播放完毕")
                 return
@@ -278,17 +284,6 @@ class Player(QMediaPlayer):
         # sequential: 2
         # loop: 3
         # random: 4
+        self._record_playback_mode()
         self.playback_mode = mode
-        self.signal_playback_mode_changed.emit(self.playback_mode)
-
-    def set_play_mode_random(self):
-        self.playback_mode = 4
-        self.signal_playback_mode_changed.emit(self.playback_mode)
-
-    def set_play_mode_loop(self):
-        self.playback_mode = 3
-        self.signal_playback_mode_changed.emit(self.playback_mode)
-
-    def set_play_mode_one_in_loop(self):
-        self.playback_mode = 1
-        self.signal_playback_mode_changed.emit(self.playback_mode)
+        self.signal_playback_mode_changed.emit(mode)

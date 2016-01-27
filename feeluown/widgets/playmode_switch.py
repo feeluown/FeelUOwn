@@ -26,9 +26,9 @@ class PlaymodeSwitchLabel(QLabel):
         self.player = Player()
         self.resize(15, 15)
         self._current_mode = self.player.playback_mode
-        self._set_mode()
+        self._update_mode_icon()
 
-    def _set_mode(self):
+    def _update_mode_icon(self):
         if self._current_mode == 1:
             self.setPixmap(QPixmap(ICON_PATH + "single_repeat.png").scaled(self.size()))
         elif self._current_mode == 3:
@@ -43,7 +43,9 @@ class PlaymodeSwitchLabel(QLabel):
             self._current_mode = 3
         elif self._current_mode == 3:
             self._current_mode = 4
-        self._set_mode()
+        else:
+            self._current_mode = 4
+        self._update_mode_icon()
         self.player.set_play_mode(self._current_mode)
 
     @pyqtSlot(int)
