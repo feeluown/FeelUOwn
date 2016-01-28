@@ -170,12 +170,13 @@ class NetEaseAPI(object):
     # TODO: change param 'cache' name to others
     def get_playlist_detail(self, pid, cache=True):
         '''update playlist detail in sqlite if cache is false'''
-        if cache is False:
-            app_event_loop = asyncio.get_event_loop()
-            app_event_loop.run_in_executor(
-                None, partial(self.update_playlist_detail, pid))
 
         if PlaylistDb.exists(pid):
+            if cache is False:
+                app_event_loop = asyncio.get_event_loop()
+                app_event_loop.run_in_executor(
+                    None, partial(self.update_playlist_detail, pid))
+
             LOG.info("Read playlist %d info from sqlite" % (pid))
             return PlaylistDb.get_data(pid)
         else:
