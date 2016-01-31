@@ -108,6 +108,11 @@ class Player(QMediaPlayer):
                 LOG.info("播放列表播放完毕")
             if not self._other_mode:
                 self.play_next()
+        # TODO: at hotkey linux module, when it call 
+        #       Controller.player.play_next or last may stop the player
+        #       add following code to fix the problem.
+        elif state in (QMediaPlayer.LoadedMedia, ):
+            self.play()
 
     def add_music(self, music_model):
         for i, music in enumerate(self._music_list):

@@ -2,9 +2,7 @@
 
 import sys
 import asyncio
-from _thread import start_new_thread
-
-from controller_api import ControllerApi
+from functools import partial
 
 
 def init():
@@ -13,5 +11,6 @@ def init():
         asyncio.Task(run())
     elif sys.platform.lower() == "linux":
         from .linux import KeyEventLoop
-        event = KeyEventLoop(ControllerApi.player)
-        start_new_thread(event.run, ())
+        event = KeyEventLoop()
+        app_event_loop = asyncio.get_event_loop()
+        app_event_loop.run_in_executor(None, partial(event.run))

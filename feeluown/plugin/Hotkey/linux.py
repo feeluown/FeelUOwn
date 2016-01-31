@@ -9,6 +9,9 @@ from Xlib import X
 from Xlib.ext import record
 from Xlib.protocol import rq
 
+from feeluown.base.logger import LOG
+from feeluown.controller_api import ControllerApi
+
 """
 0x1008ff17 media_next
 0x1008ff16 media_previous
@@ -25,8 +28,7 @@ class MediaKey(Enum):
 
 
 class KeyEventLoop(object):
-    def __init__(self, player):
-        self.player = player
+    def __init__(self):
         self.disp = Display()
         self.root = self.disp.screen().root
 
@@ -43,16 +45,17 @@ class KeyEventLoop(object):
                 keycode = event.detail
                 keysym = self.disp.keycode_to_keysym(keycode, 0)
                 if hex(keysym) == MediaKey.media_next.value:
-                    self.player.play_next()
+                    ControllerApi.player.play_next()
                 elif hex(keysym) == MediaKey.media_previous.value:
-                    self.player.play_last()
+                    ControllerApi.player.play_last()
                 elif hex(keysym) == MediaKey.media_stop.value:
-                    self.player.stop()
+                    ControllerApi.player.stop()
                 elif hex(keysym) == MediaKey.media_play_pause.value:
-                    self.player.play_or_pause()
+                    ControllerApi.player.play_or_pause()
 
     def run(self):
         # Monitor keypress and button press
+        LOG.info("Linux multimedia hotkey start")
         ctx = self.disp.record_create_context(
             0,
             [record.AllClients],

@@ -38,11 +38,14 @@ desktopFilename='FeelUOwn.desktop'
 touch $desktopFilename
 currentPath=`dirname $(readlink -f $0)`
 
-pythonVersion=''
-python3.5 --version 1>/dev/null 2>&1
-if [ $? -eq 0 ]; then
-    pythonVersion='python3.5'
-fi
+pythonVersion='python3'
+
+# since the latest ubuntu(wily) use python3.4 as default python3
+
+# python3.5 --version 1>/dev/null 2>&1
+# if [ $? -eq 0 ]; then
+#     pythonVersion='python3.5'
+# fi
 
 echo "#!/usr/bin/env xdg-open
 [Desktop Entry]
