@@ -5,7 +5,6 @@ import hashlib
 import pickle
 import re
 from functools import partial
-from threading import current_thread
 
 from feeluown.base.logger import LOG
 from feeluown.base.utils import singleton
