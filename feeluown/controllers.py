@@ -30,7 +30,7 @@ from feeluown.c.tips_manager import TipsManager
 from feeluown.c.version_manager import VersionManager
 from feeluown.constants import WINDOW_ICON, DATABASE_SQLITE
 
-from feeluown.plugin import NetEaseMusic, Hotkey
+from feeluown.plugin import NetEaseMusic, Hotkey, MprisEx
 from feeluown.plugin.NetEaseMusic.model import Base
 
 
@@ -86,6 +86,7 @@ class Controller(QWidget):
     def _init_plugins(self):
         NetEaseMusic.init(self)  # 特别意义的插件
         Hotkey.init()
+        MprisEx.init()
 
     def _init_signal_binding(self):
         """初始化部分信号绑定
@@ -222,7 +223,6 @@ class Controller(QWidget):
     @staticmethod
     @pyqtSlot(int)
     def search_album(aid):
-        loop = asyncio.get_event_loop()
         album_detail_model = ControllerApi.api.get_album_detail(aid)
         if not ControllerApi.api.is_response_ok(album_detail_model):
             return

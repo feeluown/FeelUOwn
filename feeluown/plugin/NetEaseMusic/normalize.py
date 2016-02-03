@@ -112,7 +112,6 @@ class NetEaseAPI(object):
         self.save_cookies()
         self.save_login_time()
 
-
     def get_captcha_url(self, captcha_id):
         return self.ne.get_captcha_url(captcha_id)
 
@@ -128,7 +127,7 @@ class NetEaseAPI(object):
 
     def get_song_detail(self, mid):
         if SongDb.exists(mid):
-            LOG.info("Read song %d from sqlite" % mid)
+            # LOG.info("Read song %d from sqlite" % mid)
             return SongDb.get_data(mid)
 
         data = self.ne.song_detail(mid)
@@ -142,7 +141,7 @@ class NetEaseAPI(object):
 
         song = SongDb(mid=mid, _data=pickle.dumps(model))
         song.save()
-        LOG.info('Save music %d info into sqlite' % mid)
+        # LOG.info('Save music %d info into sqlite' % mid)
 
         return model
 
@@ -164,7 +163,7 @@ class NetEaseAPI(object):
             playlist = PlaylistDb(pid=pid, _data=pickle.dumps(model))
             playlist.save()
 
-        LOG.info('Save playlist %d info to sqlite' % pid)
+        # LOG.info('Save playlist %d info to sqlite' % pid)
         return model
 
     # TODO: change param 'cache' name to others
@@ -177,7 +176,7 @@ class NetEaseAPI(object):
                 app_event_loop.run_in_executor(
                     None, partial(self.update_playlist_detail, pid))
 
-            LOG.info("Read playlist %d info from sqlite" % (pid))
+            # LOG.info("Read playlist %d info from sqlite" % (pid))
             return PlaylistDb.get_data(pid)
         else:
             return self.update_playlist_detail(pid)
