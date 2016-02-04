@@ -24,6 +24,8 @@ sudo dnf install python3-pip
 sudo dnf install python3-qt5
 sudo pip3 install -r requirements.txt
 sudo pip3 install python3-xlib
+sudo apt-get install python3-dbus
+sudo apt-get install python3-dbus.mainloop.pyqt5
 
 # gstreamer 依赖还需要自己探索了，目前没搞清楚...
 ```
@@ -38,6 +40,7 @@ sudo apt-get install libqt5multimedia5-plugins
 sudo apt-get install fcitx-frontend-qt5
 sudo apt-get install python3-xlib
 sudo apt-get install python3-dbus
+sudo apt-get install python3-dbus.mainloop.pyqt5
 
 pip3 install -r requirements.txt
 ```
