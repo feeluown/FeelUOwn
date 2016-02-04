@@ -28,6 +28,14 @@ class MprisServer(dbus.service.Object):
         ControllerApi.player.stateChanged.connect(
             self._update_playback_status)
 
+        self._properties = dbus.Dictionary({
+            'DesktopEntry': 'FeelUOwn',
+            'Identity': 'feeluown',
+            'CanQuit': False,
+            'CanRaise': False,
+            'HasTrackList': False,
+        }, signature='sv')
+
         self._player_properties = dbus.Dictionary({
             'Metadata': dbus.Dictionary({
                 'mpris:length': dbus.Int64(0),
@@ -132,8 +140,10 @@ class MprisServer(dbus.service.Object):
     @dbus.service.method(dbus.PROPERTIES_IFACE,
                          in_signature='s', out_signature='a{sv}')
     def GetAll(self, interface):
-        if interface in (MPRIS_MEDIAPLAYER_PLAYER_INTERFACE):
+        if interface == MPRIS_MEDIAPLAYER_PLAYER_INTERFACE:
             return self._player_properties
+        elif interface == MPRIS_MEDIAPLAYER_INTERFACE:
+            return self._properties
         else:
             raise dbus.exceptions.DBusException(
                 'com.example.UnknownInterface',
