@@ -29,6 +29,9 @@ sudo apt-get install python3-dbus.mainloop.pyqt5
 
 # gstreamer 依赖还需要自己探索了，目前没搞清楚...
 ```
+### archlinux安装
+yaourt -S feeluown-git 
+
 
 ## 目前依賴
 Python 3, PyQt5
@@ -78,9 +81,6 @@ cd FeelUOwn
 ```
 
 然后就可以搜索 FeelUOwn, 就可以从系统程序中找到
-
-### archlinux安装
-yaourt -S feeluown-git 
 
 ## Changelog
 

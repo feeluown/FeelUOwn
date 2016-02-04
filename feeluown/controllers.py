@@ -85,7 +85,7 @@ class Controller(QWidget):
 
     def _init_plugins(self):
         NetEaseMusic.init(self)  # 特别意义的插件
-        Hotkey.init()
+        # Hotkey.init()
         MprisEx.init()
 
     def _init_signal_binding(self):
