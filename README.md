@@ -8,7 +8,7 @@
 ![](http://7xnn7w.com1.z0.glb.clouddn.com/v5.0a.png)
 
 
-## Ubuntu 14.04, 15.04安装
+## Ubuntu 15.10 安装
 
 > 运行下面3条命令，小白也可以正常使用。
 
@@ -17,8 +17,6 @@ git clone https://github.com/cosven/FeelUOwn.git
 cd FeelUOwn
 ./install.sh
 ```
-
-Ubuntu 15.10 点击图标没反应请参考 #74 #81 的临时解决方案。
 
 ## Fedora 安装
 ```
@@ -39,6 +37,7 @@ sudo apt-get install python3-pyqt5.qtwebkit
 sudo apt-get install libqt5multimedia5-plugins
 sudo apt-get install fcitx-frontend-qt5
 sudo apt-get install python3-xlib
+sudo apt-get install python3-dbus
 
 pip3 install -r requirements.txt
 ```
