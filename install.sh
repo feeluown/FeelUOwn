@@ -12,6 +12,7 @@ echo "---------------------------"
 echo "安装系统软件依赖"
 sudo apt-get install python3-xlib
 sudo apt-get install python3-dbus
+sudo apt-get install python3-dbus.mainloop.pyqt5
 
 sudo apt-get install python3-pyqt5.qtmultimedia
 sudo apt-get install python3-pyqt5.qtwebkit
