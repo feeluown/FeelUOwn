@@ -11,7 +11,15 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-
+    feeluown.rst
+    feeluown.base.rst
+    feeluown.c.rst
+    feeluown.plugin.rst
+    feeluown.plugin.HotKey.rst
+    feeluown.plugin.MprisEx.rst
+    feeluown.plugin.NetEaseMusic.rst
+    feeluown.widgets.rst
+    modules.rst
 
 Indices and tables
 ==================
