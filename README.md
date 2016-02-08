@@ -1,11 +1,6 @@
 # FeelUOwn
 
-从之前的 “网易云音乐 For Linux(第三方版)” 项目发展过来
-之前的项目托管地址：<https://git.oschina.net/zjuysw/NetEaseMusic>
-
-技术框架大致的说明： <http://www.cosven.com/2015/07/07/FeelUOwn-%E6%8A%80%E6%9C%AF%E9%98%B6%E6%AE%B5%E6%80%BB%E7%BB%93/>
-
-![](http://7xnn7w.com1.z0.glb.clouddn.com/v5.0a.png)
+![](http://7xnn7w.com1.z0.glb.clouddn.com/feeluown.png)
 
 
 ## Ubuntu 15.10 安装
@@ -19,21 +14,20 @@ cd FeelUOwn
 ```
 
 ## Fedora 安装
-```
-sudo dnf install python3-pip
-sudo dnf install python3-qt5
-sudo pip3 install -r requirements.txt
-sudo pip3 install python3-xlib
-sudo apt-get install python3-dbus
-sudo apt-get install python3-dbus.mainloop.pyqt5
 
-# gstreamer 依赖还需要自己探索了，目前没搞清楚...
+可以从 FZUG 源安装。感谢 @wzdnzd , issue #97
+
+```sh
+sudo dnf install feeluown
 ```
+
 ### archlinux安装
+
+```sh
 yaourt -S feeluown-git 
+```
 
-
-## 目前依賴
+## 目前依賴 (以ubuntu的包名为准)
 Python 3, PyQt5
 
 ```
@@ -65,14 +59,6 @@ yaourt -S python-quamash-qt5
 
 如果在安装完这些包之后，还是没有声音，可以提交相关issue
 
-### 安装使用
-
-```
-git clone https://github.com/cosven/FeelUOwn.git
-cd FeelUOwn
-./install.sh
-```
-
 ### 更新
 ```
 cd FeelUOwn
@@ -83,6 +69,9 @@ cd FeelUOwn
 然后就可以搜索 FeelUOwn, 就可以从系统程序中找到
 
 ## Changelog
+
+**2016年２月１日**
+增加 _Linux MPRIS2 dbus interface_ 支持
 
 **2015年11月10日**
 
