@@ -15,7 +15,7 @@ cd FeelUOwn
 
 ## Fedora 安装
 
-可以从 FZUG 源安装。感谢 @wzdnzd , issue #97
+可以从 FZUG 源安装。感谢 @1dot75cm, issue #97
 
 ```sh
 sudo dnf install feeluown
