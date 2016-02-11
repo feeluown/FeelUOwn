@@ -24,10 +24,10 @@ from feeluown.base.logger import LOG
 from feeluown.base.network_manger import NetworkManager
 from feeluown.base.player import Player
 from feeluown.base.utils import measure_time
-from feeluown.c.focus_manager import FocusManager
-from feeluown.c.modes import ModesManger
-from feeluown.c.tips_manager import TipsManager
-from feeluown.c.version_manager import VersionManager
+from feeluown.controllers.focus_manager import FocusManager
+from feeluown.controllers.modes import ModesManger
+from feeluown.controllers.tips_manager import TipsManager
+from feeluown.controllers.version_manager import VersionManager
 from feeluown.constants import WINDOW_ICON, DATABASE_SQLITE
 
 from feeluown.plugin import NetEaseMusic, MprisEx
