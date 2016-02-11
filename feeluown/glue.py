@@ -30,11 +30,11 @@ from feeluown.c.tips_manager import TipsManager
 from feeluown.c.version_manager import VersionManager
 from feeluown.constants import WINDOW_ICON, DATABASE_SQLITE
 
-from feeluown.plugin import NetEaseMusic, Hotkey, MprisEx
+from feeluown.plugin import NetEaseMusic, MprisEx
 from feeluown.plugin.NetEaseMusic.model import Base
 
 
-class Controller(QWidget):
+class Glue(QWidget):
 
     @measure_time
     def __init__(self, parent=None):

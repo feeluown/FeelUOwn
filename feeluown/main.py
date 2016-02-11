@@ -16,7 +16,7 @@ from quamash import QEventLoop
 
 from feeluown.constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
     MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
-from feeluown.controllers import Controller
+from feeluown.glue import Glue
 
 
 def ensure_data_dir():
@@ -49,7 +49,7 @@ if __name__ == "__main__":
         sys.stdout = f_handler
         sys.stderr = f_handler
 
-    w = Controller()
+    w = Glue()
     w.move(QApplication.primaryScreen().geometry().center()
            - w.rect().center())
     w.show()

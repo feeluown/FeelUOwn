@@ -22,6 +22,7 @@ user.json
 *.vim-bookmarks
 
 __pycache__
+.cache
 .ipynb_checkpoints
 *.DS_Store
 *.un~
