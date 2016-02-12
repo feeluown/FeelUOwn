@@ -1,6 +1,4 @@
 # -*- coding=utf8 -*-
-__author__ = 'cosven'
-
 
 from enum import Enum
 
@@ -9,8 +7,11 @@ from Xlib import X
 from Xlib.ext import record
 from Xlib.protocol import rq
 
-from feeluown.base.logger import LOG
+from feeluown.logger import LOG
 from feeluown.controller_api import ControllerApi
+
+
+__author__ = 'cosven'
 
 """
 0x1008ff17 media_next

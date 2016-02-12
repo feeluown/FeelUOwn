@@ -6,7 +6,7 @@ from PyQt5.QtGui import QKeySequence, QPixmap
 from PyQt5.QtWidgets import QWidget, QApplication, QShortcut, QVBoxLayout,\
     QFrame, QHBoxLayout, QLabel
 
-from feeluown.base.utils import singleton
+from feeluown.utils import singleton
 from feeluown.constants import WINDOW_ICON
 
 

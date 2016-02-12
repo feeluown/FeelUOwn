@@ -6,9 +6,9 @@ import pickle
 import re
 from functools import partial
 
-from feeluown.base.logger import LOG
-from feeluown.base.utils import singleton
-from feeluown.base.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
+from feeluown.logger import LOG
+from feeluown.utils import singleton
+from feeluown.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
     AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
     AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
 

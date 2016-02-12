@@ -8,9 +8,11 @@ every basic widget (including user,info,play) class has three public \
 funcition to set child widget properties.
 """
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QMouseEvent, QContextMenuEvent, QPainter
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QMenu, QWidget, QLabel, QSlider, QPushButton,\
+        QHBoxLayout, QSizePolicy, QVBoxLayout, QLineEdit, QAction,\
+        QStyleOption, QStyle
 
 from feeluown.widgets.add_to_playlist_btn import Add_to_playlist_btn
 
@@ -29,6 +31,7 @@ class LoginLabel(QLabel):
 
     def mousePressEvent(self, event: QMouseEvent):
         self.menu.exec(event.globalPos())
+
 
 class MusicInfoWidget(QWidget):
     def __init__(self, parent=None):
@@ -66,7 +69,8 @@ class MusicInfoWidget(QWidget):
 
         self.music_slider.setFixedHeight(15)
         self.music_slider.setOrientation(Qt.Horizontal)
-        self.music_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.music_slider.setSizePolicy(
+                QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
 
     def _customize_object_name(self):
@@ -93,15 +97,18 @@ class MusicInfoWidget(QWidget):
         music_function_container_layout.addWidget(self.music_slider)
 
         music_function_container_sub = QWidget(music_function_container)
-        music_function_container_sub_layout = QHBoxLayout(music_function_container_sub)
+        music_function_container_sub_layout = QHBoxLayout(
+                music_function_container_sub)
         music_function_container_sub_layout.setContentsMargins(0, 0, 0, 0)
         music_function_container_sub_layout.setSpacing(0)
-        music_function_container_sub.setLayout(music_function_container_sub_layout)
+        music_function_container_sub.setLayout(
+                music_function_container_sub_layout)
 
         music_function_container_layout.addWidget(music_function_container_sub)
 
         music_function_container_sub_layout.addSpacing(10)
-        music_function_container_sub_layout.addWidget(self.music_countdown_label)
+        music_function_container_sub_layout.addWidget(
+                self.music_countdown_label)
         music_function_container_sub_layout.addWidget(self.add_to_playlist_btn)
         music_function_container_sub_layout.addStretch(1)
         music_function_container_sub_layout.addWidget(self.music_name_label)
@@ -173,7 +180,8 @@ class TopWidget(QWidget):
         self.search_edit.setFixedHeight(30)
         self.search_edit.setPlaceholderText(u'搜索歌曲')
         self.search_edit.setAttribute(Qt.WA_MacShowFocusRect, False)
-        self.search_edit.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+        self.search_edit.setSizePolicy(
+                QSizePolicy.Minimum, QSizePolicy.Minimum)
 
         self.play_pause_btn.setCheckable(True)
         self.play_pause_btn.setChecked(True)

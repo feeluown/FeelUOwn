@@ -4,7 +4,7 @@
 
 import dbus.mainloop.pyqt5
 
-from feeluown.base.logger import LOG
+from feeluown.logger import LOG
 
 from .service import MprisServer
 

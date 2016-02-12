@@ -15,8 +15,8 @@ import requests
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
-from feeluown.base.utils import singleton, show_requests_progress
-from feeluown.base.logger import LOG
+from feeluown.utils import singleton, show_requests_progress
+from feeluown.logger import LOG
 
 
 uri = 'http://music.163.com/api'

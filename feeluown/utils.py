@@ -54,6 +54,7 @@ def measure_time(func):
         t = time.process_time()
         result = func(*args, **kwargs)
         elapsed_time = time.process_time() - t
-        LOG.info('function %s executed time: %f s' % (func.__name__, elapsed_time))
+        LOG.info('function %s executed time: %f s'
+                 % (func.__name__, elapsed_time))
         return result
     return wrapper

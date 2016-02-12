@@ -4,7 +4,7 @@ import asyncio
 import requests
 from functools import partial
 
-from feeluown.base.logger import LOG
+from feeluown.logger import LOG
 from feeluown.controller_api import ControllerApi
 from feeluown.view_api import ViewOp
 

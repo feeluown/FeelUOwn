@@ -5,8 +5,8 @@ from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QLabel
 
-from feeluown.base.player import Player
-from feeluown.base.logger import LOG
+from feeluown.player import Player
+from feeluown.logger import LOG
 from feeluown.constants import ICON_PATH
 
 

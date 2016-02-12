@@ -8,9 +8,9 @@ from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtNetwork import QNetworkRequest
 from PyQt5.QtWidgets import QApplication
 
-from feeluown.base.logger import LOG
-from feeluown.base.models import MusicModel
-from feeluown.base.utils import measure_time
+from feeluown.logger import LOG
+from feeluown.models import MusicModel
+from feeluown.utils import measure_time
 from feeluown.widgets.playlist_widget import PlaylistItem
 
 

@@ -2,7 +2,7 @@
 
 from queue import Queue
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkRequest, QNetworkReply
+from PyQt5.QtNetwork import QNetworkAccessManager, QNetworkReply
 
 from feeluown.controller_api import ControllerApi
 from .utils import singleton
@@ -26,5 +26,3 @@ class NetworkManager(QNetworkAccessManager):
             return
         item = ControllerApi.network_manager.network_queue.get_nowait()
         item(res)
-
-

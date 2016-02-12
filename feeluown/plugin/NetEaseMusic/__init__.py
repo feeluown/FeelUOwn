@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from feeluown.base.logger import LOG
+from feeluown.logger import LOG
 from feeluown.controller_api import ControllerApi
 from feeluown.view_api import ViewOp
 

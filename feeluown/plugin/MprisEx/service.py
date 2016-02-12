@@ -5,7 +5,7 @@ from PyQt5.QtMultimedia import QMediaPlayer
 import dbus
 import dbus.service
 
-from feeluown.base.logger import LOG
+from feeluown.logger import LOG
 from feeluown.controller_api import ControllerApi
 
 
