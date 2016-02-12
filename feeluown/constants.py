@@ -1,4 +1,4 @@
-# -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
 
 import os
 
@@ -52,3 +52,8 @@ WINDOW_ICON = ICON_PATH + 'FeelUOwn.png'
 sqlite database name
 """
 DATABASE_SQLITE = CACHE_PATH + 'data.db'
+
+"""
+config file
+"""
+CONFIG_FILE_PATH = FEELUOWN_PATH + 'config.yaml'

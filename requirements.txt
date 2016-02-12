@@ -1,3 +1,4 @@
 quamash==0.5.3
 requests
 SQLAlchemy==1.0.9
+pyyaml==3.11

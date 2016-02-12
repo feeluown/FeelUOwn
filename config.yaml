@@ -1,0 +1,20 @@
+---
+# feeluown config file
+
+player:
+  song_id: 0
+  position: 0
+  status: 0    # player status, playing, paused, stopped
+  playback_mode: 0
+  active_tracks: []
+
+lyric:
+  status: true    # show or hide, true for show
+  color: 'default'
+  background-color: 'default'
+
+plugins:
+  NetEaseMusic: true
+  HotKey: true
+  MprisEx: true
+...

@@ -1,4 +1,4 @@
-# -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
 
 import platform
 import subprocess
@@ -10,8 +10,7 @@ from feeluown.logger import LOG
 
 
 class ControllerApi(object):
-    """暴露给plugin或者其他外部模块的接口和数据
-    """
+    """暴露给plugin或者其他外部模块的接口和数据"""
     notify_widget = None
     lyric_widget = None
     desktop_mini = None
