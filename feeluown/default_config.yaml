@@ -1,7 +1,7 @@
 ---
-theme: 'default'    # not supported
+theme: default    # not supported
 
-player:
+player:    # not supported
     song_id: 0
     position: 0
     playback_mode: 4
@@ -10,13 +10,13 @@ player:
 plugin:
     NetEaseMusic: true
     MprisEx: true
-    HotKey: true
+    Hotkey: true
 
 lyric:
-    color: 'default'
-    background: 'default'
+    color: default    # not supported
+    background: default
 
 songs:
-    dirs: ['~/Music']
-    download: '~/Music'
+    dirs: [~/Music]
+    download: ~/Music
 ...

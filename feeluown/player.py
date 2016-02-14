@@ -265,12 +265,14 @@ class Player(QMediaPlayer):
         LOG.info("save song %s failed" % song_model['name'])
         return False
 
-    def set_play_mode(self, mode=4):
+    def set_play_mode(self, mode):
         # item once: 0
         # item in loop: 1
         # sequential: 2
         # loop: 3
         # random: 4
+        if mode == self.playback_mode:
+            return 0
         self._record_playback_mode()
         self.playback_mode = mode
         self.signal_playback_mode_changed.emit(mode)

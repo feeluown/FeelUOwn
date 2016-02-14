@@ -1,7 +1,7 @@
 # -*- coding:utf8 -*-
 
 
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QStatusBar, QPushButton
 
 from feeluown.widgets.playmode_switch import PlaymodeSwitchLabel
 

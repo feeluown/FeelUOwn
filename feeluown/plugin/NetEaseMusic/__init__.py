@@ -10,7 +10,7 @@ from .model import UserDb
 netease_normalize = NetEaseAPI()
 
 
-def init(controller):
+def init():
 
     LOG.info("NetEase Plugin init")
 

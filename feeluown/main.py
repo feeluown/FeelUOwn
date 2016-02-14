@@ -28,11 +28,13 @@ if __name__ == "__main__":
     path = sys.path[0]
     os.chdir(os.path.abspath(path))
 
+    from feeluown import config
     from feeluown.constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
         MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
     from feeluown.glue import Glue
 
     ensure_data_dir()
+    config.load()
 
     app = QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(True)

@@ -23,10 +23,10 @@ class MiniWidget(QLabel):
         self._layout = QVBoxLayout()
         self.setLayout(self._layout)
 
-        self.setPixmap(QPixmap(ICON_PATH + "FeelUOwn.png"))
+        self.setPixmap(QPixmap(ICON_PATH + "/FeelUOwn.png"))
 
-        self._dislike_pixmap = QPixmap(ICON_PATH + "dislike.png")
-        self._like_pixmap = QPixmap(ICON_PATH + "like.png")
+        self._dislike_pixmap = QPixmap(ICON_PATH + "/dislike.png")
+        self._like_pixmap = QPixmap(ICON_PATH + "/like.png")
 
         self.is_song_like = False
 
@@ -84,9 +84,9 @@ class MiniWidget(QLabel):
             btn_pixmap_width, btn_pixmap_height = 12, 12
             last_btn_top_left_point = QPoint(width/2-40, height-btn_pixmap_height-slider_width-30)
             next_btn_top_left_point = QPoint(width/2+28, height-btn_pixmap_height-slider_width-30)
-            painter.drawPixmap(last_btn_top_left_point, QPixmap(ICON_PATH + "mini_last.png"))
+            painter.drawPixmap(last_btn_top_left_point, QPixmap(ICON_PATH + "/mini_last.png"))
             painter.drawPixmap(next_btn_top_left_point,
-                               QPixmap(ICON_PATH + "mini_next.png"))
+                               QPixmap(ICON_PATH + "/mini_next.png"))
 
             if self.song_name and self.song_singer:
                 painter.drawText(rec, self.song_name + "\n\n" + self.song_singer, text_option)

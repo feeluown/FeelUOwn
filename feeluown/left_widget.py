@@ -8,9 +8,10 @@ every basic widget (including user,info,play) class has three public \
 funcition to set child widget properties.
 """
 
-from PyQt5.QtGui import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QLabel,\
+        QPushButton, QVBoxLayout, QSizePolicy
 
 from feeluown.constants import ICON_PATH
 from feeluown.widgets.playlist_widget import SpreadWidget, RecommendItem
@@ -56,11 +57,11 @@ class LeftWidget(QWidget):
         self.local_list_widget = SpreadWidget()
 
         self.fm_item = RecommendItem(self.recommend_list_widget, "私人FM",
-                                     QPixmap(ICON_PATH + 'fm.png'))
+                                     QPixmap(ICON_PATH + '/fm.png'))
         self.recommend_item = RecommendItem(
             self.recommend_list_widget,
             "每日推荐",
-            QPixmap(ICON_PATH + 'recommend.png'))
+            QPixmap(ICON_PATH + '/recommend.png'))
 
         self.layout = QVBoxLayout()
 

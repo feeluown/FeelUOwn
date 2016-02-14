@@ -25,6 +25,7 @@ class Config(MutableMapping):
     def save(self, path=CONFIG_FILE_PATH):
         with open(path, 'w') as f:
             f.write(yaml.dump(self._data))
+            LOG.info('save user config.')
 
     def __getitem__(self, key):
         return self._data[self.__keytransform__(key)]
@@ -43,6 +44,9 @@ class Config(MutableMapping):
 
     def __len__(self):
         return iter(self._data)
+
+    def on_playback_mode_change(self, mode):
+        self._data['player']['playback_mode'] = mode
 
 
 config = Config()

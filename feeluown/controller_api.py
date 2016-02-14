@@ -6,6 +6,7 @@ import subprocess
 from PyQt5.QtCore import pyqtSlot
 from PyQt5.QtWidgets import QApplication
 
+import feeluown
 from feeluown.logger import LOG
 
 
@@ -89,3 +90,10 @@ class ControllerApi(object):
 
         ControllerApi.player.play(song)
         return True
+
+    @classmethod
+    def ready_to_quit(self):
+        ControllerApi.notify_widget.show_message('Notification',
+                                                 'Ready to quit !')
+        feeluown.config.save()
+        QApplication.quit()

@@ -3,15 +3,16 @@
 import sys
 import asyncio
 import platform
+import importlib
 
 from PyQt5.QtGui import QKeySequence, QIcon, QPainter
 from PyQt5.QtCore import Qt, pyqtSlot
-from PyQt5.QtWidgets import QStyle, QStyleOption, QShortcut, QWidget,\
-        QApplication
+from PyQt5.QtWidgets import QStyle, QStyleOption, QShortcut, QWidget
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+import feeluown
 from feeluown.network_manager import NetworkManager
 from feeluown.player import Player
 from feeluown.logger import LOG
@@ -31,7 +32,6 @@ from feeluown.controllers.tips_manager import TipsManager
 from feeluown.controllers.version_manager import VersionManager
 from feeluown.constants import WINDOW_ICON, DATABASE_SQLITE
 
-from feeluown.plugin import NetEaseMusic, Hotkey, MprisEx
 from feeluown.plugin.NetEaseMusic.model import Base
 
 
@@ -40,6 +40,8 @@ class Glue(QWidget):
     @measure_time
     def __init__(self, parent=None):
         super().__init__(parent)
+        ControllerApi.player = Player(self)
+
         ui = UiMainWidget()
         ViewOp.ui = ui
         ViewOp.controller = ControllerApi
@@ -55,7 +57,6 @@ class Glue(QWidget):
         session = Session()
         LOG.info('db connected: %s' % DATABASE_SQLITE)
 
-        ControllerApi.player = Player(self)
         ControllerApi.session = session
         ControllerApi.view = ViewOp
         ControllerApi.desktop_mini = DesktopMiniLayer()
@@ -77,6 +78,7 @@ class Glue(QWidget):
 
         self.mode_manager = ModesManger()
         self._init_signal_binding()
+        self.load_config()
 
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(1, self._init_plugins)
@@ -84,9 +86,16 @@ class Glue(QWidget):
         asyncio.Task(VersionManager.check_release())
 
     def _init_plugins(self):
-        NetEaseMusic.init(self)  # 特别意义的插件
-        Hotkey.init()
-        MprisEx.init()
+        plugins = feeluown.config['plugin']
+        for plugin_module_name in plugins.keys():
+            if plugins[plugin_module_name]:
+                try:
+                    plugin = importlib.import_module('feeluown.plugin.' +
+                                                     plugin_module_name)
+                except ImportError:
+                    LOG.error('load module %s failed.' % plugin_module_name)
+                    continue
+                plugin.init()
 
     def _init_signal_binding(self):
         """init signal binding among widgets"""
@@ -142,6 +151,8 @@ class Glue(QWidget):
                 self.on_playlist_empty)
         ControllerApi.player.signal_playback_mode_changed.connect(
             ViewOp.ui.STATUS_BAR.playmode_switch_label.on_mode_changed)
+        ControllerApi.player.signal_playback_mode_changed.connect(
+            feeluown.config.on_playback_mode_change)
 
         ControllerApi.network_manager.finished.connect(
                 ControllerApi.network_manager.access_network_queue)
@@ -194,6 +205,11 @@ class Glue(QWidget):
         ControllerApi.current_playlist_widget.setGeometry(x, y, 500, 300)
         ControllerApi.current_playlist_widget.show()
         ControllerApi.current_playlist_widget.setFocus(True)
+
+    def load_config(self):
+        LOG.info('load user config')
+        ControllerApi.player.set_play_mode(
+                feeluown.config['player']['playback_mode'])
 
     @pyqtSlot()
     def pop_login(self):
@@ -292,4 +308,4 @@ class Glue(QWidget):
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
 
     def closeEvent(self, event):
-        QApplication.quit()
+        ControllerApi.ready_to_quit()
