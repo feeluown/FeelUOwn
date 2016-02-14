@@ -105,9 +105,10 @@ class ModesManger(object):
     def change_to_normal(self):
         if self.current_mode == 1:
             FmMode.exit_()
+            ControllerApi.player.change_player_mode_to_normal()
         elif self.current_mode == 2:
             SimiSongsMode.exit_()
-        ControllerApi.player.change_player_mode_to_normal()
+            ControllerApi.player.change_player_mode_to_normal()
         self.current_mode = 0
 
     def change_to_fm(self):

@@ -10,7 +10,7 @@ from feeluown.view_api import ViewOp
 
 
 class VersionManager(object):
-    current_version = 'v7.0alpha'
+    current_version = 'v7.1a'
 
     @classmethod
     @asyncio.coroutine
@@ -19,8 +19,8 @@ class VersionManager(object):
         LOG.info('正在查找新版本...')
         try:
             loop = asyncio.get_event_loop()
-            future = loop.run_in_executor(None,
-                partial(requests.get, url, timeout=5))
+            future = loop.run_in_executor(
+                    None, partial(requests.get, url, timeout=5))
             res = yield from future
             if not res.status_code == 200:
                 LOG.warning('connect to api.github.com timeout')
