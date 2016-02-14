@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import platform
 import json
 import time
 from functools import wraps
@@ -58,3 +59,15 @@ def measure_time(func):
                  % (func.__name__, elapsed_time))
         return result
     return wrapper
+
+
+def is_mac():
+    if platform.system() == 'Darwin':
+        return True
+    return False
+
+
+def is_linux():
+    if platform.system() == 'Linux':
+        return True
+    return False
