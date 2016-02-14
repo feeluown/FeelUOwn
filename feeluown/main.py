@@ -6,17 +6,9 @@ import sys
 import os
 import asyncio
 
-sys.path.append('..')
-path = sys.path[0]
-os.chdir(os.path.abspath(path))
-
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtGui import QIcon
 from quamash import QEventLoop
-
-from feeluown.constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
-    MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
-from feeluown.glue import Glue
 
 
 def ensure_data_dir():
@@ -31,6 +23,15 @@ def ensure_data_dir():
 
 
 if __name__ == "__main__":
+
+    sys.path.append('..')
+    path = sys.path[0]
+    os.chdir(os.path.abspath(path))
+
+    from feeluown.constants import QSS_PATH, LOGFILE, CACHE_PATH, DATA_PATH,\
+        MODE, DEBUG, WINDOW_ICON, FEELUOWN_PATH, SONGS_PATH
+    from feeluown.glue import Glue
+
     ensure_data_dir()
 
     app = QApplication(sys.argv)
@@ -50,8 +51,8 @@ if __name__ == "__main__":
         sys.stderr = f_handler
 
     w = Glue()
-    w.move(QApplication.primaryScreen().geometry().center()
-           - w.rect().center())
+    w.move(QApplication.primaryScreen().geometry().center() -
+           w.rect().center())
     w.show()
 
     app_event_loop.run_forever()
