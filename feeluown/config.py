@@ -5,6 +5,8 @@ from collections.abc import MutableMapping
 import yaml
 
 from feeluown.constants import CONFIG_FILE_PATH
+from feeluown.constants import DEFAULT_CONFIG_FILE_PATH
+from feeluown.logger import LOG
 
 
 class Config(MutableMapping):
@@ -12,8 +14,13 @@ class Config(MutableMapping):
         self._data = dict()
 
     def load(self, path=CONFIG_FILE_PATH):
-        with open(path, 'r') as f:
-            self._data.update(yaml.load(f))
+        try:
+            with open(path, 'r') as f:
+                self._data.update(yaml.load(f))
+        except OSError:
+            LOG.error('user config file not found, will load default config')
+            with open(DEFAULT_CONFIG_FILE_PATH, 'r') as f:
+                self._data.update(yaml.load(f))
 
     def save(self, path=CONFIG_FILE_PATH):
         with open(path, 'w') as f:

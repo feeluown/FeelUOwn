@@ -1,0 +1,22 @@
+---
+theme: 'default'    # not supported
+
+player:
+    song_id: 0
+    position: 0
+    playback_mode: 4
+    state: 0
+
+plugin:
+    NetEaseMusic: true
+    MprisEx: true
+    HotKey: true
+
+lyric:
+    color: 'default'
+    background: 'default'
+
+songs:
+    dirs: ['~/Music']
+    download: '~/Music'
+...

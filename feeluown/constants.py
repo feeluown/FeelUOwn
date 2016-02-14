@@ -57,3 +57,4 @@ DATABASE_SQLITE = CACHE_PATH + 'data.db'
 config file
 """
 CONFIG_FILE_PATH = FEELUOWN_PATH + 'config.yaml'
+DEFAULT_CONFIG_FILE_PATH = 'default_config.yaml'
