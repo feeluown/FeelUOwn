@@ -1,40 +1,16 @@
 # -*- coding:utf8 -*-
 
-import os
 import random
 import asyncio
-from functools import wraps
 
 import requests
 
-from PyQt5.QtMultimedia import *
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
+from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
+from PyQt5.QtCore import QUrl, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QApplication, QMessageBox
 
-from feeluown.constants import SONGS_PATH
 from .utils import singleton, show_requests_progress
 from .logger import LOG
-
-
-
-
-def cache_song(func):
-    @wraps(func)
-    def wrapper(player, song_model=None):
-        if song_model is None:
-            return func(player)
-        mid = song_model['id']
-        music_filename = str(mid) + '.mp3'
-        music_filepath = os.path.join(SONGS_PATH, music_filename)
-        if os.path.exists(music_filepath):
-            LOG.info("play cached song %s" % song_model['name'])
-        else:   # async cache song
-            app_event_loop = asyncio.get_event_loop()
-            LOG.info("will download song %s " % song_model['name'])
-            player.save_song(song_model, music_filepath)
-        song_model['url'] = music_filepath
-        return func(player, song_model)
-    return wrapper
 
 
 @singleton
@@ -44,7 +20,7 @@ class Player(QMediaPlayer):
     signal_player_media_changed = pyqtSignal([dict])
     signal_playlist_is_empty = pyqtSignal()
     signal_playback_mode_changed = pyqtSignal([int])
-    signal_playlist_finished = pyqtSignal()     # only for playback_mode 2
+    signal_playlist_finished = pyqtSignal()
 
     signal_song_required = pyqtSignal()
     finished = pyqtSignal()
@@ -66,9 +42,9 @@ class Player(QMediaPlayer):
         self._music_error_times = 0
 
         # latency of retying next operation when error happened
-        self._RETRY_LATENCY = 3
-        # when _music_error_times reached _MUSIC_ERROR_MAXIMUM, play next music
-        self._MUSIC_ERROR_MAXIMUM = 3
+        self._retry_latency = 3
+        # when _music_error_times reached _music_error_maximum, play next music
+        self._music_error_maximum = 3
 
     def change_player_mode_to_normal(self):
         LOG.info('退出特殊的播放模式')
@@ -100,7 +76,7 @@ class Player(QMediaPlayer):
                 LOG.info("播放列表播放完毕")
             if not self._other_mode:
                 self.play_next()
-        # TODO: at hotkey linux module, when it call 
+        # TODO: at hotkey linux module, when it call
         #       Controller.player.play_next or last may stop the player
         #       add following code to fix the problem.
         elif state in (QMediaPlayer.LoadedMedia, ):
@@ -216,23 +192,36 @@ class Player(QMediaPlayer):
     def on_error_occured(self, error):
         self.setMedia(QMediaContent())
         self.pause()
-        if error == QMediaPlayer.FormatError or error == QMediaPlayer.ServiceMissingError:
-            m = QMessageBox(QMessageBox.Warning, u"错误提示", "第一次运行出现该错误可能是由于缺少解码器，请参考项目主页\
-                https://github.com/cosven/FeelUOwn 安装依赖。\n 如果不是第一次运行，那就可能是网络已经断开，请检查您的网络连接", QMessageBox.Yes | QMessageBox.No)
+        if error == QMediaPlayer.FormatError or\
+                error == QMediaPlayer.ServiceMissingError:
+            m = QMessageBox(
+                QMessageBox.Warning,
+                u"错误提示",
+                "第一次运行出现该错误可能是由于缺少解码器，"
+                "请参考项目主页 https://github.com/cosven/FeelUOwn 。"
+                "\n 也可能是网络已经断开，请检查您的网络连接",
+                QMessageBox.Yes | QMessageBox.No)
             if m.exec() == QMessageBox.Yes:
                 QApplication.quit()
             else:
                 LOG.error(u'播放器出现error, 类型为' + str(error))
         if error == QMediaPlayer.NetworkError:
-            if self._music_error_times >= self._MUSIC_ERROR_MAXIMUM or \
-                    self._current_index < 0 or self._current_index >= len(self._music_list):
+            if self._music_error_times >= self._music_error_maximum or \
+                    self._current_index < 0 or\
+                    self._current_index >= len(self._music_list):
                 self._music_error_times = 0
-                self._app_event_loop.call_later(self._RETRY_LATENCY, self.play_next)
-                LOG.error(u'播放器出现错误：网络连接失败，{}秒后尝试播放下一首'.format(self._RETRY_LATENCY))
+                self._app_event_loop.call_later(
+                    self._retry_latency, self.play_next)
+                LOG.error(
+                    u'播放器出现错误：网络连接失败，{}秒后尝试播放下一首'.
+                    format(self._retry_latency))
             else:
                 self._music_error_times += 1
-                self._app_event_loop.call_later(self._RETRY_LATENCY, self.play, self._music_list[self._current_index])
-                LOG.error(u'播放器出现错误：网络连接失败, {}秒后重试'.format(self._RETRY_LATENCY))
+                self._app_event_loop.call_later(
+                    self._retry_latency,
+                    self.play, self._music_list[self._current_index])
+                LOG.error(u'播放器出现错误：网络连接失败, {}秒后重试'.
+                          format(self._retry_latency))
         elif error == QMediaPlayer.ResourceError:
             LOG.error(u'播放器出现错误：缺少解码器')
         return
@@ -267,7 +256,8 @@ class Player(QMediaPlayer):
         res = requests.get(song_model['url'], stream=True)
         if res.status_code == 200:
             print('status code 200')
-            content = show_requests_progress(res, self.signal_download_progress)
+            content = show_requests_progress(
+                    res, self.signal_download_progress)
             with open(filepath, 'wb') as f:
                 f.write(content)
                 LOG.info("save song %s successful" % song_model['name'])
