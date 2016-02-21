@@ -19,4 +19,7 @@ lyric:
 songs:
     dirs: [~/Music]
     download: ~/Music
+
+width: 960
+height: 600
 ...
