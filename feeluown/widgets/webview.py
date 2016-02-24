@@ -13,6 +13,7 @@ from feeluown.constants import MODE, PUBLIC_PATH, DEBUG, HTML_PATH
 class WebView(QWebView):
     signal_play = pyqtSignal([int])
     signal_play_songs = pyqtSignal([list])
+    signal_play_song_ids = pyqtSignal([list])
     signal_search_artist = pyqtSignal([int])
     signal_search_album = pyqtSignal([int])
     signal_play_mv = pyqtSignal([int])
@@ -72,6 +73,13 @@ class WebView(QWebView):
         songs = json.loads(songs_str)
         tracks = songs['tracks']
         self.signal_play_songs.emit(tracks)
+
+    @pyqtSlot(str)
+    def play_song_ids(self, songs_str):
+        LOG.debug('play songs by ids')
+        songs = json.loads(songs_str)
+        song_ids = songs['track_ids']
+        self.signal_play_song_ids.emit(song_ids)
 
     @pyqtSlot(int)
     def search_artist(self, aid):

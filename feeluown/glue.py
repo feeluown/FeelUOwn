@@ -117,6 +117,7 @@ class Glue(QWidget):
 
         ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
         ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
+        ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
         ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
         ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
         ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
@@ -239,14 +240,16 @@ class Glue(QWidget):
                 self.hide()
         ControllerApi.toggle_desktop_mini()
 
-    @pyqtSlot(int)
+    @pyqtSlot(list)
     def on_play_songs(self, songs):
         self.mode_manager.change_to_normal()
-        if len(songs) == 0:
-            ViewOp.ui.STATUS_BAR.showMessage(u'该列表没有歌曲', 2000)
-            return
         ControllerApi.current_playlist_widget.set_songs(songs)
         ControllerApi.player.set_music_list(songs)
+
+    @pyqtSlot(list)
+    def on_play_song_ids(self, song_ids):
+        songs = ControllerApi.api.get_songs_detail(song_ids)
+        self.on_play_songs(songs)
 
     @pyqtSlot(int)
     def remove_music_from_list(self, mid):
