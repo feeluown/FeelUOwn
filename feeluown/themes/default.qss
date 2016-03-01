@@ -267,6 +267,10 @@ QPushButton#new_playlist_btn:hover {
     color: #993333;
 }
 
+QPushButton#tracks_play_all_btn:hover {
+    color: #993333;
+}
+
 /* ****************************** */
 /* QLineEdit */
 /* ****************************** */
@@ -376,6 +380,27 @@ QLabel#remove_music {
 
 QLabel#remove_music:hover {
     color: #993333;
+}
+
+QLabel#tracks_table_mv_btn {
+    font-size: 10px;
+    color: #CCC;
+}
+
+QLabel#tracks_table_remove_btn {
+    color: #CCC;
+}
+
+QLabel#tracks_table_mv_btn:hover, QLabel#tracks_table_remove_btn:hover {
+    color: #993333;
+}
+
+QLabel#tracks_title_label {
+    font-size: 13px;
+}
+
+QLabel#tracks_img_label {
+    border-radius: 5px;
 }
 
 /* ****************************** */
@@ -507,7 +532,6 @@ QHeaderView::section:horizontal {
     font-weight: normal;
 }
 
-
 QTableView QTableCornerButton::section {
     background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
         stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
@@ -528,7 +552,6 @@ QTableWidget {
 QTableWidget::item{
     padding: 3px 4px;
     border-radius: 0px;
-    selection-background-color: #993333;
     outline: none;
     color: #CCC;
 }
@@ -543,7 +566,10 @@ QTableWidget::item:selected{
 QTableWidget::item:focus {
     outline: none;
     border: 0px;
+}
 
+QTableWidget#tracks_table_widget {
+    font-size: 13px;
 }
 
 /* ****************************** */

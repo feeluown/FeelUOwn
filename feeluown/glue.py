@@ -19,7 +19,7 @@ from feeluown.logger import LOG
 from feeluown.controller_api import ControllerApi
 from feeluown.view_api import ViewOp
 from feeluown.widgets.login_dialog import LoginDialog
-from feeluown.widgets.music_table import MusicTableWidget
+from feeluown.widgets.music_table import CurrentMusicTable
 from feeluown.widgets.lyric import LyricWidget
 from feeluown.widgets.playlist_widget import PlaylistItem
 from feeluown.widgets.desktop_mini import DesktopMiniLayer
@@ -64,7 +64,7 @@ class Glue(QWidget):
         ControllerApi.notify_widget = NotifyWidget()
 
         ControllerApi.network_manager = NetworkManager(self)
-        ControllerApi.current_playlist_widget = MusicTableWidget()
+        ControllerApi.current_playlist_widget = CurrentMusicTable()
 
         self._search_shortcut = QShortcut(QKeySequence('Ctrl+F'), self)
         self._minimize_shortcut = QShortcut(QKeySequence('Ctrl+M'), self)
@@ -115,12 +115,14 @@ class Glue(QWidget):
         ViewOp.ui.PLAY_OR_PAUSE.clicked.connect(
             ViewOp.on_play_or_pause_clicked)
 
-        ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
-        ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
-        ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
-        ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
-        ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
-        ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
+        # ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
+        # ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
+        # ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
+        # ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
+        # ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
+        # ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
+        ViewOp.ui.TRACKS_TABLE_WIDGET.signal_play_music.connect(
+            self.on_play_song_clicked)
 
         ViewOp.ui.PLAY_PREVIOUS_SONG_BTN.clicked.connect(
             ControllerApi.player.play_last)
@@ -267,7 +269,7 @@ class Glue(QWidget):
         album_detail_model = ControllerApi.api.get_album_detail(aid)
         if not ControllerApi.api.is_response_ok(album_detail_model):
             return
-        ViewOp.ui.WEBVIEW.load_album(album_detail_model)
+        # ViewOp.ui.WEBVIEW.load_album(album_detail_model)
         ControllerApi.state['current_pid'] = 0
 
     @staticmethod
@@ -276,7 +278,7 @@ class Glue(QWidget):
         artist_detail_model = ControllerApi.api.get_artist_detail(aid)
         if not ControllerApi.api.is_response_ok(artist_detail_model):
             return
-        ViewOp.ui.WEBVIEW.load_artist(artist_detail_model)
+        # ViewOp.ui.WEBVIEW.load_artist(artist_detail_model)
         ControllerApi.state['current_pid'] = 0
 
     @pyqtSlot()
@@ -288,16 +290,15 @@ class Glue(QWidget):
             if not ControllerApi.api.is_response_ok(songs):
                 return
             PlaylistItem.de_active_all()
-            ViewOp.ui.WEBVIEW.load_search_result(songs)
+            # ViewOp.ui.WEBVIEW.load_search_result(songs)
             ControllerApi.state['current_pid'] = 0
             length = len(songs)
             if length != 0:
                 ViewOp.ui.STATUS_BAR.showMessage(
                     u'搜索到 %s 首 %s 相关歌曲' % (str(length), text), 5000)
                 return
-            else:
-                ViewOp.ui.STATUS_BAR.showMessage(u'Oops，没有找到相关歌曲', 5000)
-                return
+            ViewOp.ui.STATUS_BAR.showMessage(u'Oops，没有找到相关歌曲', 5000)
+            return
 
     def paintEvent(self, event):
         """

@@ -8,7 +8,7 @@ every basic widget class has three public \
 funcition to set child widget properties.
 """
 
-from PyQt5.QtWidgets import *
+from PyQt5.QtWidgets import QProgressBar, QVBoxLayout, QHBoxLayout
 
 from feeluown.left_widget import LeftScrollArea
 from feeluown.right_widget import RightWidget
@@ -26,7 +26,7 @@ class UiMainWidget(object):
         self.left_widget = LeftScrollArea()
         self.top_widget = TopWidget()
 
-        self.progress_info= QProgressBar()
+        self.progress_info = QProgressBar()
 
         self.right_layout = QVBoxLayout()
         self.left_layout = QVBoxLayout()
@@ -73,6 +73,7 @@ class UiMainWidget(object):
         self.STATUS_BAR = self.status
         self.PROGRESS = self.progress_info
         self.WEBVIEW = self.right_widget.webview
+        self.TRACKS_TABLE_WIDGET = self.right_widget.webview.tracks_table_widget
 
         self.TOP_WIDGET = self.top_widget
         self.LEFT_WIDGET = self.left_widget

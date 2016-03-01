@@ -16,8 +16,8 @@ def test_setting_widget(qtbot):
 
 
 def test_music_table_widget(qtbot):
-    from feeluown.widgets.music_table import MusicTableWidget
-    w = MusicTableWidget()
+    from feeluown.widgets.music_table import CurrentMusicTable
+    w = CurrentMusicTable()
     w.show()
     qtbot.addWidget(w)
 

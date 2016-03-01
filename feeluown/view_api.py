@@ -111,7 +111,7 @@ class ViewOp(object):
             return False
         if cls.controller.state['current_pid'] == cls.controller.api.favorite_pid:
             LOG.info("喜欢列表的歌曲发生变化")
-            ViewOp.ui.WEBVIEW.load_playlist(playlist_detail)
+            # ViewOp.ui.WEBVIEW.load_playlist(playlist_detail)
         return True
 
     @classmethod
@@ -199,7 +199,7 @@ class ViewOp(object):
             pid, cache=False)
         if not cls.controller.api.is_response_ok(playlist_detail):
             return
-        cls.ui.WEBVIEW.load_playlist(playlist_detail)
+        # cls.ui.WEBVIEW.load_playlist(playlist_detail)
         # TODO: change current_pid when webview changed
         cls.controller.state['current_pid'] = pid
 
@@ -209,5 +209,5 @@ class ViewOp(object):
         songs = cls.controller.api.get_recommend_songs()
         if not cls.controller.api.is_response_ok(songs):
             return
-        cls.ui.WEBVIEW.load_recommend_songs(songs)
+        # cls.ui.WEBVIEW.load_recommend_songs(songs)
         cls.controller.state['current_pid'] = 0
