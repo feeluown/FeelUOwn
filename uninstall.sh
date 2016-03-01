@@ -33,7 +33,7 @@ if [ "$flag" = "y" ]; then
     if [ -f ~/.local/share/applications/$desktopFilename ]; then
         sudo rm ~/.local/share/applications/$desktopFilename
     fi
-    
+    rm -rf ~/.FeelUOwn   
     echo "==============================="
     
     if [ $? -eq 0 ]; then
