@@ -22,6 +22,8 @@ sudo dnf install feeluown
 ```
 
 ### archlinux安装
+感谢 @wenLiangcan
+<https://aur.archlinux.org/packages/feeluown-git/>
 
 ```sh
 yaourt -S feeluown-git 

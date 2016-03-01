@@ -75,7 +75,7 @@ class ControllerApi(object):
         else:
             ControllerApi.desktop_mini.show()
             ControllerApi.notify_widget.show_message(
-                    "Tips", "按ESC可以退出mini模式哦 ~")
+                "Tips", "按ESC可以退出mini模式哦 ~")
 
     @classmethod
     @pyqtSlot(int)

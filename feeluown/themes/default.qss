@@ -371,8 +371,11 @@ QLabel#album_img_label {
 }
 
 QLabel#remove_music {
-    border-image: url(../icons/trash_btn.png);
-    background-color: transparent;
+    color: #CCC;
+}
+
+QLabel#remove_music:hover {
+    color: #993333;
 }
 
 /* ****************************** */

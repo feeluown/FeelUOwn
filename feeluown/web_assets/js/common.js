@@ -88,11 +88,17 @@ SongTable.bind_music_play = function(){
 
     $('.song').keydown(function(e){
         var index = $('.song').index(this);
+        var total_songs = $('.song').length;
         var sid = $(this).attr('id');
 
         switch(e.which){
             case 74:    // key: j
-                $('.song').eq(index + 1).focus();
+                if (index == (total_songs-1)){
+                    $('.song').eq(0).focus();
+                }
+                else{
+                    $('.song').eq(index + 1).focus();
+                }
                 break;
             case 75:    // key: k
                 $('.song').eq(index - 1).focus()
@@ -120,6 +126,17 @@ SongTable.bind_music_play = function(){
         songs.tracks = window.songs;
         var songsStr = JSON.stringify(songs);
         js_python.play_songs(songsStr);
+    });
+
+    $('#play_all_ids').on('click', function(){
+        var songs = {};
+        var track_ids = [];
+        for (var i=0; i<window.songs.length; i++){
+            track_ids.push(window.songs[i].id);
+        }
+        songs.track_ids = track_ids;
+        var songsStr = JSON.stringify(songs);
+        js_python.play_song_ids(songsStr);
     });
 }
 

@@ -201,7 +201,7 @@ class DesktopMiniLayer(QWidget):
 
         self._layout.setContentsMargins(0, 0, 0, 0)
         # self.setMask(QRegion(0, 0, self.width(), self.height(), QRegion.Ellipse))
-        self.setMask(QBitmap(ICON_PATH + "mask.bmp"))
+        self.setMask(QBitmap(ICON_PATH + "/mask.bmp"))
         self.setMouseTracking(True)
 
         self._init_position()

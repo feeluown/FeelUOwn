@@ -175,6 +175,13 @@ class NetEase(QObject):
         data = self.http_request('GET', action)
         return data
 
+    def songs_detail(self, music_ids):
+        music_ids = [str(music_id) for music_id in music_ids]
+        action = 'http://music.163.com/api/song/detail?ids=[' +\
+            ','.join(music_ids) + ']'
+        data = self.http_request('GET', action)
+        return data
+
     # DJchannel ( id, channel_name ) ids --> song urls ( details )
     # 将 channels 整理为 songs 类型
     def channel_detail(self, channelids, offset=0):

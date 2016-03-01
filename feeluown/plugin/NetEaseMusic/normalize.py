@@ -144,6 +144,16 @@ class NetEaseAPI(object):
 
         return model
 
+    def get_songs_detail(self, mids):
+        data = self.ne.songs_detail(mids)
+        if not self.is_response_avaible(data):
+            return data
+        songs = []
+        for each in data['songs']:
+            song = self.access_music(each)
+            songs.append(song)
+        return songs
+
     def update_playlist_detail(self, pid, data=None):
         data = self.ne.playlist_detail(pid) if data is None else data
         if not self.is_response_avaible(data):

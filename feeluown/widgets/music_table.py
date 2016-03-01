@@ -88,6 +88,7 @@ class MusicTableWidget(QTableWidget):
         btn = QLabel()
         btn.setToolTip(u'从当前播放列表中移除')
         btn.setObjectName('remove_music')   # 为了应用QSS，不知道这种实现好不好
+        btn.setText('✖')
         self.setCellWidget(row, 3, btn)
         self.setRowHeight(row, 30)
         self.setColumnWidth(3, 30)

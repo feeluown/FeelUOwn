@@ -10,10 +10,18 @@ from feeluown.logger import LOG
 
 
 class Config(MutableMapping):
+    """load default config and user config
+
+    user config can override default config
+    """
     def __init__(self):
         self._data = dict()
 
     def load(self, path=CONFIG_FILE_PATH):
+        # load default config first, there may be some new key field which not
+        # exists in user config
+        with open(DEFAULT_CONFIG_FILE_PATH, 'r') as f:
+            self._data.update(yaml.load(f))
         try:
             with open(path, 'r') as f:
                 self._data.update(yaml.load(f))
@@ -30,8 +38,8 @@ class Config(MutableMapping):
     def __getitem__(self, key):
         return self._data[self.__keytransform__(key)]
 
-    def __setitem__(self, key):
-        return self._data[self.__keytransform__(key)]
+    def __setitem__(self, key, value):
+        self._data[self.__keytransform__(key)] = value
 
     def __keytransform__(self, key):
         return key

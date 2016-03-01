@@ -74,7 +74,6 @@ class Glue(QWidget):
         self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setWindowIcon(QIcon(WINDOW_ICON))
         self.setWindowTitle('FeelUOwn')
-        self.resize(1000, 608)
 
         self.mode_manager = ModesManger()
         self._init_signal_binding()
@@ -103,33 +102,34 @@ class Glue(QWidget):
         ViewOp.ui.QUIT_ACTION.triggered.connect(sys.exit)
         ViewOp.ui.SONG_PROGRESS_SLIDER.sliderMoved.connect(ControllerApi.seek)
         ViewOp.ui.SHOW_CURRENT_SONGS.clicked.connect(
-                self._show_current_playlist)
+            self._show_current_playlist)
 
         ViewOp.ui.SEARCH_BOX.returnPressed.connect(self._search_music)
         ViewOp.ui.LOVE_SONG_BTN.clicked.connect(
-                ViewOp.on_set_favorite_btn_clicked)
+            ViewOp.on_set_favorite_btn_clicked)
         ViewOp.ui.SIMI_SONGS_BTN.clicked.connect(
-                self.mode_manager.change_to_simi)
+            self.mode_manager.change_to_simi)
 
         ViewOp.ui.SHOW_DESKTOP_MINI.clicked.connect(self.switch_desktop_mini)
 
         ViewOp.ui.PLAY_OR_PAUSE.clicked.connect(
-                ViewOp.on_play_or_pause_clicked)
+            ViewOp.on_play_or_pause_clicked)
 
         ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
         ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
+        ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
         ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
         ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
         ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
 
         ViewOp.ui.PLAY_PREVIOUS_SONG_BTN.clicked.connect(
-                ControllerApi.player.play_last)
+            ControllerApi.player.play_last)
         ViewOp.ui.PLAY_NEXT_SONG_BTN.clicked.connect(
-                ControllerApi.player.play_next)
+            ControllerApi.player.play_next)
         ViewOp.ui.PLAY_MV_BTN.clicked.connect(
-                ViewOp.on_play_current_song_mv_clicked)
+            ViewOp.on_play_current_song_mv_clicked)
         ViewOp.ui.SHOW_LYRIC_BTN.clicked.connect(
-                ControllerApi.toggle_lyric_widget)
+            ControllerApi.toggle_lyric_widget)
 
         ViewOp.ui.SPREAD_BTN_FOR_MY_LIST.clicked.connect(
             ViewOp.ui.MY_LIST_WIDGET.fold_spread_with_animation)
@@ -140,38 +140,38 @@ class Glue(QWidget):
         ViewOp.ui.NEW_PLAYLIST_BTN.clicked.connect(ViewOp.new_playlist)
 
         ControllerApi.player.signal_player_media_changed.connect(
-                ViewOp.on_player_media_changed)
+            ViewOp.on_player_media_changed)
         ControllerApi.player.stateChanged.connect(
-                ViewOp.on_player_state_changed)
+            ViewOp.on_player_state_changed)
         ControllerApi.player.positionChanged.connect(
-                ViewOp.on_player_position_changed)
+            ViewOp.on_player_position_changed)
         ControllerApi.player.durationChanged.connect(
-                ViewOp.on_player_duration_changed)
+            ViewOp.on_player_duration_changed)
         ControllerApi.player.signal_playlist_is_empty.connect(
-                self.on_playlist_empty)
+            self.on_playlist_empty)
         ControllerApi.player.signal_playback_mode_changed.connect(
             ViewOp.ui.STATUS_BAR.playmode_switch_label.on_mode_changed)
         ControllerApi.player.signal_playback_mode_changed.connect(
             feeluown.config.on_playback_mode_change)
 
         ControllerApi.network_manager.finished.connect(
-                ControllerApi.network_manager.access_network_queue)
+            ControllerApi.network_manager.access_network_queue)
 
         ControllerApi.desktop_mini.content.set_song_like_signal.connect(
-                ViewOp.on_set_favorite_btn_clicked)
+            ViewOp.on_set_favorite_btn_clicked)
         ControllerApi.desktop_mini.content.play_last_music_signal.connect(
-                ControllerApi.player.play_last)
+            ControllerApi.player.play_last)
         ControllerApi.desktop_mini.content.play_next_music_signal.connect(
-                ControllerApi.player.play_next)
+            ControllerApi.player.play_next)
         ControllerApi.desktop_mini.close_signal.connect(self.show)
 
         ViewOp.ui.FM_ITEM.signal_text_btn_clicked.connect(
-                self.mode_manager.change_to_fm)
+            self.mode_manager.change_to_fm)
         ViewOp.ui.RECOMMEND_ITEM.signal_text_btn_clicked.connect(
-                ViewOp.on_recommend_item_clicked)
+            ViewOp.on_recommend_item_clicked)
 
         ControllerApi.current_playlist_widget.signal_play_music.connect(
-                self.on_play_song_clicked)
+            self.on_play_song_clicked)
         ControllerApi.current_playlist_widget.signal_remove_music_from_list.\
             connect(self.remove_music_from_list)
 
@@ -180,7 +180,7 @@ class Glue(QWidget):
         ViewOp.ui.PROGRESS.setRange(0, 100)
 
         ControllerApi.player.signal_download_progress.connect(
-                ViewOp.ui.PROGRESS.setValue)
+            ViewOp.ui.PROGRESS.setValue)
 
         self._search_shortcut.activated.connect(ViewOp.ui.SEARCH_BOX.setFocus)
         self._pre_focus.activated.connect(FocusManager.change_focus)
@@ -209,7 +209,9 @@ class Glue(QWidget):
     def load_config(self):
         LOG.info('load user config')
         ControllerApi.player.set_play_mode(
-                feeluown.config['player']['playback_mode'])
+            feeluown.config['player']['playback_mode'])
+        self.resize(feeluown.config['width'],
+                    feeluown.config['height'])
 
     @pyqtSlot()
     def pop_login(self):
@@ -238,14 +240,16 @@ class Glue(QWidget):
                 self.hide()
         ControllerApi.toggle_desktop_mini()
 
-    @pyqtSlot(int)
+    @pyqtSlot(list)
     def on_play_songs(self, songs):
         self.mode_manager.change_to_normal()
-        if len(songs) == 0:
-            ViewOp.ui.STATUS_BAR.showMessage(u'该列表没有歌曲', 2000)
-            return
         ControllerApi.current_playlist_widget.set_songs(songs)
         ControllerApi.player.set_music_list(songs)
+
+    @pyqtSlot(list)
+    def on_play_song_ids(self, song_ids):
+        songs = ControllerApi.api.get_songs_detail(song_ids)
+        self.on_play_songs(songs)
 
     @pyqtSlot(int)
     def remove_music_from_list(self, mid):
@@ -306,6 +310,10 @@ class Glue(QWidget):
         painter = QPainter(self)
         style = self.style()
         style.drawPrimitive(QStyle.PE_Widget, option, painter, self)
+
+    def resizeEvent(self, event):
+        feeluown.config.update({'width': self.width(),
+                                'height': self.height()})
 
     def closeEvent(self, event):
         ControllerApi.ready_to_quit()
