@@ -209,5 +209,5 @@ class ViewOp(object):
         songs = cls.controller.api.get_recommend_songs()
         if not cls.controller.api.is_response_ok(songs):
             return
-        # cls.ui.WEBVIEW.load_recommend_songs(songs)
+        cls.ui.WEBVIEW.load_brief_songs(songs)
         cls.controller.state['current_pid'] = 0

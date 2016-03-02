@@ -18,7 +18,9 @@ from feeluown.widgets.music_table import TracksTableWidget,\
 
 
 class MusicWidget(QWidget):
+    signal_play_song = pyqtSignal([int])
     signal_play_songs = pyqtSignal([list])
+    signal_play_song_ids = pyqtSignal([list])
     signal_play_mv = pyqtSignal([int])
     signal_search_album = pyqtSignal([int])
     signal_search_artist = pyqtSignal([int])
@@ -40,6 +42,8 @@ class MusicWidget(QWidget):
         self.layout.setSpacing(0)
 
     def _bind_signal(self):
+        self.tracks_table_widget.signal_play_music.connect(
+            self.signal_play_song.emit)
         self.tracks_table_options_widget.play_all_btn.clicked.connect(
             self._play_songs)
         self.tracks_table_widget.signal_play_mv.connect(
@@ -51,7 +55,11 @@ class MusicWidget(QWidget):
 
     def _play_songs(self):
         songs = self.tracks_table_widget.songs
-        self.signal_play_songs.emit(songs)
+        if self.tracks_table_widget.is_songs_brief():
+            song_ids = [song['id'] for song in songs]
+            self.signal_play_song_ids.emit(song_ids)
+        else:
+            self.signal_play_songs.emit(songs)
 
     def load_playlist(self, playlist_model):
         tracks = playlist_model['tracks']
@@ -64,6 +72,9 @@ class MusicWidget(QWidget):
     def load_album(self, album_detail_model):
         tracks = album_detail_model['songs']
         self.tracks_table_widget.set_songs(tracks, 3)
+
+    def load_brief_songs(self, songs):
+        self.tracks_table_widget.set_songs(songs, 4)
 
 
 class RightWidget(QWidget):

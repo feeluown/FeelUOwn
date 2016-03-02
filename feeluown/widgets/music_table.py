@@ -228,10 +228,14 @@ class TracksTableWidget(BaseMusicTable):
         self.setItem(row, 3, album_item)
         self.setItem(row, 4, duration_item)
 
-        if MusicModel.mv_available(music_model):
-            mv_label = QLabel('MV')
-            mv_label.setObjectName('tracks_table_mv_btn')
-            self.setCellWidget(row, 0, mv_label)
+        if self._tracks_type is not 4:
+            self.setColumnHidden(0, False)
+            if MusicModel.mv_available(music_model):
+                mv_label = QLabel('MV')
+                mv_label.setObjectName('tracks_table_mv_btn')
+                self.setCellWidget(row, 0, mv_label)
+        else:
+            self.setColumnHidden(0, True)
 
         if tracks_type is 0:
             btn = QLabel('✗')
@@ -251,6 +255,11 @@ class TracksTableWidget(BaseMusicTable):
         self.change_tracks_type(tracks_type)
         for track in tracks:
             self.add_item_from_model(track, tracks_type)
+
+    def is_songs_brief(self):
+        if self._tracks_type is 4:
+            return True
+        return False
 
     def change_tracks_type(self, tracks_type):
         self._tracks_type = tracks_type

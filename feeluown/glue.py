@@ -115,14 +115,12 @@ class Glue(QWidget):
         ViewOp.ui.PLAY_OR_PAUSE.clicked.connect(
             ViewOp.on_play_or_pause_clicked)
 
-        # ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
+        ViewOp.ui.WEBVIEW.signal_play_song.connect(self.on_play_song)
         ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
-        # ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
+        ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
         ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
         ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
         ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
-        ViewOp.ui.TRACKS_TABLE_WIDGET.signal_play_music.connect(
-            self.on_play_song_clicked)
 
         ViewOp.ui.PLAY_PREVIOUS_SONG_BTN.clicked.connect(
             ControllerApi.player.play_last)
@@ -173,7 +171,7 @@ class Glue(QWidget):
             ViewOp.on_recommend_item_clicked)
 
         ControllerApi.current_playlist_widget.signal_play_music.connect(
-            self.on_play_song_clicked)
+            self.on_play_song)
         ControllerApi.current_playlist_widget.signal_remove_music_from_list.\
             connect(self.remove_music_from_list)
 
@@ -228,7 +226,7 @@ class Glue(QWidget):
         ViewOp.load_user_infos(data)
 
     @pyqtSlot(int)
-    def on_play_song_clicked(self, mid=None):
+    def on_play_song(self, mid=None):
         self.mode_manager.change_to_normal()
         ControllerApi.play_specific_song_by_mid(mid)
 
@@ -290,7 +288,7 @@ class Glue(QWidget):
             if not ControllerApi.api.is_response_ok(songs):
                 return
             PlaylistItem.de_active_all()
-            # ViewOp.ui.WEBVIEW.load_search_result(songs)
+            ViewOp.ui.WEBVIEW.load_brief_songs(songs)
             ControllerApi.state['current_pid'] = 0
             length = len(songs)
             if length != 0:
