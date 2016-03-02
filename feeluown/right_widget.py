@@ -1,4 +1,4 @@
-# -*- coding=utf8 -*-
+# -*- coding=utf-8 -*-
 
 
 """
@@ -8,35 +8,62 @@ every basic widget (including user,info,play) class has three public \
 funcition to set child widget properties.
 """
 
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QPainter
-from PyQt5.QtWidgets import QHBoxLayout, QStyleOption, QStyle, QWidget, \
+from PyQt5.QtWidgets import QStyleOption, QStyle, QWidget, \
     QVBoxLayout
 
-from feeluown.widgets.music_table import TracksTableWidget
-from feeluown.widgets.tracks_widget import TracksWidget
+from feeluown.widgets.music_table import TracksTableWidget,\
+    TracksTableOptionsWidget
 
 
 class MusicWidget(QWidget):
+    signal_play_songs = pyqtSignal([list])
+    signal_play_mv = pyqtSignal([int])
+    signal_search_album = pyqtSignal([int])
+    signal_search_artist = pyqtSignal([int])
+
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.layout = QHBoxLayout(self)
+        self.layout = QVBoxLayout(self)
 
         self.tracks_table_widget = TracksTableWidget()
-        self.tracks_widget = TracksWidget()
-        self.layout.addWidget(self.tracks_widget)
+        self.tracks_table_options_widget = TracksTableOptionsWidget()
+        self.layout.addWidget(self.tracks_table_options_widget)
         self.layout.addWidget(self.tracks_table_widget)
 
-        self._set_layouts_prop()
+        self._set_layout_props()
+        self._bind_signal()
 
-    def _set_layouts_prop(self):
-        self.layout.setContentsMargins(10, 0, 0, 5)
+    def _set_layout_props(self):
+        self.layout.setContentsMargins(0, 0, 0, 0)
         self.layout.setSpacing(0)
+
+    def _bind_signal(self):
+        self.tracks_table_options_widget.play_all_btn.clicked.connect(
+            self._play_songs)
+        self.tracks_table_widget.signal_play_mv.connect(
+            self.signal_play_mv.emit)
+        self.tracks_table_widget.signal_search_album.connect(
+            self.signal_search_album.emit)
+        self.tracks_table_widget.signal_search_artist.connect(
+            self.signal_search_artist.emit)
+
+    def _play_songs(self):
+        songs = self.tracks_table_widget.songs
+        self.signal_play_songs.emit(songs)
 
     def load_playlist(self, playlist_model):
         tracks = playlist_model['tracks']
-        self.tracks_table_widget.set_songs(tracks)
-        self.tracks_widget.load_img(playlist_model['coverImgUrl'])
-        self.tracks_widget.set_title(playlist_model['name'])
+        self.tracks_table_widget.set_songs(tracks, 0)
+
+    def load_artist(self, artist_detail_model):
+        tracks = artist_detail_model['hotSongs']
+        self.tracks_table_widget.set_songs(tracks, 2)
+
+    def load_album(self, album_detail_model):
+        tracks = album_detail_model['songs']
+        self.tracks_table_widget.set_songs(tracks, 3)
 
 
 class RightWidget(QWidget):

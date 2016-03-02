@@ -199,7 +199,7 @@ class ViewOp(object):
             pid, cache=False)
         if not cls.controller.api.is_response_ok(playlist_detail):
             return
-        # cls.ui.WEBVIEW.load_playlist(playlist_detail)
+        cls.ui.WEBVIEW.load_playlist(playlist_detail)
         # TODO: change current_pid when webview changed
         cls.controller.state['current_pid'] = pid
 

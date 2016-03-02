@@ -116,11 +116,11 @@ class Glue(QWidget):
             ViewOp.on_play_or_pause_clicked)
 
         # ViewOp.ui.WEBVIEW.signal_play.connect(self.on_play_song_clicked)
-        # ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
+        ViewOp.ui.WEBVIEW.signal_play_songs.connect(self.on_play_songs)
         # ViewOp.ui.WEBVIEW.signal_play_song_ids.connect(self.on_play_song_ids)
-        # ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
-        # ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
-        # ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
+        ViewOp.ui.WEBVIEW.signal_play_mv.connect(ControllerApi.play_mv_by_mvid)
+        ViewOp.ui.WEBVIEW.signal_search_album.connect(self.search_album)
+        ViewOp.ui.WEBVIEW.signal_search_artist.connect(self.search_artist)
         ViewOp.ui.TRACKS_TABLE_WIDGET.signal_play_music.connect(
             self.on_play_song_clicked)
 
@@ -269,7 +269,7 @@ class Glue(QWidget):
         album_detail_model = ControllerApi.api.get_album_detail(aid)
         if not ControllerApi.api.is_response_ok(album_detail_model):
             return
-        # ViewOp.ui.WEBVIEW.load_album(album_detail_model)
+        ViewOp.ui.WEBVIEW.load_album(album_detail_model)
         ControllerApi.state['current_pid'] = 0
 
     @staticmethod
@@ -278,7 +278,7 @@ class Glue(QWidget):
         artist_detail_model = ControllerApi.api.get_artist_detail(aid)
         if not ControllerApi.api.is_response_ok(artist_detail_model):
             return
-        # ViewOp.ui.WEBVIEW.load_artist(artist_detail_model)
+        ViewOp.ui.WEBVIEW.load_artist(artist_detail_model)
         ControllerApi.state['current_pid'] = 0
 
     @pyqtSlot()

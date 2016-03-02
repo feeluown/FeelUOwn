@@ -24,16 +24,22 @@ class TracksWidget(QWidget):
         self._play_all_btn.setObjectName('tracks_play_all_btn')
         self._title_label.setAlignment(Qt.AlignCenter)
 
-        self._img_label.setFixedSize(220, 220)
-
-        self.layout.addWidget(self._img_label)
+        self._img_label.setFixedSize(180, 180)
+        
         self.layout.addSpacing(20)
+        self.layout.addWidget(self._img_label)
+        self.layout.addSpacing(15)
         self.layout.addWidget(self._title_label)
         self.layout.addSpacing(10)
         self.layout.addWidget(self._play_all_btn)
         self.layout.addStretch(1)
 
+        self.layout.setContentsMargins(0, 0, 0, 0)
+
     def load_img(self, url):
+        params = "?param={width}y{height}".format(width=180, height=180)
+        url += params
+
         @asyncio.coroutine
         def _set_img():
             app_event_loop = asyncio.get_event_loop()
