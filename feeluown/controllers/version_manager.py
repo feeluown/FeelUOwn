@@ -10,7 +10,7 @@ from feeluown.view_api import ViewOp
 
 
 class VersionManager(object):
-    current_version = 'v7.1a'
+    current_version = 'v8.0a'
 
     @classmethod
     @asyncio.coroutine
