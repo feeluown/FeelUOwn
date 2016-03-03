@@ -267,6 +267,14 @@ QPushButton#new_playlist_btn:hover {
     color: #993333;
 }
 
+QPushButton#tracks_play_all_btn {
+    font-size: 15px;
+}
+
+QPushButton#tracks_play_all_btn:hover, QPushButton#tracks_play_all_btn:focus {
+    color: #993333;
+}
+
 /* ****************************** */
 /* QLineEdit */
 /* ****************************** */
@@ -378,6 +386,36 @@ QLabel#remove_music:hover {
     color: #993333;
 }
 
+QLabel#tracks_table_mv_btn {
+    font-size: 8px;
+    color: #CCC;
+    border-radius: 2px;
+    border: 1px solid #AAA;
+    margin-top: 8px;
+    margin-bottom: 8px;
+}
+
+QLabel#tracks_table_remove_btn {
+    color: #CCC;
+}
+
+QLabel#tracks_table_remove_btn:focus, QLabel#tracks_table_mv_btn:focus {
+    color: #993333;
+}
+
+QLabel#tracks_table_mv_btn:hover, QLabel#tracks_table_remove_btn:hover {
+    color: #993333;
+    border-color: #993333;
+}
+
+QLabel#tracks_title_label {
+    font-size: 13px;
+}
+
+QLabel#tracks_img_label {
+    border-radius: 5px;
+}
+
 /* ****************************** */
 /* QScrollBar */
 /* ****************************** */
@@ -390,14 +428,14 @@ QScrollBar:vertical {
     margin: 0px 0;
     border: 0px solid grey;
     background: #222;
-    width: 6px;
-    border-radius: 3px;
+    width: 4px;
+    border-radius: 2px;
 }
 
 QScrollBar::handle:vertical {
-    width: 6px;
+    width: 4px;
     background: #993333;
-    border-radius: 3px;
+    border-radius: 2px;
     margin: 0 0;
     border: 0px solid #993333;
 }
@@ -496,17 +534,15 @@ QHeaderView {
 }
 
 QHeaderView::section:horizontal {
-    background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
-        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
-    color: #CCC;
+    background: #222;
+    color: #993333;
     border: 0px;
-    border-bottom: 1px solid rgba(153, 51, 51, 0.3);
+    border-bottom: 1px solid #993333;
     height: 24px;
     padding-left: 5px;
     font-size: 12px;
     font-weight: normal;
 }
-
 
 QTableView QTableCornerButton::section {
     background: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
@@ -528,7 +564,6 @@ QTableWidget {
 QTableWidget::item{
     padding: 3px 4px;
     border-radius: 0px;
-    selection-background-color: #993333;
     outline: none;
     color: #CCC;
 }
@@ -542,8 +577,12 @@ QTableWidget::item:selected{
 
 QTableWidget::item:focus {
     outline: none;
-    border: 0px;
+    color: #993333;
+}
 
+QTableWidget#tracks_table_widget {
+    font-size: 13px;
+    border-left: 4px solid rgba(40, 40, 40, 0.4);
 }
 
 /* ****************************** */

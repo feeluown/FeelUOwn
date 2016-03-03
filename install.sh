@@ -10,12 +10,10 @@ echo "脚本适用于Debian系的Linux"
 echo "---------------------------"
 
 echo "安装系统软件依赖"
-sudo apt-get install python3-xlib
 sudo apt-get install python3-dbus
 sudo apt-get install python3-dbus.mainloop.pyqt5
 
 sudo apt-get install python3-pyqt5.qtmultimedia
-sudo apt-get install python3-pyqt5.qtwebkit
 sudo apt-get install libqt5multimedia5-plugins
 
 sudo apt-get install gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly
