@@ -197,7 +197,7 @@ class NetEase(QObject):
 
         return channels
 
-    def add_music_to_playlist(self, mid, pid, op):
+    def op_music_to_playlist(self, mid, pid, op):
         """
         :param op: add or del
         把mid这首音乐加入pid这个歌单列表当中去

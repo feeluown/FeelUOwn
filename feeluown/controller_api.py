@@ -38,9 +38,9 @@ class ControllerApi(object):
         if not ControllerApi.api.is_response_ok(mv_model):
             return
 
-        url_high = mv_model['url_high']
+        url_middle = mv_model['url_middle']
         clipboard = QApplication.clipboard()
-        clipboard.setText(url_high)
+        clipboard.setText(url_middle)
 
         cls.view.ui.STATUS_BAR.showMessage(
                 u"程序已经将视频的播放地址复制到剪切板", 5000)
@@ -49,7 +49,7 @@ class ControllerApi(object):
             ControllerApi.notify_widget.show_message(
                     "通知", "正在尝试调用VLC视频播放器播放MV")
             try:
-                subprocess.Popen(['vlc', url_high, '--play-and-exit', '-f'])
+                subprocess.Popen(['vlc', url_middle, '--play-and-exit', '-f'])
             except:
                 LOG.error('call vlc player failed')
         elif platform.system().lower() == 'Darwin'.lower():
@@ -57,7 +57,8 @@ class ControllerApi(object):
             ControllerApi.notify_widget.show_message(
                     "通知", "准备调用 QuickTime Player 播放mv")
             try:
-                subprocess.Popen(['open', '-a', 'QuickTime Player', url_high])
+                subprocess.Popen(
+                    ['open', '-a', 'QuickTime Player', url_middle])
             except:
                 LOG.error('call quicktime player failed')
 

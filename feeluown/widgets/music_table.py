@@ -4,6 +4,8 @@ from PyQt5.QtCore import Qt, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QTableWidget, QHeaderView, QAbstractItemView,\
     QLabel, QTableWidgetItem, QWidget, QHBoxLayout, QPushButton
 
+from feeluown.controller_api import ControllerApi
+from feeluown.view_api import ViewOp
 from feeluown.models import MusicModel
 
 
@@ -25,7 +27,7 @@ class BaseMusicTable(QTableWidget):
         self.setEditTriggers(QAbstractItemView.NoEditTriggers)
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
 
-        self.cellDoubleClicked.connect(self.on_cell_double_clicked)
+        self.cellDoubleClicked.connect(self.play_song)
         self.setShowGrid(False)     # item 之间的 border
         self.setMouseTracking(True)
         self.verticalHeader().hide()
@@ -66,7 +68,7 @@ class BaseMusicTable(QTableWidget):
         return False
 
     @pyqtSlot(int, int)
-    def on_cell_double_clicked(self, row, column):
+    def play_song(self, row, column):
         item = self.item(row, self._data_column_id)
         music_model = item.data(Qt.UserRole)
         self.signal_play_music.emit(music_model['id'])
@@ -204,6 +206,7 @@ class TracksTableWidget(BaseMusicTable):
 
     def _bind_signal(self):
         self.cellClicked.connect(self.on_cell_clicked)
+        self.currentCellChanged.connect(self.on_current_cell_changed)
 
     def add_item_from_model(self, music_model, tracks_type):
         artist_name = ''
@@ -283,8 +286,47 @@ class TracksTableWidget(BaseMusicTable):
         elif column == 3:    # album
             model = self.get_model(row)
             self.signal_search_album.emit(model['album']['id'])
-        elif column == 4:   # remove song
-            pass
+        elif column == 5:   # remove song
+            model = self.get_model(row)
+            flag = ControllerApi.api.remove_song_from_playlist(
+                model['id'], ControllerApi.state['current_pid'])
+            if flag is True:
+                self.removeRow(row)
+                self.songs.remove(model)
+            else:
+                ViewOp.ui.STATUS_BAR.showMessage('remove song failed')
+
+    @pyqtSlot(int, int, int, int)
+    def on_current_cell_changed(self, row, column, pre_row, pre_column):
+        if column in (0, 5):    # mv or remove btn
+            cell_widget = self.cellWidget(row, column)
+            if cell_widget is not None:
+                cell_widget.setFocus()
+
+    def keyPressEvent(self, event):
+        self.setFocus()     # gain focus from cell widget if neccesary
+        key_code = event.key()
+        if key_code == Qt.Key_J:
+            self.setCurrentCell(self._next_row(), self._data_column_id)
+        elif key_code == Qt.Key_K:
+            self.setCurrentCell(self._prev_row(), self._data_column_id)
+        elif key_code in (Qt.Key_Enter, Qt.Key_Return):
+            current_row = self.currentRow()
+            self.play_song(current_row, self._data_column_id)
+        elif key_code == Qt.Key_Space:
+            current_row = self.currentRow()
+            current_column = self.currentColumn()
+            self.on_cell_clicked(current_row, current_column)
+        else:
+            super().keyPressEvent(event)
+
+    def _next_row(self):
+        current_row = self.currentRow()
+        return current_row + 1 if current_row != (self.rowCount() - 1) else 0
+
+    def _prev_row(self):
+        current_row = self.currentRow()
+        return current_row - 1 if current_row != 0 else self.rowCount() - 1
 
 
 class TracksTableOptionsWidget(QWidget):

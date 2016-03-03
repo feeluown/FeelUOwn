@@ -8,9 +8,9 @@ from functools import partial
 
 from feeluown.logger import LOG
 from feeluown.utils import singleton
-from feeluown.models import MusicModel, UserModel, PlaylistModel, ArtistModel, \
-    AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel, BriefAlbumModel, \
-    AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
+from feeluown.models import MusicModel, UserModel, PlaylistModel, ArtistModel,\
+    AlbumModel, BriefPlaylistModel, BriefMusicModel, BriefArtistModel,\
+    BriefAlbumModel, AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
 
 from .api import NetEase
 from .model import PlaylistDb, SongDb, UserDb
@@ -288,7 +288,13 @@ class NetEaseAPI(object):
         return data
 
     def add_song_to_playlist(self, mid, pid):
-        data = self.ne.add_music_to_playlist(mid, pid, 'add')
+        data = self.ne.op_music_to_playlist(mid, pid, 'add')
+        if not self.is_response_avaible(data):
+            return False
+        return True
+
+    def remove_song_from_playlist(self, mid, pid):
+        data = self.ne.op_music_to_playlist(mid, pid, 'del')
         if not self.is_response_avaible(data):
             return False
         return True

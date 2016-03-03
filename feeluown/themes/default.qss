@@ -271,7 +271,7 @@ QPushButton#tracks_play_all_btn {
     font-size: 15px;
 }
 
-QPushButton#tracks_play_all_btn:hover {
+QPushButton#tracks_play_all_btn:hover, QPushButton#tracks_play_all_btn:focus {
     color: #993333;
 }
 
@@ -397,6 +397,10 @@ QLabel#tracks_table_mv_btn {
 
 QLabel#tracks_table_remove_btn {
     color: #CCC;
+}
+
+QLabel#tracks_table_remove_btn:focus, QLabel#tracks_table_mv_btn:focus {
+    color: #993333;
 }
 
 QLabel#tracks_table_mv_btn:hover, QLabel#tracks_table_remove_btn:hover {
@@ -573,7 +577,7 @@ QTableWidget::item:selected{
 
 QTableWidget::item:focus {
     outline: none;
-    border: 0px;
+    color: #993333;
 }
 
 QTableWidget#tracks_table_widget {
