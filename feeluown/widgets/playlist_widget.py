@@ -200,8 +200,12 @@ class _BaseItem(QFrame):
     def set_btn_text(self, text):
         self._text_btn.setText(text)
 
+    # TODO: use set_icon_text to replace this func
     def set_icon_pixmap(self, pixmap):
         self._icon_label.setPixmap(pixmap)
+
+    def set_icon_text(self, text):
+        self._icon_label.setText(text)
 
     def _bind_select_shortcut(self, event):
         key_code = event.key()

@@ -76,6 +76,9 @@ class MusicWidget(QWidget):
     def load_brief_songs(self, songs):
         self.tracks_table_widget.set_songs(songs, 4)
 
+    def load_songs(self, songs):
+        print (songs)
+
 
 class RightWidget(QWidget):
     def __init__(self, parent=None):

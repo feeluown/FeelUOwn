@@ -70,6 +70,10 @@ cd FeelUOwn
 
 然后就可以搜索 FeelUOwn, 就可以从系统程序中找到
 
+## 写个性插件
+请参考 `feeluown/plugin` 目录下的 `LocalSong` 模块， 一个比较 _标准_ 的插件。
+
+
 ## Changelog
 
 **2016年２月１日**

@@ -6,9 +6,11 @@ import yaml
 
 from feeluown.constants import CONFIG_FILE_PATH
 from feeluown.constants import DEFAULT_CONFIG_FILE_PATH
+from feeluown.utils import update_dict_recursive
 from feeluown.logger import LOG
 
 
+# TODO: add version info to config file
 class Config(MutableMapping):
     """load default config and user config
 
@@ -17,6 +19,7 @@ class Config(MutableMapping):
     def __init__(self):
         self._data = dict()
 
+    # TODO: bugy update policy
     def load(self, path=CONFIG_FILE_PATH):
         # load default config first, there may be some new key field which not
         # exists in user config
@@ -24,11 +27,9 @@ class Config(MutableMapping):
             self._data.update(yaml.load(f))
         try:
             with open(path, 'r') as f:
-                self._data.update(yaml.load(f))
+                update_dict_recursive(self._data, yaml.load(f))
         except OSError:
             LOG.error('user config file not found, will load default config')
-            with open(DEFAULT_CONFIG_FILE_PATH, 'r') as f:
-                self._data.update(yaml.load(f))
 
     def save(self, path=CONFIG_FILE_PATH):
         with open(path, 'w') as f:

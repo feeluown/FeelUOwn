@@ -11,6 +11,7 @@ plugin:
     NetEaseMusic: true
     MprisEx: true
     Hotkey: true
+    LocalSong: true
 
 lyric:
     color: default    # not supported

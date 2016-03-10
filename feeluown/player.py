@@ -1,4 +1,4 @@
-# -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
 
 import random
 import asyncio
@@ -84,6 +84,7 @@ class Player(QMediaPlayer):
 
     def add_music(self, music_model):
         for i, music in enumerate(self._music_list):
+            # TODO: 暴露了 music_model 实现细节
             if music_model['id'] == music['id']:
                 return False
         self._music_list.append(music_model)
