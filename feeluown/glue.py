@@ -32,7 +32,7 @@ from feeluown.controllers.tips_manager import TipsManager
 from feeluown.controllers.version_manager import VersionManager
 from feeluown.constants import WINDOW_ICON, DATABASE_SQLITE
 
-from feeluown.plugin.NetEaseMusic.model import Base
+from feeluown.plugin.NetEaseMusic.db import Base
 
 
 class Glue(QWidget):

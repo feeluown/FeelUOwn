@@ -11,7 +11,7 @@ funcition to set child widget properties.
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QScrollArea, QWidget, QHBoxLayout, QLabel,\
-        QPushButton, QVBoxLayout, QSizePolicy
+    QPushButton, QVBoxLayout, QSizePolicy
 
 from feeluown.constants import ICON_PATH
 from feeluown.widgets.playlist_widget import SpreadWidget, RecommendItem

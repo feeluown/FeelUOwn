@@ -1,4 +1,4 @@
-# -*- coding: utf8 -*-
+# -*- coding: utf-8 -*-
 
 import asyncio
 import hashlib
@@ -13,7 +13,7 @@ from feeluown.models import MusicModel, UserModel, PlaylistModel, ArtistModel,\
     BriefAlbumModel, AlbumDetailModel, ArtistDetailModel, MvModel, LyricModel
 
 from .api import NetEase
-from .model import PlaylistDb, SongDb, UserDb
+from .db import PlaylistDb, SongDb, UserDb
 
 
 """
