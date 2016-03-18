@@ -47,3 +47,6 @@ feeluown/widgets/*.jpg
 
 # node
 node_modules
+
+*.out
+.ropeproject
