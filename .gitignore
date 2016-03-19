@@ -48,5 +48,7 @@ feeluown/widgets/*.jpg
 # node
 node_modules
 
+# rope
+=======
 *.out
 .ropeproject

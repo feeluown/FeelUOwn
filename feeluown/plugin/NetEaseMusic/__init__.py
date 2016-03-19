@@ -5,7 +5,7 @@ from feeluown.controller_api import ControllerApi
 from feeluown.view_api import ViewOp
 
 from .normalize import NetEaseAPI
-from .model import UserDb
+from .db import UserDb
 
 netease_normalize = NetEaseAPI()
 

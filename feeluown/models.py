@@ -1,4 +1,4 @@
-# -*- coding:utf8 -*-
+# -*- coding:utf-8 -*-
 
 from .logger import LOG
 
@@ -6,13 +6,13 @@ from .logger import LOG
 class DataModel(object):
     def __init__(self, data, type=None):
         super().__init__()
-        self.type = type    # such as: douban, neteasemusic ... for different music plugin
+        self._type = type    # such as: douban, neteasemusic
         self.data_model = {}
         self._model = {}
         self.data = data
 
     def get_model_type(self):
-        return self.type
+        return self._type
 
     def get_dict(self):
         self.data_model['code'] = 200
@@ -38,7 +38,6 @@ class DataModel(object):
         return True
 
     def __getitem__(self, item):
-        # 没有实现setitem， 暂时没用到这个函数，以后可能废弃
         if item in self.get_dict():
             return self.get_dict()[item]
         else:

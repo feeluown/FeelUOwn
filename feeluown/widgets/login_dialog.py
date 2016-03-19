@@ -11,7 +11,7 @@ from PyQt5.QtNetwork import *
 from feeluown.network_manager import NetworkManager
 from feeluown.logger import LOG
 from feeluown.controller_api import ControllerApi
-from feeluown.plugin.NetEaseMusic.model import UserDb
+from feeluown.plugin.NetEaseMusic.db import UserDb
 
 
 class LoginDialog(QDialog):
@@ -20,7 +20,7 @@ class LoginDialog(QDialog):
         登录成功则发射("loginsuccess")信号，失败则显示相关提示信息
 
     调用: 1. 在用户登录成功时，会发射("login_success")信号
-    
+
     """
     signal_login_sucess = pyqtSignal([dict], name='login_success')
     pw_filename = "ne_un_pw.json"

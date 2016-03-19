@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 
+import collections
 import platform
 import json
 import time
@@ -71,3 +72,13 @@ def is_linux():
     if platform.system() == 'Linux':
         return True
     return False
+
+
+def update_dict_recursive(d, u):
+    for k, v in u.items():
+        if isinstance(v, collections.Mapping):
+            r = update_dict_recursive(d.get(k, {}), v)
+            d[k] = r
+        else:
+            d[k] = u[k]
+    return d
