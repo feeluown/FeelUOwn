@@ -1,7 +1,8 @@
 # FeelUOwn
 
-![](http://7xnn7w.com1.z0.glb.clouddn.com/feeluown.png)
+## screenshot
 
+![](http://7xnn7w.com1.z0.glb.clouddn.com/feeluown.png)
 
 ## Ubuntu 15.10 安装
 
