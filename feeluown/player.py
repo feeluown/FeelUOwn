@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 
 from .utils import singleton, show_requests_progress
 from .logger import LOG
+from .controller_api import ControllerApi
 
 
 @singleton
@@ -100,6 +101,8 @@ class Player(QMediaPlayer):
     @classmethod
     def get_media_content_from_model(cls, music_model):
         url = music_model['url']
+        if url == '':
+            return None
         if url.startswith('http'):
             media_content = QMediaContent(QUrl(url))
         else:
@@ -142,7 +145,12 @@ class Player(QMediaPlayer):
         media_content = self.get_media_content_from_model(music_model)
         self._current_index = self.get_index_by_model(music_model)
         super().stop()
-        self.setMedia(media_content)
+        if media_content is not None:
+            self.setMedia(media_content)
+        else:
+            self.remove_music(music_model['id'])
+            ControllerApi.notify_widget.show_message('Error', '该歌曲不能播放')
+            self.play_next()
         super().play()
         return flag
 

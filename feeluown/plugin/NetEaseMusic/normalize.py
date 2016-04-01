@@ -408,6 +408,10 @@ class NetEaseAPI(object):
         :return:
         """
         music_data['url'] = music_data['mp3Url']
+        # TODO: tmp fix. 网易付费歌曲
+        if music_data['url'] is None:
+            music_data['url'] = ''
+
         song = MusicModel(music_data).get_dict()
 
         for i, artist in enumerate(music_data['artists']):
