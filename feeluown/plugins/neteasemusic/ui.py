@@ -1,10 +1,11 @@
 import hashlib
 
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit
 from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
+from feeluown.utils import pixmap_from_url
 
 
 class LineInput(FLineEdit):
@@ -26,6 +27,7 @@ class LoginDialog(FDialog):
 
         self.is_encrypted = False
         self.captcha_needed = False
+        self.captcha_id = 0
 
         self.username_input = LineInput(self)
         self.pw_input = LineInput(self)
@@ -33,6 +35,8 @@ class LoginDialog(FDialog):
         # self.remember_checkbox = FCheckBox(self)
         self.captcha_label = FLabel(self)
         self.captcha_label.hide()
+        self.captcha_input = LineInput(self)
+        self.captcha_input.hide()
         self.hint_label = FLabel(self)
         self.ok_btn = FButton('登录', self)
         self._layout = QVBoxLayout(self)
@@ -43,6 +47,13 @@ class LoginDialog(FDialog):
         self.setObjectName('login_dialog')
         self.set_theme_style()
         self.setup_ui()
+
+        self.pw_input.textChanged.connect(self.dis_encrypt)
+
+    def fill(self, data):
+        self.username_input.setText(data['username'])
+        self.pw_input.setText(data['password'])
+        self.is_encrypted = True
 
     def set_theme_style(self):
         pass
@@ -56,14 +67,13 @@ class LoginDialog(FDialog):
         self._layout.addWidget(self.username_input)
         self._layout.addWidget(self.pw_input)
         self._layout.addWidget(self.captcha_label)
+        self._layout.addWidget(self.captcha_input)
         self._layout.addWidget(self.hint_label)
         # self._layout.addWidget(self.remember_checkbox)
         self._layout.addWidget(self.ok_btn)
 
-    def fill(self, data):
-        self.username_input.setText(data['username'])
-        self.pw_input.setText(data['password'])
-        self.is_encrypted = True
+    def show_hint(self, text):
+        self.hint_label.setText(text)
 
     @property
     def data(self):
@@ -75,6 +85,17 @@ class LoginDialog(FDialog):
             password = hashlib.md5(pw.encode('utf-8')).hexdigest()
         d = dict(username=username, password=password)
         return d
+
+    def captcha_verify(self, data):
+        self.captcha_needed = True
+        url = data['captcha_url']
+        self.captcha_id = data['captcha_id']
+        self.captcha_input.show()
+        self.captcha_label.show()
+        pixmap_from_url(url, self.captcha_label.setPixmap)
+
+    def dis_encrypt(self, text):
+        self.is_encrypted = False
 
 
 class LoginButton(FLabel):
@@ -108,6 +129,11 @@ class LoginButton(FLabel):
         if event.button() == Qt.LeftButton:
             self.clicked.emit()
 
+    def set_avatar(self, url):
+        pixmap = pixmap_from_url(url)
+        self.setPixmap(pixmap.scaled(self.size(),
+                       transformMode=Qt.SmoothTransformation))
+
 
 class Ui(object):
     def __init__(self, app):
@@ -128,6 +154,7 @@ class Ui(object):
         self._lbc_layout.setSpacing(0)
 
         self._lbc_layout.addWidget(self.login_btn)
+        self.login_btn.setFixedSize(30, 30)
         self._lbc_layout.addSpacing(10)
 
         tp_layout = self._app.ui.top_panel.layout()

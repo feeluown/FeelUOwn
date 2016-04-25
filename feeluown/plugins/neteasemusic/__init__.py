@@ -9,13 +9,12 @@ __version__ = '0.0.1'
 __desc__ = '网易云音乐'
 
 
-logger = logging.getLogger(__name__)
-
-
 def enable(app):
+    logger = logging.getLogger(__name__)
     Nem(app)
     logger.info('neteasemusic plugin enabled')
 
 
 def disable(app):
+    logger = logging.getLogger(__name__)
     logger.info('neteasemusic plugin disabled')

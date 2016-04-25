@@ -16,4 +16,5 @@ def logger_config():
     else:
         logging.basicConfig(
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
+            level=logging.INFO,
         )

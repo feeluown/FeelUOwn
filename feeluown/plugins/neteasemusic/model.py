@@ -1,7 +1,15 @@
-from feeluown.model import SongModel
+import json
+import os
+
+from feeluown.model import SongModel, PlaylistModel
+
+from .api import api
+from .consts import USERS_INFO_FILE
 
 
 class NSongModel(SongModel):
+    _api = api
+
     def __init__(self, mid, title, url, length, artists_model, album_model,
                  mvid=0):
         self.mid = mid
@@ -40,12 +48,17 @@ class NSongModel(SongModel):
         return self._url
 
     @classmethod
+    def get(cls, mid):
+        data = cls._api.song_detail(mid)
+        return cls.create(data)
+
+    @classmethod
     def create(cls, data):
         if data is None or not len(data['songs']):
             return None
         song_data = data['songs'][0]
         return cls.pure_create(song_data)
-        
+
     @classmethod
     def pure_create(cls, song_data):
         mid = song_data['id']
@@ -68,6 +81,7 @@ class NSongModel(SongModel):
 
 class _AlbumModel(object):
     '''netease brief album model'''
+
     def __init__(self, bid, name, img):
         super().__init__()
 
@@ -84,6 +98,8 @@ class _ArtistModel(object):
 
 
 class NAlbumModel(object):
+    _api = api
+
     def __init__(self, bid, name, artists_name, songs, img='', desc=''):
         super().__init__()
 
@@ -115,6 +131,11 @@ class NAlbumModel(object):
         return self._desc
 
     @classmethod
+    def get(cls, bid):
+        data = cls._api.album_infos(bid)
+        return cls.create(data)
+
+    @classmethod
     def create(cls, data):
         if data is None or data['code'] != 200:
             return None
@@ -129,6 +150,8 @@ class NAlbumModel(object):
 
 
 class NArtistModel(object):
+    _api = api
+
     def __init__(self, aid, name, img, songs=[]):
         self.aid = aid
         self._name = name
@@ -141,6 +164,11 @@ class NArtistModel(object):
         return self._name
 
     @classmethod
+    def get(cls, aid):
+        data = cls._api.artist_infos(aid)
+        return cls.create(data)
+
+    @classmethod
     def create(cls, data):
         if data is None or data['code'] != 200:
             return None
@@ -151,3 +179,130 @@ class NArtistModel(object):
 
         songs = NSongModel.batch_create(data['hotSongs'])
         return cls(aid, name, img, songs)
+
+
+class NUserModel(object):
+    _api = api
+
+    def __init__(self, username, uid, name, img, playlists=[]):
+        super().__init__()
+        self.username = username
+
+        self.uid = uid
+        self.name = name
+        self.img = img
+        self._playlists = playlists
+
+    @property
+    def playlists(self):
+        if self._playlists:
+            return self._playlists
+        data = self._api.user_playlist(self.uid)
+        if data is None:
+            return []
+        playlists = data['playlist']
+        playlists_model = []
+        for p in playlists:
+            model = NPlaylistModel(p['id'], p['name'], p['specialType'],
+                                   p['uid'])
+            playlists_model.append(model)
+        self._playlists = playlists_model
+        return playlists_model
+
+    @classmethod
+    def create(cls, data):
+        user_data = data['data']
+        username = data['username']
+        img = user_data['profile']['avatarUrl']
+        uid = user_data['profile']['userId']
+        name = user_data['profile']['nickname']
+        model = NUserModel(username, uid, name, img)
+        return model
+
+    @classmethod
+    def check(cls, username, pw):
+        data = cls._api.login(username, pw)
+        if data is None:
+            return {'code': 408, 'message': '网络状况不好'}
+        elif data['code'] == 200:
+            return {'code': 200, 'message': '登陆成功',
+                    'data': data, 'username': username}
+        elif data['code'] == 415:
+            captcha_id = data['captchaId']
+            url = cls._api.get_captcha_url(captcha_id)
+            return {'code': 415, 'message': '本次登陆需要验证码',
+                    'captcha_url': url, 'captchar_id': captcha_id}
+        elif data['code'] == 501:
+            return {'code': 501, 'message': '用户名不存在'}
+        elif data['code'] == 502:
+            return {'code': 502, 'message': '密码错误'}
+        elif data['code'] == 509:
+            return {'code': 509, 'message': '请休息几分钟再尝试'}
+
+    @classmethod
+    def check_captcha(cls, captcha_id, text):
+        flag, cid = cls._api.confirm_captcha(captcha_id, text)
+        if flag is not True:
+            url = cls._api.get_captcha_url(cid)
+            return {'code': 415, 'message': '验证码错误',
+                    'captcha_url': url, 'captcha_id': cid}
+        return {'code': 200, 'message': '验证码正确'}
+
+    def save(self):
+        with open(USERS_INFO_FILE, 'w+') as f:
+            data = {
+                self.username: {
+                    'uid': self.uid,
+                    'name': self.name,
+                    'img': self.img,
+                    'cookies': self._api.cookies
+                }
+            }
+            if f.read() != '':
+                data.update(json.load(f))
+            json.dump(data, f, indent=4)
+
+    @classmethod
+    def load(cls):
+        if not os.path.exists(USERS_INFO_FILE):
+            return None
+        with open(USERS_INFO_FILE, 'r') as f:
+            text = f.read()
+            if text == '':
+                return None
+            data = json.loads(text)
+            username = next(iter(data.keys()))
+            user_data = data[username]
+            model = cls(username,
+                        user_data['uid'],
+                        user_data['name'],
+                        user_data['img'])
+            model._api.load_cookies(user_data['cookies'])
+        return model
+
+
+class NPlaylistModel(PlaylistModel):
+    _api = api
+
+    def __init__(self, pid, name, ptype, uid, songs=[]):
+        super().__init__()
+        self.pid = pid
+        self._name = name
+        self.ptype = ptype
+        self.uid = uid
+        self._songs = songs
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def songs(self):
+        if self._songs:
+            return self._songs
+        data = self._api.playlist_detail(self.pid)
+        if data is None:
+            return None
+        songs_model = NSongModel.batch_create(data['result']['tracks'])
+        self._songs = songs_model
+        return self._songs

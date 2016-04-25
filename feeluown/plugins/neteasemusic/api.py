@@ -13,9 +13,6 @@ modified by cosven
 import json
 import logging
 import requests
-import os
-
-from .consts import COOKIES_FILE
 
 
 uri = 'http://music.163.com/api'
@@ -24,7 +21,6 @@ logger = logging.getLogger(__name__)
 
 
 class Api(object):
-
     def __init__(self):
         super().__init__()
         self.headers = {
@@ -37,17 +33,12 @@ class Api(object):
         }
         self._cookies = dict(appver="1.2.1", os="osx")
 
-    def save_cookies(self, path=COOKIES_FILE):
-        cookies_str = json.dumps(self._cookies)
-        with open(COOKIES_FILE, 'w') as f:
-            f.write(cookies_str)
+    @property
+    def cookies(self):
+        return self._cookies
 
-    def load_cookies(self, path=COOKIES_FILE):
-        if not os.path.exists(path):
-            return
-        with open(COOKIES_FILE, 'r') as f:
-            cookies = json.load(f)
-            self._cookies.update(cookies)
+    def load_cookies(self, cookies):
+        self._cookies.update(cookies)
 
     def request(self, method, action, query=None, timeout=3):
         logger.info('method=%s url=%s query=%s' % (method, action, query))
@@ -71,19 +62,16 @@ class Api(object):
         action = 'http://music.163.com/api/login/'
         phone_action = 'http://music.163.com/api/login/cellphone/'
         data = {
-            'username': username,
             'password': pw_encrypt,
             'rememberLogin': 'true'
         }
-
-        phone_data = {
-            'phone': username,
-            'password': pw_encrypt,
-            'rememberLogin': 'true'
-        }
-
+        if username.isdigit() and len(username) == 11:
+            phone = True
+            data.update({'phone': username})
+        else:
+            data.update({'username': username})
         if phone:
-            res_data = self.request("POST_UPDATE", phone_action, phone_data)
+            res_data = self.request("POST_UPDATE", phone_action, data)
             return res_data
         else:
             res_data = self.request("POST_UPDATE", action, data)
@@ -265,3 +253,5 @@ class Api(object):
     def get_recommend_songs(self):
         url = uri + '/discovery/recommend/songs'
         return self.request('GET', url)
+
+api = Api()

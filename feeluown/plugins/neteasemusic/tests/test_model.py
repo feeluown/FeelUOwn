@@ -2,8 +2,8 @@ import pytest
 import json
 import os
 
-from neteasemusic.model import NSongModel, NAlbumModel, NArtistModel
-
+from neteasemusic.model import NSongModel, NAlbumModel, NArtistModel, \
+    NPlaylistModel
 
 @pytest.fixture
 def song_data():
@@ -32,6 +32,15 @@ def artist_data():
     return data
 
 
+@pytest.fixture
+def playlist_data():
+    f_path = os.path.join(os.path.dirname(os.path.realpath(__file__)),
+                          'playlist.json')
+    with open(f_path, 'r') as f:
+        data = json.load(f)
+    return data
+
+
 def test_song_model(song_data):
     model = NSongModel.create(song_data)
     assert model.title == 'Sugar'
@@ -52,3 +61,13 @@ def test_artsit_model(artist_data):
     model = NArtistModel.create(artist_data)
     assert model.aid == 96266
     assert model.name == 'Maroon 5'
+
+
+def test_playlist_model(playlist_data, monkeypatch):
+    pid = playlist_data['result']['id']
+    name = playlist_data['result']['name']
+    ptype = playlist_data['result']['specialType']
+    uid = playlist_data['result']['userId']
+    model = NPlaylistModel(pid, name, ptype, uid)
+    monkeypatch.setattr(model._api, 'playlist_detail', lambda x: playlist_data)
+    assert len(model.songs) == 216

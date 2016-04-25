@@ -72,3 +72,16 @@ class AlbumModel(object):
     @property
     def desc(self):
         return ''
+
+
+class PlaylistModel(object):
+    def __init__(self):
+        pass
+
+    @property
+    def name(self):
+        raise NotImplementedError('This should be implemented by subclass')
+
+    @property
+    def songs(self):
+        raise NotImplementedError('This should be implemented by subclass')
