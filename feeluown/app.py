@@ -49,4 +49,5 @@ class App(FWidget):
         self.setStyleSheet(style_str)
 
     def test(self):
-        self.theme_manager.choose('Molokai')
+        # self.theme_manager.choose('')
+        pass

@@ -2,7 +2,6 @@
 
 import os
 import logging
-from enum import Enum
 import configparser
 
 from PyQt5.QtWidgets import QWidget
@@ -61,14 +60,8 @@ class ThemeManager(object):
         self.current_theme = Theme(theme_name)
 
 
-class ThemeMode(Enum):
-    dark = 0
-    light = 1
-
-
 class Theme(object):
     def __init__(self, config_file=None):
-        self.current_mode = ThemeMode.dark
         self._config = configparser.ConfigParser()
 
         self.read(config_file)
@@ -82,99 +75,104 @@ class Theme(object):
                 return True
         return False
 
-    def change_mode(self):
-        '''change between dark and light'''
-        if self.current_mode == ThemeMode.dark:
-            self.current_mode = ThemeMode.light
-        else:
-            self.current_mode = ThemeMode.dark
+    @property
+    def background_light(self):
+        color_section = self._config['Background']
+        return self._parse_color_str(color_section['color'])
 
     @property
     def background(self):
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Background']
-        else:
-            color_section = self._config['BackgroundIntense']
+        color_section = self._config['BackgroundIntense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def foreground_light(self):
+        color_section = self._config['Foreground']
         return self._parse_color_str(color_section['color'])
 
     @property
     def foreground(self):
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Foreground']
-        else:
-            color_section = self._config['ForegroundIntense']
+        color_section = self._config['ForegroundIntense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color0_light(self):
+        color_section = self._config['Color0']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color0(self):
-        '''relative black'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color0']
-        else:
-            color_section = self._config['Color0Intense']
+        color_section = self._config['Color0Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color1_light(self):
+        color_section = self._config['Color1']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color1(self):
-        '''relative red'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color1']
-        else:
-            color_section = self._config['Color1Intense']
+        color_section = self._config['Color1Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color2_light(self):
+        color_section = self._config['Color2']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color2(self):
-        '''relative green'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color2']
-        else:
-            color_section = self._config['Color2Intense']
+        color_section = self._config['Color2Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color3_light(self):
+        color_section = self._config['Color3']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color3(self):
-        '''relative yellow'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color3']
-        else:
-            color_section = self._config['Color3Intense']
+        color_section = self._config['Color3Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color4_light(self):
+        color_section = self._config['Color4']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color4(self):
-        '''relative blue'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color4']
-        else:
-            color_section = self._config['Color4Intense']
+        color_section = self._config['Color4Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color5_light(self):
+        color_section = self._config['Color5']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color5(self):
-        '''relative magenta'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color5']
-        else:
-            color_section = self._config['Color5Intense']
+        color_section = self._config['Color5Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color6_light(self):
+        color_section = self._config['Color6']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color6(self):
-        '''relative cyan'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color6']
-        else:
-            color_section = self._config['Color6Intense']
+        color_section = self._config['Color6Intense']
+        return self._parse_color_str(color_section['color'])
+
+    @property
+    def color7_light(self):
+        color_section = self._config['Color7']
         return self._parse_color_str(color_section['color'])
 
     @property
     def color7(self):
-        '''relative white'''
-        if self.current_mode == ThemeMode.light:
-            color_section = self._config['Color7']
-        else:
-            color_section = self._config['Color7Intense']
+        color_section = self._config['Color7Intense']
         return self._parse_color_str(color_section['color'])
 
     def _parse_color_str(self, color_str):
