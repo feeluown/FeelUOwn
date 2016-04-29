@@ -1,11 +1,13 @@
 import hashlib
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,\
+    QTableWidgetItem
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
-from feeluown.utils import pixmap_from_url
+from feeluown.libs.widgets.components import MusicTable
+from feeluown.utils import pixmap_from_url, parse_ms
 
 
 class LineInput(FLineEdit):
@@ -133,6 +135,153 @@ class LoginButton(FLabel):
         pixmap = pixmap_from_url(url)
         self.setPixmap(pixmap.scaled(self.size(),
                        transformMode=Qt.SmoothTransformation))
+
+
+class SongsTable(MusicTable):
+    def __init__(self, app, rows=0, columns=6, parent=None):
+        super().__init__(app, rows, columns, parent)
+        self._app = app
+
+        self.setObjectName('nem_songs_table')
+        self.set_theme_style()
+        self.songs = []
+
+        self.setHorizontalHeaderLabels(['', '歌曲名', '歌手', '专辑', '时长',
+                                        ''])
+        self.setColumnWidth(0, 28)
+        self.setColumnWidth(2, 150)
+        self.setColumnWidth(3, 200)
+        self.setColumnWidth(5, 100)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            QHeaderView {{
+                color: {1};
+                background: transparent;
+                font-size: 14px;
+            }}
+            QHeaderView::section:horizontal {{
+                height: 24px;
+                background: transparent;
+                border-top: 1px;
+                border-left: 1px;
+                border-bottom: 1px;
+                border-color: {5};
+                color: {5};
+                border-style: solid;
+                padding-left: 5px;
+            }}
+
+            QTableView QTableCornerButton::section {{
+                background: transparent;
+                border: 0px;
+                border-bottom: 1px solid {1};
+            }}
+            #{0} {{
+                border: 0px;
+                background: transparent;
+                alternate-background-color: {3};
+                color: {1};
+            }}
+            #{0}::item {{
+                outline: none;
+            }}
+            #{0}::item:focus {{
+                background: transparent;
+                outline: none;
+            }}
+            #{0}::item:selected {{
+                background: {5};
+                color: {4}
+            }}
+        '''.format(self.objectName(),
+                   theme.foreground.name(),
+                   theme.color6.name(),
+                   theme.color0_light.name(),
+                   theme.color0.name(),
+                   theme.color7_light.name())
+        self.setStyleSheet(style_str)
+
+    def add_item(self, song_model):
+        music_item = QTableWidgetItem(song_model.title)
+        album_item = QTableWidgetItem(song_model.album_name)
+        artist_item = QTableWidgetItem(song_model.artists_name)
+        m, s = parse_ms(song_model.length)
+        length_item = QTableWidgetItem(str(m) + ':' + str(s))
+
+        row = self.rowCount()
+        self.setRowCount(row + 1)
+        self.setItem(row, 1, music_item)
+        self.setItem(row, 2, artist_item)
+        self.setItem(row, 3, album_item)
+        self.setItem(row, 4, length_item)
+
+        self.songs.append(song_model)
+
+
+class TableControl(FFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.play_all_btn = FButton('▶')
+        self._layout = QHBoxLayout(self)
+        self.setup_ui()
+        self.setObjectName('n_table_control')
+        self.set_theme_style()
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            QPushButton {{
+                background: transparent;
+                color: {1};
+                font-size: 16px;
+                outline: none;
+            }}
+            QPushButton:hover {{
+                color: {2};
+            }}
+        '''.format(self.objectName(),
+                   theme.foreground.name(),
+                   theme.color0.name())
+        self.setStyleSheet(style_str)
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self.setFixedHeight(40)
+        self.play_all_btn.setFixedSize(20, 20)
+
+        self._layout.addSpacing(20)
+        self._layout.addWidget(self.play_all_btn)
+        self._layout.addStretch(0)
+
+
+class SongsTable_Container(FFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.songs_table = None
+        self.table_control = TableControl(self._app)
+        self._layout = QVBoxLayout(self)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+        self._layout.addWidget(self.table_control)
+
+    def set_table(self, songs_table):
+        self.songs_table = songs_table
+        self._layout.addWidget(songs_table)
+        self._layout.addSpacing(10)
 
 
 class Ui(object):

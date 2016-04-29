@@ -5,8 +5,8 @@ import os
 from PyQt5.QtCore import QObject
 
 from .consts import USER_PW_FILE
-from .model import NUserModel
-from .ui import Ui
+from .model import NUserModel, NSongModel
+from .ui import Ui, SongsTable, SongsTable_Container
 
 logger = logging.getLogger(__name__)
 
@@ -26,6 +26,7 @@ class Nem(QObject):
         self.user = None
 
         self.init_signal_binding()
+        self.test()
 
     def init_signal_binding(self):
         self.ui.login_btn.clicked.connect(self.ready_to_login)
@@ -99,3 +100,13 @@ class Nem(QObject):
 
     def load_playlists(self):
         print('load user playlists')
+
+    def test(self):
+        self.songs_table = SongsTable(self._app)
+        self.songs_table_container = SongsTable_Container(self._app)
+        self.songs_table_container.set_table(self.songs_table)
+        right_panel = self._app.ui.central_panel.right_panel
+        right_panel.layout().addWidget(self.songs_table_container)
+        model = NSongModel.get(210049)
+        for i in range(0, 20):
+            self.songs_table.add_item(model)

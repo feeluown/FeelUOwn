@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtWidgets import QHBoxLayout
+from PyQt5.QtWidgets import QHBoxLayout, QAbstractItemView
+from PyQt5.QtCore import Qt
 
-from .base import FFrame, FLabel
+from .base import FFrame, FLabel, FTableWidget
 
 
 class LP_GroupHeader(FFrame):
@@ -127,3 +128,22 @@ class LP_GroupItem(FFrame):
                    theme.color6.name(),
                    theme.color3_light.name())
         self.setStyleSheet(style_str)
+
+
+class MusicTable(FTableWidget):
+    def __init__(self, app, *args, **kw):
+        super().__init__(*args, **kw)
+        self._app = app
+
+        self.setObjectName('music_table')
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self._alignment = Qt.AlignLeft | Qt.AlignVCenter
+        self.horizontalHeader().setDefaultAlignment(self._alignment)
+        self.verticalHeader().hide()
+        self.setShowGrid(False)
+        self.setAlternatingRowColors(True)
+        self.set_theme_style()
+
+    def set_theme_style(self):
+        pass

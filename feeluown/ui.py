@@ -169,7 +169,7 @@ class TopPanel(FFrame):
             }}
         '''.format(self.objectName(),
                    theme.foreground.name(),
-                   theme.color5.name())
+                   theme.foreground_light.name())
         self.setStyleSheet(style_str)
 
     def setup_ui(self):
@@ -212,7 +212,7 @@ class LP_LibraryPanel(FFrame):
         self._layout.addWidget(self.header)
 
     def test(self):
-        for i in range(5):
+        for i in range(25):
             item = LP_GroupItem(self._app, '我喜欢的歌曲列表')
             self._layout.addWidget(item)
             if i in [2]:
@@ -298,6 +298,7 @@ class LeftPanel_Container(FScrollArea):
 
         self.ensureWidgetVisible(self.left_panel)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWidgetResizable(True)
         self.setObjectName('c_left_panel_container')
         self.set_theme_style()
@@ -311,18 +312,35 @@ class LeftPanel_Container(FScrollArea):
             #{0} {{
                 background: transparent;
                 border: 0px;
+                border-right: 1px solid {1};
             }}
         '''.format(self.objectName(),
-                   theme.color5.name())
+                   theme.foreground_light.name())
         self.setStyleSheet(style_str)
 
 
-class RightPanel(FScrollArea):
+class RightPanel(FFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+        self._layout = QHBoxLayout(self)
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+
+class RightPanel_Container(FScrollArea):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
+        self.right_panel = RightPanel(self._app)
         self._layout = QVBoxLayout(self)
+        self.setWidget(self.right_panel)
+
         self.setObjectName('c_left_panel')
         self.set_theme_style()
         self.setup_ui()
@@ -349,7 +367,7 @@ class CentralPanel(FFrame):
         self._app = app
 
         self.left_panel_container = LeftPanel_Container(self._app, self)
-        self.right_panel = RightPanel(self._app, self)
+        self.right_panel = RightPanel_Container(self._app, self)
 
         self._layout = QHBoxLayout(self)
         self.set_theme_style()

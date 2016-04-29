@@ -29,7 +29,7 @@ class NSongModel(SongModel):
         name = []
         for artist in self.artists:
             name.append(artist.name)
-        return ','.join(name)
+        return ', '.join(name)
 
     @property
     def album_name(self):

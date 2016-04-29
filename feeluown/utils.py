@@ -11,3 +11,9 @@ def pixmap_from_url(url, callback=None):
         callback(QPixmap(img))
     else:
         return QPixmap(img)
+
+
+def parse_ms(ms):
+    minute = int(ms / 60000)
+    second = int((ms % 60000) / 1000)
+    return minute, second
