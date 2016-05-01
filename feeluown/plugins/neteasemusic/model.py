@@ -48,6 +48,12 @@ class NSongModel(SongModel):
         return self._url
 
     @classmethod
+    def mv_available(cls, mvid):
+        if mvid != 0:
+            return True
+        return False
+
+    @classmethod
     def get(cls, mid):
         data = cls._api.song_detail(mid)
         return cls.create(data)

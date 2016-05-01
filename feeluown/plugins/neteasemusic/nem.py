@@ -5,8 +5,8 @@ import os
 from PyQt5.QtCore import QObject
 
 from .consts import USER_PW_FILE
-from .model import NUserModel, NSongModel
-from .ui import Ui, SongsTable, SongsTable_Container, PlaylistItem
+from .model import NUserModel
+from .ui import Ui, SongsTable, PlaylistItem
 
 logger = logging.getLogger(__name__)
 
@@ -30,6 +30,8 @@ class Nem(QObject):
     def init_signal_binding(self):
         self.ui.login_btn.clicked.connect(self.ready_to_login)
         self.ui.login_dialog.ok_btn.clicked.connect(self.login)
+        self.ui.songs_table_container.table_control.play_all_btn.clicked\
+            .connect(self.play_all)
 
     def load_user_pw(self):
         if not os.path.exists(USER_PW_FILE):
@@ -104,10 +106,33 @@ class Nem(QObject):
             item.load_playlist_signal.connect(self.load_playlist)
             playlist_widget.add_item(item)
 
+    def play_song(self, song):
+        self._app.player.play(song)
+
+    def play_all(self):
+        songs_table = self.ui.songs_table_container.songs_table
+        if songs_table is not None:
+            self._app.player.set_music_list(songs_table.songs)
+
+    def play_mv(self, mvid):
+        pass
+
     def load_playlist(self, playlist):
         logger.info('load playlist : %d, %s' % (playlist.pid, playlist.name))
         songs_table = SongsTable(self._app)
         songs_table.set_playlist(playlist)
+        songs_table.play_song_signal.connect(self.play_song)
+        songs_table.play_mv_signal.connect(self.play_mv)
+        songs_table.show_artist_signal.connect(self.load_artist)
+        songs_table.show_album_signal.connect(self.load_album)
         self.ui.songs_table_container.set_table(songs_table)
         self._app.ui.central_panel.right_panel.set_widget(
             self.ui.songs_table_container)
+
+    def load_artist(self, aid):
+        print('aid:', aid)
+        pass
+
+    def load_album(self, bid):
+        print('bid:', bid)
+        pass

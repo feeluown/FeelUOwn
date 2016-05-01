@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QTime
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea
@@ -8,6 +8,8 @@ from feeluown.libs.widgets.btns import _MultiSwitchButton
 from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader
+
+from .utils import parse_ms
 
 
 class PlayerControlButton(FButton):
@@ -44,20 +46,31 @@ class ProgressSlider(_BasicSlider):
         self.setMinimumWidth(400)
         self.setObjectName('player_progress_slider')
 
+    def set_duration(self, ms):
+        self.setRange(0, ms / 1000)
 
-class VolumnSlider(_BasicSlider):
+    def update_state(self, ms):
+        self.setValue(ms / 1000)
+
+
+class VolumeSlider(_BasicSlider):
     def __init__(self, app, parent=None):
         super().__init__(app, parent)
 
         self.setOrientation(Qt.Horizontal)
         self.setMinimumWidth(100)
-        self.setObjectName('player_volumn_slider')
+        self.setObjectName('player_volume_slider')
+        self.setRange(0, 100)   # player volume range
+        self.setValue(100)
+        self.setToolTip('调教播放器音量')
 
 
 class ProgressLabel(_BasicLabel):
     def __init__(self, app, text=None, parent=None):
         super().__init__(app, text, parent)
         self._app = app
+
+        self.duration_text = '00:00'
 
         self.setObjectName('player_progress_label')
         self.set_theme_style()
@@ -66,10 +79,22 @@ class ProgressLabel(_BasicLabel):
         theme = self._app.theme_manager.current_theme
         style_str = '''
             #{0} {{
+                background: transparent;
             }}
         '''.format(self.objectName(),
                    theme.color3.name())
         self.setStyleSheet(self._style_str + style_str)
+
+    def set_duration(self, ms):
+        m, s = parse_ms(ms)
+        duration = QTime(0, m, s)
+        self.duration_text = duration.toString('mm:ss')
+
+    def update_state(self, ms):
+        m, s = parse_ms(ms)
+        position = QTime(0, m, s)
+        position_text = position.toString('mm:ss')
+        self.setText(position_text + '/' + self.duration_text)
 
 
 class PlayerControlPanel(FFrame):
@@ -82,7 +107,7 @@ class PlayerControlPanel(FFrame):
         self.pp_btn = PlayerControlButton(self._app, '播放', self)
         self.next_btn = PlayerControlButton(self._app, '下一首', self)
         self.progress_slider = ProgressSlider(self._app, self)
-        self.volumn_slider = VolumnSlider(self._app, self)
+        self.volume_slider = VolumeSlider(self._app, self)
         self.progress_label = ProgressLabel(self._app, '00:00/00:00', self)
 
         self._btn_container = FFrame(self)
@@ -110,6 +135,7 @@ class PlayerControlPanel(FFrame):
     def setup_ui(self):
         self._btn_container.setFixedWidth(140)
         self._slider_container.setMinimumWidth(700)
+        self.progress_label.setFixedWidth(80)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -127,7 +153,7 @@ class PlayerControlPanel(FFrame):
         self._sc_layout.addWidget(self.progress_label)
         self._sc_layout.addSpacing(5)
         self._sc_layout.addStretch(0)
-        self._sc_layout.addWidget(self.volumn_slider)
+        self._sc_layout.addWidget(self.volume_slider)
         self._sc_layout.addStretch(1)
 
         self._layout.addWidget(self._btn_container)
@@ -140,10 +166,16 @@ class SongOperationPanel(FFrame):
         super().__init__(parent)
         self._app = app
 
+        self.setObjectName('song_operation_panel')
         self.set_theme_style()
 
     def set_theme_style(self):
-        pass
+        style_str = '''
+            #{0} {{
+                background: transparent;
+            }}
+        '''.format(self.objectName())
+        self.setStyleSheet(style_str)
 
 
 class TopPanel(FFrame):

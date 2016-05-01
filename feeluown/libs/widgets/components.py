@@ -171,7 +171,6 @@ class MusicTable(FTableWidget):
         self.horizontalHeader().setDefaultAlignment(self._alignment)
         self.verticalHeader().hide()
         self.setShowGrid(False)
-        self.setAlternatingRowColors(True)
         self.set_theme_style()
 
     def set_theme_style(self):

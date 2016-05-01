@@ -1,5 +1,7 @@
 import hashlib
+import logging
 
+from PyQt5.QtGui import QColor
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,\
     QTableWidgetItem
@@ -7,9 +9,12 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,\
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
 from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
-from feeluown.utils import pixmap_from_url, parse_ms, lighter
+from feeluown.utils import pixmap_from_url, parse_ms, lighter, darker
 
-from .model import PlaylistModel
+from .model import NPlaylistModel, NSongModel
+
+
+logger = logging.getLogger(__name__)
 
 
 class LineInput(FLineEdit):
@@ -140,7 +145,7 @@ class LoginButton(FLabel):
 
 
 class PlaylistItem(LP_GroupItem):
-    load_playlist_signal = pyqtSignal(PlaylistModel)
+    load_playlist_signal = pyqtSignal(NPlaylistModel)
 
     def __init__(self, app, playlist=None, parent=None):
         super().__init__(app, playlist.name, parent=parent)
@@ -153,6 +158,11 @@ class PlaylistItem(LP_GroupItem):
 
 
 class SongsTable(MusicTable):
+    play_mv_signal = pyqtSignal([int])
+    play_song_signal = pyqtSignal([NSongModel])
+    show_artist_signal = pyqtSignal([int])
+    show_album_signal = pyqtSignal([int])
+
     def __init__(self, app, rows=0, columns=6, parent=None):
         super().__init__(app, rows, columns, parent)
         self._app = app
@@ -170,6 +180,8 @@ class SongsTable(MusicTable):
         self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+        self.cellDoubleClicked.connect(self.on_cell_dbclick)
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -199,7 +211,6 @@ class SongsTable(MusicTable):
             #{0} {{
                 border: 0px;
                 background: transparent;
-                alternate-background-color: {3};
                 color: {1};
             }}
             #{0}::item {{
@@ -215,7 +226,7 @@ class SongsTable(MusicTable):
         '''.format(self.objectName(),
                    theme.foreground.name(),
                    theme.color6.name(),
-                   lighter(theme.background).name(),
+                   darker(theme.background, a=50).name(QColor.HexArgb),
                    theme.color0.name(),
                    theme.color7_light.name())
         self.setStyleSheet(style_str)
@@ -238,8 +249,23 @@ class SongsTable(MusicTable):
 
     def set_playlist(self, model):
         self.setRowCount(0)
+        if model.songs is None:
+            logger.error('cant get playlist %d\'s songs' % model.pid)
+            return
         for song in model.songs:
             self.add_item(song)
+
+    def on_cell_dbclick(self, row, column):
+        song = self.songs[row]
+        if column == 0:
+            if NSongModel.mv_available(song.mvid):
+                self.play_mv_signal.emit(song.mvid)
+        elif column == 1:
+            self.play_song_signal.emit(self.songs[row])
+        elif column == 2:
+            self.show_artist_signal.emit(song.artists[0].aid)
+        elif column == 3:
+            self.show_album_signal.emit(song.album.bid)
 
 
 class TableControl(FFrame):
