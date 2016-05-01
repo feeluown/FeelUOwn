@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import QHBoxLayout, QAbstractItemView
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 
 from .base import FFrame, FLabel, FTableWidget
 
@@ -46,9 +46,14 @@ class LP_GroupHeader(FFrame):
 
 
 class LP_GroupItem(FFrame):
+    clicked = pyqtSignal()
+
     def __init__(self, app, name=None, parent=None):
         super().__init__(parent)
         self._app = app
+
+        self.is_selected = False
+        self.is_playing = False
 
         self._layout = QHBoxLayout(self)
         self._flag_label = FLabel(self)
@@ -65,15 +70,34 @@ class LP_GroupItem(FFrame):
         self.set_theme_style()
         self.setup_ui()
 
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and \
+                self.rect().contains(event.pos()):
+            self.clicked.emit()
+
+    def enterEvent(self, event):
+        theme = self._app.theme_manager.current_theme
+        label_hover_color = theme.color4
+        if self.is_selected or self.is_playing:
+            return
+        self._img_label.setStyleSheet(
+            'color: {0};'.format(label_hover_color.name()))
+        self._name_label.setStyleSheet(
+            'color: {0};'.format(label_hover_color.name()))
+
+    def leaveEvent(self, event):
+        theme = self._app.theme_manager.current_theme
+        label_color = theme.foreground
+        if self.is_selected or self.is_playing:
+            return
+        self._img_label.setStyleSheet('color: {0};'.format(label_color.name()))
+        self._name_label.setStyleSheet('color: {0};'.format(label_color.name()))
+
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
         style_str = '''
             #{0} {{
                 background: transparent;
-            }}
-            #{3} {{
-                color: {4};
-                font-size: 13px;
             }}
             #{1} {{
                 color: transparent;
@@ -83,11 +107,16 @@ class LP_GroupItem(FFrame):
                 color: {4};
                 font-size: 14px;
             }}
+            #{3} {{
+                color: {4};
+                font-size: 13px;
+            }}
         '''.format(self.objectName(),
                    self._flag_label.objectName(),
                    self._img_label.objectName(),
                    self._name_label.objectName(),
-                   theme.foreground.name())
+                   theme.foreground.name(),
+                   theme.color0.name())
         self.setStyleSheet(style_str)
 
     def setup_ui(self):
@@ -102,7 +131,7 @@ class LP_GroupItem(FFrame):
         self._layout.addSpacing(2)
         self._layout.addWidget(self._name_label)
 
-    def set_focus(self):
+    def set_selected(self):
         theme = self._app.theme_manager.current_theme
         style_str = '''
             #{0} {{

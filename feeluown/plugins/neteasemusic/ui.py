@@ -6,8 +6,10 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,\
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
-from feeluown.libs.widgets.components import MusicTable
-from feeluown.utils import pixmap_from_url, parse_ms
+from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
+from feeluown.utils import pixmap_from_url, parse_ms, lighter
+
+from .model import PlaylistModel
 
 
 class LineInput(FLineEdit):
@@ -137,6 +139,19 @@ class LoginButton(FLabel):
                        transformMode=Qt.SmoothTransformation))
 
 
+class PlaylistItem(LP_GroupItem):
+    load_playlist_signal = pyqtSignal(PlaylistModel)
+
+    def __init__(self, app, playlist=None, parent=None):
+        super().__init__(app, playlist.name, parent=parent)
+
+        self.model = playlist
+        self.clicked.connect(self.on_clicked)
+
+    def on_clicked(self):
+        self.load_playlist_signal.emit(self.model)
+
+
 class SongsTable(MusicTable):
     def __init__(self, app, rows=0, columns=6, parent=None):
         super().__init__(app, rows, columns, parent)
@@ -168,7 +183,7 @@ class SongsTable(MusicTable):
                 height: 24px;
                 background: transparent;
                 border-top: 1px;
-                border-left: 1px;
+                border-right: 1px;
                 border-bottom: 1px;
                 border-color: {5};
                 color: {5};
@@ -195,13 +210,12 @@ class SongsTable(MusicTable):
                 outline: none;
             }}
             #{0}::item:selected {{
-                background: {5};
-                color: {4}
+                background: {4};
             }}
         '''.format(self.objectName(),
                    theme.foreground.name(),
                    theme.color6.name(),
-                   theme.color0_light.name(),
+                   lighter(theme.background).name(),
                    theme.color0.name(),
                    theme.color7_light.name())
         self.setStyleSheet(style_str)
@@ -221,6 +235,11 @@ class SongsTable(MusicTable):
         self.setItem(row, 4, length_item)
 
         self.songs.append(song_model)
+
+    def set_playlist(self, model):
+        self.setRowCount(0)
+        for song in model.songs:
+            self.add_item(song)
 
 
 class TableControl(FFrame):
@@ -279,9 +298,14 @@ class SongsTable_Container(FFrame):
         self._layout.addWidget(self.table_control)
 
     def set_table(self, songs_table):
+        if self.songs_table:
+            self._layout.replaceWidget(self.songs_table, songs_table)
+            self.songs_table.close()
+            del self.songs_table
+        else:
+            self._layout.addWidget(songs_table)
+            self._layout.addSpacing(10)
         self.songs_table = songs_table
-        self._layout.addWidget(songs_table)
-        self._layout.addSpacing(10)
 
 
 class Ui(object):
@@ -292,6 +316,7 @@ class Ui(object):
         self.login_dialog = LoginDialog(self._app, self._app)
         self.login_btn = LoginButton(self._app)
         self._lb_container = FFrame()
+        self.songs_table_container = SongsTable_Container(self._app)
 
         self._lbc_layout = QHBoxLayout(self._lb_container)
 

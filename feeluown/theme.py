@@ -26,11 +26,10 @@ class ThemeManager(object):
         :param theme: theme unique name
         '''
         def recursive_update(widget):
-            widget.set_theme_style()
+            if hasattr(widget, 'set_theme_style'):
+                widget.set_theme_style()
             for child in widget.children():
-                if isinstance(child, QWidget) and \
-                        hasattr(child, 'set_theme_style'):
-                    child.set_theme_style()
+                if isinstance(child, QWidget):
                     recursive_update(child)
 
         self.set_theme(theme_name)
@@ -61,10 +60,11 @@ class ThemeManager(object):
 
 
 class Theme(object):
-    def __init__(self, config_file=None):
+    def __init__(self, config_name=None):
         self._config = configparser.ConfigParser()
+        self.name = config_name
 
-        self.read(config_file)
+        self.read(config_name)
 
     def read(self, config_file):
         config_file_path = os.path.abspath(THEMES_DIR + config_file +

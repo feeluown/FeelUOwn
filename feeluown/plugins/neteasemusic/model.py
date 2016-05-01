@@ -204,7 +204,7 @@ class NUserModel(object):
         playlists_model = []
         for p in playlists:
             model = NPlaylistModel(p['id'], p['name'], p['specialType'],
-                                   p['uid'])
+                                   p['userId'])
             playlists_model.append(model)
         self._playlists = playlists_model
         return playlists_model

@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QSizePolicy
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea
 from feeluown.libs.widgets.btns import _MultiSwitchButton
 from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
-from feeluown.libs.widgets.components import LP_GroupHeader, LP_GroupItem
+from feeluown.libs.widgets.components import LP_GroupHeader
 
 
 class PlayerControlButton(FButton):
@@ -165,11 +165,12 @@ class TopPanel(FFrame):
             #{0} {{
                 background: transparent;
                 color: {1};
-                border-bottom: 1px solid {2};
+                border-bottom: 3px inset {3};
             }}
         '''.format(self.objectName(),
                    theme.foreground.name(),
-                   theme.foreground_light.name())
+                   theme.color0_light.name(),
+                   theme.color0_light.name())
         self.setStyleSheet(style_str)
 
     def setup_ui(self):
@@ -192,7 +193,6 @@ class LP_LibraryPanel(FFrame):
         self.setObjectName('lp_library_panel')
         self.set_theme_style()
         self.setup_ui()
-        self.test()
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -211,13 +211,6 @@ class LP_LibraryPanel(FFrame):
         self._layout.addSpacing(3)
         self._layout.addWidget(self.header)
 
-    def test(self):
-        for i in range(25):
-            item = LP_GroupItem(self._app, '我喜欢的歌曲列表')
-            self._layout.addWidget(item)
-            if i in [2]:
-                item.set_focus()
-
 
 class LP_PlaylistsPanel(FFrame):
     def __init__(self, app, parent=None):
@@ -230,7 +223,6 @@ class LP_PlaylistsPanel(FFrame):
 
         self.set_theme_style()
         self.setup_ui()
-        self.test()
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -242,18 +234,14 @@ class LP_PlaylistsPanel(FFrame):
                    theme.color5.name())
         self.setStyleSheet(style_str)
 
+    def add_item(self, item):
+        self._layout.addWidget(item)
+
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
         self._layout.addWidget(self.header)
-
-    def test(self):
-        for i in range(5):
-            item = LP_GroupItem(self._app, '国语经典-粤语')
-            self._layout.addWidget(item)
-            if i in [4]:
-                item.set_focus()
 
 
 class LeftPanel(FFrame):
@@ -265,6 +253,7 @@ class LeftPanel(FFrame):
         self.playlists_panel = LP_PlaylistsPanel(self._app)
 
         self._layout = QVBoxLayout(self)
+        self.setLayout(self._layout)
         self.setObjectName('c_left_panel')
         self.set_theme_style()
         self.setup_ui()
@@ -293,18 +282,20 @@ class LeftPanel_Container(FScrollArea):
         super().__init__(parent)
         self._app = app
 
-        self.left_panel = LeftPanel(self._app, self)
+        self.left_panel = LeftPanel(self._app)
+        self._layout = QVBoxLayout(self)  # no layout, no children
         self.setWidget(self.left_panel)
 
-        self.ensureWidgetVisible(self.left_panel)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWidgetResizable(True)
+
         self.setObjectName('c_left_panel_container')
         self.set_theme_style()
         self.setMinimumWidth(180)
         self.setMaximumWidth(220)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+
+        self.setup_ui()
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -312,20 +303,46 @@ class LeftPanel_Container(FScrollArea):
             #{0} {{
                 background: transparent;
                 border: 0px;
-                border-right: 1px solid {1};
+                border-right: 3px inset {1};
             }}
         '''.format(self.objectName(),
-                   theme.foreground_light.name())
+                   theme.color0_light.name())
         self.setStyleSheet(style_str)
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+        # self._layout.addWidget(self.left_panel)
 
 
 class RightPanel(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
-        self._layout = QHBoxLayout(self)
 
+        self.widget = None
+
+        self._layout = QHBoxLayout(self)
+        self.setLayout(self._layout)
+        self.setObjectName('right_panel')
+        self.set_theme_style()
         self.setup_ui()
+
+    def set_theme_style(self):
+        style_str = '''
+            #{0} {{
+                background: transparent;
+            }}
+        '''.format(self.objectName())
+        self.setStyleSheet(style_str)
+
+    def set_widget(self, widget):
+        if self.widget and self.widget != widget:
+            self._layout.replaceWidget(self.widget, widget)
+        else:
+            self._layout.addWidget(widget)
+        self.widget = widget
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -340,6 +357,10 @@ class RightPanel_Container(FScrollArea):
         self.right_panel = RightPanel(self._app)
         self._layout = QVBoxLayout(self)
         self.setWidget(self.right_panel)
+
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWidgetResizable(True)
 
         self.setObjectName('c_left_panel')
         self.set_theme_style()
@@ -367,7 +388,9 @@ class CentralPanel(FFrame):
         self._app = app
 
         self.left_panel_container = LeftPanel_Container(self._app, self)
-        self.right_panel = RightPanel_Container(self._app, self)
+        self.right_panel_container = RightPanel_Container(self._app, self)
+        self.left_panel = self.left_panel_container.left_panel
+        self.right_panel = self.right_panel_container.right_panel
 
         self._layout = QHBoxLayout(self)
         self.set_theme_style()
@@ -386,7 +409,7 @@ class CentralPanel(FFrame):
         self._layout.setSpacing(0)
 
         self._layout.addWidget(self.left_panel_container)
-        self._layout.addWidget(self.right_panel)
+        self._layout.addWidget(self.right_panel_container)
 
 
 class SongLabel(FLabel):

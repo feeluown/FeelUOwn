@@ -18,7 +18,6 @@ class App(FWidget):
         self.theme_manager.set_theme(DEFAULT_THEME_NAME)
 
         self.ui = Ui(self)
-
         self._init_managers()
 
         self.resize(960, 600)
@@ -40,14 +39,16 @@ class App(FWidget):
     def set_theme_style(self):
         theme = self.theme_manager.current_theme
         style_str = '''
-            #app {{
-                background: {0};
-                color: {1};
+            #{0} {{
+                background: {1};
+                color: {2};
             }}
-        '''.format(theme.background.name(),
+        '''.format(self.objectName(),
+                   theme.background.name(),
                    theme.foreground.name())
         self.setStyleSheet(style_str)
 
     def test(self):
-        # self.theme_manager.choose('')
+        # self.theme_manager.choose('Solarized')
+        # self.theme_manager.choose('Tomorrow Night')
         pass
