@@ -5,6 +5,8 @@ from PyQt5.QtGui import QImage, QPixmap, QColor
 
 def pixmap_from_url(url, callback=None):
     res = requests.get(url)
+    if res.status_code != 200:
+        return None
     img = QImage()
     img.loadFromData(res.content)
     if callback is not None:

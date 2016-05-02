@@ -1,7 +1,9 @@
-# -*- coding: utf-8 -*-
+import asyncio
+import logging
 
 from PyQt5.QtCore import Qt, QTime
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
+from PyQt5.QtMultimedia import QMediaPlayer
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea
 from feeluown.libs.widgets.btns import _MultiSwitchButton
@@ -10,6 +12,9 @@ from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader
 
 from .utils import parse_ms
+
+
+logger = logging.getLogger(__name__)
 
 
 class PlayerControlButton(FButton):
@@ -495,12 +500,158 @@ class PlayerModeSwitchBtn(_MultiSwitchButton):
         self.setStyleSheet(style_str)
 
 
+class PlayerStateLabel(FLabel):
+    def __init__(self, app, text=None, parent=None):
+        super().__init__(text, parent)
+        self._app = app
+
+        self.setObjectName('player_state_label')
+        self.set_theme_style()
+
+        self.set_text('Stopped')
+
+    def set_text(self, text):
+        self.setText(('♨ ' + text).upper())
+
+    @property
+    def common_style(self):
+        style_str = '''
+            #{0} {{
+                padding-left: 3px;
+                padding-right: 5px;
+            }}
+        '''.format(self.objectName())
+        return style_str
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {2};
+            }}
+        '''.format(self.objectName(),
+                   theme.color6_light.name(),
+                   theme.foreground.name())
+        self.setStyleSheet(style_str + self.common_style)
+
+    def set_error_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {2};
+            }}
+        '''.format(self.objectName(),
+                   theme.color1_light.name(),
+                   theme.color7_light.name())
+        self.setStyleSheet(style_str + self.common_style)
+
+    def set_normal_style(self):
+        self.set_theme_style()
+
+    def update_media_state(self, state):
+        self.set_theme_style()
+        logger.debug('current player media state %d' % state)
+        if state == QMediaPlayer.LoadedMedia:
+            self.set_text('Loaded')
+        elif state == QMediaPlayer.LoadingMedia:
+            self.set_text('Loading')
+        elif state == QMediaPlayer.BufferingMedia:
+            self.set_text('Buffering')
+        elif state == QMediaPlayer.BufferedMedia:
+            self.set_text('Buffered')
+        elif state == QMediaPlayer.InvalidMedia:
+            self.set_text('Invalid')
+
+    def update_state(self, state):
+        return
+        self.set_theme_style()
+        if state == QMediaPlayer.StoppedState:
+            self.set_text('Stopped')
+        elif state == QMediaPlayer.PlayingState:
+            self.set_text('Playing')
+        elif state == QMediaPlayer.PausedState:
+            self.set_text('Paused')
+
+    def set_error(self, error):
+        self.set_error_style()
+        if error == QMediaPlayer.ResourceError:
+            self.set_text('Decode Failed')
+        elif error == QMediaPlayer.NetworkError:
+            self.set_text('Disconnected')
+        elif error == QMediaPlayer.FormatError:
+            self.set_text('Decode Failded')
+        elif error == QMediaPlayer.ServiceMissingError:
+            self.set_text('Server Error')
+        else:
+            logger.error('player error %d' % error)
+
+
+class MessageLabel(FLabel):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.setObjectName('message_label')
+
+    @property
+    def common_style(self):
+        style_str = '''
+            #{0} {{
+                padding-left: 3px;
+                padding-right: 5px;
+            }}
+        '''.format(self.objectName())
+        return style_str
+
+    def _set_error_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {2};
+            }}
+        '''.format(self.objectName(),
+                   theme.color1_light.name(),
+                   theme.color7_light.name())
+        self.setStyleSheet(style_str + self.common_style)
+
+    def _set_normal_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {2};
+            }}
+        '''.format(self.objectName(),
+                   theme.color6_light.name(),
+                   theme.foreground.name())
+        self.setStyleSheet(style_str + self.common_style)
+
+    def show_message(self, text):
+        self._set_normal_style()
+        self.show()
+        self.setText(text)
+        app_event_loop = asyncio.get_event_loop()
+        app_event_loop.call_later(3, self.hide)
+
+    def show_error(self, text):
+        self._set_error_style()
+        self.show()
+        self.setText(text)
+        app_event_loop = asyncio.get_event_loop()
+        app_event_loop.call_later(3, self.hide)
+
+
 class StatusPanel(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self._layout = QHBoxLayout(self)
+        self.player_state_label = PlayerStateLabel(self._app)
+        self.message_label = MessageLabel(self._app)
         self.song_label = SongLabel(self._app, parent=self)
         self.pms_btn = PlayerModeSwitchBtn(self._app, self)
 
@@ -524,7 +675,10 @@ class StatusPanel(FFrame):
         self.setFixedHeight(18)
         # self.song_label.setMinimumWidth(220)
         self.song_label.setMaximumWidth(300)
-        self._layout.addStretch(1)
+        self._layout.addWidget(self.player_state_label)
+        self._layout.addStretch(0)
+        self._layout.addWidget(self.message_label)
+        self._layout.addStretch(0)
         self._layout.addWidget(self.pms_btn)
         self._layout.addWidget(self.song_label)
 

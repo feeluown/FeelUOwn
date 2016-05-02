@@ -35,14 +35,21 @@ class App(FFrame):
 
     def bind_signal(self):
         top_panel = self.ui.top_panel
+        status_panel = self.ui.status_panel
 
         self.player.stateChanged.connect(self._on_player_status_changed)
         self.player.positionChanged.connect(self._on_player_position_changed)
         self.player.durationChanged.connect(self._on_player_duration_changed)
         self.player.signal_player_media_changed.connect(
             self._on_player_song_changed)
+        self.player.mediaStatusChanged.connect(
+            status_panel.player_state_label.update_media_state)
+        self.player.stateChanged.connect(
+            status_panel.player_state_label.update_state)
+        self.player.error.connect(status_panel.player_state_label.set_error)
 
-        top_panel.pc_panel.volume_slider.sliderMoved.connect(self.change_volume)
+        top_panel.pc_panel.volume_slider.sliderMoved.connect(
+            self.change_volume)
         top_panel.pc_panel.pp_btn.clicked.connect(self.player.play_or_pause)
         top_panel.pc_panel.next_btn.clicked.connect(self.player.play_next)
         top_panel.pc_panel.previous_btn.clicked.connect(self.player.play_last)
@@ -74,9 +81,19 @@ class App(FFrame):
                    theme.foreground.name())
         self.setStyleSheet(style_str)
 
+    def message(self, text, error=False):
+        if error:
+            self.ui.status_panel.message_label.show_error(text)
+        else:
+            self.ui.status_panel.message_label.show_message(text)
+
+    def notify(self, text, error=False):
+        pass
+
     def test(self):
-        self.theme_manager.choose('Molokai')
+        # self.theme_manager.choose('Molokai')
         # self.theme_manager.choose('Tomorrow Night')
+        pass
 
     def _on_player_duration_changed(self, ms):
         self.ui.top_panel.pc_panel.progress_label.set_duration(ms)
@@ -101,4 +118,3 @@ class App(FFrame):
 
     def change_volume(self, value):
         self.player.setVolume(value)
-        pass
