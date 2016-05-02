@@ -248,12 +248,9 @@ class SongsTable(MusicTable):
 
         self.songs.append(song_model)
 
-    def set_playlist(self, model):
+    def set_songs(self, songs):
         self.setRowCount(0)
-        if model.songs is None:
-            logger.error('cant get playlist %d\'s songs' % model.pid)
-            return
-        for song in model.songs:
+        for song in songs:
             self.add_item(song)
 
     def on_cell_dbclick(self, row, column):
@@ -276,6 +273,8 @@ class SearchBox(FLineEdit):
 
         self.setObjectName('search_box')
         self.setPlaceholderText('搜索歌曲、歌手')
+        self.setToolTip('输入文字可以从当前歌单内搜索'
+                        '按下 Enter 将搜索网络')
         self.set_theme_style()
 
     def set_theme_style(self):

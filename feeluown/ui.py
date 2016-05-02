@@ -599,6 +599,7 @@ class MessageLabel(FLabel):
 
         self.setObjectName('message_label')
         self.queue = []
+        self.hide()
 
     @property
     def common_style(self):
@@ -651,6 +652,8 @@ class MessageLabel(FLabel):
         if self.queue:
             m = self.queue.pop(0)
             self.show_message(m['message'], m['error'])
+        else:
+            self.hide()
 
 
 class StatusPanel(FFrame):

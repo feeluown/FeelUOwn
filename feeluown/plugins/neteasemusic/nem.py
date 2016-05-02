@@ -6,7 +6,7 @@ from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QKeySequence
 
 from .consts import USER_PW_FILE
-from .model import NUserModel
+from .model import NUserModel, NSongModel
 from .ui import Ui, SongsTable, PlaylistItem
 from feeluown.utils import mesure_time
 
@@ -147,12 +147,14 @@ class Nem(QObject):
 
     def search_net(self):
         text = self.ui.songs_table_container.table_control.search_box.text()
-        return text
+        songs = NSongModel.search(text)
+        self._app.message('搜索到 %d 首相关歌曲' % len(songs))
+        if songs:
+            self.load_songs(songs)
 
-    def load_playlist(self, playlist):
-        logger.info('load playlist : %d, %s' % (playlist.pid, playlist.name))
+    def load_songs(self, songs):
         songs_table = SongsTable(self._app)
-        songs_table.set_playlist(playlist)
+        songs_table.set_songs(songs)
         songs_table.play_song_signal.connect(self.play_song)
         songs_table.play_mv_signal.connect(self.play_mv)
         songs_table.show_artist_signal.connect(self.load_artist)
@@ -160,6 +162,12 @@ class Nem(QObject):
         self.ui.songs_table_container.set_table(songs_table)
         self._app.ui.central_panel.right_panel.set_widget(
             self.ui.songs_table_container)
+
+    def load_playlist(self, playlist):
+        logger.info('load playlist : %d, %s' % (playlist.pid, playlist.name))
+        if playlist.songs is None:
+            return
+        self.load_songs(playlist.songs)
 
     def load_artist(self, aid):
         print('aid:', aid)

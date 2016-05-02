@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 from feeluown.model import SongModel, PlaylistModel
@@ -6,12 +7,14 @@ from feeluown.model import SongModel, PlaylistModel
 from .api import api
 from .consts import USERS_INFO_FILE
 
+logger = logging.getLogger(__name__)
+
 
 class NSongModel(SongModel):
     _api = api
 
-    def __init__(self, mid, title, url, length, artists_model, album_model,
-                 mvid=0):
+    def __init__(self, mid, title, length, artists_model, album_model,
+                 mvid=0, url=None):
         self.mid = mid
         self._title = title
         self._url = url
@@ -37,6 +40,9 @@ class NSongModel(SongModel):
 
     @property
     def album_img(self):
+        if not self.album._img:
+            logger.debug('songs has no album img, so get detail')
+            self.get_detail()
         return self.album.img
 
     @property
@@ -45,7 +51,17 @@ class NSongModel(SongModel):
 
     @property
     def url(self):
+        if not self._url:
+            logger.debug('songs has no url, so get detail')
+            self.get_detail()
         return self._url
+
+    def get_detail(self):
+        data = self._api.song_detail(self.mid)
+        if data is not None:
+            song = data['songs'][0]
+            self._url = song['mp3Url']
+            self.album._img = song['album']['picUrl']
 
     @classmethod
     def mv_available(cls, mvid):
@@ -69,44 +85,36 @@ class NSongModel(SongModel):
     def pure_create(cls, song_data):
         mid = song_data['id']
         title = song_data['name']
-        url = song_data['mp3Url']
+        url = song_data.get('mp3Url', None)
         length = song_data['duration']
-        album = _AlbumModel(song_data['album']['id'],
+        album = NAlbumModel(song_data['album']['id'],
                             song_data['album']['name'],
-                            song_data['album']['picUrl'])
-        artists = [_ArtistModel(x['id'], x['name'])
+                            song_data['album']['artist']['name'],
+                            img=song_data['album'].get('picUrl', None))
+        artists = [NArtistModel(x['id'], x['name'])
                    for x in song_data['artists']]
         mvid = song_data['mvid']
-        model = cls(mid, title, url, length, artists, album, mvid)
+        model = cls(mid, title, length, artists, album, mvid, url)
         return model
 
     @classmethod
     def batch_create(cls, datas):
         return [cls.pure_create(data) for data in datas]
 
-
-class _AlbumModel(object):
-    '''netease brief album model'''
-
-    def __init__(self, bid, name, img):
-        super().__init__()
-
-        self.bid = bid
-        self.name = name
-        self.img = img
-
-
-class _ArtistModel(object):
-    def __init__(self, aid, name):
-        super().__init__()
-        self.aid = aid
-        self.name = name
+    @classmethod
+    def search(cls, text):
+        data = cls._api.search(text)
+        songs = []
+        if data is not None:
+            if data['result']['songCount']:
+                songs = data['result']['songs']
+        return cls.batch_create(songs)
 
 
 class NAlbumModel(object):
     _api = api
 
-    def __init__(self, bid, name, artists_name, songs, img='', desc=''):
+    def __init__(self, bid, name, artists_name, songs=[], img='', desc=''):
         super().__init__()
 
         self.bid = bid
@@ -126,15 +134,32 @@ class NAlbumModel(object):
 
     @property
     def img(self):
+        if not self._img:
+            logger.debug('album has no img, so get detail')
+            self.get_detail()
         return self._img
 
     @property
     def songs(self):
+        if not self._songs:
+            logger.debug('album has no songs, so get detail')
+            self.get_detail()
         return self._songs
 
     @property
     def desc(self):
+        if not self._desc:
+            logger.debug('album has no desc, so get detail')
+            self.get_detail()
         return self._desc
+
+    def get_detail(self):
+        data = self._api.album_infos(self.bid)
+        if data is not None:
+            data = data['album']
+            self._songs = NSongModel.batch_create(data['songs'])
+            self._img = data['picUrl']
+            self._desc = data['briefDesc']
 
     @classmethod
     def get(cls, bid):
@@ -158,16 +183,36 @@ class NAlbumModel(object):
 class NArtistModel(object):
     _api = api
 
-    def __init__(self, aid, name, img, songs=[]):
+    def __init__(self, aid, name, img='', songs=[]):
         self.aid = aid
         self._name = name
 
-        self.img = img
-        self.songs = songs
+        self._img = img
+        self._songs = songs
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def img(self):
+        if not self._img:
+            logger.debug('artist has no img, so get detail')
+            self.get_detail()
+        return self._img
+
+    @property
+    def songs(self):
+        if not self._songs:
+            logger.debug('artist has no songs, so get detail')
+            self.get_detail()
+        return self._songs
+
+    def get_detail(self):
+        data = self._api.artist_infos(self.aid)
+        if data is not None:
+            self._img = data['artist']['picUrl']
+            self._songs = data['hotSongs']
 
     @classmethod
     def get(cls, aid):

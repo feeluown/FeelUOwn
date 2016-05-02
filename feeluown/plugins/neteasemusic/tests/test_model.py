@@ -48,6 +48,8 @@ def test_song_model(song_data):
     assert model.length == 235546
     assert model.url == 'http://m2.music.126.net/XdP-TUsP9aSZtxAn1af3Pg==/'\
                         '6636652185377132.mp3'
+    assert model.album_img == 'http://p3.music.126.net/'\
+                              'SwbJDnhHO0DUDWvDXJGAfQ==/6655343883051583.jpg'
     assert hasattr(model, 'album_img')
     assert hasattr(model, 'album_name')
 

@@ -92,10 +92,10 @@ class Player(QMediaPlayer):
                 return True
         return False
 
-    @classmethod
-    def get_media_content_from_model(cls, music_model):
+    def get_media_content_from_model(self, music_model):
         url = music_model.url
-        if url == '':
+        if not url:
+            self._app.message('URL 不存在，不能播放该歌曲')
             return None
         if url.startswith('http'):
             media_content = QMediaContent(QUrl(url))
