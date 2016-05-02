@@ -114,9 +114,9 @@ class Player(QMediaPlayer):
         self._current_index = 0
         self.stop()
 
-    def is_music_in_list(self, url):
+    def is_music_in_list(self, model):
         for music in self._music_list:
-            if url == music.url:
+            if model.url == music.url:
                 return True
         return False
 
@@ -188,13 +188,13 @@ class Player(QMediaPlayer):
     def on_error_occured(self, error):
         song = self._music_list[self._current_index]
         logger.error('cant play song: %d, %s' % (song.mid, song.title))
-        self.pause()
+        self.stop()
         if error == QMediaPlayer.FormatError:
             self._app.message('这首歌挂了，也有可能是断网了', error=True)
         elif error == QMediaPlayer.NetworkError:
             self._wait_to_retry()
         elif error == QMediaPlayer.ResourceError:
-            logger.error('播放器出现错误：缺少解码器')
+            logger.error('网络出现错误：不能正确解析资源')
         elif error == QMediaPlayer.ServiceMissingError:
             self._app.notify('缺少解码器，请向作者求助', error=True)
         else:
@@ -204,12 +204,12 @@ class Player(QMediaPlayer):
         if self._music_error_times >= self._music_error_maximum:
             self._music_error_times = 0
             self._wait_to_next(self._retry_latency)
-            self._app.message('大兄弟，将要播放下一首歌曲', error=True)
+            self._app.message('将要播放下一首歌曲', error=True)
         else:
             self._music_error_times += 1
             app_event_loop = asyncio.get_event_loop()
             app_event_loop.call_later(self._retry_latency, self.play)
-            self._app.message('大兄弟，网络连接不佳', error=True)
+            self._app.message('网络连接不佳', error=True)
 
     def _wait_to_next(self, second=0):
         if len(self._music_list) < 2:

@@ -1,18 +1,10 @@
-import requests
+import logging
+import time
+from functools import wraps
+from PyQt5.QtGui import QColor
 
-from PyQt5.QtGui import QImage, QPixmap, QColor
 
-
-def pixmap_from_url(url, callback=None):
-    res = requests.get(url)
-    if res.status_code != 200:
-        return None
-    img = QImage()
-    img.loadFromData(res.content)
-    if callback is not None:
-        callback(QPixmap(img))
-    else:
-        return QPixmap(img)
+logger = logging.getLogger(__name__)
 
 
 def parse_ms(ms):
@@ -35,3 +27,15 @@ def darker(color, degree=1, a=255):
     g = g - 10 * degree if (g - 10 * degree) > 0 else 0
     b = b - 10 * degree if (b - 10 * degree) > 0 else 0
     return QColor(r, g, b, a)
+
+
+def mesure_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.process_time()
+        result = func(*args, **kwargs)
+        elapsed_time = time.process_time() - t
+        logger.info('function %s executed time: %f s'
+                    % (func.__name__, elapsed_time))
+        return result
+    return wrapper

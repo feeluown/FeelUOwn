@@ -506,6 +506,10 @@ class PlayerStateLabel(FLabel):
         self._app = app
 
         self.setObjectName('player_state_label')
+        self.setToolTip('这里显示的是播放器的状态\n'
+                        'Buffered 代表该音乐已经可以开始播放\n'
+                        'Loading 代表正在加载该音乐\n'
+                        'Invalid 代表加载音乐失败')
         self.set_theme_style()
 
         self.set_text('Stopped')
@@ -579,9 +583,9 @@ class PlayerStateLabel(FLabel):
         if error == QMediaPlayer.ResourceError:
             self.set_text('Decode Failed')
         elif error == QMediaPlayer.NetworkError:
-            self.set_text('Disconnected')
+            self.set_text('Not Found')
         elif error == QMediaPlayer.FormatError:
-            self.set_text('Decode Failded')
+            self.set_text('Disconnected')
         elif error == QMediaPlayer.ServiceMissingError:
             self.set_text('Server Error')
         else:
@@ -594,6 +598,7 @@ class MessageLabel(FLabel):
         self._app = app
 
         self.setObjectName('message_label')
+        self.queue = []
 
     @property
     def common_style(self):
@@ -629,19 +634,23 @@ class MessageLabel(FLabel):
                    theme.foreground.name())
         self.setStyleSheet(style_str + self.common_style)
 
-    def show_message(self, text):
-        self._set_normal_style()
-        self.show()
-        self.setText(text)
+    def show_message(self, text, error=False):
+        if self.isVisible():
+            self.queue.append({'error': error, 'message': text})
+            return
+        if error:
+            self._set_error_style()
+            self.setText(text)
+        else:
+            self._set_normal_style()
+            self.setText(text)
         app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_later(3, self.hide)
+        app_event_loop.call_later(3, self.access_message_queue)
 
-    def show_error(self, text):
-        self._set_error_style()
-        self.show()
-        self.setText(text)
-        app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_later(3, self.hide)
+    def access_message_queue(self):
+        if self.queue:
+            m = self.queue.pop(0)
+            self.show_message(m['message'], m['error'])
 
 
 class StatusPanel(FFrame):

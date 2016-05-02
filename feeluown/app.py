@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QBrush
+from PyQt5.QtGui import QPainter, QImage, QPixmap
+from PyQt5.QtWidgets import QApplication
 from PyQt5.QtMultimedia import QMediaPlayer
 
 from .consts import DEFAULT_THEME_NAME
+from .hotkey import Hotkey
 from .player import Player
 from .plugin import PluginsManager
+from .request import Request
 from .theme import ThemeManager
 from .ui import Ui
-from .utils import pixmap_from_url, darker
+from .utils import darker
 from feeluown.libs.widgets.base import FFrame
 
 
@@ -17,7 +20,9 @@ class App(FFrame):
     def __init__(self):
         super().__init__()
         self.player = Player(self)
+        self.request = Request(self)
         self.theme_manager = ThemeManager(self)
+        self.hotkey_manager = Hotkey(self)
         self.plugins_manager = PluginsManager(self)
         self.theme_manager.set_theme(DEFAULT_THEME_NAME)
 
@@ -83,7 +88,7 @@ class App(FFrame):
 
     def message(self, text, error=False):
         if error:
-            self.ui.status_panel.message_label.show_error(text)
+            self.ui.status_panel.message_label.show_message(text, True)
         else:
             self.ui.status_panel.message_label.show_message(text)
 
@@ -106,7 +111,7 @@ class App(FFrame):
     def _on_player_song_changed(self, song):
         song_label = self.ui.status_panel.song_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
-        self.player_pixmap = pixmap_from_url(song.album_img)
+        self.player_pixmap = self.pixmap_from_url(song.album_img)
         self.update()
 
     def _on_player_status_changed(self, status):
@@ -118,3 +123,19 @@ class App(FFrame):
 
     def change_volume(self, value):
         self.player.setVolume(value)
+
+    def pixmap_from_url(self, url, callback=None):
+        res = self.request.get(url)
+        if res is None:
+            return None
+        img = QImage()
+        img.loadFromData(res.content)
+        if callback is not None:
+            callback(QPixmap(img))
+            return None
+        else:
+            return QPixmap(img)
+
+    def closeEvent(self, event):
+        self.player.stop()
+        QApplication.quit()

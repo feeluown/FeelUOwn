@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,\
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
 from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
-from feeluown.utils import pixmap_from_url, parse_ms, lighter, darker
+from feeluown.utils import parse_ms, lighter, darker
 
 from .model import NPlaylistModel, NSongModel
 
@@ -101,7 +101,7 @@ class LoginDialog(FDialog):
         self.captcha_id = data['captcha_id']
         self.captcha_input.show()
         self.captcha_label.show()
-        pixmap_from_url(url, self.captcha_label.setPixmap)
+        self._app.pixmap_from_url(url, self.captcha_label.setPixmap)
 
     def dis_encrypt(self, text):
         self.is_encrypted = False
@@ -139,9 +139,10 @@ class LoginButton(FLabel):
             self.clicked.emit()
 
     def set_avatar(self, url):
-        pixmap = pixmap_from_url(url)
-        self.setPixmap(pixmap.scaled(self.size(),
-                       transformMode=Qt.SmoothTransformation))
+        pixmap = self._app.pixmap_from_url(url)
+        if pixmap is not None:
+            self.setPixmap(pixmap.scaled(self.size(),
+                           transformMode=Qt.SmoothTransformation))
 
 
 class PlaylistItem(LP_GroupItem):
@@ -268,12 +269,43 @@ class SongsTable(MusicTable):
             self.show_album_signal.emit(song.album.bid)
 
 
+class SearchBox(FLineEdit):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.setObjectName('search_box')
+        self.setPlaceholderText('搜索歌曲、歌手')
+        self.set_theme_style()
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                padding-left: 3px;
+                font-size: 14px;
+                background: transparent;
+                border: 0px;
+                border-bottom: 1px solid {1};
+                color: {2};
+                outline: none;
+            }}
+            #{0}:focus {{
+                outline: none;
+            }}
+        '''.format(self.objectName(),
+                   theme.color6.name(),
+                   theme.foreground.name())
+        self.setStyleSheet(style_str)
+
+
 class TableControl(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.play_all_btn = FButton('▶')
+        self.search_box = SearchBox(self._app)
         self._layout = QHBoxLayout(self)
         self.setup_ui()
         self.setObjectName('n_table_control')
@@ -301,10 +333,13 @@ class TableControl(FFrame):
         self._layout.setSpacing(0)
         self.setFixedHeight(40)
         self.play_all_btn.setFixedSize(20, 20)
+        self.search_box.setFixedSize(160, 26)
 
         self._layout.addSpacing(20)
         self._layout.addWidget(self.play_all_btn)
         self._layout.addStretch(0)
+        self._layout.addWidget(self.search_box)
+        self._layout.addSpacing(60)
 
 
 class SongsTable_Container(FFrame):

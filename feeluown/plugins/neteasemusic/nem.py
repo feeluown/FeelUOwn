@@ -3,10 +3,12 @@ import logging
 import os
 
 from PyQt5.QtCore import QObject
+from PyQt5.QtGui import QKeySequence
 
 from .consts import USER_PW_FILE
 from .model import NUserModel
 from .ui import Ui, SongsTable, PlaylistItem
+from feeluown.utils import mesure_time
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +27,7 @@ class Nem(QObject):
 
         self.user = None
 
+        self.registe_hotkey()
         self.init_signal_binding()
 
     def init_signal_binding(self):
@@ -32,6 +35,15 @@ class Nem(QObject):
         self.ui.login_dialog.ok_btn.clicked.connect(self.login)
         self.ui.songs_table_container.table_control.play_all_btn.clicked\
             .connect(self.play_all)
+        self.ui.songs_table_container.table_control.search_box.textChanged\
+            .connect(self.search_table)
+        self.ui.songs_table_container.table_control.search_box.returnPressed\
+            .connect(self.search_net)
+
+    def registe_hotkey(self):
+        self._app.hotkey_manager.registe(
+            QKeySequence('Ctrl+F'),
+            self.ui.songs_table_container.table_control.search_box.setFocus)
 
     def load_user_pw(self):
         if not os.path.exists(USER_PW_FILE):
@@ -116,6 +128,26 @@ class Nem(QObject):
 
     def play_mv(self, mvid):
         pass
+
+    @mesure_time
+    def search_table(self, text):
+        songs_table = self.ui.songs_table_container.songs_table
+        if not text:
+            for i in range(songs_table.rowCount()):
+                songs_table.showRow(i)
+            return
+        songs = songs_table.songs
+        for i, song in enumerate(songs):
+            if text.lower() not in song.title.lower()\
+                    and text not in song.album_name.lower()\
+                    and text not in song.artists_name.lower():
+                songs_table.hideRow(i)
+            else:
+                songs_table.showRow(i)
+
+    def search_net(self):
+        text = self.ui.songs_table_container.table_control.search_box.text()
+        return text
 
     def load_playlist(self, playlist):
         logger.info('load playlist : %d, %s' % (playlist.pid, playlist.name))
