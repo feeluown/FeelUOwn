@@ -10,9 +10,13 @@ CopyRight (c) 2014 vellow <i@vellow.net>
 modified by cosven
 """
 
+import base64
+import os
 import json
 import logging
 import requests
+from Crypto.Cipher import AES
+from Crypto.PublicKey import RSA
 
 
 uri = 'http://music.163.com/api'
@@ -253,5 +257,41 @@ class Api(object):
     def get_recommend_songs(self):
         url = uri + '/discovery/recommend/songs'
         return self.request('GET', url)
+
+    def create_aes_key(self, size):
+        return (''.join([hex(b)[2:] for b in os.urandom(size)]))[0:16]
+
+    def aes_encrypt(self, text, key):
+        pad = 16 - len(text) % 16
+        text = text + pad * chr(pad)
+        encryptor = AES.new(key, 2, '0102030405060708')
+        enc_text = encryptor.encrypt(text)
+        enc_text_encode = base64.b64encode(enc_text)
+        return enc_text_encode
+
+    def rsa_encrypt(self, text):
+        e = '010001'
+        n = '00e0b509f6259df8642dbc35662901477df22677ec152b5ff68ace615'\
+            'bb7b725152b3ab17a876aea8a5aa76d2e417629ec4ee341f56135fccf'\
+            '695280104e0312ecbda92557c93870114af6c9d05c4f7f0c3685b7a46'\
+            'bee255932575cce10b424d813cfe4875d3e82047b97ddef52741d546b'\
+            '8e289dc6935b3ece0462db0a22b8e7'
+        reverse_text = text[::-1]
+        pub_key = RSA.contruct([int(n, 16), int(e, 16)])
+        encrypt_text = pub_key.encrypt(reverse_text)[0]
+        return encrypt_text
+
+    def encrypted_request(self, data):
+        text = json.dumps(data)
+        first_aes_key = '0CoJUm6Qyw8W8jud'
+        second_aes_key = self.create_aes_key(16)
+        enc_text = self.rsa_encrypt(self.aes_encrypt(text, first_aes_key),
+                                    second_aes_key)
+        enc_aes_key = self.rsa_encrypt(second_aes_key)
+        payload = {
+            'params': enc_text,
+            'encSecKey': enc_aes_key
+        }
+        return payload
 
 api = Api()

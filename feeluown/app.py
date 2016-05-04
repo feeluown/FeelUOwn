@@ -87,10 +87,7 @@ class App(FFrame):
         self.setStyleSheet(style_str)
 
     def message(self, text, error=False):
-        if error:
-            self.ui.status_panel.message_label.show_message(text, True)
-        else:
-            self.ui.status_panel.message_label.show_message(text)
+        self.ui.status_panel.message_label.show_message(text, error)
 
     def notify(self, text, error=False):
         pass

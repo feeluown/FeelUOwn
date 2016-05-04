@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt, QTime
+from PyQt5.QtCore import Qt, QTime, pyqtSignal
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 from PyQt5.QtMultimedia import QMediaPlayer
 
@@ -515,7 +515,7 @@ class PlayerStateLabel(FLabel):
         self.set_text('Stopped')
 
     def set_text(self, text):
-        self.setText(('♨ ' + text).upper())
+        self.setText(('♫ ' + text).upper())
 
     @property
     def common_style(self):
@@ -636,6 +636,7 @@ class MessageLabel(FLabel):
         self.setStyleSheet(style_str + self.common_style)
 
     def show_message(self, text, error=False):
+        self.show()
         if self.isVisible():
             self.queue.append({'error': error, 'message': text})
             return
@@ -656,6 +657,43 @@ class MessageLabel(FLabel):
             self.hide()
 
 
+class AppStatusLabel(FLabel):
+    clicked = pyqtSignal()
+
+    def __init__(self, app, text=None, parent=None):
+        super().__init__(text, parent)
+        self._app = app
+
+        self.setText('♨ Normal'.upper())
+        self.setToolTip('点击可以切换到其他模式哦 ~')
+        self.setObjectName('app_status_label')
+        self.set_theme_style()
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {3};
+                padding-left: 5px;
+                padding-right: 5px;
+                font-size: 14px;
+            }}
+            #{0}:hover {{
+                color: {2};
+            }}
+        '''.format(self.objectName(),
+                   theme.color3.name(),
+                   theme.color2.name(),
+                   theme.background.name())
+        self.setStyleSheet(style_str)
+
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and \
+                self.rect().contains(event.pos()):
+            self.clicked.emit()
+
+
 class StatusPanel(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -663,6 +701,7 @@ class StatusPanel(FFrame):
 
         self._layout = QHBoxLayout(self)
         self.player_state_label = PlayerStateLabel(self._app)
+        self.app_status_label = AppStatusLabel(self._app)
         self.message_label = MessageLabel(self._app)
         self.song_label = SongLabel(self._app, parent=self)
         self.pms_btn = PlayerModeSwitchBtn(self._app, self)
@@ -688,11 +727,18 @@ class StatusPanel(FFrame):
         # self.song_label.setMinimumWidth(220)
         self.song_label.setMaximumWidth(300)
         self._layout.addWidget(self.player_state_label)
+        self._layout.addWidget(self.app_status_label)
         self._layout.addStretch(0)
         self._layout.addWidget(self.message_label)
         self._layout.addStretch(0)
         self._layout.addWidget(self.pms_btn)
         self._layout.addWidget(self.song_label)
+
+
+class LyricFrame(FFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
 
 
 class Ui(object):

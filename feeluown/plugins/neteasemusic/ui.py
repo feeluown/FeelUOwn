@@ -134,8 +134,9 @@ class LoginButton(FLabel):
                    theme.color4.name())
         self.setStyleSheet(style_str)
 
-    def mousePressEvent(self, event):
-        if event.button() == Qt.LeftButton:
+    def mouseReleaseEvent(self, event):
+        if event.button() == Qt.LeftButton and \
+                self.rect().contains(event.pos()):
             self.clicked.emit()
 
     def set_avatar(self, url):
@@ -273,7 +274,7 @@ class SearchBox(FLineEdit):
 
         self.setObjectName('search_box')
         self.setPlaceholderText('搜索歌曲、歌手')
-        self.setToolTip('输入文字可以从当前歌单内搜索'
+        self.setToolTip('输入文字可以从当前歌单内搜索\n'
                         '按下 Enter 将搜索网络')
         self.set_theme_style()
 

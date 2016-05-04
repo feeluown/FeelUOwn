@@ -187,7 +187,7 @@ class Player(QMediaPlayer):
     @pyqtSlot(QMediaPlayer.Error)
     def on_error_occured(self, error):
         song = self._music_list[self._current_index]
-        logger.error('cant play song: %d, %s' % (song.mid, song.title))
+        self._app.message('cant play song: %s' % (song.title))
         self.stop()
         if error == QMediaPlayer.FormatError:
             self._app.message('这首歌挂了，也有可能是断网了', error=True)
