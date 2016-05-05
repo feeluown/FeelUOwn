@@ -11,6 +11,7 @@ modified by cosven
 """
 
 import base64
+import binascii
 import os
 import json
 import logging
@@ -20,6 +21,7 @@ from Crypto.PublicKey import RSA
 
 
 uri = 'http://music.163.com/api'
+uri_v1 = 'http://music.163.com/weapi/v1'
 
 logger = logging.getLogger(__name__)
 
@@ -258,10 +260,21 @@ class Api(object):
         url = uri + '/discovery/recommend/songs'
         return self.request('GET', url)
 
-    def create_aes_key(self, size):
+    def get_song_comment(self, mid, comment_id):
+        data = {
+            'rid': comment_id,
+            'offset': '0',
+            'total': 'true',
+            'limit': '20',
+            'csrf_token': self._cookies.get('__csrf')
+        }
+        url = uri_v1 + '/resource/comments/' + comment_id
+        return self.request('POST', url, data)
+
+    def _create_aes_key(self, size):
         return (''.join([hex(b)[2:] for b in os.urandom(size)]))[0:16]
 
-    def aes_encrypt(self, text, key):
+    def _aes_encrypt(self, text, key):
         pad = 16 - len(text) % 16
         text = text + pad * chr(pad)
         encryptor = AES.new(key, 2, '0102030405060708')
@@ -269,7 +282,7 @@ class Api(object):
         enc_text_encode = base64.b64encode(enc_text)
         return enc_text_encode
 
-    def rsa_encrypt(self, text):
+    def _rsa_encrypt(self, text):
         e = '010001'
         n = '00e0b509f6259df8642dbc35662901477df22677ec152b5ff68ace615'\
             'bb7b725152b3ab17a876aea8a5aa76d2e417629ec4ee341f56135fccf'\
@@ -277,20 +290,22 @@ class Api(object):
             'bee255932575cce10b424d813cfe4875d3e82047b97ddef52741d546b'\
             '8e289dc6935b3ece0462db0a22b8e7'
         reverse_text = text[::-1]
-        pub_key = RSA.contruct([int(n, 16), int(e, 16)])
-        encrypt_text = pub_key.encrypt(reverse_text)[0]
-        return encrypt_text
+        pub_key = RSA.construct([int(n, 16), int(e, 16)])
+        encrypt_text = pub_key.encrypt(int(binascii.hexlify(reverse_text), 16),
+                                       None)[0]
+        return format(encrypt_text, 'x').zfill(256)
 
-    def encrypted_request(self, data):
+    def encrypt_request(self, data):
         text = json.dumps(data)
         first_aes_key = '0CoJUm6Qyw8W8jud'
-        second_aes_key = self.create_aes_key(16)
-        enc_text = self.rsa_encrypt(self.aes_encrypt(text, first_aes_key),
-                                    second_aes_key)
-        enc_aes_key = self.rsa_encrypt(second_aes_key)
+        second_aes_key = self._create_aes_key(16)
+        enc_text = self._aes_encrypt(
+            self._aes_encrypt(text, first_aes_key).decode('ascii'),
+            second_aes_key).decode('ascii')
+        enc_aes_key = self._rsa_encrypt(second_aes_key.encode('ascii'))
         payload = {
             'params': enc_text,
-            'encSecKey': enc_aes_key
+            'encSecKey': enc_aes_key,
         }
         return payload
 

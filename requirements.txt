@@ -1,2 +1,1 @@
 quamash==0.5.3
-pycrypto==2.6.1
