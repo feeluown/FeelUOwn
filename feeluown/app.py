@@ -53,6 +53,10 @@ class App(FFrame):
         self.player.stateChanged.connect(
             status_panel.player_state_label.update_state)
         self.player.error.connect(status_panel.player_state_label.set_error)
+        self.player.signal_playback_mode_changed.connect(
+            status_panel.pms_btn.on_playback_mode_changed)
+
+        status_panel.pms_btn.clicked.connect(self.player.next_playback_mode)
 
         self.request.connected_signal.connect(self._on_network_connected)
         self.request.disconnected_signal.connect(self._on_network_disconnected)

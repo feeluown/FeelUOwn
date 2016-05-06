@@ -59,11 +59,14 @@ class NSongModel(SongModel):
         if self._url is not None:
             return self._url
         data = self._api.weapi_songs_url([self.mid])
-        if data is not None and data['code'] == 200:
-            url = data['data'][0]['url']
-            self._url = url
+        if data is not None:
+            if data['code'] == 200:
+                url = data['data'][0]['url']
+                self._url = url
+            if data['code'] == 404:
+                self._url = None
         else:
-            self._url = self._candidate_url
+            return self._candidate_url
         return self._url
 
     def get_detail(self):

@@ -8,6 +8,7 @@ from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
 from PyQt5.QtCore import QUrl, pyqtSignal, pyqtSlot
 
 from .model import SongModel
+from .consts import PlaybackMode
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +17,7 @@ logger = logging.getLogger(__name__)
 class Player(QMediaPlayer):
     signal_player_media_changed = pyqtSignal([SongModel])
     signal_playlist_is_empty = pyqtSignal()
-    signal_playback_mode_changed = pyqtSignal([int])
+    signal_playback_mode_changed = pyqtSignal([PlaybackMode])
     signal_playlist_finished = pyqtSignal()
 
     signal_song_required = pyqtSignal()
@@ -24,8 +25,8 @@ class Player(QMediaPlayer):
 
     _music_list = list()    # 里面的对象是music_model
     _current_index = 0
-    playback_mode = 3
-    last_playback_mode = 3
+    playback_mode = PlaybackMode.loop
+    last_playback_mode = PlaybackMode.loop
     _other_mode = False
 
     def __init__(self, app):
@@ -131,8 +132,8 @@ class Player(QMediaPlayer):
         insert_flag = self.insert_music(music_model)
         index = self.get_index_by_model(music_model)
         if not insert_flag:
-            if music_model.mid == self._music_list[self._current_index].mid:
-                super().play()
+            if music_model.mid == self._music_list[self._current_index].mid\
+                    and self.state() == QMediaPlayer.PlayingState:
                 return True
 
         media_content = self.get_media_content_from_model(music_model)
@@ -227,9 +228,9 @@ class Player(QMediaPlayer):
     def get_next_song_index(self):
         if len(self._music_list) is 0:
             return None
-        if self.playback_mode == 1:
+        if self.playback_mode == PlaybackMode.one_loop:
             return self._current_index
-        elif self.playback_mode == 3:
+        elif self.playback_mode == PlaybackMode.loop:
             if self._current_index >= len(self._music_list) - 1:
                 return 0
             else:
@@ -240,9 +241,9 @@ class Player(QMediaPlayer):
     def get_previous_song_index(self):
         if len(self._music_list) is 0:
             return None
-        if self.playback_mode == 1:
+        if self.playback_mode == PlaybackMode.one_loop:
             return self._current_index
-        elif self.playback_mode == 3:
+        elif self.playback_mode == PlaybackMode.loop:
             if self._current_index is 0:
                 return len(self._music_list) - 1
             else:
@@ -250,7 +251,7 @@ class Player(QMediaPlayer):
         else:
             return random.choice(range(len(self._music_list)))
 
-    def set_play_mode(self, mode):
+    def _set_play_mode(self, mode):
         # item once: 0
         # item in loop: 1
         # sequential: 2
@@ -260,4 +261,13 @@ class Player(QMediaPlayer):
             return 0
         self._record_playback_mode()
         self.playback_mode = mode
+        self._app.message('设置播放顺序为：%s' % mode.value)
         self.signal_playback_mode_changed.emit(mode)
+
+    def next_playback_mode(self):
+        if self.playback_mode == PlaybackMode.one_loop:
+            self._set_play_mode(PlaybackMode.loop)
+        elif self.playback_mode == PlaybackMode.loop:
+            self._set_play_mode(PlaybackMode.random)
+        elif self.playback_mode == PlaybackMode.random:
+            self._set_play_mode(PlaybackMode.one_loop)

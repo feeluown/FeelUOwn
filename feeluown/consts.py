@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+from enum import Enum
 
 
 THEMES_DIR = './feeluown/themes/'
@@ -16,3 +17,10 @@ USER_PLUGINS_DIR = HOME_DIR + '/plugins'
 CACHE_DIR = HOME_DIR + '/cache'
 
 LOG_FILE = HOME_DIR + '/run.log'
+
+
+class PlaybackMode(Enum):
+    one_loop = '单曲循环'
+    sequential = '顺序'
+    loop = '全部循环'
+    random = '随机'

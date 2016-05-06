@@ -6,12 +6,12 @@ from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
 from PyQt5.QtMultimedia import QMediaPlayer
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea
-from feeluown.libs.widgets.btns import _MultiSwitchButton
 from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader
 
 from .utils import parse_ms, darker
+from .consts import PlaybackMode
 
 
 logger = logging.getLogger(__name__)
@@ -476,14 +476,14 @@ class SongLabel(FLabel):
         self.setText('♪  ' + song_text + ' ')
 
 
-class PlayerModeSwitchBtn(_MultiSwitchButton):
+class PlaybackModeSwitchBtn(FButton):
     def __init__(self, app, parent=None):
-        super().__init__(app, parent=parent)
+        super().__init__(parent=parent)
         self._app = app
 
         self.setObjectName('player_mode_switch_btn')
         self.set_theme_style()
-        self.setText('♭ 随机')
+        self.set_text('循环')
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -499,15 +499,21 @@ class PlayerModeSwitchBtn(_MultiSwitchButton):
                    theme.background.name())
         self.setStyleSheet(style_str)
 
+    def set_text(self, text):
+        self.setText('♭ ' + text)
 
-class ThemeSwitchBtn(_MultiSwitchButton):
+    def on_playback_mode_changed(self, playback_mode):
+        self.set_text(playback_mode.value)
+
+
+class ThemeSwitchBtn(FButton):
     def __init__(self, app, parent=None):
-        super().__init__(app, parent=parent)
+        super().__init__(parent)
         self._app = app
 
         self.setObjectName('theme_switch_btn')
         self.set_theme_style()
-        self.setText('♭ Solarized')
+        self.set_text('Solarized')
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -516,12 +522,15 @@ class ThemeSwitchBtn(_MultiSwitchButton):
                 background: {1};
                 color: {2};
                 border: 0px;
-                padding: 0px 4px;
+                padding: 1px 4px;
             }}
         '''.format(self.objectName(),
-                   theme.color6.name(),
+                   theme.color4.name(),
                    theme.background.name())
         self.setStyleSheet(style_str)
+
+    def set_text(self, text):
+        self.setText('✿ ' + text)
 
 
 class PlayerStateLabel(FLabel):
@@ -658,7 +667,6 @@ class MessageLabel(FLabel):
         self.setStyleSheet(style_str + self.common_style)
 
     def show_message(self, text, error=False):
-        self.show()
         if self.isVisible():
             self.queue.append({'error': error, 'message': text})
             return
@@ -668,15 +676,15 @@ class MessageLabel(FLabel):
         else:
             self._set_normal_style()
             self.setText(text)
+        self.show()
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(3, self.access_message_queue)
 
     def access_message_queue(self):
+        self.hide()
         if self.queue:
             m = self.queue.pop(0)
             self.show_message(m['message'], m['error'])
-        else:
-            self.hide()
 
 
 class AppStatusLabel(FLabel):
@@ -787,7 +795,8 @@ class StatusPanel(FFrame):
         self.network_status_label = NetworkStatus(self._app)
         self.message_label = MessageLabel(self._app)
         self.song_label = SongLabel(self._app, parent=self)
-        self.pms_btn = PlayerModeSwitchBtn(self._app, self)
+        self.pms_btn = PlaybackModeSwitchBtn(self._app, self)
+        self.theme_switch_btn = ThemeSwitchBtn(self._app, self)
 
         self.setup_ui()
         self.setObjectName('status_panel')
@@ -815,6 +824,7 @@ class StatusPanel(FFrame):
         self._layout.addStretch(0)
         self._layout.addWidget(self.message_label)
         self._layout.addStretch(0)
+        self._layout.addWidget(self.theme_switch_btn)
         self._layout.addWidget(self.pms_btn)
         self._layout.addWidget(self.song_label)
 
