@@ -21,6 +21,7 @@ from Crypto.PublicKey import RSA
 
 
 uri = 'http://music.163.com/api'
+uri_we = 'http://music.163.com/weapi'
 uri_v1 = 'http://music.163.com/weapi/v1'
 
 logger = logging.getLogger(__name__)
@@ -47,14 +48,17 @@ class Api(object):
         self._cookies.update(cookies)
 
     def request(self, method, action, query=None, timeout=3):
-        logger.info('method=%s url=%s query=%s' % (method, action, query))
+        logger.info('method=%s url=%s' % (method, action))
         try:
             if method == "GET":
-                res = requests.get(action, headers=self.headers, cookies=self._cookies, timeout=timeout)
+                res = requests.get(action, headers=self.headers,
+                                   cookies=self._cookies, timeout=timeout)
             elif method == "POST":
-                res = requests.post(action, data=query, headers=self.headers, cookies=self._cookies, timeout=timeout)
+                res = requests.post(action, data=query, headers=self.headers,
+                                    cookies=self._cookies, timeout=timeout)
             elif method == "POST_UPDATE":
-                res = requests.post(action, data=query, headers=self.headers, cookies=self._cookies, timeout=timeout)
+                res = requests.post(action, data=query, headers=self.headers,
+                                    cookies=self._cookies, timeout=timeout)
                 self._cookies.update(res.cookies.get_dict())
             content = res.content
             content_str = content.decode('utf-8')
@@ -183,6 +187,16 @@ class Api(object):
         data = self.request('GET', action)
         return data
 
+    def weapi_songs_url(self, music_ids, bitrate=128000):
+        url = uri_we + '/song/enhance/player/url'
+        data = {
+            'ids': music_ids,
+            'br': bitrate,
+            'csrf_token': self._cookies.get('__csrf')
+        }
+        payload = self.encrypt_request(data)
+        return self.request('POST', url, payload)
+
     def songs_detail(self, music_ids):
         music_ids = [str(music_id) for music_id in music_ids]
         action = uri + '/api/song/detail?ids=[' +\
@@ -260,7 +274,7 @@ class Api(object):
         url = uri + '/discovery/recommend/songs'
         return self.request('GET', url)
 
-    def get_song_comment(self, mid, comment_id):
+    def get_comment(self, comment_id):
         data = {
             'rid': comment_id,
             'offset': '0',
@@ -269,7 +283,8 @@ class Api(object):
             'csrf_token': self._cookies.get('__csrf')
         }
         url = uri_v1 + '/resource/comments/' + comment_id
-        return self.request('POST', url, data)
+        payload = self.encrypt_request(data)
+        return self.request('POST', url, payload)
 
     def _create_aes_key(self, size):
         return (''.join([hex(b)[2:] for b in os.urandom(size)]))[0:16]

@@ -51,9 +51,10 @@ class NSongModel(SongModel):
 
     @property
     def url(self):
-        if not self._url:
-            logger.debug('songs has no url, so get detail')
-            self.get_detail()
+        data = self._api.weapi_songs_url([self.mid])
+        if data is not None and data['code'] == 200:
+            url = data['data'][0]['url']
+            self._url = url
         return self._url
 
     def get_detail(self):
@@ -85,7 +86,8 @@ class NSongModel(SongModel):
     def pure_create(cls, song_data):
         mid = song_data['id']
         title = song_data['name']
-        url = song_data.get('mp3Url', None)
+        # url = song_data.get('mp3Url', None)
+        url = None
         length = song_data['duration']
         album = NAlbumModel(song_data['album']['id'],
                             song_data['album']['name'],
