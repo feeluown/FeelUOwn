@@ -17,7 +17,7 @@ class NSongModel(SongModel):
                  mvid=0, url=None):
         self._mid = mid
         self._title = title
-        self._url = url
+        self._url = None
         self._candidate_url = url
         self._length = length
         self.artists = artists_model
