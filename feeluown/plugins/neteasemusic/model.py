@@ -15,13 +15,18 @@ class NSongModel(SongModel):
 
     def __init__(self, mid, title, length, artists_model, album_model,
                  mvid=0, url=None):
-        self.mid = mid
+        self._mid = mid
         self._title = title
         self._url = url
+        self._candidate_url = url
         self._length = length
         self.artists = artists_model
         self.album = album_model
         self.mvid = mid
+
+    @property
+    def mid(self):
+        return self._mid
 
     @property
     def title(self):
@@ -51,17 +56,21 @@ class NSongModel(SongModel):
 
     @property
     def url(self):
+        if self._url is not None:
+            return self._url
         data = self._api.weapi_songs_url([self.mid])
         if data is not None and data['code'] == 200:
             url = data['data'][0]['url']
             self._url = url
+        else:
+            self._url = self._candidate_url
         return self._url
 
     def get_detail(self):
         data = self._api.song_detail(self.mid)
         if data is not None:
             song = data['songs'][0]
-            self._url = song['mp3Url']
+            self._candidate_url = song['mp3Url']
             self.album._img = song['album']['picUrl']
 
     @classmethod
@@ -86,8 +95,7 @@ class NSongModel(SongModel):
     def pure_create(cls, song_data):
         mid = song_data['id']
         title = song_data['name']
-        # url = song_data.get('mp3Url', None)
-        url = None
+        url = song_data.get('mp3Url', None)
         length = song_data['duration']
         album = NAlbumModel(song_data['album']['id'],
                             song_data['album']['name'],

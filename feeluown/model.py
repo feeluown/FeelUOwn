@@ -3,6 +3,10 @@ class SongModel(object):
         pass
 
     @property
+    def mid(self):
+        raise NotImplementedError('This should be implemented by subclass')
+
+    @property
     def title(self):
         raise NotImplementedError('This should be implemented by subclass')
 

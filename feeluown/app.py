@@ -33,7 +33,7 @@ class App(FFrame):
 
         self.resize(960, 600)
         self.setObjectName('app')
-        self.setWindowIcon(QIcon(APP_ICON))
+        QApplication.setWindowIcon(QIcon(APP_ICON))
         self.set_theme_style()
 
         self.bind_signal()
@@ -53,6 +53,10 @@ class App(FFrame):
         self.player.stateChanged.connect(
             status_panel.player_state_label.update_state)
         self.player.error.connect(status_panel.player_state_label.set_error)
+
+        self.request.connected_signal.connect(self._on_network_connected)
+        self.request.disconnected_signal.connect(self._on_network_disconnected)
+        self.request.slow_signal.connect(self._on_network_slow)
 
         top_panel.pc_panel.volume_slider.sliderMoved.connect(
             self.change_volume)
@@ -110,6 +114,8 @@ class App(FFrame):
         song_label = self.ui.status_panel.song_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
         self.player_pixmap = self.pixmap_from_url(song.album_img)
+        if self.player_pixmap is not None:
+            QApplication.setWindowIcon(QIcon(self.player_pixmap))
         self.update()
 
     def _on_player_status_changed(self, status):
@@ -118,6 +124,18 @@ class App(FFrame):
             pp_btn.setText('暂停')
         else:
             pp_btn.setText('播放')
+
+    def _on_network_slow(self):
+        network_status_label = self.ui.status_panel.network_status_label
+        network_status_label.set_state(0)
+
+    def _on_network_connected(self):
+        network_status_label = self.ui.status_panel.network_status_label
+        network_status_label.set_state(1)
+
+    def _on_network_disconnected(self):
+        network_status_label = self.ui.status_panel.network_status_label
+        network_status_label.set_state(0)
 
     def change_volume(self, value):
         self.player.setVolume(value)

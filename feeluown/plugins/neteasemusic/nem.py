@@ -8,6 +8,7 @@ from PyQt5.QtGui import QKeySequence
 from .consts import USER_PW_FILE
 from .model import NUserModel, NSongModel
 from .ui import Ui, SongsTable, PlaylistItem
+from .api import api
 from feeluown.utils import mesure_time
 
 logger = logging.getLogger(__name__)
@@ -22,6 +23,7 @@ class Nem(QObject):
 
         super().__init__(parent=app)
         self._app = app
+        api.set_http(self._app.request)
 
         self.ui = Ui(self._app)
 

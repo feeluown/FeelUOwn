@@ -11,7 +11,7 @@ from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader
 
-from .utils import parse_ms
+from .utils import parse_ms, darker
 
 
 logger = logging.getLogger(__name__)
@@ -500,9 +500,33 @@ class PlayerModeSwitchBtn(_MultiSwitchButton):
         self.setStyleSheet(style_str)
 
 
+class ThemeSwitchBtn(_MultiSwitchButton):
+    def __init__(self, app, parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+
+        self.setObjectName('theme_switch_btn')
+        self.set_theme_style()
+        self.setText('♭ Solarized')
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {2};
+                border: 0px;
+                padding: 0px 4px;
+            }}
+        '''.format(self.objectName(),
+                   theme.color6.name(),
+                   theme.background.name())
+        self.setStyleSheet(style_str)
+
+
 class PlayerStateLabel(FLabel):
     def __init__(self, app, text=None, parent=None):
-        super().__init__(text, parent)
+        super().__init__('♫', parent)
         self._app = app
 
         self.setObjectName('player_state_label')
@@ -511,8 +535,6 @@ class PlayerStateLabel(FLabel):
                         'Loading 代表正在加载该音乐\n'
                         'Invalid 代表加载音乐失败')
         self.set_theme_style()
-
-        self.set_text('Stopped')
 
     def set_text(self, text):
         self.setText(('♫ ' + text).upper())
@@ -566,7 +588,7 @@ class PlayerStateLabel(FLabel):
         elif state == QMediaPlayer.BufferedMedia:
             self.set_text('Buffered')
         elif state == QMediaPlayer.InvalidMedia:
-            self.set_text('Invalid')
+            self.set_text('Failed')
 
     def update_state(self, state):
         return
@@ -583,9 +605,9 @@ class PlayerStateLabel(FLabel):
         if error == QMediaPlayer.ResourceError:
             self.set_text('Decode Failed')
         elif error == QMediaPlayer.NetworkError:
-            self.set_text('Not Found')
+            self.set_text('Network Error')
         elif error == QMediaPlayer.FormatError:
-            self.set_text('Disconnected')
+            self.set_text('Decode Failed')
         elif error == QMediaPlayer.ServiceMissingError:
             self.set_text('Server Error')
         else:
@@ -665,7 +687,8 @@ class AppStatusLabel(FLabel):
         self._app = app
 
         self.setText('♨ Normal'.upper())
-        self.setToolTip('点击可以切换到其他模式哦 ~')
+        self.setToolTip('点击可以切换到其他模式哦 ~\n'
+                        '不过暂时还没实现这个功能...敬请期待 ~')
         self.setObjectName('app_status_label')
         self.set_theme_style()
 
@@ -694,6 +717,65 @@ class AppStatusLabel(FLabel):
             self.clicked.emit()
 
 
+class NetworkStatus(FLabel):
+    def __init__(self, app, text=None, parent=None):
+        super().__init__(text, parent)
+        self._app = app
+
+        self.setToolTip('这里显示的是当前网络状态')
+        self.setObjectName('network_status_label')
+        self.set_theme_style()
+
+        self.set_state(1)
+
+    @property
+    def common_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+                color: {2};
+                padding-left: 5px;
+                padding-right: 5px;
+                font-size: 14px;
+            }}
+        '''.format(self.objectName(),
+                   theme.color6.name(),
+                   darker(theme.color7, 3).name())
+        return style_str
+
+    def set_theme_style(self):
+        self.setStyleSheet(self.common_style)
+
+    def _set_error_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+            }}
+        '''.format(self.objectName(),
+                   theme.color5.name())
+        self.setStyleSheet(self.common_style + style_str)
+
+    def _set_normal_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: {1};
+            }}
+        '''.format(self.objectName(),
+                   theme.color6_light.name())
+        self.setStyleSheet(self.common_style + style_str)
+
+    def set_state(self, state):
+        if state == 0:
+            self._set_error_style()
+            self.setText('✕')
+        elif state == 1:
+            self._set_normal_style()
+            self.setText('✓')
+
+
 class StatusPanel(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -702,6 +784,7 @@ class StatusPanel(FFrame):
         self._layout = QHBoxLayout(self)
         self.player_state_label = PlayerStateLabel(self._app)
         self.app_status_label = AppStatusLabel(self._app)
+        self.network_status_label = NetworkStatus(self._app)
         self.message_label = MessageLabel(self._app)
         self.song_label = SongLabel(self._app, parent=self)
         self.pms_btn = PlayerModeSwitchBtn(self._app, self)
@@ -728,6 +811,7 @@ class StatusPanel(FFrame):
         self.song_label.setMaximumWidth(300)
         self._layout.addWidget(self.player_state_label)
         self._layout.addWidget(self.app_status_label)
+        self._layout.addWidget(self.network_status_label)
         self._layout.addStretch(0)
         self._layout.addWidget(self.message_label)
         self._layout.addStretch(0)

@@ -23,7 +23,7 @@ class Player(QMediaPlayer):
     finished = pyqtSignal()
 
     _music_list = list()    # 里面的对象是music_model
-    _current_index = None
+    _current_index = 0
     playback_mode = 3
     last_playback_mode = 3
     _other_mode = False
@@ -81,13 +81,16 @@ class Player(QMediaPlayer):
 
     def insert_music(self, model):
         if not self.is_music_in_list(model):
-            self._music_list.insert(self._current_index + 1, model)
+            if self._current_index is None:
+                self._music_list.insert(0, model)
+            else:
+                self._music_list.insert(self._current_index + 1, model)
             return True
         return False
 
-    def remove_music(self, url):
+    def remove_music(self, mid):
         for i, music_model in enumerate(self._music_list):
-            if url == music_model.url:
+            if mid == music_model.mid:
                 self._music_list.pop(i)
                 return True
         return False
@@ -111,12 +114,12 @@ class Player(QMediaPlayer):
 
     def clear_playlist(self):
         self._music_list = []
-        self._current_index = None
+        self._current_index = 0
         self.stop()
 
     def is_music_in_list(self, model):
         for music in self._music_list:
-            if model.url == music.url:
+            if model.mid == music.mid:
                 return True
         return False
 
@@ -128,7 +131,8 @@ class Player(QMediaPlayer):
         insert_flag = self.insert_music(music_model)
         index = self.get_index_by_model(music_model)
         if not insert_flag:
-            if index == self._current_index:
+            if music_model.mid == self._music_list[self._current_index].mid:
+                super().play()
                 return True
 
         media_content = self.get_media_content_from_model(music_model)
@@ -140,7 +144,7 @@ class Player(QMediaPlayer):
         if media_content is not None:
             self.setMedia(media_content)
         else:
-            self.remove_music(music_model.url)
+            self.remove_music(music_model.mid)
             # this song can't be player error message
             self.play_next()
         super().play()
@@ -148,7 +152,7 @@ class Player(QMediaPlayer):
 
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
-            if music_model.url == music.url:
+            if music_model.mid == music.mid:
                 return i
         return None
 

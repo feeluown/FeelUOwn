@@ -3,21 +3,20 @@
 import os
 
 
-packages = ['python3-pyqt5',
-            'python3-pyqt5.qtmultimedia',
-            'libqt5multimedia5-plugins',
-            'fcitx-frontend-qt5',
-            'gstreamer0.10-plugins-good',
-            'gstreamer0.10-plugins-bad',
-            'gstreamer0.10-plugins-ugly',
-            'python3-setuptools',
-            'python3-pip']
-
-
 def install_sys_dep():
+    packages = ['python3-pyqt5',
+                'python3-pyqt5.qtmultimedia',
+                'libqt5multimedia5-plugins',
+                'fcitx-frontend-qt5',
+                'gstreamer0.10-plugins-good',
+                'gstreamer0.10-plugins-bad',
+                'gstreamer0.10-plugins-ugly',
+                'python3-setuptools',
+                'python3-pip']
+
     print('Download and install software dependency.')
     os.system('sudo apt-get install -y {packages} 1>/dev/null'
-              .format(packages=' '.join([])))
+              .format(packages=' '.join(packages)))
 
     print('Download and install python dependency')
     os.system('pip3 install -r requirements.txt 1>/dev/null')

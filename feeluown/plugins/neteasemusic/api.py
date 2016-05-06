@@ -39,6 +39,7 @@ class Api(object):
                           ' Chrome/33.0.1750.152 Safari/537.36'
         }
         self._cookies = dict(appver="1.2.1", os="osx")
+        self._http = None
 
     @property
     def cookies(self):
@@ -47,23 +48,33 @@ class Api(object):
     def load_cookies(self, cookies):
         self._cookies.update(cookies)
 
+    def set_http(self, http):
+        self._http = http
+
+    @property
+    def http(self):
+        return requests if self._http is None else self._http
+
     def request(self, method, action, query=None, timeout=3):
         logger.info('method=%s url=%s' % (method, action))
         try:
             if method == "GET":
-                res = requests.get(action, headers=self.headers,
-                                   cookies=self._cookies, timeout=timeout)
+                res = self.http.get(action, headers=self.headers,
+                                    cookies=self._cookies, timeout=timeout)
             elif method == "POST":
-                res = requests.post(action, data=query, headers=self.headers,
-                                    cookies=self._cookies, timeout=timeout)
+                res = self.http.post(action, data=query, headers=self.headers,
+                                     cookies=self._cookies, timeout=timeout)
             elif method == "POST_UPDATE":
-                res = requests.post(action, data=query, headers=self.headers,
-                                    cookies=self._cookies, timeout=timeout)
+                res = self.http.post(action, data=query, headers=self.headers,
+                                     cookies=self._cookies, timeout=timeout)
                 self._cookies.update(res.cookies.get_dict())
-            content = res.content
-            content_str = content.decode('utf-8')
-            content_dict = json.loads(content_str)
-            return content_dict
+            if res is not None:
+                content = res.content
+                content_str = content.decode('utf-8')
+                content_dict = json.loads(content_str)
+                return content_dict
+            else:
+                return None
         except Exception as e:
             logger.error(str(e))
             return None
