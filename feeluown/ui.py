@@ -478,7 +478,7 @@ class SongLabel(FLabel):
 
 class PlayerModeSwitchBtn(_MultiSwitchButton):
     def __init__(self, app, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(app, parent=parent)
         self._app = app
 
         self.setObjectName('player_mode_switch_btn')
@@ -502,7 +502,7 @@ class PlayerModeSwitchBtn(_MultiSwitchButton):
 
 class ThemeSwitchBtn(_MultiSwitchButton):
     def __init__(self, app, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(app, parent=parent)
         self._app = app
 
         self.setObjectName('theme_switch_btn')
