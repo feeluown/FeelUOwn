@@ -125,10 +125,14 @@ class Player(QMediaPlayer):
             super().play()
             return False
 
-        flag = self.insert_music(music_model)
+        insert_flag = self.insert_music(music_model)
+        if not insert_flag:
+            index = self.get_index_by_model(music_model)
+            if index == self._current_index:
+                return True
 
         media_content = self.get_media_content_from_model(music_model)
-        self._current_index = self.get_index_by_model(music_model)
+
         super().stop()
         logger.debug('start to play song: %d, %s, %s' %
                      (music_model.mid, music_model.title, music_model.url))
@@ -139,7 +143,7 @@ class Player(QMediaPlayer):
             # this song can't be player error message
             self.play_next()
         super().play()
-        return flag
+        return True
 
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):

@@ -1,13 +1,15 @@
 # -*- coding: utf-8 -*-
 
-import sys
 import asyncio
+import os
+import sys
 
 from PyQt5.QtWidgets import QApplication
 from quamash import QEventLoop
 
 from .app import App
-from .consts import USER_PLUGINS_DIR, PLUGINS_DIR
+from .consts import HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,\
+    CACHE_DIR
 from .config import config
 from feeluown import logger_config
 
@@ -20,6 +22,17 @@ def parse_args(args):
     if '-d' in args:
         config.debug = True
     logger_config()
+
+
+def ensure_dir():
+    if not os.path.exists(HOME_DIR):
+        os.mkdir(HOME_DIR)
+    if not os.path.exists(DATA_DIR):
+        os.mkdir(DATA_DIR)
+    if not os.path.exists(USER_PLUGINS_DIR):
+        os.mkdir(USER_PLUGINS_DIR)
+    if not os.path.exists(CACHE_DIR):
+        os.mkdir(CACHE_DIR)
 
 
 def main():
