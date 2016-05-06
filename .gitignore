@@ -9,6 +9,7 @@
 
 *.pyc
 *.swp
+*.swo
 
 *.desktop
 *.md~

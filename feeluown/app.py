@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QPainter, QImage, QPixmap
+from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication
 from PyQt5.QtMultimedia import QMediaPlayer
 
-from .consts import DEFAULT_THEME_NAME
+from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
 from .player import Player
 from .plugin import PluginsManager
@@ -33,6 +33,7 @@ class App(FFrame):
 
         self.resize(960, 600)
         self.setObjectName('app')
+        self.setWindowIcon(QIcon(APP_ICON))
         self.set_theme_style()
 
         self.bind_signal()

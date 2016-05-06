@@ -14,10 +14,6 @@ from .config import config
 from feeluown import logger_config
 
 
-sys.path.append(PLUGINS_DIR)
-sys.path.append(USER_PLUGINS_DIR)
-
-
 def parse_args(args):
     if '-d' in args:
         config.debug = True
@@ -33,6 +29,12 @@ def ensure_dir():
         os.mkdir(USER_PLUGINS_DIR)
     if not os.path.exists(CACHE_DIR):
         os.mkdir(CACHE_DIR)
+
+
+ensure_dir()
+os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
+sys.path.append(PLUGINS_DIR)
+sys.path.append(USER_PLUGINS_DIR)
 
 
 def main():
