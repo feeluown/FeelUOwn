@@ -57,6 +57,10 @@ class App(FFrame):
             status_panel.pms_btn.on_playback_mode_changed)
 
         status_panel.pms_btn.clicked.connect(self.player.next_playback_mode)
+        status_panel.theme_switch_btn.signal_change_theme.connect(
+            self.theme_manager.choose)
+        status_panel.theme_switch_btn.clicked.connect(
+            self.refresh_themes)
 
         self.request.connected_signal.connect(self._on_network_connected)
         self.request.disconnected_signal.connect(self._on_network_disconnected)
@@ -143,6 +147,11 @@ class App(FFrame):
 
     def change_volume(self, value):
         self.player.setVolume(value)
+
+    def refresh_themes(self):
+        theme_switch_btn = self.ui.status_panel.theme_switch_btn
+        themes = self.theme_manager.list()
+        theme_switch_btn.set_themes(themes)
 
     def pixmap_from_url(self, url, callback=None):
         res = self.request.get(url)

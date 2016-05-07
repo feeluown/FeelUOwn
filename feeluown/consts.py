@@ -14,6 +14,7 @@ HOME_DIR = os.path.expanduser('~') + '/.FeelUOwn'
 
 DATA_DIR = HOME_DIR + '/data'
 USER_PLUGINS_DIR = HOME_DIR + '/plugins'
+USER_THEMES_DIR = HOME_DIR + '/themes'
 CACHE_DIR = HOME_DIR + '/cache'
 
 LOG_FILE = HOME_DIR + '/run.log'

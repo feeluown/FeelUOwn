@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import QWidget, QFrame, QPushButton, QLabel, QSlider,\
-    QScrollArea, QDialog, QLineEdit, QCheckBox, QTableWidget
+    QScrollArea, QDialog, QLineEdit, QCheckBox, QTableWidget, QComboBox
 from PyQt5.QtCore import QObject
 
 
@@ -16,6 +16,14 @@ class FButton(QPushButton):
 class FCheckBox(QCheckBox):
     def __init__(self, parent=None):
         super().__init__(parent)
+
+    def set_theme_style(self):
+        pass
+
+
+class FComboBox(QComboBox):
+    def __init__(self, *args, **kw):
+        super().__init__(*args, **kw)
 
     def set_theme_style(self):
         pass

@@ -7,7 +7,7 @@ import configparser
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QColor
 
-from .consts import THEMES_DIR
+from .consts import THEMES_DIR, USER_THEMES_DIR
 
 
 logger = logging.getLogger(__name__)
@@ -35,9 +35,15 @@ class ThemeManager(object):
         self.set_theme(theme_name)
         recursive_update(self._app)
 
-    def scan(self, themes_dir):
+    def scan(self, themes_dir=[THEMES_DIR, USER_THEMES_DIR]):
         '''themes directory'''
-        pass
+        self._themes = []
+        for directory in themes_dir:
+            files = os.listdir(directory)
+            for f in files:
+                f_name, f_ext = f.split('.')
+                if f_ext == 'colorscheme':
+                    self._themes.append(f_name)
 
     def list(self):
         '''show themes list
@@ -45,7 +51,9 @@ class ThemeManager(object):
         :param theme: theme unique name
         :return: themes name list
         '''
-        pass
+        if not self._themes:
+            self.scan()
+        return self._themes
 
     def get_theme(self, theme_name):
         '''

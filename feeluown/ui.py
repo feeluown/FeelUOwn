@@ -1,11 +1,13 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt, QTime, pyqtSignal
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout
+from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QComboBox
 from PyQt5.QtMultimedia import QMediaPlayer
 
-from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea
+from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
+    FComboBox
 from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader
@@ -506,14 +508,24 @@ class PlaybackModeSwitchBtn(FButton):
         self.set_text(playback_mode.value)
 
 
-class ThemeSwitchBtn(FButton):
+class ThemeComboBox(FComboBox):
+    clicked = pyqtSignal()
+    signal_change_theme = pyqtSignal([str])
+
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.setObjectName('theme_switch_btn')
+        self.setEditable(False)
+        self.maximum_width = 150
         self.set_theme_style()
-        self.set_text('Solarized')
+        self.setFrame(False)
+        self.current_theme = self._app.theme_manager.current_theme.name
+        self.themes = [self.current_theme]
+        self.set_themes(self.themes)
+
+        self.currentIndexChanged.connect(self.on_index_changed)
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -522,15 +534,65 @@ class ThemeSwitchBtn(FButton):
                 background: {1};
                 color: {2};
                 border: 0px;
-                padding: 1px 4px;
+                padding: 0px 4px;
+                border-radius: 0px;
+            }}
+            #{0}::drop-down {{
+                width: 0px;
+                border: 0px;
+            }}
+            #{0} QAbstractItemView {{
+                border: 0px;
+                min-width: 200px;
             }}
         '''.format(self.objectName(),
                    theme.color4.name(),
-                   theme.background.name())
+                   theme.background.name(),
+                   theme.foreground.name())
         self.setStyleSheet(style_str)
 
-    def set_text(self, text):
-        self.setText('✿ ' + text)
+    @pyqtSlot(int)
+    def on_index_changed(self, index):
+        if index < 0 or not self.themes:
+            return
+        metrics = QFontMetrics(self.font())
+        if self.themes[index] == self.current_theme:
+            return
+        self.current_theme = self.themes[index]
+        name = '❀ ' + self.themes[index]
+        width = metrics.width(name)
+        if width < self.maximum_width:
+            self.setFixedWidth(width + 10)
+            self.setItemText(index, name)
+            self.setToolTip(name)
+        else:
+            self.setFixedWidth(self.maximum_width)
+            text = metrics.elidedText(name, Qt.ElideRight,
+                                      self.width())
+            self.setItemText(index, text)
+            self.setToolTip(text)
+        self.signal_change_theme.emit(self.current_theme)
+
+    def add_item(self, text):
+        self.addItem('❀ ' + text)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.LeftButton and \
+                self.rect().contains(event.pos()):
+            self.clicked.emit()
+            self.showPopup()
+
+    def set_themes(self, themes):
+        self.clear()
+        if self.current_theme:
+            self.themes = [self.current_theme]
+            self.add_item(self.current_theme)
+        else:
+            self.themes = []
+        for theme in themes:
+            if theme not in self.themes:
+                self.add_item(theme)
+                self.themes.append(theme)
 
 
 class PlayerStateLabel(FLabel):
@@ -542,7 +604,7 @@ class PlayerStateLabel(FLabel):
         self.setToolTip('这里显示的是播放器的状态\n'
                         'Buffered 代表该音乐已经可以开始播放\n'
                         'Loading 代表正在加载该音乐\n'
-                        'Invalid 代表加载音乐失败')
+                        'Failed 代表加载音乐失败')
         self.set_theme_style()
 
     def set_text(self, text):
@@ -748,7 +810,7 @@ class NetworkStatus(FLabel):
                 font-size: 14px;
             }}
         '''.format(self.objectName(),
-                   theme.color6.name(),
+                   theme.color6_light.name(),
                    darker(theme.color7, 3).name())
         return style_str
 
@@ -796,7 +858,7 @@ class StatusPanel(FFrame):
         self.message_label = MessageLabel(self._app)
         self.song_label = SongLabel(self._app, parent=self)
         self.pms_btn = PlaybackModeSwitchBtn(self._app, self)
-        self.theme_switch_btn = ThemeSwitchBtn(self._app, self)
+        self.theme_switch_btn = ThemeComboBox(self._app, self)
 
         self.setup_ui()
         self.setObjectName('status_panel')
