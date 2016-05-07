@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from .base import FSlider
+from feeluown.utils import lighter
 
 
 class _BasicSlider(FSlider):
@@ -8,8 +9,10 @@ class _BasicSlider(FSlider):
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
+        self.set_theme_style()
 
-        theme = app.theme_manager.current_theme
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
         self._style_str = '''
             QSlider::groove:horizontal {{
                 background: {1};
@@ -26,10 +29,7 @@ class _BasicSlider(FSlider):
                 background: {3};
             }}
         '''.format(self.objectName(),
-                   theme.foreground.name(),
+                   lighter(theme.color0_light).name(),
                    theme.color4.name(),
-                   theme.color0.name())
-        self.set_theme_style()
-
-    def set_theme_style(self):
+                   theme.foreground.name())
         self.setStyleSheet(self._style_str)

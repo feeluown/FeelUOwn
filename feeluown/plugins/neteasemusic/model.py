@@ -62,12 +62,18 @@ class NSongModel(SongModel):
         if data is not None:
             if data['code'] == 200:
                 url = data['data'][0]['url']
+                if url is None:
+                    return self.candidate_url
                 self._url = url
             if data['code'] == 404:
-                self._url = None
-        else:
-            return self._candidate_url
+                return self.candidate_url
         return self._url
+
+    @property
+    def candidate_url(self):
+        if not self._candidate_url:
+            self.get_detail()
+        return self._candidate_url
 
     def get_detail(self):
         data = self._api.song_detail(self.mid)

@@ -24,7 +24,7 @@ class Player(QMediaPlayer):
     finished = pyqtSignal()
 
     _music_list = list()    # 里面的对象是music_model
-    _current_index = 0
+    _current_index = None
     playback_mode = PlaybackMode.loop
     last_playback_mode = PlaybackMode.loop
     _other_mode = False
@@ -83,9 +83,10 @@ class Player(QMediaPlayer):
     def insert_music(self, model):
         if not self.is_music_in_list(model):
             if self._current_index is None:
-                self._music_list.insert(0, model)
+                index = 0
             else:
-                self._music_list.insert(self._current_index + 1, model)
+                index = self._current_index + 1
+            self._music_list.insert(index, model)
             return True
         return False
 
@@ -132,17 +133,18 @@ class Player(QMediaPlayer):
         insert_flag = self.insert_music(music_model)
         index = self.get_index_by_model(music_model)
         if not insert_flag:
-            if music_model.mid == self._music_list[self._current_index].mid\
+            if self._current_index is not None\
+                    and music_model.mid == self._music_list[self._current_index].mid\
                     and self.state() == QMediaPlayer.PlayingState:
                 return True
 
         media_content = self.get_media_content_from_model(music_model)
-        self._current_index = index
 
         super().stop()
         logger.debug('start to play song: %d, %s, %s' %
                      (music_model.mid, music_model.title, music_model.url))
         if media_content is not None:
+            self._current_index = index
             self.setMedia(media_content)
         else:
             self.remove_music(music_model.mid)

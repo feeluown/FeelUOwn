@@ -12,8 +12,7 @@ from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader
 
-from .utils import parse_ms, darker
-from .consts import PlaybackMode
+from .utils import parse_ms
 
 
 logger = logging.getLogger(__name__)
@@ -460,7 +459,7 @@ class SongLabel(FLabel):
         self.setIndent(5)
         self.set_theme_style()
 
-        self.set_song('Thank You - Dido / Dido')
+        self.set_song('No song is playing')
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -629,7 +628,7 @@ class PlayerStateLabel(FLabel):
             }}
         '''.format(self.objectName(),
                    theme.color6_light.name(),
-                   theme.foreground.name())
+                   theme.color7_light.name())
         self.setStyleSheet(style_str + self.common_style)
 
     def set_error_style(self):
@@ -776,7 +775,7 @@ class AppStatusLabel(FLabel):
                 color: {2};
             }}
         '''.format(self.objectName(),
-                   theme.color3.name(),
+                   theme.color4.name(),
                    theme.color2.name(),
                    theme.background.name())
         self.setStyleSheet(style_str)
@@ -807,11 +806,12 @@ class NetworkStatus(FLabel):
                 color: {2};
                 padding-left: 5px;
                 padding-right: 5px;
-                font-size: 14px;
+                font-size: 16px;
+                font-weight: bold;
             }}
         '''.format(self.objectName(),
-                   theme.color6_light.name(),
-                   darker(theme.color7, 3).name())
+                   theme.color3.name(),
+                   theme.background.name())
         return style_str
 
     def set_theme_style(self):
@@ -828,14 +828,7 @@ class NetworkStatus(FLabel):
         self.setStyleSheet(self.common_style + style_str)
 
     def _set_normal_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-            }}
-        '''.format(self.objectName(),
-                   theme.color6_light.name())
-        self.setStyleSheet(self.common_style + style_str)
+        self.setStyleSheet(self.common_style)
 
     def set_state(self, state):
         if state == 0:
