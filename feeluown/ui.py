@@ -628,7 +628,7 @@ class PlayerStateLabel(FLabel):
             }}
         '''.format(self.objectName(),
                    theme.color6_light.name(),
-                   theme.color7_light.name())
+                   theme.color7.name())
         self.setStyleSheet(style_str + self.common_style)
 
     def set_error_style(self):
@@ -640,7 +640,7 @@ class PlayerStateLabel(FLabel):
             }}
         '''.format(self.objectName(),
                    theme.color1_light.name(),
-                   theme.color7_light.name())
+                   theme.color7.name())
         self.setStyleSheet(style_str + self.common_style)
 
     def set_normal_style(self):
