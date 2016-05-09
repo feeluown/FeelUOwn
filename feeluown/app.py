@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+import asyncio
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
@@ -13,6 +13,7 @@ from .request import Request
 from .theme import ThemeManager
 from .ui import Ui
 from .utils import darker
+from .version import VersionManager
 from feeluown.libs.widgets.base import FFrame
 
 
@@ -24,6 +25,7 @@ class App(FFrame):
         self.theme_manager = ThemeManager(self)
         self.hotkey_manager = Hotkey(self)
         self.plugins_manager = PluginsManager(self)
+        self.version_manager = VersionManager(self)
         self.theme_manager.set_theme(DEFAULT_THEME_NAME)
 
         self.ui = Ui(self)
@@ -86,6 +88,7 @@ class App(FFrame):
 
     def _init_managers(self):
         self.plugins_manager.scan()
+        asyncio.Task(self.version_manager.check_release())
 
     def set_theme_style(self):
         theme = self.theme_manager.current_theme
