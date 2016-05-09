@@ -45,7 +45,7 @@ fi
 echo ""
 
 echo "重新生成桌面图标"
-./install.py
+sudo ./install.py
 
 exit 0
 
