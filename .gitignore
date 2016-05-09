@@ -41,11 +41,11 @@ data/*.json
 cache/*.json
 
 # test image
-feeluown/*.png
-feeluown/*.jpg
-feeluown/widgets/*.png
-feeluown/widgets/*.jpg
-
+# feeluown/*.png
+# feeluown/*.jpg
+# feeluown/widgets/*.png
+# feeluown/widgets/*.jpg
+# 
 # node
 node_modules
 
