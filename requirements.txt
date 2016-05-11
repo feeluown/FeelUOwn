@@ -1,1 +1,2 @@
 quamash==0.5.5
+pycrypto
