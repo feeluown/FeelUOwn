@@ -30,7 +30,7 @@ def generate_icon():
     icon_string = '#!/usr/bin/env xdg-open\n'\
                   '[Desktop Entry]\n'\
                   'Type=Application\n'\
-                  'Name=FeelUOwn-Dev\n'\
+                  'Name=FeelUOwn\n'\
                   'Comment=FeelUOwn Launcher\n'\
                   'Exec=sh -c "PYTHONPATH={current_path}: python3 -m feeluown"\n'\
                   'Icon={feeluown_icon}\n'\
@@ -41,7 +41,8 @@ def generate_icon():
                           current_path=current_path)
     f_path = os.path.expanduser('~') +\
         '/.local/share/applications/FeelUOwn.desktop'
-    os.remove(f_path)
+    if os.path.exists(f_path):
+        os.remove(f_path)
     with open(f_path, 'w') as f:
         f.write(icon_string)
     os.system('chmod +x %s' % f_path)
