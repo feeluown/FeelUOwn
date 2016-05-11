@@ -1,4 +1,5 @@
 import logging
+import platform
 import time
 from functools import wraps
 from PyQt5.QtGui import QColor
@@ -39,3 +40,15 @@ def mesure_time(func):
                     % (func.__name__, elapsed_time))
         return result
     return wrapper
+
+
+def is_linux():
+    if platform.system() == 'Linux':
+        return True
+    return False
+
+
+def is_osx():
+    if platform.system() == 'Darwin':
+        return True
+    return False
