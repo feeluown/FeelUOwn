@@ -40,13 +40,21 @@ def generate_icon():
                   .format(feeluown_icon=feeluown_icon,
                           current_path=current_path)
     f_path = os.path.expanduser('~') +\
-        '/.local/share/applications/FeelUOwn.desktop'
+        '/.local/share/applications/feeluown.desktop'
+    f_bak_path = current_path + '/feeluown.desktop'
     if os.path.exists(f_path):
         os.remove(f_path)
-    with open(f_path, 'w') as f:
-        f.write(icon_string)
-    os.system('chmod +x %s' % f_path)
+    try:
+        with open(f_path, 'w') as f:
+            f.write(icon_string)
+        os.system('chmod +x %s' % f_path)
+    except FileNotFoundError:
+        print('Please copy feeluown.desktop to ~/.local/share/applications/')
 
+    with open(f_bak_path, 'w') as f:
+        f.write(icon_string)
+        os.system('chmod +x %s' % f_bak_path)
+    print('Pleace copy feeluown.destkop to your desktop !!!')
 
 install_sys_dep()
 generate_icon()
