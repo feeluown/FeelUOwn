@@ -39,3 +39,10 @@ def mesure_time(func):
                     % (func.__name__, elapsed_time))
         return result
     return wrapper
+
+
+def is_linux():
+    import platform
+    if platform.system() == "Linux":
+        return True
+    return False
