@@ -8,6 +8,7 @@ class Request(QObject):
     connected_signal = pyqtSignal()
     disconnected_signal = pyqtSignal()
     slow_signal = pyqtSignal()
+    server_error = pyqtSignal()
 
     def __init__(self, app):
         super().__init__(parent=app)
@@ -19,12 +20,10 @@ class Request(QObject):
             self.connected_signal.emit()
             return res
         except ConnectionError:
-            self._app.message('网络连接失败', error=True)
             self.disconnected_signal.emit()
         except HTTPError:
             self._app.message('服务端出现错误', error=True)
         except Timeout:
-            self._app.message('网络连接超时', error=True)
             self.slow_signal.emit()
         return None
 

@@ -67,6 +67,7 @@ class App(FFrame):
         self.request.connected_signal.connect(self._on_network_connected)
         self.request.disconnected_signal.connect(self._on_network_disconnected)
         self.request.slow_signal.connect(self._on_network_slow)
+        self.request.server_error.connect(self._on_network_server_error)
 
         top_panel.pc_panel.volume_slider.sliderMoved.connect(
             self.change_volume)
@@ -138,14 +139,19 @@ class App(FFrame):
 
     def _on_network_slow(self):
         network_status_label = self.ui.status_panel.network_status_label
+        self.message('网络连接超时', error=True)
         network_status_label.set_state(0)
 
     def _on_network_connected(self):
         network_status_label = self.ui.status_panel.network_status_label
         network_status_label.set_state(1)
 
+    def _on_network_server_error(self):
+        self.message('服务端出现错误', error=True)
+
     def _on_network_disconnected(self):
         network_status_label = self.ui.status_panel.network_status_label
+        self.message('网络连接失败', error=True)
         network_status_label.set_state(0)
 
     def change_volume(self, value):
