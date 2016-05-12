@@ -67,7 +67,7 @@ class App(FFrame):
         self.request.connected_signal.connect(self._on_network_connected)
         self.request.disconnected_signal.connect(self._on_network_disconnected)
         self.request.slow_signal.connect(self._on_network_slow)
-        self.request.server_error.connect(self._on_network_server_error)
+        self.request.server_error_signal.connect(self._on_network_server_error)
 
         top_panel.pc_panel.volume_slider.sliderMoved.connect(
             self.change_volume)
