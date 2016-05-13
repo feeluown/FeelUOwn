@@ -1,15 +1,13 @@
 import hashlib
 import logging
 
-from PyQt5.QtGui import QColor
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,\
-    QTableWidgetItem
+from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView, \
+    QMenu, QAction
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
 from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
-from feeluown.utils import parse_ms, lighter, darker
 
 from .model import NPlaylistModel, NSongModel
 
@@ -164,6 +162,8 @@ class SongsTable(MusicTable):
     play_song_signal = pyqtSignal([NSongModel])
     show_artist_signal = pyqtSignal([int])
     show_album_signal = pyqtSignal([int])
+    add_song_signal = pyqtSignal([NSongModel])
+    set_to_next_signal = pyqtSignal([NSongModel])
 
     def __init__(self, app, rows=0, columns=6, parent=None):
         super().__init__(app, rows, columns, parent)
@@ -185,74 +185,34 @@ class SongsTable(MusicTable):
 
         self.cellDoubleClicked.connect(self.on_cell_dbclick)
 
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            QHeaderView {{
-                color: {1};
-                background: transparent;
-                font-size: 14px;
-            }}
-            QHeaderView::section:horizontal {{
-                height: 24px;
-                background: transparent;
-                border-top: 1px;
-                border-right: 1px;
-                border-bottom: 1px;
-                border-color: {5};
-                color: {5};
-                border-style: solid;
-                padding-left: 5px;
-            }}
+        self._context_menu_row = 0
 
-            QTableView QTableCornerButton::section {{
-                background: transparent;
-                border: 0px;
-                border-bottom: 1px solid {1};
-            }}
-            #{0} {{
-                border: 0px;
-                background: transparent;
-                color: {1};
-            }}
-            #{0}::item {{
-                outline: none;
-            }}
-            #{0}::item:focus {{
-                background: transparent;
-                outline: none;
-            }}
-            #{0}::item:selected {{
-                background: {4};
-            }}
-        '''.format(self.objectName(),
-                   theme.foreground.name(),
-                   theme.color6.name(),
-                   darker(theme.background, a=50).name(QColor.HexArgb),
-                   theme.color0.name(),
-                   theme.color7_light.name())
-        self.setStyleSheet(style_str)
+        self.menu = QMenu()
+        self.add_to_current_playlist_action = QAction('添加到当前播放列表', self)
+        self.set_song_next_to_action = QAction('下一首播放', self)
+        self.menu.addAction(self.add_to_current_playlist_action)
+        self.menu.addAction(self.set_song_next_to_action)
 
-    def add_item(self, song_model):
-        music_item = QTableWidgetItem(song_model.title)
-        album_item = QTableWidgetItem(song_model.album_name)
-        artist_item = QTableWidgetItem(song_model.artists_name)
-        m, s = parse_ms(song_model.length)
-        length_item = QTableWidgetItem(str(m) + ':' + str(s))
+        self.add_to_current_playlist_action.triggered.connect(
+            self.add_song_to_current_playlist)
+        self.set_song_next_to_action.triggered.connect(
+            self.set_song_to_next)
 
-        row = self.rowCount()
-        self.setRowCount(row + 1)
-        self.setItem(row, 1, music_item)
-        self.setItem(row, 2, artist_item)
-        self.setItem(row, 3, album_item)
-        self.setItem(row, 4, length_item)
+    def add_song_to_current_playlist(self):
+        song = self.songs[self._context_menu_row]
+        self.add_song_signal.emit(song)
 
-        self.songs.append(song_model)
+    def set_song_to_next(self):
+        song = self.songs[self._context_menu_row]
+        self.set_to_next_signal.emit(song)
 
-    def set_songs(self, songs):
-        self.setRowCount(0)
-        for song in songs:
-            self.add_item(song)
+    def contextMenuEvent(self, event):
+        point = event.pos()
+        item = self.itemAt(point)
+        if item is not None:
+            row = self.row(item)
+            self._context_menu_row = row
+            self.menu.exec(event.globalPos())
 
     def on_cell_dbclick(self, row, column):
         song = self.songs[row]
@@ -260,7 +220,7 @@ class SongsTable(MusicTable):
             if NSongModel.mv_available(song.mvid):
                 self.play_mv_signal.emit(song.mvid)
         elif column == 1:
-            self.play_song_signal.emit(self.songs[row])
+            self.play_song_signal.emit(song)
         elif column == 2:
             self.show_artist_signal.emit(song.artists[0].aid)
         elif column == 3:
@@ -361,8 +321,7 @@ class SongsTable_Container(FFrame):
     def set_table(self, songs_table):
         if self.songs_table:
             self._layout.replaceWidget(self.songs_table, songs_table)
-            self.songs_table.close()
-            del self.songs_table
+            self.songs_table.deleteLater()
         else:
             self._layout.addWidget(songs_table)
             self._layout.addSpacing(10)

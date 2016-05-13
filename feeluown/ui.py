@@ -3,14 +3,15 @@ import logging
 
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QComboBox
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu, QAction
 from PyQt5.QtMultimedia import QMediaPlayer
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
     FComboBox
 from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
-from feeluown.libs.widgets.components import LP_GroupHeader
+from feeluown.libs.widgets.components import LP_GroupHeader, LP_GroupItem, \
+    MusicTable
 
 from .utils import parse_ms
 
@@ -52,11 +53,16 @@ class ProgressSlider(_BasicSlider):
         self.setMinimumWidth(400)
         self.setObjectName('player_progress_slider')
 
+        self.sliderMoved.connect(self.seek)
+
     def set_duration(self, ms):
         self.setRange(0, ms / 1000)
 
     def update_state(self, ms):
         self.setValue(ms / 1000)
+
+    def seek(self, second):
+        self._app.player.setPosition(second * 1000)
 
 
 class VolumeSlider(_BasicSlider):
@@ -226,6 +232,8 @@ class LP_LibraryPanel(FFrame):
         self._app = app
 
         self.header = LP_GroupHeader(self._app, '我的音乐')
+        self.current_playlist_item = LP_GroupItem(self._app, '当前播放列表')
+        self.current_playlist_item.set_img_text('◎')
         self._layout = QVBoxLayout(self)
 
         self.setObjectName('lp_library_panel')
@@ -248,6 +256,7 @@ class LP_LibraryPanel(FFrame):
 
         self._layout.addSpacing(3)
         self._layout.addWidget(self.header)
+        self._layout.addWidget(self.current_playlist_item)
 
 
 class LP_PlaylistsPanel(FFrame):
@@ -377,7 +386,10 @@ class RightPanel(FFrame):
 
     def set_widget(self, widget):
         if self.widget and self.widget != widget:
-            self._layout.replaceWidget(self.widget, widget)
+            self._layout.removeWidget(self.widget)
+            self.widget.hide()
+            widget.show()
+            self._layout.addWidget(widget)
         else:
             self._layout.addWidget(widget)
         self.widget = widget
@@ -679,7 +691,7 @@ class PlayerStateLabel(FLabel):
         elif error == QMediaPlayer.FormatError:
             self.set_text('Decode Failed')
         elif error == QMediaPlayer.ServiceMissingError:
-            self.set_text('Server Error')
+            self.set_text('Gsteamer Missing')
         else:
             logger.error('player error %d' % error)
 
@@ -884,6 +896,36 @@ class StatusPanel(FFrame):
         self._layout.addWidget(self.song_label)
 
 
+class CurrentPlaylistTable(MusicTable):
+    remove_signal = pyqtSignal([int])   # song id
+
+    def __init__(self, app):
+        super().__init__(app)
+        self._app = app
+
+        self._row = 0
+
+        self.menu = QMenu()
+        self.remove = QAction('从当前列表中移除', self)
+        self.menu.addAction(self.remove)
+
+        self.remove.triggered.connect(self.remove_song)
+
+    def contextMenuEvent(self, event):
+        point = event.pos()
+        item = self.itemAt(point)
+        if item is not None:
+            row = self.row(item)
+            self._row = row
+            self.menu.exec(event.globalPos())
+
+    def remove_song(self):
+        song = self.songs[self._row]
+        self.songs.pop(self._row)
+        self.removeRow(self._row)
+        self.remove_signal.emit(song.mid)
+
+
 class LyricFrame(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -896,6 +938,7 @@ class Ui(object):
         self.top_panel = TopPanel(app, app)
         self.central_panel = CentralPanel(app, app)
         self.status_panel = StatusPanel(app, app)
+        self.current_playlist_table = CurrentPlaylistTable(app)
 
         self.setup()
 

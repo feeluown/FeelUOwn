@@ -9,7 +9,6 @@ from .consts import USER_PW_FILE
 from .model import NUserModel, NSongModel
 from .ui import Ui, SongsTable, PlaylistItem
 from .api import api
-from feeluown.utils import mesure_time
 
 logger = logging.getLogger(__name__)
 
@@ -131,21 +130,9 @@ class Nem(QObject):
     def play_mv(self, mvid):
         pass
 
-    @mesure_time
     def search_table(self, text):
         songs_table = self.ui.songs_table_container.songs_table
-        if not text:
-            for i in range(songs_table.rowCount()):
-                songs_table.showRow(i)
-            return
-        songs = songs_table.songs
-        for i, song in enumerate(songs):
-            if text.lower() not in song.title.lower()\
-                    and text not in song.album_name.lower()\
-                    and text not in song.artists_name.lower():
-                songs_table.hideRow(i)
-            else:
-                songs_table.showRow(i)
+        songs_table.search(text)
 
     def search_net(self):
         text = self.ui.songs_table_container.table_control.search_box.text()
@@ -161,6 +148,9 @@ class Nem(QObject):
         songs_table.play_mv_signal.connect(self.play_mv)
         songs_table.show_artist_signal.connect(self.load_artist)
         songs_table.show_album_signal.connect(self.load_album)
+        songs_table.add_song_signal.connect(self._app.player.add_music)
+        songs_table.set_to_next_signal.connect(
+            self._app.player.set_tmp_fixed_next_song)
         self.ui.songs_table_container.set_table(songs_table)
         self._app.ui.central_panel.right_panel.set_widget(
             self.ui.songs_table_container)

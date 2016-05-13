@@ -9,7 +9,7 @@ from .config import config
 def logger_config():
     if config.debug:
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.DEBUG,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
         )
     else:

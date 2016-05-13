@@ -30,7 +30,7 @@ def darker(color, degree=1, a=255):
     return QColor(r, g, b, a)
 
 
-def mesure_time(func):
+def measure_time(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
         t = time.process_time()

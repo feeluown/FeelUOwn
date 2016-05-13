@@ -25,6 +25,7 @@ class Player(QMediaPlayer):
 
     _music_list = list()    # 里面的对象是music_model
     _current_index = None
+    _tmp_fix_next_song = None
     playback_mode = PlaybackMode.loop
     last_playback_mode = PlaybackMode.loop
     _other_mode = False
@@ -80,7 +81,7 @@ class Player(QMediaPlayer):
         elif state in (QMediaPlayer.LoadedMedia, ):
             self.play()
 
-    def insert_music(self, model):
+    def insert_to_next(self, model):
         if not self.is_music_in_list(model):
             if self._current_index is None:
                 index = 0
@@ -90,10 +91,17 @@ class Player(QMediaPlayer):
             return True
         return False
 
+    def add_music(self, song):
+        self._music_list.append(song)
+
     def remove_music(self, mid):
         for i, music_model in enumerate(self._music_list):
             if mid == music_model.mid:
                 self._music_list.pop(i)
+                if i == self._current_index:
+                    self.play_next()
+                elif i < self._current_index:
+                    self._current_index -= 1
                 return True
         return False
 
@@ -130,7 +138,7 @@ class Player(QMediaPlayer):
             super().play()
             return False
 
-        insert_flag = self.insert_music(music_model)
+        insert_flag = self.insert_to_next(music_model)
         index = self.get_index_by_model(music_model)
         if not insert_flag:
             if self._current_index is not None\
@@ -138,20 +146,19 @@ class Player(QMediaPlayer):
                     and self.state() == QMediaPlayer.PlayingState:
                 return True
 
-        media_content = self.get_media_content_from_model(music_model)
-
         super().stop()
-        logger.debug('start to play song: %d, %s, %s' %
-                     (music_model.mid, music_model.title, music_model.url))
+        media_content = self.get_media_content_from_model(music_model)
         if media_content is not None:
+            logger.debug('start to play song: %d, %s, %s' %
+                         (music_model.mid, music_model.title, music_model.url))
             self._current_index = index
             self.setMedia(media_content)
+            super().play()
+            return True
         else:
             self.remove_music(music_model.mid)
-            # this song can't be player error message
             self.play_next()
-        super().play()
-        return True
+            return False
 
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
@@ -171,6 +178,10 @@ class Player(QMediaPlayer):
             self.play_next()
 
     def play_next(self):
+        if self._tmp_fix_next_song is not None:
+            flag = self.play(self._tmp_fix_next_song)
+            self._tmp_fix_next_song = None
+            return flag
         index = self.get_next_song_index()
         if index is not None:
             if index == 0 and self._other_mode:
@@ -193,6 +204,9 @@ class Player(QMediaPlayer):
         else:
             self.signal_playlist_is_empty.emit()
             return False
+
+    def set_tmp_fixed_next_song(self, song):
+        self._tmp_fix_next_song = song
 
     @pyqtSlot(QMediaPlayer.Error)
     def on_error_occured(self, error):
@@ -229,6 +243,7 @@ class Player(QMediaPlayer):
 
     def get_next_song_index(self):
         if len(self._music_list) is 0:
+            self._app.message('当前播放列表没有歌曲')
             return None
         if self.playback_mode == PlaybackMode.one_loop:
             return self._current_index
@@ -273,3 +288,7 @@ class Player(QMediaPlayer):
             self._set_play_mode(PlaybackMode.random)
         elif self.playback_mode == PlaybackMode.random:
             self._set_play_mode(PlaybackMode.one_loop)
+
+    @property
+    def songs(self):
+        return self._music_list

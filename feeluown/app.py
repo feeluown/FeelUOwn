@@ -44,6 +44,7 @@ class App(FFrame):
     def bind_signal(self):
         top_panel = self.ui.top_panel
         status_panel = self.ui.status_panel
+        library_panel = self.ui.central_panel.left_panel.library_panel
 
         self.player.stateChanged.connect(self._on_player_status_changed)
         self.player.positionChanged.connect(self._on_player_position_changed)
@@ -74,6 +75,13 @@ class App(FFrame):
         top_panel.pc_panel.pp_btn.clicked.connect(self.player.play_or_pause)
         top_panel.pc_panel.next_btn.clicked.connect(self.player.play_next)
         top_panel.pc_panel.previous_btn.clicked.connect(self.player.play_last)
+
+        library_panel.current_playlist_item.clicked.connect(
+            self.show_current_playlist)
+        self.ui.current_playlist_table.play_song_signal.connect(
+            self.player.play)
+        self.ui.current_playlist_table.remove_signal.connect(
+            self.player.remove_music)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -156,6 +164,11 @@ class App(FFrame):
 
     def change_volume(self, value):
         self.player.setVolume(value)
+
+    def show_current_playlist(self):
+        self.ui.current_playlist_table.set_songs(self.player.songs)
+        right_panel = self.ui.central_panel.right_panel
+        right_panel.set_widget(self.ui.current_playlist_table)
 
     def refresh_themes(self):
         theme_switch_btn = self.ui.status_panel.theme_switch_btn
