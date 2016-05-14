@@ -4,13 +4,15 @@ import asyncio
 import os
 import sys
 
+sys.path.append(os.path.dirname(sys.path[0]))
+
 from PyQt5.QtWidgets import QApplication
 from quamash import QEventLoop
 
-from .app import App
-from .consts import HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,\
-    CACHE_DIR, USER_THEMES_DIR
-from .config import config
+from feeluown.app import App
+from feeluown.consts import (HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
+                             CACHE_DIR, USER_THEMES_DIR)
+from feeluown.config import config
 from feeluown import logger_config
 
 
