@@ -2,14 +2,14 @@ import hashlib
 import logging
 
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView, \
-    QMenu, QAction
+from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
+                             QMenu, QAction, QAbstractItemView)
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
 from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
 
-from .model import NPlaylistModel, NSongModel
+from .model import NPlaylistModel, NSongModel, NUserModel
 
 
 logger = logging.getLogger(__name__)
@@ -149,12 +149,41 @@ class PlaylistItem(LP_GroupItem):
 
     def __init__(self, app, playlist=None, parent=None):
         super().__init__(app, playlist.name, parent=parent)
+        self._app = app
 
         self.model = playlist
         self.clicked.connect(self.on_clicked)
+        self.setAcceptDrops(True)
 
     def on_clicked(self):
         self.load_playlist_signal.emit(self.model)
+
+    def dropEvent(self, event):
+        source = event.source()
+        if not isinstance(source, SongsTable):
+            return
+        event.accept()
+        song = source.drag_song
+        if song is not None:
+            user = NUserModel.current_user
+            if user.is_playlist_mine(self.model.pid):
+                self.add_song_to_playlist(song)
+
+    def add_song_to_playlist(self, song):
+        logger.debug('temp to add "%s" to playlist "%s"' %
+                     (song.title, self.model.name))
+        if self.model.add_song(song.mid):
+            self._app.message('add "%s" to playlist "%s" success' %
+                              (song.title, self.model.name))
+        else:
+            self._app.message('add "%s" to playlist "%s" failed' %
+                              (song.title, self.model.name), error=True)
+
+    def dragEnterEvent(self, event):
+        event.accept()
+
+    def dragMoveEvent(self, event):
+        event.accept()
 
 
 class SongsTable(MusicTable):
@@ -184,19 +213,12 @@ class SongsTable(MusicTable):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
         self.cellDoubleClicked.connect(self.on_cell_dbclick)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QAbstractItemView.DragOnly)
 
         self._context_menu_row = 0
-
-        self.menu = QMenu()
-        self.add_to_current_playlist_action = QAction('添加到当前播放列表', self)
-        self.set_song_next_to_action = QAction('下一首播放', self)
-        self.menu.addAction(self.add_to_current_playlist_action)
-        self.menu.addAction(self.set_song_next_to_action)
-
-        self.add_to_current_playlist_action.triggered.connect(
-            self.add_song_to_current_playlist)
-        self.set_song_next_to_action.triggered.connect(
-            self.set_song_to_next)
+        self._drag_row = None
+        self._playlist_id = 0
 
     def add_song_to_current_playlist(self):
         song = self.songs[self._context_menu_row]
@@ -206,13 +228,66 @@ class SongsTable(MusicTable):
         song = self.songs[self._context_menu_row]
         self.set_to_next_signal.emit(song)
 
+    def remove_song_from_playlist(self):
+        song = self.songs[self._context_menu_row]
+        if NPlaylistModel.del_song_from_playlist(song.mid, self._playlist_id):
+            self.removeRow(self._context_menu_row)
+            self._app.message('删除 %s 成功' % song.title)
+        else:
+            self._app.message('删除 %s 失败' % song.title, error=True)
+
+    def set_playlist_id(self, pid):
+        self._playlist_id = pid
+
+    def is_playlist(self):
+        if self._playlist_id:
+            return True
+        return False
+
+    def _is_playlist_mine(self):
+        if self.is_playlist():
+            user = NUserModel.current_user
+            if user.is_playlist_mine(self._playlist_id):
+                return True
+        return False
+
     def contextMenuEvent(self, event):
+        menu = QMenu()
+        add_to_current_playlist_action = QAction('添加到当前播放列表', self)
+        set_song_next_to_action = QAction('下一首播放', self)
+        menu.addAction(add_to_current_playlist_action)
+        menu.addAction(set_song_next_to_action)
+
+        if self._is_playlist_mine():
+            remove_song_from_playlist_action = QAction('从歌单中删除该歌曲', self)
+            menu.addAction(remove_song_from_playlist_action)
+            remove_song_from_playlist_action.triggered.connect(
+                self.remove_song_from_playlist)
+
+        add_to_current_playlist_action.triggered.connect(
+            self.add_song_to_current_playlist)
+        set_song_next_to_action.triggered.connect(
+            self.set_song_to_next)
+
         point = event.pos()
         item = self.itemAt(point)
         if item is not None:
             row = self.row(item)
             self._context_menu_row = row
-            self.menu.exec(event.globalPos())
+            menu.exec(event.globalPos())
+
+    @property
+    def drag_song(self):
+        if self._drag_row is not None:
+            return self.songs[self._drag_row]
+        return None
+
+    def mousePressEvent(self, event):
+        super().mousePressEvent(event)
+        point = event.pos()
+        item = self.itemAt(point)
+        if item is not None:
+            self._drag_row = self.row(item)
 
     def on_cell_dbclick(self, row, column):
         song = self.songs[row]

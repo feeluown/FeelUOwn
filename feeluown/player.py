@@ -215,6 +215,7 @@ class Player(QMediaPlayer):
         self.stop()
         if error == QMediaPlayer.FormatError:
             self._app.message('这首歌挂了，也有可能是断网了', error=True)
+            logger.debug('song cant be played, url is %s' % song.url)
         elif error == QMediaPlayer.NetworkError:
             self._wait_to_retry()
         elif error == QMediaPlayer.ResourceError:

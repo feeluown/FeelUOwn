@@ -61,10 +61,11 @@ class NSongModel(SongModel):
         data = self._api.weapi_songs_url([self.mid])
         if data is not None:
             if data['code'] == 200:
+                # get when needed as url will be invalid several minute later
                 url = data['data'][0]['url']
                 if url is None:
                     return self.candidate_url
-                self._url = url
+                return url
             if data['code'] == 404:
                 return self.candidate_url
         return self._url
@@ -253,6 +254,7 @@ class NArtistModel(object):
 
 class NUserModel(object):
     _api = api
+    current_user = None
 
     def __init__(self, username, uid, name, img, playlists=[]):
         super().__init__()
@@ -262,6 +264,16 @@ class NUserModel(object):
         self.name = name
         self.img = img
         self._playlists = playlists
+
+    def is_playlist_mine(self, pid):
+        for p in self.playlists:
+            if p.pid == pid:
+                return True
+        return False
+
+    @classmethod
+    def set_current_user(cls, user):
+        cls.current_user = user
 
     @property
     def playlists(self):
@@ -352,6 +364,7 @@ class NUserModel(object):
 
 
 class NPlaylistModel(PlaylistModel):
+    instances = []
     _api = api
 
     def __init__(self, pid, name, ptype, uid, songs=[]):
@@ -361,6 +374,8 @@ class NPlaylistModel(PlaylistModel):
         self.ptype = ptype
         self.uid = uid
         self._songs = songs
+
+        NPlaylistModel.instances.append(self)
 
     @property
     def name(self):
@@ -376,3 +391,31 @@ class NPlaylistModel(PlaylistModel):
         songs_model = NSongModel.batch_create(data['result']['tracks'])
         self._songs = songs_model
         return self._songs
+
+    def update_songs(self):
+        self._songs = []
+
+    def add_song(self, mid):
+        data = self._api.op_music_to_playlist(mid, self.pid, op='add')
+        if data['code'] == 502:
+            return False
+        elif data['code'] == 200:
+            self.update_songs()
+            return True
+
+    def del_song(self, mid):
+        data = self._api.op_music_to_playlist(mid, self.pid, op='del')
+        if data['code'] == 200:
+            self.update_songs()
+            return True
+        return False
+
+    @classmethod
+    def del_song_from_playlist(cls, mid, pid):
+        for playlist in cls.instances:
+            if playlist.pid == pid:
+                return playlist.del_song(mid)
+        data = cls._api.op_music_to_playlist(mid, pid, op='del')
+        if data['code'] == 200:
+            return True
+        return False

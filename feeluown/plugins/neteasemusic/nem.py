@@ -14,12 +14,8 @@ logger = logging.getLogger(__name__)
 
 
 class Nem(QObject):
-    instance = None
 
     def __init__(self, app):
-        if Nem.instance is not None:
-            return Nem.instance
-
         super().__init__(parent=app)
         self._app = app
         api.set_http(self._app.request)
@@ -78,6 +74,7 @@ class Nem(QObject):
         else:
             logger.info('load last user.')
             self.user = model
+            NUserModel.set_current_user(model)
             self._on_login_in()
 
     def login(self):
@@ -141,8 +138,9 @@ class Nem(QObject):
         if songs:
             self.load_songs(songs)
 
-    def load_songs(self, songs):
-        songs_table = SongsTable(self._app)
+    def load_songs(self, songs, songs_table=None):
+        if songs_table is None:
+            songs_table = SongsTable(self._app)
         songs_table.set_songs(songs)
         songs_table.play_song_signal.connect(self.play_song)
         songs_table.play_mv_signal.connect(self.play_mv)
@@ -159,7 +157,9 @@ class Nem(QObject):
         logger.info('load playlist : %d, %s' % (playlist.pid, playlist.name))
         if playlist.songs is None:
             return
-        self.load_songs(playlist.songs)
+        songs_table = SongsTable(self._app)
+        songs_table.set_playlist_id(playlist.pid)
+        self.load_songs(playlist.songs, songs_table)
 
     def load_artist(self, aid):
         print('aid:', aid)
