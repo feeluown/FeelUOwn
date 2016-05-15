@@ -1,4 +1,9 @@
-# FeelUOwn 开发版说明文档
+# FeelUOwn 说明文档
+
+## screenshot
+[查看最新进展截图](https://github.com/cosven/FeelUOwn/issues/140)
+[查看最新开发进度](https://github.com/cosven/FeelUOwn/issues/156)
+![](http://7xnn7w.com1.z0.glb.clouddn.com/new.png)
 
 ## 手动安装（推荐）
 
@@ -18,12 +23,18 @@ pip3 install -r requirements.txt  # 可能需要 加 sudo
 
 ```
 
-## 生成桌面图标
+#### 生成桌面图标
+`sudo ./install.py`
 
+## 插件编写与安装
+[插件编写与安装](https://github.com/cosven/FeelUOwn/issues/148)
 
 ## 运行
 
+普通用户搜索feeluown，点击图标运行即可
+
 ```
+# 开发者调试程序
 make run
 ```
 
