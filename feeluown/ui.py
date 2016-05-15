@@ -234,7 +234,7 @@ class LP_LibraryPanel(FFrame):
 
         self.header = LP_GroupHeader(self._app, '我的音乐')
         self.current_playlist_item = LP_GroupItem(self._app, '当前播放列表')
-        self.current_playlist_item.set_img_text('◎')
+        self.current_playlist_item.set_img_text('❂')
         self._layout = QVBoxLayout(self)
 
         self.setObjectName('lp_library_panel')

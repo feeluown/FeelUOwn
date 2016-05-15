@@ -413,7 +413,9 @@ class Ui(object):
         self._lb_container = FFrame()
         self.songs_table_container = SongsTable_Container(self._app)
         self.fm_item = LP_GroupItem(self._app, '私人FM')
+        self.fm_item.set_img_text('Ω')
         self.recommend_item = LP_GroupItem(self._app, '每日推荐')
+        self.recommend_item.set_img_text('✦')
 
         self._lbc_layout = QHBoxLayout(self._lb_container)
 

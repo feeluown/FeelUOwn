@@ -1,3 +1,4 @@
+import datetime
 import json
 import logging
 import os
@@ -23,6 +24,8 @@ class NSongModel(SongModel):
         self.artists = artists_model
         self.album = album_model
         self.mvid = mid
+
+        self._start_time = datetime.datetime.now()
 
     @property
     def mid(self):
@@ -57,6 +60,11 @@ class NSongModel(SongModel):
     @property
     def url(self):
         if self._url is not None:
+            now = datetime.datetime.now()
+            if (now - self._start_time).total_seconds() / 60 > 10:
+                logger.warning('%s url maybe outdated.' % (self.title))
+                self._url = None
+                return self.url
             return self._url
         data = self._api.weapi_songs_url([self.mid])
         if data is not None:
@@ -65,6 +73,9 @@ class NSongModel(SongModel):
                 url = data['data'][0]['url']
                 if url is None:
                     return self.candidate_url
+
+                self._start_time = datetime.datetime.now()
+                self._url = url
                 return url
             if data['code'] == 404:
                 return self.candidate_url
