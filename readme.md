@@ -1,11 +1,12 @@
 # FeelUOwn 说明文档
 
 ## screenshot
-[查看最新进展截图](https://github.com/cosven/FeelUOwn/issues/140)
-[查看最新开发进度](https://github.com/cosven/FeelUOwn/issues/156)
+- [查看最新进展截图](https://github.com/cosven/FeelUOwn/issues/140)
+- [查看最新开发进度](https://github.com/cosven/FeelUOwn/issues/156)
+
 ![](http://7xnn7w.com1.z0.glb.clouddn.com/new.png)
 
-## 手动安装（推荐）
+## 手动安装（适合于有一定技术基础）
 
 ```
 git clone https://github.com/cosven/FeelUOwn.git
@@ -18,7 +19,7 @@ sudo apt-get install gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstrea
 
 # 这些东西很多系统已经有了，以防万一，也安装一次
 sudo apt-get install python3-setuptools
-sudo easy_install3 pip
+sudo apt-get install python3-pip
 pip3 install -r requirements.txt  # 可能需要 加 sudo
 
 ```
@@ -27,7 +28,7 @@ pip3 install -r requirements.txt  # 可能需要 加 sudo
 `sudo ./install.py`
 
 ## 插件编写与安装
-[插件编写与安装](https://github.com/cosven/FeelUOwn/issues/148)
+[插件编写与安装说明](https://github.com/cosven/FeelUOwn/issues/148)
 
 ## 运行
 
@@ -39,9 +40,9 @@ make run
 ```
 
 ## 常见问题
-1. 搜索时有多个 feeluown, 桌面 feeluown 没有图标
+1. 搜索应用时有多个 feeluown, 桌面 feeluown 没有图标
 
-手动删除桌面 feeluown 图标，因为它已经没用了
+手动删除桌面 feeluown 图标，因为它已经没用了，然后运行下面命令。
 ```
 cd ~/.local/share/applications
 rm FeelUOwn.desktop
