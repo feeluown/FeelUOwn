@@ -26,3 +26,12 @@ pip3 install -r requirements.txt  # 可能需要 加 sudo
 ```
 make run
 ```
+
+## 常见问题
+1. 搜索时有多个 feeluown, 桌面 feeluown 没有图标
+
+手动删除桌面 feeluown 图标，因为它已经没用了
+```
+cd ~/.local/share/applications
+rm FeelUOwn.desktop
+```
