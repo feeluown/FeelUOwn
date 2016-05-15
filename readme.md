@@ -30,6 +30,7 @@ pip3 install -r requirements.txt  # 可能需要 加 sudo
 ## 插件编写与安装
 [插件编写与安装说明](https://github.com/cosven/FeelUOwn/issues/148)
 
+
 ## 运行
 
 普通用户搜索feeluown，点击图标运行即可
@@ -40,10 +41,15 @@ make run
 ```
 
 ## 常见问题
-1. 搜索应用时有多个 feeluown, 桌面 feeluown 没有图标
+##### 搜索应用时有多个 feeluown, 桌面 feeluown 没有图标
 
 手动删除桌面 feeluown 图标，因为它已经没用了，然后运行下面命令。
 ```
 cd ~/.local/share/applications
 rm FeelUOwn.desktop
 ```
+
+##### 桌面歌词
+- 首先下载安装 [feeluown-mpris2-plugin](https://github.com/cosven/feeluown-mpris2-plugin.git)
+- 然后安装著名的 [osdlyrics](https://github.com/osdlyrics/osdlyrics)。安装这个东西有两种方法：一种自己编译安装，第二种在google上搜索 osdlyrics_0.4.3-1-precise1_amd64
+  这个包，安装即可。（我自己只在Ubuntu 15.10上测试过）
