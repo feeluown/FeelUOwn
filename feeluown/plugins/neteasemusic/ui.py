@@ -114,7 +114,7 @@ class LoginButton(FLabel):
 
         self.setText('登录')
         self.setToolTip('登陆网易云音乐')
-        self.setObjectName('n_login_btn')
+        self.setObjectName('nem_login_btn')
         self.set_theme_style()
 
     def set_theme_style(self):
@@ -412,6 +412,8 @@ class Ui(object):
         self.login_btn = LoginButton(self._app)
         self._lb_container = FFrame()
         self.songs_table_container = SongsTable_Container(self._app)
+        self.fm_item = LP_GroupItem(self._app, '私人FM')
+        self.recommend_item = LP_GroupItem(self._app, '每日推荐')
 
         self._lbc_layout = QHBoxLayout(self._lb_container)
 
@@ -428,3 +430,10 @@ class Ui(object):
 
         tp_layout = self._app.ui.top_panel.layout()
         tp_layout.addWidget(self._lb_container)
+
+    def on_login_in(self):
+        self.login_dialog.close()
+
+        library_panel = self._app.ui.central_panel.left_panel.library_panel
+        library_panel.add_item(self.fm_item)
+        library_panel.add_item(self.recommend_item)

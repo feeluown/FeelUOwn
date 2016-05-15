@@ -14,6 +14,7 @@ from feeluown.libs.widgets.components import LP_GroupHeader, LP_GroupItem, \
     MusicTable
 
 from .utils import parse_ms
+from .consts import PlaybackMode
 
 
 logger = logging.getLogger(__name__)
@@ -257,6 +258,9 @@ class LP_LibraryPanel(FFrame):
         self._layout.addSpacing(3)
         self._layout.addWidget(self.header)
         self._layout.addWidget(self.current_playlist_item)
+
+    def add_item(self, item):
+        self._layout.addWidget(item)
 
 
 class LP_PlaylistsPanel(FFrame):
@@ -516,7 +520,10 @@ class PlaybackModeSwitchBtn(FButton):
         self.setText('♭ ' + text)
 
     def on_playback_mode_changed(self, playback_mode):
-        self.set_text(playback_mode.value)
+        if playback_mode == PlaybackMode.sequential:
+            self.set_text(self._app.player_mode_manager.current_mode.name)
+        else:
+            self.set_text(playback_mode.value)
 
 
 class ThemeComboBox(FComboBox):

@@ -48,13 +48,13 @@ class Player(QMediaPlayer):
     def change_player_mode_to_normal(self):
         logger.debug('退出特殊的播放模式')
         self._other_mode = False
-        self.set_play_mode(self.last_playback_mode)
+        self._set_playback_mode(self.last_playback_mode)
 
     def change_player_mode_to_other(self):
         # player mode: such as fm mode, different from playback mode
         logger.debug('进入特殊的播放模式')
         self._other_mode = True
-        self.set_play_mode(2)
+        self._set_playback_mode(PlaybackMode.sequential)
 
     def _record_playback_mode(self):
         self.last_playback_mode = self.playback_mode
@@ -133,19 +133,13 @@ class Player(QMediaPlayer):
                 return True
         return False
 
-    def play(self, music_model=None):
-        if music_model is None:
-            super().play()
-            return False
-
+    def _play(self, music_model):
         insert_flag = self.insert_to_next(music_model)
         index = self.get_index_by_model(music_model)
-        if not insert_flag:
-            if self._current_index is not None\
-                    and music_model.mid == self._music_list[self._current_index].mid\
+        if not insert_flag and self._current_index is not None:
+            if music_model.mid == self._music_list[self._current_index].mid\
                     and self.state() == QMediaPlayer.PlayingState:
                 return True
-
         super().stop()
         media_content = self.get_media_content_from_model(music_model)
         if media_content is not None:
@@ -159,6 +153,16 @@ class Player(QMediaPlayer):
             self.remove_music(music_model.mid)
             self.play_next()
             return False
+
+    def other_mode_play(self, music_model):
+        self._play(music_model)
+
+    def play(self, music_model=None):
+        if music_model is None:
+            super().play()
+            return False
+        self._app.player_mode_manager.exit_to_normal()
+        self._play(music_model)
 
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
@@ -253,6 +257,8 @@ class Player(QMediaPlayer):
                 return 0
             else:
                 return self._current_index + 1
+        elif self.playback_mode == PlaybackMode.sequential:
+            return None
         else:
             return random.choice(range(len(self._music_list)))
 
@@ -266,10 +272,12 @@ class Player(QMediaPlayer):
                 return len(self._music_list) - 1
             else:
                 return self._current_index - 1
+        elif self.playback_mode == PlaybackMode.sequential:
+            return None
         else:
             return random.choice(range(len(self._music_list)))
 
-    def _set_play_mode(self, mode):
+    def _set_playback_mode(self, mode):
         # item once: 0
         # item in loop: 1
         # sequential: 2
@@ -284,11 +292,11 @@ class Player(QMediaPlayer):
 
     def next_playback_mode(self):
         if self.playback_mode == PlaybackMode.one_loop:
-            self._set_play_mode(PlaybackMode.loop)
+            self._set_playback_mode(PlaybackMode.loop)
         elif self.playback_mode == PlaybackMode.loop:
-            self._set_play_mode(PlaybackMode.random)
+            self._set_playback_mode(PlaybackMode.random)
         elif self.playback_mode == PlaybackMode.random:
-            self._set_play_mode(PlaybackMode.one_loop)
+            self._set_playback_mode(PlaybackMode.one_loop)
 
     @property
     def songs(self):

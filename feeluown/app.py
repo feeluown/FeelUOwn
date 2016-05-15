@@ -8,6 +8,7 @@ from PyQt5.QtMultimedia import QMediaPlayer
 from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
 from .player import Player
+from .player_mode import PlayerModeManager
 from .plugin import PluginsManager
 from .request import Request
 from .theme import ThemeManager
@@ -21,6 +22,7 @@ class App(FFrame):
     def __init__(self):
         super().__init__()
         self.player = Player(self)
+        self.player_mode_manager = PlayerModeManager(self)
         self.request = Request(self)
         self.theme_manager = ThemeManager(self)
         self.hotkey_manager = Hotkey(self)

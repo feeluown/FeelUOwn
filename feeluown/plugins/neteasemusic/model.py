@@ -107,10 +107,7 @@ class NSongModel(SongModel):
         title = song_data['name']
         url = song_data.get('mp3Url', None)
         length = song_data['duration']
-        album = NAlbumModel(song_data['album']['id'],
-                            song_data['album']['name'],
-                            song_data['album']['artist']['name'],
-                            img=song_data['album'].get('picUrl', None))
+        album = NAlbumModel.create_from_brief(song_data['album'])
         artists = [NArtistModel(x['id'], x['name'])
                    for x in song_data['artists']]
         mvid = song_data['mvid']
@@ -172,6 +169,17 @@ class NAlbumModel(object):
             logger.debug('album has no desc, so get detail')
             self.get_detail()
         return self._desc
+
+    @classmethod
+    def create_from_brief(cls, data):
+        pid = data['id']
+        name = data['name']
+        if 'artists' in data:
+            artists_name = ', '.join([x['name'] for x in data['artists']])
+        else:
+            artists_name = data['artist']
+        img = data.get('picUrl', None)
+        return cls(pid, name, artists_name, img=img)
 
     def get_detail(self):
         data = self._api.album_infos(self.bid)
@@ -362,6 +370,28 @@ class NUserModel(object):
             model._api.load_cookies(user_data['cookies'])
         return model
 
+    @classmethod
+    def get_recommend_songs(cls):
+        if cls.current_user is None:
+            return []
+        data = cls._api.get_recommend_songs()
+        if data.get('code') == 200:
+            return NSongModel.batch_create(data['recommend'])
+        return []
+
+    @classmethod
+    def get_fm_song(cls):
+        if cls.current_user is None:
+            return []
+        data = cls._api.get_radio_music()
+        if data is None:
+            return []
+        if data['code'] == 200:
+            songs = data['data']
+            return NSongModel.batch_create(songs)
+        else:
+            return []
+
 
 class NPlaylistModel(PlaylistModel):
     instances = []
@@ -397,6 +427,8 @@ class NPlaylistModel(PlaylistModel):
 
     def add_song(self, mid):
         data = self._api.op_music_to_playlist(mid, self.pid, op='add')
+        if data is None:
+            return False
         if data['code'] == 502:
             return False
         elif data['code'] == 200:
@@ -405,7 +437,7 @@ class NPlaylistModel(PlaylistModel):
 
     def del_song(self, mid):
         data = self._api.op_music_to_playlist(mid, self.pid, op='del')
-        if data['code'] == 200:
+        if data.get('code') == 200:
             self.update_songs()
             return True
         return False

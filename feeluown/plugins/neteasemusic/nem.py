@@ -5,10 +5,11 @@ import os
 from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QKeySequence
 
+from .api import api
 from .consts import USER_PW_FILE
+from .fm_player_mode import FM_mode
 from .model import NUserModel, NSongModel
 from .ui import Ui, SongsTable, PlaylistItem
-from .api import api
 
 logger = logging.getLogger(__name__)
 
@@ -37,10 +38,22 @@ class Nem(QObject):
         self.ui.songs_table_container.table_control.search_box.returnPressed\
             .connect(self.search_net)
 
+        self.ui.fm_item.clicked.connect(self.enter_fm_mode)
+        self.ui.recommend_item.clicked.connect(self.show_recommend_songs)
+
+    def enter_fm_mode(self):
+        mode = FM_mode(self._app)
+        self._app.player_mode_manager.enter_mode(mode)
+
     def registe_hotkey(self):
         self._app.hotkey_manager.registe(
             QKeySequence('Ctrl+F'),
             self.ui.songs_table_container.table_control.search_box.setFocus)
+
+    def show_recommend_songs(self):
+        songs = NUserModel.get_recommend_songs()
+        songs_table = SongsTable(self._app)
+        self.load_songs(songs, songs_table)
 
     def load_user_pw(self):
         if not os.path.exists(USER_PW_FILE):
@@ -104,7 +117,9 @@ class Nem(QObject):
 
     def _on_login_in(self):
         logger.info('login in... set user infos.')
-        self.ui.login_dialog.close()
+
+        self.ui.on_login_in()
+
         self.ui.login_btn.set_avatar(self.user.img)
         self.user.save()
         self.load_playlists()
