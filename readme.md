@@ -4,7 +4,7 @@
 - [查看最新进展截图](https://github.com/cosven/FeelUOwn/issues/140)
 - [查看最新开发进度](https://github.com/cosven/FeelUOwn/issues/156)
 
-![](http://7xnn7w.com1.z0.glb.clouddn.com/new.png)
+![](http://7xnn7w.com1.z0.glb.clouddn.com/new_2.png)
 
 ## 手动安装（适合于有一定技术基础）
 
