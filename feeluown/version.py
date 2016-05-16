@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class VersionManager(object):
-    current_version = 'v9.0a'
+    current_version = 'v9.1a'
 
     def __init__(self, app):
         self._app = app
@@ -29,7 +29,6 @@ class VersionManager(object):
                 if release['tag_name'] > self.current_version:
                     title = u'发现新版本 %s hoho' % release['tag_name']
                     logger.info(title)
-                    content = release['name']
                     self._app.message(title)
                     break
         except Exception as e:
