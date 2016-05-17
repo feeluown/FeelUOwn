@@ -13,20 +13,17 @@ sudo apt-get install python3-pip
 pip3 install feeluown
 feeluown-install-dev   # 安装依赖
 feeluown-genicon   # 生成图标
+
+# 运行
+feeluown
+
+# 开发者运行
+feeluown -d
 ```
 
 ## 插件编写与安装
 [插件编写与安装说明](https://github.com/cosven/FeelUOwn/issues/148)
 
-
-## 运行
-
-普通用户搜索feeluown，点击图标运行即可
-
-```
-# 开发者调试程序
-make run
-```
 
 ## 常见问题
 ##### 搜索应用时有多个 feeluown, 桌面 feeluown 没有图标
