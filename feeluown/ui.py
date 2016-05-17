@@ -673,7 +673,9 @@ class PlayerStateLabel(FLabel):
         elif state == QMediaPlayer.LoadingMedia:
             self.set_text('Loading')
         elif state == QMediaPlayer.BufferingMedia:
-            self.set_text('Buffering')
+            self.set_text('Buffering More')
+        elif state == QMediaPlayer.StalledMedia:
+            self.set_text('Insufficient Buffering')
         elif state == QMediaPlayer.BufferedMedia:
             self.set_text('Buffered')
         elif state == QMediaPlayer.InvalidMedia:
