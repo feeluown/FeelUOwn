@@ -5,7 +5,7 @@ from setuptools import setup
 
 setup(
     name='feeluown',
-    version='1.0.1',
+    version='1.0.2',
     description='*nix music player',
     author='Cosven',
     author_email='cosven.yin@gmail.com',

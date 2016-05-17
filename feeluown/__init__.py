@@ -6,6 +6,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
+__version__ = '1.0.2'
+
+
 def logger_config():
     if config.debug:
         logging.basicConfig(
