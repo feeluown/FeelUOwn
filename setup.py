@@ -1,11 +1,7 @@
 #!/usr/bin/env python3
-import glob
-import os
 
-from setuptools import setup, find_packages
-import feeluown
+from setuptools import setup
 
-print(find_packages('feeluown'))
 
 setup(
     name='feeluown',
@@ -19,10 +15,9 @@ setup(
         'feeluown.libs.widgets',
         'feeluown.plugins.neteasemusic',
         ],
-    data_files=[
-        ('feeluown/themes',
-         glob.glob(os.path.join('.', 'feeluown/themes', '*'))),
-        ],
+    package_data={
+        '': ['themes/*.colorscheme']
+        },
     url='https://github.com/cosven/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'python3'],
     classifiers=(
