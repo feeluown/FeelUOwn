@@ -7,3 +7,5 @@ test:
 try:
 	PYTHONPATH=./feeluown/plugins: ipython3
 	
+install:
+	sudo ./install.py

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+#! /usr/bin/env python3
 
 import asyncio
 import os
@@ -57,4 +57,5 @@ def main():
     sys.exit(0)
 
 
-main()
+if __name__ == '__main__':
+    main()

@@ -53,3 +53,7 @@ node_modules
 =======
 *.out
 .ropeproject
+
+dist/
+build/
+feeluown.egg-info/
