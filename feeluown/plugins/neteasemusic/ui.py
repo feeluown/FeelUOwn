@@ -299,7 +299,6 @@ class SongsTable(MusicTable):
             if NSongModel.mv_available(song.mvid):
                 self.play_mv_signal.emit(song.mvid)
         elif column == 1:
-            print('son: ............................')
             self.play_song_signal.emit(song)
         elif column == 2:
             self.show_artist_signal.emit(song.artists[0].aid)
@@ -421,6 +420,8 @@ class Ui(object):
         self.fm_item.set_img_text('Ω')
         self.recommend_item = LP_GroupItem(self._app, '每日推荐')
         self.recommend_item.set_img_text('✦')
+        self.simi_item = LP_GroupItem(self._app, '相似歌曲')
+        self.simi_item.set_img_text('∾')
 
         self._lbc_layout = QHBoxLayout(self._lb_container)
 
@@ -443,4 +444,12 @@ class Ui(object):
             self.login_dialog.hide()
         library_panel = self._app.ui.central_panel.left_panel.library_panel
         library_panel.add_item(self.fm_item)
+        library_panel.add_item(self.simi_item)
+        self.hide_simi_item()
         library_panel.add_item(self.recommend_item)
+
+    def show_simi_item(self):
+        self.simi_item.show()
+
+    def hide_simi_item(self):
+        self.simi_item.hide()

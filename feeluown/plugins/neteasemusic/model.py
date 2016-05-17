@@ -6,7 +6,7 @@ import os
 from feeluown.model import SongModel, PlaylistModel
 
 from .api import api
-from .consts import USERS_INFO_FILE
+from .consts import USERS_INFO_FILE, SONG_SOURCE
 
 logger = logging.getLogger(__name__)
 
@@ -58,6 +58,10 @@ class NSongModel(SongModel):
         return self._length
 
     @property
+    def source(self):
+        return SONG_SOURCE
+
+    @property
     def url(self):
         if self._url is not None:
             now = datetime.datetime.now()
@@ -93,6 +97,15 @@ class NSongModel(SongModel):
             song = data['songs'][0]
             self._candidate_url = song['mp3Url']
             self.album._img = song['album']['picUrl']
+
+    def get_simi_songs(self):
+        data = self._api.get_similar_song(self.mid)
+        if data is None:
+            return []
+        if data['code'] == 200:
+            return [NSongModel.pure_create(data['songs'][0])]
+        else:
+            return []
 
     @classmethod
     def mv_available(cls, mvid):

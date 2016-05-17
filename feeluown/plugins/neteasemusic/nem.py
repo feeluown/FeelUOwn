@@ -6,10 +6,12 @@ from functools import partial
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QKeySequence
+from PyQt5.QtMultimedia import QMediaPlayer
 
 from .api import api
 from .consts import USER_PW_FILE
 from .fm_player_mode import FM_mode
+from .simi_player_mode import Simi_mode
 from .model import NUserModel, NSongModel
 from .ui import Ui, SongsTable, PlaylistItem
 
@@ -42,9 +44,17 @@ class Nem(QObject):
 
         self.ui.fm_item.clicked.connect(self.enter_fm_mode)
         self.ui.recommend_item.clicked.connect(self.show_recommend_songs)
+        self.ui.simi_item.clicked.connect(self.enter_simi_mode)
+
+        self._app.player.stateChanged.connect(
+            self.on_player_state_changed)
 
     def enter_fm_mode(self):
         mode = FM_mode(self._app)
+        self._app.player_mode_manager.enter_mode(mode)
+
+    def enter_simi_mode(self):
+        mode = Simi_mode(self._app)
         self._app.player_mode_manager.enter_mode(mode)
 
     def registe_hotkey(self):
@@ -191,3 +201,10 @@ class Nem(QObject):
     def load_album(self, bid):
         print('bid:', bid)
         pass
+
+    def on_player_state_changed(self, state):
+        if state == QMediaPlayer.PlayingState\
+                or state == QMediaPlayer.PausedState:
+            self.ui.show_simi_item()
+        else:
+            self.ui.hide_simi_item()

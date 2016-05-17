@@ -30,6 +30,10 @@ class SongModel(object):
     def length(self):
         raise NotImplementedError('This should be implemented by subclass')
 
+    @property
+    def source(self):
+        raise NotImplementedError('This should be implemented by subclass')
+
 
 class MvModel(object):
     def __init__(self):

@@ -1,3 +1,8 @@
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class PlayerModeManager(object):
     current_mode = None
 
@@ -8,13 +13,23 @@ class PlayerModeManager(object):
     def enter_mode(self, mode):
         self.current_mode = mode
         self._app.player.change_player_mode_to_other()
-        self._app.message('进入 %s 播放模式' % mode.name)
-        mode.load()
+        msg = '进入 %s 播放模式' % mode.name
+        self._app.message(msg)
+        logger.info(msg)
+        try:
+            mode.load()
+        except Exception as e:
+            logger.error('enter mode %s failed ' % mode.name)
+            logger.error(str(e))
 
     def exit_to_normal(self):
         if self.current_mode is not None:
             self._app.player.change_player_mode_to_normal()
-            self.current_mode.unload()
+            try:
+                self.current_mode.unload()
+            except Exception as e:
+                logger.error('exit mode %s failed ' % self.current_mode.name)
+                logger.error(str(e))
             self.current_mode = None
 
 
