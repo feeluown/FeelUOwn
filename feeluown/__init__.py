@@ -9,13 +9,13 @@ from .config import config
 def logger_config():
     if config.debug:
         logging.basicConfig(
-            level=logging.INFO,
+            level=logging.DEBUG,
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
         )
     else:
         logging.basicConfig(
             format="[%(levelname)s] [%(filename)s line:%(lineno)d] : %(message)s",
-            level=logging.INFO,
+            level=logging.DEBUG,
             filename=LOG_FILE,
             filemode='w',
         )
