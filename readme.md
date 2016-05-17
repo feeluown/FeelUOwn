@@ -53,3 +53,8 @@ rm FeelUOwn.desktop
 - 首先下载安装 [feeluown-mpris2-plugin](https://github.com/cosven/feeluown-mpris2-plugin.git)
 - 然后安装著名的 [osdlyrics](https://github.com/osdlyrics/osdlyrics)。安装这个东西有两种方法：一种自己编译安装，第二种在google上搜索 osdlyrics_0.4.3-1-precise1_amd64
   这个包，安装即可。（我自己只在Ubuntu 15.10上测试过）
+
+##### Ubuntu 16.04 不能正常播放
+```
+sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly -y
+```
