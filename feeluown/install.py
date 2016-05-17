@@ -19,7 +19,7 @@ def install_sys_dep():
                 'fcitx-frontend-qt5']
 
     linux_distro = platform.linux_distribution()
-    if linux_distro[0] in ('Deepin'):  # debian
+    if linux_distro[0] in ('Deepin') or 'ubuntu' in linux_distro[0].lower():
         print('Download and install software dependency.')
         os.system('sudo apt-get install -y {packages} 1>/dev/null'
                   .format(packages=' '.join(packages)))
