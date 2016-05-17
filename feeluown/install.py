@@ -77,6 +77,12 @@ def generate_icon():
     os.system('chmod +x %s' % desktop_f)
     print('gen finished')
 
+
+def update():
+    os.system('sudo -H pip3 install --upgrade feeluown')
+    os.system('feeluown-install-dev')
+    os.system('feeluown-genicon')
+
 if __name__ == '__main__':
     install_sys_dep()
     generate_icon()
