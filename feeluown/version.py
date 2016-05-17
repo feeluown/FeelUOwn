@@ -21,6 +21,8 @@ class VersionManager(object):
             future = loop.run_in_executor(
                 None, partial(self._app.request.get, url, timeout=5))
             res = yield from future
+            if res is None:
+                return
             if not res.status_code == 200:
                 logger.warning('connect to api.github.com timeout')
                 return

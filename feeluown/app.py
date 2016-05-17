@@ -1,4 +1,5 @@
 import asyncio
+from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
@@ -99,7 +100,9 @@ class App(FFrame):
 
     def _init_managers(self):
         self.plugins_manager.scan()
-        asyncio.Task(self.version_manager.check_release())
+        app_event_loop = asyncio.get_event_loop()
+        app_event_loop.call_later(
+            8, partial(asyncio.Task, self.version_manager.check_release()))
 
     def set_theme_style(self):
         theme = self.theme_manager.current_theme

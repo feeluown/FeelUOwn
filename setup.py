@@ -2,10 +2,12 @@
 
 from setuptools import setup
 
+import feeluown
+
 
 setup(
     name='feeluown',
-    version='1.0.2',
+    version=feeluown.__version__,
     description='*nix music player',
     author='Cosven',
     author_email='cosven.yin@gmail.com',

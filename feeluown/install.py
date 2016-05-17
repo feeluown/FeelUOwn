@@ -44,21 +44,23 @@ def install_sys_dep():
 def generate_icon():
     print('Generate icon, then you can see app in apps list.')
     DESKTOP_FILE = 'feeluown.desktop'
-    current_path = os.getcwd()
-    feeluown_dir = current_path + '/feeluown'
-    feeluown_icon = feeluown_dir + '/feeluown.png'
+    current_path = os.path.abspath(os.path.dirname(__file__))
+    icon = current_path + '/feeluown.png'
+    feeluown_home_dir = os.path.expanduser('~') + '/.FeelUOwn'
+    feeluown_icon = feeluown_home_dir + '/feeluown.png'
+    shutil.copy(icon, feeluown_icon)
+
     icon_string = '#!/usr/bin/env xdg-open\n'\
                   '[Desktop Entry]\n'\
                   'Type=Application\n'\
                   'Name=FeelUOwn\n'\
                   'Comment=FeelUOwn Launcher\n'\
-                  'Exec=sh -c "python3 -m feeluown"\n'\
+                  'Exec=python3 -m feeluown\n'\
                   'Icon={feeluown_icon}\n'\
                   'Categories=AudioVideo;Audio;Player;Qt;\n'\
                   'Terminal=false\n'\
                   'StartupNotify=true\n'\
-                  .format(feeluown_icon=feeluown_icon,
-                          current_path=current_path)
+                  .format(feeluown_icon=feeluown_icon)
     f_path = os.path.expanduser('~') +\
         '/.local/share/applications/' + DESKTOP_FILE
     try:
