@@ -6,7 +6,7 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.3.2'
+__version__ = '1.0.3.3'
 
 
 def logger_config():
