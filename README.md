@@ -6,26 +6,14 @@
 
 ![](http://7xnn7w.com1.z0.glb.clouddn.com/new_2.png)
 
-## 手动安装（适合于有一定技术基础）
+## 安装
 
 ```
-git clone https://github.com/cosven/FeelUOwn.git
-git checkout dev    # 使用开发版
-cd FeelUOwn
-
-sudo apt-get install python3-pyqt5.qtmultimedia libqt5multimedia5-plugins -y    # 播放音乐需要
-sudo apt-get install fcitx-frontend-qt5 -y  # 输入中文需要
-sudo apt-get install gstreamer0.10-plugins-good gstreamer0.10-plugins-bad gstreamer0.10-plugins-ugly -y   # 系统依赖
-
-# 这些东西很多系统已经有了，以防万一，也安装一次
-sudo apt-get install python3-setuptools
 sudo apt-get install python3-pip
-pip3 install -r requirements.txt  # 可能需要 加 sudo
-
+pip3 install feeluown
+feeluown-install-dev   # 安装依赖
+feeluown-genicon   # 生成图标
 ```
-
-#### 生成桌面图标
-`sudo ./install.py`
 
 ## 插件编写与安装
 [插件编写与安装说明](https://github.com/cosven/FeelUOwn/issues/148)
