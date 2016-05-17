@@ -14,12 +14,14 @@ pip3 install feeluown
 feeluown-install-dev   # 安装依赖
 feeluown-genicon   # 生成图标
 
-# 运行
+### 运行
 feeluown
 
-# 开发者运行
+### 开发者运行
 feeluown -d
 ```
+如果要体验最新开发进展：直接 git clone 项目，`make run` 即可
+
 
 ## 插件编写与安装
 [插件编写与安装说明](https://github.com/cosven/FeelUOwn/issues/148)
