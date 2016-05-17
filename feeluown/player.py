@@ -25,6 +25,7 @@ class Player(QMediaPlayer):
 
     _music_list = list()    # 里面的对象是music_model
     _current_index = None
+    _current_song = None
     _tmp_fix_next_song = None
     playback_mode = PlaybackMode.loop
     last_playback_mode = PlaybackMode.loop
@@ -79,7 +80,7 @@ class Player(QMediaPlayer):
         #       Controller.player.play_next or last may stop the player
         #       add following code to fix the problem.
         elif state in (QMediaPlayer.LoadedMedia, ):
-            self.play()
+            pass
 
     def insert_to_next(self, model):
         if not self.is_music_in_list(model):
@@ -124,7 +125,8 @@ class Player(QMediaPlayer):
 
     def clear_playlist(self):
         self._music_list = []
-        self._current_index = 0
+        self._current_index = None
+        self._current_song = None
         self.stop()
 
     def is_music_in_list(self, model):
@@ -137,19 +139,23 @@ class Player(QMediaPlayer):
         insert_flag = self.insert_to_next(music_model)
         index = self.get_index_by_model(music_model)
         if not insert_flag and self._current_index is not None:
-            if music_model.mid == self._music_list[self._current_index].mid\
+            if music_model.mid == self._current_song.mid\
                     and self.state() == QMediaPlayer.PlayingState:
                 return True
         super().stop()
         media_content = self.get_media_content_from_model(music_model)
         if media_content is not None:
+            self._app.message('ready to play %s' % music_model.title)
             logger.debug('start to play song: %d, %s, %s' %
                          (music_model.mid, music_model.title, music_model.url))
             self._current_index = index
+            self._current_song = music_model
             self.setMedia(media_content)
             super().play()
             return True
         else:
+            self._app.message('% is not available, play next song'
+                              % music_model.title)
             self.remove_music(music_model.mid)
             self.play_next()
             return False
@@ -161,6 +167,7 @@ class Player(QMediaPlayer):
         if music_model is None:
             super().play()
             return False
+        self._app.message('prepare to play %s' % music_model.title)
         self._app.player_mode_manager.exit_to_normal()
         self._play(music_model)
 

@@ -284,6 +284,7 @@ class MusicTable(FTableWidget):
         if column == 0:
             pass
         elif column == 1:
+            print('parent: ..........................')
             self.play_song_signal.emit(song)
         elif column == 2:
             pass

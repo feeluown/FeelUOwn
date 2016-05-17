@@ -1,6 +1,8 @@
+import asyncio
 import json
 import logging
 import os
+from functools import partial
 
 from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QKeySequence
@@ -120,14 +122,20 @@ class Nem(QObject):
 
         self.ui.on_login_in()
 
-        self.ui.login_btn.set_avatar(self.user.img)
+        app_event_loop = asyncio.get_event_loop()
+        app_event_loop.run_in_executor(
+            None,
+            partial(self.ui.login_btn.set_avatar, self.user.img))
         self.user.save()
         self.load_playlists()
 
     def load_playlists(self):
+        self._app.message('loading neteasemusic playlists')
         playlist_widget = self._app.ui.central_panel.left_panel.playlists_panel
         for playlist in self.user.playlists:
             item = PlaylistItem(self._app, playlist)
+            if item.existed:
+                continue
             item.load_playlist_signal.connect(self.load_playlist)
             playlist_widget.add_item(item)
 

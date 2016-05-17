@@ -621,6 +621,7 @@ class PlayerStateLabel(FLabel):
         self.setObjectName('player_state_label')
         self.setToolTip('这里显示的是播放器的状态\n'
                         'Buffered 代表该音乐已经可以开始播放\n'
+                        'Stalled 表示正在加载或者由于某种原因而被迫中断\n'
                         'Loading 代表正在加载该音乐\n'
                         'Failed 代表加载音乐失败')
         self.set_theme_style()
@@ -675,7 +676,7 @@ class PlayerStateLabel(FLabel):
         elif state == QMediaPlayer.BufferingMedia:
             self.set_text('Buffering More')
         elif state == QMediaPlayer.StalledMedia:
-            self.set_text('Insufficient Buffering')
+            self.set_text('Stalled')
         elif state == QMediaPlayer.BufferedMedia:
             self.set_text('Buffered')
         elif state == QMediaPlayer.InvalidMedia:
@@ -711,6 +712,7 @@ class MessageLabel(FLabel):
         self._app = app
 
         self.setObjectName('message_label')
+        self._interval = 3
         self.queue = []
         self.hide()
 
@@ -745,7 +747,7 @@ class MessageLabel(FLabel):
             }}
         '''.format(self.objectName(),
                    theme.color6_light.name(),
-                   theme.foreground.name())
+                   theme.color7.name())
         self.setStyleSheet(style_str + self.common_style)
 
     def show_message(self, text, error=False):
@@ -754,18 +756,19 @@ class MessageLabel(FLabel):
             return
         if error:
             self._set_error_style()
-            self.setText(text)
         else:
             self._set_normal_style()
-            self.setText(text)
+        self.setText(str(len(self.queue)) + ': ' + text)
         self.show()
         app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_later(3, self.access_message_queue)
+        app_event_loop.call_later(self._interval, self.access_message_queue)
 
     def access_message_queue(self):
-        self.hide()
+        if self.isVisible():
+            self.hide()
         if self.queue:
             m = self.queue.pop(0)
+            self._interval = 1.2
             self.show_message(m['message'], m['error'])
 
 

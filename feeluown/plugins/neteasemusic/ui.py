@@ -146,10 +146,15 @@ class LoginButton(FLabel):
 
 class PlaylistItem(LP_GroupItem):
     load_playlist_signal = pyqtSignal(NPlaylistModel)
+    pids = []
 
     def __init__(self, app, playlist=None, parent=None):
         super().__init__(app, playlist.name, parent=parent)
         self._app = app
+        self.existed = False
+        if playlist.pid in PlaylistItem.pids:
+            self.existed = True
+        PlaylistItem.pids.append(playlist.pid)
 
         self.model = playlist
         self.clicked.connect(self.on_clicked)
@@ -212,7 +217,6 @@ class SongsTable(MusicTable):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-        self.cellDoubleClicked.connect(self.on_cell_dbclick)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
 
@@ -295,6 +299,7 @@ class SongsTable(MusicTable):
             if NSongModel.mv_available(song.mvid):
                 self.play_mv_signal.emit(song.mvid)
         elif column == 1:
+            print('son: ............................')
             self.play_song_signal.emit(song)
         elif column == 2:
             self.show_artist_signal.emit(song.artists[0].aid)
@@ -434,8 +439,8 @@ class Ui(object):
         tp_layout.addWidget(self._lb_container)
 
     def on_login_in(self):
-        self.login_dialog.close()
-
+        if self.login_dialog.isVisible():
+            self.login_dialog.hide()
         library_panel = self._app.ui.central_panel.left_panel.library_panel
         library_panel.add_item(self.fm_item)
         library_panel.add_item(self.recommend_item)
