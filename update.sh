@@ -45,7 +45,7 @@ fi
 echo ""
 
 echo "重新生成桌面图标"
-sudo ./install.py
+./feeluown/install.py
 
 exit 0
 

@@ -1,3 +1,3 @@
-# 为了兼容上一个版本，之后会删除这个脚本
+# 为了兼容 9.0a 之前版本，之后会删除这个脚本
 
-sudo ./install.py
+./feeluown/install.py

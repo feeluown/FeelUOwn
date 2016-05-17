@@ -16,7 +16,7 @@ setup(
         'feeluown.plugins.neteasemusic',
         ],
     package_data={
-        '': ['themes/*.colorscheme']
+        '': ['themes/*.colorscheme', '*.png']
         },
     url='https://github.com/cosven/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'python3'],
@@ -33,6 +33,8 @@ setup(
     entry_points={
         'console_scripts': [
                 "feeluown=feeluown.__main__:main",
+                "feeluown-install-dev=feeluown.install:install_sys_dep",
+                "feeluown-genicon=feeluown.install:generate_icon",
             ]
         },
     )
