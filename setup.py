@@ -31,6 +31,7 @@ setup(
     # FIXME depends on PyQt5 , but cannot put that in a setup.py
     install_requires=[
         'quamash>=0.5.5',
+        'pycrypto',
         ],
     entry_points={
         'console_scripts': [
