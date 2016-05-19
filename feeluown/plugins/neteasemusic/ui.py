@@ -236,6 +236,10 @@ class SongsTable(MusicTable):
         else:
             self._app.message('删除 %s 失败' % song.title, error=True)
 
+    def download_nem_song(self):
+        song = self.songs[self._context_menu_row]
+        song.download()
+
     def set_playlist_id(self, pid):
         self._playlist_id = pid
 
@@ -268,6 +272,10 @@ class SongsTable(MusicTable):
             self.add_song_to_current_playlist)
         set_song_next_to_action.triggered.connect(
             self.set_song_to_next)
+
+        download_nemsong_action = QAction('下载', self)
+        menu.addAction(download_nemsong_action)
+        download_nemsong_action.triggered.connect(self.download_nem_song)
 
         point = event.pos()
         item = self.itemAt(point)
