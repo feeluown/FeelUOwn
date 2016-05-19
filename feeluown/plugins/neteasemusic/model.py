@@ -2,11 +2,13 @@ import datetime
 import json
 import logging
 import os
+import urllib.request
+from threading import Thread
 
 from feeluown.model import SongModel, PlaylistModel
 
 from .api import api
-from .consts import USERS_INFO_FILE
+from .consts import USERS_INFO_FILE, DOWNLOAD_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +139,38 @@ class NSongModel(SongModel):
             if data['result']['songCount']:
                 songs = data['result']['songs']
         return cls.batch_create(songs)
+
+    def download(self):
+        NemDownThread(self).start()
+
+
+class NemDownThread(Thread):
+
+    def __init__(self, song):
+        self._song = song
+        Thread.__init__(self)
+
+    def run(self):
+        songurl = self._song.url
+        songtitle = self._song.title
+        filepath = DOWNLOAD_DIR + '/%s' % songtitle
+        while os.path.exists(filepath + '.mp3'):
+            filepath += '_'
+        logger.info("downloading %s from %s." % (songtitle, songurl))
+        fp = None
+        song = None
+        try:
+            fp = urllib.request.urlopen(songurl)
+            with open(filepath + '.mp3', 'wb') as song:
+                song.write(fp.read())
+        except:
+            logger.warning("download error")
+        finally:
+            if fp:
+                fp.close()
+            if song:
+                song.close()
+        logger.info("downloaded %s ." % songtitle)
 
 
 class NAlbumModel(object):
