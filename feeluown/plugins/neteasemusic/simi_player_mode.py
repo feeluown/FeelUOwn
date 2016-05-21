@@ -29,7 +29,7 @@ class Simi_mode(PlayerModeBase):
         if song is not None:
             self.player.other_mode_play(song)
         else:
-            self._app.message('当前播放歌曲不是网易云音乐歌曲', error=True)
+            self._app.message('不能进入相似歌曲播放模式', error=True)
             logger.warning('cant enter simi mode')
             # TODO: when PlayerModeManager call exit_to_normal, it call unload
             #       again
@@ -39,7 +39,12 @@ class Simi_mode(PlayerModeBase):
         if not self._songs:
             song = self._check_player_song()
             if song is not None:
-                self._songs = song.get_simi_songs()
+                songs = song.get_simi_songs()
+                if songs:
+                    logger.error('this song has no similar songs')
+                    self._songs = songs
+                else:
+                    return None
             else:
                 return None
         song = self._songs.pop(0)
