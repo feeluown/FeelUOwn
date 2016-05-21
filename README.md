@@ -45,3 +45,26 @@ rm FeelUOwn.desktop
 ```
 sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly -y
 ```
+
+##### 所有的依赖
+
+```
+# feeluown 包的系统依赖
+gstreamer0.10-plugins-good  # 有的系统依赖 gstreamer1.0 版本
+gstreamer0.10-plugins-bad
+gstreamer0.10-plugins-ugly
+
+python3-pyqt5
+python3-pyqt5.qtmultimedia
+libqt5multimedia5-plugins
+fcitx-frontend-qt5  # 为了支持搜狗等 fcitx类的 中文输入法
+
+# python3 的依赖
+requests
+quamash>=0.55
+
+# 网易云音乐插件　需要的依赖
+pycrypto    # python 库
+```
+
+> 安装一些其他的插件时，可能也需要其他的依赖包，请参照插件的　README

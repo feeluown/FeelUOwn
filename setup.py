@@ -32,6 +32,7 @@ setup(
     install_requires=[
         'quamash>=0.5.5',
         'pycrypto',
+        'requests',
         ],
     entry_points={
         'console_scripts': [
