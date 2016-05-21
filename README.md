@@ -19,6 +19,10 @@ feeluown
 
 ### 开发者运行
 feeluown -d
+
+### 更新，建议没事可以更新它，会有一些小的bug修复
+### 有大的更新的时候，运行软件的时候会提示
+pip3 install feeluown --upgrade
 ```
 如果要体验最新开发进展：直接 git clone 项目，`make run` 即可
 
