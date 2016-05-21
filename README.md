@@ -76,3 +76,7 @@ pycrypto    # python 库
 ##### 获取更多主题
 <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/konsole>
 下载喜欢的主题文件 `example.colorscheme`，把它放入 `~/.FeelUOwn/themes` 文件夹中
+
+
+##### 怎样收藏歌曲到某个歌单
+把歌曲拖动到某个歌单即可。
