@@ -4,7 +4,7 @@ import os
 from enum import Enum
 
 
-THEMES_DIR = './feeluown/themes/'
+THEMES_DIR = './feeluown/themes'
 PLUGINS_DIR = './feeluown/plugins'
 APP_ICON = './feeluown/feeluown.png'
 DEFAULT_THEME_NAME = 'Solarized'
