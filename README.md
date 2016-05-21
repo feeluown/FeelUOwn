@@ -68,3 +68,7 @@ pycrypto    # python 库
 ```
 
 > 安装一些其他的插件时，可能也需要其他的依赖包，请参照插件的　README
+
+##### 获取更多主题
+<https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/konsole>
+下载喜欢的主题文件 `example.colorscheme`，把它放入 `~/.FeelUOwn/themes` 文件夹中
