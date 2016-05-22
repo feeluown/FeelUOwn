@@ -7,7 +7,7 @@ logger = logging.getLogger(__name__)
 
 
 class VersionManager(object):
-    current_version = 'v9.1a'
+    current_version = 'v9.2a'
 
     def __init__(self, app):
         self._app = app
