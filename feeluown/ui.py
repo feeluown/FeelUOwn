@@ -148,7 +148,7 @@ class PlayerControlPanel(FFrame):
     def setup_ui(self):
         self._btn_container.setFixedWidth(140)
         self._slider_container.setMinimumWidth(700)
-        self.progress_label.setFixedWidth(80)
+        self.progress_label.setFixedWidth(90)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
