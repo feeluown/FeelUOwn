@@ -4,24 +4,22 @@ import logging
 import os
 from functools import partial
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from PyQt5.QtCore import QObject
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtMultimedia import QMediaPlayer
 
 from .api import api
 from .consts import USER_PW_FILE
+from .downloader import Downloader
 from .fm_player_mode import FM_mode
 from .simi_player_mode import Simi_mode
 from .model import NUserModel, NSongModel, NArtistModel, NAlbumModel
 from .ui import Ui, SongsTable, PlaylistItem
-from feeluown.consts import SONG_DIR
-from feeluown.utils import emit_requests_progress
 
 logger = logging.getLogger(__name__)
 
 
 class Nem(QObject):
-    download_progress_signal = pyqtSignal([int])
 
     def __init__(self, app):
         super().__init__(parent=app)
@@ -29,14 +27,17 @@ class Nem(QObject):
         api.set_http(self._app.request)
 
         self.ui = Ui(self._app)
+        self.downloader = Downloader(self._app, self)
 
         self.user = None
+        self.download_queue = []
 
         self.registe_hotkey()
         self.init_signal_binding()
 
     def init_signal_binding(self):
-        self.download_progress_signal.connect(self._app.show_request_progress)
+        self.downloader.download_progress_signal.connect(
+            self._app.show_request_progress)
         self.ui.login_btn.clicked.connect(self.ready_to_login)
         self.ui.login_dialog.ok_btn.clicked.connect(self.login)
         self.ui.songs_table_container.table_control.play_all_btn.clicked\
@@ -180,7 +181,7 @@ class Nem(QObject):
             songs_table = SongsTable(self._app)
         songs_table.set_songs(songs)
         songs_table.play_song_signal.connect(self.play_song)
-        songs_table.download_song_signal.connect(self.download_song)
+        songs_table.download_song_signal.connect(self.downloader.download_song)
         songs_table.play_mv_signal.connect(self.play_mv)
         songs_table.show_artist_signal.connect(self.load_artist)
         songs_table.show_album_signal.connect(self.load_album)
@@ -219,41 +220,3 @@ class Nem(QObject):
             self.ui.show_simi_item()
         else:
             self.ui.hide_simi_item()
-
-    def download_song(self, song):
-
-        @asyncio.coroutine
-        def download():
-            f_name = song.filename
-            f_path = os.path.join(SONG_DIR, f_name)
-            if os.path.exists(f_path):
-                logger.warning('%s have been downloaded' % song.title)
-                self._app.message('%s 这首歌已经存在' % song.title)
-                return True
-            if song.url is not None:
-                try:
-                    event_loop = asyncio.get_event_loop()
-                    self._app.message('准备下载 %s' % song.title)
-                    res = song._api.http.get(song.url, stream=True)
-                    if res.status_code != 200:
-                        raise Exception('response not ok while download song')
-                    future = event_loop.run_in_executor(
-                        None,
-                        partial(emit_requests_progress, res,
-                                self.download_progress_signal))
-                    content = yield from future
-                    if not content:
-                        raise Exception('error in downloaded song')
-                    with open(f_path, 'wb') as f:
-                        f.write(content)
-                    logger.info('download song %s successfully' % song.title)
-                    self._app.message('%s 下载成功' % song.title)
-                    return True
-                except Exception as e:
-                    logger.error(e)
-
-            self._app.message('下载 %s 失败' % song.title, error=True)
-            return False
-
-        event_loop = asyncio.get_event_loop()
-        event_loop.create_task(download())

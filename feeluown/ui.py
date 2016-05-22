@@ -753,7 +753,7 @@ class MessageLabel(FLabel):
     def show_message(self, text, error=False):
         if self.isVisible():
             self.queue.append({'error': error, 'message': text})
-            self._interval = 1.2
+            self._interval = 1.5
             return
         if error:
             self._set_error_style()
