@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtGui import QFontMetrics, QPainter
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu, QAction
 from PyQt5.QtMultimedia import QMediaPlayer
@@ -820,8 +820,26 @@ class NetworkStatus(FLabel):
         self.setToolTip('这里显示的是当前网络状态')
         self.setObjectName('network_status_label')
         self.set_theme_style()
+        self._progress = 100
+        self._show_progress = False
 
         self.set_state(1)
+
+    def paintEvent(self, event):
+        if self._show_progress:
+            painter = QPainter(self)
+            p_bg_color = self._app.theme_manager.current_theme.color0
+            painter.fillRect(self.rect(), p_bg_color)
+            bg_color = self._app.theme_manager.current_theme.color3
+            rect = self.rect()
+            percent = self._progress * 1.0 / 100
+            rect.setWidth(int(rect.width() * percent))
+            painter.fillRect(rect, bg_color)
+            painter.drawText(self.rect(), Qt.AlignVCenter,
+                             str(self._progress) + '%')
+            self._show_progress = False
+        else:
+            super().paintEvent(event)
 
     @property
     def common_style(self):
@@ -832,7 +850,7 @@ class NetworkStatus(FLabel):
                 color: {2};
                 padding-left: 5px;
                 padding-right: 5px;
-                font-size: 16px;
+                font-size: 14px;
                 font-weight: bold;
             }}
         '''.format(self.objectName(),
@@ -863,6 +881,13 @@ class NetworkStatus(FLabel):
         elif state == 1:
             self._set_normal_style()
             self.setText('✓')
+
+    def show_progress(self, progress):
+        self._progress = progress
+        self._show_progress = True
+        if self._progress == 100:
+            self._show_progress = False
+        self.update()
 
 
 class StatusPanel(FFrame):

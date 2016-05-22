@@ -4,7 +4,7 @@ import logging
 import os
 from functools import partial
 
-from PyQt5.QtCore import QObject
+from PyQt5.QtCore import QObject, pyqtSignal
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtMultimedia import QMediaPlayer
 
@@ -15,11 +15,13 @@ from .simi_player_mode import Simi_mode
 from .model import NUserModel, NSongModel, NArtistModel, NAlbumModel
 from .ui import Ui, SongsTable, PlaylistItem
 from feeluown.consts import SONG_DIR
+from feeluown.utils import emit_requests_progress
 
 logger = logging.getLogger(__name__)
 
 
 class Nem(QObject):
+    download_progress_signal = pyqtSignal([int])
 
     def __init__(self, app):
         super().__init__(parent=app)
@@ -34,6 +36,7 @@ class Nem(QObject):
         self.init_signal_binding()
 
     def init_signal_binding(self):
+        self.download_progress_signal.connect(self._app.show_request_progress)
         self.ui.login_btn.clicked.connect(self.ready_to_login)
         self.ui.login_dialog.ok_btn.clicked.connect(self.login)
         self.ui.songs_table_container.table_control.play_all_btn.clicked\
@@ -226,16 +229,21 @@ class Nem(QObject):
             if os.path.exists(f_path):
                 logger.warning('%s have been downloaded' % song.title)
                 self._app.message('%s 这首歌已经存在' % song.title)
-                return
+                return True
             if song.url is not None:
                 try:
                     event_loop = asyncio.get_event_loop()
-                    self._app.message('正在后台下载 %s' % song.title)
+                    self._app.message('准备下载 %s' % song.title)
+                    res = song._api.http.get(song.url, stream=True)
+                    if res.status_code != 200:
+                        raise Exception('response not ok while download song')
                     future = event_loop.run_in_executor(
                         None,
-                        partial(song._api.http.get, song.url))
-                    res = yield from future
-                    content = res.content
+                        partial(emit_requests_progress, res,
+                                self.download_progress_signal))
+                    content = yield from future
+                    if not content:
+                        raise Exception('error in downloaded song')
                     with open(f_path, 'wb') as f:
                         f.write(content)
                     logger.info('download song %s successfully' % song.title)

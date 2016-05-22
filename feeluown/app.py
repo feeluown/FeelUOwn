@@ -74,6 +74,7 @@ class App(FFrame):
         self.request.disconnected_signal.connect(self._on_network_disconnected)
         self.request.slow_signal.connect(self._on_network_slow)
         self.request.server_error_signal.connect(self._on_network_server_error)
+        # self.request.progress_signal.connect(self.show_request_progress)
 
         top_panel.pc_panel.volume_slider.sliderMoved.connect(
             self.change_volume)
@@ -194,6 +195,9 @@ class App(FFrame):
             return None
         else:
             return QPixmap(img)
+
+    def show_request_progress(self, progress):
+        self.ui.status_panel.network_status_label.show_progress(progress)
 
     def closeEvent(self, event):
         self.player.stop()
