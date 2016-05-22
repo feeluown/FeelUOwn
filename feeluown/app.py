@@ -13,6 +13,7 @@ from .player_mode import PlayerModeManager
 from .plugin import PluginsManager
 from .request import Request
 from .theme import ThemeManager
+from .tips import TipsManager
 from .ui import Ui
 from .utils import darker
 from .version import VersionManager
@@ -26,6 +27,7 @@ class App(FFrame):
         self.player_mode_manager = PlayerModeManager(self)
         self.request = Request(self)
         self.theme_manager = ThemeManager(self)
+        self.tips_manager = TipsManager(self)
         self.hotkey_manager = Hotkey(self)
         self.plugins_manager = PluginsManager(self)
         self.version_manager = VersionManager(self)
@@ -103,6 +105,7 @@ class App(FFrame):
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(
             8, partial(asyncio.Task, self.version_manager.check_release()))
+        self.tips_manager.show_random_tip()
 
     def set_theme_style(self):
         theme = self.theme_manager.current_theme

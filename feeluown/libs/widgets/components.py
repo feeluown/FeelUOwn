@@ -284,7 +284,6 @@ class MusicTable(FTableWidget):
         if column == 0:
             pass
         elif column == 1:
-            print('parent: ..........................')
             self.play_song_signal.emit(song)
         elif column == 2:
             pass
@@ -306,8 +305,9 @@ class MusicTable(FTableWidget):
 
     def _next_row(self):
         current_row = self.currentRow()
-        return current_row + 1 if current_row != (self.rowCount() - 1) else 0
+        return current_row + 1 if current_row != (self.rowCount() - 1)\
+            else current_row
 
     def _prev_row(self):
         current_row = self.currentRow()
-        return current_row - 1 if current_row != 0 else self.rowCount() - 1
+        return current_row - 1 if current_row != 0 else 0
