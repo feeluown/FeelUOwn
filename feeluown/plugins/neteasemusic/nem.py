@@ -12,7 +12,7 @@ from .api import api
 from .consts import USER_PW_FILE
 from .fm_player_mode import FM_mode
 from .simi_player_mode import Simi_mode
-from .model import NUserModel, NSongModel
+from .model import NUserModel, NSongModel, NArtistModel, NAlbumModel
 from .ui import Ui, SongsTable, PlaylistItem
 from feeluown.consts import SONG_DIR
 
@@ -197,12 +197,18 @@ class Nem(QObject):
         self.load_songs(playlist.songs, songs_table)
 
     def load_artist(self, aid):
-        print('aid:', aid)
-        pass
+        artist = NArtistModel.get(aid)
+        logger.info('load artist: %d, %s' % (aid, artist.name))
+        songs = artist.songs
+        songs_table = SongsTable(self._app)
+        self.load_songs(songs, songs_table)
 
     def load_album(self, bid):
-        print('bid:', bid)
-        pass
+        album = NAlbumModel.get(bid)
+        logger.info('load album: %d, %s' % (bid, album.name))
+        songs = album.songs
+        songs_table = SongsTable(self._app)
+        self.load_songs(songs, songs_table)
 
     def on_player_state_changed(self, state):
         if state == QMediaPlayer.PlayingState\
@@ -218,7 +224,8 @@ class Nem(QObject):
             f_name = song.filename
             f_path = os.path.join(SONG_DIR, f_name)
             if os.path.exists(f_path):
-                logger.warning('this song have been downloaded')
+                logger.warning('%s have been downloaded' % song.title)
+                self._app.message('%s 这首歌已经存在' % song.title)
                 return
             if song.url is not None:
                 try:
@@ -232,14 +239,12 @@ class Nem(QObject):
                     with open(f_path, 'wb') as f:
                         f.write(content)
                     logger.info('download song %s successfully' % song.title)
-                    self._app.message('%s 下载成功'
-                                      % song.title)
+                    self._app.message('%s 下载成功' % song.title)
                     return True
                 except Exception as e:
                     logger.error(e)
 
-            self._app.message('下载 %s 失败' %
-                              song.title, error=True)
+            self._app.message('下载 %s 失败' % song.title, error=True)
             return False
 
         event_loop = asyncio.get_event_loop()

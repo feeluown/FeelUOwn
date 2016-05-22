@@ -284,7 +284,7 @@ class NArtistModel(object):
         data = self._api.artist_infos(self.aid)
         if data is not None:
             self._img = data['artist']['picUrl']
-            self._songs = data['hotSongs']
+            self._songs = NSongModel.batch_create(data['hotSongs'])
 
     @classmethod
     def get(cls, aid):
