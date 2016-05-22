@@ -11,7 +11,7 @@ from quamash import QEventLoop
 
 from feeluown.app import App
 from feeluown.consts import (HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
-                             CACHE_DIR, USER_THEMES_DIR)
+                             CACHE_DIR, USER_THEMES_DIR, SONG_DIR)
 from feeluown.config import config
 from feeluown import logger_config
 
@@ -33,6 +33,8 @@ def ensure_dir():
         os.mkdir(CACHE_DIR)
     if not os.path.exists(USER_THEMES_DIR):
         os.mkdir(USER_THEMES_DIR)
+    if not os.path.exists(SONG_DIR):
+        os.mkdir(SONG_DIR)
 
 
 ensure_dir()

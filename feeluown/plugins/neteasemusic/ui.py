@@ -1,7 +1,7 @@
 import hashlib
 import logging
 
-from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QMenu, QAction, QAbstractItemView)
 
@@ -194,6 +194,7 @@ class PlaylistItem(LP_GroupItem):
 class SongsTable(MusicTable):
     play_mv_signal = pyqtSignal([int])
     play_song_signal = pyqtSignal([NSongModel])
+    download_song_signal = pyqtSignal([NSongModel])
     show_artist_signal = pyqtSignal([int])
     show_album_signal = pyqtSignal([int])
     add_song_signal = pyqtSignal([NSongModel])
@@ -224,15 +225,27 @@ class SongsTable(MusicTable):
         self._drag_row = None
         self._playlist_id = 0
 
+    @pyqtSlot()
     def add_song_to_current_playlist(self):
+        '''do not call explicit, just a slot function'''
         song = self.songs[self._context_menu_row]
         self.add_song_signal.emit(song)
 
+    @pyqtSlot()
     def set_song_to_next(self):
+        '''do not call explicit, just a slot function'''
         song = self.songs[self._context_menu_row]
         self.set_to_next_signal.emit(song)
 
+    @pyqtSlot()
+    def download_song(self):
+        '''do not call explicit, just a slot function'''
+        song = self.songs[self._context_menu_row]
+        self.download_song_signal.emit(song)
+
+    @pyqtSlot()
     def remove_song_from_playlist(self):
+        '''do not call explicit, just a slot function'''
         song = self.songs[self._context_menu_row]
         if NPlaylistModel.del_song_from_playlist(song.mid, self._playlist_id):
             self.removeRow(self._context_menu_row)
@@ -259,8 +272,10 @@ class SongsTable(MusicTable):
         menu = QMenu()
         add_to_current_playlist_action = QAction('添加到当前播放列表', self)
         set_song_next_to_action = QAction('下一首播放', self)
+        download_song_action = QAction('下载该歌曲', self)
         menu.addAction(add_to_current_playlist_action)
         menu.addAction(set_song_next_to_action)
+        menu.addAction(download_song_action)
 
         if self._is_playlist_mine():
             remove_song_from_playlist_action = QAction('从歌单中删除该歌曲', self)
@@ -272,6 +287,7 @@ class SongsTable(MusicTable):
             self.add_song_to_current_playlist)
         set_song_next_to_action.triggered.connect(
             self.set_song_to_next)
+        download_song_action.triggered.connect(self.download_song)
 
         point = event.pos()
         item = self.itemAt(point)

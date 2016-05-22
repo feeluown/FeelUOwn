@@ -145,7 +145,7 @@ class Player(QMediaPlayer):
         super().stop()
         media_content = self.get_media_content_from_model(music_model)
         if media_content is not None:
-            self._app.message('ready to play %s' % music_model.title)
+            self._app.message('正在准备播放 %s' % music_model.title)
             logger.debug('start to play song: %d, %s, %s' %
                          (music_model.mid, music_model.title, music_model.url))
             self._current_index = index
@@ -154,7 +154,7 @@ class Player(QMediaPlayer):
             super().play()
             return True
         else:
-            self._app.message('% is not available, play next song'
+            self._app.message('% 不能播放, 准备播放下一首'
                               % music_model.title)
             self.remove_music(music_model.mid)
             self.play_next()
@@ -167,7 +167,7 @@ class Player(QMediaPlayer):
         if music_model is None:
             super().play()
             return False
-        self._app.message('prepare to play %s' % music_model.title)
+        self._app.message('准备播放 %s' % music_model.title)
         self._app.player_mode_manager.exit_to_normal()
         self._play(music_model)
 
@@ -222,7 +222,7 @@ class Player(QMediaPlayer):
     @pyqtSlot(QMediaPlayer.Error)
     def on_error_occured(self, error):
         song = self._music_list[self._current_index]
-        self._app.message('cant play song: %s' % (song.title))
+        self._app.message('%s 不能播放' % (song.title))
         self.stop()
         if error == QMediaPlayer.FormatError:
             self._app.message('这首歌挂了，也有可能是断网了', error=True)

@@ -14,6 +14,7 @@ from .fm_player_mode import FM_mode
 from .simi_player_mode import Simi_mode
 from .model import NUserModel, NSongModel
 from .ui import Ui, SongsTable, PlaylistItem
+from feeluown.consts import SONG_DIR
 
 logger = logging.getLogger(__name__)
 
@@ -140,7 +141,7 @@ class Nem(QObject):
         self.load_playlists()
 
     def load_playlists(self):
-        self._app.message('loading neteasemusic playlists')
+        self._app.message('正在加载网易云音乐歌单')
         playlist_widget = self._app.ui.central_panel.left_panel.playlists_panel
         for playlist in self.user.playlists:
             item = PlaylistItem(self._app, playlist)
@@ -176,6 +177,7 @@ class Nem(QObject):
             songs_table = SongsTable(self._app)
         songs_table.set_songs(songs)
         songs_table.play_song_signal.connect(self.play_song)
+        songs_table.download_song_signal.connect(self.download_song)
         songs_table.play_mv_signal.connect(self.play_mv)
         songs_table.show_artist_signal.connect(self.load_artist)
         songs_table.show_album_signal.connect(self.load_album)
@@ -208,3 +210,37 @@ class Nem(QObject):
             self.ui.show_simi_item()
         else:
             self.ui.hide_simi_item()
+
+    def download_song(self, song):
+
+        @asyncio.coroutine
+        def download():
+            f_name = song.filename
+            f_path = os.path.join(SONG_DIR, f_name)
+            if os.path.exists(f_path):
+                logger.warning('this song have been downloaded')
+                return
+            if song.url is not None:
+                try:
+                    event_loop = asyncio.get_event_loop()
+                    self._app.message('正在后台下载 %s' % song.title)
+                    future = event_loop.run_in_executor(
+                        None,
+                        partial(song._api.http.get, song.url))
+                    res = yield from future
+                    content = res.content
+                    with open(f_path, 'wb') as f:
+                        f.write(content)
+                    logger.info('download song %s successfully' % song.title)
+                    self._app.message('%s 下载成功'
+                                      % song.title)
+                    return True
+                except Exception as e:
+                    logger.error(e)
+
+            self._app.message('下载 %s 失败' %
+                              song.title, error=True)
+            return False
+
+        event_loop = asyncio.get_event_loop()
+        event_loop.create_task(download())

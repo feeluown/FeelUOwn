@@ -4,6 +4,7 @@ import logging
 import os
 
 from feeluown.model import SongModel, PlaylistModel
+from feeluown.consts import SONG_DIR
 
 from .api import api
 from .consts import USERS_INFO_FILE, SONG_SOURCE
@@ -63,6 +64,11 @@ class NSongModel(SongModel):
 
     @property
     def url(self):
+        f_path = NSongModel.local_exists(self)
+        if f_path is not None:
+            logger.info('use local mp3 file for song: %s' % self.title)
+            return f_path
+
         if self._url is not None:
             now = datetime.datetime.now()
             if (now - self._start_time).total_seconds() / 60 > 10:
@@ -150,6 +156,20 @@ class NSongModel(SongModel):
             if data['result']['songCount']:
                 songs = data['result']['songs']
         return cls.batch_create(songs)
+
+    # TODO: some songs may have same title and artists_name, temp ignore
+    @property
+    def filename(self):
+        return self._title + ' - ' + self.artists_name + '.mp3'
+
+    @classmethod
+    def local_exists(cls, song):
+        '''return song file path if exists, else None'''
+        f_name = song.filename
+        if f_name in os.listdir(SONG_DIR):
+            return os.path.join(SONG_DIR, f_name)
+        else:
+            return None
 
 
 class NAlbumModel(object):
