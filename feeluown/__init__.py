@@ -7,7 +7,7 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.4.2'
+__version__ = '1.0.4.3'
 
 
 dict_config = {
@@ -48,5 +48,5 @@ def logger_config():
     if config.debug:
         logging.config.dictConfig(dict_config)
     else:
-        dict_config['loggers']['neteasemusic']['handlers'] = ['release']
+        dict_config['loggers']['feeluown']['handlers'] = ['release']
         logging.config.dictConfig(dict_config)
