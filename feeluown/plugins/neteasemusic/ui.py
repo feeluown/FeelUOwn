@@ -253,6 +253,14 @@ class SongsTable(MusicTable):
         else:
             self._app.message('删除 %s 失败' % song.title, error=True)
 
+    def scroll_to_song(self, song):
+        for i, s in enumerate(self.songs):
+            if s.mid == song.mid:
+                item = self.item(i, 1)
+                self.scrollToItem(item)
+                self.setCurrentItem(item)
+                break
+
     def set_playlist_id(self, pid):
         self._playlist_id = pid
 

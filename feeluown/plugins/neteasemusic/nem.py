@@ -53,6 +53,8 @@ class Nem(QObject):
 
         self._app.player.stateChanged.connect(
             self.on_player_state_changed)
+        self._app.player.signal_player_media_changed.connect(
+            self.on_player_media_changed)
 
     def enter_fm_mode(self):
         mode = FM_mode(self._app)
@@ -220,3 +222,7 @@ class Nem(QObject):
             self.ui.show_simi_item()
         else:
             self.ui.hide_simi_item()
+
+    def on_player_media_changed(self, song):
+        songs_table = self.ui.songs_table_container.songs_table
+        songs_table.scroll_to_song(song)

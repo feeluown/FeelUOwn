@@ -198,7 +198,7 @@ class Api(object):
         data = self.request('GET', action)
         return data
 
-    def weapi_songs_url(self, music_ids, bitrate=128000):
+    def weapi_songs_url(self, music_ids, bitrate=320000):
         url = uri_we + '/song/enhance/player/url'
         data = {
             'ids': music_ids,
