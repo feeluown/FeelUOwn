@@ -7,11 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.4.4'
+__version__ = '1.0.4.5'
 __upgrade_desc__ = '''
-1. 修复部分歌曲播放导致崩溃
-2. 显示当前音乐加载的进度
-3. 调整默认音质至 320 比特率
+1. 当播放中断时，向前移动
 '''
 
 
