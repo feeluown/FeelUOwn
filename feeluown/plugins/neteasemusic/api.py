@@ -106,7 +106,8 @@ class Api(object):
         return False
 
     def confirm_captcha(self, captcha_id, text):
-        action = uri + '/image/captcha/verify/hf?id=' + str(captcha_id) + '&captcha=' + str(text)
+        action = uri + '/image/captcha/verify/hf?id=' + str(captcha_id) +\
+            '&captcha=' + str(text)
         data = self.request('GET', action)
         return data
 
@@ -116,8 +117,8 @@ class Api(object):
 
     # 用户歌单
     def user_playlist(self, uid, offset=0, limit=200):
-        action = uri + '/user/playlist/?offset=' + str(offset) + '&limit=' + str(
-            limit) + '&uid=' + str(uid)
+        action = uri + '/user/playlist/?offset=' + str(offset) +\
+            '&limit=' + str(limit) + '&uid=' + str(uid)
         res_data = self.request('GET', action)
         return res_data
 
@@ -134,7 +135,8 @@ class Api(object):
         return self.request('POST', action, data)
 
     def playlist_detail(self, playlist_id):
-        action = uri + '/playlist/detail?id=' + str(playlist_id) + '&offset=0&total=true&limit=1001'
+        action = uri + '/playlist/detail?id=' + str(playlist_id) +\
+            '&offset=0&total=true&limit=1001'
         res_data = self.request('GET', action)
         return res_data
 

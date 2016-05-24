@@ -464,6 +464,7 @@ class Ui(object):
         tp_layout.addWidget(self._lb_container)
 
     def on_login_in(self):
+        self.login_btn.setToolTip('点击可刷新歌单列表')
         if self.login_dialog.isVisible():
             self.login_dialog.hide()
         library_panel = self._app.ui.central_panel.left_panel.library_panel

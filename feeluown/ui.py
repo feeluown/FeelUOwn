@@ -12,6 +12,7 @@ from feeluown.libs.widgets.labels import _BasicLabel
 from feeluown.libs.widgets.sliders import _BasicSlider
 from feeluown.libs.widgets.components import LP_GroupHeader, LP_GroupItem, \
     MusicTable
+from feeluown import __upgrade_desc__
 
 from .utils import parse_ms
 from .consts import PlaybackMode
@@ -623,8 +624,34 @@ class PlayerStateLabel(FLabel):
                         'Buffered 代表该音乐已经可以开始播放\n'
                         'Stalled 表示正在加载或者由于某种原因而被迫中断\n'
                         'Loading 代表正在加载该音乐\n'
-                        'Failed 代表加载音乐失败')
+                        'Failed 代表加载音乐失败\n'
+                        '这里的进度条代表加载音乐的进度')
         self.set_theme_style()
+        self._progress = 100
+        self._show_progress = False
+
+    def paintEvent(self, event):
+        if self._show_progress:
+            painter = QPainter(self)
+            p_bg_color = self._app.theme_manager.current_theme.color0
+            painter.fillRect(self.rect(), p_bg_color)
+            bg_color = self._app.theme_manager.current_theme.color6_light
+            rect = self.rect()
+            percent = self._progress * 1.0 / 100
+            rect.setWidth(int(rect.width() * percent))
+            painter.fillRect(rect, bg_color)
+            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter,
+                             'loading ' + str(self._progress) + '%')
+            self._show_progress = False
+        else:
+            super().paintEvent(event)
+
+    def show_progress(self, progress):
+        self._progress = progress
+        self._show_progress = True
+        if self._progress == 100:
+            self._show_progress = False
+        self.update()
 
     def set_text(self, text):
         self.setText(('♫ ' + text).upper())
@@ -783,7 +810,9 @@ class AppStatusLabel(FLabel):
 
         self.setText('♨ Normal'.upper())
         self.setToolTip('点击可以切换到其他模式哦 ~\n'
-                        '不过暂时还没实现这个功能...敬请期待 ~')
+                        '不过暂时还没实现这个功能...敬请期待 ~\n' +
+                        '此版本更新摘要:\n' +
+                        __upgrade_desc__)
         self.setObjectName('app_status_label')
         self.set_theme_style()
 
@@ -835,7 +864,7 @@ class NetworkStatus(FLabel):
             percent = self._progress * 1.0 / 100
             rect.setWidth(int(rect.width() * percent))
             painter.fillRect(rect, bg_color)
-            painter.drawText(self.rect(), Qt.AlignVCenter,
+            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlighHCenter,
                              str(self._progress) + '%')
             self._show_progress = False
         else:

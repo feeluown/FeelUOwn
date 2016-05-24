@@ -13,7 +13,8 @@ from .consts import USER_PW_FILE
 from .downloader import Downloader
 from .fm_player_mode import FM_mode
 from .simi_player_mode import Simi_mode
-from .model import NUserModel, NSongModel, NArtistModel, NAlbumModel
+from .model import (NUserModel, NSongModel, NArtistModel,
+                    NAlbumModel, NPlaylistModel)
 from .ui import Ui, SongsTable, PlaylistItem
 
 logger = logging.getLogger(__name__)
@@ -155,6 +156,8 @@ class Nem(QObject):
                 continue
             item.load_playlist_signal.connect(self.load_playlist)
             playlist_widget.add_item(item)
+            if NPlaylistModel.is_favorite(playlist):
+                self.load_playlist(playlist)
 
     def play_song(self, song):
         self._app.player.play(song)

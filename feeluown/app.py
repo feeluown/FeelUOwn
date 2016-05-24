@@ -63,6 +63,8 @@ class App(FFrame):
         self.player.error.connect(status_panel.player_state_label.set_error)
         self.player.signal_playback_mode_changed.connect(
             status_panel.pms_btn.on_playback_mode_changed)
+        self.player.bufferStatusChanged.connect(
+            status_panel.player_state_label.show_progress)
 
         status_panel.pms_btn.clicked.connect(self.player.next_playback_mode)
         status_panel.theme_switch_btn.signal_change_theme.connect(
@@ -185,16 +187,19 @@ class App(FFrame):
         theme_switch_btn.set_themes(themes)
 
     def pixmap_from_url(self, url, callback=None):
-        res = self.request.get(url)
+        # FIXME: only neteasemusic img url accept the params
+        data = {'param': '{0}y{0}'.format(self.width())}
+        res = self.request.get(url, data)
         if res is None:
             return None
         img = QImage()
         img.loadFromData(res.content)
-        if callback is not None:
-            callback(QPixmap(img))
+        pixmap = QPixmap(img)
+        if pixmap.isNull():
             return None
-        else:
-            return QPixmap(img)
+        if callback is not None:
+            callback(pixmap)
+        return pixmap
 
     def show_request_progress(self, progress):
         self.ui.status_panel.network_status_label.show_progress(progress)

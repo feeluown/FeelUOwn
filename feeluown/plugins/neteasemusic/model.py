@@ -495,3 +495,9 @@ class NPlaylistModel(PlaylistModel):
         if data['code'] == 200:
             return True
         return False
+
+    @classmethod
+    def is_favorite(cls, model):
+        if model.ptype == 5:
+            return True
+        return False
