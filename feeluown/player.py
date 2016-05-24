@@ -5,10 +5,11 @@ import logging
 import random
 
 from PyQt5.QtMultimedia import QMediaPlayer, QMediaContent
-from PyQt5.QtCore import QUrl, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import QUrl, pyqtSignal, pyqtSlot, QTimer
 
 from .model import SongModel
 from .consts import PlaybackMode
+from .utils import parse_ms
 
 
 logger = logging.getLogger(__name__)
@@ -34,17 +35,18 @@ class Player(QMediaPlayer):
     def __init__(self, app):
         super().__init__(app)
         self._app = app
+        self._stalled_timer = QTimer(self)
 
         self.error.connect(self.on_error_occured)
         self.mediaChanged.connect(self.on_media_changed)
         self.mediaStatusChanged.connect(self.on_media_status_changed)
+        self._stalled_timer.timeout.connect(self._wait_to_seek_back)
 
         self._music_error_times = 0
-
-        # latency of retying next operation when error happened
         self._retry_latency = 3
-        # when _music_error_times reached _music_error_maximum, play next music
         self._music_error_maximum = 3
+
+        self._media_stalled = False
 
     def change_player_mode_to_normal(self):
         logger.debug('退出特殊的播放模式')
@@ -67,6 +69,7 @@ class Player(QMediaPlayer):
 
     @pyqtSlot(QMediaPlayer.MediaStatus)
     def on_media_status_changed(self, state):
+        self._media_stalled = False
         if state == QMediaPlayer.EndOfMedia:
             self.finished.emit()
             self.stop()
@@ -78,8 +81,12 @@ class Player(QMediaPlayer):
                 self.play_next()
         elif state in (QMediaPlayer.BufferedMedia, QMediaPlayer.LoadedMedia):
             self.play()
-        elif state in (QMediaPlayer.BufferingMedia, QMediaPlayer.StalledMedia):
+        elif state in (QMediaPlayer.StalledMedia, ):
             self.pause()
+            self._media_stalled = True
+            if not self._stalled_timer.isActive():
+                self._stalled_timer.start()
+                self._stalled_timer.setInterval(3000)
 
     def insert_to_next(self, model):
         if not self.is_music_in_list(model):
@@ -246,6 +253,21 @@ class Player(QMediaPlayer):
             app_event_loop = asyncio.get_event_loop()
             app_event_loop.call_later(self._retry_latency, self.play)
             self._app.message('网络连接不佳', error=True)
+
+    def _wait_to_seek_back(self):
+        if not self._media_stalled:
+            return
+        self._app.message('播放器将退回到 1s 之前的位置')
+        self._media_stalled = False
+        self._stalled_timer.stop()
+        current_position = self.position()
+        two_second_back = current_position - 1 * 1000
+        if two_second_back < 0:
+            two_second_back = 0
+        self.setPosition(two_second_back)
+        logger.warning('seek back media because current media is stalled')
+        logger.warning('curr position is %d:%d' % parse_ms(current_position))
+        logger.warning('back position is %d:%d' % parse_ms(two_second_back))
 
     def _wait_to_next(self, second=0):
         if len(self._music_list) < 2:

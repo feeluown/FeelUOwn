@@ -624,6 +624,7 @@ class PlayerStateLabel(FLabel):
                         'Buffered 代表该音乐已经可以开始播放\n'
                         'Stalled 表示正在加载或者由于某种原因而被迫中断\n'
                         'Loading 代表正在加载该音乐\n'
+                        'Loaded 代表改歌曲是本地歌曲，并加载完毕\n'
                         'Failed 代表加载音乐失败\n'
                         '这里的进度条代表加载音乐的进度')
         self.set_theme_style()
@@ -641,7 +642,7 @@ class PlayerStateLabel(FLabel):
             rect.setWidth(int(rect.width() * percent))
             painter.fillRect(rect, bg_color)
             painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter,
-                             'loading ' + str(self._progress) + '%')
+                             'buffering' + str(self._progress) + '%')
             self._show_progress = False
         else:
             super().paintEvent(event)
