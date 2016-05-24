@@ -12,6 +12,7 @@
 sudo apt-get install python3-pip
 sudo -H pip3 install feeluown
 feeluown-install-dev   # 安装依赖
+mkdir ~/.FeelUOwn
 feeluown-genicon   # 生成图标
 
 ### 运行
