@@ -99,11 +99,12 @@ class Player(QMediaPlayer):
         for i, music_model in enumerate(self._music_list):
             if mid == music_model.mid:
                 self._music_list.pop(i)
-                if i == self._current_index:
-                    self.play_next()
-                elif i < self._current_index:
-                    self._current_index -= 1
-                return True
+                if self._current_index is not None:
+                    if i == self._current_index:
+                        self.play_next()
+                    elif i < self._current_index:
+                        self._current_index -= 1
+                    return True
         return False
 
     def get_media_content_from_model(self, music_model):
@@ -154,7 +155,7 @@ class Player(QMediaPlayer):
             super().play()
             return True
         else:
-            self._app.message('% 不能播放, 准备播放下一首'
+            self._app.message('%s 不能播放, 准备播放下一首'
                               % music_model.title)
             self.remove_music(music_model.mid)
             self.play_next()
