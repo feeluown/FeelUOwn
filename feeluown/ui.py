@@ -864,7 +864,7 @@ class NetworkStatus(FLabel):
             percent = self._progress * 1.0 / 100
             rect.setWidth(int(rect.width() * percent))
             painter.fillRect(rect, bg_color)
-            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlighHCenter,
+            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter,
                              str(self._progress) + '%')
             self._show_progress = False
         else:
