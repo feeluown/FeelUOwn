@@ -10,7 +10,7 @@
 
 ```
 sudo apt-get install python3-pip
-pip3 install feeluown
+sudo -H pip3 install feeluown
 feeluown-install-dev   # 安装依赖
 feeluown-genicon   # 生成图标
 
