@@ -789,8 +789,11 @@ class MessageLabel(FLabel):
             self._set_normal_style()
         self.setText(str(len(self.queue)) + ': ' + text)
         self.show()
-        app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_later(self._interval, self.access_message_queue)
+        try:
+            app_event_loop = asyncio.get_event_loop()
+            app_event_loop.call_later(self._interval, self.access_message_queue)
+        except:
+            pass
 
     def access_message_queue(self):
         if self.isVisible():

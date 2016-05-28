@@ -287,6 +287,7 @@ class Player(QMediaPlayer):
             else:
                 return self._current_index + 1
         elif self.playback_mode == PlaybackMode.sequential:
+            self.signal_playlist_finished.emit()
             return None
         else:
             return random.choice(range(len(self._music_list)))
