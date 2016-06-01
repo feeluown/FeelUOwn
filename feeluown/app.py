@@ -14,6 +14,7 @@ from .plugin import PluginsManager
 from .request import Request
 from .theme import ThemeManager
 from .tips import TipsManager
+from .server import Server
 from .ui import Ui
 from .utils import darker
 from .version import VersionManager
@@ -26,6 +27,7 @@ class App(FFrame):
         self.player = Player(self)
         self.player_mode_manager = PlayerModeManager(self)
         self.request = Request(self)
+        self.server = Server(self)
         self.theme_manager = ThemeManager(self)
         self.tips_manager = TipsManager(self)
         self.hotkey_manager = Hotkey(self)
@@ -105,6 +107,7 @@ class App(FFrame):
 
     def _init_managers(self):
         self.plugins_manager.scan()
+        self.server.run()
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(
             8, partial(asyncio.Task, self.version_manager.check_release()))

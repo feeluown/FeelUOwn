@@ -7,9 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.4.5'
+__version__ = '1.0.5'
 __upgrade_desc__ = '''
-1. 当播放中断时，向前移动
+1. 增加 UDP Server， 用来实现远程控制
 '''
 
 

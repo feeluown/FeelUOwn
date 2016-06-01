@@ -1,8 +1,7 @@
-import asyncio
 import logging
 
 from PyQt5.QtGui import QFontMetrics, QPainter
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu, QAction
 from PyQt5.QtMultimedia import QMediaPlayer
 
@@ -741,8 +740,11 @@ class MessageLabel(FLabel):
 
         self.setObjectName('message_label')
         self._interval = 3
+        self.timer = QTimer(self)
         self.queue = []
         self.hide()
+
+        self.timer.timeout.connect(self.access_message_queue)
 
     @property
     def common_style(self):
@@ -789,15 +791,10 @@ class MessageLabel(FLabel):
             self._set_normal_style()
         self.setText(str(len(self.queue)) + ': ' + text)
         self.show()
-        try:
-            app_event_loop = asyncio.get_event_loop()
-            app_event_loop.call_later(self._interval, self.access_message_queue)
-        except:
-            pass
+        self.timer.start(self._interval * 1000)
 
     def access_message_queue(self):
-        if self.isVisible():
-            self.hide()
+        self.hide()
         if self.queue:
             m = self.queue.pop(0)
             self.show_message(m['message'], m['error'])
