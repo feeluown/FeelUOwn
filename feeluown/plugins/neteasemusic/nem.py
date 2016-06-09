@@ -176,8 +176,12 @@ class Nem(QObject):
 
     def search_net(self):
         text = self.ui.songs_table_container.table_control.search_box.text()
-        songs = NSongModel.search(text)
-        self._app.message('搜索到 %d 首相关歌曲' % len(songs))
+        if text.strip():
+            songs = NSongModel.search(text)
+            self._app.message('搜索到 %d 首相关歌曲' % len(songs))
+        else:
+            songs = None
+            self._app.message('搜索内容不能为空')
         if songs:
             self.load_songs(songs)
 
