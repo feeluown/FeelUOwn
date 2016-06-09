@@ -152,7 +152,7 @@ class NSongModel(SongModel):
     def search(cls, text):
         data = cls._api.search(text)
         songs = []
-        if data is not None:
+        if data is not None and 'result' in data.keys():
             if data['result']['songCount']:
                 songs = data['result']['songs']
         return cls.batch_create(songs)
