@@ -1,8 +1,9 @@
 import logging
 
 from PyQt5.QtGui import QFontMetrics, QPainter
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QMenu, QAction
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer, QThread
+from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
+                             QApplication)
 from PyQt5.QtMultimedia import QMediaPlayer
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
@@ -740,7 +741,7 @@ class MessageLabel(FLabel):
 
         self.setObjectName('message_label')
         self._interval = 3
-        self.timer = QTimer(self)
+        self.timer = QTimer()
         self.queue = []
         self.hide()
 
@@ -791,6 +792,7 @@ class MessageLabel(FLabel):
             self._set_normal_style()
         self.setText(str(len(self.queue)) + ': ' + text)
         self.show()
+        self.timer.moveToThread(QThread.currentThread())
         self.timer.start(self._interval * 1000)
 
     def access_message_queue(self):
