@@ -15,6 +15,8 @@ class Request(QObject):
         self._app = app
 
     def get(self, *args, **kw):
+        if kw.get('timeout') is not None:
+            kw['timeout'] = 3
         try:
             res = requests.get(*args, **kw)
             self.connected_signal.emit()
