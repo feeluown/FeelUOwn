@@ -15,7 +15,7 @@ class Request(QObject):
         self._app = app
 
     def get(self, *args, **kw):
-        if kw.get('timeout') is not None:
+        if kw.get('timeout') is None:
             kw['timeout'] = 3
         try:
             res = requests.get(*args, **kw)
