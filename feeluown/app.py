@@ -1,5 +1,6 @@
 import asyncio
 from functools import partial
+import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
@@ -20,8 +21,11 @@ from .utils import darker
 from .version import VersionManager
 from feeluown.libs.widgets.base import FFrame
 
+logger = logging.getLogger(__name__)
+
 
 class App(FFrame):
+
     def __init__(self):
         super().__init__()
         self.player = Player(self)
@@ -57,6 +61,8 @@ class App(FFrame):
         self.player.positionChanged.connect(self._on_player_position_changed)
         self.player.durationChanged.connect(self._on_player_duration_changed)
         self.player.signal_player_media_changed.connect(
+            self._on_player_media_changed)
+        self.player.signal_player_song_changed.connect(
             self._on_player_song_changed)
         self.player.mediaStatusChanged.connect(
             status_panel.player_state_label.update_media_state)
@@ -144,13 +150,19 @@ class App(FFrame):
         self.ui.top_panel.pc_panel.progress_label.update_state(ms)
         self.ui.top_panel.pc_panel.progress_slider.update_state(ms)
 
+    def _on_player_media_changed(self, song):
+        song_label = self.ui.status_panel.song_label
+        song_label.set_song(song.title + ' - ' + song.artists_name)
+
+        # FIXME: optimize performance
+        # self.player_pixmap = self.pixmap_from_url(url)
+        # if self.player_pixmap is not None:
+        #     QApplication.setWindowIcon(QIcon(self.player_pixmap))
+        # self.update()
+
     def _on_player_song_changed(self, song):
         song_label = self.ui.status_panel.song_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
-        self.player_pixmap = self.pixmap_from_url(song.album_img)
-        if self.player_pixmap is not None:
-            QApplication.setWindowIcon(QIcon(self.player_pixmap))
-        self.update()
 
     def _on_player_status_changed(self, status):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
