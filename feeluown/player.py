@@ -160,24 +160,30 @@ class Player(QMediaPlayer):
             if music_model.mid == self.current_song.mid\
                     and self.state() == QMediaPlayer.PlayingState:
                 return True
-        super().stop()
 
         self._current_index = index
         self.current_song = music_model
+        self.setMedia(QMediaContent())
+        super().stop()
         self.signal_player_song_changed.emit(self.current_song)
 
-        # FIXME: cotinuously switch song may cause error and performance\
-        #   problem
-        media_content = self.get_media_content_from_model(music_model)
-        if media_content is not None:
-            logger.debug('start to play song: %d, %s, %s' %
-                         (music_model.mid, music_model.title, music_model.url))
-            self.setMedia(media_content)
-        else:
-            self._app.message('%s 不能播放, 准备播放下一首'
-                              % music_model.title)
-            self.remove_music(music_model.mid)
-            self.play_next()
+        def async_get():
+            media_content = self.get_media_content_from_model(music_model)
+            if media_content is not None:
+                logger.debug('start to play song: %d, %s, %s' %
+                             (music_model.mid, music_model.title, music_model.url))
+                self.stop()
+                self.setMedia(media_content)
+            else:
+                self._app.message('%s 不能播放, 准备播放下一首'
+                                  % music_model.title)
+                self.remove_music(music_model.mid)
+                self.play_next()
+
+        app_event_loop = asyncio.get_event_loop()
+        if Player.play_task is not None:
+            Player.play_task.cancel()
+        Player.play_task = app_event_loop.call_soon(async_get)
 
     def other_mode_play(self, music_model):
         self._play(music_model)
@@ -186,10 +192,9 @@ class Player(QMediaPlayer):
         if music_model is None:
             super().play()
             return False
+        print('\033[0;31m %s request to play \033[0m' % music_model.title)
         self._app.player_mode_manager.exit_to_normal()
-        print('\033[0;31m] called 1 %s\033[0m]' % music_model.title)
         self._play(music_model)
-        print('\033[0;31m] called 2 %s\033[0m]' % music_model.title)
 
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):

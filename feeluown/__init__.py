@@ -7,9 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.5'
+__version__ = '1.0.5.1'
 __upgrade_desc__ = '''
-1. 增加 UDP Server， 用来实现远程控制
+1. 允许连续切换歌曲
 '''
 
 
