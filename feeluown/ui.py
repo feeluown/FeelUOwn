@@ -385,6 +385,7 @@ class RightPanel(FFrame):
         style_str = '''
             #{0} {{
                 background: transparent;
+                padding: 20px 30px 0px 30px;
             }}
         '''.format(self.objectName())
         self.setStyleSheet(style_str)
@@ -792,7 +793,6 @@ class MessageLabel(FLabel):
             self._set_normal_style()
         self.setText(str(len(self.queue)) + ': ' + text)
         self.show()
-        self.timer.moveToThread(QThread.currentThread())
         self.timer.start(self._interval * 1000)
 
     def access_message_queue(self):

@@ -179,6 +179,7 @@ class MusicTable(FTableWidget):
         self.horizontalHeader().setDefaultAlignment(self._alignment)
         self.verticalHeader().hide()
         self.setShowGrid(False)
+        self.setAlternatingRowColors(True)
 
         self.setObjectName('music_table')
         self.set_theme_style()
@@ -224,6 +225,7 @@ class MusicTable(FTableWidget):
             #{0} {{
                 border: 0px;
                 background: transparent;
+                alternate-background-color: {3};
                 color: {1};
             }}
             #{0}::item {{
@@ -239,7 +241,7 @@ class MusicTable(FTableWidget):
         '''.format(self.objectName(),
                    theme.foreground.name(),
                    theme.color6.name(),
-                   darker(theme.background, a=50).name(QColor.HexArgb),
+                   darker(theme.color0, a=30).name(QColor.HexArgb),
                    theme.color0.name(),
                    theme.color7_light.name())
         self.setStyleSheet(style_str)
