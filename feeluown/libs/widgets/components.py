@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QTime
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QHBoxLayout, QAbstractItemView, QHeaderView, \
     QTableWidgetItem
@@ -251,7 +251,8 @@ class MusicTable(FTableWidget):
         album_item = QTableWidgetItem(song_model.album_name)
         artist_item = QTableWidgetItem(song_model.artists_name)
         m, s = parse_ms(song_model.length)
-        length_item = QTableWidgetItem(str(m) + ':' + str(s))
+        duration = QTime(0, m, s)
+        length_item = QTableWidgetItem(duration.toString())
 
         row = self.rowCount()
         self.setRowCount(row + 1)

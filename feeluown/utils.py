@@ -30,6 +30,11 @@ def darker(color, degree=1, a=255):
     return QColor(r, g, b, a)
 
 
+def set_alpha(color, a):
+    r, g, b = color.red(), color.green(), color.blue()
+    return QColor(r, g, b, a)
+
+
 def measure_time(func):
     @wraps(func)
     def wrapper(*args, **kwargs):

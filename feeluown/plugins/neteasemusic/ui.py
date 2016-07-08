@@ -1,13 +1,16 @@
 import hashlib
 import logging
 
-from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTime
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
-                             QMenu, QAction, QAbstractItemView)
+                             QMenu, QAction, QAbstractItemView,
+                             QTableWidgetItem)
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
 from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
+from feeluown.utils import set_alpha, parse_ms
 
 from .model import NPlaylistModel, NSongModel, NUserModel
 
@@ -191,6 +194,65 @@ class PlaylistItem(LP_GroupItem):
         event.accept()
 
 
+class _TagCellWidget(FFrame):
+    def __init__(self, app):
+        super().__init__()
+        self._app = app
+        self.setObjectName('tag_cell')
+
+        self.download_tag = FLabel('✓', self)
+        self.download_flag = False
+        self.download_tag.setObjectName('download_tag')
+        self.download_tag.setAlignment(Qt.AlignCenter)
+
+        self.set_theme_style()
+
+        self._layout = QHBoxLayout(self)
+        self.setup_ui()
+
+    @property
+    def download_label_style(self):
+        theme = self._app.theme_manager.current_theme
+        background = set_alpha(theme.color7, 50).name(QColor.HexArgb)
+        if self.download_flag:
+            color = theme.color4.name()
+        else:
+            color = set_alpha(theme.color7, 30).name(QColor.HexArgb)
+        style_str = '''
+            #download_tag {{
+                color: {0};
+                background: {1};
+                border-radius: 10px;
+            }}
+        '''.format(color, background)
+        return style_str
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: transparent;
+            }}
+        '''.format(self.objectName())
+        style_str = style_str + self.download_label_style
+
+        self.setStyleSheet(style_str)
+
+    def set_download_tag(self):
+        self.download_flag = True
+        self.set_theme_style()
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+        self._layout.addSpacing(10)
+        self._layout.addWidget(self.download_tag)
+        self._layout.addSpacing(10)
+        self._layout.addStretch(1)
+        self.download_tag.setFixedSize(20, 20)
+
+
 class SongsTable(MusicTable):
     play_mv_signal = pyqtSignal([int])
     play_song_signal = pyqtSignal([NSongModel])
@@ -249,6 +311,7 @@ class SongsTable(MusicTable):
         song = self.songs[self._context_menu_row]
         if NPlaylistModel.del_song_from_playlist(song.mid, self._playlist_id):
             self.removeRow(self._context_menu_row)
+            self.songs.pop(self._context_menu_row)
             self._app.message('删除 %s 成功' % song.title)
         else:
             self._app.message('删除 %s 失败' % song.title, error=True)
@@ -268,6 +331,27 @@ class SongsTable(MusicTable):
         if self._playlist_id:
             return True
         return False
+
+    def add_item(self, song_model):
+        music_item = QTableWidgetItem(song_model.title)
+        album_item = QTableWidgetItem(song_model.album_name)
+        artist_item = QTableWidgetItem(song_model.artists_name)
+        m, s = parse_ms(song_model.length)
+        duration = QTime(0, m, s)
+        length_item = QTableWidgetItem(duration.toString())
+
+        row = self.rowCount()
+        self.setRowCount(row + 1)
+        self.setItem(row, 1, music_item)
+        self.setItem(row, 2, artist_item)
+        self.setItem(row, 3, album_item)
+        self.setItem(row, 4, length_item)
+        cell_widget = _TagCellWidget(self._app)
+        if NSongModel.local_exists(song_model):
+            cell_widget.set_download_tag()
+        self.setCellWidget(row, 5, cell_widget)
+
+        self.songs.append(song_model)
 
     def _is_playlist_mine(self):
         if self.is_playlist():
