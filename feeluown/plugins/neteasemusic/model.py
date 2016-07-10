@@ -166,8 +166,9 @@ class NSongModel(SongModel):
     def local_exists(cls, song):
         '''return song file path if exists, else None'''
         f_name = song.filename
-        if f_name in os.listdir(SONG_DIR):
-            return os.path.join(SONG_DIR, f_name)
+        f_path = os.path.join(SONG_DIR, f_name)
+        if os.path.exists(f_path):
+            return f_path
         else:
             return None
 
