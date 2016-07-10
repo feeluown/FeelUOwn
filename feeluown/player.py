@@ -192,7 +192,6 @@ class Player(QMediaPlayer):
         if music_model is None:
             super().play()
             return False
-        print('\033[0;31m %s request to play \033[0m' % music_model.title)
         self._app.player_mode_manager.exit_to_normal()
         self._play(music_model)
 
