@@ -44,7 +44,7 @@ class App(FFrame):
 
         self.player_pixmap = None
 
-        self.resize(960, 600)
+        self.resize(1000, 618)
         self.setObjectName('app')
         QApplication.setWindowIcon(QIcon(APP_ICON))
         self.set_theme_style()

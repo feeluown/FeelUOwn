@@ -338,7 +338,7 @@ class SongsTable(MusicTable):
         artist_item = QTableWidgetItem(song_model.artists_name)
         m, s = parse_ms(song_model.length)
         duration = QTime(0, m, s)
-        length_item = QTableWidgetItem(duration.toString())
+        length_item = QTableWidgetItem(duration.toString('mm:ss'))
 
         row = self.rowCount()
         self.setRowCount(row + 1)
