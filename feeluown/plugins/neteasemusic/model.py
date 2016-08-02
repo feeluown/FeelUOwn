@@ -94,13 +94,12 @@ class NSongModel(SongModel):
 
     @property
     def candidate_url(self):
-        if not self._candidate_url:
+        self._candidate_url = self._api.get_xiami_song_by_title(self.title)
+        if self._candidate_url:
+            logger.info('use xiami url for song: %s, the url is: %s'
+                        % (self.title, self._candidate_url))
+        else:
             self.get_detail()
-        if self._candidate_url is None:
-            self._candidate_url = self._api.get_xiami_song_by_title(self.title)
-            if self._candidate_url:
-                logger.info('use xiami url for song: %s, the url is: %s'
-                            % (self.title, self._candidate_url))
         return self._candidate_url
 
     def get_detail(self):
