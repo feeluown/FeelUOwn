@@ -233,3 +233,4 @@ class Nem(QObject):
     def on_player_media_changed(self, song):
         songs_table = self.ui.songs_table_container.songs_table
         songs_table.scroll_to_song(song)
+        api.accumulate_pl_count(song.mid)

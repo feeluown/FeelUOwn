@@ -335,6 +335,13 @@ class Api(object):
         payload = self.encrypt_request(data)
         return self.request('POST', url, payload)
 
+    def accumulate_pl_count(self, mid):
+        data = {"ids":"[%d]" % mid, "br":128000,
+                "csrf_token": self._cookies.get('__scrf')}
+        url = uri_we + '/pl/count'
+        payload = self.encrypt_request(data)
+        return self.request('POST', url, payload)
+
     def _create_aes_key(self, size):
         return (''.join([hex(b)[2:] for b in os.urandom(size)]))[0:16]
 
