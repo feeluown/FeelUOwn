@@ -69,13 +69,14 @@ class NSongModel(SongModel):
             logger.info('use local mp3 file for song: %s' % self.title)
             return f_path
 
-        if self._url is not None:
+        if self._url is not None:   # use cached url
             now = datetime.datetime.now()
             if (now - self._start_time).total_seconds() / 60 > 10:
                 logger.warning('%s url maybe outdated.' % (self.title))
                 self._url = None
                 return self.url
             return self._url
+
         data = self._api.weapi_songs_url([self.mid])
         if data is not None:
             if data['code'] == 200:
@@ -95,6 +96,11 @@ class NSongModel(SongModel):
     def candidate_url(self):
         if not self._candidate_url:
             self.get_detail()
+        if self._candidate_url is None:
+            self._candidate_url = self._api.get_xiami_song_by_title(self.title)
+            if self._candidate_url:
+                logger.info('use xiami url for song: %s, the url is: %s'
+                            % (self.title, self._candidate_url))
         return self._candidate_url
 
     def get_detail(self):
