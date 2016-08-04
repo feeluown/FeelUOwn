@@ -35,7 +35,7 @@ class LP_GroupHeader(FFrame):
                 color: {1};
             }}
         '''.format(self.objectName(),
-                   theme.foreground_light.name())
+                   theme.color5_light.name())
         self.setStyleSheet(style_str)
 
     def setup_ui(self):
@@ -84,7 +84,7 @@ class LP_GroupItem(FFrame):
 
     def enterEvent(self, event):
         theme = self._app.theme_manager.current_theme
-        label_hover_color = theme.color4
+        label_hover_color = theme.color5
         if self.is_selected or self.is_playing:
             return
         self._img_label.setStyleSheet(
@@ -94,7 +94,7 @@ class LP_GroupItem(FFrame):
 
     def leaveEvent(self, event):
         theme = self._app.theme_manager.current_theme
-        label_color = theme.foreground
+        label_color = theme.random_color()
         if self.is_selected or self.is_playing:
             return
         self._img_label.setStyleSheet('color: {0};'.format(label_color.name()))
@@ -122,7 +122,7 @@ class LP_GroupItem(FFrame):
                    self._flag_label.objectName(),
                    self._img_label.objectName(),
                    self._name_label.objectName(),
-                   theme.foreground.name(),
+                   theme.random_color().name(),
                    theme.color0.name())
         self.setStyleSheet(style_str)
 

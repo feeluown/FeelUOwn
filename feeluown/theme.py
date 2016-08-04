@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import os
-import logging
 import configparser
+import logging
+import random
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QColor
@@ -186,6 +187,16 @@ class Theme(object):
     def color7(self):
         color_section = self._config['Color7Intense']
         return self._parse_color_str(color_section['color'])
+
+    def random_color(self):
+        '''return one of the eight*2 color'''
+        attributes = self.__class__.__dict__.keys()
+        color_attrs = []
+        for attr in attributes:
+            if attr.startswith('color') and not attr.startswith('color0'):
+                color_attrs.append(attr)
+        color_attr = random.choice(color_attrs)
+        return getattr(self, color_attr)
 
     def _parse_color_str(self, color_str):
         rgb = [int(x) for x in color_str.split(',')]
