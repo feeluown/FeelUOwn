@@ -7,10 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.5.2'
+__version__ = '1.0.5.3'
 __upgrade_desc__ = '''
-1. 用虾米来补充网易云音乐
-2. 发送播放次数信息给网易云服务器
+1. 添加歌词显示支持
 '''
 
 

@@ -7,7 +7,7 @@ from feeluown.model import SongModel, PlaylistModel
 from feeluown.consts import SONG_DIR
 
 from .api import api
-from .consts import USERS_INFO_FILE, SONG_SOURCE
+from .consts import USERS_INFO_FILE, SOURCE
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +60,7 @@ class NSongModel(SongModel):
 
     @property
     def source(self):
-        return SONG_SOURCE
+        return SOURCE
 
     @property
     def url(self):
@@ -207,6 +207,10 @@ class NAlbumModel(object):
         return self._img
 
     @property
+    def img_id(self):
+        return SOURCE + '-' + 'album' + str(self.bid)
+
+    @property
     def songs(self):
         if not self._songs:
             logger.debug('album has no songs, so get detail')
@@ -280,6 +284,10 @@ class NArtistModel(object):
         return self._img
 
     @property
+    def img_id(self):
+        return SOURCE + '-' + 'artist' + str(self.aid)
+
+    @property
     def songs(self):
         if not self._songs:
             logger.debug('artist has no songs, so get detail')
@@ -344,7 +352,8 @@ class NUserModel(object):
         playlists_model = []
         for p in playlists:
             model = NPlaylistModel(p['id'], p['name'], p['specialType'],
-                                   p['userId'])
+                                   p['userId'], p['coverImgUrl'],
+                                   p['updateTime'])
             playlists_model.append(model)
         self._playlists = playlists_model
         return playlists_model
@@ -447,19 +456,25 @@ class NPlaylistModel(PlaylistModel):
     instances = []
     _api = api
 
-    def __init__(self, pid, name, ptype, uid, songs=[]):
+    def __init__(self, pid, name, ptype, uid, cover_img, update_ts, songs=[]):
         super().__init__()
         self.pid = pid
         self._name = name
         self.ptype = ptype
         self.uid = uid
         self._songs = songs
+        self.cover_img = cover_img
+        self.last_update_ts = update_ts
 
         NPlaylistModel.instances.append(self)
 
     @property
     def name(self):
         return self._name
+
+    @property
+    def cover_img_id(self):
+        return SOURCE + '-' + 'playlist' + '-' + str(self.last_update_ts)
 
     @property
     def songs(self):

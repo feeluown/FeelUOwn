@@ -1,15 +1,16 @@
+import asyncio
 import hashlib
 import logging
 
 from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTime
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QMenu, QAction, QAbstractItemView,
                              QTableWidgetItem)
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
     FButton
-from feeluown.libs.widgets.components import MusicTable, LP_GroupItem
+from feeluown.libs.widgets.components import MusicTable, LP_GroupItem, ImgLabel
 from feeluown.utils import set_alpha, parse_ms
 
 from .model import NPlaylistModel, NSongModel, NUserModel
@@ -446,6 +447,16 @@ class SearchBox(FLineEdit):
         self.setStyleSheet(style_str)
 
 
+class CoverImgLabel(ImgLabel):
+    def __init__(self, app, parent=None):
+        super().__init__(app, parent)
+
+        self._app = app
+        self.setFixedWidth(160)
+        self.setObjectName('n_album_img_label')
+        self.set_theme_style()
+
+
 class TableControl(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -495,6 +506,7 @@ class SongsTable_Container(FFrame):
         self._app = app
 
         self.songs_table = None
+        self.img_label = CoverImgLabel(self._app)
         self.table_control = TableControl(self._app)
         self._layout = QVBoxLayout(self)
         self.setup_ui()
@@ -503,6 +515,8 @@ class SongsTable_Container(FFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
+        self._layout.addWidget(self.img_label)
+        self._layout.addSpacing(10)
         self._layout.addWidget(self.table_control)
 
     def set_table(self, songs_table):
@@ -513,6 +527,27 @@ class SongsTable_Container(FFrame):
             self._layout.addWidget(songs_table)
             self._layout.addSpacing(10)
         self.songs_table = songs_table
+
+    def load_img(self, img_url, img_name):
+        self.img_label.show()
+        event_loop = asyncio.get_event_loop()
+        future = event_loop.create_task(
+            self._app.img_ctl.get(img_url, img_name))
+        future.add_done_callback(self.set_img)
+
+    def set_img(self, future):
+        content = future.result()
+        img = QImage()
+        img.loadFromData(content)
+        pixmap = QPixmap(img)
+        if pixmap.isNull():
+            return None
+        self.img_label.setPixmap(
+            pixmap.scaledToWidth(self.img_label.width(),
+                                 mode=Qt.SmoothTransformation))
+
+    def hide_img_label(self):
+        self.img_label.hide()
 
 
 class Ui(object):

@@ -7,7 +7,7 @@ from enum import Enum
 THEMES_DIR = './feeluown/themes'
 PLUGINS_DIR = './feeluown/plugins'
 APP_ICON = './feeluown/feeluown.png'
-DEFAULT_THEME_NAME = 'Solarized'
+DEFAULT_THEME_NAME = 'Tomorrow Night'
 
 
 HOME_DIR = os.path.expanduser('~') + '/.FeelUOwn'

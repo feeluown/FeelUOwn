@@ -230,6 +230,7 @@ class MusicTable(FTableWidget):
                 color: {1};
             }}
             #{0}::item {{
+                color: {1};
                 outline: none;
             }}
             #{0}::item:focus {{
@@ -315,3 +316,15 @@ class MusicTable(FTableWidget):
     def _prev_row(self):
         current_row = self.currentRow()
         return current_row - 1 if current_row != 0 else 0
+
+
+class FramelessWidget(FFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+
+        self._app = app
+
+
+class ImgLabel(FLabel):
+    def __init__(self, app, parent=None):
+        super().__init__(None, parent)
