@@ -1,7 +1,7 @@
 import logging
 from feeluown.player_mode import PlayerModeBase
 
-from .consts import SONG_SOURCE
+from .consts import SOURCE
 
 
 logger = logging.getLogger(__name__)
@@ -52,6 +52,6 @@ class Simi_mode(PlayerModeBase):
 
     def _check_player_song(self):
         song = self.player.current_song
-        if song is not None and song.source == SONG_SOURCE:
+        if song is not None and song.source == SOURCE:
             return song
         return None
