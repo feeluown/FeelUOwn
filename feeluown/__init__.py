@@ -11,6 +11,7 @@ __version__ = '1.0.5.3'
 __upgrade_desc__ = '''
 1. 添加图片缓存模块
 2. 添加 Playlist, Album, Artist 歌曲页面的 Cover Image 显示
+3. 添加 Album, Artist 描述
 '''
 
 
