@@ -482,6 +482,73 @@ class DescriptionLabel(FLabel):
                    theme.color0.name())
         self.setStyleSheet(style_str)
 
+    def keyPressEvent(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_Space:
+            self._preview_dialog = DescriptionPreviewDialog(self._app)
+            preview_container = self.parent().parent()
+            self._preview_dialog.set_copy(preview_container)
+            self._preview_dialog.show()
+        else:
+            super().keyPressEvent(event)
+
+
+class DescriptionPreviewDialog(FDialog):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.setObjectName('n_desc_preview_dialog')
+        self.desc_container = DescriptionContainer(self._app, self)
+        self._container = FFrame(self)
+        self._container.setObjectName('n_desc_preview_dialog_container')
+        self.setWindowFlags(Qt.FramelessWindowHint)
+        self.setAttribute(Qt.WA_TranslucentBackground)
+
+        self.set_theme_style()
+        self._container_layout = QVBoxLayout(self._container)
+        self._layout = QVBoxLayout(self)
+        self.setup_ui()
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                color: {3};
+            }}
+            #{1} {{
+                background: {2};
+                border: 5px solid {4};
+                border-radius: 5px;
+                padding: 3px;
+            }}
+        '''.format(self.objectName(),
+                   self._container.objectName(),
+                   theme.background.name(),
+                   theme.foreground.name(),
+                   theme.random_color().name())
+        self.setStyleSheet(style_str)
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+        self._container_layout.setContentsMargins(0, 0, 0, 0)
+        self._container_layout.setSpacing(0)
+
+        self._layout.addWidget(self._container)
+        self._container_layout.addWidget(self.desc_container)
+
+    def set_copy(self, desc_container):
+        self.desc_container.set_html(desc_container.html)
+
+    def keyPressEvent(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_Space:
+            self.close()
+        else:
+            super().keyPressEvent(event)
+
 
 class DescriptionContainer(FScrollArea):
     def __init__(self, app, parent=None):
@@ -499,6 +566,10 @@ class DescriptionContainer(FScrollArea):
         self.setWidget(self.desc_label)
         self.setWidgetResizable(True)
         self.setup_ui()
+
+    @property
+    def html(self):
+        return self.desc_label.text()
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -518,6 +589,17 @@ class DescriptionContainer(FScrollArea):
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
+
+    def keyPressEvent(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_J:
+            value = self.verticalScrollBar().value()
+            self.verticalScrollBar().setValue(value + 20)
+        elif key_code == Qt.Key_K:
+            value = self.verticalScrollBar().value()
+            self.verticalScrollBar().setValue(value - 20)
+        else:
+            super().keyPressEvent(event)
 
 
 class TableControl(FFrame):

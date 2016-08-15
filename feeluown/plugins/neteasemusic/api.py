@@ -239,7 +239,10 @@ class Api(object):
         if res is None:
             return None
         soup = BeautifulSoup(res.content, 'html.parser')
-        return soup.select('.n-albdesc')[0].prettify()
+        albdescs = soup.select('.n-albdesc')
+        if albdescs:
+            return albdescs[0].prettify()
+        return ''
 
     def artist_desc(self, artist_id):
         action = site_uri + '/artist/desc'
@@ -248,7 +251,10 @@ class Api(object):
         if res is None:
             return None
         soup = BeautifulSoup(res.content, 'html.parser')
-        return soup.select('.n-artdesc')[0].prettify()
+        artdescs = soup.select('.n-artdesc')
+        if artdescs:
+            return artdescs[0].prettify()
+        return ''
 
     # song id --> song url ( details )
     def song_detail(self, music_id):
