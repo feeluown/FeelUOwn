@@ -176,7 +176,7 @@ class Nem(QObject):
 
     def search_net(self):
         text = self.ui.songs_table_container.table_control.search_box.text()
-        self.ui.songs_table_container.hide_img_label()
+        self.ui.songs_table_container.hide_info_container()
         if text.strip():
             songs = NSongModel.search(text)
             self._app.message('搜索到 %d 首相关歌曲' % len(songs))
@@ -210,6 +210,7 @@ class Nem(QObject):
         songs_table.set_playlist_id(playlist.pid)
         self.ui.songs_table_container.load_img(playlist.cover_img,
                                                playlist.cover_img_id)
+        self.ui.songs_table_container.set_desc(playlist.desc)
         self.load_songs(playlist.songs, songs_table)
 
     def load_artist(self, aid):
@@ -219,6 +220,7 @@ class Nem(QObject):
         songs_table = SongsTable(self._app)
         self.ui.songs_table_container.load_img(artist.img,
                                                artist.img_id)
+        self.ui.songs_table_container.set_desc(artist.desc)
         self.load_songs(songs, songs_table)
 
     def load_album(self, bid):
@@ -228,6 +230,7 @@ class Nem(QObject):
         songs_table = SongsTable(self._app)
         self.ui.songs_table_container.load_img(album.img,
                                                album.img_id)
+        self.ui.songs_table_container.set_desc(album.desc)
         self.load_songs(songs, songs_table)
 
     def on_player_state_changed(self, state):

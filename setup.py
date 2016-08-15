@@ -33,6 +33,7 @@ setup(
         'quamash>=0.5.5',
         'pycrypto',
         'requests',
+        'beautifulsoup4',
         ],
     entry_points={
         'console_scripts': [

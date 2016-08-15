@@ -15,11 +15,14 @@ import binascii
 import os
 import json
 import logging
+
+from bs4 import BeautifulSoup
 import requests
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
 
 
+site_uri = 'http://music.163.com'
 uri = 'http://music.163.com/api'
 uri_we = 'http://music.163.com/weapi'
 uri_v1 = 'http://music.163.com/weapi/v1'
@@ -228,6 +231,24 @@ class Api(object):
         action = uri + '/album/' + str(album_id)
         data = self.request('GET', action)
         return data
+
+    def album_desc(self, album_id):
+        action = site_uri + '/album'
+        data = {'id': album_id}
+        res = self.http.get(action, data)
+        if res is None:
+            return None
+        soup = BeautifulSoup(res.content, 'html.parser')
+        return soup.select('.n-albdesc')[0].prettify()
+
+    def artist_desc(self, artist_id):
+        action = site_uri + '/artist/desc'
+        data = {'id': artist_id}
+        res = self.http.get(action, data)
+        if res is None:
+            return None
+        soup = BeautifulSoup(res.content, 'html.parser')
+        return soup.select('.n-artdesc')[0].prettify()
 
     # song id --> song url ( details )
     def song_detail(self, music_id):

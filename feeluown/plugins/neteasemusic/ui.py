@@ -6,10 +6,10 @@ from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTime
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QMenu, QAction, QAbstractItemView,
-                             QTableWidgetItem)
+                             QTableWidgetItem, QSizePolicy)
 
 from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
-    FButton
+    FButton, FScrollArea
 from feeluown.libs.widgets.components import MusicTable, LP_GroupItem, ImgLabel
 from feeluown.utils import set_alpha, parse_ms
 
@@ -457,6 +457,69 @@ class CoverImgLabel(ImgLabel):
         self.set_theme_style()
 
 
+class DescriptionLabel(FLabel):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+
+        self._app = app
+        self.setObjectName('n_desc_container')
+        self.set_theme_style()
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.setWordWrap(True)
+        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                padding-top: 5px;
+                padding-bottom: 5px;
+                background: transparent;
+                color: {1};
+            }}
+        '''.format(self.objectName(),
+                   theme.foreground.name(),
+                   theme.color0.name())
+        self.setStyleSheet(style_str)
+
+
+class DescriptionContainer(FScrollArea):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+
+        self._app = app
+        self.desc_label = DescriptionLabel(self._app)
+        self.setObjectName('n_desc_container')
+        self.set_theme_style()
+
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._layout = QVBoxLayout(self)
+        self.setWidget(self.desc_label)
+        self.setWidgetResizable(True)
+        self.setup_ui()
+
+    def set_theme_style(self):
+        theme = self._app.theme_manager.current_theme
+        style_str = '''
+            #{0} {{
+                background: transparent;
+            }}
+        '''.format(self.objectName(),
+                   theme.foreground.name(),
+                   theme.color0.name())
+        self.setStyleSheet(style_str)
+
+    def set_html(self, desc):
+        self.desc_label.setText(desc)
+        self.desc_label.setTextFormat(Qt.RichText)
+
+    def setup_ui(self):
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+
 class TableControl(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -507,15 +570,25 @@ class SongsTable_Container(FFrame):
 
         self.songs_table = None
         self.img_label = CoverImgLabel(self._app)
+        self.desc_container = DescriptionContainer(self._app)
+        self.info_container = FFrame(parent=self)
         self.table_control = TableControl(self._app)
         self._layout = QVBoxLayout(self)
+        self._info_layout = QHBoxLayout(self.info_container)
         self.setup_ui()
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
+        self._info_layout.setContentsMargins(0, 0, 0, 0)
+        self._info_layout.setSpacing(0)
 
-        self._layout.addWidget(self.img_label)
+        self._info_layout.addWidget(self.img_label)
+        self._info_layout.addSpacing(20)
+        self._info_layout.addWidget(self.desc_container)
+
+        self._layout.addSpacing(10)
+        self._layout.addWidget(self.info_container)
         self._layout.addSpacing(10)
         self._layout.addWidget(self.table_control)
 
@@ -546,8 +619,11 @@ class SongsTable_Container(FFrame):
             pixmap.scaledToWidth(self.img_label.width(),
                                  mode=Qt.SmoothTransformation))
 
-    def hide_img_label(self):
-        self.img_label.hide()
+    def set_desc(self, desc):
+        self.desc_container.set_html(desc)
+
+    def hide_info_container(self):
+        self.info_container.hide()
 
 
 class Ui(object):

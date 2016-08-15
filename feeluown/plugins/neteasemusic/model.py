@@ -220,8 +220,7 @@ class NAlbumModel(object):
     @property
     def desc(self):
         if not self._desc:
-            logger.debug('album has no desc, so get detail')
-            self.get_detail()
+            self._desc = self._api.album_desc(self.bid)
         return self._desc
 
     @classmethod
@@ -241,7 +240,7 @@ class NAlbumModel(object):
             data = data['album']
             self._songs = NSongModel.batch_create(data['songs'])
             self._img = data['picUrl']
-            self._desc = data['briefDesc']
+            self._desc = data['description']
 
     @classmethod
     def get(cls, bid):
@@ -270,6 +269,7 @@ class NArtistModel(object):
         self._name = name
 
         self._img = img
+        self._desc = ''
         self._songs = songs
 
     @property
@@ -288,6 +288,12 @@ class NArtistModel(object):
         return SOURCE + '-' + 'artist' + str(self.aid)
 
     @property
+    def desc(self):
+        if not self._desc:
+            self._desc = self._api.artist_desc(self.aid)
+        return self._desc
+
+    @property
     def songs(self):
         if not self._songs:
             logger.debug('artist has no songs, so get detail')
@@ -298,6 +304,7 @@ class NArtistModel(object):
         data = self._api.artist_infos(self.aid)
         if data is not None:
             self._img = data['artist']['picUrl']
+            self._description = data['description']
             self._songs = NSongModel.batch_create(data['hotSongs'])
 
     @classmethod
@@ -353,7 +360,7 @@ class NUserModel(object):
         for p in playlists:
             model = NPlaylistModel(p['id'], p['name'], p['specialType'],
                                    p['userId'], p['coverImgUrl'],
-                                   p['updateTime'])
+                                   p['updateTime'], p['description'])
             playlists_model.append(model)
         self._playlists = playlists_model
         return playlists_model
@@ -456,7 +463,8 @@ class NPlaylistModel(PlaylistModel):
     instances = []
     _api = api
 
-    def __init__(self, pid, name, ptype, uid, cover_img, update_ts, songs=[]):
+    def __init__(self, pid, name, ptype, uid, cover_img, update_ts,
+                 description, songs=[]):
         super().__init__()
         self.pid = pid
         self._name = name
@@ -464,6 +472,7 @@ class NPlaylistModel(PlaylistModel):
         self.uid = uid
         self._songs = songs
         self.cover_img = cover_img
+        self._description = description
         self.last_update_ts = update_ts
 
         NPlaylistModel.instances.append(self)
@@ -475,6 +484,10 @@ class NPlaylistModel(PlaylistModel):
     @property
     def cover_img_id(self):
         return SOURCE + '-' + 'playlist' + '-' + str(self.last_update_ts)
+
+    @property
+    def desc(self):
+        return self._description
 
     @property
     def songs(self):
@@ -521,4 +534,3 @@ class NPlaylistModel(PlaylistModel):
     def is_favorite(cls, model):
         if model.ptype == 5:
             return True
-        return False
