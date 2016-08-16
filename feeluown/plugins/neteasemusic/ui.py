@@ -684,7 +684,7 @@ class SongsTable_Container(FFrame):
         self.songs_table = songs_table
 
     def load_img(self, img_url, img_name):
-        self.img_label.show()
+        self.info_container.show()
         event_loop = asyncio.get_event_loop()
         future = event_loop.create_task(
             self._app.img_ctl.get(img_url, img_name))
