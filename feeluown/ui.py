@@ -3,7 +3,7 @@ import logging
 from PyQt5.QtGui import QFontMetrics, QPainter
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer, QThread
 from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
-                             QApplication)
+                             QApplication, QSizePolicy)
 from PyQt5.QtMultimedia import QMediaPlayer
 
 from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
@@ -77,6 +77,7 @@ class VolumeSlider(_BasicSlider):
         self.setRange(0, 100)   # player volume range
         self.setValue(100)
         self.setToolTip('调教播放器音量')
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
 
 class ProgressLabel(_BasicLabel):
@@ -166,9 +167,7 @@ class PlayerControlPanel(FFrame):
         self._sc_layout.addSpacing(2)
         self._sc_layout.addWidget(self.progress_label)
         self._sc_layout.addSpacing(5)
-        self._sc_layout.addStretch(0)
         self._sc_layout.addWidget(self.volume_slider)
-        self._sc_layout.addStretch(1)
 
         self._layout.addWidget(self._btn_container)
         self._layout.addSpacing(10)
