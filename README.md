@@ -8,6 +8,8 @@
 
 ## 安装
 
+安装 powerline font. <https://github.com/powerline/fonts>
+
 ```
 sudo apt-get install python3-pip
 sudo -H pip3 install feeluown
