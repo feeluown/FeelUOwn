@@ -7,11 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.5.3'
+__version__ = '1.0.5.4'
 __upgrade_desc__ = '''
-1. 添加图片缓存模块
-2. 添加 Playlist, Album, Artist 歌曲页面的 Cover Image 显示
-3. 添加 Album, Artist 描述
+1. 修复一些小 bug
 '''
 
 
