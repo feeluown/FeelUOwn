@@ -575,6 +575,7 @@ class DescriptionContainer(FScrollArea):
         theme = self._app.theme_manager.current_theme
         style_str = '''
             #{0} {{
+                border: 0;
                 background: transparent;
             }}
         '''.format(self.objectName(),

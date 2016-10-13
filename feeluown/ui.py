@@ -935,11 +935,10 @@ class StatusSeparator(FLabel):
         style_str = '''
             #{0} {{
                 border: 0;
-                padding: 0px 0px;
+                padding-right: -1px;
                 margin: 0;
                 background: {1};
                 color: {2};
-                font-size: 12px;
                 font-family: "DejaVu Sans Mono for Powerline";
             }}
         '''.format(self.objectName(),
