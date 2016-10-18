@@ -9,6 +9,7 @@
 
 *.pyc
 *.swp
+*.swo
 
 *.desktop
 *.md~
@@ -21,7 +22,10 @@ user.json
 *.bak
 *.vim-bookmarks
 
+\#**
+
 __pycache__
+.cache
 .ipynb_checkpoints
 *.DS_Store
 *.un~
@@ -37,10 +41,19 @@ data/*.json
 cache/*.json
 
 # test image
-feeluown/*.png
-feeluown/*.jpg
-feeluown/widgets/*.png
-feeluown/widgets/*.jpg
-
+# feeluown/*.png
+# feeluown/*.jpg
+# feeluown/widgets/*.png
+# feeluown/widgets/*.jpg
+# 
 # node
 node_modules
+
+# rope
+=======
+*.out
+.ropeproject
+
+dist/
+build/
+feeluown.egg-info/

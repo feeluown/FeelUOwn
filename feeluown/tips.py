@@ -1,12 +1,18 @@
-# -*- coding: utf-8 -*-
+import random
 
 
-tips = {
-    "2015-10-30": "Ctrl-F 可以快速进行搜索",
-    "2015-11-01": "ESC 键可以退出歌词哦 ~",
-    "2015-11-06": "右键歌单可以进行一些编辑哦",
-    "2015-11-22": "右键歌单可以强制刷新歌单内容哦",
-    "2015-12-13": "Ctrl-M 可以最小化哦",
-    "2015-12-19": "试试 j, k 快捷键, 选取歌曲或者列表",
-    "2015-12-20": "Ctrl-[, Ctrl-] 可以在歌曲和列表中切换 focus"
-}
+class TipsManager(object):
+    tips = [
+        '你知道 mpris2 插件可以配合 osdlyrics 使用吗?',
+        '双击歌手就可以浏览歌手的热门歌曲',
+        '您可以自定义主题哦',
+        '您有任何有关问题都可以上项目主页反馈哦',
+        'Ctrl + F: 搜索快捷键, J, K 可以上下移动光标',
+    ]
+
+    def __init__(self, app):
+        self._app = app
+
+    def show_random_tip(self):
+        tip = random.choice(self.tips)
+        self._app.message('小提示: %s' % tip)

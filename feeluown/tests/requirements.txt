@@ -1,6 +1,0 @@
-quamash
-requests
-ipython>=4.0.0
-qtconsole
-pytest
-pytest-qt
