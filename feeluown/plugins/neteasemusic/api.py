@@ -413,8 +413,8 @@ class Api(object):
         if not songs:
             return None
 
-        target_song = None
-        max_match_ratio = 0
+        target_song = songs[0]  # respect xiami search result
+        max_match_ratio = 0.5
         for song in songs:
             if song['song_name'].lower() == title.lower():
                 if song['artist_name'] == artist_name:
@@ -424,7 +424,7 @@ class Api(object):
                 if ratio > max_match_ratio:
                     max_match_ratio = ratio
                     target_song = song
-        return song['listen_file']
+        return target_song['listen_file']
 
 
 api = Api()
