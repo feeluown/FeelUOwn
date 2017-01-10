@@ -94,7 +94,8 @@ class NSongModel(SongModel):
 
     @property
     def candidate_url(self):
-        self._candidate_url = self._api.get_xiami_song_by_title(self.title)
+        self._candidate_url = self._api.get_xiami_song_by_title(
+            self.title, self.artists_name)
         if self._candidate_url:
             logger.info('use xiami url for song: %s, the url is: %s'
                         % (self.title, self._candidate_url))

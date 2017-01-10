@@ -15,6 +15,7 @@ import binascii
 import os
 import json
 import logging
+from difflib import SequenceMatcher
 
 from bs4 import BeautifulSoup
 import requests
@@ -407,13 +408,23 @@ class Api(object):
         }
         return payload
 
-    def get_xiami_song_by_title(self, title):
+    def get_xiami_song_by_title(self, title, artist_name):
         songs = self.xiami_assister.search(title)
-        if songs:
-            for song in songs:
-                if song['song_name'] == title:
-                    return song['listen_file']
-        return None
+        if not songs:
+            return None
+
+        target_song = None
+        max_match_ratio = 0
+        for song in songs:
+            if song['song_name'].lower() == title.lower():
+                if song['artist_name'] == artist_name:
+                    target_song = song
+                    break
+                ratio = SequenceMatcher(None, song['artist_name'], artist_name).ratio()
+                if ratio > max_match_ratio:
+                    max_match_ratio = ratio
+                    target_song = song
+        return song['listen_file']
 
 
 api = Api()
