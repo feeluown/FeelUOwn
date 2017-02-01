@@ -13,8 +13,7 @@ setup(
     author_email='cosven.yin@gmail.com',
     packages=[
         'feeluown',
-        'feeluown.libs',
-        'feeluown.libs.widgets',
+        'feeluown.widgets',
         'feeluown.plugins.neteasemusic',
         ],
     package_data={

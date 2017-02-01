@@ -7,14 +7,12 @@ from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QMenu, QAction, QAbstractItemView,
                              QTableWidgetItem, QSizePolicy)
+from feeluown.widgets.components import MusicTable, LP_GroupItem, ImgLabel
 
-from feeluown.libs.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
-    FButton, FScrollArea
-from feeluown.libs.widgets.components import MusicTable, LP_GroupItem, ImgLabel
 from feeluown.utils import set_alpha, parse_ms
-
+from feeluown.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
+    FButton, FScrollArea
 from .model import NPlaylistModel, NSongModel, NUserModel
-
 
 logger = logging.getLogger(__name__)
 

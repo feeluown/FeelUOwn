@@ -1,21 +1,20 @@
 import logging
 
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
 from PyQt5.QtGui import QFontMetrics, QPainter
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer, QThread
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
-                             QApplication, QSizePolicy)
 from PyQt5.QtMultimedia import QMediaPlayer
-
-from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
+from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
+                             QSizePolicy)
+from feeluown.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
     FComboBox
-from feeluown.libs.widgets.labels import _BasicLabel
-from feeluown.libs.widgets.sliders import _BasicSlider
-from feeluown.libs.widgets.components import LP_GroupHeader, LP_GroupItem, \
+from feeluown.widgets.components import LP_GroupHeader, LP_GroupItem, \
     MusicTable
-from feeluown import __upgrade_desc__
+from feeluown.widgets.sliders import _BasicSlider
 
-from .utils import parse_ms
+from feeluown import __upgrade_desc__
+from feeluown.widgets.labels import _BasicLabel
 from .consts import PlaybackMode
+from .utils import parse_ms
 
 
 logger = logging.getLogger(__name__)
