@@ -7,9 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.5.4'
+__version__ = '1.0.5.5'
 __upgrade_desc__ = '''
-1. 修复一些小 bug
+1. 修复不能登录的问题
 '''
 
 
