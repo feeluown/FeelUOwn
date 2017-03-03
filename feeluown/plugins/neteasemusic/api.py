@@ -120,8 +120,8 @@ class Api(object):
             return None
 
     def login(self, username, pw_encrypt, phone=False):
-        action = 'http://music.163.com/api/login/'
-        phone_action = 'http://music.163.com/api/login/cellphone/'
+        action = 'http://music.163.com/weapi/login'
+        phone_action = 'http://music.163.com/weapi/login/cellphone'
         data = {
             'password': pw_encrypt,
             'rememberLogin': 'true'
@@ -131,11 +131,13 @@ class Api(object):
             data.update({'phone': username})
         else:
             data.update({'username': username})
+
+        payload = self.encrypt_request(data)
         if phone:
-            res_data = self.request("POST_UPDATE", phone_action, data)
+            res_data = self.request("POST_UPDATE", phone_action, payload)
             return res_data
         else:
-            res_data = self.request("POST_UPDATE", action, data)
+            res_data = self.request("POST_UPDATE", action, payload)
             return res_data
 
     def check_cookies(self):
