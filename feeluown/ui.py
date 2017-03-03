@@ -1,21 +1,20 @@
 import logging
 
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
 from PyQt5.QtGui import QFontMetrics, QPainter
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer, QThread
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
-                             QApplication, QSizePolicy)
 from PyQt5.QtMultimedia import QMediaPlayer
-
-from feeluown.libs.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
+from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
+                             QSizePolicy)
+from feeluown.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
     FComboBox
-from feeluown.libs.widgets.labels import _BasicLabel
-from feeluown.libs.widgets.sliders import _BasicSlider
-from feeluown.libs.widgets.components import LP_GroupHeader, LP_GroupItem, \
+from feeluown.widgets.components import LP_GroupHeader, LP_GroupItem, \
     MusicTable
-from feeluown import __upgrade_desc__
+from feeluown.widgets.sliders import _BasicSlider
 
-from .utils import parse_ms
+from feeluown import __upgrade_desc__
+from feeluown.widgets.labels import _BasicLabel
 from .consts import PlaybackMode
+from .utils import parse_ms
 
 
 logger = logging.getLogger(__name__)
@@ -921,32 +920,6 @@ class NetworkStatus(FLabel):
         self.update()
 
 
-class StatusSeparator(FLabel):
-    def __init__(self, app, pre_bg_color, next_bg_color,
-                 text='\ue0b0', parent=None):
-        super().__init__(text, parent)
-        self._app = app
-        self._color = pre_bg_color
-        self._bg_color = next_bg_color
-        self.setObjectName('status_separator')
-        self.set_theme_style()
-
-    def set_theme_style(self):
-        style_str = '''
-            #{0} {{
-                border: 0;
-                padding-right: -1px;
-                margin: 0;
-                background: {1};
-                color: {2};
-                font-family: "DejaVu Sans Mono for Powerline";
-            }}
-        '''.format(self.objectName(),
-                   self._bg_color.name(),
-                   self._color.name())
-        self.setStyleSheet(style_str)
-
-
 class StatusPanel(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -954,31 +927,12 @@ class StatusPanel(FFrame):
 
         self._layout = QHBoxLayout(self)
         self.player_state_label = PlayerStateLabel(self._app)
-        self.sepa1 = StatusSeparator(
-                self._app,
-                self._app.theme_manager.current_theme.color6_light,
-                self._app.theme_manager.current_theme.color4)
         self.app_status_label = AppStatusLabel(self._app)
         self.network_status_label = NetworkStatus(self._app)
         self.message_label = MessageLabel(self._app)
         self.song_label = SongLabel(self._app, parent=self)
-        self.sepa2 = StatusSeparator(
-                self._app,
-                self._app.theme_manager.current_theme.color7,
-                self._app.theme_manager.current_theme.color6,
-                '\ue0b2')
         self.pms_btn = PlaybackModeSwitchBtn(self._app, self)
-        self.sepa3 = StatusSeparator(
-                self._app,
-                self._app.theme_manager.current_theme.color6,
-                self._app.theme_manager.current_theme.color4,
-                '\ue0b2')
         self.theme_switch_btn = ThemeComboBox(self._app, self)
-        self.sepa4 = StatusSeparator(
-                self._app,
-                self._app.theme_manager.current_theme.color4,
-                self._app.theme_manager.current_theme.color0,
-                '\ue0b2')
 
         self.setup_ui()
         self.setObjectName('status_panel')
@@ -998,20 +952,15 @@ class StatusPanel(FFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
         self.setFixedHeight(18)
-        # self.song_label.setMinimumWidth(220)
         self.song_label.setMaximumWidth(300)
         self._layout.addWidget(self.player_state_label)
-        self._layout.addWidget(self.sepa1)
         self._layout.addWidget(self.app_status_label)
         self._layout.addWidget(self.network_status_label)
         self._layout.addStretch(0)
         self._layout.addWidget(self.message_label)
         self._layout.addStretch(0)
-        self._layout.addWidget(self.sepa4)
         self._layout.addWidget(self.theme_switch_btn)
-        self._layout.addWidget(self.sepa3)
         self._layout.addWidget(self.pms_btn)
-        self._layout.addWidget(self.sepa2)
         self._layout.addWidget(self.song_label)
 
 

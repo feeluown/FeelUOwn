@@ -1,12 +1,13 @@
 import asyncio
-from functools import partial
 import logging
+from functools import partial
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication
 from PyQt5.QtMultimedia import QMediaPlayer
+from PyQt5.QtWidgets import QApplication
 
+from feeluown.widgets.base import FFrame
 from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
 from .img_ctl import ImgController
@@ -14,13 +15,12 @@ from .player import Player
 from .player_mode import PlayerModeManager
 from .plugin import PluginsManager
 from .request import Request
+from .server import Server
 from .theme import ThemeManager
 from .tips import TipsManager
-from .server import Server
 from .ui import Ui
 from .utils import darker
 from .version import VersionManager
-from feeluown.libs.widgets.base import FFrame
 
 logger = logging.getLogger(__name__)
 
