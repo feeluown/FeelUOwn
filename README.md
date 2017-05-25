@@ -33,6 +33,7 @@ pip3 install feeluown --upgrade
 ## 插件编写与安装
 [插件编写与安装说明](https://github.com/cosven/FeelUOwn/issues/148)
 
+一个非常[简单的插件例子](https://gist.github.com/cosven/7a746fa61f94a4c83cb6bf654cea6bf8)
 
 ## 常见问题
 ##### 搜索应用时有多个 feeluown, 桌面 feeluown 没有图标
