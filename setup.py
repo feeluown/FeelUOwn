@@ -30,10 +30,12 @@ setup(
     # FIXME depends on PyQt5 , but cannot put that in a setup.py
     install_requires=[
         'quamash>=0.5.5',
+        'fuocore>=0.0.5a2',
         'pycrypto',
         'requests',
         'beautifulsoup4',
         ],
+    tests_require=['pytest'],
     entry_points={
         'console_scripts': [
                 "feeluown=feeluown.__main__:main",

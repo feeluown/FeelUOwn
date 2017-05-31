@@ -1,11 +1,14 @@
 run:
 	python3 -m feeluown -d
 
-test:
-	PYTHONPATH=./feeluown/plugins: py.test-3.4
+unittest:
+	PYTHONPATH=./feeluown/plugins: coverage run --source=feeluown setup.py test && coverage report -m
+
+test: unittest
+	PYTHONPATH=./feeluown/plugins: python setup.py test
 
 try:
 	PYTHONPATH=./feeluown/plugins: ipython3
-	
+
 install:
 	sudo ./install.py

@@ -61,9 +61,7 @@ class App(FFrame):
 
         self.player.stateChanged.connect(self._on_player_status_changed)
         self.player.positionChanged.connect(self._on_player_position_changed)
-        self.player.durationChanged.connect(self._on_player_duration_changed)
-        self.player.signal_player_media_changed.connect(
-            self._on_player_media_changed)
+        self.player.duration_changed.connect(self._on_player_duration_changed)
         self.player.signal_player_song_changed.connect(
             self._on_player_song_changed)
         self.player.mediaStatusChanged.connect(
@@ -144,13 +142,13 @@ class App(FFrame):
         # self.theme_manager.choose('Tomorrow Night')
         pass
 
-    def _on_player_duration_changed(self, ms):
-        self.ui.top_panel.pc_panel.progress_label.set_duration(ms)
-        self.ui.top_panel.pc_panel.progress_slider.set_duration(ms)
-
     def _on_player_position_changed(self, ms):
         self.ui.top_panel.pc_panel.progress_label.update_state(ms)
         self.ui.top_panel.pc_panel.progress_slider.update_state(ms)
+
+    def _on_player_duration_changed(self, ms):
+        self.ui.top_panel.pc_panel.progress_label.set_duration(ms)
+        self.ui.top_panel.pc_panel.progress_slider.set_duration(ms)
 
     def _on_player_media_changed(self, song):
         song_label = self.ui.status_panel.song_label

@@ -54,7 +54,7 @@ class Nem(QObject):
 
         self._app.player.stateChanged.connect(
             self.on_player_state_changed)
-        self._app.player.signal_player_media_changed.connect(
+        self._app.player.signal_player_song_changed.connect(
             self.on_player_media_changed)
 
     def enter_fm_mode(self):

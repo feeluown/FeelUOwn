@@ -1,0 +1,5 @@
+quamash>=0.5.5
+pycrypto
+requests
+beautifulsoup4
+fuocore>=0.0.5a2

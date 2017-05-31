@@ -31,7 +31,7 @@ dict_config = {
         },
         'release': {
             'formatter': 'standard',
-            'level': 'DEBUG',
+            'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': LOG_FILE,
             'mode': 'w',
@@ -42,7 +42,7 @@ dict_config = {
             'handlers': ['debug'],
             'level': logging.DEBUG,
             'propagate': True
-        },
+        }
     }
 }
 

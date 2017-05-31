@@ -70,7 +70,7 @@ class _ImgCache(object):
         '''return img file path'''
         hname = self._hash(img_name)
         fname = self._gen_fname(hname)
-        logger.info('create img cache for %s' % img_name)
+        logger.debug('create img cache for %s' % img_name)
         return self._get_path(fname)
 
     def update(self, img_name):
@@ -79,13 +79,13 @@ class _ImgCache(object):
         new_fpath = self._get_path(new_fname)
         old_fpath = self.get(img_name)
         os.rename(old_fpath, new_fpath)
-        logger.info('update img cache for %s' % img_name)
+        logger.debug('update img cache for %s' % img_name)
 
     def get(self, img_name):
         hname = self._hash(img_name)
         for fname in os.listdir(CACHE_DIR):
             if fname.startswith(hname):
-                logger.info('get img cache for %s' % img_name)
+                logger.debug('get img cache for %s' % img_name)
                 return self._get_path(fname)
         return None
 
