@@ -7,9 +7,9 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.0.5.5'
+__version__ = '1.1.0a'
 __upgrade_desc__ = '''
-1. 修复不能登录的问题
+1. use mpv player backend
 '''
 
 

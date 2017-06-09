@@ -4,13 +4,15 @@
 - [查看最新进展截图](https://github.com/cosven/FeelUOwn/issues/140)
 - [查看最新开发进度](https://github.com/cosven/FeelUOwn/issues/156)
 
-![](http://7xnn7w.com1.z0.glb.clouddn.com/new_2.png)
+![截图](https://cloud.githubusercontent.com/assets/4962134/17672685/235ae556-6350-11e6-98c6-1f18051e5da1.png)
 
 ## 安装
 
 安装 powerline font. <https://github.com/powerline/fonts>
 
 ```
+sudo apt-get install mpv
+
 sudo apt-get install python3-pip
 sudo -H pip3 install feeluown
 feeluown-install-dev   # 安装依赖
@@ -60,18 +62,10 @@ make
 sudo make install
 ```
 
-##### Ubuntu 16.04 不能正常播放
-```
-sudo apt-get install gstreamer1.0-plugins-good gstreamer1.0-plugins-bad gstreamer1.0-plugins-ugly -y
-```
-
 ##### 所有的依赖
 
 ```
 # feeluown 包的系统依赖
-gstreamer0.10-plugins-good  # 有的系统依赖 gstreamer1.0 版本
-gstreamer0.10-plugins-bad
-gstreamer0.10-plugins-ugly
 
 python3-pyqt5
 python3-pyqt5.qtmultimedia
