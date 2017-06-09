@@ -693,45 +693,6 @@ class PlayerStateLabel(FLabel):
     def set_normal_style(self):
         self.set_theme_style()
 
-    def update_media_state(self, state):
-        self.set_theme_style()
-        logger.debug('current player media state %d' % state)
-        if state == QMediaPlayer.LoadedMedia:
-            self.set_text('Loaded')
-        elif state == QMediaPlayer.LoadingMedia:
-            self.set_text('Loading')
-        elif state == QMediaPlayer.BufferingMedia:
-            self.set_text('Buffering More')
-        elif state == QMediaPlayer.StalledMedia:
-            self.set_text('Stalled')
-        elif state == QMediaPlayer.BufferedMedia:
-            self.set_text('Buffered')
-        elif state == QMediaPlayer.InvalidMedia:
-            self.set_text('Failed')
-
-    def update_state(self, state):
-        return
-        self.set_theme_style()
-        if state == QMediaPlayer.StoppedState:
-            self.set_text('Stopped')
-        elif state == QMediaPlayer.PlayingState:
-            self.set_text('Playing')
-        elif state == QMediaPlayer.PausedState:
-            self.set_text('Paused')
-
-    def set_error(self, error):
-        self.set_error_style()
-        if error == QMediaPlayer.ResourceError:
-            self.set_text('Decode Failed')
-        elif error == QMediaPlayer.NetworkError:
-            self.set_text('Network Error')
-        elif error == QMediaPlayer.FormatError:
-            self.set_text('Decode Failed')
-        elif error == QMediaPlayer.ServiceMissingError:
-            self.set_text('Gsteamer Missing')
-        else:
-            logger.error('player error %d' % error)
-
 
 class MessageLabel(FLabel):
     def __init__(self, app, parent=None):

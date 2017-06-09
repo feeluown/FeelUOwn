@@ -64,15 +64,8 @@ class App(FFrame):
         self.player.duration_changed.connect(self._on_player_duration_changed)
         self.player.signal_player_song_changed.connect(
             self._on_player_song_changed)
-        self.player.mediaStatusChanged.connect(
-            status_panel.player_state_label.update_media_state)
-        self.player.stateChanged.connect(
-            status_panel.player_state_label.update_state)
-        self.player.error.connect(status_panel.player_state_label.set_error)
         self.player.signal_playback_mode_changed.connect(
             status_panel.pms_btn.on_playback_mode_changed)
-        self.player.bufferStatusChanged.connect(
-            status_panel.player_state_label.show_progress)
 
         status_panel.pms_btn.clicked.connect(self.player.next_playback_mode)
         status_panel.theme_switch_btn.signal_change_theme.connect(

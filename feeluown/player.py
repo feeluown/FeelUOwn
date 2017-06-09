@@ -5,7 +5,7 @@ import logging
 import random
 
 from PyQt5.QtMultimedia import QMediaPlayer
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, QObject
 from fuocore.backends import MpvPlayer
 from fuocore.engine import State
 
@@ -16,8 +16,7 @@ from .consts import PlaybackMode
 logger = logging.getLogger(__name__)
 
 
-class Player(QMediaPlayer):
-    play_task = None
+class Player(QObject):
 
     signal_player_song_changed = pyqtSignal([SongModel])
     signal_playlist_is_empty = pyqtSignal()
@@ -45,8 +44,6 @@ class Player(QMediaPlayer):
         self._app = app
         self.player = MpvPlayer()
         self.player.initialize()
-
-        self.error.connect(self.on_error_occured)
 
         self.player.media_changed.connect(self.on_media_changed)
         self.player.song_finished.connect(self.on_song_finished)
@@ -168,6 +165,9 @@ class Player(QMediaPlayer):
         self._app.player_mode_manager.exit_to_normal()
         self._play(music_model)
 
+    def pause(self):
+        self.player.pause()
+
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
             if music_model.mid == music.mid:
@@ -216,23 +216,6 @@ class Player(QMediaPlayer):
 
     def set_tmp_fixed_next_song(self, song):
         self._tmp_fix_next_song = song
-
-    @pyqtSlot(QMediaPlayer.Error)
-    def on_error_occured(self, error):
-        song = self._music_list[self._current_index]
-        self._app.message('%s 不能播放' % (song.title))
-        self.stop()
-        if error == QMediaPlayer.FormatError:
-            self._app.message('这首歌挂了，也有可能是断网了', error=True)
-            logger.debug('song cant be played, url is %s' % song.url)
-        elif error == QMediaPlayer.NetworkError:
-            self._wait_to_retry()
-        elif error == QMediaPlayer.ResourceError:
-            logger.error('网络出现错误：不能正确解析资源')
-        elif error == QMediaPlayer.ServiceMissingError:
-            self._app.notify('缺少解码器，请向作者求助', error=True)
-        else:
-            self._wait_to_next(2)
 
     def _wait_to_retry(self):
         if self._music_error_times >= self._music_error_maximum:

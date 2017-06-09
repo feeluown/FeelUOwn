@@ -1,5 +1,5 @@
 run:
-	python3 -m feeluown -d
+	LC_ALL=C python3 -m feeluown -d
 
 unittest:
 	PYTHONPATH=./feeluown/plugins: coverage run --source=feeluown setup.py test && coverage report -m
