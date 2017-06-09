@@ -7,35 +7,23 @@ import os
 
 def install_sys_dep():
 
-    def _get_gstreamer(gstreamer_version='0.10'):
-        v_package = ['gstreamer{0}-plugins-good'.format(gstreamer_version),
-                     'gstreamer{0}-plugins-bad'.format(gstreamer_version),
-                     'gstreamer{0}-plugins-ugly'.format(gstreamer_version)]
-        return v_package
-
     packages = ['python3-pyqt5',
                 'python3-pyqt5.qtmultimedia',
                 'libqt5multimedia5-plugins',
-                'fcitx-frontend-qt5']
+                'fcitx-frontend-qt5',
+                'mpv']
 
     linux_distro = platform.linux_distribution()
     if linux_distro[0] in ('Deepin') or 'ubuntu' in linux_distro[0].lower():
         print('Download and install software dependency.')
         os.system('sudo apt-get install -y {packages} 1>/dev/null'
                   .format(packages=' '.join(packages)))
-        if linux_distro[1] >= '16.04':
-            gstreamer_version = '1.0'
-        else:
-            gstreamer_version = '0.10'
-        gstreamer_packages = _get_gstreamer(gstreamer_version)
-        packages = packages + gstreamer_packages
         os.system('sudo apt-get install -y {packages} 1>/dev/null'
                   .format(packages=' '.join(packages)))
         print('\ninstall finished ~')
     else:
         print('You should install these packages by yourself, '
               'as your linux may not a debian distribution\n')
-        packages = packages + _get_gstreamer()
         for i, p in enumerate(packages):
             print(i, ': ', p)
         print('\npackage name may be different among different systems')
