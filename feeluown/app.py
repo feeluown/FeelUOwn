@@ -213,5 +213,5 @@ class App(FFrame):
         self.ui.status_panel.network_status_label.show_progress(progress)
 
     def closeEvent(self, event):
-        self.player.stop()
+        self.player.quit()
         QApplication.quit()
