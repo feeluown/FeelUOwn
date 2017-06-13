@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import asyncio
+import locale
 import logging
 import random
 
@@ -41,6 +42,9 @@ class Player(QObject):
 
     def __init__(self, app):
         super().__init__(app)
+
+        # FIXME: for mpv player. ask fuocore to fix this.
+        locale.setlocale(locale.LC_NUMERIC, 'C')
         self._app = app
         self.player = MpvPlayer()
         self.player.initialize()
@@ -168,6 +172,12 @@ class Player(QObject):
     def pause(self):
         self.player.pause()
 
+    def setPosition(self, position):
+        self.player.position = position
+
+    def setVolume(self, volume):
+        pass
+
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
             if music_model.mid == music.mid:
@@ -290,3 +300,6 @@ class Player(QObject):
     @property
     def songs(self):
         return self._music_list
+
+    def quit(self):
+        self.player.quit()

@@ -63,7 +63,7 @@ class ProgressSlider(_BasicSlider):
         self.setValue(ms / 1000)
 
     def seek(self, second):
-        self._app.player.setPosition(second * 1000)
+        self._app.player.setPosition(second)
 
 
 class VolumeSlider(_BasicSlider):
