@@ -172,6 +172,9 @@ class Player(QObject):
     def pause(self):
         self.player.pause()
 
+    def setPosition(self, position):
+        self.player.position = position
+
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
             if music_model.mid == music.mid:

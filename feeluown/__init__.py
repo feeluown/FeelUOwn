@@ -7,7 +7,7 @@ from .consts import LOG_FILE
 from .config import config
 
 
-__version__ = '1.1.0a'
+__version__ = '1.1.0a1'
 __upgrade_desc__ = '''
 1. use mpv player backend
 '''
