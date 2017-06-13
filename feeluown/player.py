@@ -148,7 +148,7 @@ class Player(QObject):
         index = self.get_index_by_model(music_model)
         if not insert_flag and self._current_index is not None:
             if music_model.mid == self.current_song.mid\
-                    and self.state() == QMediaPlayer.PlayingState:
+                    and self.player.state == State.playing:
                 return True
 
         self._current_index = index
