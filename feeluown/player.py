@@ -172,6 +172,9 @@ class Player(QObject):
     def pause(self):
         self.player.pause()
 
+    def stop(self):
+        self.player.stop()
+
     def setPosition(self, position):
         self.player.position = position
 
