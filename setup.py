@@ -30,7 +30,7 @@ setup(
     # FIXME depends on PyQt5 , but cannot put that in a setup.py
     install_requires=[
         'quamash>=0.5.5',
-        'fuocore>=0.0.5a2',
+        'fuocore>=0.0.5a4',
         'pycrypto',
         'requests',
         'beautifulsoup4',
