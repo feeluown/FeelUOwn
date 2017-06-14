@@ -179,7 +179,7 @@ class Player(QObject):
         self.player.position = position
 
     def setVolume(self, volume):
-        pass
+        self.player.volume = volume
 
     def get_index_by_model(self, music_model):
         for i, music in enumerate(self._music_list):
