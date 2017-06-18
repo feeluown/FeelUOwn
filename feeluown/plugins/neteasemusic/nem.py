@@ -100,15 +100,20 @@ class Nem(QObject):
         logger.info('save username and password to %s' % USER_PW_FILE)
 
     def ready_to_login(self):
-        model = NUserModel.load()
-        if model is None:
-            self.ui.login_dialog.show()
-            self.load_user_pw()
+        # Only refresh playlists when a user already exists
+        if self.user:
+            self.load_playlists()
+
         else:
-            logger.info('load last user.')
-            self.user = model
-            NUserModel.set_current_user(model)
-            self._on_login_in()
+            model = NUserModel.load()
+            if model is None:
+                self.ui.login_dialog.show()
+                self.load_user_pw()
+            else:
+                logger.info('load last user.')
+                self.user = model
+                NUserModel.set_current_user(model)
+                self._on_login_in()
 
     def login(self):
         login_dialog = self.ui.login_dialog
