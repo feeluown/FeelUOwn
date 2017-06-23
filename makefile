@@ -2,10 +2,10 @@ run:
 	python3 -m feeluown -d
 
 unittest:
-	PYTHONPATH=./feeluown/plugins: coverage run --source=feeluown setup.py test && coverage report -m
+	PYTHONPATH=./feeluown/plugins: pytest
 
 test: unittest
-	PYTHONPATH=./feeluown/plugins: python setup.py test
+	PYTHONPATH=./feeluown/plugins: pytest
 
 try:
 	PYTHONPATH=./feeluown/plugins: ipython3
