@@ -2,6 +2,13 @@
 
 > trying to be a hackable music player for \*nix
 
+## Features
+
+1. 支持网易云音乐大部分功能
+2. 简单的插件机制
+3. 多平台支持
+4. TODO 远程控制（更方便的编写插件）
+
 ## screenshot
 ![截图](https://cloud.githubusercontent.com/assets/4962134/17672685/235ae556-6350-11e6-98c6-1f18051e5da1.png)
 
@@ -29,8 +36,12 @@ pip3 install feeluown --upgrade
 ### osx 安装方法
 
 ```shell
-brew install mpv
+brew install mpv  # 安装 mpv 播放器
+brew install pyqt --with-python3  # 安装 pyqt5， python3 支持
 pip3 install feeluown
+
+# 运行
+feeluown
 ```
 
 安装[这个插件](https://github.com/cosven/feeluown-mac-hotkey-plugin)可以在 osx 使用多媒体快捷键。
