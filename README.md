@@ -1,35 +1,39 @@
 # FeelUOwn 说明文档
 
-## screenshot
-- [查看最新进展截图](https://github.com/cosven/FeelUOwn/issues/140)
-- [查看最新开发进度](https://github.com/cosven/FeelUOwn/issues/156)
+> trying to be a hackable music player for \*nix
 
+## screenshot
 ![截图](https://cloud.githubusercontent.com/assets/4962134/17672685/235ae556-6350-11e6-98c6-1f18051e5da1.png)
 
-## 安装
+## 安装方法
 
-安装 powerline font. <https://github.com/powerline/fonts>
+### ubuntu 安装方法
 
-```
-sudo apt-get install mpv
-
+```shell
+sudo apt-get install libmpv1
 sudo apt-get install python3-pip
 sudo -H pip3 install feeluown
 feeluown-install-dev   # 安装依赖
 mkdir ~/.FeelUOwn
 feeluown-genicon   # 生成图标
 
-### 运行
-feeluown
-
 ### 开发者运行
 feeluown -d
 
 ### 更新，建议没事可以更新它，会有一些小的bug修复
-### 有大的更新的时候，运行软件的时候会提示
 pip3 install feeluown --upgrade
 ```
-如果要体验最新开发进展：直接 git clone 项目，`make run` 即可
+
+建议安装[feeluown-mpris2-plugin](https://github.com/cosven/feeluown-mpris2-plugin.git) 这个插件支持快捷键等高级特性。
+
+### osx 安装方法
+
+```shell
+brew install mpv
+pip3 install feeluown
+```
+
+安装[这个插件](https://github.com/cosven/feeluown-mac-hotkey-plugin)可以在 osx 使用多媒体快捷键。
 
 
 ## 插件编写与安装
@@ -37,16 +41,8 @@ pip3 install feeluown --upgrade
 
 一个非常[简单的插件例子](https://gist.github.com/cosven/7a746fa61f94a4c83cb6bf654cea6bf8)
 
-## 常见问题
-##### 搜索应用时有多个 feeluown, 桌面 feeluown 没有图标
 
-手动删除桌面 feeluown 图标，因为它已经没用了，然后运行下面命令。
-```
-cd ~/.local/share/applications
-rm FeelUOwn.desktop
-```
-
-##### 桌面歌词
+#### linux 桌面歌词
 - 首先下载安装 [feeluown-mpris2-plugin](https://github.com/cosven/feeluown-mpris2-plugin.git)
 - 然后安装著名的 [osdlyrics](https://github.com/osdlyrics/osdlyrics)。安装这个东西有两种方法：一种自己编译安装，第二种在google上搜索 osdlyrics_0.4.3-1-precise1_amd64
   这个包，安装即可。（我自己只在Ubuntu 15.10上测试过）
@@ -61,28 +57,6 @@ git checkout develop    # 我试过其他分支，反正就这个分支靠谱一
 make
 sudo make install
 ```
-
-##### 所有的依赖
-
-```
-# feeluown 包的系统依赖
-
-python3-pyqt5
-python3-pyqt5.qtmultimedia
-libqt5multimedia5-plugins
-fcitx-frontend-qt5  # 为了支持搜狗等 fcitx类的 中文输入法
-
-# python3 的依赖
-requests
-quamash>=0.55
-
-# 网易云音乐插件　需要的依赖
-pycrypto    # python 库
-```
-
-> 安装一些其他的插件时，可能也需要其他的依赖包，请参照插件的　README
-
-注: <http://music.163.com/#/download> 此处有网易云音乐 Linux 官方版
 
 ##### 获取更多主题
 <https://github.com/mbadolato/iTerm2-Color-Schemes/tree/master/konsole>
