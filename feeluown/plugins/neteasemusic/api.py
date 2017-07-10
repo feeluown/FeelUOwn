@@ -378,7 +378,7 @@ class Api(object):
     def _aes_encrypt(self, text, key):
         pad = 16 - len(text) % 16
         text = text + pad * chr(pad)
-        encryptor = AES.new(key, 2, '0102030405060708')
+        encryptor = AES.new(bytes(key, 'utf-8'), 2, '0102030405060708')
         enc_text = encryptor.encrypt(text)
         enc_text_encode = base64.b64encode(enc_text)
         return enc_text_encode
