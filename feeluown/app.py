@@ -58,6 +58,7 @@ class App(FFrame):
         top_panel = self.ui.top_panel
         status_panel = self.ui.status_panel
         library_panel = self.ui.central_panel.left_panel.library_panel
+        pms_btn = top_panel.pc_panel.pms_btn
 
         self.player.stateChanged.connect(self._on_player_status_changed)
         self.player.positionChanged.connect(self._on_player_position_changed)
@@ -65,9 +66,9 @@ class App(FFrame):
         self.player.signal_player_song_changed.connect(
             self._on_player_song_changed)
         self.player.signal_playback_mode_changed.connect(
-            status_panel.pms_btn.on_playback_mode_changed)
+            pms_btn.on_playback_mode_changed)
 
-        status_panel.pms_btn.clicked.connect(self.player.next_playback_mode)
+        pms_btn.clicked.connect(self.player.next_playback_mode)
         status_panel.theme_switch_btn.signal_change_theme.connect(
             self.theme_manager.choose)
         status_panel.theme_switch_btn.clicked.connect(
@@ -144,7 +145,7 @@ class App(FFrame):
         self.ui.top_panel.pc_panel.progress_slider.set_duration(ms)
 
     def _on_player_media_changed(self, song):
-        song_label = self.ui.status_panel.song_label
+        song_label = self.ui.top_panel.pc_panel.song_title_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
 
         # FIXME: optimize performance
@@ -154,7 +155,7 @@ class App(FFrame):
         # self.update()
 
     def _on_player_song_changed(self, song):
-        song_label = self.ui.status_panel.song_label
+        song_label = self.ui.top_panel.pc_panel.song_title_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
 
     def _on_player_status_changed(self, status):

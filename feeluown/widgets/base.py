@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from PyQt5.QtWidgets import QWidget, QFrame, QPushButton, QLabel, QSlider,\
-    QScrollArea, QDialog, QLineEdit, QCheckBox, QTableWidget, QComboBox
+    QScrollArea, QDialog, QLineEdit, QCheckBox, QTableWidget, QComboBox,\
+    QVBoxLayout, QHBoxLayout
 from PyQt5.QtCore import QObject
 
 
@@ -99,3 +100,17 @@ class FWidget(QWidget):
 
     def set_theme_style(self):
         pass
+
+
+class FHBoxLayout(QHBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setSpacing(0)
+        self.setContentsMargins(0, 0, 0, 0)
+
+
+class FVBoxLayout(QVBoxLayout):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setSpacing(0)
+        self.setContentsMargins(0, 0, 0, 0)
