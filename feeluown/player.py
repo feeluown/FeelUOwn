@@ -7,8 +7,8 @@ import random
 
 from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtCore import pyqtSignal, QObject
-from fuocore.backends import MpvPlayer
-from fuocore.engine import State
+from fuocore.core.player import MpvPlayer
+from fuocore.core.player import State
 
 from .model import SongModel
 from .consts import PlaybackMode
@@ -83,7 +83,7 @@ class Player(QObject):
         """listen to new player song_finished event"""
         self.play_next()
 
-    def on_state_changed(self):
+    def on_state_changed(self, *args, **kwargs):
         if self.player.state == State.playing:
             self.stateChanged.emit(QMediaPlayer.PlayingState)
         elif self.player.state == State.paused:
@@ -91,10 +91,10 @@ class Player(QObject):
         else:
             self.stateChanged.emit(QMediaPlayer.StoppedState)
 
-    def on_position_changed(self):
+    def on_position_changed(self, *args, **kwargs):
         self.positionChanged.emit(self.player.position * 1000)
 
-    def on_duration_changed(self):
+    def on_duration_changed(self, *args, **kwags):
         self.duration_changed.emit(self.player.duration * 1000)
 
     def insert_to_next(self, model):
