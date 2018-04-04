@@ -2,7 +2,6 @@ import logging
 
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
 from PyQt5.QtGui import QFontMetrics, QPainter
-from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
                              QSizePolicy, QGridLayout)
 from feeluown.widgets.base import FFrame, FButton, FLabel, FScrollArea,\

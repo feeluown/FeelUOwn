@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QHBoxLayout, QAbstractItemView, QHeaderView, \
     QTableWidgetItem
 
 from .base import FFrame, FLabel, FTableWidget
-from feeluown.model import SongModel
 from feeluown.utils import darker, parse_ms, measure_time
 
 
@@ -167,7 +166,7 @@ class LP_GroupItem(FFrame):
 
 
 class MusicTable(FTableWidget):
-    play_song_signal = pyqtSignal([SongModel])
+    play_song_signal = pyqtSignal([object])
 
     def __init__(self, app, rows=0, columns=6, parent=None):
         super().__init__(rows, columns, parent)

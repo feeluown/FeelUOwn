@@ -1,12 +1,15 @@
 import asyncio
 import logging
+import os
 from functools import partial
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtMultimedia import QMediaPlayer
 from PyQt5.QtWidgets import QApplication
 
+from fuocore.core.player import State as PlayerState
+
+from feeluown.config import config
 from feeluown.widgets.base import FFrame
 from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
@@ -15,7 +18,6 @@ from .player import Player
 from .player_mode import PlayerModeManager
 from .plugin import PluginsManager
 from .request import Request
-from .server import Server
 from .theme import ThemeManager
 from .tips import TipsManager
 from .ui import Ui
@@ -27,12 +29,13 @@ logger = logging.getLogger(__name__)
 
 class App(FFrame):
 
+    initialized = pyqtSignal()
+
     def __init__(self):
         super().__init__()
-        self.player = Player(self)
+        self.player = Player()
         self.player_mode_manager = PlayerModeManager(self)
         self.request = Request(self)
-        self.server = Server(self)
         self.theme_manager = ThemeManager(self)
         self.tips_manager = TipsManager(self)
         self.hotkey_manager = Hotkey(self)
@@ -52,7 +55,32 @@ class App(FFrame):
         self.set_theme_style()
 
         self.bind_signal()
-        self.test()
+        self.initialize()
+
+    def initialize(self):
+        self.initialized.emit()
+
+    def scan_fuo_files(self):
+        fuo_files = config.FUO_FILES
+        f_list = []
+        for filepath in fuo_files:
+            if not os.path.exists(filepath):
+                continue
+            if os.path.isdir(filepath):
+                for fname in os.listdir(filepath):
+                    fpath = os.path.join(filepath, fname)
+                    if os.path.isfile(fpath):
+                        f_list.append(fpath)
+            else:
+                f_list.append(filepath)
+        from feeluown.widgets.components import LP_GroupItem
+        library_panel = self.ui.central_panel.left_panel.library_panel
+        for fpath in f_list:
+            basename = os.path.basename(fpath)
+            if not basename.endswith('.fuo'):
+                continue
+            name = basename.rsplit('.', 1)[0]
+            library_panel.layout().addWidget(LP_GroupItem(self, name))
 
     def bind_signal(self):
         top_panel = self.ui.top_panel
@@ -60,15 +88,13 @@ class App(FFrame):
         library_panel = self.ui.central_panel.left_panel.library_panel
         pms_btn = top_panel.pc_panel.pms_btn
 
-        self.player.stateChanged.connect(self._on_player_status_changed)
-        self.player.positionChanged.connect(self._on_player_position_changed)
+        self.player.state_changed.connect(self._on_player_status_changed)
+        self.player.position_changed.connect(self._on_player_position_changed)
         self.player.duration_changed.connect(self._on_player_duration_changed)
-        self.player.signal_player_song_changed.connect(
-            self._on_player_song_changed)
-        self.player.signal_playback_mode_changed.connect(
+        self.player.media_changed.connect(self._on_player_song_changed)
+        self.player.playlist.playback_mode_changed.connect(
             pms_btn.on_playback_mode_changed)
 
-        pms_btn.clicked.connect(self.player.next_playback_mode)
         status_panel.theme_switch_btn.signal_change_theme.connect(
             self.theme_manager.choose)
         status_panel.theme_switch_btn.clicked.connect(
@@ -82,16 +108,13 @@ class App(FFrame):
 
         top_panel.pc_panel.volume_slider.sliderMoved.connect(
             self.change_volume)
-        top_panel.pc_panel.pp_btn.clicked.connect(self.player.play_or_pause)
-        top_panel.pc_panel.next_btn.clicked.connect(self.player.play_next)
-        top_panel.pc_panel.previous_btn.clicked.connect(self.player.play_last)
 
         library_panel.current_playlist_item.clicked.connect(
             self.show_current_playlist)
         self.ui.current_playlist_table.play_song_signal.connect(
             self.player.play)
-        self.ui.current_playlist_table.remove_signal.connect(
-            self.player.remove_music)
+        #self.ui.current_playlist_table.remove_signal.connect(
+        #    self.player.remove_music)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -106,8 +129,7 @@ class App(FFrame):
             painter.fillRect(self.rect(), bg_color)
 
     def _init_managers(self):
-        self.plugins_manager.scan()
-        self.server.run()
+        # self.plugins_manager.scan()
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(
             8, partial(asyncio.Task, self.version_manager.check_release()))
@@ -129,11 +151,6 @@ class App(FFrame):
         self.ui.status_panel.message_label.show_message(text, error)
 
     def notify(self, text, error=False):
-        pass
-
-    def test(self):
-        # self.theme_manager.choose('Molokai')
-        # self.theme_manager.choose('Tomorrow Night')
         pass
 
     def _on_player_position_changed(self, ms):
@@ -158,9 +175,9 @@ class App(FFrame):
         song_label = self.ui.top_panel.pc_panel.song_title_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
 
-    def _on_player_status_changed(self, status):
+    def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
-        if status == QMediaPlayer.PlayingState:
+        if state == PlayerState.playing:
             pp_btn.setText('暂停')
         else:
             pp_btn.setText('播放')
@@ -214,5 +231,5 @@ class App(FFrame):
         self.ui.status_panel.network_status_label.show_progress(progress)
 
     def closeEvent(self, event):
-        self.player.quit()
+        self.player.shutdown()
         QApplication.quit()
