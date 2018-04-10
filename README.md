@@ -2,7 +2,8 @@
 
 > trying to be a hackable music player for \*nix
 
-**NOTICE**: 当前正在基于 [feeluown-core](https://github.com/cosven/FeelUOwn-core) 对 feeluown 进行重构，请看 refactor 分支。
+**INFO**: 当前正在基于 [feeluown-core](https://github.com/cosven/FeelUOwn-core) 对 feeluown 进行重构，
+有兴趣的朋友可以看 refactor 分支。
 
 ## Features
 
