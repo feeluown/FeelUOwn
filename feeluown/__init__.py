@@ -41,8 +41,14 @@ dict_config = {
         'feeluown': {
             'handlers': ['debug'],
             'level': logging.DEBUG,
-            'propagate': True
+            'propagate': False,
+        },
+        '': {
+            'handlers': ['debug'],
+            'level': logging.DEBUG,
+            'propagate': True,
         }
+
     }
 }
 
@@ -50,6 +56,8 @@ dict_config = {
 def logger_config():
     if config.debug:
         logging.config.dictConfig(dict_config)
+        logging.info('Debug mode.')
     else:
-        dict_config['loggers']['feeluown']['handlers'] = ['release']
+        dict_config['loggers']['']['handlers'] = ['release']
         logging.config.dictConfig(dict_config)
+        logging.info('Release mode.')

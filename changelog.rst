@@ -3,7 +3,8 @@ Changelog
 
 2.0.0a0
 """""""
-- 尝试类似 Component 的设计
+- 使用 fuocore 中提供的 Model
+- 尝试类似 Component 的设计（参考）
 
 1.1.0
 """""

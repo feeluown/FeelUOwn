@@ -266,6 +266,7 @@ class MusicTable(FTableWidget):
 
     def set_songs(self, songs):
         self.setRowCount(0)
+        self.songs = []
         for song in songs:
             self.add_item(song)
 
