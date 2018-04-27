@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from PyQt5.QtCore import Qt, pyqtSignal, QTime
+from PyQt5.QtCore import Qt, pyqtSignal, QTime, QAbstractTableModel, QVariant
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QHBoxLayout, QAbstractItemView, QHeaderView, \
     QTableWidgetItem

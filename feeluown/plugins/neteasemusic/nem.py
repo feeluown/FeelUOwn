@@ -5,85 +5,35 @@ import os
 from functools import partial
 
 from PyQt5.QtCore import QObject
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtMultimedia import QMediaPlayer
 
 from fuocore.netease.provider import NeteaseProvider
-from fuocore.netease.models import (
-    NAlbumModel,
-    NArtistModel,
-    NPlaylistModel
-)
 
 from .consts import USER_PW_FILE
-from .downloader import Downloader
-from .fm_player_mode import FM_mode
 from .model import NUserModel
-from .simi_player_mode import Simi_mode
-from .ui import Ui, SongsTable, PlaylistItem
+from .ui import Ui, PlaylistItem
+
 
 logger = logging.getLogger(__name__)
-
-
 provider = NeteaseProvider()
 
 
 class Nem(QObject):
 
     def __init__(self, app):
-        super().__init__(parent=app)
+        super(Nem, self).__init__(parent=app)
         self._app = app
-
         self.ui = Ui(self._app)
-        self.downloader = Downloader(self._app, self)
-
         self.user = None
-        self.download_queue = []
-
-        self.registe_hotkey()
         self.init_signal_binding()
 
     def init_signal_binding(self):
-        self.downloader.download_progress_signal.connect(
-            self._app.show_request_progress)
         self.ui.login_btn.clicked.connect(self.ready_to_login)
         self.ui.login_dialog.ok_btn.clicked.connect(self.login)
-        self.ui.songs_table_container.table_control.play_all_btn.clicked\
-            .connect(self.play_all)
-        self.ui.songs_table_container.table_control.search_box.textChanged\
-            .connect(self.search_table)
-        # FIXME
-        # self.ui.songs_table_container.table_control.search_box.returnPressed\
-        #     .connect(self.search_net)
-
-        self.ui.fm_item.clicked.connect(self.enter_fm_mode)
         self.ui.recommend_item.clicked.connect(self.show_recommend_songs)
-        self.ui.simi_item.clicked.connect(self.enter_simi_mode)
-
-        self._app.player.state_changed.connect(
-            self.on_player_state_changed)
-        self._app.player.media_changed.connect(
-            self.on_player_media_changed)
-
-    def enter_fm_mode(self):
-        mode = FM_mode(self._app)
-        self._app.player_mode_manager.enter_mode(mode)
-
-    def enter_simi_mode(self):
-        mode = Simi_mode(self._app)
-        self._app.player_mode_manager.enter_mode(mode)
-
-    def registe_hotkey(self):
-        self._app.hotkey_manager.registe(
-            QKeySequence('Ctrl+F'),
-            self.ui.songs_table_container.table_control.search_box.setFocus)
 
     def show_recommend_songs(self):
         # FIXME:
         return
-        songs = NUserModel.get_recommend_songs()
-        songs_table = SongsTable(self._app)
-        self.load_songs(songs, songs_table)
 
     def load_user_pw(self):
         if not os.path.exists(USER_PW_FILE):
@@ -180,86 +130,24 @@ class Nem(QObject):
     def play_all(self):
         songs_table = self.ui.songs_table_container.songs_table
         if songs_table is not None:
-            self._app.player.set_music_list(songs_table.songs)
+            self._app.player.playlist.clear()
+            for song in songs_table.songs:
+                self._app.player.playlist.add(song)
 
     def play_mv(self, mvid):
         pass
 
-    def search_table(self, text):
-        songs_table = self.ui.songs_table_container.songs_table
-        songs_table.search(text)
-
-    def search_net(self):
-        text = self.ui.songs_table_container.table_control.search_box.text()
-        self.ui.songs_table_container.hide_info_container()
-        if text.strip():
-            songs = NSongModel.search(text)
-            self._app.message('搜索到 %d 首相关歌曲' % len(songs))
-        else:
-            songs = None
-            self._app.message('搜索内容不能为空')
-        if songs:
-            self.load_songs(songs)
-
-    def load_songs(self, songs, songs_table=None):
-        if songs_table is None:
-            songs_table = SongsTable(self._app)
-        songs_table.set_songs(songs)
-        songs_table.play_song_signal.connect(self.play_song)
-        songs_table.download_song_signal.connect(self.downloader.download_song)
-        songs_table.play_mv_signal.connect(self.play_mv)
-        songs_table.show_artist_signal.connect(self.load_artist)
-        songs_table.show_album_signal.connect(self.load_album)
-        # FIXME:
-        # songs_table.add_song_signal.connect(self._app.player.add_music)
-        #songs_table.set_to_next_signal.connect(
-        #    self._app.player.set_tmp_fixed_next_song)
-        self.ui.songs_table_container.set_table(songs_table)
-        self._app.ui.central_panel.right_panel.set_widget(
-            self.ui.songs_table_container)
-
     def load_playlist(self, playlist):
         logger.info('Will load playlist: %d, %s', playlist.identifier, playlist.name)
-        songs_table = SongsTable(self._app)
-        songs_table.set_playlist_id(playlist.identifier)
-        # FIXME
-        #self.ui.songs_table_container.load_img(playlist.cover_img,
-        #                                       playlist.cover_img_id)
-        #self.ui.songs_table_container.set_desc(playlist.desc)
-        self.load_songs(playlist.songs, songs_table)
+        self._app.ui.show_playlist(playlist)
 
     def load_artist(self, aid):
         artist = provider.get_artist(aid)
-        logger.info('Load artist: %d, %s', aid, artist.name)
         songs = artist.songs
-        songs_table = SongsTable(self._app)
-        # FIXME
-        # self.ui.songs_table_container.load_img(artist.img, artist.img_id)
-        # self.ui.songs_table_container.set_desc(artist.desc)
-        self.load_songs(songs, songs_table)
+        self.load_songs(songs)
+        logger.info('Load artist: %d, %s', aid, artist.name)
 
     def load_album(self, bid):
         album = NAlbumModel.get(bid)
-        logger.info('Load album: %d, %s', bid, album.name)
-        songs = album.songs
-        songs_table = SongsTable(self._app)
-        # FIXME
-        # self.ui.songs_table_container.load_img(album.img, album.img_id)
-        # self.ui.songs_table_container.set_desc(album.desc)
-        self.load_songs(songs, songs_table)
-
-    def on_player_state_changed(self, state):
-        if state == QMediaPlayer.PlayingState\
-                or state == QMediaPlayer.PausedState:
-            self.ui.show_simi_item()
-        else:
-            self.ui.hide_simi_item()
-
-    def on_player_media_changed(self, media):
-        # FIXME
-        return
-        song = self._app.player.playlist.current_song
-        songs_table = self.ui.songs_table_container.songs_table
-        songs_table.scroll_to_song(song)
-        # FIXME
-        # api.accumulate_pl_count(song.mid)
+        self.load_songs(album.songs)
+        logger.info('Load album: %d, %s', album, album.name)

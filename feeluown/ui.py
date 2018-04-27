@@ -5,18 +5,49 @@ from PyQt5.QtGui import QFontMetrics, QPainter
 from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
                              QSizePolicy, QGridLayout)
 from feeluown.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
-    FComboBox, FHBoxLayout, FVBoxLayout
+    FComboBox, FHBoxLayout, FVBoxLayout, FLineEdit, FDialog
 from feeluown.widgets.components import LP_GroupHeader, LP_GroupItem, \
-    MusicTable
+    MusicTable, ImgLabel
 from feeluown.widgets.sliders import _BasicSlider
 
 from feeluown import __upgrade_desc__
 from feeluown.widgets.labels import _BasicLabel
+from feeluown.widgets.table_container import SongsTableContainer
+
+from feeluown.components import SongsModel
+from feeluown.view import PlaylistTable
+
 from .consts import PlaybackMode
 from .utils import parse_ms
 
 
 logger = logging.getLogger(__name__)
+
+
+def get_colors_ctx(theme):
+    return {
+        'background': theme.background.name(),
+        'background_light': theme.background_light.name(),
+        'foreground': theme.foreground.name(),
+        'foreground_light': theme.foreground_light.name(),
+        'color0': theme.color0.name(),
+        'color1': theme.color1.name(),
+        'color2': theme.color2.name(),
+        'color3': theme.color3.name(),
+        'color4': theme.color4.name(),
+        'color5': theme.color5.name(),
+        'color6': theme.color6.name(),
+        'color7': theme.color7.name(),
+        'color0_light': theme.color0_light.name(),
+        'color1_light': theme.color1_light.name(),
+        'color2_light': theme.color2_light.name(),
+        'color3_light': theme.color3_light.name(),
+        'color4_light': theme.color4_light.name(),
+        'color5_light': theme.color5_light.name(),
+        'color6_light': theme.color6_light.name(),
+        'color7_light': theme.color7_light.name(),
+    }
+
 
 
 class PlayerControlButton(FButton):
@@ -929,9 +960,17 @@ class Ui(object):
         self.status_panel.hide()
         self.current_playlist_table = CurrentPlaylistTable(app)
 
+        self.songs_table_container = SongsTableContainer(app, app)
+        self.playlist_table = PlaylistTable(app, app)
+
         self.setup()
 
     def setup(self):
         self._layout.addWidget(self.central_panel)
         self._layout.addWidget(self.top_panel)
         self._layout.addWidget(self.status_panel)
+
+    def show_playlist(self, playlist):
+        self.playlist_table.setModel(SongsModel(playlist.songs))
+        self.songs_table_container.set_table(self.playlist_table)
+        self.central_panel.right_panel.set_widget(self.songs_table_container)
