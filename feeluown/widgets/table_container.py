@@ -13,6 +13,8 @@ from feeluown.widgets.base import (
     FLineEdit,
 )
 
+from feeluown.components.playlist import PlaylistTableModel, PlaylistTableView
+
 from feeluown.widgets.components import ImgLabel
 
 
@@ -255,57 +257,39 @@ class SongsTableContainer(FFrame):
         self._app = app
 
         self.songs_table = None
-        self.img_label = CoverImgLabel(self._app)
-        # self.desc_container = DescriptionContainer(self._app)
-        self.info_container = FFrame(parent=self)
         self.table_control = TableControl(self._app)
         self._layout = QVBoxLayout(self)
-        self._info_layout = QHBoxLayout(self.info_container)
         self.setup_ui()
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self._info_layout.setContentsMargins(0, 0, 0, 0)
-        self._info_layout.setSpacing(0)
 
-        self._info_layout.addWidget(self.img_label)
-        self._info_layout.addSpacing(20)
-        # self._info_layout.addWidget(self.desc_container)
-
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.info_container)
         self._layout.addSpacing(10)
         self._layout.addWidget(self.table_control)
 
     def set_table(self, songs_table):
-        if self.songs_table:
+        if self.songs_table is not None:
+            assert self._layout.indexOf(self.songs_table) != -1
             self._layout.replaceWidget(self.songs_table, songs_table)
+            self.songs_table.deleteLater()
+            songs_table.show()
         else:
             self._layout.addWidget(songs_table)
             self._layout.addSpacing(10)
         self.songs_table = songs_table
 
-    def load_img(self, img_url, img_name):
-        self.info_container.show()
-        event_loop = asyncio.get_event_loop()
-        future = event_loop.create_task(
-            self._app.img_ctl.get(img_url, img_name))
-        future.add_done_callback(self.set_img)
+    def play_song(self, song):
+        self._app.player.play_song(song)
 
-    def set_img(self, future):
-        content = future.result()
-        img = QImage()
-        img.loadFromData(content)
-        pixmap = QPixmap(img)
-        if pixmap.isNull():
-            return None
-        self.img_label.setPixmap(
-            pixmap.scaledToWidth(self.img_label.width(),
-                                 mode=Qt.SmoothTransformation))
+    def show_playlist(self, playlist):
+        playlist_table_view = PlaylistTableView(self)
+        playlist_table_view.play_song_needed.connect(self.play_song)
+        playlist_table_view.setModel(PlaylistTableModel(playlist.songs))
+        self.set_table(playlist_table_view)
 
-    def set_desc(self, desc):
-        self.desc_container.set_html(desc)
+    def show_artist(self, artist):
+        pass
 
-    def hide_info_container(self):
-        self.info_container.hide()
+    def show_album(self, album):
+        pass

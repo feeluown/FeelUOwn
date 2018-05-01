@@ -14,9 +14,6 @@ from feeluown import __upgrade_desc__
 from feeluown.widgets.labels import _BasicLabel
 from feeluown.widgets.table_container import SongsTableContainer
 
-from feeluown.components import SongsModel
-from feeluown.view import PlaylistTable
-
 from .consts import PlaybackMode
 from .utils import parse_ms
 
@@ -953,16 +950,13 @@ class LyricFrame(FFrame):
 
 class Ui(object):
     def __init__(self, app):
+        self._app = app
         self._layout = FVBoxLayout(app)
         self.top_panel = TopPanel(app, app)
         self.central_panel = CentralPanel(app, app)
         self.status_panel = StatusPanel(app, app)
         self.status_panel.hide()
         self.current_playlist_table = CurrentPlaylistTable(app)
-
-        self.songs_table_container = SongsTableContainer(app, app)
-        self.playlist_table = PlaylistTable(app, app)
-
         self.setup()
 
     def setup(self):
@@ -971,6 +965,7 @@ class Ui(object):
         self._layout.addWidget(self.status_panel)
 
     def show_playlist(self, playlist):
-        self.playlist_table.setModel(SongsModel(playlist.songs))
-        self.songs_table_container.set_table(self.playlist_table)
+        if not hasattr(self, 'songs_table_container'):
+            self.songs_table_container = SongsTableContainer(self._app, self._app)
+        self.songs_table_container.show_playlist(playlist)
         self.central_panel.right_panel.set_widget(self.songs_table_container)

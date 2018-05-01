@@ -102,10 +102,10 @@ class Nem(QObject):
 
         self.ui.on_login_in()
 
-        app_event_loop = asyncio.get_event_loop()
-        app_event_loop.run_in_executor(
-            None,
-            partial(self.ui.login_btn.set_avatar, self.user.img))
+        # app_event_loop = asyncio.get_event_loop()
+        # app_event_loop.run_in_executor(
+        #     None,
+        #     partial(self.ui.login_btn.set_avatar, self.user.img))
         self.user.save()
         self.load_playlists()
 
