@@ -3,10 +3,15 @@ import asyncio
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
+    QWidget,
+    QFrame,
+    QLabel,
     QHBoxLayout,
     QVBoxLayout,
+    QPushButton,
 )
 
+from feeluown.theme import set_stylesheet
 from feeluown.widgets.base import (
     FFrame,
     FButton,
@@ -18,78 +23,52 @@ from feeluown.components.playlist import PlaylistTableModel, PlaylistTableView
 from feeluown.widgets.components import ImgLabel
 
 
-class CoverImgLabel(ImgLabel):
-    def __init__(self, app, parent=None):
-        super().__init__(app, parent)
-
-        self._app = app
-        self.setFixedWidth(160)
-        self.setObjectName('n_album_img_label')
-        self.set_theme_style()
-
-
-
 class SearchBox(FLineEdit):
-    def __init__(self, app, parent=None):
+    style_fmt = """
+    SearchBox {{
+        padding-left: 3px;
+        font-size: 14px;
+        background: transparent;
+        border: 0px;
+        border-bottom: 1px solid {color6};
+        color: {foreground};
+        outline: none;
+    }}
+    SearchBox:focus {{
+        outline: none;
+    }}
+    """
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self._app = app
 
         self.setObjectName('search_box')
         self.setPlaceholderText('搜索歌曲、歌手')
         self.setToolTip('输入文字可以从当前歌单内搜索\n'
                         '按下 Enter 将搜索网络')
-        self.set_theme_style()
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                padding-left: 3px;
-                font-size: 14px;
-                background: transparent;
-                border: 0px;
-                border-bottom: 1px solid {1};
-                color: {2};
-                outline: none;
-            }}
-            #{0}:focus {{
-                outline: none;
-            }}
-        '''.format(self.objectName(),
-                   theme.color6.name(),
-                   theme.foreground.name())
-        self.setStyleSheet(style_str)
 
 
-
-class TableControl(FFrame):
-    def __init__(self, app, parent=None):
+class TableControl(QWidget):
+    style_fmt = """
+    QWidget {{
+        background: transparent;
+    }}
+    QPushButton {{
+        background: transparent;
+        border: 0px;  /* make background transparent */
+        color: {foreground};
+        font-size: 20px;
+        outline: none;
+    }}
+    QWidget QPushButton:hover {{
+        color: {color0};
+    }}
+    """
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self._app = app
-
-        self.play_all_btn = FButton('▶')
-        self.search_box = SearchBox(self._app)
+        self.play_all_btn = QPushButton('☊', self)
+        self.search_box = SearchBox(self)
         self._layout = QHBoxLayout(self)
         self.setup_ui()
-        self.setObjectName('n_table_control')
-        self.set_theme_style()
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            QPushButton {{
-                background: transparent;
-                color: {1};
-                font-size: 16px;
-                outline: none;
-            }}
-            QPushButton:hover {{
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.foreground.name(),
-                   theme.color0.name())
-        self.setStyleSheet(style_str)
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -251,24 +230,48 @@ class TableControl(FFrame):
 #             super().keyPressEvent(event)
 
 
+class TableOverview(QFrame):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.cover_label = QLabel(self)
+        self.cover_label.setFixedWidth(160)
+        self._layout = QHBoxLayout(self)
+        self._layout.addWidget(self.cover_label)
+        self._layout.addStretch(1)
+
+    def set_cover(self, pixmap):
+        self.cover_label.setPixmap(
+            pixmap.scaledToWidth(self.cover_label.width(),
+                                 mode=Qt.SmoothTransformation))
+
+
 class SongsTableContainer(FFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.songs_table = None
+        self.table_overview = TableOverview(self)
         self.table_control = TableControl(self._app)
         self._layout = QVBoxLayout(self)
         self.setup_ui()
+        set_stylesheet(self._app.theme_manager.current_theme, self)
+
+        self.table_control.play_all_btn.clicked.connect(
+            self.play_all)
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-
+        self._layout.addSpacing(10)
+        self._layout.addWidget(self.table_overview)
         self._layout.addSpacing(10)
         self._layout.addWidget(self.table_control)
 
     def set_table(self, songs_table):
+        songs_table.play_song_needed.connect(self.play_song)
+        theme = self._app.theme_manager.current_theme
         if self.songs_table is not None:
             assert self._layout.indexOf(self.songs_table) != -1
             self._layout.replaceWidget(self.songs_table, songs_table)
@@ -278,15 +281,35 @@ class SongsTableContainer(FFrame):
             self._layout.addWidget(songs_table)
             self._layout.addSpacing(10)
         self.songs_table = songs_table
+        set_stylesheet(self._app.theme_manager.current_theme, songs_table)
 
     def play_song(self, song):
         self._app.player.play_song(song)
 
+    def play_all(self):
+        songs = self.songs_table.model().songs
+        self._app.player.playlist.clear()
+        for song in songs:
+            self._app.player.playlist.add(song)
+        self._app.player.playlist.play_next()
+
     def show_playlist(self, playlist):
         playlist_table_view = PlaylistTableView(self)
-        playlist_table_view.play_song_needed.connect(self.play_song)
         playlist_table_view.setModel(PlaylistTableModel(playlist.songs))
         self.set_table(playlist_table_view)
+        if playlist.cover:
+            event_loop = asyncio.get_event_loop()
+            event_loop.create_task(self.show_cover(playlist.cover))
+
+    async def show_cover(self, cover):
+        # FIXME: cover_hash may not work properly someday
+        cover_uid = cover.split('/', -1)[-1]
+        content = await self._app.img_ctl.get(cover, cover_uid)
+        img = QImage()
+        img.loadFromData(content)
+        pixmap = QPixmap(img)
+        if not pixmap.isNull():
+            self.table_overview.set_cover(pixmap)
 
     def show_artist(self, artist):
         pass

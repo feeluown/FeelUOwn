@@ -15,7 +15,6 @@ from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
 from .img_ctl import ImgController
 from .player import Player
-from .player_mode import PlayerModeManager
 from .plugin import PluginsManager
 from .request import Request
 from .theme import ThemeManager
@@ -34,7 +33,6 @@ class App(FFrame):
     def __init__(self):
         super().__init__()
         self.player = Player()
-        self.player_mode_manager = PlayerModeManager(self)
         self.request = Request(self)
         self.theme_manager = ThemeManager(self)
         self.tips_manager = TipsManager(self)
@@ -94,7 +92,7 @@ class App(FFrame):
         self.player.position_changed.connect(self._on_player_position_changed)
         self.player.duration_changed.connect(self._on_player_duration_changed)
         # FIXME:
-        self.player.media_changed.connect(self._on_player_media_changed)
+        self.player.playlist.song_changed.connect(self._on_player_song_changed)
         self.player.playlist.playback_mode_changed.connect(
             pms_btn.on_playback_mode_changed)
 
@@ -157,14 +155,14 @@ class App(FFrame):
         pass
 
     def _on_player_position_changed(self, ms):
-        self.ui.top_panel.pc_panel.progress_label.update_state(ms)
-        self.ui.top_panel.pc_panel.progress_slider.update_state(ms)
+        self.ui.top_panel.pc_panel.progress_label.update_state(ms*1000)
+        self.ui.top_panel.pc_panel.progress_slider.update_state(ms*1000)
 
     def _on_player_duration_changed(self, ms):
-        self.ui.top_panel.pc_panel.progress_label.set_duration(ms)
-        self.ui.top_panel.pc_panel.progress_slider.set_duration(ms)
+        self.ui.top_panel.pc_panel.progress_label.set_duration(ms*1000)
+        self.ui.top_panel.pc_panel.progress_slider.set_duration(ms*1000)
 
-    def _on_player_media_changed(self, song):
+    def _on_player_song_changed(self, song):
         song_label = self.ui.top_panel.pc_panel.song_title_label
         song_label.set_song(song.title + ' - ' + song.artists_name)
 
@@ -173,13 +171,6 @@ class App(FFrame):
         # if self.player_pixmap is not None:
         #     QApplication.setWindowIcon(QIcon(self.player_pixmap))
         # self.update()
-
-    def _on_player_media_changed(self, media):
-        # FIXME
-        return
-        song = self.player.playlist.current_song
-        song_label = self.ui.top_panel.pc_panel.song_title_label
-        song_label.set_song(song.title + ' - ' + 'tmp')
 
     def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
@@ -237,5 +228,6 @@ class App(FFrame):
         self.ui.status_panel.network_status_label.show_progress(progress)
 
     def closeEvent(self, event):
+        self.player.stop()
         self.player.shutdown()
         QApplication.quit()

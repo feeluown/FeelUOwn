@@ -21,32 +21,6 @@ from .utils import parse_ms
 logger = logging.getLogger(__name__)
 
 
-def get_colors_ctx(theme):
-    return {
-        'background': theme.background.name(),
-        'background_light': theme.background_light.name(),
-        'foreground': theme.foreground.name(),
-        'foreground_light': theme.foreground_light.name(),
-        'color0': theme.color0.name(),
-        'color1': theme.color1.name(),
-        'color2': theme.color2.name(),
-        'color3': theme.color3.name(),
-        'color4': theme.color4.name(),
-        'color5': theme.color5.name(),
-        'color6': theme.color6.name(),
-        'color7': theme.color7.name(),
-        'color0_light': theme.color0_light.name(),
-        'color1_light': theme.color1_light.name(),
-        'color2_light': theme.color2_light.name(),
-        'color3_light': theme.color3_light.name(),
-        'color4_light': theme.color4_light.name(),
-        'color5_light': theme.color5_light.name(),
-        'color6_light': theme.color6_light.name(),
-        'color7_light': theme.color7_light.name(),
-    }
-
-
-
 class PlayerControlButton(FButton):
     def __init__(self, app, text=None, parent=None):
         super().__init__(text, parent)
@@ -60,6 +34,7 @@ class PlayerControlButton(FButton):
         style_str = '''
             #{0} {{
                 background: transparent;
+                border: 0px;
                 font-size: 13px;
                 color: {1};
                 outline: none;
@@ -165,6 +140,10 @@ class PlayerControlPanel(FFrame):
         self.setObjectName('pc_panel')
         self.set_theme_style()
         self.setup_ui()
+
+        self.next_btn.clicked.connect(self._app.player.playlist.play_next)
+        self.previous_btn.clicked.connect(self._app.player.playlist.play_previous)
+        self.pp_btn.clicked.connect(self._app.player.toggle)
 
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
@@ -514,10 +493,7 @@ class PlaybackModeSwitchBtn(FButton):
         self.setText('♭ ' + text)
 
     def on_playback_mode_changed(self, playback_mode):
-        if playback_mode == PlaybackMode.sequential:
-            self.set_text(self._app.player_mode_manager.current_mode.name)
-        else:
-            self.set_text(playback_mode.value)
+        self.set_text(playback_mode.value)
 
 
 class ThemeCombo(FComboBox):

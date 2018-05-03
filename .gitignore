@@ -60,3 +60,6 @@ feeluown.egg-info/
 # Emacs
 .\#*
 \#*\#
+
+# virtualenv
+.venv/

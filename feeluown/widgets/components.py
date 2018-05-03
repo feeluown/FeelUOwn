@@ -81,24 +81,6 @@ class LP_GroupItem(FFrame):
                 self.rect().contains(event.pos()):
             self.clicked.emit()
 
-    def enterEvent(self, event):
-        theme = self._app.theme_manager.current_theme
-        label_hover_color = theme.color5
-        if self.is_selected or self.is_playing:
-            return
-        self._img_label.setStyleSheet(
-            'color: {0};'.format(label_hover_color.name()))
-        self._name_label.setStyleSheet(
-            'color: {0};'.format(label_hover_color.name()))
-
-    def leaveEvent(self, event):
-        theme = self._app.theme_manager.current_theme
-        label_color = theme.random_color()
-        if self.is_selected or self.is_playing:
-            return
-        self._img_label.setStyleSheet('color: {0};'.format(label_color.name()))
-        self._name_label.setStyleSheet('color: {0};'.format(label_color.name()))
-
     def set_theme_style(self):
         theme = self._app.theme_manager.current_theme
         style_str = '''
@@ -121,7 +103,7 @@ class LP_GroupItem(FFrame):
                    self._flag_label.objectName(),
                    self._img_label.objectName(),
                    self._name_label.objectName(),
-                   theme.random_color().name(),
+                   theme.foreground.name(),
                    theme.color0.name())
         self.setStyleSheet(style_str)
 
