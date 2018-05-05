@@ -73,19 +73,16 @@ class App(QFrame):
                         f_list.append(fpath)
             else:
                 f_list.append(filepath)
-        from feeluown.widgets.components import LP_GroupItem
-        library_panel = self.ui.central_panel.left_panel.library_panel
+
         for fpath in f_list:
             basename = os.path.basename(fpath)
             if not basename.endswith('.fuo'):
                 continue
             name = basename.rsplit('.', 1)[0]
-            library_panel.layout().addWidget(LP_GroupItem(self, name))
 
     def bind_signal(self):
         top_panel = self.ui.top_panel
         status_panel = self.ui.status_panel
-        library_panel = self.ui.central_panel.left_panel.library_panel
         pms_btn = top_panel.pc_panel.pms_btn
 
         self.player.state_changed.connect(self._on_player_status_changed)
@@ -109,9 +106,6 @@ class App(QFrame):
 
         top_panel.pc_panel.volume_slider.sliderMoved.connect(
             self.change_volume)
-
-        library_panel.current_playlist_item.clicked.connect(
-            self.show_current_playlist)
 
     def paintEvent(self, event):
         painter = QPainter(self)

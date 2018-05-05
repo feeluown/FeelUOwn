@@ -10,8 +10,6 @@ from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QScrollArea, QLabel)
 from fuocore.models import PlaylistModel, SongModel
 
-from feeluown.widgets.components import LP_GroupItem
-
 from feeluown.utils import set_alpha, parse_ms
 from .model import NUserModel
 
@@ -147,53 +145,6 @@ class LoginButton(QLabel):
                            transformMode=Qt.SmoothTransformation))
 
 
-class PlaylistItem(LP_GroupItem):
-    load_playlist_signal = pyqtSignal(PlaylistModel)
-    pids = []
-
-    def __init__(self, app, playlist=None, parent=None):
-        super().__init__(app, playlist.name, parent=parent)
-        self._app = app
-        self.existed = False
-        if playlist.identifier in PlaylistItem.pids:
-            self.existed = True
-        PlaylistItem.pids.append(playlist.identifier)
-
-        self.model = playlist
-        self.clicked.connect(self.on_clicked)
-        self.setAcceptDrops(True)
-
-    def on_clicked(self):
-        self.load_playlist_signal.emit(self.model)
-
-    def dropEvent(self, event):
-        source = event.source()
-        if not isinstance(source, SongsTable):
-            return
-        event.accept()
-        song = source.drag_song
-        if song is not None:
-            user = NUserModel.current_user
-            if user.is_playlist_mine(self.model.pid):
-                self.add_song_to_playlist(song)
-
-    def add_song_to_playlist(self, song):
-        logger.debug('temp to add "%s" to playlist "%s"' %
-                     (song.title, self.model.name))
-        if self.model.add_song(song.mid):
-            self._app.message('add "%s" to playlist "%s" success' %
-                              (song.title, self.model.name))
-        else:
-            self._app.message('add "%s" to playlist "%s" failed' %
-                              (song.title, self.model.name), error=True)
-
-    def dragEnterEvent(self, event):
-        event.accept()
-
-    def dragMoveEvent(self, event):
-        event.accept()
-
-
 class _TagCellWidget(QFrame):
     def __init__(self, app):
         super().__init__()
@@ -262,8 +213,6 @@ class Ui(object):
         self.login_dialog = LoginDialog(self._app, self._app)
         self.login_btn = LoginButton(self._app)
         self._lb_container = QFrame()
-        self.recommend_item = LP_GroupItem(self._app, '每日推荐')
-        self.recommend_item.set_img_text('✦')
 
         self._lbc_layout = QHBoxLayout(self._lb_container)
 
@@ -285,5 +234,3 @@ class Ui(object):
         self.login_btn.setToolTip('点击可刷新歌单列表')
         if self.login_dialog.isVisible():
             self.login_dialog.hide()
-        library_panel = self._app.ui.central_panel.left_panel.library_panel
-        library_panel.add_item(self.recommend_item)

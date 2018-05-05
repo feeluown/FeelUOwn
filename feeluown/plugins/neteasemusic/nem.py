@@ -10,7 +10,7 @@ from fuocore.netease.provider import NeteaseProvider
 
 from .consts import USER_PW_FILE
 from .model import NUserModel
-from .ui import Ui, PlaylistItem
+from .ui import Ui
 
 
 logger = logging.getLogger(__name__)
@@ -29,11 +29,6 @@ class Nem(QObject):
     def init_signal_binding(self):
         self.ui.login_btn.clicked.connect(self.ready_to_login)
         self.ui.login_dialog.ok_btn.clicked.connect(self.login)
-        self.ui.recommend_item.clicked.connect(self.show_recommend_songs)
-
-    def show_recommend_songs(self):
-        # FIXME:
-        return
 
     def load_user_pw(self):
         if not os.path.exists(USER_PW_FILE):
@@ -111,17 +106,9 @@ class Nem(QObject):
 
     def load_playlists(self):
         self._app.message('正在加载网易云音乐歌单')
-        playlist_widget = self._app.ui.central_panel.left_panel.playlists_panel
+        left_panel = self._app.ui.central_panel.left_panel
         user = provider.get_user(self.user.uid)
-        for playlist in user.playlists:
-            item = PlaylistItem(self._app, playlist)
-            if item.existed:
-                continue
-            item.load_playlist_signal.connect(self.load_playlist)
-            playlist_widget.add_item(item)
-            # FIXME:
-            # if NPlaylistModel.is_favorite(playlist):
-            #     self.load_playlist(playlist)
+        left_panel.set_playlists(user.playlists)
 
     def play_song(self, song):
         logger.debug('Nem request to play song: %s', song)
@@ -138,16 +125,13 @@ class Nem(QObject):
         pass
 
     def load_playlist(self, playlist):
-        logger.info('Will load playlist: %d, %s', playlist.identifier, playlist.name)
         self._app.ui.show_playlist(playlist)
 
     def load_artist(self, aid):
         artist = provider.get_artist(aid)
         songs = artist.songs
         self.load_songs(songs)
-        logger.info('Load artist: %d, %s', aid, artist.name)
 
     def load_album(self, bid):
         album = NAlbumModel.get(bid)
         self.load_songs(album.songs)
-        logger.info('Load album: %d, %s', album, album.name)

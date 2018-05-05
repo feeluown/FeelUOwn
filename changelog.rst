@@ -5,6 +5,7 @@ Changelog
 """""
 - 使用 fuocore 中提供的 Model
 - 尝试类似 Component 的设计（参考）
+- 移除 FXxxWidget
 
 1.1.0
 """""

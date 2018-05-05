@@ -3,7 +3,6 @@ from functools import partial
 from PyQt5.QtCore import (
     pyqtSignal,
     QAbstractTableModel,
-    QAbstractListModel,
     Qt,
     QSize,
     QTime,
@@ -16,20 +15,16 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
-    QItemDelegate,
-    QListView,
     QPushButton,
     QStyledItemDelegate,
-    QSpinBox,
     QTableView,
-    QTableWidget,
     QWidget,
 )
 
 from feeluown.utils import parse_ms
 
 
-class PlaylistTableModel(QAbstractTableModel):
+class SongsTableModel(QAbstractTableModel):
     sections = ('', '歌曲标题', '时长', '歌手', '专辑')
 
     def __init__(self, songs):
@@ -94,13 +89,13 @@ class SongOpsEditor(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
 
-class PlaylistTableDelegate(QStyledItemDelegate):
+class SongsTableDelegate(QStyledItemDelegate):
     def __init__(self, parent):
         super().__init__(parent)
         self.table = parent
 
     def createEditor(self, parent, option, index):
-        if index.column() in (1, 2):
+        if index.column() in (2, ):
             editor = SongOpsEditor(parent)
             editor.play_btn.clicked.connect(
                 partial(self.closeEditor.emit, editor, QAbstractItemDelegate.SubmitModelCache))
@@ -119,7 +114,7 @@ class PlaylistTableDelegate(QStyledItemDelegate):
         return QSize(w, option.rect.height())
 
 
-class PlaylistTableView(QTableView):
+class SongsTableView(QTableView):
 
     show_artist_needed = pyqtSignal([object])
     show_album_needed = pyqtSignal([object])
@@ -132,7 +127,7 @@ class PlaylistTableView(QTableView):
 
         self.clicked.connect(self._on_click)
         self.doubleClicked.connect(self._on_db_click)
-        self.delegate = PlaylistTableDelegate(self)
+        self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # FIXME: PyQt5 seg fault

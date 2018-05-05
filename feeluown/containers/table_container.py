@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
 )
 
-from feeluown.components.playlist import PlaylistTableModel, PlaylistTableView
+from feeluown.components.songs import SongsTableModel, SongsTableView
 
 
 class SearchBox(QLineEdit):
@@ -255,8 +255,8 @@ class SongsTableContainer(QFrame):
         self._app.player.playlist.play_next()
 
     def show_playlist(self, playlist):
-        playlist_table_view = PlaylistTableView(self)
-        playlist_table_view.setModel(PlaylistTableModel(playlist.songs))
+        playlist_table_view = SongsTableView(self)
+        playlist_table_view.setModel(SongsTableModel(playlist.songs))
         self.set_table(playlist_table_view)
         if playlist.cover:
             event_loop = asyncio.get_event_loop()

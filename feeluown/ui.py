@@ -18,10 +18,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from feeluown.widgets.components import LP_GroupHeader, LP_GroupItem
-
 from feeluown import __upgrade_desc__
-from feeluown.widgets.table_container import SongsTableContainer
+from feeluown.containers.table_container import SongsTableContainer
 
 from .consts import PlaybackMode
 from .utils import parse_ms
@@ -179,99 +177,35 @@ class TopPanel(QFrame):
         self._layout.addSpacing(10)
 
 
-class LP_LibraryPanel(QFrame):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.header = LP_GroupHeader(self._app, '我的音乐')
-        self.current_playlist_item = LP_GroupItem(self._app, '当前播放列表')
-        self.current_playlist_item.set_img_text('❂')
-        self._layout = QVBoxLayout(self)
-
-        self.setObjectName('lp_library_panel')
-        self.set_theme_style()
-        self.setup_ui()
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-            }}
-        '''.format(self.objectName(),
-                   theme.color3.name())
-        self.setStyleSheet(style_str)
-
-    def setup_ui(self):
-        self._layout.addSpacing(3)
-        self._layout.addWidget(self.header)
-        self._layout.addWidget(self.current_playlist_item)
-
-    def add_item(self, item):
-        self._layout.addWidget(item)
-
-
-class LP_PlaylistsPanel(QFrame):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.header = LP_GroupHeader(self._app, '歌单')
-        self._layout = QVBoxLayout(self)
-        self.setObjectName('lp_playlists_panel')
-
-        self.set_theme_style()
-        self.setup_ui()
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-            }}
-        '''.format(self.objectName(),
-                   theme.color5.name())
-        self.setStyleSheet(style_str)
-
-    def add_item(self, item):
-        self._layout.addWidget(item)
-
-    def setup_ui(self):
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
-        self._layout.addWidget(self.header)
+from feeluown.components.playlists import (
+    PlaylistsView,
+    PlaylistsModel,
+)
 
 
 class LeftPanel(QFrame):
+
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
-        self.library_panel = LP_LibraryPanel(self._app)
-        self.playlists_panel = LP_PlaylistsPanel(self._app)
+        self.library_header = QLabel('我的音乐', self)
+        self.playlists_header = QLabel('播放列表', self)
+        self.playlists_view = PlaylistsView(self)
+
+        self.playlists_view.show_playlist.connect(self.show_playlist)
 
         self._layout = QVBoxLayout(self)
-        self.setLayout(self._layout)
-        self.setObjectName('c_left_panel')
-        self.set_theme_style()
-        self.setup_ui()
+        self._layout.addWidget(self.library_header)
+        self._layout.addWidget(self.playlists_header)
+        self._layout.addWidget(self.playlists_view)
 
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-            }}
-        '''.format(self.objectName(),
-                   theme.color5.name())
-        self.setStyleSheet(style_str)
+    def set_playlists(self, playlists):
+        model = PlaylistsModel(playlists, self)
+        self.playlists_view.setModel(model)
 
-    def setup_ui(self):
-        self._layout.addWidget(self.library_panel)
-        self._layout.addWidget(self.playlists_panel)
-        self._layout.addStretch(1)
+    def show_playlist(self, playlist):
+        self._app.ui.show_playlist(playlist)
 
 
 class LeftPanel_Container(QScrollArea):
@@ -279,7 +213,7 @@ class LeftPanel_Container(QScrollArea):
         super().__init__(parent)
         self._app = app
 
-        self.left_panel = LeftPanel(self._app)
+        self.left_panel = LeftPanel(self._app, self)
         self._layout = QVBoxLayout(self)  # no layout, no children
         self.setWidget(self.left_panel)
 

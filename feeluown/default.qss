@@ -26,6 +26,18 @@ QLabel {{
     color: {color0};
 }}
 
+PlaylistsView {{
+    background: transparent;
+    selection-background-color: transparent;
+    selection-color: {color3};
+    color: {foreground};
+    outline: none;
+    border: 0px;
+}}
+PlaylistsView::item:hover {{
+    color: {color4};
+}}
+
 QSlider::groove:horizontal {{
     background: {color0_light};
     height: 4px;
