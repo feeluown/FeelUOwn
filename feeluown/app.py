@@ -5,19 +5,18 @@ from functools import partial
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QFrame
 
 from fuocore.core.player import State as PlayerState
 
 from feeluown.config import config
-from feeluown.widgets.base import FFrame
 from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
 from .img_ctl import ImgController
 from .player import Player
 from .plugin import PluginsManager
 from .request import Request
-from .theme import ThemeManager
+from .theme import ThemeManager, get_colors_ctx
 from .tips import TipsManager
 from .ui import Ui
 from .utils import darker
@@ -26,7 +25,7 @@ from .version import VersionManager
 logger = logging.getLogger(__name__)
 
 
-class App(FFrame):
+class App(QFrame):
 
     initialized = pyqtSignal()
 
@@ -41,6 +40,7 @@ class App(FFrame):
         self.plugins_manager = PluginsManager(self)
         self.version_manager = VersionManager(self)
         self.theme_manager.set_theme(DEFAULT_THEME_NAME)
+        self.load_qss()
 
         self.ui = Ui(self)
         self._init_managers()
@@ -112,10 +112,6 @@ class App(FFrame):
 
         library_panel.current_playlist_item.clicked.connect(
             self.show_current_playlist)
-        self.ui.current_playlist_table.play_song_signal.connect(
-            self.player.play)
-        #self.ui.current_playlist_table.remove_signal.connect(
-        #    self.player.remove_music)
 
     def paintEvent(self, event):
         painter = QPainter(self)
@@ -200,9 +196,7 @@ class App(FFrame):
         self.player.setVolume(value)
 
     def show_current_playlist(self):
-        self.ui.current_playlist_table.set_songs(self.player.songs)
-        right_panel = self.ui.central_panel.right_panel
-        right_panel.set_widget(self.ui.current_playlist_table)
+        pass
 
     def refresh_themes(self):
         theme_switch_btn = self.ui.status_panel.theme_switch_btn
@@ -226,6 +220,11 @@ class App(FFrame):
 
     def show_request_progress(self, progress):
         self.ui.status_panel.network_status_label.show_progress(progress)
+
+    def load_qss(self):
+        with open('feeluown/default.qss') as f:
+            s = f.read().format(**get_colors_ctx(self.theme_manager.current_theme))
+            QApplication.instance().setStyleSheet(s)
 
     def closeEvent(self, event):
         self.player.stop()

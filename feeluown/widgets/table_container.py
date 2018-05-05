@@ -6,38 +6,16 @@ from PyQt5.QtWidgets import (
     QWidget,
     QFrame,
     QLabel,
+    QLineEdit,
     QHBoxLayout,
     QVBoxLayout,
     QPushButton,
 )
 
-from feeluown.theme import set_stylesheet
-from feeluown.widgets.base import (
-    FFrame,
-    FButton,
-    FLineEdit,
-)
-
 from feeluown.components.playlist import PlaylistTableModel, PlaylistTableView
 
-from feeluown.widgets.components import ImgLabel
 
-
-class SearchBox(FLineEdit):
-    style_fmt = """
-    SearchBox {{
-        padding-left: 3px;
-        font-size: 14px;
-        background: transparent;
-        border: 0px;
-        border-bottom: 1px solid {color6};
-        color: {foreground};
-        outline: none;
-    }}
-    SearchBox:focus {{
-        outline: none;
-    }}
-    """
+class SearchBox(QLineEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -48,21 +26,6 @@ class SearchBox(FLineEdit):
 
 
 class TableControl(QWidget):
-    style_fmt = """
-    QWidget {{
-        background: transparent;
-    }}
-    QPushButton {{
-        background: transparent;
-        border: 0px;  /* make background transparent */
-        color: {foreground};
-        font-size: 20px;
-        outline: none;
-    }}
-    QWidget QPushButton:hover {{
-        color: {color0};
-    }}
-    """
     def __init__(self, parent=None):
         super().__init__(parent)
         self.play_all_btn = QPushButton('☊', self)
@@ -246,7 +209,7 @@ class TableOverview(QFrame):
                                  mode=Qt.SmoothTransformation))
 
 
-class SongsTableContainer(FFrame):
+class SongsTableContainer(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -256,7 +219,6 @@ class SongsTableContainer(FFrame):
         self.table_control = TableControl(self._app)
         self._layout = QVBoxLayout(self)
         self.setup_ui()
-        set_stylesheet(self._app.theme_manager.current_theme, self)
 
         self.table_control.play_all_btn.clicked.connect(
             self.play_all)
@@ -281,7 +243,6 @@ class SongsTableContainer(FFrame):
             self._layout.addWidget(songs_table)
             self._layout.addSpacing(10)
         self.songs_table = songs_table
-        set_stylesheet(self._app.theme_manager.current_theme, songs_table)
 
     def play_song(self, song):
         self._app.player.play_song(song)

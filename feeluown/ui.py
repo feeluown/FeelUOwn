@@ -2,16 +2,25 @@ import logging
 
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
 from PyQt5.QtGui import QFontMetrics, QPainter
-from PyQt5.QtWidgets import (QVBoxLayout, QHBoxLayout, QMenu, QAction,
-                             QSizePolicy, QGridLayout)
-from feeluown.widgets.base import FFrame, FButton, FLabel, FScrollArea,\
-    FComboBox, FHBoxLayout, FVBoxLayout, FLineEdit, FDialog
-from feeluown.widgets.components import LP_GroupHeader, LP_GroupItem, \
-    MusicTable, ImgLabel
-from feeluown.widgets.sliders import _BasicSlider
+from PyQt5.QtWidgets import (
+    QAction,
+    QComboBox,
+    QFrame,
+    QGridLayout,
+    QHBoxLayout,
+    QLabel,
+    QMenu,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QSlider,
+    QVBoxLayout,
+    QWidget,
+)
+
+from feeluown.widgets.components import LP_GroupHeader, LP_GroupItem
 
 from feeluown import __upgrade_desc__
-from feeluown.widgets.labels import _BasicLabel
 from feeluown.widgets.table_container import SongsTableContainer
 
 from .consts import PlaybackMode
@@ -21,36 +30,40 @@ from .utils import parse_ms
 logger = logging.getLogger(__name__)
 
 
-class PlayerControlButton(FButton):
-    def __init__(self, app, text=None, parent=None):
+
+class VolumeSlider(QSlider):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.setOrientation(Qt.Horizontal)
+        self.setMinimumWidth(100)
+        self.setObjectName('player_volume_slider')
+        self.setRange(0, 100)   # player volume range
+        self.setValue(100)
+        self.setToolTip('调教播放器音量')
+        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
+
+
+class ProgressLabel(QLabel):
+    def __init__(self, text=None, parent=None):
         super().__init__(text, parent)
-        self._app = app
+        self.duration_text = '00:00'
 
-        self.setObjectName('mc_btn')
-        self.set_theme_style()
+    def set_duration(self, ms):
+        m, s = parse_ms(ms)
+        duration = QTime(0, m, s)
+        self.duration_text = duration.toString('mm:ss')
 
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-                border: 0px;
-                font-size: 13px;
-                color: {1};
-                outline: none;
-            }}
-            #{0}:hover {{
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.foreground.name(),
-                   theme.color4.name())
-        self.setStyleSheet(style_str)
+    def update_state(self, ms):
+        m, s = parse_ms(ms)
+        position = QTime(0, m, s)
+        position_text = position.toString('mm:ss')
+        self.setText(position_text + '/' + self.duration_text)
 
 
-class ProgressSlider(_BasicSlider):
+class ProgressSlider(QSlider):
     def __init__(self, app, parent=None):
-        super().__init__(app, parent)
+        super().__init__(parent)
 
         self.setOrientation(Qt.Horizontal)
         self.setMinimumWidth(400)
@@ -68,94 +81,36 @@ class ProgressSlider(_BasicSlider):
         self._app.player.setPosition(second)
 
 
-class VolumeSlider(_BasicSlider):
-    def __init__(self, app, parent=None):
-        super().__init__(app, parent)
-
-        self.setOrientation(Qt.Horizontal)
-        self.setMinimumWidth(100)
-        self.setObjectName('player_volume_slider')
-        self.setRange(0, 100)   # player volume range
-        self.setValue(100)
-        self.setToolTip('调教播放器音量')
-        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
-
-
-class ProgressLabel(_BasicLabel):
-    def __init__(self, app, text=None, parent=None):
-        super().__init__(app, text, parent)
-        self._app = app
-
-        self.duration_text = '00:00'
-
-        self.setObjectName('player_progress_label')
-        self.set_theme_style()
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-            }}
-        '''.format(self.objectName(),
-                   theme.color3.name())
-        self.setStyleSheet(self._style_str + style_str)
-
-    def set_duration(self, ms):
-        m, s = parse_ms(ms)
-        duration = QTime(0, m, s)
-        self.duration_text = duration.toString('mm:ss')
-
-    def update_state(self, ms):
-        m, s = parse_ms(ms)
-        position = QTime(0, m, s)
-        position_text = position.toString('mm:ss')
-        self.setText(position_text + '/' + self.duration_text)
-
-
-class PlayerControlPanel(FFrame):
+class PlayerControlPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
-        self._layout = FHBoxLayout(self)
-        self.previous_btn = PlayerControlButton(self._app, '上一首', self)
-        self.pp_btn = PlayerControlButton(self._app, '播放', self)
-        self.next_btn = PlayerControlButton(self._app, '下一首', self)
+        self._layout = QHBoxLayout(self)
+        self.previous_btn = QPushButton('上一首', self)
+        self.pp_btn = QPushButton('播放', self)
+        self.next_btn = QPushButton('下一首', self)
 
         self._sub_layout = QGridLayout()
-        self.song_title_label = SongLabel(self._app, parent=self)
-        self.progress_slider = ProgressSlider(self._app, self)
+        self.song_title_label = SongLabel(parent=self)
+        self.progress_slider = ProgressSlider(self)
+
         self.pms_btn = PlaybackModeSwitchBtn(self._app, self)
 
-        self.volume_slider = VolumeSlider(self._app, self)
-        self.progress_label = ProgressLabel(self._app, '00:00/00:00', self)
+        self.volume_slider = VolumeSlider(self)
+        self.progress_label = ProgressLabel('00:00/00:00', self)
 
-        self._btn_container = FFrame(self)
-        self._slider_container = FFrame(self)
+        self._btn_container = QFrame(self)
+        self._slider_container = QFrame(self)
 
-        self._bc_layout = FHBoxLayout(self._btn_container)
-        self._sc_layout = FHBoxLayout(self._slider_container)
+        self._bc_layout = QHBoxLayout(self._btn_container)
+        self._sc_layout = QHBoxLayout(self._slider_container)
 
-        self.setObjectName('pc_panel')
-        self.set_theme_style()
         self.setup_ui()
 
         self.next_btn.clicked.connect(self._app.player.playlist.play_next)
         self.previous_btn.clicked.connect(self._app.player.playlist.play_previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-                color: {1};
-            }}
-        '''.format(self.objectName(),
-                   theme.foreground.name(),
-                   theme.color0.name())
-        self.setStyleSheet(style_str)
 
     def setup_ui(self):
         self._btn_container.setFixedWidth(140)
@@ -174,6 +129,8 @@ class PlayerControlPanel(FFrame):
         self._sc_layout.addWidget(self.progress_label)
         self._sc_layout.addSpacing(5)
         self._sc_layout.addWidget(self.volume_slider)
+        self._sc_layout.setSpacing(0)
+        self._sc_layout.setContentsMargins(0, 0, 0, 0)
 
         self._sub_layout.setSpacing(0)
         self._sub_layout.setContentsMargins(0, 0, 0, 0)
@@ -185,14 +142,16 @@ class PlayerControlPanel(FFrame):
         self._layout.addWidget(self._btn_container)
         self._layout.addSpacing(10)
         self._layout.addWidget(self._slider_container)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
 
-class TopPanel(FFrame):
+class TopPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
-        self._layout = FHBoxLayout(self)
+        self._layout = QHBoxLayout(self)
         self.pc_panel = PlayerControlPanel(self._app, self)
 
         self.setObjectName('top_panel')
@@ -220,7 +179,7 @@ class TopPanel(FFrame):
         self._layout.addSpacing(10)
 
 
-class LP_LibraryPanel(FFrame):
+class LP_LibraryPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -228,7 +187,7 @@ class LP_LibraryPanel(FFrame):
         self.header = LP_GroupHeader(self._app, '我的音乐')
         self.current_playlist_item = LP_GroupItem(self._app, '当前播放列表')
         self.current_playlist_item.set_img_text('❂')
-        self._layout = FVBoxLayout(self)
+        self._layout = QVBoxLayout(self)
 
         self.setObjectName('lp_library_panel')
         self.set_theme_style()
@@ -253,13 +212,13 @@ class LP_LibraryPanel(FFrame):
         self._layout.addWidget(item)
 
 
-class LP_PlaylistsPanel(FFrame):
+class LP_PlaylistsPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.header = LP_GroupHeader(self._app, '歌单')
-        self._layout = FVBoxLayout(self)
+        self._layout = QVBoxLayout(self)
         self.setObjectName('lp_playlists_panel')
 
         self.set_theme_style()
@@ -285,7 +244,7 @@ class LP_PlaylistsPanel(FFrame):
         self._layout.addWidget(self.header)
 
 
-class LeftPanel(FFrame):
+class LeftPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -293,7 +252,7 @@ class LeftPanel(FFrame):
         self.library_panel = LP_LibraryPanel(self._app)
         self.playlists_panel = LP_PlaylistsPanel(self._app)
 
-        self._layout = FVBoxLayout(self)
+        self._layout = QVBoxLayout(self)
         self.setLayout(self._layout)
         self.setObjectName('c_left_panel')
         self.set_theme_style()
@@ -315,13 +274,13 @@ class LeftPanel(FFrame):
         self._layout.addStretch(1)
 
 
-class LeftPanel_Container(FScrollArea):
+class LeftPanel_Container(QScrollArea):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.left_panel = LeftPanel(self._app)
-        self._layout = FVBoxLayout(self)  # no layout, no children
+        self._layout = QVBoxLayout(self)  # no layout, no children
         self.setWidget(self.left_panel)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -351,14 +310,14 @@ class LeftPanel_Container(FScrollArea):
         pass
 
 
-class RightPanel(FFrame):
+class RightPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.widget = None
 
-        self._layout = FHBoxLayout(self)
+        self._layout = QHBoxLayout(self)
         self.setLayout(self._layout)
         self.setObjectName('right_panel')
         self.set_theme_style()
@@ -383,13 +342,13 @@ class RightPanel(FFrame):
         self.widget = widget
 
 
-class RightPanel_Container(FScrollArea):
+class RightPanel_Container(QScrollArea):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.right_panel = RightPanel(self._app)
-        self._layout = FVBoxLayout(self)
+        self._layout = QVBoxLayout(self)
         self.setWidget(self.right_panel)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -416,7 +375,7 @@ class RightPanel_Container(FScrollArea):
         self._layout.setSpacing(0)
 
 
-class CentralPanel(FFrame):
+class CentralPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -426,7 +385,7 @@ class CentralPanel(FFrame):
         self.left_panel = self.left_panel_container.left_panel
         self.right_panel = self.right_panel_container.right_panel
 
-        self._layout = FHBoxLayout(self)
+        self._layout = QHBoxLayout(self)
         self.set_theme_style()
         self.setup_ui()
 
@@ -443,30 +402,16 @@ class CentralPanel(FFrame):
         self._layout.addWidget(self.right_panel_container)
 
 
-class SongLabel(_BasicLabel):
-    def __init__(self, app, text=None, parent=None):
-        super().__init__(app, text, parent)
-        self._app = app
-
-        self.setObjectName('song_label')
-        self.set_theme_style()
-
+class SongLabel(QLabel):
+    def __init__(self, text=None, parent=None):
+        super().__init__(text, parent)
         self.set_song('No song is playing')
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-            }}
-        '''.format(self.objectName())
-        self.setStyleSheet(self._style_str + style_str)
 
     def set_song(self, song_text):
         self.setText('♪  ' + song_text + ' ')
 
 
-class PlaybackModeSwitchBtn(FButton):
+class PlaybackModeSwitchBtn(QPushButton):
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app
@@ -496,7 +441,7 @@ class PlaybackModeSwitchBtn(FButton):
         self.set_text(playback_mode.value)
 
 
-class ThemeCombo(FComboBox):
+class ThemeCombo(QComboBox):
     clicked = pyqtSignal()
     signal_change_theme = pyqtSignal([str])
 
@@ -583,7 +528,7 @@ class ThemeCombo(FComboBox):
                 self.themes.append(theme)
 
 
-class PlayerStateLabel(FLabel):
+class PlayerStateLabel(QLabel):
     def __init__(self, app, text=None, parent=None):
         super().__init__('♫', parent)
         self._app = app
@@ -664,7 +609,7 @@ class PlayerStateLabel(FLabel):
         self.set_theme_style()
 
 
-class MessageLabel(FLabel):
+class MessageLabel(QLabel):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -733,7 +678,7 @@ class MessageLabel(FLabel):
             self._interval = 3
 
 
-class AppStatusLabel(FLabel):
+class AppStatusLabel(QLabel):
     clicked = pyqtSignal()
 
     def __init__(self, app, text=None, parent=None):
@@ -773,7 +718,7 @@ class AppStatusLabel(FLabel):
             self.clicked.emit()
 
 
-class NetworkStatus(FLabel):
+class NetworkStatus(QLabel):
     def __init__(self, app, text=None, parent=None):
         super().__init__(text, parent)
         self._app = app
@@ -851,12 +796,12 @@ class NetworkStatus(FLabel):
         self.update()
 
 
-class StatusPanel(FFrame):
+class StatusPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
-        self._layout = FHBoxLayout(self)
+        self._layout = QHBoxLayout(self)
         self.player_state_label = PlayerStateLabel(self._app)
         self.app_status_label = AppStatusLabel(self._app)
         self.network_status_label = NetworkStatus(self._app)
@@ -886,39 +831,11 @@ class StatusPanel(FFrame):
         self._layout.addWidget(self.message_label)
         self._layout.addStretch(0)
         self._layout.addWidget(self.theme_switch_btn)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
 
 
-class CurrentPlaylistTable(MusicTable):
-    remove_signal = pyqtSignal([int])   # song id
-
-    def __init__(self, app):
-        super().__init__(app)
-        self._app = app
-
-        self._row = 0
-
-        self.menu = QMenu()
-        self.remove = QAction('从当前列表中移除', self)
-        self.menu.addAction(self.remove)
-
-        self.remove.triggered.connect(self.remove_song)
-
-    def contextMenuEvent(self, event):
-        point = event.pos()
-        item = self.itemAt(point)
-        if item is not None:
-            row = self.row(item)
-            self._row = row
-            self.menu.exec(event.globalPos())
-
-    def remove_song(self):
-        song = self.songs[self._row]
-        self.songs.pop(self._row)
-        self.removeRow(self._row)
-        self.remove_signal.emit(song.mid)
-
-
-class LyricFrame(FFrame):
+class LyricFrame(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -927,12 +844,11 @@ class LyricFrame(FFrame):
 class Ui(object):
     def __init__(self, app):
         self._app = app
-        self._layout = FVBoxLayout(app)
+        self._layout = QVBoxLayout(app)
         self.top_panel = TopPanel(app, app)
         self.central_panel = CentralPanel(app, app)
         self.status_panel = StatusPanel(app, app)
         self.status_panel.hide()
-        self.current_playlist_table = CurrentPlaylistTable(app)
         self.setup()
 
     def setup(self):

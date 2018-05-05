@@ -6,20 +6,19 @@ from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTime
 from PyQt5.QtGui import QColor, QImage, QPixmap
 from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QMenu, QAction, QAbstractItemView,
-                             QTableWidgetItem, QSizePolicy)
+                             QTableWidgetItem, QSizePolicy, QDialog, QFrame, QPushButton,
+                             QScrollArea, QLabel)
 from fuocore.models import PlaylistModel, SongModel
 
 from feeluown.widgets.components import LP_GroupItem
 
 from feeluown.utils import set_alpha, parse_ms
-from feeluown.widgets.base import FLabel, FFrame, FDialog, FLineEdit, \
-    FButton, FScrollArea
 from .model import NUserModel
 
 logger = logging.getLogger(__name__)
 
 
-class LineInput(FLineEdit):
+class LineInput(QLineEdit):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -31,7 +30,7 @@ class LineInput(FLineEdit):
         pass
 
 
-class LoginDialog(FDialog):
+class LoginDialog(QDialog):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -44,12 +43,12 @@ class LoginDialog(FDialog):
         self.pw_input = LineInput(self)
         self.pw_input.setEchoMode(QLineEdit.Password)
         # self.remember_checkbox = FCheckBox(self)
-        self.captcha_label = FLabel(self)
+        self.captcha_label = QLabel(self)
         self.captcha_label.hide()
         self.captcha_input = LineInput(self)
         self.captcha_input.hide()
-        self.hint_label = FLabel(self)
-        self.ok_btn = FButton('登录', self)
+        self.hint_label = QLabel(self)
+        self.ok_btn = QPushButton('登录', self)
         self._layout = QVBoxLayout(self)
 
         self.username_input.setPlaceholderText('网易邮箱或者手机号')
@@ -109,7 +108,7 @@ class LoginDialog(FDialog):
         self.is_encrypted = False
 
 
-class LoginButton(FLabel):
+class LoginButton(QLabel):
     clicked = pyqtSignal()
 
     def __init__(self, app, text=None, parent=None):
@@ -195,13 +194,13 @@ class PlaylistItem(LP_GroupItem):
         event.accept()
 
 
-class _TagCellWidget(FFrame):
+class _TagCellWidget(QFrame):
     def __init__(self, app):
         super().__init__()
         self._app = app
         self.setObjectName('tag_cell')
 
-        self.download_tag = FLabel('✓', self)
+        self.download_tag = QLabel('✓', self)
         self.download_flag = False
         self.download_tag.setObjectName('download_tag')
         self.download_tag.setAlignment(Qt.AlignCenter)
@@ -262,7 +261,7 @@ class Ui(object):
 
         self.login_dialog = LoginDialog(self._app, self._app)
         self.login_btn = LoginButton(self._app)
-        self._lb_container = FFrame()
+        self._lb_container = QFrame()
         self.recommend_item = LP_GroupItem(self._app, '每日推荐')
         self.recommend_item.set_img_text('✦')
 

@@ -121,62 +121,6 @@ class PlaylistTableDelegate(QStyledItemDelegate):
 
 class PlaylistTableView(QTableView):
 
-    style_fmt = """
-    QHeaderView {{
-        color: {foreground};
-        background: transparent;
-        font-size: 14px;
-    }}
-    QHeaderView::section:horizontal {{
-        height: 24px;
-        background: transparent;
-        border-top: 1px;
-        border-right: 1px;
-        border-bottom: 1px;
-        border-color: {color7_light};
-        color: {color7_light};
-        border-style: solid;
-        padding-left: 5px;
-    }}
-    QTableView QTableCornerButton::section {{
-        background: transparent;
-    }}
-    QTableView {{
-        font-size: 13px;
-        background: transparent;
-        alternate-background-color: rgba(0, 0, 0, 0.09);
-        selection-background-color: transparent;
-        color: {foreground};
-        outline: none;
-        border: 0px;
-    }}
-    QTableView::item {{
-        background: transparent;
-        color: {foreground};
-    }}
-    QTableView::item:hover {{
-    }}
-    QTableView::item:focus {{
-        outline: none;
-    }}
-    QTableView::item:selected {{
-        color: {color3};
-    }}
-    QTableView QWidget {{
-        height: 100%;
-    }}
-    QTableView QPushButton {{
-        font-size: 18px;
-        background: {background_light};
-        color: {foreground};
-        border-radius: 3px;
-    }}
-    QTableView QPushButton:hover {{
-        font-size: 20px;
-        color: {color4};
-    }}
-    """
-
     show_artist_needed = pyqtSignal([object])
     show_album_needed = pyqtSignal([object])
     play_song_needed = pyqtSignal([object])

@@ -1,0 +1,120 @@
+/* 主题：时代在进步 */
+
+QFrame {{
+    background: transparent;
+}}
+
+QHeaderView {{
+    color: {foreground};
+    background: transparent;
+    font-size: 14px;
+}}
+QHeaderView::section:horizontal {{
+    height: 24px;
+    background: transparent;
+    border-top: 1px;
+    border-right: 1px;
+    border-bottom: 1px;
+    border-color: {color7_light};
+    color: {color7_light};
+    border-style: solid;
+    padding-left: 5px;
+}}
+
+QLabel {{
+    background: transparent;
+    color: {color0};
+}}
+
+QSlider::groove:horizontal {{
+    background: {color0_light};
+    height: 4px;
+    border-radius: 2px;
+}}
+QSlider::handle:horizontal {{
+    background: {color4};
+    width: 16px;
+    margin: -6px 0;
+    border-radius: 8px;
+}}
+QSlider::sub-page:horizontal {{
+    background: {foreground};
+}}
+
+QTableView QTableCornerButton::section {{
+    background: transparent;
+}}
+QTableView {{
+    font-size: 13px;
+    background: transparent;
+    alternate-background-color: rgba(0, 0, 0, 0.09);
+    selection-background-color: transparent;
+    color: {foreground};
+    outline: none;
+    border: 0px;
+}}
+QTableView::item {{
+    background: transparent;
+    color: {foreground};
+}}
+QTableView::item:hover {{
+}}
+QTableView::item:focus {{
+    outline: none;
+}}
+QTableView::item:selected {{
+    color: {color3};
+}}
+QTableView QWidget {{
+    height: 100%;
+}}
+QTableView QPushButton {{
+    font-size: 18px;
+    background: {background_light};
+    color: {foreground};
+    border-radius: 3px;
+}}
+QTableView QPushButton:hover {{
+    font-size: 20px;
+    color: {color4};
+}}
+TableControl SearchBox {{
+    padding-left: 3px;
+    font-size: 14px;
+    background: transparent;
+    border: 0px;
+    border-bottom: 1px solid {color6};
+    color: {foreground};
+    outline: none;
+}}
+TableControl SearchBox:focus {{
+    outline: none;
+}}
+
+TableControl {{
+    background: transparent;
+}}
+
+TableControl QPushButton {{
+    background: transparent;
+    border: 0px;  /* make background transparent */
+    color: {foreground};
+    font-size: 20px;
+    outline: none;
+}}
+
+TableControl QPushButton:hover {{
+    color: {color0};
+}}
+
+PlayerControlPanel QPushButton {{
+    background: transparent;
+    border: 0px;
+    font-size: 13px;
+    color: {foreground};
+    outline: none;
+}}
+
+PlayerControlButton QPushButton {{
+    color: {color4};
+}}
