@@ -1,5 +1,10 @@
 /* 主题：时代在进步 */
 
+#artists_selection_view {{
+    background: {background};
+    color: {foreground};
+}}
+
 QFrame {{
     background: transparent;
 }}

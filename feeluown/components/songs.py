@@ -2,7 +2,9 @@ from functools import partial
 
 from PyQt5.QtCore import (
     pyqtSignal,
+    QAbstractListModel,
     QAbstractTableModel,
+    QModelIndex,
     Qt,
     QSize,
     QTime,
@@ -15,6 +17,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
+    QListView,
     QPushButton,
     QStyledItemDelegate,
     QTableView,
@@ -75,6 +78,25 @@ class SongsTableModel(QAbstractTableModel):
         return QVariant()
 
 
+class ArtistsModel(QAbstractListModel):
+    def __init__(self, artists):
+        super().__init__()
+        self.artists = artists
+
+    def rowCount(self, _):
+        return len(self.artists)
+
+    def data(self, index, role):
+        artist = self.artists[index.row()]
+        if role == Qt.DisplayRole:
+            return artist.name
+        elif role == Qt.UserRole:
+            return artist
+        elif role == Qt.SizeHintRole:
+            return QSize(100, 30)
+        return QVariant()
+
+
 class SongOpsEditor(QWidget):
     """song editor for playlist table view"""
 
@@ -89,20 +111,50 @@ class SongOpsEditor(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
 
+class ArtistsSelectionView(QListView):
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Dialog | Qt.FramelessWindowHint)
+        self.setObjectName('artists_selection_view')
+
+
 class SongsTableDelegate(QStyledItemDelegate):
     def __init__(self, parent):
         super().__init__(parent)
-        self.table = parent
+        self.view = parent
 
     def createEditor(self, parent, option, index):
+        # Yeah, I'm a genius, again.
         if index.column() in (2, ):
             editor = SongOpsEditor(parent)
             editor.play_btn.clicked.connect(
                 partial(self.closeEditor.emit, editor, QAbstractItemDelegate.SubmitModelCache))
             editor.download_btn.clicked.connect(
                 partial(self.closeEditor.emit, editor, QAbstractItemDelegate.SubmitModelCache))
-            editor.play_btn.clicked.connect(partial(self.table.play_song_needed.emit, index.data(role=Qt.UserRole)))
+            editor.play_btn.clicked.connect(partial(self.view.play_song_needed.emit, index.data(role=Qt.UserRole)))
             return editor
+        elif index.column() == 3:
+            editor = ArtistsSelectionView(parent)
+            editor.clicked.connect(partial(self.commitData.emit, editor))
+            editor.move(parent.mapToGlobal(option.rect.bottomLeft()))
+            editor.setFixedWidth(option.rect.width())
+            return editor
+
+    def setEditorData(self, editor, index):
+        super().setEditorData(editor, index)
+        if index.column() == 3:
+            song = index.data(role=Qt.UserRole)
+            model = ArtistsModel(song.artists)
+            editor.setModel(model)
+            editor.setCurrentIndex(QModelIndex())
+
+    def setModelData(self, editor, model, index):
+        if index.column() == 3:
+            index = editor.currentIndex()
+            if index.isValid():
+                artist = index.data(Qt.UserRole)
+                self.view.show_artist_needed.emit(artist)
+        super().setModelData(editor, model, index)
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
@@ -112,6 +164,16 @@ class SongsTableDelegate(QStyledItemDelegate):
         width = self.parent().width()
         w = int(width * widths[index.column()])
         return QSize(w, option.rect.height())
+
+    def editorEvent(self, event, model, option, index):
+        super().editorEvent(event, model, option, index)
+        return False
+
+    def updateEditorGeometry(self, editor, option, index):
+        if index.column() == 3:
+            pass
+        else:
+            super().updateEditorGeometry(editor, option, index)
 
 
 class SongsTableView(QTableView):
@@ -123,10 +185,9 @@ class SongsTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._entered_previous = None
+        self._previous_entered = None
+        self._previous_clicked = None
 
-        self.clicked.connect(self._on_click)
-        self.doubleClicked.connect(self._on_db_click)
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
@@ -143,47 +204,34 @@ class SongsTableView(QTableView):
         #self.setFocusPolicy(Qt.NoFocus)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
+
         self.entered.connect(self._on_entered)
-        self.setObjectName('playlist_table')
-
-    def _on_click(self, index):
-        song = self.model().data(index, Qt.UserRole)
-
-        # emit show_artist_needed signal
-        if index.column() == 3:
-            if len(song.artists) > 1:
-                dialog = QInputDialog(self)
-                dialog.setOptions(QInputDialog.UseListViewForComboBoxItems)
-                dialog.setComboBoxItems([artist.name for artist in song.artists])
-                if dialog.exec():
-                    name = dialog.textValue()
-                    for artist in song.artists:
-                        if artist.name == name:
-                            self.show_artist_needed.emit(artist)
-            elif len(song.artists) == 1:
-                self.show_artist_needed.emit(song.artists[0])
-
-        elif index.column() == 4 and song.album:
-            self.show_album_needed.emit(song.album)
-
-    def _on_db_click(self, index):
-        if index.column() == 1:
-            song = self.model().data(index, Qt.UserRole)
-            self.play_song_needed.emit(song)
-        elif index.column() == 2:
-            self.openPersistentEditor(index)
+        self.activated.connect(self._on_activated)
 
     def _on_entered(self, index):
-        if self._entered_previous is not None:
-            self.closePersistentEditor(self._entered_previous)
+        if self._previous_entered is not None:
+            self.closePersistentEditor(self._previous_entered)
 
         # I'm genius!
         if self.state() == QAbstractItemView.NoState:
             _index = self.model().createIndex(index.row(), 2)
             self.openPersistentEditor(_index)
-            self._entered_previous = _index
+            self._previous_entered = _index
+
+    def _on_activated(self, index):
+        if index.column() == 1:
+            song = index.data(Qt.UserRole)
+            self.play_song_needed.emit(song)
+        elif index.column() == 3:
+            song = index.data(Qt.UserRole)
+            artists = song.artists
+            if artists is not None:
+                if len(artists) > 1:
+                    self.edit(index)
+                else:
+                    self.show_artist_needed.emit(artists[0])
 
     def leaveEvent(self, event):
         super().leaveEvent(event)
-        if self._entered_previous is not None:
-            self.closePersistentEditor(self._entered_previous)
+        if self._previous_entered is not None:
+            self.closePersistentEditor(self._previous_entered)

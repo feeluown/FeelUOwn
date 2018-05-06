@@ -243,6 +243,7 @@ class SongsTableContainer(QFrame):
             self._layout.addWidget(songs_table)
             self._layout.addSpacing(10)
         self.songs_table = songs_table
+        songs_table.show_artist_needed.connect(self.show_artist)
 
     def play_song(self, song):
         self._app.player.play_song(song)
@@ -255,12 +256,17 @@ class SongsTableContainer(QFrame):
         self._app.player.playlist.play_next()
 
     def show_playlist(self, playlist):
-        playlist_table_view = SongsTableView(self)
-        playlist_table_view.setModel(SongsTableModel(playlist.songs))
-        self.set_table(playlist_table_view)
+        songs_table_view = SongsTableView(self)
+        songs_table_view.setModel(SongsTableModel(playlist.songs))
+        self.set_table(songs_table_view)
         if playlist.cover:
             event_loop = asyncio.get_event_loop()
             event_loop.create_task(self.show_cover(playlist.cover))
+        self.songs_table.scrollToTop()
+
+    def show_artist(self, artist):
+        self.songs_table.setModel(SongsTableModel(artist.songs))
+        self.songs_table.scrollToTop()
 
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
@@ -271,9 +277,6 @@ class SongsTableContainer(QFrame):
         pixmap = QPixmap(img)
         if not pixmap.isNull():
             self.table_overview.set_cover(pixmap)
-
-    def show_artist(self, artist):
-        pass
 
     def show_album(self, album):
         pass
