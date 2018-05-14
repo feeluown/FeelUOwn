@@ -2,15 +2,15 @@
 
 > trying to be a hackable music player for \*nix
 
-当前主要精力从放在开发 [feeluown-core](https://github.com/cosven/FeelUOwn-core) 和 [feeluown-cli](https://github.com/cosven/FeelUOwn-cli) 上。
-feeluown 之后会集成 feeluown-core，甚至 feeluown-cli。
-
 ## Features
 
-1. 支持网易云音乐大部分功能
-2. 简单的插件机制
-3. 多平台支持
-4. TODO 远程控制（更方便的编写插件）
+- [x] 容易安装，不折腾
+- [ ] 网络操作异步化
+- [ ] 基于 TCP 的远程控制
+- [x] 支持网易云音乐部分功能（登录等）
+- [ ] 文档健全
+- [ ] 简单的插件机制
+- [x] 多平台支持
 
 ## screenshot
 ![截图](https://cloud.githubusercontent.com/assets/4962134/17672685/235ae556-6350-11e6-98c6-1f18051e5da1.png)
