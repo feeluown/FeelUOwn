@@ -37,7 +37,7 @@ class SongsTableModel(QAbstractTableModel):
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
 
-    def rowCount(self, _):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.songs)
 
     def columnCount(self, _):
@@ -83,7 +83,7 @@ class ArtistsModel(QAbstractListModel):
         super().__init__()
         self.artists = artists
 
-    def rowCount(self, _):
+    def rowCount(self, parent=QModelIndex()):
         return len(self.artists)
 
     def data(self, index, role):
@@ -213,7 +213,7 @@ class SongsTableView(QTableView):
             self.closePersistentEditor(self._previous_entered)
 
         # I'm genius!
-        if self.state() == QAbstractItemView.NoState:
+        if self.state() == QAbstractItemView.NoState and index.column() in (1, 2, ):
             _index = self.model().createIndex(index.row(), 2)
             self.openPersistentEditor(_index)
             self._previous_entered = _index
@@ -235,3 +235,26 @@ class SongsTableView(QTableView):
         super().leaveEvent(event)
         if self._previous_entered is not None:
             self.closePersistentEditor(self._previous_entered)
+
+    def setModel(self, model):
+        super().setModel(model)
+        self.show_all_rows()
+
+    def show_all_rows(self):
+        for i in range(self.model().rowCount()):
+            self.setRowHidden(i, False)
+
+    def filter_row(self, text):
+        # TODO: improve search algorithm
+        if not text:
+            self.show_all_rows()
+            return
+
+        songs = self.model().songs
+        for i, song in enumerate(songs):
+            if text.lower() not in song.title.lower()\
+                    and text not in song.album_name.lower()\
+                    and text not in song.artists_name.lower():
+                self.setRowHidden(i, True)
+            else:
+                self.setRowHidden(i, False)

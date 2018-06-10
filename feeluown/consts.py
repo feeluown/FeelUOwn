@@ -23,7 +23,6 @@ LOG_FILE = HOME_DIR + '/run.log'
 
 
 class PlaybackMode(Enum):
-    one_loop = '单曲循环'
-    sequential = '顺序'
-    loop = '全部循环'
-    random = '随机'
+    one_loop = '🔂'
+    loop = '🔁'
+    random = '🔀'

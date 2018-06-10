@@ -5,9 +5,10 @@ from functools import partial
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QFrame
+from PyQt5.QtWidgets import QApplication, QFrame, QStyle
 
 from fuocore.core.player import State as PlayerState
+from fuocore.core.source import Source
 
 from feeluown.config import config
 from .consts import DEFAULT_THEME_NAME, APP_ICON
@@ -40,7 +41,8 @@ class App(QFrame):
         self.plugins_manager = PluginsManager(self)
         self.version_manager = VersionManager(self)
         self.theme_manager.set_theme(DEFAULT_THEME_NAME)
-        self.load_qss()
+        self.provider_manager = Source(prvs=set())
+        # self.load_qss()
 
         self.ui = Ui(self)
         self._init_managers()
@@ -50,7 +52,6 @@ class App(QFrame):
         self.resize(1000, 618)
         self.setObjectName('app')
         QApplication.setWindowIcon(QIcon(APP_ICON))
-        self.set_theme_style()
 
         self.bind_signal()
         self.initialize()
@@ -83,7 +84,6 @@ class App(QFrame):
     def bind_signal(self):
         top_panel = self.ui.top_panel
         status_panel = self.ui.status_panel
-        pms_btn = top_panel.pc_panel.pms_btn
 
         self.player.state_changed.connect(self._on_player_status_changed)
         self.player.position_changed.connect(self._on_player_position_changed)
@@ -91,7 +91,7 @@ class App(QFrame):
         # FIXME:
         self.player.playlist.song_changed.connect(self._on_player_song_changed)
         self.player.playlist.playback_mode_changed.connect(
-            pms_btn.on_playback_mode_changed)
+            top_panel.pc_panel.on_playback_mode_changed)
 
         status_panel.theme_switch_btn.signal_change_theme.connect(
             self.theme_manager.choose)
@@ -119,24 +119,16 @@ class App(QFrame):
             painter.drawPixmap(0, 0, pixmap)
             painter.fillRect(self.rect(), bg_color)
 
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self.ui.adjust_widgets_size()
+
     def _init_managers(self):
         self.plugins_manager.scan()
         app_event_loop = asyncio.get_event_loop()
         app_event_loop.call_later(
             8, partial(asyncio.Task, self.version_manager.check_release()))
         self.tips_manager.show_random_tip()
-
-    def set_theme_style(self):
-        theme = self.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.background.name(),
-                   theme.foreground.name())
-        self.setStyleSheet(style_str)
 
     def message(self, text, error=False):
         self.ui.status_panel.message_label.show_message(text, error)
@@ -145,11 +137,11 @@ class App(QFrame):
         pass
 
     def _on_player_position_changed(self, ms):
-        self.ui.top_panel.pc_panel.progress_label.update_state(ms*1000)
+        self.ui.top_panel.pc_panel.on_position_changed(ms*1000)
         self.ui.top_panel.pc_panel.progress_slider.update_state(ms*1000)
 
     def _on_player_duration_changed(self, ms):
-        self.ui.top_panel.pc_panel.progress_label.set_duration(ms*1000)
+        self.ui.top_panel.pc_panel.on_duration_changed(ms*1000)
         self.ui.top_panel.pc_panel.progress_slider.set_duration(ms*1000)
 
     def _on_player_song_changed(self, song):
@@ -165,9 +157,9 @@ class App(QFrame):
     def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
         if state == PlayerState.playing:
-            pp_btn.setText('暂停')
+            pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         else:
-            pp_btn.setText('播放')
+            pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
 
     def _on_network_slow(self):
         network_status_label = self.ui.status_panel.network_status_label
@@ -187,7 +179,7 @@ class App(QFrame):
         network_status_label.set_state(0)
 
     def change_volume(self, value):
-        self.player.setVolume(value)
+        self.player.volume = value
 
     def show_current_playlist(self):
         pass

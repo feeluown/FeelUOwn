@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QItemDelegate,
     QListView,
     QPushButton,
+    QSizePolicy,
     QStyledItemDelegate,
     QSpinBox,
     QTableView,
@@ -64,6 +65,7 @@ class PlaylistsView(QListView):
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
 
         self.clicked.connect(self._on_clicked)
 

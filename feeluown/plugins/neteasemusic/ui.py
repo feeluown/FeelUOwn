@@ -1,6 +1,7 @@
-import asyncio
 import hashlib
+import json
 import logging
+import os
 
 from PyQt5.QtCore import pyqtSignal, Qt, pyqtSlot, QTime
 from PyQt5.QtGui import QColor, QImage, QPixmap
@@ -8,42 +9,33 @@ from PyQt5.QtWidgets import (QHBoxLayout, QVBoxLayout, QLineEdit, QHeaderView,
                              QMenu, QAction, QAbstractItemView,
                              QTableWidgetItem, QSizePolicy, QDialog, QFrame, QPushButton,
                              QScrollArea, QLabel)
-from fuocore.models import PlaylistModel, SongModel
 
-from feeluown.utils import set_alpha, parse_ms
-from .model import NUserModel
+from .consts import USER_PW_FILE
 
 logger = logging.getLogger(__name__)
 
 
-class LineInput(QLineEdit):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.setObjectName('line_input')
-        self.set_theme_style()
-
-    def set_theme_style(self):
-        pass
-
-
 class LoginDialog(QDialog):
-    def __init__(self, app, parent=None):
+    login_success = pyqtSignal([object])
+
+    def __init__(self, verify_captcha, verify_userpw, create_user, parent=None):
         super().__init__(parent)
-        self._app = app
+
+        self.verify_captcha = verify_captcha
+        self.verify_userpw = verify_userpw
+        self.create_user = create_user
 
         self.is_encrypted = False
         self.captcha_needed = False
         self.captcha_id = 0
 
-        self.username_input = LineInput(self)
-        self.pw_input = LineInput(self)
+        self.username_input = QLineEdit(self)
+        self.pw_input = QLineEdit(self)
         self.pw_input.setEchoMode(QLineEdit.Password)
         # self.remember_checkbox = FCheckBox(self)
         self.captcha_label = QLabel(self)
         self.captcha_label.hide()
-        self.captcha_input = LineInput(self)
+        self.captcha_input = QLineEdit(self)
         self.captcha_input.hide()
         self.hint_label = QLabel(self)
         self.ok_btn = QPushButton('登录', self)
@@ -52,26 +44,12 @@ class LoginDialog(QDialog):
         self.username_input.setPlaceholderText('网易邮箱或者手机号')
         self.pw_input.setPlaceholderText('密码')
 
-        self.setObjectName('login_dialog')
-        self.set_theme_style()
-        self.setup_ui()
-
         self.pw_input.textChanged.connect(self.dis_encrypt)
+        self.ok_btn.clicked.connect(self.login)
 
-    def fill(self, data):
-        self.username_input.setText(data['username'])
-        self.pw_input.setText(data['password'])
-        self.is_encrypted = True
-
-    def set_theme_style(self):
-        pass
-
-    def setup_ui(self):
         self.setFixedWidth(200)
-
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-
         self._layout.addWidget(self.username_input)
         self._layout.addWidget(self.pw_input)
         self._layout.addWidget(self.captcha_label)
@@ -79,6 +57,11 @@ class LoginDialog(QDialog):
         self._layout.addWidget(self.hint_label)
         # self._layout.addWidget(self.remember_checkbox)
         self._layout.addWidget(self.ok_btn)
+
+    def fill(self, data):
+        self.username_input.setText(data['username'])
+        self.pw_input.setText(data['password'])
+        self.is_encrypted = True
 
     def show_hint(self, text):
         self.hint_label.setText(text)
@@ -100,137 +83,56 @@ class LoginDialog(QDialog):
         self.captcha_id = data['captcha_id']
         self.captcha_input.show()
         self.captcha_label.show()
-        self._app.pixmap_from_url(url, self.captcha_label.setPixmap)
+        # FIXME: get pixmap from url
+        # self._app.pixmap_from_url(url, self.captcha_label.setPixmap)
 
     def dis_encrypt(self, text):
         self.is_encrypted = False
 
+    def login(self):
+        if self.captcha_needed:
+            captcha = str(self.captcha_input.text())
+            captcha_id = self.captcha_id
+            data = self.check_captcha(captcha_id, captcha)
+            if data['code'] == 200:
+                self.captcha_input.hide()
+                self.captcha_label.hide()
+            else:
+                self.captcha_verify(data)
 
-class LoginButton(QLabel):
-    clicked = pyqtSignal()
+        user_data = self.data
+        self.show_hint('正在登录...')
+        data = self.verify_userpw(user_data['username'], user_data['password'])
+        message = data['message']
+        self.show_hint(message)
+        if data['code'] == 200:
+            self.save_user_pw(user_data)
+            user = self.create_user(data)
+            self.login_success.emit(user)
+            self.hide()
+        elif data['code'] == 415:
+            self.captcha_verify(data)
 
-    def __init__(self, app, text=None, parent=None):
-        super().__init__(text, parent)
-        self._app = app
+    def save_user_pw(self, data):
+        with open(USER_PW_FILE, 'w+') as f:
+            if f.read() == '':
+                d = dict()
+            else:
+                d = json.load(f)
+            d['default'] = data['username']
+            d[d['default']] = data
+            json.dump(d, f, indent=4)
 
-        self.setText('登录')
-        self.setToolTip('登陆网易云音乐')
-        self.setObjectName('nem_login_btn')
-        self.set_theme_style()
+        logger.info('save username and password to %s' % USER_PW_FILE)
 
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-                color: {1};
-            }}
-            #{0}:hover {{
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.foreground.name(),
-                   theme.color4.name())
-        self.setStyleSheet(style_str)
+    def load_user_pw(self):
+        if not os.path.exists(USER_PW_FILE):
+            return
+        with open(USER_PW_FILE, 'r') as f:
+            d = json.load(f)
+            data = d[d['default']]
+        self.username_input.setText(data['username'])
+        self.pw_input.setText(data['password'])
+        self.is_encrypted = True
 
-    def mouseReleaseEvent(self, event):
-        if event.button() == Qt.LeftButton and \
-                self.rect().contains(event.pos()):
-            self.clicked.emit()
-
-    def set_avatar(self, url):
-        pixmap = self._app.pixmap_from_url(url)
-        if pixmap is not None:
-            self.setPixmap(pixmap.scaled(self.size(),
-                           transformMode=Qt.SmoothTransformation))
-
-
-class _TagCellWidget(QFrame):
-    def __init__(self, app):
-        super().__init__()
-        self._app = app
-        self.setObjectName('tag_cell')
-
-        self.download_tag = QLabel('✓', self)
-        self.download_flag = False
-        self.download_tag.setObjectName('download_tag')
-        self.download_tag.setAlignment(Qt.AlignCenter)
-
-        self.set_theme_style()
-
-        self._layout = QHBoxLayout(self)
-        self.setup_ui()
-
-    @property
-    def download_label_style(self):
-        theme = self._app.theme_manager.current_theme
-        background = set_alpha(theme.color7, 50).name(QColor.HexArgb)
-        if self.download_flag:
-            color = theme.color4.name()
-        else:
-            color = set_alpha(theme.color7, 30).name(QColor.HexArgb)
-        style_str = '''
-            #download_tag {{
-                color: {0};
-                background: {1};
-                border-radius: 10px;
-            }}
-        '''.format(color, background)
-        return style_str
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: transparent;
-            }}
-        '''.format(self.objectName())
-        style_str = style_str + self.download_label_style
-
-        self.setStyleSheet(style_str)
-
-    def set_download_tag(self):
-        self.download_flag = True
-        self.set_theme_style()
-
-    def setup_ui(self):
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.download_tag)
-        self._layout.addSpacing(10)
-        self._layout.addStretch(1)
-        self.download_tag.setFixedSize(20, 20)
-
-
-
-class Ui(object):
-    def __init__(self, app):
-        super().__init__()
-        self._app = app
-
-        self.login_dialog = LoginDialog(self._app, self._app)
-        self.login_btn = LoginButton(self._app)
-        self._lb_container = QFrame()
-
-        self._lbc_layout = QHBoxLayout(self._lb_container)
-
-        self.setup()
-
-    def setup(self):
-
-        self._lbc_layout.setContentsMargins(0, 0, 0, 0)
-        self._lbc_layout.setSpacing(0)
-
-        self._lbc_layout.addWidget(self.login_btn)
-        self.login_btn.setFixedSize(30, 30)
-        self._lbc_layout.addSpacing(10)
-
-        tp_layout = self._app.ui.top_panel.layout()
-        tp_layout.addWidget(self._lb_container)
-
-    def on_login_in(self):
-        self.login_btn.setToolTip('点击可刷新歌单列表')
-        if self.login_dialog.isVisible():
-            self.login_dialog.hide()
+        logger.info('load username and password from %s' % USER_PW_FILE)

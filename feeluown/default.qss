@@ -1,8 +1,19 @@
 /* 主题：时代在进步 */
 
+App {{
+    background: {background};
+    color: {foreground};
+}}
+
 #artists_selection_view {{
     background: {background};
     color: {foreground};
+}}
+
+LeftPanel_Container {{
+    background: transparent;
+    border: 0px;
+    border-right: 3px inset {color0_light};
 }}
 
 QFrame {{
@@ -95,7 +106,18 @@ QTableView QPushButton:hover {{
     font-size: 20px;
     color: {color4};
 }}
-TableControl SearchBox {{
+
+RightPanel {{
+    background: transparent;
+    padding: 20px 30px 0px 30px;
+}}
+
+RightPanel_Container {{
+    background: transparent;
+    border: 0px;
+}}
+
+SearchBox {{
     padding-left: 3px;
     font-size: 14px;
     background: transparent;
@@ -104,7 +126,7 @@ TableControl SearchBox {{
     color: {foreground};
     outline: none;
 }}
-TableControl SearchBox:focus {{
+SearchBox:focus {{
     outline: none;
 }}
 
@@ -122,6 +144,12 @@ TableControl QPushButton {{
 
 TableControl QPushButton:hover {{
     color: {color0};
+}}
+
+TopPanel {{
+    background: transparent;
+    color: {foreground};
+    border-top: 3px inset {color0_light};
 }}
 
 PlayerControlPanel QPushButton {{

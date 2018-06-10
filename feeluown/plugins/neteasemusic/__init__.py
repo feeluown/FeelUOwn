@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def enable(app):
     nem = Nem(app)
-    nem.ready_to_login()
+    nem.initialize()
     logger.info('neteasemusic plugin enabled')
 
 
