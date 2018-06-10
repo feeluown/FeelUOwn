@@ -9,11 +9,12 @@ sys.path.append(os.path.dirname(sys.path[0]))
 from PyQt5.QtWidgets import QApplication
 from quamash import QEventLoop
 
+from feeluown import logger_config
 from feeluown.app import App
+from feeluown.rcfile import load_rcfile
 from feeluown.consts import (HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
                              CACHE_DIR, USER_THEMES_DIR, SONG_DIR)
 from feeluown.config import config
-from feeluown import logger_config
 
 
 def parse_args(args):
@@ -45,6 +46,7 @@ sys.path.append(USER_PLUGINS_DIR)
 
 def main():
     parse_args(sys.argv)
+    load_rcfile()
 
     q_app = QApplication(sys.argv)
     q_app.setQuitOnLastWindowClosed(True)

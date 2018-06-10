@@ -4,6 +4,7 @@ import os
 import configparser
 import logging
 import random
+from itertools import chain
 
 from PyQt5.QtWidgets import QWidget
 from PyQt5.QtGui import QColor
@@ -201,3 +202,44 @@ class Theme(object):
     def _parse_color_str(self, color_str):
         rgb = [int(x) for x in color_str.split(',')]
         return QColor(rgb[0], rgb[1], rgb[2])
+
+
+def get_colors_ctx(theme):
+    return {
+        'background': theme.background.name(),
+        'background_light': theme.background_light.name(),
+        'foreground': theme.foreground.name(),
+        'foreground_light': theme.foreground_light.name(),
+        'color0': theme.color0.name(),
+        'color1': theme.color1.name(),
+        'color2': theme.color2.name(),
+        'color3': theme.color3.name(),
+        'color4': theme.color4.name(),
+        'color5': theme.color5.name(),
+        'color6': theme.color6.name(),
+        'color7': theme.color7.name(),
+        'color0_light': theme.color0_light.name(),
+        'color1_light': theme.color1_light.name(),
+        'color2_light': theme.color2_light.name(),
+        'color3_light': theme.color3_light.name(),
+        'color4_light': theme.color4_light.name(),
+        'color5_light': theme.color5_light.name(),
+        'color6_light': theme.color6_light.name(),
+        'color7_light': theme.color7_light.name(),
+    }
+
+
+def set_stylesheet(theme, widget):
+    def do(w):
+        object_name = w.objectName()
+        ctx = get_colors_ctx(theme)
+        ctx.update({'object_name': object_name})
+        stylesheet = w.style_fmt.format(**ctx)
+        w.setStyleSheet(stylesheet)
+
+    discovered_w_list = []
+    for w in chain([widget], discovered_w_list):
+        if isinstance(w, QWidget):
+            discovered_w_list += w.children()
+            if hasattr(w, 'style_fmt'):
+                do(w)

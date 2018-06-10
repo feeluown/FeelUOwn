@@ -14,12 +14,10 @@ logger = logging.getLogger(__name__)
 class ImgController(object):
     def __init__(self, app):
         super().__init__()
-
         self._app = app
         self.cache = _ImgCache(self._app)
 
-    @asyncio.coroutine
-    def get(self, img_url, img_name):
+    async def get(self, img_url, img_name):
         fpath = self.cache.get(img_name)
         if fpath is not None:
             with open(fpath, 'rb') as f:
@@ -27,10 +25,9 @@ class ImgController(object):
             self.cache.update(img_name)
             return content
         event_loop = asyncio.get_event_loop()
-        future = event_loop.run_in_executor(
+        res = await event_loop.run_in_executor(
             None,
             partial(self._app.request.get, img_url))
-        res = yield from future
         if res is None:
             return None
         fpath = self.cache.create(img_name)

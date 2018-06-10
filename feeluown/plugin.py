@@ -25,10 +25,11 @@ class PluginsManager(object):
         plugin.disable(self._app)
 
     def scan(self):
+        logger.debug('Scaning plugins...')
         modules_name = [p for p in os.listdir(PLUGINS_DIR)
                         if os.path.isdir(os.path.join(PLUGINS_DIR, p))]
-        modules_name.extend([p for p in os.listdir(USER_PLUGINS_DIR)
-                             if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
+        #modules_name.extend([p for p in os.listdir(USER_PLUGINS_DIR)
+        #                     if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
         for module_name in modules_name:
             try:
                 module = importlib.import_module(module_name)
@@ -38,3 +39,4 @@ class PluginsManager(object):
                 logger.info('detect plugin: %s.' % plugin_name)
             except:
                 logger.exception('detect a bad plugin %s' % module_name)
+        logger.debug('Scaning plugins...done')

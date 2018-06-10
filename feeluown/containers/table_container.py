@@ -1,0 +1,182 @@
+import asyncio
+
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette
+from PyQt5.QtWidgets import (
+    QDialog,
+    QFrame,
+    QHBoxLayout,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QScrollArea,
+    QSizePolicy,
+    QVBoxLayout,
+    QWidget,
+)
+
+from feeluown.components.songs import SongsTableModel, SongsTableView
+
+
+class DescriptionContainer(QScrollArea):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self._label = QLabel(self)
+        self._label.setWordWrap(True)
+        self._label.setTextFormat(Qt.RichText)
+        self._label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setWidget(self._label)
+        self.setWidgetResizable(True)
+
+        self.setFrameShape(QFrame.NoFrame)
+        self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+    @property
+    def html(self):
+        return self._label.text()
+
+    def set_html(self, desc):
+        self._label.setText(desc)
+
+    def keyPressEvent(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_Space:
+            # TODO: show more, show less
+            pass
+        elif key_code == Qt.Key_J:
+            value = self.verticalScrollBar().value()
+            self.verticalScrollBar().setValue(value + 20)
+        elif key_code == Qt.Key_K:
+            value = self.verticalScrollBar().value()
+            self.verticalScrollBar().setValue(value - 20)
+        else:
+            super().keyPressEvent(event)
+
+
+class TableOverview(QFrame):
+    def __init__(self, parent):
+        super().__init__(parent)
+
+        self.cover_label = QLabel(self)
+        self._title_label = QLabel(self)
+        self._desc_container = DescriptionContainer(self)
+        self.cover_label.setFixedWidth(160)
+
+        self._title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self._desc_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+
+        self._layout = QHBoxLayout(self)
+        self._right_sub_layout = QVBoxLayout()
+        self._right_sub_layout.addWidget(self._title_label)
+        self._right_sub_layout.addStretch(0)
+        self._right_sub_layout.addWidget(self._desc_container)
+        self._right_sub_layout.setStretch(2, 1)
+        self._layout.addWidget(self.cover_label)
+        self._layout.addSpacing(10)
+        self._layout.addLayout(self._right_sub_layout)
+        self._layout.setStretch(1, 1)
+        self.setMaximumHeight(180)
+
+    def set_cover(self, pixmap):
+        self.cover_label.setPixmap(
+            pixmap.scaledToWidth(self.cover_label.width(),
+                                 mode=Qt.SmoothTransformation))
+
+    def set_name(self, name):
+        self._title_label.setText('<h3>{name}</h3>'.format(name=name))
+        self._title_label.setTextFormat(Qt.RichText)
+
+    def set_desc(self, desc):
+        if desc:
+            self._desc_container.show()
+            self._desc_container.set_html(desc)
+        else:
+            self._desc_container.hide()
+
+
+class SongsTableContainer(QFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.songs_table = SongsTableView(self)
+        self.table_overview = TableOverview(self)
+        self._layout = QVBoxLayout(self)
+
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self._layout.addWidget(self.table_overview)
+        self._layout.addSpacing(10)
+        self._layout.addWidget(self.songs_table)
+        self._layout.addSpacing(10)
+
+        self.songs_table.play_song_needed.connect(
+            lambda song: asyncio.ensure_future(self.play_song(song)))
+        self.songs_table.show_artist_needed.connect(
+            lambda artist: asyncio.ensure_future(self.show_artist(artist)))
+        self.hide()
+
+    async def play_song(self, song):
+        # TODO: fetch url asynchronous
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(None, lambda: song.url)
+        self._app.player.play_song(song)
+
+    def play_all(self):
+        songs = self.songs_table.model().songs
+        self._app.player.playlist.clear()
+        for song in songs:
+            self._app.player.playlist.add(song)
+        self._app.player.playlist.play_next()
+
+    async def show_playlist(self, playlist):
+        self.show()
+        self.table_overview.show()
+        loop = asyncio.get_event_loop()
+        songs = await loop.run_in_executor(None, lambda: playlist.songs)
+        self.songs_table.setModel(SongsTableModel(songs))
+        self.table_overview.set_name(playlist.name)
+        self.table_overview.set_desc(playlist.description or '')
+        if playlist.cover:
+            loop.create_task(self.show_cover(playlist.cover))
+        self.songs_table.scrollToTop()
+
+    async def show_artist(self, artist):
+        self.show()
+        loop = asyncio.get_event_loop()
+        songs = await loop.run_in_executor(None, lambda: artist.songs)
+        if songs:
+            self.table_overview.show()
+            self.songs_table.setModel(SongsTableModel(songs))
+            self.songs_table.scrollToTop()
+
+    async def show_cover(self, cover):
+        # FIXME: cover_hash may not work properly someday
+        cover_uid = cover.split('/', -1)[-1]
+        content = await self._app.img_ctl.get(cover, cover_uid)
+        img = QImage()
+        img.loadFromData(content)
+        pixmap = QPixmap(img)
+        if not pixmap.isNull():
+            self.table_overview.set_cover(pixmap)
+
+    def show_album(self, album):
+        pass
+
+    def show_songs(self, songs):
+        self.show()
+        self.table_overview.hide()
+        self.songs_table.setModel(SongsTableModel(songs))
+        self.songs_table.scrollToTop()
+
+    def search(self, text):
+        if self.songs_table is not None:
+            self.songs_table.filter_row(text)

@@ -1,0 +1,6 @@
+[MASTER]
+disable=
+    missing-docstring,
+    too-few-public-methods,
+    no-name-in-module,  # seems not working for PyQt5
+    invalid-name
