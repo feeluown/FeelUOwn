@@ -213,6 +213,9 @@ class App(QFrame):
             QApplication.instance().setStyleSheet(s)
 
     def closeEvent(self, event):
-        self.player.stop()
-        self.player.shutdown()
+        try:
+            self.player.stop()
+            self.player.shutdown()
+        except Exception as e:
+            pass
         QApplication.quit()
