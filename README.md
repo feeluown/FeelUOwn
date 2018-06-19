@@ -2,6 +2,8 @@
 
 > trying to be a hackable music player for \*nix
 
+**WARNING**:  需要 [feeluown-core](https://github.com/cosven/feeluown-core) master 分支代码配合食用
+
 ## Features
 
 - [x] 容易安装，不折腾

@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QScrollArea,
     QSizePolicy,
     QSlider,
+    QSplitter,
     QStyle,
     QVBoxLayout,
     QWidget,
@@ -22,6 +23,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown import __upgrade_desc__
 from feeluown.components.searchbox import SearchBox
+from feeluown.components.separator import Separator
 from feeluown.components.playlists import (
     PlaylistsView,
     PlaylistsModel,
@@ -156,16 +158,11 @@ class TopPanel(QFrame):
 
         self._layout = QHBoxLayout(self)
         self.pc_panel = PlayerControlPanel(self._app, self)
-        self.searchbox = SearchBox(self)
-
         self.setObjectName('top_panel')
 
         self.setFixedHeight(60)
-        self.searchbox.setMinimumWidth(80)
-        self.searchbox.setMaximumWidth(160)
+
         self._layout.addWidget(self.pc_panel)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.searchbox)
         self._layout.addSpacing(10)
 
 
@@ -192,6 +189,11 @@ class LeftPanel(QFrame):
         self._layout.addWidget(self.playlists_header)
         self._layout.addWidget(self.playlists_view)
 
+        self.libraries_view.setFrameShape(QFrame.NoFrame)
+        self.playlists_view.setFrameShape(QFrame.NoFrame)
+        self.setMinimumWidth(180)
+        self.setMaximumWidth(250)
+
     def add_library(self, library):
         self._libraries_model.libraries.append(library)
 
@@ -200,24 +202,7 @@ class LeftPanel(QFrame):
         self.playlists_view.setModel(model)
 
     async def show_playlist(self, playlist):
-        await self._app.ui.songs_table_container.show_playlist(playlist)
-
-
-class LeftPanel_Container(QScrollArea):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.left_panel = LeftPanel(self._app, self)
-        self.setWidget(self.left_panel)
-
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setWidgetResizable(True)
-
-        self.setObjectName('c_left_panel_container')
-        self.setMinimumWidth(180)
-        self.setMaximumWidth(200)
+        await self._app.ui.songs_table_container.show_model(playlist)
 
 
 class RightPanel(QFrame):
@@ -244,41 +229,18 @@ class RightPanel(QFrame):
         self.widget = widget
 
 
-class RightPanel_Container(QScrollArea):
+class RightPanel_Container(QWidget):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
         self.right_panel = RightPanel(self._app)
         self._layout = QVBoxLayout(self)
-        self.setWidget(self.right_panel)
-
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setWidgetResizable(True)
-
-        self.setObjectName('c_left_panel')
-
+        self._layout.addWidget(self.right_panel)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
-
-class CentralPanel(QFrame):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.left_panel_container = LeftPanel_Container(self._app, self)
-        self.right_panel_container = RightPanel_Container(self._app, self)
-        self.left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
-        self.right_panel_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-
-        self.left_panel = self.left_panel_container.left_panel
-        self.right_panel = self.right_panel_container.right_panel
-
-        self._layout = QHBoxLayout(self)
-        self._layout.addWidget(self.left_panel_container)
-        self._layout.addWidget(self.right_panel_container)
+        self.setMinimumWidth(780)
 
 
 class SongLabel(QLabel):
@@ -695,34 +657,47 @@ class Ui(object):
     def __init__(self, app):
         self._app = app
         self._layout = QVBoxLayout(app)
+        self._top_separator = Separator(app)
+        self._splitter = QSplitter(app)
+
         self.top_panel = TopPanel(app, app)
-        self.central_panel = CentralPanel(app, app)
+        self.left_panel = LeftPanel(self._app, self._splitter)
+        self.right_panel_container = RightPanel_Container(self._app, self._splitter)
+        self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.right_panel_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        self.right_panel = self.right_panel_container.right_panel
+        self.searchbox = SearchBox(self._app)
+
+        self._splitter.addWidget(self.left_panel)
+        self._splitter.addWidget(self.right_panel_container)
+
         self.status_panel = StatusPanel(app, app)
 
-        self.songs_table_container = SongsTableContainer(self._app, self.central_panel)
-        self.central_panel.right_panel.set_widget(self.songs_table_container)
+        self.songs_table_container = SongsTableContainer(self._app, self.right_panel_container)
+        self.right_panel.set_widget(self.songs_table_container)
 
+        # self.searchbox.setFrame(False)
         self.status_panel.hide()
 
         self._layout.addWidget(self.top_panel)
-        self._layout.addWidget(self.central_panel)
+        self._layout.addWidget(self._top_separator)
+        self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.status_panel)
+        self._layout.addWidget(self.searchbox)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
         self.adjust_widgets_size()
 
-        self.top_panel.searchbox.textChanged.connect(self.songs_table_container.search)
-        self.top_panel.searchbox.returnPressed.connect(self.search_library)
+        self.searchbox.textChanged.connect(self.songs_table_container.search)
+        self.searchbox.returnPressed.connect(self.search_library)
 
     def adjust_widgets_size(self):
-        self.central_panel.layout().setSpacing(0)
-        self.central_panel.layout().setContentsMargins(0, 0, 0, 0)
-
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
     def search_library(self):
-        text = self.top_panel.searchbox.text()
+        text = self.searchbox.text()
         songs = self._app.provider_manager.search(text)
         self.songs_table_container.show_songs(songs)

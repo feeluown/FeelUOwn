@@ -205,19 +205,19 @@ class SongsTableView(QTableView):
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
 
-        self.entered.connect(self._on_entered)
+        # self.entered.connect(self._on_entered)
         self.activated.connect(self._on_activated)
 
-    def _on_entered(self, index):
-        if self._previous_entered is not None:
-            self.closePersistentEditor(self._previous_entered)
-
-        # I'm genius!
-        if self.state() == QAbstractItemView.NoState and index.column() in (1, 2, ):
-            _index = self.model().createIndex(index.row(), 2)
-            self.openPersistentEditor(_index)
-            self._previous_entered = _index
-
+#    def _on_entered(self, index):
+#        if self._previous_entered is not None:
+#            self.closePersistentEditor(self._previous_entered)
+#
+#        # I'm genius!
+#        if self.state() == QAbstractItemView.NoState and index.column() in (1, 2, ):
+#            _index = self.model().createIndex(index.row(), 2)
+#            self.openPersistentEditor(_index)
+#            self._previous_entered = _index
+#
     def _on_activated(self, index):
         if index.column() == 1:
             song = index.data(Qt.UserRole)
@@ -230,12 +230,16 @@ class SongsTableView(QTableView):
                     self.edit(index)
                 else:
                     self.show_artist_needed.emit(artists[0])
+        elif index.column() == 4:
+            song = index.data(Qt.UserRole)
+            if song.album:
+                self.show_album_needed.emit(song.album)
 
-    def leaveEvent(self, event):
-        super().leaveEvent(event)
-        if self._previous_entered is not None:
-            self.closePersistentEditor(self._previous_entered)
-
+#    def leaveEvent(self, event):
+#        super().leaveEvent(event)
+#        if self._previous_entered is not None:
+#            self.closePersistentEditor(self._previous_entered)
+#
     def setModel(self, model):
         super().setModel(model)
         self.show_all_rows()
@@ -248,6 +252,8 @@ class SongsTableView(QTableView):
         # TODO: improve search algorithm
         if not text:
             self.show_all_rows()
+            return
+        if not self.model():
             return
 
         songs = self.model().songs

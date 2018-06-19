@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette
@@ -8,6 +9,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QLabel,
     QLineEdit,
+    QListView,
     QPushButton,
     QScrollArea,
     QSizePolicy,
@@ -15,7 +17,11 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from fuocore import ModelType
 from feeluown.components.songs import SongsTableModel, SongsTableView
+
+
+logger = logging.getLogger(__name__)
 
 
 class DescriptionContainer(QScrollArea):
@@ -67,7 +73,6 @@ class TableOverview(QFrame):
         self.cover_label = QLabel(self)
         self._title_label = QLabel(self)
         self._desc_container = DescriptionContainer(self)
-        self.cover_label.setFixedWidth(160)
 
         self._title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._desc_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
@@ -83,6 +88,7 @@ class TableOverview(QFrame):
         self._layout.addSpacing(10)
         self._layout.addLayout(self._right_sub_layout)
         self._layout.setStretch(1, 1)
+        self.cover_label.setFixedWidth(160)
         self.setMaximumHeight(180)
 
     def set_cover(self, pixmap):
@@ -109,6 +115,7 @@ class SongsTableContainer(QFrame):
 
         self.songs_table = SongsTableView(self)
         self.table_overview = TableOverview(self)
+
         self._layout = QVBoxLayout(self)
 
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -121,7 +128,9 @@ class SongsTableContainer(QFrame):
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
         self.songs_table.show_artist_needed.connect(
-            lambda artist: asyncio.ensure_future(self.show_artist(artist)))
+            lambda artist: asyncio.ensure_future(self.show_model(artist)))
+        self.songs_table.show_album_needed.connect(
+            lambda album: asyncio.ensure_future(self.show_model(album)))
         self.hide()
 
     async def play_song(self, song):
@@ -137,26 +146,48 @@ class SongsTableContainer(QFrame):
             self._app.player.playlist.add(song)
         self._app.player.playlist.play_next()
 
+    async def show_model(self, model):
+        model_type = model.type_
+        if model_type == ModelType.album:
+            func = self.show_album
+        elif model_type == ModelType.artist:
+            func = self.show_artist
+        elif model_type == ModelType.playlist:
+            func = self.show_playlist
+        else:
+            func = lambda model: None
+        await func(model)
+
     async def show_playlist(self, playlist):
-        self.show()
         self.table_overview.show()
         loop = asyncio.get_event_loop()
         songs = await loop.run_in_executor(None, lambda: playlist.songs)
-        self.songs_table.setModel(SongsTableModel(songs))
+        self._show_songs(songs)
         self.table_overview.set_name(playlist.name)
-        self.table_overview.set_desc(playlist.description or '')
+        self.table_overview.set_desc(playlist.desc or '')
         if playlist.cover:
             loop.create_task(self.show_cover(playlist.cover))
-        self.songs_table.scrollToTop()
 
     async def show_artist(self, artist):
-        self.show()
+        self.table_overview.show()
         loop = asyncio.get_event_loop()
         songs = await loop.run_in_executor(None, lambda: artist.songs)
+        self.table_overview.set_desc(artist.desc or '')
+        self.table_overview.set_name(artist.name)
         if songs:
-            self.table_overview.show()
-            self.songs_table.setModel(SongsTableModel(songs))
-            self.songs_table.scrollToTop()
+            self._show_songs(songs)
+        if artist.cover:
+            loop.create_task(self.show_cover(artist.cover))
+
+    async def show_album(self, album):
+        loop = asyncio.get_event_loop()
+        songs = await loop.run_in_executor(None, lambda: album.songs)
+        self.table_overview.set_name(album.name)
+        self.table_overview.set_desc(album.desc or '')
+        if songs:
+            self._show_songs(songs)
+        if album.cover:
+            loop.create_task(self.show_cover(album.cover))
 
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
@@ -168,15 +199,15 @@ class SongsTableContainer(QFrame):
         if not pixmap.isNull():
             self.table_overview.set_cover(pixmap)
 
-    def show_album(self, album):
-        pass
-
-    def show_songs(self, songs):
+    def _show_songs(self, songs):
         self.show()
-        self.table_overview.hide()
         self.songs_table.setModel(SongsTableModel(songs))
         self.songs_table.scrollToTop()
 
+    def show_songs(self, songs):
+        self._show_songs(songs)
+        self.table_overview.hide()
+
     def search(self, text):
-        if self.songs_table is not None:
+        if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
