@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
     QPushButton,
     QScrollArea,
     QSizePolicy,
+    QTabBar,
     QVBoxLayout,
     QWidget,
 )
@@ -156,6 +157,7 @@ class SongsTableContainer(QFrame):
             func = self.show_playlist
         else:
             func = lambda model: None
+        self._app.histories.append(model)
         await func(model)
 
     async def show_playlist(self, playlist):
@@ -174,8 +176,7 @@ class SongsTableContainer(QFrame):
         songs = await loop.run_in_executor(None, lambda: artist.songs)
         self.table_overview.set_desc(artist.desc or '')
         self.table_overview.set_name(artist.name)
-        if songs:
-            self._show_songs(songs)
+        self._show_songs(songs)
         if artist.cover:
             loop.create_task(self.show_cover(artist.cover))
 
@@ -184,8 +185,7 @@ class SongsTableContainer(QFrame):
         songs = await loop.run_in_executor(None, lambda: album.songs)
         self.table_overview.set_name(album.name)
         self.table_overview.set_desc(album.desc or '')
-        if songs:
-            self._show_songs(songs)
+        self._show_songs(songs)
         if album.cover:
             loop.create_task(self.show_cover(album.cover))
 
@@ -201,7 +201,7 @@ class SongsTableContainer(QFrame):
 
     def _show_songs(self, songs):
         self.show()
-        self.songs_table.setModel(SongsTableModel(songs))
+        self.songs_table.setModel(SongsTableModel(songs or []))
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):

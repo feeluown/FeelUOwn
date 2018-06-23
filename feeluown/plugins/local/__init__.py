@@ -21,10 +21,11 @@ def enable(app):
     library = LibraryModel(
         identifier='local',
         name='本地音乐',
-        icon='♪ ',
+        icon='♪  ',
         load_cb=partial(app.ui.songs_table_container.show_songs, provider.songs)
     )
-    app.ui.left_panel.add_library(library)
+    app.libraries.add_library(library)
+    app.ui.songs_table_container.show_songs(provider.songs)
 
 
 def disable(app):

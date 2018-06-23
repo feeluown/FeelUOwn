@@ -16,6 +16,7 @@ setup(
         'feeluown.containers',
         'feeluown.components',
         'feeluown.plugins.neteasemusic',
+        'feeluown.plugins.local',
         ],
     package_data={
         '': ['themes/*.colorscheme', '*.png']
@@ -23,18 +24,16 @@ setup(
     url='https://github.com/cosven/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'python3'],
     classifiers=(
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3 :: Only',
         'Environment :: X11 Applications :: Qt',
         ),
     # FIXME depends on PyQt5 , but cannot put that in a setup.py
     install_requires=[
         'quamash>=0.5.5',
-        'fuocore>1.0.0,<2.0',
-        'pycrypto',
+        'fuocore>=2.0a0',
         'requests',
-        'beautifulsoup4',
         ],
     tests_require=['pytest'],
     entry_points={

@@ -24,6 +24,9 @@ class LibrariesModel(QAbstractListModel):
         super().__init__(parent)
         self.libraries = libraries or []
 
+    def add_library(self, library):
+        self.libraries.append(library)
+
     def rowCount(self, parent=QModelIndex()):
         return len(self.libraries)
 

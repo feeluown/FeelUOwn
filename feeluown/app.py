@@ -11,6 +11,9 @@ from fuocore.core.player import State as PlayerState
 from fuocore.core.source import Source
 
 from feeluown.config import config
+from feeluown.components.history import HistoriesModel
+from feeluown.components.library import LibrariesModel
+
 from .consts import DEFAULT_THEME_NAME, APP_ICON
 from .hotkey import Hotkey
 from .img_ctl import ImgController
@@ -44,7 +47,11 @@ class App(QFrame):
         self.provider_manager = Source(prvs=set())
         # self.load_qss()
 
+        self.histories = HistoriesModel(parent=self)
+        self.libraries = LibrariesModel([], parent=self)
+
         self.ui = Ui(self)
+
         self._init_managers()
 
         self.player_pixmap = None
@@ -89,9 +96,10 @@ class App(QFrame):
         self.player.position_changed.connect(self._on_player_position_changed)
         self.player.duration_changed.connect(self._on_player_duration_changed)
         # FIXME:
-        self.player.playlist.song_changed.connect(self._on_player_song_changed)
         self.player.playlist.playback_mode_changed.connect(
             top_panel.pc_panel.on_playback_mode_changed)
+        self.player.playlist.song_changed.connect(
+            top_panel.pc_panel.on_player_song_changed)
 
         status_panel.theme_switch_btn.signal_change_theme.connect(
             self.theme_manager.choose)
@@ -121,7 +129,6 @@ class App(QFrame):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        self.ui.adjust_widgets_size()
 
     def _init_managers(self):
         self.plugins_manager.scan()
@@ -143,16 +150,6 @@ class App(QFrame):
     def _on_player_duration_changed(self, ms):
         self.ui.top_panel.pc_panel.on_duration_changed(ms*1000)
         self.ui.top_panel.pc_panel.progress_slider.set_duration(ms*1000)
-
-    def _on_player_song_changed(self, song):
-        song_label = self.ui.top_panel.pc_panel.song_title_label
-        song_label.set_song(song.title + ' - ' + song.artists_name)
-
-        # FIXME: optimize performance
-        # self.player_pixmap = self.pixmap_from_url(url)
-        # if self.player_pixmap is not None:
-        #     QApplication.setWindowIcon(QIcon(self.player_pixmap))
-        # self.update()
 
     def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn

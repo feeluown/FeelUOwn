@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
-from PyQt5.QtGui import QFontMetrics, QPainter, QFont
+from PyQt5.QtGui import QFontMetrics, QPainter, QFont, QKeySequence
 from PyQt5.QtWidgets import (
     QAction,
     QComboBox,
@@ -28,7 +28,8 @@ from feeluown.components.playlists import (
     PlaylistsView,
     PlaylistsModel,
 )
-from feeluown.components.library import LibrariesView, LibrariesModel
+from feeluown.components.library import LibrariesView
+from feeluown.components.history import HistoriesView
 from feeluown.containers.table_container import SongsTableContainer
 
 from .consts import PlaybackMode
@@ -89,13 +90,13 @@ class PlayerControlPanel(QFrame):
         self.next_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))
         self.volume_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaVolume))
 
-        self.song_title_label = SongLabel(parent=self)
+        self.song_title_label = QLabel('No song is playing.', parent=self)
         self.song_title_label.setAlignment(Qt.AlignCenter)
         self.duration_label = QLabel('00:00', parent=self)
         self.position_label = QLabel('00:00', parent=self)
         self.progress_slider = ProgressSlider(self)
         self.volume_slider = VolumeSlider(self)
-        self.volume_slider.hide()
+        #self.volume_slider.hide()
         self.volume_btn.hide()
 
         self.next_btn.clicked.connect(self._app.player.playlist.play_next)
@@ -104,11 +105,11 @@ class PlayerControlPanel(QFrame):
 
         # set widget layout
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.progress_slider.setMinimumWidth(400)
+        self.progress_slider.setMinimumWidth(480)
         self.progress_slider.setMaximumWidth(700)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._sub_layout = QVBoxLayout()
-        self.volume_slider.setMaximumWidth(150)
+        self.volume_slider.setMaximumWidth(200)
         self._sub_layout.addWidget(self.song_title_label)
         self._sub_layout.addWidget(self.progress_slider)
 
@@ -122,8 +123,6 @@ class PlayerControlPanel(QFrame):
 
         self._layout.addWidget(self.volume_btn)
         self._layout.addSpacing(10)
-        self._layout.addWidget(self.volume_slider)
-        self._layout.addSpacing(10)
 
         self._layout.addStretch(1)
         self._layout.addWidget(self.position_label)
@@ -133,6 +132,8 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.duration_label)
         self._layout.addSpacing(10)
         self._layout.addStretch(1)
+        self._layout.addWidget(self.volume_slider)
+        self._layout.addSpacing(10)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -149,6 +150,12 @@ class PlayerControlPanel(QFrame):
 
     def on_playback_mode_changed(self, playback_mode):
         self.pms_btn.setText(playback_mode.value)
+
+    def on_player_song_changed(self, song):
+        self.song_title_label.setText(
+            '♪  {title} - {artists_name}'.format(
+                title=song.title,
+                artists_name=song.artists_name))
 
 
 class TopPanel(QFrame):
@@ -173,35 +180,42 @@ class LeftPanel(QFrame):
         self._app = app
 
         self.library_header = QLabel('我的音乐', self)
-        self.playlists_header = QLabel('播放列表', self)
+        self.playlists_header = QLabel('歌单列表', self)
+        self.history_header = QLabel('历史记录', self)
 
-        self._libraries_model = LibrariesModel([], self)
         self.playlists_view = PlaylistsView(self)
         self.libraries_view = LibrariesView(self)
-        self.libraries_view.setModel(self._libraries_model)
+        self.histories_view = HistoriesView(self)
+        self._splitter = QSplitter(Qt.Vertical, self)
 
-        self.playlists_view.show_playlist.connect(
-            lambda pl: asyncio.ensure_future(self.show_playlist(pl)))
+        self.libraries_view.setModel(self._app.libraries)
+        self.histories_view.setModel(self._app.histories)
 
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self.library_header)
-        self._layout.addWidget(self.libraries_view)
-        self._layout.addWidget(self.playlists_header)
-        self._layout.addWidget(self.playlists_view)
+        self._splitter.addWidget(self.library_header)
+        self._splitter.addWidget(self.libraries_view)
+        self._splitter.addWidget(self.history_header)
+        self._splitter.addWidget(self.histories_view)
+        self._splitter.addWidget(self.playlists_header)
+        self._splitter.addWidget(self.playlists_view)
+        self._layout.addWidget(self._splitter)
 
         self.libraries_view.setFrameShape(QFrame.NoFrame)
         self.playlists_view.setFrameShape(QFrame.NoFrame)
+        self.histories_view.setFrameShape(QFrame.NoFrame)
         self.setMinimumWidth(180)
         self.setMaximumWidth(250)
 
-    def add_library(self, library):
-        self._libraries_model.libraries.append(library)
+        self.playlists_view.show_playlist.connect(
+            lambda pl: asyncio.ensure_future(self.show_model(pl)))
+        self.histories_view.show_model.connect(
+            lambda model: asyncio.ensure_future(self.show_model(model)))
 
     def set_playlists(self, playlists):
         model = PlaylistsModel(playlists, self)
         self.playlists_view.setModel(model)
 
-    async def show_playlist(self, playlist):
+    async def show_model(self, playlist):
         await self._app.ui.songs_table_container.show_model(playlist)
 
 
@@ -211,7 +225,6 @@ class RightPanel(QFrame):
         self._app = app
 
         self.widget = None
-
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
@@ -227,20 +240,6 @@ class RightPanel(QFrame):
         else:
             self._layout.addWidget(widget)
         self.widget = widget
-
-
-class RightPanel_Container(QWidget):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.right_panel = RightPanel(self._app)
-        self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self.right_panel)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
-        self.setMinimumWidth(780)
 
 
 class SongLabel(QLabel):
@@ -657,45 +656,51 @@ class Ui(object):
     def __init__(self, app):
         self._app = app
         self._layout = QVBoxLayout(app)
+        self._bottom_layout = QHBoxLayout(app)
         self._top_separator = Separator(app)
         self._splitter = QSplitter(app)
 
+        # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
+        # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
         self.left_panel = LeftPanel(self._app, self._splitter)
-        self.right_panel_container = RightPanel_Container(self._app, self._splitter)
-        self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
-        self.right_panel_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.right_panel = RightPanel(self._app, self._splitter)
 
-        self.right_panel = self.right_panel_container.right_panel
+        self.pc_panel = self.top_panel.pc_panel
         self.searchbox = SearchBox(self._app)
-
-        self._splitter.addWidget(self.left_panel)
-        self._splitter.addWidget(self.right_panel_container)
-
         self.status_panel = StatusPanel(app, app)
+        self.songs_table_container = SongsTableContainer(self._app, self.right_panel)
 
-        self.songs_table_container = SongsTableContainer(self._app, self.right_panel_container)
+        # 对部件进行一些 UI 层面的初始化
+        self._splitter.addWidget(self.left_panel)
+        self._splitter.addWidget(self.right_panel)
         self.right_panel.set_widget(self.songs_table_container)
-
-        # self.searchbox.setFrame(False)
+        self.searchbox.setFrame(False)
         self.status_panel.hide()
+
+        self.right_panel.setMinimumWidth(780)
+        self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self._layout.addWidget(self.top_panel)
         self._layout.addWidget(self._top_separator)
         self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.status_panel)
         self._layout.addWidget(self.searchbox)
+        # self._layout.addLayout(self._bottom_layout)
+        # self._bottom_layout.addWidget(self.searchbox)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
-
-        self.adjust_widgets_size()
+        self.top_panel.layout().setSpacing(0)
+        self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
         self.searchbox.textChanged.connect(self.songs_table_container.search)
         self.searchbox.returnPressed.connect(self.search_library)
 
-    def adjust_widgets_size(self):
-        self.top_panel.layout().setSpacing(0)
-        self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
+        self._app.hotkey_manager.registe(
+            [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
+            self.searchbox.setFocus
+        )
 
     def search_library(self):
         text = self.searchbox.text()
