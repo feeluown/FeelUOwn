@@ -2,12 +2,10 @@
 
 > trying to be a hackable music player for \*nix
 
-**WARNING**:  需要 [feeluown-core](https://github.com/cosven/feeluown-core) master 分支代码配合食用
-
 ## Features
 
 - [x] 容易安装，不折腾
-- [ ] 网络操作异步化
+- [-] 网络操作异步化
 - [ ] 基于 TCP 的远程控制
 - [x] 支持网易云音乐部分功能（登录等）
 - [ ] 文档健全
