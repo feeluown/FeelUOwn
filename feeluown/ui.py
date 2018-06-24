@@ -67,7 +67,6 @@ class PlayerControlPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
-        self.setStyleSheet('border: 1px solid red;')
 
         class Button(QPushButton):
             def __init__(self, *args, **kwargs):
