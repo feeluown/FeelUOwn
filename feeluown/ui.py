@@ -44,12 +44,9 @@ class VolumeSlider(QSlider):
         super().__init__(parent)
 
         self.setOrientation(Qt.Horizontal)
-        self.setMinimumWidth(100)
-        self.setObjectName('player_volume_slider')
-        self.setRange(0, 100)   # player volume range
-        self.setValue(100)
+        #self.setRange(0, 100)   # player volume range
+        #self.setValue(100)
         self.setToolTip('调教播放器音量')
-        self.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Minimum)
 
 
 class ProgressSlider(QSlider):
@@ -75,18 +72,21 @@ class PlayerControlPanel(QFrame):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
 
-                self.setFixedSize(40, 40)
+                # self.setFixedSize(40, 40)
 
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
         self.previous_btn = Button(self)
         self.pp_btn = Button(self)
+        self.next_btn = Button(self)
         self.pms_btn = Button(self)
         self.volume_btn = Button(self)
 
+        self.pms_btn.setToolTip('该功能尚未开发完成，欢迎 PR')
+        self.volume_btn.setToolTip('该功能尚未开发完成，欢迎 PR')
+
         self.previous_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
         self.pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-        self.next_btn = Button(self)
         self.next_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))
         self.volume_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaVolume))
 
@@ -95,21 +95,17 @@ class PlayerControlPanel(QFrame):
         self.duration_label = QLabel('00:00', parent=self)
         self.position_label = QLabel('00:00', parent=self)
         self.progress_slider = ProgressSlider(self)
-        self.volume_slider = VolumeSlider(self)
-        #self.volume_slider.hide()
-        self.volume_btn.hide()
 
         self.next_btn.clicked.connect(self._app.player.playlist.play_next)
         self.previous_btn.clicked.connect(self._app.player.playlist.play_previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
 
         # set widget layout
-        self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self.progress_slider.setMinimumWidth(480)
-        self.progress_slider.setMaximumWidth(700)
+        self.progress_slider.setMaximumWidth(600)
+        self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self._sub_layout = QVBoxLayout()
-        self.volume_slider.setMaximumWidth(200)
+        self._sub_layout = QVBoxLayout(self)
         self._sub_layout.addWidget(self.song_title_label)
         self._sub_layout.addWidget(self.progress_slider)
 
@@ -118,21 +114,17 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.pp_btn)
         self._layout.addWidget(self.next_btn)
         self._layout.addSpacing(15)
-        self._layout.addWidget(self.pms_btn)
-        self._layout.addSpacing(5)
-
-        self._layout.addWidget(self.volume_btn)
-        self._layout.addSpacing(10)
-
-        self._layout.addStretch(1)
+        self._layout.addStretch(0)
         self._layout.addWidget(self.position_label)
         self._layout.addSpacing(7)
         self._layout.addLayout(self._sub_layout)
         self._layout.addSpacing(7)
         self._layout.addWidget(self.duration_label)
+        self._layout.addSpacing(5)
+        self._layout.addStretch(0)
+        self._layout.addWidget(self.pms_btn)
         self._layout.addSpacing(10)
-        self._layout.addStretch(1)
-        self._layout.addWidget(self.volume_slider)
+        self._layout.addWidget(self.volume_btn)
         self._layout.addSpacing(10)
 
         self._layout.setSpacing(0)
@@ -170,7 +162,6 @@ class TopPanel(QFrame):
         self.setFixedHeight(60)
 
         self._layout.addWidget(self.pc_panel)
-        self._layout.addSpacing(10)
 
 
 class LeftPanel(QFrame):
@@ -502,26 +493,6 @@ class AppStatusLabel(QLabel):
                         '此版本更新摘要:\n' +
                         __upgrade_desc__)
         self.setObjectName('app_status_label')
-        #self.set_theme_style()
-
-    def set_theme_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-                color: {3};
-                padding-left: 5px;
-                padding-right: 5px;
-                font-size: 14px;
-            }}
-            #{0}:hover {{
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.color4.name(),
-                   theme.color2.name(),
-                   theme.background.name())
-        self.setStyleSheet(style_str)
 
     def mouseReleaseEvent(self, event):
         if event.button() == Qt.LeftButton and \
@@ -536,7 +507,6 @@ class NetworkStatus(QLabel):
 
         self.setToolTip('这里显示的是当前网络状态')
         self.setObjectName('network_status_label')
-        #self.set_theme_style()
         self._progress = 100
         self._show_progress = False
 

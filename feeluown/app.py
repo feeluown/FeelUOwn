@@ -112,8 +112,8 @@ class App(QFrame):
         self.request.server_error_signal.connect(self._on_network_server_error)
         # self.request.progress_signal.connect(self.show_request_progress)
 
-        top_panel.pc_panel.volume_slider.sliderMoved.connect(
-            self.change_volume)
+        #top_panel.pc_panel.volume_slider.sliderMoved.connect(
+        #    self.change_volume)
 
     def paintEvent(self, event):
         painter = QPainter(self)
