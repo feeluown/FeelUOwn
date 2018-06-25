@@ -2,6 +2,9 @@
 
 > trying to be a hackable music player for \*nix
 
+- [项目开发计划](https://github.com/cosven/FeelUOwn/projects/1)，欢迎大家一起来创造 ～
+- [用户/开发者聊天群](https://t.me/feeluown)
+
 ## Features
 
 - [x] 容易安装，不折腾
