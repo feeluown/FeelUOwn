@@ -82,6 +82,9 @@ class PlayerControlPanel(QFrame):
         self.pms_btn = Button(self)
         self.volume_btn = Button(self)
 
+        self.pms_btn.setToolTip('该功能尚未开发完成，欢迎 PR')
+        self.volume_btn.setToolTip('该功能尚未开发完成，欢迎 PR')
+
         self.previous_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
         self.pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
         self.next_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))
