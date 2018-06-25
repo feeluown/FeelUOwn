@@ -43,7 +43,7 @@ def generate_icon():
                   'Type=Application\n'\
                   'Name=FeelUOwn\n'\
                   'Comment=FeelUOwn Launcher\n'\
-                  'Exec=python3 -m feeluown\n'\
+                  'Exec=env QT_AUTO_SCREEN_SCALE_FACTOR=1 python3 -m feeluown\n'\
                   'Icon={feeluown_icon}\n'\
                   'Categories=AudioVideo;Audio;Player;Qt;\n'\
                   'Terminal=false\n'\
