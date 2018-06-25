@@ -39,9 +39,9 @@ setup(
     entry_points={
         'console_scripts': [
                 "feeluown=feeluown.__main__:main",
-                "feeluown-install-dev=feeluown.install:install_sys_dep",
+                # "feeluown-install-dev=feeluown.install:install_sys_dep",
                 "feeluown-genicon=feeluown.install:generate_icon",
-                "feeluown-update=feeluown.install:update"
+                # "feeluown-update=feeluown.install:update"
             ]
         },
     )
