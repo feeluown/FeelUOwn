@@ -22,10 +22,10 @@ def enable(app):
         identifier='local',
         name='本地音乐',
         icon='♪  ',
-        load_cb=partial(app.ui.songs_table_container.show_songs, provider.songs)
+        load_cb=partial(app.ui.table_container.show_songs, provider.songs)
     )
     app.libraries.add_library(library)
-    app.ui.songs_table_container.show_songs(provider.songs)
+    app.ui.table_container.show_songs(provider.songs)
 
 
 def disable(app):

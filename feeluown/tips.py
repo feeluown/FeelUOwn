@@ -1,6 +1,3 @@
-import random
-
-
 class TipsManager(object):
     tips = [
         '你知道 mpris2 插件可以配合 osdlyrics 使用吗?',
@@ -14,5 +11,4 @@ class TipsManager(object):
         self._app = app
 
     def show_random_tip(self):
-        tip = random.choice(self.tips)
-        self._app.message('小提示: %s' % tip)
+        pass

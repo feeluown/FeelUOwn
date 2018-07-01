@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from contextlib import contextmanager
 from functools import partial
 
 from PyQt5.QtCore import Qt, pyqtSignal
@@ -36,6 +37,7 @@ class App(QFrame):
     def __init__(self):
         super().__init__()
         self.player = Player()
+        self.playlist = self.player.playlist
         self.request = Request(self)
         self.theme_manager = ThemeManager(self)
         self.tips_manager = TipsManager(self)
@@ -90,7 +92,6 @@ class App(QFrame):
 
     def bind_signal(self):
         top_panel = self.ui.top_panel
-        status_panel = self.ui.status_panel
 
         self.player.state_changed.connect(self._on_player_status_changed)
         self.player.position_changed.connect(self._on_player_position_changed)
@@ -101,16 +102,10 @@ class App(QFrame):
         self.player.playlist.song_changed.connect(
             top_panel.pc_panel.on_player_song_changed)
 
-        status_panel.theme_switch_btn.signal_change_theme.connect(
-            self.theme_manager.choose)
-        status_panel.theme_switch_btn.clicked.connect(
-            self.refresh_themes)
-
         self.request.connected_signal.connect(self._on_network_connected)
         self.request.disconnected_signal.connect(self._on_network_disconnected)
         self.request.slow_signal.connect(self._on_network_slow)
         self.request.server_error_signal.connect(self._on_network_server_error)
-        # self.request.progress_signal.connect(self.show_request_progress)
 
         #top_panel.pc_panel.volume_slider.sliderMoved.connect(
         #    self.change_volume)
@@ -137,8 +132,16 @@ class App(QFrame):
             8, partial(asyncio.Task, self.version_manager.check_release()))
         self.tips_manager.show_random_tip()
 
-    def message(self, text, error=False):
-        self.ui.status_panel.message_label.show_message(text, error)
+    @contextmanager
+    def action_log(self, s):
+        self.ui.cmdbox.show_msg(s + '...', timeout=-1)  # doing
+        try:
+            yield
+        except Exception:
+            self.ui.cmdbox.show_msg(s + '...failed')  # failed
+            raise
+        else:
+            self.ui.cmdbox.show_msg(s + '...done')  # done
 
     def notify(self, text, error=False):
         pass
@@ -159,32 +162,22 @@ class App(QFrame):
             pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
 
     def _on_network_slow(self):
-        network_status_label = self.ui.status_panel.network_status_label
-        self.message('网络连接超时', error=True)
-        network_status_label.set_state(0)
+        pass
 
     def _on_network_connected(self):
-        network_status_label = self.ui.status_panel.network_status_label
-        network_status_label.set_state(1)
+        pass
 
     def _on_network_server_error(self):
-        self.message('服务端出现错误', error=True)
+        pass
 
     def _on_network_disconnected(self):
-        network_status_label = self.ui.status_panel.network_status_label
-        self.message('网络连接失败', error=True)
-        network_status_label.set_state(0)
+        pass
 
     def change_volume(self, value):
         self.player.volume = value
 
-    def show_current_playlist(self):
-        pass
-
     def refresh_themes(self):
-        theme_switch_btn = self.ui.status_panel.theme_switch_btn
-        themes = self.theme_manager.list()
-        theme_switch_btn.set_themes(themes)
+        pass
 
     def pixmap_from_url(self, url, callback=None):
         # FIXME: only neteasemusic img url accept the params
@@ -200,9 +193,6 @@ class App(QFrame):
         if callback is not None:
             callback(pixmap)
         return pixmap
-
-    def show_request_progress(self, progress):
-        self.ui.status_panel.network_status_label.show_progress(progress)
 
     def load_qss(self):
         with open('feeluown/default.qss') as f:

@@ -13,11 +13,13 @@ from PyQt5.QtCore import (
 from PyQt5.QtWidgets import (
     QAbstractItemDelegate,
     QAbstractItemView,
+    QAction,
     QComboBox,
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
     QListView,
+    QMenu,
     QPushButton,
     QStyledItemDelegate,
     QTableView,
@@ -35,6 +37,10 @@ class SongsTableModel(QAbstractTableModel):
         self.songs = songs
 
     def flags(self, index):
+        if index.column() in (2, ):
+            return Qt.ItemIsSelectable
+        elif index.column() in (0, ):
+            return Qt.ItemIsSelectable
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
 
     def rowCount(self, parent=QModelIndex()):
@@ -51,7 +57,7 @@ class SongsTableModel(QAbstractTableModel):
                 return ''
         return QVariant()
 
-    def data(self, index, role):
+    def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return QVariant()
         if index.row() >= len(self.songs) or index.row() < 0:
@@ -182,11 +188,12 @@ class SongsTableView(QTableView):
     show_album_needed = pyqtSignal([object])
     play_song_needed = pyqtSignal([object])
 
+    # 之后或许可以改成 row_deleted，row_deleted 更抽象，
+    # 而 song_deleted 更具体，方便以后修改设计。
+    song_deleted = pyqtSignal([object])
+
     def __init__(self, parent=None):
         super().__init__(parent)
-
-        self._previous_entered = None
-        self._previous_clicked = None
 
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
@@ -200,24 +207,14 @@ class SongsTableView(QTableView):
 
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
-        #self.setSelectionMode(QAbstractItemView.NoSelection)
+        # self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         #self.setFocusPolicy(Qt.NoFocus)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
 
-        # self.entered.connect(self._on_entered)
         self.activated.connect(self._on_activated)
 
-#    def _on_entered(self, index):
-#        if self._previous_entered is not None:
-#            self.closePersistentEditor(self._previous_entered)
-#
-#        # I'm genius!
-#        if self.state() == QAbstractItemView.NoState and index.column() in (1, 2, ):
-#            _index = self.model().createIndex(index.row(), 2)
-#            self.openPersistentEditor(_index)
-#            self._previous_entered = _index
-#
     def _on_activated(self, index):
         if index.column() == 1:
             song = index.data(Qt.UserRole)
@@ -235,11 +232,6 @@ class SongsTableView(QTableView):
             if song.album:
                 self.show_album_needed.emit(song.album)
 
-#    def leaveEvent(self, event):
-#        super().leaveEvent(event)
-#        if self._previous_entered is not None:
-#            self.closePersistentEditor(self._previous_entered)
-#
     def setModel(self, model):
         super().setModel(model)
         self.show_all_rows()

@@ -135,10 +135,10 @@ class SongsTableContainer(QFrame):
         self.hide()
 
     async def play_song(self, song):
-        # TODO: fetch url asynchronous
         loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, lambda: song.url)
-        self._app.player.play_song(song)
+        with self._app.action_log('play {}'.format(song)):
+            await loop.run_in_executor(None, lambda: song.url)
+            self._app.player.play_song(song)
 
     def play_all(self):
         songs = self.songs_table.model().songs
@@ -156,9 +156,14 @@ class SongsTableContainer(QFrame):
         elif model_type == ModelType.playlist:
             func = self.show_playlist
         else:
-            func = lambda model: None
+            def func(model): pass  # seems silly
         self._app.histories.append(model)
-        await func(model)
+        try:
+            self.songs_table.song_deleted.disconnect()
+        except TypeError:  # no connections at all
+            pass
+        with self._app.action_log('show {}'.format(str(model))):
+            await func(model)
 
     async def show_playlist(self, playlist):
         self.table_overview.show()

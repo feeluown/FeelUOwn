@@ -117,7 +117,7 @@ RightPanel_Container {{
     border: 0px;
 }}
 
-SearchBox {{
+CmdBox {{
     padding-left: 3px;
     font-size: 14px;
     background: transparent;
@@ -126,7 +126,7 @@ SearchBox {{
     color: {foreground};
     outline: none;
 }}
-SearchBox:focus {{
+CmdBox:focus {{
     outline: none;
 }}
 

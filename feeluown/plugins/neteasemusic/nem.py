@@ -33,7 +33,6 @@ class Nem(QObject):
 
     def initialize(self):
         self._app.provider_manager.register(provider)
-        left_panel = self._app.ui.left_panel
         self._app.libraries.add_library(self._library)
 
     def ready_to_login(self):
@@ -52,7 +51,6 @@ class Nem(QObject):
             self.login_as(model)
 
     async def load_playlists(self):
-        self._app.message('正在加载网易云音乐歌单')
         left_panel = self._app.ui.left_panel
         user = provider.get_user(self.user.uid)
         loop = asyncio.get_event_loop()
