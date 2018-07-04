@@ -3,7 +3,7 @@
 > trying to be a hackable music player for \*nix
 
 - [项目开发计划](https://github.com/cosven/FeelUOwn/projects/1)
-- [用户/开发者交流群](https://t.me/feeluown)
+- [用户/开发者交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
 
 ## Features
 
