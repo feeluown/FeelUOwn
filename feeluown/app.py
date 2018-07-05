@@ -30,7 +30,14 @@ from .version import VersionManager
 logger = logging.getLogger(__name__)
 
 
-class App(QFrame):
+class AppCodeRunnerMixin(object):
+    def exec_(self, code):
+        obj = compile(code, '<string>', 'single')
+        g = {'app': self}
+        exec(obj, g)
+
+
+class App(QFrame, AppCodeRunnerMixin):
 
     initialized = pyqtSignal()
 
@@ -109,21 +116,6 @@ class App(QFrame):
 
         #top_panel.pc_panel.volume_slider.sliderMoved.connect(
         #    self.change_volume)
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        bg_color = darker(self.theme_manager.current_theme.background, a=200)
-
-        if self.player_pixmap is not None:
-            pixmap = self.player_pixmap.scaled(
-                self.size(),
-                Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation)
-            painter.drawPixmap(0, 0, pixmap)
-            painter.fillRect(self.rect(), bg_color)
-
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
 
     def _init_managers(self):
         self.plugins_manager.scan()
@@ -206,3 +198,18 @@ class App(QFrame):
         except Exception as e:
             pass
         QApplication.quit()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        bg_color = darker(self.theme_manager.current_theme.background, a=200)
+
+        if self.player_pixmap is not None:
+            pixmap = self.player_pixmap.scaled(
+                self.size(),
+                Qt.KeepAspectRatioByExpanding,
+                Qt.SmoothTransformation)
+            painter.drawPixmap(0, 0, pixmap)
+            painter.fillRect(self.rect(), bg_color)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)

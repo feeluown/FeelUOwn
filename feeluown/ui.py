@@ -23,7 +23,6 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown import __upgrade_desc__
-from feeluown.components.cmdbox import CmdBox
 from feeluown.components.separator import Separator
 from feeluown.components.playlists import (
     PlaylistsView,
@@ -31,6 +30,7 @@ from feeluown.components.playlists import (
 )
 from feeluown.components.library import LibrariesView
 from feeluown.components.history import HistoriesView
+from feeluown.containers.cmdbox import CmdBox
 from feeluown.containers.table_container import SongsTableContainer
 
 from .consts import PlaybackMode
@@ -422,19 +422,12 @@ class Ui(object):
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.cmdbox.textEdited.connect(self.table_container.search)
-        self.cmdbox.returnPressed.connect(self.search_library)
         self.pc_panel.playlist_btn.clicked.connect(self.show_current_playlist)
 
         self._app.hotkey_manager.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.cmdbox.setFocus
         )
-
-    def search_library(self):
-        text = self.cmdbox.text()
-        songs = self._app.provider_manager.search(text)
-        self.table_container.show_songs(songs)
 
     def show_current_playlist(self):
         songs = self._app.playlist.list()
