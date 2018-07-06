@@ -404,7 +404,6 @@ class Ui(object):
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self.left_panel)
         self._splitter.addWidget(self.right_panel)
-        self.cmdbox.setFrame(False)
 
         self.right_panel.setMinimumWidth(780)
         self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)

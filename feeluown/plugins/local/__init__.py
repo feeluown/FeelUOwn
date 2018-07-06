@@ -24,7 +24,7 @@ def enable(app):
         icon='♪  ',
         load_cb=partial(app.ui.table_container.show_songs, provider.songs)
     )
-    app.libraries.add_library(library)
+    app.libraries.append(library)
     app.ui.table_container.show_songs(provider.songs)
 
 

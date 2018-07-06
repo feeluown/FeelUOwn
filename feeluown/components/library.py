@@ -12,6 +12,7 @@ from PyQt5.QtWidgets import (
 
 
 class LibraryModel(object):
+    # FIXME: 整个用起来非常痛苦，糟糕的设计，尤其是 load_cb
     def __init__(self, identifier, name, load_cb, icon=None, **kwargs):
         self.identifier = identifier
         self.name = name
@@ -22,13 +23,13 @@ class LibraryModel(object):
 class LibrariesModel(QAbstractListModel):
     def __init__(self, libraries=None, parent=None):
         super().__init__(parent)
-        self.libraries = libraries or []
+        self._libraries = libraries or []
 
-    def add_library(self, library):
-        self.libraries.append(library)
+    def append(self, library):
+        self._libraries.append(library)
 
     def rowCount(self, parent=QModelIndex()):
-        return len(self.libraries)
+        return len(self._libraries)
 
     def flags(self, index):
         return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
@@ -37,10 +38,10 @@ class LibrariesModel(QAbstractListModel):
         if not index.isValid():
             return QVariant()
         row = index.row()
-        if row >= len(self.libraries) or row < 0:
+        if row >= len(self._libraries) or row < 0:
             return QVariant()
 
-        library = self.libraries[row]
+        library = self._libraries[row]
         if role == Qt.DisplayRole:
             return library.icon + ' ' + library.name
         elif role == Qt.UserRole:

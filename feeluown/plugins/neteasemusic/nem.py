@@ -33,7 +33,7 @@ class Nem(QObject):
 
     def initialize(self):
         self._app.provider_manager.register(provider)
-        self._app.libraries.add_library(self._library)
+        self._app.libraries.append(self._library)
 
     def ready_to_login(self):
         if self.user is not None:
