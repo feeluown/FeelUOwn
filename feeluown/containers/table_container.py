@@ -19,7 +19,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore import ModelType
-from feeluown.components.songs import SongsTableModel, SongsTableView
+from feeluown.components.songs_table import SongsTableModel, SongsTableView
 
 
 logger = logging.getLogger(__name__)
