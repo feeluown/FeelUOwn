@@ -36,6 +36,12 @@ class SongsTableModel(QAbstractTableModel):
         super().__init__()
         self.songs = songs
 
+    def remove_song(self, song):
+        index = self.songs.index(song)
+        self.beginRemoveRows(QModelIndex(), index - 1,  index)
+        self.songs.remove(song)
+        self.endRemoveRows()
+
     def flags(self, index):
         if index.column() in (2, ):
             return Qt.ItemIsSelectable
@@ -256,3 +262,13 @@ class SongsTableView(QTableView):
                 self.setRowHidden(i, True)
             else:
                 self.setRowHidden(i, False)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu()
+        index = self.indexAt(event.pos())
+        self.selectRow(index.row())
+        song = self.model().data(index, Qt.UserRole)
+        remove_song_action = QAction('移除歌曲', menu)
+        remove_song_action.triggered.connect(partial(self.song_deleted.emit, song))
+        menu.addAction(remove_song_action)
+        menu.exec(event.globalPos())

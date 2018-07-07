@@ -421,13 +421,13 @@ class Ui(object):
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.pc_panel.playlist_btn.clicked.connect(self.show_current_playlist)
+        self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
 
         self._app.hotkey_manager.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.cmdbox.setFocus
         )
 
-    def show_current_playlist(self):
+    def show_player_playlist(self):
         songs = self._app.playlist.list()
-        self.table_container.show_songs(songs)
+        self.table_container.show_player_playlist(songs)

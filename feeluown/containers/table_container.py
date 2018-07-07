@@ -158,12 +158,13 @@ class SongsTableContainer(QFrame):
         else:
             def func(model): pass  # seems silly
         self._app.histories.append(model)
-        try:
-            self.songs_table.song_deleted.disconnect()
-        except TypeError:  # no connections at all
-            pass
         with self._app.action_log('show {}'.format(str(model))):
             await func(model)
+
+    def show_player_playlist(self, songs):
+        self.show_songs(songs)
+        self.songs_table.song_deleted.connect(
+            lambda song: self._app.playlist.remove(song))
 
     async def show_playlist(self, playlist):
         self.table_overview.show()
@@ -174,6 +175,16 @@ class SongsTableContainer(QFrame):
         self.table_overview.set_desc(playlist.desc or '')
         if playlist.cover:
             loop.create_task(self.show_cover(playlist.cover))
+
+        def remove_song(song):
+            rv = playlist.remove(song.identifier)
+            if rv:
+                self.songs_table.model().remove_song(song)
+                self._app.ui.cmdbox.show_msg('remove {}...success'.format(song))
+            else:
+                self._app.ui.cmdbox.show_msg('remove {}...failed'.format(song))
+        self.songs_table.song_deleted.connect(
+            lambda song: remove_song(song))
 
     async def show_artist(self, artist):
         self.table_overview.show()
@@ -205,6 +216,10 @@ class SongsTableContainer(QFrame):
             self.table_overview.set_cover(pixmap)
 
     def _show_songs(self, songs):
+        try:
+            self.songs_table.song_deleted.disconnect()
+        except TypeError:  # no connections at all
+            pass
         self.show()
         self.songs_table.setModel(SongsTableModel(songs or []))
         self.songs_table.scrollToTop()
