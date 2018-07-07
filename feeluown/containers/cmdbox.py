@@ -1,53 +1,120 @@
 import io
 import sys
 
-from PyQt5.QtCore import QTimer, pyqtSignal
-from PyQt5.QtGui import QFontDatabase
-from PyQt5.QtWidgets import QLineEdit
+from PyQt5.QtCore import (
+    pyqtSignal,
+    QSize,
+    Qt,
+    QRect,
+    QTimer,
+)
+from PyQt5.QtGui import (
+    QColor,
+    QFont,
+    QTextCursor,
+    QFontDatabase,
+    QFontMetrics,
+    QPainter,
+    QPalette,
+    QSyntaxHighlighter,
+    QTextCharFormat,
+    QTextOption,
+)
+from PyQt5.QtWidgets import (
+    QApplication,
+    QLineEdit,
+    QStyle,
+    QStyleOptionFrame,
+    QTextEdit,
+)
 
 
-class CmdBox(QLineEdit):
-    # FIXME: please rename CmdBox to ___
+class PyREPLHighlighter(QSyntaxHighlighter):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        prompt_fmt = QTextCharFormat()
+        prompt_fmt.setFontWeight(QFont.Bold)
+        self._prompt_fmt = prompt_fmt
+
+    def highlightBlock(self, text):
+        if text.startswith('>>> '):
+            self.setFormat(0, 3, self._prompt_fmt)
+
+
+class CmdBox(QTextEdit):
+    """用户输入
+
+    使用 QTextEdit 模拟 QLineEdit，以实现高亮等特性
+
+    ref: https://wiki.qt.io/Technical_FAQ #How can I create a one-line QTextEdit?
+    """
+    # FIXME: please rename CmdBox to XXX
+
+    returnPressed = pyqtSignal()
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
 
         self._app = app
 
-        self.setPlaceholderText('搜索歌曲、歌手、专辑、用户')
+        # self.setPlaceholderText('搜索歌曲、歌手、专辑、用户；执行 Python 代码等')
+        self.setPlaceholderText('Search library, exec code, or run command.')
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
-        self.setTextMargins(5, 0, 0, 0)
+
+        # 模拟 QLineEdit
+        self.setTabChangesFocus(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWordWrapMode(QTextOption.NoWrap)
+        self.setFixedHeight(self.sizeHint().height())
 
         self._timer = QTimer(self)
         self._cmd_text = None
-        self._text_type = 'cmd'  # ['msg', 'cmd']
+        self._mode = 'cmd'  # 详见 _set_mode 函数
         self._timer.timeout.connect(self.__on_timeout)
 
-        self.textEdited.connect(self.__on_text_edited)
+        self.textChanged.connect(self.__on_text_edited)
+        self._highlighter = PyREPLHighlighter(self.document())
+        # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
 
     def show_msg(self, text, timeout=1000):
         if not text:
             return
-        if self._text_type == 'cmd':
-            self.setReadOnly(True)
-            self._text_type = 'msg'
-            self._cmd_text = self.text()
-        assert self.isReadOnly() is True
+        self._set_mode('msg')
         self.setText(text)
         if timeout > 0:
             self._timer.start(timeout)
 
-    def _restore_cmd_text(self):
-        self.setReadOnly(False)
-        self._text_type = 'cmd'
-        self.setText(self._cmd_text)
+    def _set_mode(self, mode):
+        """修改当前模式
+
+        现在主要有两种模式：cmd 模式是正常模式；msg 模式用来展示消息通知，
+        当自己处于 msg 模式下时，会 block 所有 signal
+        """
+        if mode == 'cmd':
+            self.setReadOnly(False)
+            self._timer.stop()
+            if self._cmd_text:
+                self.setHtml(self._cmd_text)
+            # 注意在所有操作完成之后再关闭 blockSignals
+            # 然后修改当前 mode
+            self.blockSignals(False)
+            self._mode = mode
+        elif mode == 'msg':
+            self.blockSignals(True)
+            if self._mode == 'cmd':
+                self.setReadOnly(True)
+                self._cmd_text = self.toHtml()
+                self._mode = mode
 
     def _search_library(self, q):
         songs = self._app.provider_manager.search(q)
         self._app.ui.table_container.show_songs(songs)
 
     def _exec_code(self, code):
+        """执行代码并重定向代码的 stdout/stderr"""
         output = io.StringIO()
         sys.stderr = output
         sys.stdout = output
@@ -60,24 +127,50 @@ class CmdBox(QLineEdit):
             sys.stdout = sys.__stdout__
         self.show_msg(output.getvalue())
 
-    def __on_text_edited(self, text):
-        if self._text_type == 'cmd':
-            self._cmd_text = text
+    def __on_text_edited(self):
+        text = self.toPlainText()
+        if self._mode == 'cmd':
+            self._cmd_text = self.toHtml()
         if not text.startswith('>'):
             self._app.ui.table_container.search(text)
 
     def __on_return_pressed(self):
-        text = self.text()
+        text = self.toPlainText()
         if text.startswith('>>> '):
             self._exec_code(text[4:])
         else:
             self._search_library(text)
 
     def __on_timeout(self):
-        self._timer.stop()
-        self._restore_cmd_text()
+        self._set_mode('cmd')
 
     def focusInEvent(self, e):
         super().focusInEvent(e)
-        self._timer.stop()
-        self._restore_cmd_text()
+        self._set_mode('cmd')
+
+    def keyPressEvent(self, e):
+        if e.key() in (Qt.Key_Return, Qt.Key_Enter):
+            self.returnPressed.emit()
+            e.ignore()
+        else:
+            super().keyPressEvent(e)
+
+    def wheelEvent(self, e):
+        if self._mode != 'cmd':
+            super().wheelEvent(e)
+
+    def sizeHint(self):
+        fm = QFontMetrics(self.font())
+        # FIXME: 暂时不是太懂应该怎样正确的计算 w 和 h
+        # 其中，计算 h 的一个原则是让高度正好能够显示一行
+        # 目前在 Linux 下测试 h+4 正好符合期望
+        h = max(fm.height(), 14) + 4
+        w = self.width() - 4
+        opt = QStyleOptionFrame()
+        opt.initFrom(self)
+        return self.style().sizeFromContents(
+            QStyle.CT_LineEdit,
+            opt,
+            QSize(w, h).expandedTo(QApplication.globalStrut()),
+            self
+        )
