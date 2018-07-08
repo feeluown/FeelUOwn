@@ -1,10 +1,10 @@
-# FeelUOwn 说明文档
+# feel your own
 
 > trying to be a hackable music player for \*nix
 
 - [项目开发计划](https://github.com/cosven/FeelUOwn/projects/1)
 - [用户/开发者交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
-- [文档](http://feeluown.readthedocs.io)
+- [详细文档](http://feeluown.readthedocs.io)
 
 ## Features
 
