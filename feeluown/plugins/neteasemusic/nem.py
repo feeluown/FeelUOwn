@@ -29,6 +29,7 @@ class Nem(QObject):
             identifier='netease',
             name='网易云音乐',
             load_cb=self.ready_to_login,
+            user=self.user,
         )
 
     def initialize(self):
@@ -60,6 +61,7 @@ class Nem(QObject):
     def login_as(self, user):
         NUserModel.set_current_user(user)
         self.user = user
+        self._library.user = self.user
         self.user.save()
         loop = asyncio.get_event_loop()
         loop.create_task(self.load_playlists())

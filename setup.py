@@ -22,7 +22,7 @@ setup(
         '': ['themes/*.colorscheme', '*.png']
         },
     url='https://github.com/cosven/FeelUOwn',
-    keywords=['media', 'player', 'application', 'PyQt5', 'python3'],
+    keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
     classifiers=(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',

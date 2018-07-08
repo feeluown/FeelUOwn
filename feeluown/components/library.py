@@ -12,12 +12,15 @@ from PyQt5.QtWidgets import (
 
 
 class LibraryModel(object):
-    # FIXME: 整个用起来非常痛苦，糟糕的设计，尤其是 load_cb
-    def __init__(self, identifier, name, load_cb, icon=None, **kwargs):
+    # XXX: 把这个 Model 放到 fuocore 中去实现？
+    # 这个东西有点像 fuocore 中的 provider
+    def __init__(self, identifier, name, load_cb, icon=None, user=None,
+                 **kwargs):
         self.identifier = identifier
         self.name = name
         self.load_cb = load_cb
         self.icon = icon or '♬ '
+        self.user = user
 
 
 class LibrariesModel(QAbstractListModel):

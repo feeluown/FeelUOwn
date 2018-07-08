@@ -4,6 +4,7 @@
 
 - [项目开发计划](https://github.com/cosven/FeelUOwn/projects/1)
 - [用户/开发者交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
+- [文档](http://feeluown.readthedocs.io)
 
 ## Features
 
@@ -11,7 +12,7 @@
 - [ ] [60%] 网络操作异步化
 - [ ] 基于 TCP 的远程控制
 - [x] 支持本地音乐、网易云音乐部分功能（登录等）
-- [ ] 文档健全
+- [ ] [05%] 文档健全
 - [ ] [30%] 简单的插件机制
 - [x] 多平台支持
 
@@ -33,4 +34,24 @@ feeluown-genicon   # 生成图标
 ## MacOS
 brew install pyqt
 brew install mpv
+```
+
+## 开发
+
+在本地新建一个虚拟环境，clone feeluown 和 feeluown-core 两个项目。
+将两个项目安装到虚拟环境当中，然后进行开发。项目正处于积极开发阶段，
+代码每天都可能有较多修改，建议大家开发前先 rebase；另外，feeluown
+最新代码很可能会依赖 master 分支的 feeluown-core 代码。
+
+```
+# install feeluown
+git clone https://github.com/cosven/FeelUOwn.git
+cd feeluown
+pip install -e . # Ensure you have activated your venv
+cd ..
+
+# install feeluown-core
+git clone https://github.com/cosven/feeluown-core
+cd feeluown-core
+pip install -e .
 ```

@@ -145,7 +145,7 @@ class SongsTableContainer(QFrame):
         self._app.player.playlist.clear()
         for song in songs:
             self._app.player.playlist.add(song)
-        self._app.player.playlist.play_next()
+        self._app.player.play_next()
 
     async def show_model(self, model):
         model_type = model.type_
@@ -180,9 +180,9 @@ class SongsTableContainer(QFrame):
             rv = playlist.remove(song.identifier)
             if rv:
                 self.songs_table.model().remove_song(song)
-                self._app.ui.cmdbox.show_msg('remove {}...success'.format(song))
+                self._app.ui.magicbox.show_msg('remove {}...success'.format(song))
             else:
-                self._app.ui.cmdbox.show_msg('remove {}...failed'.format(song))
+                self._app.ui.magicbox.show_msg('remove {}...failed'.format(song))
         self.songs_table.song_deleted.connect(
             lambda song: remove_song(song))
 

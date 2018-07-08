@@ -29,7 +29,10 @@ from PyQt5.QtWidgets import (
 )
 
 
-class PyREPLHighlighter(QSyntaxHighlighter):
+class Highlighter(QSyntaxHighlighter):
+    """
+    Python REPL 和 fuo 命令语法高亮
+    """
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -42,14 +45,11 @@ class PyREPLHighlighter(QSyntaxHighlighter):
             self.setFormat(0, 3, self._prompt_fmt)
 
 
-class CmdBox(QTextEdit):
-    """用户输入
-
-    使用 QTextEdit 模拟 QLineEdit，以实现高亮等特性
+class MagicBox(QTextEdit):
+    """读取用户输入，解析执行
 
     ref: https://wiki.qt.io/Technical_FAQ #How can I create a one-line QTextEdit?
     """
-    # FIXME: please rename CmdBox to XXX
 
     returnPressed = pyqtSignal()
 
@@ -60,6 +60,9 @@ class CmdBox(QTextEdit):
 
         # self.setPlaceholderText('搜索歌曲、歌手、专辑、用户；执行 Python 代码等')
         self.setPlaceholderText('Search library, exec code, or run command.')
+        self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
+                        '输入 >>> 前缀之后，可以执行 Python 代码\n'
+                        '输入 $ 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
 
         # 模拟 QLineEdit
@@ -75,7 +78,7 @@ class CmdBox(QTextEdit):
         self._timer.timeout.connect(self.__on_timeout)
 
         self.textChanged.connect(self.__on_text_edited)
-        self._highlighter = PyREPLHighlighter(self.document())
+        self._highlighter = Highlighter(self.document())
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
 
@@ -125,7 +128,7 @@ class CmdBox(QTextEdit):
         finally:
             sys.stderr = sys.__stderr__
             sys.stdout = sys.__stdout__
-        self.show_msg(output.getvalue())
+        self.show_msg(output.getvalue() or 'No output.')
 
     def __on_text_edited(self):
         text = self.toPlainText()

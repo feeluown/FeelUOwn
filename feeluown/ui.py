@@ -30,7 +30,7 @@ from feeluown.components.playlists import (
 )
 from feeluown.components.library import LibrariesView
 from feeluown.components.history import HistoriesView
-from feeluown.containers.cmdbox import CmdBox
+from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 
 from .consts import PlaybackMode
@@ -84,10 +84,13 @@ class PlayerControlPanel(QFrame):
         self.pms_btn = Button(self)
         self.volume_btn = Button(self)
         self.playlist_btn = Button('🎶', self)
+        self.progress_slider = ProgressSlider(self)
 
-        self.pms_btn.setToolTip('该功能尚未开发完成，欢迎 PR')
-        self.volume_btn.setToolTip('该功能尚未开发完成，欢迎 PR')
+        # TODO(simple): implementation
+        self.pms_btn.setToolTip('修改播放模式（未实现，欢迎 PR）')
+        self.volume_btn.setToolTip('调整音量（未实现，欢迎 PR）')
         self.playlist_btn.setToolTip('显示当前播放列表')
+        self.progress_slider.setToolTip('拖动调节进度（未实现，欢迎 PR）')
 
         self.previous_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
         self.pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
@@ -98,10 +101,9 @@ class PlayerControlPanel(QFrame):
         self.song_title_label.setAlignment(Qt.AlignCenter)
         self.duration_label = QLabel('00:00', parent=self)
         self.position_label = QLabel('00:00', parent=self)
-        self.progress_slider = ProgressSlider(self)
 
-        self.next_btn.clicked.connect(self._app.player.playlist.play_next)
-        self.previous_btn.clicked.connect(self._app.player.playlist.play_previous)
+        self.next_btn.clicked.connect(self._app.player.play_next)
+        self.previous_btn.clicked.connect(self._app.player.play_previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
 
         # set widget layout
@@ -399,7 +401,7 @@ class Ui(object):
         # alias
         self.pc_panel = self.top_panel.pc_panel
         self.table_container = self.right_panel.table_container
-        self.cmdbox = CmdBox(self._app)
+        self.magicbox = MagicBox(self._app)
 
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self.left_panel)
@@ -412,10 +414,10 @@ class Ui(object):
         self._layout.addWidget(self.top_panel)
         self._layout.addWidget(self._top_separator)
         self._layout.addWidget(self._splitter)
-        self._layout.addWidget(self.cmdbox)
+        self._layout.addWidget(self.magicbox)
 
         # self._layout.addLayout(self._bottom_layout)
-        # self._bottom_layout.addWidget(self.cmdbox)
+        # self._bottom_layout.addWidget(self.magicbox)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self.top_panel.layout().setSpacing(0)
@@ -425,7 +427,7 @@ class Ui(object):
 
         self._app.hotkey_manager.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
-            self.cmdbox.setFocus
+            self.magicbox.setFocus
         )
 
     def show_player_playlist(self):

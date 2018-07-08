@@ -117,7 +117,7 @@ RightPanel_Container {{
     border: 0px;
 }}
 
-CmdBox {{
+MagicBox {{
     padding-left: 3px;
     font-size: 14px;
     background: transparent;
@@ -126,7 +126,7 @@ CmdBox {{
     color: {foreground};
     outline: none;
 }}
-CmdBox:focus {{
+MagicBox:focus {{
     outline: none;
 }}
 

@@ -1,7 +1,9 @@
 #! /usr/bin/env python3
 
 import asyncio
+import logging
 import os
+import traceback
 import sys
 
 sys.path.append(os.path.dirname(sys.path[0]))
@@ -15,6 +17,8 @@ from feeluown.rcfile import load_rcfile
 from feeluown.consts import (HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
                              CACHE_DIR, USER_THEMES_DIR, SONG_DIR)
 from feeluown.config import config
+
+logger = logging.getLogger(__name__)
 
 
 def parse_args(args):
@@ -38,6 +42,16 @@ def ensure_dir():
         os.mkdir(SONG_DIR)
 
 
+def excepthook(exc_type, exc_value, tb):
+    """Exception hook"""
+    src_tb = tb
+    while src_tb.tb_next:
+        src_tb = src_tb.tb_next
+    logger.error('Exception occured: print locals varibales')
+    logger.error(src_tb.tb_frame.f_locals)
+    traceback.print_exception(exc_type, exc_value, tb)
+
+
 ensure_dir()
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 sys.path.append(PLUGINS_DIR)
@@ -45,8 +59,8 @@ sys.path.append(USER_PLUGINS_DIR)
 
 
 def main():
+    sys.excepthook = excepthook
     parse_args(sys.argv)
-    load_rcfile()
 
     q_app = QApplication(sys.argv)
     q_app.setQuitOnLastWindowClosed(True)
@@ -56,6 +70,8 @@ def main():
     asyncio.set_event_loop(app_event_loop)
     app = App()
     app.show()
+
+    load_rcfile(app)
 
     app_event_loop.run_forever()
     sys.exit(0)

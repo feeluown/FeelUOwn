@@ -15,16 +15,14 @@ from feeluown.config import config
 from feeluown.components.history import HistoriesModel
 from feeluown.components.library import LibrariesModel
 
-from .consts import DEFAULT_THEME_NAME, APP_ICON
+from .consts import APP_ICON
 from .hotkey import Hotkey
 from .img_ctl import ImgController
 from .player import Player
 from .plugin import PluginsManager
 from .request import Request
-from .theme import ThemeManager, get_colors_ctx
 from .tips import TipsManager
 from .ui import Ui
-from .utils import darker
 from .version import VersionManager
 
 logger = logging.getLogger(__name__)
@@ -33,7 +31,10 @@ logger = logging.getLogger(__name__)
 class AppCodeRunnerMixin(object):
     def exec_(self, code):
         obj = compile(code, '<string>', 'single')
-        g = {'app': self}
+        g = {
+            'app': self,
+            'player': self.player
+        }
         exec(obj, g)
 
 
@@ -46,13 +47,11 @@ class App(QFrame, AppCodeRunnerMixin):
         self.player = Player()
         self.playlist = self.player.playlist
         self.request = Request(self)
-        self.theme_manager = ThemeManager(self)
         self.tips_manager = TipsManager(self)
         self.hotkey_manager = Hotkey(self)
         self.img_ctl = ImgController(self)
         self.plugins_manager = PluginsManager(self)
         self.version_manager = VersionManager(self)
-        self.theme_manager.set_theme(DEFAULT_THEME_NAME)
         self.provider_manager = Source(prvs=set())
         # self.load_qss()
 
@@ -126,14 +125,14 @@ class App(QFrame, AppCodeRunnerMixin):
 
     @contextmanager
     def action_log(self, s):
-        self.ui.cmdbox.show_msg(s + '...', timeout=-1)  # doing
+        self.ui.magicbox.show_msg(s + '...', timeout=-1)  # doing
         try:
             yield
         except Exception:
-            self.ui.cmdbox.show_msg(s + '...failed')  # failed
+            self.ui.magicbox.show_msg(s + '...failed')  # failed
             raise
         else:
-            self.ui.cmdbox.show_msg(s + '...done')  # done
+            self.ui.magicbox.show_msg(s + '...done')  # done
 
     def notify(self, text, error=False):
         pass
@@ -168,9 +167,6 @@ class App(QFrame, AppCodeRunnerMixin):
     def change_volume(self, value):
         self.player.volume = value
 
-    def refresh_themes(self):
-        pass
-
     def pixmap_from_url(self, url, callback=None):
         # FIXME: only neteasemusic img url accept the params
         data = {'param': '{0}y{0}'.format(self.width())}
@@ -186,11 +182,6 @@ class App(QFrame, AppCodeRunnerMixin):
             callback(pixmap)
         return pixmap
 
-    def load_qss(self):
-        with open('feeluown/default.qss') as f:
-            s = f.read().format(**get_colors_ctx(self.theme_manager.current_theme))
-            QApplication.instance().setStyleSheet(s)
-
     def closeEvent(self, event):
         try:
             self.player.stop()
@@ -198,18 +189,6 @@ class App(QFrame, AppCodeRunnerMixin):
         except Exception as e:
             pass
         QApplication.quit()
-
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        bg_color = darker(self.theme_manager.current_theme.background, a=200)
-
-        if self.player_pixmap is not None:
-            pixmap = self.player_pixmap.scaled(
-                self.size(),
-                Qt.KeepAspectRatioByExpanding,
-                Qt.SmoothTransformation)
-            painter.drawPixmap(0, 0, pixmap)
-            painter.fillRect(self.rect(), bg_color)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
