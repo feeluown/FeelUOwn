@@ -3,44 +3,39 @@ import logging
 import os
 
 from fuocore.netease.api import api
+from fuocore.netease.schemas import NeteaseUserSchema
 
 from .consts import USERS_INFO_FILE
 
 logger = logging.getLogger(__name__)
 
 
-class NUserModel(object):
-    _api = api
-    current_user = None
+def create_user(identifier, name, cookies):
+    user, _ = NeteaseUserSchema(strict=True).load(dict(
+        id=int(identifier),
+        name=name,
+        cookies=cookies,
+    ))
+    return user
 
-    def __init__(self, username, uid, name, img, playlists=[]):
+
+class LoginController(object):
+    _api = api
+
+    def __init__(self, username, uid, name, img):
         super().__init__()
         self.username = username
-
         self.uid = uid
         self.name = name
-        self.img = img
-        self._playlists = playlists
-
-    def is_playlist_mine(self, pid):
-        for p in self.playlists:
-            if p.pid == pid:
-                return True
-        return False
-
-    @classmethod
-    def set_current_user(cls, user):
-        cls.current_user = user
 
     @classmethod
     def create(cls, data):
         user_data = data['data']
-        username = data['username']
-        img = user_data['profile']['avatarUrl']
+        # img = user_data['profile']['avatarUrl']
         uid = user_data['profile']['userId']
         name = user_data['profile']['nickname']
-        model = NUserModel(username, uid, name, img)
-        return model
+        user = create_user(uid, name, cls._api.cookies)
+        return user
 
     @classmethod
     def check(cls, username, pw):
@@ -71,14 +66,14 @@ class NUserModel(object):
                     'captcha_url': url, 'captcha_id': cid}
         return {'code': 200, 'message': '验证码正确'}
 
-    def save(self):
+    @classmethod
+    def save(cls, user):
         with open(USERS_INFO_FILE, 'w+') as f:
             data = {
-                self.username: {
-                    'uid': self.uid,
-                    'name': self.name,
-                    'img': self.img,
-                    'cookies': self._api.cookies
+                user.name: {
+                    'uid': user.identifier,
+                    'name': user.name,
+                    'cookies': user.cookies
                 }
             }
             if f.read() != '':
@@ -96,31 +91,7 @@ class NUserModel(object):
             data = json.loads(text)
             username = next(iter(data.keys()))
             user_data = data[username]
-            model = cls(username,
-                        user_data['uid'],
-                        user_data['name'],
-                        user_data['img'])
-            model._api.load_cookies(user_data['cookies'])
-        return model
-
-    @classmethod
-    def get_recommend_songs(cls):
-        if cls.current_user is None:
-            return []
-        data = cls._api.get_recommend_songs()
-        if data.get('code') == 200:
-            return NSongModel.batch_create(data['recommend'])
-        return []
-
-    @classmethod
-    def get_fm_song(cls):
-        if cls.current_user is None:
-            return []
-        data = cls._api.get_radio_music()
-        if data is None:
-            return []
-        if data['code'] == 200:
-            songs = data['data']
-            return NSongModel.batch_create(songs)
-        else:
-            return []
+            uid = user_data['uid']
+            name = user_data['name']
+            user = create_user(uid, name, cls._api.cookies)
+        return user

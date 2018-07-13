@@ -57,11 +57,12 @@ class HistoriesModel(QAbstractListModel):
         # latest first
         model = self._models[len(self._models) - row - 1]
         if role == Qt.DisplayRole:
-            if model.type_ == ModelType.song:
+            model_type = ModelType(model._meta.model_type)
+            if model_type == ModelType.song:
                 return model.title
-            elif model.type_ in (ModelType.playlist,
-                                 ModelType.artist,
-                                 ModelType.album):
+            elif model_type in (ModelType.playlist,
+                                ModelType.artist,
+                                ModelType.album):
                 return model.name
             else:
                 return str(model)

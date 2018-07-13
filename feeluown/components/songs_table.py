@@ -30,7 +30,7 @@ from feeluown.utils import parse_ms
 
 
 class SongsTableModel(QAbstractTableModel):
-    sections = ('', '歌曲标题', '时长', '歌手', '专辑')
+    sections = ('来源', '歌曲标题', '时长', '歌手', '专辑')
 
     def __init__(self, songs):
         super().__init__()
@@ -72,7 +72,7 @@ class SongsTableModel(QAbstractTableModel):
         song = self.songs[index.row()]
         if role == Qt.DisplayRole:
             if index.column() == 0:
-                return ''
+                return song.source
             elif index.column() == 1:
                 return song.title
             elif index.column() == 2:
@@ -172,7 +172,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
     def sizeHint(self, option, index):
-        widths = (0.05, 0.3, 0.1, 0.2, 0.3)
+        widths = (0.1, 0.3, 0.1, 0.2, 0.3)
         width = self.parent().width()
         w = int(width * widths[index.column()])
         return QSize(w, option.rect.height())

@@ -1,3 +1,7 @@
+"""
+FIXME: 感觉这个 component 设计有点问题，做的事情太多，得拆！
+"""
+
 from PyQt5.QtCore import (
     QAbstractListModel,
     QModelIndex,
@@ -12,15 +16,14 @@ from PyQt5.QtWidgets import (
 
 
 class LibraryModel(object):
-    # XXX: 把这个 Model 放到 fuocore 中去实现？
-    # 这个东西有点像 fuocore 中的 provider
-    def __init__(self, identifier, name, load_cb, icon=None, user=None,
-                 **kwargs):
-        self.identifier = identifier
-        self.name = name
-        self.load_cb = load_cb
-        self.icon = icon or '♬ '
-        self.user = user
+    def __init__(self, provider, search=None, on_click=None,
+                 icon='♬ ', desc='', **kwargs):
+        self.identifier = provider.identifier
+        self.name = provider.name
+        self.icon = icon
+        self.desc = desc
+        self.search = search
+        self._on_click = on_click
 
 
 class LibrariesModel(QAbstractListModel):
@@ -28,7 +31,17 @@ class LibrariesModel(QAbstractListModel):
         super().__init__(parent)
         self._libraries = libraries or []
 
-    def append(self, library):
+    def search(self, keyword):
+        songs = []
+        for library in self._libraries:
+            if not library.search:
+                continue
+            result = library.search(keyword=keyword)
+            _songs = list(result.songs[:20])
+            songs.extend(_songs)
+        return songs
+
+    def register(self, library):
         self._libraries.append(library)
 
     def rowCount(self, parent=QModelIndex()):
@@ -47,6 +60,8 @@ class LibrariesModel(QAbstractListModel):
         library = self._libraries[row]
         if role == Qt.DisplayRole:
             return library.icon + ' ' + library.name
+        elif role == Qt.ToolTipRole:
+            return library.desc
         elif role == Qt.UserRole:
             return library
         return QVariant()
@@ -65,7 +80,8 @@ class LibrariesView(QListView):
 
     def _on_clicked(self, index):
         library = index.data(role=Qt.UserRole)
-        library.load_cb()
+        if library._on_click:
+            library._on_click()
 
     def sizeHint(self):
         height = 10

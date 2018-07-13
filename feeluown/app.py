@@ -9,7 +9,6 @@ from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
 from PyQt5.QtWidgets import QApplication, QFrame, QStyle
 
 from fuocore.core.player import State as PlayerState
-from fuocore.core.source import Source
 
 from feeluown.config import config
 from feeluown.components.history import HistoriesModel
@@ -52,11 +51,9 @@ class App(QFrame, AppCodeRunnerMixin):
         self.img_ctl = ImgController(self)
         self.plugins_manager = PluginsManager(self)
         self.version_manager = VersionManager(self)
-        self.provider_manager = Source(prvs=set())
-        # self.load_qss()
 
         self.histories = HistoriesModel(parent=self)
-        self.libraries = LibrariesModel([], parent=self)
+        self.libraries = LibrariesModel(parent=self)
 
         self.ui = Ui(self)
 

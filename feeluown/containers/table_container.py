@@ -148,7 +148,7 @@ class SongsTableContainer(QFrame):
         self._app.player.play_next()
 
     async def show_model(self, model):
-        model_type = model.type_
+        model_type = ModelType(model._meta.model_type)
         if model_type == ModelType.album:
             func = self.show_album
         elif model_type == ModelType.artist:
