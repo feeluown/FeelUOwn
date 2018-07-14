@@ -2,6 +2,12 @@
 
 > trying to be a hackable music player for \*nix
 
+**feeluown 的几个终极目标：**
+
+1. 提供一个安装简单、使用方便的音乐播放器
+2. 容易和外部 *nix 程序集成
+3. 可以帮助 Python 爱好者成长的项目
+
 - [项目开发计划](https://github.com/cosven/FeelUOwn/projects/1)
 - [用户/开发者交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
 - [详细文档](http://feeluown.readthedocs.io)
