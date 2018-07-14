@@ -44,6 +44,9 @@ class LibrariesModel(QAbstractListModel):
     def register(self, library):
         self._libraries.append(library)
 
+    def __getitem__(self, index):
+        return self._libraries[index]
+
     def rowCount(self, parent=QModelIndex()):
         return len(self._libraries)
 

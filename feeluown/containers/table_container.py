@@ -221,7 +221,9 @@ class SongsTableContainer(QFrame):
         except TypeError:  # no connections at all
             pass
         self.show()
-        self.songs_table.setModel(SongsTableModel(songs or []))
+
+        source_icon_map = {lib.identifier: lib.icon for lib in self._app.libraries}
+        self.songs_table.setModel(SongsTableModel(songs or [], source_icon_map))
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):
