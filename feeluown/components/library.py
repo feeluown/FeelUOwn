@@ -51,7 +51,7 @@ class LibrariesModel(QAbstractListModel):
         return len(self._libraries)
 
     def flags(self, index):
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+        return Qt.ItemIsSelectable | Qt.ItemIsEnabled
 
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():

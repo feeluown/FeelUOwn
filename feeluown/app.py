@@ -13,6 +13,7 @@ from fuocore.core.player import State as PlayerState
 from feeluown.config import config
 from feeluown.components.history import HistoriesModel
 from feeluown.components.library import LibrariesModel
+from feeluown.components.playlists import PlaylistsModel
 
 from .consts import APP_ICON
 from .hotkey import Hotkey
@@ -28,13 +29,16 @@ logger = logging.getLogger(__name__)
 
 
 class AppCodeRunnerMixin(object):
+    def __init__(self):
+        self._g = {}
+
     def exec_(self, code):
         obj = compile(code, '<string>', 'single')
-        g = {
+        self._g.update({
             'app': self,
             'player': self.player
-        }
-        exec(obj, g)
+        })
+        exec(obj, self._g, self._g)
 
 
 class App(QFrame, AppCodeRunnerMixin):
@@ -52,6 +56,7 @@ class App(QFrame, AppCodeRunnerMixin):
         self.plugins_manager = PluginsManager(self)
         self.version_manager = VersionManager(self)
 
+        self.playlists = PlaylistsModel(parent=self)
         self.histories = HistoriesModel(parent=self)
         self.libraries = LibrariesModel(parent=self)
 
@@ -121,7 +126,7 @@ class App(QFrame, AppCodeRunnerMixin):
         self.tips_manager.show_random_tip()
 
     @contextmanager
-    def action_log(self, s):
+    def action_msg(self, s):
         self.ui.magicbox.show_msg(s + '...', timeout=-1)  # doing
         try:
             yield

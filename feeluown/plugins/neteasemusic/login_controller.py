@@ -93,5 +93,6 @@ class LoginController(object):
             user_data = data[username]
             uid = user_data['uid']
             name = user_data['name']
-            user = create_user(uid, name, cls._api.cookies)
+            cookies = user_data.get('cookies', cls._api.cookies)
+            user = create_user(uid, name, cookies)
         return user

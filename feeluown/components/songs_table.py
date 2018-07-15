@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import parse_ms
+from feeluown.mimedata import ModelMimeData
 
 
 class SongsTableModel(QAbstractTableModel):
@@ -50,11 +51,14 @@ class SongsTableModel(QAbstractTableModel):
         self.endRemoveRows()
 
     def flags(self, index):
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
         if index.column() in (2, ):
             return Qt.ItemIsSelectable
         elif index.column() in (0, ):
             return Qt.ItemIsSelectable
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
+        elif index.column() == 1:
+            return flags | Qt.ItemIsDragEnabled
+        return flags
 
     def rowCount(self, parent=QModelIndex()):
         return len(self.songs)
@@ -98,6 +102,13 @@ class SongsTableModel(QAbstractTableModel):
         elif role == Qt.UserRole:
             return song
         return QVariant()
+
+    def mimeData(self, indexes):
+        if len(indexes) == 1:
+            index = indexes[0]
+            song = index.data(Qt.UserRole)
+            return ModelMimeData(song)
+
 
 
 class ArtistsModel(QAbstractListModel):
@@ -215,7 +226,7 @@ class SongsTableView(QTableView):
         self.setItemDelegate(self.delegate)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # FIXME: PyQt5 seg fault
-        #self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.horizontalHeader().setStretchLastSection(True)
@@ -228,6 +239,8 @@ class SongsTableView(QTableView):
         #self.setFocusPolicy(Qt.NoFocus)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
+        self.setDragEnabled(True)
+        self.setDragDropMode(QAbstractItemView.DragOnly)
 
         self.activated.connect(self._on_activated)
 

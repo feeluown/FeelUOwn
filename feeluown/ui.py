@@ -188,6 +188,7 @@ class LeftPanel(QFrame):
 
         self.libraries_view.setModel(self._app.libraries)
         self.histories_view.setModel(self._app.histories)
+        self.playlists_view.setModel(self._app.playlists)
 
         self._layout = QVBoxLayout(self)
         self._splitter.addWidget(self.library_header)
@@ -208,10 +209,6 @@ class LeftPanel(QFrame):
             lambda pl: asyncio.ensure_future(self.show_model(pl)))
         self.histories_view.show_model.connect(
             lambda model: asyncio.ensure_future(self.show_model(model)))
-
-    def set_playlists(self, playlists):
-        model = PlaylistsModel(playlists, self)
-        self.playlists_view.setModel(model)
 
     async def show_model(self, playlist):
         await self._app.ui.table_container.show_model(playlist)

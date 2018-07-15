@@ -42,7 +42,7 @@ class Nem(QObject):
             return
         logger.debug('Trying to load last login user...')
         user = LoginController.load()
-        if user is None:
+        if user is None or 'MUSIC_U' not in user.cookies:
             logger.debug('Trying to load last login user...failed')
             self.login_dialog.show()
             self.login_dialog.load_user_pw()
@@ -60,4 +60,5 @@ class Nem(QObject):
         loop = asyncio.get_event_loop()
         self._library.name = '网易云音乐 - {}'.format(user.name)
         playlists = await loop.run_in_executor(None, lambda: user.playlists)
-        left_panel.set_playlists(playlists)
+        self._app.playlists.add(playlists)
+        self._app.playlists.add(user.fav_playlists, is_fav=True)

@@ -136,7 +136,7 @@ class SongsTableContainer(QFrame):
 
     async def play_song(self, song):
         loop = asyncio.get_event_loop()
-        with self._app.action_log('play {}'.format(song)):
+        with self._app.action_msg('play {}'.format(song)):
             await loop.run_in_executor(None, lambda: song.url)
             self._app.player.play_song(song)
 
@@ -158,7 +158,7 @@ class SongsTableContainer(QFrame):
         else:
             def func(model): pass  # seems silly
         self._app.histories.append(model)
-        with self._app.action_log('show {}'.format(str(model))):
+        with self._app.action_msg('show {}'.format(str(model))):
             await func(model)
 
     def show_player_playlist(self, songs):
