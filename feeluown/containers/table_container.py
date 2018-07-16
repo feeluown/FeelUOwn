@@ -136,7 +136,7 @@ class SongsTableContainer(QFrame):
 
     async def play_song(self, song):
         loop = asyncio.get_event_loop()
-        with self._app.action_msg('play {}'.format(song)):
+        with self._app.create_action('play {}'.format(song)):
             await loop.run_in_executor(None, lambda: song.url)
             self._app.player.play_song(song)
 
@@ -158,7 +158,7 @@ class SongsTableContainer(QFrame):
         else:
             def func(model): pass  # seems silly
         self._app.histories.append(model)
-        with self._app.action_msg('show {}'.format(str(model))):
+        with self._app.create_action('show {}'.format(str(model))):
             await func(model)
 
     def show_player_playlist(self, songs):
@@ -177,14 +177,18 @@ class SongsTableContainer(QFrame):
             loop.create_task(self.show_cover(playlist.cover))
 
         def remove_song(song):
-            rv = playlist.remove(song.identifier)
-            if rv:
-                self.songs_table.model().remove_song(song)
-                self._app.ui.magicbox.show_msg('remove {}...success'.format(song))
-            else:
-                self._app.ui.magicbox.show_msg('remove {}...failed'.format(song))
-        self.songs_table.song_deleted.connect(
-            lambda song: remove_song(song))
+            model = self.songs_table.model()
+            row = model.songs.index(song)
+            # 如果有 f-string 该有多好！
+            msg = 'remove {} from {}'.format(song, playlist)
+            with self._app.create_action(msg) as action:
+                rv = playlist.remove(song.identifier)
+                if rv:
+                    model.removeRow(row)
+                else:
+                    action.failed()
+
+        self.songs_table.song_deleted.connect(lambda song: remove_song(song))
 
     async def show_artist(self, artist):
         self.table_overview.show()

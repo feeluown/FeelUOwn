@@ -82,7 +82,7 @@ class MagicBox(QTextEdit):
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
 
-    def show_msg(self, text, timeout=1000):
+    def show_msg(self, text, timeout=2000):
         if not text:
             return
         self._set_mode('msg')

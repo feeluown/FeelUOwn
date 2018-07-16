@@ -1,3 +1,11 @@
+"""
+feeluown.helpers
+~~~~~~~~~~~~~~~~
+
+和应用逻辑相关的一些工具函数
+"""
+
+
 import logging
 from contextlib import contextmanager
 

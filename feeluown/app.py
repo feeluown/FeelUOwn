@@ -126,18 +126,25 @@ class App(QFrame, AppCodeRunnerMixin):
         self.tips_manager.show_random_tip()
 
     @contextmanager
-    def action_msg(self, s):
-        self.ui.magicbox.show_msg(s + '...', timeout=-1)  # doing
+    def create_action(self, s):
+        show_msg = self.ui.magicbox.show_msg
+
+        class Action(object):
+            def set_progress(self, value):
+                value = int(value * 100)
+                show_msg(s + '...{}%'.format(value), timeout=-1)
+
+            def failed(self):
+                show_msg(s + '...failed', timeout=-1)
+
+        show_msg(s + '...', timeout=-1)  # doing
         try:
-            yield
+            yield Action()
         except Exception:
-            self.ui.magicbox.show_msg(s + '...failed')  # failed
+            show_msg(s + '...error')  # error
             raise
         else:
-            self.ui.magicbox.show_msg(s + '...done')  # done
-
-    def notify(self, text, error=False):
-        pass
+            show_msg(s + '...done')  # done
 
     def _on_player_position_changed(self, ms):
         self.ui.top_panel.pc_panel.on_position_changed(ms*1000)

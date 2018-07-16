@@ -44,12 +44,6 @@ class SongsTableModel(QAbstractTableModel):
         for song in self.songs:
             self._source_set.add(song.source)
 
-    def remove_song(self, song):
-        index = self.songs.index(song)
-        self.beginRemoveRows(QModelIndex(), index - 1,  index)
-        self.songs.remove(song)
-        self.endRemoveRows()
-
     def flags(self, index):
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
         if index.column() in (2, ):
