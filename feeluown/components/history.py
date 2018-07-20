@@ -82,6 +82,7 @@ class HistoriesView(QListView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setSelectionMode(QAbstractItemView.NoSelection)
+        self.setAttribute(Qt.WA_MacShowFocusRect, 0)
 
         self.clicked.connect(self._on_clicked)
 

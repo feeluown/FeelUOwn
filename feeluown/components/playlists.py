@@ -108,6 +108,8 @@ class PlaylistsView(QListView):
 
     def __init__(self, parent):
         super().__init__(parent)
+
+        self.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)

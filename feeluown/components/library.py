@@ -20,7 +20,7 @@ class LibraryModel(object):
                  icon='♬ ', desc='', **kwargs):
         self.identifier = provider.identifier
         self.name = provider.name
-        self.icon = icon
+        self.icon = ' ' + icon
         self.desc = desc
         self.search = search
         self._on_click = on_click
@@ -75,6 +75,7 @@ class LibrariesView(QListView):
         super().__init__(parent)
 
         self.setMinimumHeight(100)
+        self.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)

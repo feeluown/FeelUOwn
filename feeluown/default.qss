@@ -1,165 +1,196 @@
 /* 主题：时代在进步 */
 
-App {{
-    background: {background};
-    color: {foreground};
-}}
+QWidget {
+    font-size: 13px;
+}
 
-#artists_selection_view {{
-    background: {background};
-    color: {foreground};
-}}
+QLabel {
+    color: #CCC;
+}
 
-LeftPanel_Container {{
-    background: transparent;
+QAbstractItemView {
+    border: 0px solid #993333;
+}
+
+QListView, QHeaderView, QTableView {
+    background-color: transparent;
+    alternate-background-color: #303030;
+    color: #CCC;
+    outline: none;
+}
+
+QTableView {
+    selection-background-color: #993333;
+}
+
+QTableView::item {
+    height: 16px;
+    selection-background-color: #993333;
+}
+
+QListView::item:selected {
+    color: #CCC;
+    border-left: 3px solid #993333;
+    padding-left: -3px;
+}
+
+QHeaderView {
+    color: #CCC;
+}
+
+QHeaderView::section:horizontal {
+    background: #222;
+    color: #993333;
     border: 0px;
-    border-right: 3px inset {color0_light};
-}}
-
-QFrame {{
-    background: transparent;
-}}
-
-QHeaderView {{
-    color: {foreground};
-    background: transparent;
-    font-size: 14px;
-}}
-QHeaderView::section:horizontal {{
+    border-bottom: 1px solid #993333;
     height: 24px;
-    background: transparent;
-    border-top: 1px;
-    border-right: 1px;
-    border-bottom: 1px;
-    border-color: {color7_light};
-    color: {color7_light};
-    border-style: solid;
     padding-left: 5px;
-}}
+    font-size: 12px;
+    font-weight: normal;
+}
 
-QLabel {{
-    background: transparent;
-    color: {color0};
-}}
+QProgressBar {
+    border: 0px solid #999999;
+    background-color: #444;
+    border-radius: 1px;
+    text-align: center;
+}
 
-PlaylistsView {{
-    background: transparent;
-    selection-background-color: transparent;
-    selection-color: {color3};
-    color: {foreground};
+QProgressBar::chunk {
+    background-color: #993333;
+}
+
+App {
+    background-color: #272727;
+}
+
+LeftPanel {
+    background-color: #333333;
+}
+
+LeftPanel QLabel {
+    padding-top: 3px;
+    padding-left: -2px;
+    padding-bottom: 3px;
+    color: #AAA;
+}
+
+PlayerControlPanel {
+    background-color: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
+        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
+}
+
+PlayerControlPanel QPushButton{
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
     outline: none;
-    border: 0px;
-}}
-PlaylistsView::item:hover {{
-    color: {color4};
-}}
+}
+#pp_btn {
+    margin-left: 10px;
+    margin-right: 10px;
+    border-image: url(icons/play_hover.png);
+}
+#pp_btn:checked {
+    border-image: url(icons/pause_hover.png);
+}
+#previous_btn {
+    margin-left: 10px;
+    border-image: url(icons/last_hover.png);
+}
+#next_btn {
+    border-image: url(icons/next_hover.png);
+}
+#playlist_btn {
+    border-image: url(icons/current_play.png);
+}
+PlayerControlPanel QPushButton:hover {
+    background-color: #111;
+    outline: none;
+}
+PlayerControlPanel QPushButton:focus {
+    outline: none;
+}
+RightPanel {
+    border: 3px solid #993333;
+    background-color: transparent;
+}
 
-QSlider::groove:horizontal {{
-    background: {color0_light};
-    height: 4px;
+SongsTableView QHeaderView {
+	height: 20px;
+}
+
+QSlider {
+  background: transparent;
+}
+
+QSlider::groove:horizontal {    /* 凹槽 */
+    border: 0px solid #993333;
+    position: absolute;
+    top: -7px;
+    height: 8px;
+}
+
+QSlider::sub-page:horizontal {  /* 滑过的区域 */
+    background-color: qlineargradient(x1: 0, y1: 1,    x2: 1, y2: 0,
+        stop: 0 rgba(151, 40, 40, 0.8), stop: 1 #993333);
+}
+
+QSlider::add-page:horizontal {  /* 未滑过的区域 */
+    background: #999999;
     border-radius: 2px;
-}}
-QSlider::handle:horizontal {{
-    background: {color4};
-    width: 16px;
-    margin: -6px 0;
-    border-radius: 8px;
-}}
-QSlider::sub-page:horizontal {{
-    background: {foreground};
-}}
+}
 
-QTableView QTableCornerButton::section {{
-    background: transparent;
-}}
-QTableView {{
-    font-size: 13px;
-    background: transparent;
-    alternate-background-color: rgba(0, 0, 0, 0.09);
-    selection-background-color: transparent;
-    color: {foreground};
-    outline: none;
-    border: 0px;
-}}
-QTableView::item {{
-    background: transparent;
-    color: {foreground};
-}}
-QTableView::item:hover {{
-}}
-QTableView::item:focus {{
-    outline: none;
-}}
-QTableView::item:selected {{
-    color: {color3};
-}}
-QTableView QWidget {{
-    height: 100%;
-}}
-QTableView QPushButton {{
-    font-size: 18px;
-    background: {background_light};
-    color: {foreground};
+QSlider::handle:horizontal {    /* 柄 */
+    background: #993333;
+    border: 0px solid #cccccc;
+    border-radius: 4px;
+    width: 8px;
+    margin: -5px 0;
+}
+
+QSplitter::handle {
+	background-color: transparent;
+}
+
+
+/* ----------------------- */
+/* ----------------------- */
+/* ----------------------- */
+/* ----------------------- */
+
+QScrollBar:vertical {
+    margin: 0px 0;
+    border: 0px solid grey;
+    background: #222;
+    width: 6px;
     border-radius: 3px;
-}}
-QTableView QPushButton:hover {{
-    font-size: 20px;
-    color: {color4};
-}}
+}
 
-RightPanel {{
-    background: transparent;
-    padding: 20px 30px 0px 30px;
-}}
+QScrollBar::handle:vertical {
+    width: 6px;
+    background: #993333;
+    border-radius: 3px;
+    margin: 0 0;
+    border: 0px solid #993333;
+}
 
-RightPanel_Container {{
-    background: transparent;
-    border: 0px;
-}}
+QScrollBar::add-line:vertical {
+    border: 0px solid grey;
+    background: #222;
+    height: 20px;
+    subcontrol-position: bottom;
+    subcontrol-origin: margin;
+}
 
-MagicBox {{
-    padding-left: 3px;
-    font-size: 14px;
-    background: transparent;
-    border: 0px;
-    border-bottom: 1px solid {color6};
-    color: {foreground};
-    outline: none;
-}}
-MagicBox:focus {{
-    outline: none;
-}}
+QScrollBar::sub-line:vertical {
+    border: 0px solid grey;
+    background: #222;
+    height: 20px;
+    subcontrol-position: top;
+    subcontrol-origin: margin;
+}
 
-TableControl {{
-    background: transparent;
-}}
-
-TableControl QPushButton {{
-    background: transparent;
-    border: 0px;  /* make background transparent */
-    color: {foreground};
-    font-size: 20px;
-    outline: none;
-}}
-
-TableControl QPushButton:hover {{
-    color: {color0};
-}}
-
-TopPanel {{
-    background: transparent;
-    color: {foreground};
-    border-top: 3px inset {color0_light};
-}}
-
-PlayerControlPanel QPushButton {{
-    background: transparent;
-    border: 0px;
-    font-size: 13px;
-    color: {foreground};
-    outline: none;
-}}
-
-PlayerControlButton QPushButton {{
-    color: {color4};
-}}
+QScrollArea {
+        border: 0px solid #993333;
+}

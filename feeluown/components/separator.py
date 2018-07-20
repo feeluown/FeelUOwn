@@ -2,8 +2,11 @@ from PyQt5.QtWidgets import QFrame
 
 
 class Separator(QFrame):
-    def __init__(self, parent=None):
+    def __init__(self, orientation='horizontal', parent=None):
         super().__init__(parent)
 
-        self.setFrameShape(QFrame.HLine)
+        if orientation == 'horizontal':
+            self.setFrameShape(QFrame.HLine)
+        else:
+            self.setFrameShape(QFrame.VLine)
         self.setFrameShadow(QFrame.Sunken)

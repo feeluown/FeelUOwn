@@ -1,12 +1,13 @@
 import asyncio
 import logging
 import os
+import sys
 from contextlib import contextmanager
 from functools import partial
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QFrame, QStyle
+from PyQt5.QtWidgets import QApplication, QFrame, QStyle, QWidget
 
 from fuocore.core.player import State as PlayerState
 
@@ -41,7 +42,7 @@ class AppCodeRunnerMixin(object):
         exec(obj, self._g, self._g)
 
 
-class App(QFrame, AppCodeRunnerMixin):
+class App(QWidget, AppCodeRunnerMixin):
 
     initialized = pyqtSignal()
 
@@ -76,7 +77,17 @@ class App(QFrame, AppCodeRunnerMixin):
     def initialize(self):
         logger.debug('App start initializing...')
         self.initialized.emit()
+        if sys.platform == 'darwin':
+            self.load_qss()
         logger.debug('App start initializing...done')
+
+    def load_qss(self):
+        filepath = os.path.abspath(__file__)
+        dirname = os.path.dirname(filepath)
+        qssfilepath = os.path.join(dirname, 'default.qss')
+        with open(qssfilepath) as f:
+            s = f.read()
+            QApplication.instance().setStyleSheet(s)
 
     def scan_fuo_files(self):
         fuo_files = config.FUO_FILES
@@ -156,6 +167,8 @@ class App(QFrame, AppCodeRunnerMixin):
 
     def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
+        if sys.platform == 'darwin':
+            return
         if state == PlayerState.playing:
             pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         else:
