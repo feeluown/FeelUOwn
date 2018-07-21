@@ -1,3 +1,4 @@
+from enum import Enum
 from functools import partial
 
 from PyQt5.QtCore import (
@@ -15,6 +16,7 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
     QAction,
     QComboBox,
+    QFrame,
     QHBoxLayout,
     QHeaderView,
     QInputDialog,
@@ -28,6 +30,14 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils import parse_ms
 from feeluown.mimedata import ModelMimeData
+
+
+class Column(Enum):
+    song = 0
+    source = 1
+    duration = 2
+    artist = 3
+    album = 4
 
 
 class SongsTableModel(QAbstractTableModel):
@@ -62,13 +72,19 @@ class SongsTableModel(QAbstractTableModel):
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
         sections = ('', '歌曲标题', '时长', '歌手', '专辑')
-        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-            if section == 0:
-                icons = (self._source_icon_map[s].strip() for s in self._source_set)
-                return '{}'.format('/'.join(icons))
-            if section < len(sections):
-                return sections[section]
-            return ''
+        if orientation == Qt.Horizontal:
+            if role == Qt.DisplayRole:
+                if section == 0:
+                    icons = (self._source_icon_map[s].strip() for s in self._source_set)
+                    return '{}'.format('/'.join(icons))
+                if section < len(sections):
+                    return sections[section]
+                return ''
+        else:
+            if role == Qt.DisplayRole:
+                return section
+            elif role == Qt.TextAlignmentRole:
+                return Qt.AlignRight
         return QVariant()
 
     def data(self, index, role=Qt.DisplayRole):
@@ -186,11 +202,10 @@ class SongsTableDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
 
-    def sizeHint(self, option, index):
-        widths = (0.03, 0.3, 0.1, 0.2, 0.3)
-        width = self.parent().width()
-        w = int(width * widths[index.column()])
-        return QSize(w, option.rect.height())
+    # def sizeHint(self, option, index):
+    #     widths = (20, 250, 50, 100, 150)
+    #     w = int(widths[index.column()])
+    #     return QSize(w, option.rect.height())
 
     def editorEvent(self, event, model, option, index):
         super().editorEvent(event, model, option, index)
@@ -222,7 +237,8 @@ class SongsTableView(QTableView):
         # FIXME: PyQt5 seg fault
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
 

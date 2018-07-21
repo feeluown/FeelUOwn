@@ -7,7 +7,14 @@ from functools import partial
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QFrame, QStyle, QWidget
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFrame,
+    QStyle,
+    QWidget,
+    QMainWindow,
+    QStyleOption,
+)
 
 from fuocore.core.player import State as PlayerState
 

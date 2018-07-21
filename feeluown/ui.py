@@ -197,6 +197,7 @@ class LeftPanel(QFrame):
                 self._layout = QVBoxLayout(self)
                 self._layout.setContentsMargins(0, 0, 0, 0)
                 self._layout.setSpacing(0)
+                label.setFixedHeight(25)
                 self._layout.addWidget(label)
                 self._layout.addWidget(view)
 
@@ -215,6 +216,8 @@ class LeftPanel(QFrame):
         self.playlists_view.setModel(self._app.playlists)
 
         self._layout = QVBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(6, 4, 0, 0)
         self._splitter.addWidget(self._libraries_con)
         self._splitter.addWidget(self._histories_con)
         self._splitter.addWidget(self._playlists_con)
@@ -235,7 +238,7 @@ class LeftPanel(QFrame):
         await self._app.ui.table_container.show_model(playlist)
 
 
-class RightPanel(QWidget):
+class RightPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -430,10 +433,11 @@ class Ui(object):
         self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self._layout.addWidget(self.top_panel)
-        self._layout.addWidget(self._top_separator)
-        self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.magicbox)
+        self.magicbox.setMinimumHeight(25)
+        self._layout.addWidget(self._splitter)
+        self._layout.addWidget(self._top_separator)
+        self._layout.addWidget(self.top_panel)
 
         # self._layout.addLayout(self._bottom_layout)
         # self._bottom_layout.addWidget(self.magicbox)

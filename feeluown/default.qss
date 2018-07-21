@@ -4,80 +4,23 @@ QWidget {
     font-size: 13px;
 }
 
-QLabel {
-    color: #CCC;
-}
-
-QAbstractItemView {
-    border: 0px solid #993333;
-}
-
-QListView, QHeaderView, QTableView {
+QListView {
     background-color: transparent;
-    alternate-background-color: #303030;
-    color: #CCC;
-    outline: none;
 }
 
-QTableView {
-    selection-background-color: #993333;
-}
-
-QTableView::item {
-    height: 16px;
-    selection-background-color: #993333;
-}
-
-QListView::item:selected {
-    color: #CCC;
-    border-left: 3px solid #993333;
-    padding-left: -3px;
-}
-
-QHeaderView {
-    color: #CCC;
-}
-
-QHeaderView::section:horizontal {
-    background: #222;
-    color: #993333;
-    border: 0px;
-    border-bottom: 1px solid #993333;
-    height: 24px;
-    padding-left: 5px;
-    font-size: 12px;
-    font-weight: normal;
-}
-
-QProgressBar {
-    border: 0px solid #999999;
-    background-color: #444;
-    border-radius: 1px;
-    text-align: center;
-}
-
-QProgressBar::chunk {
-    background-color: #993333;
-}
-
-App {
-    background-color: #272727;
-}
-
-LeftPanel {
-    background-color: #333333;
+QSplitter::handle {
+    background-color: transparent;
 }
 
 LeftPanel QLabel {
     padding-top: 3px;
-    padding-left: -2px;
     padding-bottom: 3px;
-    color: #AAA;
+    font-size: 12px;
+    font-weight: bold;
 }
 
-PlayerControlPanel {
-    background-color: qlineargradient(x1: 0, y1: 0,    x2: 0, y2: 1,
-        stop: 0 #333, stop: 0.5 #222,  stop: 0.8 #111, stop: 1 000);
+LeftPanel QListView {
+    margin-left: 5px;
 }
 
 PlayerControlPanel QPushButton{
@@ -85,6 +28,9 @@ PlayerControlPanel QPushButton{
     height: 30px;
     border-radius: 15px;
     outline: none;
+}
+PlayerControlPanel QPushButton:hover {
+    background-color: #FFF;
 }
 #pp_btn {
     margin-left: 10px;
@@ -105,92 +51,39 @@ PlayerControlPanel QPushButton{
     border-image: url(icons/current_play.png);
 }
 PlayerControlPanel QPushButton:hover {
-    background-color: #111;
     outline: none;
 }
 PlayerControlPanel QPushButton:focus {
     outline: none;
 }
+
+TopPanel {
+    background-color: qlineargradient(
+        x1: 0, y1: 0, x2: 0, y2: 1,
+        stop: 0 #EEE, stop: 0.4 #DDD, stop: 0.7 #CCC, stop: 1 #BBB
+    );
+}
+
 RightPanel {
-    border: 3px solid #993333;
+    background-color: #FFF;
+}
+
+
+DescriptionContainer {
+    background-color: transparent;
+}
+
+DescriptionContainer QLabel {
+    border: 0;
     background-color: transparent;
 }
 
 SongsTableView QHeaderView {
-	height: 20px;
+    background-color: #EFEFEF
 }
 
-QSlider {
-  background: transparent;
-}
-
-QSlider::groove:horizontal {    /* 凹槽 */
-    border: 0px solid #993333;
-    position: absolute;
-    top: -7px;
-    height: 8px;
-}
-
-QSlider::sub-page:horizontal {  /* 滑过的区域 */
-    background-color: qlineargradient(x1: 0, y1: 1,    x2: 1, y2: 0,
-        stop: 0 rgba(151, 40, 40, 0.8), stop: 1 #993333);
-}
-
-QSlider::add-page:horizontal {  /* 未滑过的区域 */
-    background: #999999;
-    border-radius: 2px;
-}
-
-QSlider::handle:horizontal {    /* 柄 */
-    background: #993333;
-    border: 0px solid #cccccc;
-    border-radius: 4px;
-    width: 8px;
-    margin: -5px 0;
-}
-
-QSplitter::handle {
-	background-color: transparent;
-}
-
-
-/* ----------------------- */
-/* ----------------------- */
-/* ----------------------- */
-/* ----------------------- */
-
-QScrollBar:vertical {
-    margin: 0px 0;
-    border: 0px solid grey;
-    background: #222;
-    width: 6px;
-    border-radius: 3px;
-}
-
-QScrollBar::handle:vertical {
-    width: 6px;
-    background: #993333;
-    border-radius: 3px;
-    margin: 0 0;
-    border: 0px solid #993333;
-}
-
-QScrollBar::add-line:vertical {
-    border: 0px solid grey;
-    background: #222;
-    height: 20px;
-    subcontrol-position: bottom;
-    subcontrol-origin: margin;
-}
-
-QScrollBar::sub-line:vertical {
-    border: 0px solid grey;
-    background: #222;
-    height: 20px;
-    subcontrol-position: top;
-    subcontrol-origin: margin;
-}
-
-QScrollArea {
-        border: 0px solid #993333;
+MagicBox {
+    border-top: 0;
+    border-bottom: 1px solid #EEE;
+    margin-top: -5px;
 }

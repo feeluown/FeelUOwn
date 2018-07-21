@@ -20,7 +20,7 @@ class LibraryModel(object):
                  icon='♬ ', desc='', **kwargs):
         self.identifier = provider.identifier
         self.name = provider.name
-        self.icon = ' ' + icon
+        self.icon = icon
         self.desc = desc
         self.search = search
         self._on_click = on_click
