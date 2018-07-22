@@ -70,6 +70,7 @@ class MagicBox(QTextEdit):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(QTextOption.NoWrap)
         self.setFixedHeight(self.sizeHint().height())
+        self.setMinimumHeight(25)
 
         self._timer = QTimer(self)
         self._cmd_text = None
