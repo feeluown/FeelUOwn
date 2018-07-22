@@ -203,10 +203,11 @@ class SongsTableDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
 
-    # def sizeHint(self, option, index):
-    #     widths = (20, 250, 50, 100, 150)
-    #     w = int(widths[index.column()])
-    #     return QSize(w, option.rect.height())
+    def sizeHint(self, option, index):
+        widths = (0.03, 0.3, 0.1, 0.2, 0.3)
+        width = self.parent().width()
+        w = int(width * widths[index.column()])
+        return QSize(w, option.rect.height())
 
     def editorEvent(self, event, model, option, index):
         super().editorEvent(event, model, option, index)
@@ -255,7 +256,6 @@ class SongsTableView(QTableView):
         self.setShowGrid(False)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
-
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):

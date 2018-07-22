@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette, QPainter, QColor
 from PyQt5.QtWidgets import (
     QDialog,
     QFrame,
@@ -38,8 +38,8 @@ class DescriptionContainer(QScrollArea):
         self.setWidgetResizable(True)
 
         self.setFrameShape(QFrame.NoFrame)
-        self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._layout = QVBoxLayout(self)
@@ -55,10 +55,7 @@ class DescriptionContainer(QScrollArea):
 
     def keyPressEvent(self, event):
         key_code = event.key()
-        if key_code == Qt.Key_Space:
-            # TODO: show more, show less
-            pass
-        elif key_code == Qt.Key_J:
+        if key_code == Qt.Key_J:
             value = self.verticalScrollBar().value()
             self.verticalScrollBar().setValue(value + 20)
         elif key_code == Qt.Key_K:
@@ -72,42 +69,46 @@ class TableOverview(QFrame):
     def __init__(self, parent):
         super().__init__(parent)
 
+        self._height = 180
         self.cover_label = QLabel(self)
-        self._title_label = QLabel(self)
         self._desc_container = DescriptionContainer(self)
 
-        self._title_label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self._desc_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
-
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
         self._layout = QHBoxLayout(self)
+        self._left_sub_layout = QVBoxLayout()
         self._right_sub_layout = QVBoxLayout()
-        self._right_sub_layout.addWidget(self._title_label)
-        self._right_sub_layout.addStretch(0)
+
         self._right_sub_layout.addWidget(self._desc_container)
-        self._right_sub_layout.setStretch(2, 1)
-        self._layout.addWidget(self.cover_label)
-        self._layout.addSpacing(10)
+        self._left_sub_layout.addWidget(self.cover_label)
+        self._left_sub_layout.addStretch(0)
+        self._layout.addLayout(self._left_sub_layout)
+        self._layout.addSpacing(20)
         self._layout.addLayout(self._right_sub_layout)
         self._layout.setStretch(1, 1)
-        self.cover_label.setFixedWidth(160)
-        self.setMaximumHeight(180)
+        self.cover_label.setFixedWidth(200)
+        self.setFixedHeight(self._height)
 
     def set_cover(self, pixmap):
         self.cover_label.setPixmap(
             pixmap.scaledToWidth(self.cover_label.width(),
                                  mode=Qt.SmoothTransformation))
 
-    def set_name(self, name):
-        self._title_label.setText('<h3>{name}</h3>'.format(name=name))
-        self._title_label.setTextFormat(Qt.RichText)
-
     def set_desc(self, desc):
-        if desc:
-            self._desc_container.show()
-            self._desc_container.set_html(desc)
-        else:
-            self._desc_container.hide()
+        self._desc_container.show()
+        self._desc_container.set_html(desc)
+
+    def keyPressEvent(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_Space:
+            if self._height < 300:
+                self._height = 300
+                self.setMinimumHeight(self._height)
+                self.setMaximumHeight(self._height)
+            else:
+                self._height = 180
+                self.setMinimumHeight(self._height)
+                self.setMaximumHeight(self._height)
+            event.accept()
 
 
 class SongsTableContainer(QFrame):
@@ -120,6 +121,7 @@ class SongsTableContainer(QFrame):
 
         self._layout = QVBoxLayout(self)
 
+        self.setAutoFillBackground(False)
         if use_mac_theme():
             self._layout.setContentsMargins(0, 0, 0, 0)
             self._layout.setSpacing(0)
@@ -132,6 +134,7 @@ class SongsTableContainer(QFrame):
             lambda artist: asyncio.ensure_future(self.show_model(artist)))
         self.songs_table.show_album_needed.connect(
             lambda album: asyncio.ensure_future(self.show_model(album)))
+        self._cover_pixmap = None
         self.hide()
 
     async def play_song(self, song):
@@ -171,8 +174,8 @@ class SongsTableContainer(QFrame):
         loop = asyncio.get_event_loop()
         songs = await loop.run_in_executor(None, lambda: playlist.songs)
         self._show_songs(songs)
-        self.table_overview.set_name(playlist.name)
-        self.table_overview.set_desc(playlist.desc or '')
+        desc = '<h2>{}</h2>\n{}'.format(playlist.name, playlist.desc or '')
+        self.table_overview.set_desc(desc)
         if playlist.cover:
             loop.create_task(self.show_cover(playlist.cover))
 
@@ -193,21 +196,22 @@ class SongsTableContainer(QFrame):
     async def show_artist(self, artist):
         self.table_overview.show()
         loop = asyncio.get_event_loop()
-        songs = await loop.run_in_executor(None, lambda: artist.songs)
-        self.table_overview.set_desc(artist.desc or '')
-        self.table_overview.set_name(artist.name)
-        self._show_songs(songs)
+        future_songs = loop.run_in_executor(None, lambda: artist.songs)
+        future_desc = loop.run_in_executor(None, lambda: artist.desc)
+        await asyncio.wait([future_songs, future_desc])
+        desc = future_desc.result()
+        self.table_overview.set_desc(desc or '<h2>{}</h2>'.format(artist.name))
+        self._show_songs(future_songs.result())
         if artist.cover:
             loop.create_task(self.show_cover(artist.cover))
 
     async def show_album(self, album):
         loop = asyncio.get_event_loop()
-        songs = await loop.run_in_executor(None, lambda: album.songs)
-        self.table_overview.set_name(album.name)
-        self.table_overview.set_desc(album.desc or '')
-        self._show_songs(songs)
-        if album.cover:
-            loop.create_task(self.show_cover(album.cover))
+        future_songs = loop.run_in_executor(None, lambda: album.songs)
+        future_desc = loop.run_in_executor(None, lambda: album.desc)
+        await asyncio.wait([future_songs, future_desc])
+        self.table_overview.set_desc(future_desc.result() or
+                                     '<h2>{}</h2>'.format(album.name))
 
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
@@ -218,6 +222,7 @@ class SongsTableContainer(QFrame):
         pixmap = QPixmap(img)
         if not pixmap.isNull():
             self.table_overview.set_cover(pixmap)
+            self.update()
 
     def _show_songs(self, songs):
         try:

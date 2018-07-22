@@ -31,9 +31,7 @@ dict_config = {
         'release': {
             'formatter': 'standard',
             'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'mode': 'w',
+            'class': 'logging.StreamHandler',
         }
     },
     'loggers': {

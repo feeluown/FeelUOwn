@@ -74,7 +74,7 @@ class LibrariesView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.setMinimumHeight(100)
+        self.setMinimumHeight(80)
         self.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)

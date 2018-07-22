@@ -25,11 +25,14 @@ class ImgController(object):
             self.cache.update(img_name)
             return content
         event_loop = asyncio.get_event_loop()
-        res = await event_loop.run_in_executor(
-            None,
-            partial(self._app.request.get, img_url))
-        if res is None:
-            return None
+        action_msg = 'Downloading image from {}'.format(img_url)
+        with self._app.create_action(action_msg) as action:
+            res = await event_loop.run_in_executor(
+                None,
+                partial(self._app.request.get, img_url))
+            if res is None:
+                action.failed()
+                return None
         fpath = self.cache.create(img_name)
         self.save(fpath, res.content)
         return res.content
