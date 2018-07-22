@@ -18,7 +18,7 @@ def enable(app):
     provider = LocalProvider()
     library = LibraryModel(
         provider=provider,
-        icon='♪  ',
+        icon='♪ ',
         on_click=partial(app.ui.table_container.show_songs, provider.songs),
         search=None,
         desc='点击显示所有本地音乐'

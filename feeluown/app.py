@@ -1,12 +1,20 @@
 import asyncio
 import logging
 import os
+import sys
 from contextlib import contextmanager
 from functools import partial
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QPainter, QImage, QPixmap, QIcon
-from PyQt5.QtWidgets import QApplication, QFrame, QStyle
+from PyQt5.QtWidgets import (
+    QApplication,
+    QFrame,
+    QStyle,
+    QWidget,
+    QMainWindow,
+    QStyleOption,
+)
 
 from fuocore.core.player import State as PlayerState
 
@@ -16,6 +24,7 @@ from feeluown.components.library import LibrariesModel
 from feeluown.components.playlists import PlaylistsModel
 
 from .consts import APP_ICON
+from .helpers import use_mac_theme
 from .hotkey import Hotkey
 from .img_ctl import ImgController
 from .player import Player
@@ -41,7 +50,7 @@ class AppCodeRunnerMixin(object):
         exec(obj, self._g, self._g)
 
 
-class App(QFrame, AppCodeRunnerMixin):
+class App(QWidget, AppCodeRunnerMixin):
 
     initialized = pyqtSignal()
 
@@ -76,7 +85,18 @@ class App(QFrame, AppCodeRunnerMixin):
     def initialize(self):
         logger.debug('App start initializing...')
         self.initialized.emit()
+        self.load_qss()
         logger.debug('App start initializing...done')
+
+    def load_qss(self):
+        if not use_mac_theme():
+            return
+        filepath = os.path.abspath(__file__)
+        dirname = os.path.dirname(filepath)
+        qssfilepath = os.path.join(dirname, 'mac.qss')
+        with open(qssfilepath) as f:
+            s = f.read()
+            QApplication.instance().setStyleSheet(s)
 
     def scan_fuo_files(self):
         fuo_files = config.FUO_FILES
@@ -156,6 +176,8 @@ class App(QFrame, AppCodeRunnerMixin):
 
     def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
+        if use_mac_theme():
+            return
         if state == PlayerState.playing:
             pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))
         else:

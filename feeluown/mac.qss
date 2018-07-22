@@ -1,0 +1,86 @@
+/* 主题：时代在进步 */
+
+QWidget {
+    font-size: 13px;
+}
+
+QListView {
+    background-color: transparent;
+}
+
+QSplitter::handle {
+    background-color: transparent;
+}
+
+LeftPanel QLabel {
+    padding-top: 3px;
+    padding-bottom: 3px;
+    font-size: 12px;
+    font-weight: bold;
+}
+
+LeftPanel QListView {
+    margin-left: 5px;
+}
+
+PlayerControlPanel QPushButton{
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    outline: none;
+}
+PlayerControlPanel QPushButton:hover {
+    background-color: #FFF;
+}
+#pp_btn {
+    border-image: url(icons/play_hover.png);
+}
+#pp_btn:checked {
+    border-image: url(icons/pause_hover.png);
+}
+#previous_btn {
+    border-image: url(icons/last_hover.png);
+}
+#next_btn {
+    border-image: url(icons/next_hover.png);
+}
+#playlist_btn {
+    border-image: url(icons/current_play.png);
+}
+PlayerControlPanel QPushButton:hover {
+    outline: none;
+}
+PlayerControlPanel QPushButton:focus {
+    outline: none;
+}
+
+TopPanel {
+    background-color: qlineargradient(
+        x1: 0, y1: 0, x2: 0, y2: 1,
+        stop: 0 #EEE, stop: 0.4 #DDD, stop: 0.7 #CCC, stop: 1 #BBB
+    );
+}
+
+RightPanel {
+    background-color: #FFF;
+}
+
+
+DescriptionContainer {
+    background-color: transparent;
+}
+
+DescriptionContainer QLabel {
+    border: 0;
+    background-color: transparent;
+}
+
+SongsTableView QHeaderView {
+    background-color: #EFEFEF
+}
+
+MagicBox {
+    border-top: 0;
+    border-bottom: 1px solid #EEE;
+    margin-top: -5px;
+}

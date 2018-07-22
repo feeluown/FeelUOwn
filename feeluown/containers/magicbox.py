@@ -57,7 +57,6 @@ class MagicBox(QTextEdit):
         super().__init__(parent)
 
         self._app = app
-
         # self.setPlaceholderText('搜索歌曲、歌手、专辑、用户；执行 Python 代码等')
         self.setPlaceholderText('Search library, exec code, or run command.')
         self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
@@ -71,6 +70,7 @@ class MagicBox(QTextEdit):
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setWordWrapMode(QTextOption.NoWrap)
         self.setFixedHeight(self.sizeHint().height())
+        self.setMinimumHeight(25)
 
         self._timer = QTimer(self)
         self._cmd_text = None
@@ -166,8 +166,8 @@ class MagicBox(QTextEdit):
         fm = QFontMetrics(self.font())
         # FIXME: 暂时不是太懂应该怎样正确的计算 w 和 h
         # 其中，计算 h 的一个原则是让高度正好能够显示一行
-        # 目前在 Linux 下测试 h+4 正好符合期望
-        h = max(fm.height(), 14) + 4
+        # 目前在 Linux 下测试 4 正好符合期望
+        h = max(fm.height() + fm.ascent() - fm.descent(), 14) + 4
         w = self.width() - 4
         opt = QStyleOptionFrame()
         opt.initFrom(self)
