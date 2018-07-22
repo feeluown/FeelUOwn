@@ -30,6 +30,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils import parse_ms
 from feeluown.mimedata import ModelMimeData
+from feeluown.helpers import use_mac_theme
 
 
 class Column(Enum):
@@ -237,8 +238,11 @@ class SongsTableView(QTableView):
         # FIXME: PyQt5 seg fault
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setFrameShape(QFrame.NoFrame)
+        # macOS 的滚动条可以自动隐藏
+        if not use_mac_theme():
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        else:
+            self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
 

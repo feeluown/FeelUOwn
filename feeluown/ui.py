@@ -35,6 +35,7 @@ from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 
 from .consts import PlaybackMode
+from .helpers import use_mac_theme
 from .utils import parse_ms
 
 
@@ -73,8 +74,8 @@ class PlayerControlPanel(QFrame):
         class Button(QPushButton):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                # self.setFixedSize(40, 40)
-                # self.setMaximumWidth(40)
+                # 按钮文字一般是一个 symbol，长度控制为 40 是满足需求的
+                self.setMaximumWidth(40)
 
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
@@ -98,7 +99,7 @@ class PlayerControlPanel(QFrame):
         self.playlist_btn.setToolTip('显示当前播放列表')
         self.progress_slider.setToolTip('拖动调节进度（未实现，欢迎 PR）')
 
-        if sys.platform != 'darwin':
+        if not use_mac_theme():
             self.previous_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
             self.pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
             self.next_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))
@@ -125,10 +126,14 @@ class PlayerControlPanel(QFrame):
         self._sub_layout.addWidget(self.song_title_label)
         self._sub_layout.addWidget(self.progress_slider)
 
-        self._layout.addSpacing(10)
+        self._layout.addSpacing(15)
         self._layout.addWidget(self.previous_btn)
+        self._layout.addSpacing(5)
         self._layout.addWidget(self.pp_btn)
+        self._layout.addSpacing(5)
         self._layout.addWidget(self.next_btn)
+        self._layout.addSpacing(20)
+        self._layout.addWidget(self.volume_btn)
         self._layout.addStretch(0)
         self._layout.addWidget(self.position_label)
         self._layout.addSpacing(7)
@@ -137,8 +142,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.duration_label)
         self._layout.addSpacing(5)
         self._layout.addStretch(0)
-        self._layout.addWidget(self.volume_btn)
-        self._layout.addSpacing(10)
         self._layout.addWidget(self.pms_btn)
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(10)
@@ -216,8 +219,9 @@ class LeftPanel(QFrame):
         self.playlists_view.setModel(self._app.playlists)
 
         self._layout = QVBoxLayout(self)
-        self._layout.setSpacing(0)
-        self._layout.setContentsMargins(6, 4, 0, 0)
+        if use_mac_theme():
+            self._layout.setSpacing(0)
+            self._layout.setContentsMargins(6, 4, 0, 0)
         self._splitter.addWidget(self._libraries_con)
         self._splitter.addWidget(self._histories_con)
         self._splitter.addWidget(self._playlists_con)
@@ -412,7 +416,8 @@ class Ui(object):
         self._bottom_layout = QHBoxLayout()
         self._top_separator = Separator(parent=app)
         self._splitter = QSplitter(app)
-        self._splitter.setHandleWidth(0)
+        if use_mac_theme():
+            self._splitter.setHandleWidth(0)
 
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
@@ -433,11 +438,16 @@ class Ui(object):
         self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        self._layout.addWidget(self.magicbox)
-        self.magicbox.setMinimumHeight(25)
-        self._layout.addWidget(self._splitter)
-        self._layout.addWidget(self._top_separator)
-        self._layout.addWidget(self.top_panel)
+        if use_mac_theme():
+            self._layout.addWidget(self.magicbox)
+            self._layout.addWidget(self._splitter)
+            self._layout.addWidget(self._top_separator)
+            self._layout.addWidget(self.top_panel)
+        else:
+            self._layout.addWidget(self.top_panel)
+            self._layout.addWidget(self._top_separator)
+            self._layout.addWidget(self._splitter)
+            self._layout.addWidget(self.magicbox)
 
         # self._layout.addLayout(self._bottom_layout)
         # self._bottom_layout.addWidget(self.magicbox)

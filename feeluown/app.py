@@ -24,6 +24,7 @@ from feeluown.components.library import LibrariesModel
 from feeluown.components.playlists import PlaylistsModel
 
 from .consts import APP_ICON
+from .helpers import use_mac_theme
 from .hotkey import Hotkey
 from .img_ctl import ImgController
 from .player import Player
@@ -84,14 +85,15 @@ class App(QWidget, AppCodeRunnerMixin):
     def initialize(self):
         logger.debug('App start initializing...')
         self.initialized.emit()
-        if sys.platform == 'darwin':
-            self.load_qss()
+        self.load_qss()
         logger.debug('App start initializing...done')
 
     def load_qss(self):
+        if not use_mac_theme():
+            return
         filepath = os.path.abspath(__file__)
         dirname = os.path.dirname(filepath)
-        qssfilepath = os.path.join(dirname, 'default.qss')
+        qssfilepath = os.path.join(dirname, 'mac.qss')
         with open(qssfilepath) as f:
             s = f.read()
             QApplication.instance().setStyleSheet(s)
@@ -174,7 +176,7 @@ class App(QWidget, AppCodeRunnerMixin):
 
     def _on_player_status_changed(self, state):
         pp_btn = self.ui.top_panel.pc_panel.pp_btn
-        if sys.platform == 'darwin':
+        if use_mac_theme():
             return
         if state == PlayerState.playing:
             pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPause))

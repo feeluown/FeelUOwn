@@ -19,6 +19,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore import ModelType
+from feeluown.helpers import use_mac_theme
 from feeluown.components.songs_table import SongsTableModel, SongsTableView
 
 
@@ -119,8 +120,9 @@ class SongsTableContainer(QFrame):
 
         self._layout = QVBoxLayout(self)
 
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
+        if use_mac_theme():
+            self._layout.setContentsMargins(0, 0, 0, 0)
+            self._layout.setSpacing(0)
         self._layout.addWidget(self.table_overview)
         self._layout.addWidget(self.songs_table)
 
