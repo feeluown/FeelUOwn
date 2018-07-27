@@ -20,7 +20,7 @@ def enable(app):
     provider = LocalProvider()
     logger.info('Register provider: %s' % provider)
     app.library.register(provider)
-    if app.mode & App.GUIMode:
+    if app.mode & App.GuiMode:
         pm = ProviderModel(
             name='本地音乐',
             icon='♪ ',

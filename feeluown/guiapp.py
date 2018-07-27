@@ -45,7 +45,12 @@ class AppCodeRunnerMixin(object):
         exec(obj, self._g, self._g)
 
 
-class GuiMixin(QWidget, AppCodeRunnerMixin):
+class GuiAppMixin(QWidget, AppCodeRunnerMixin):
+    """
+    FIXME: Subclass must call initialize to make this mixin
+    work properly, which seems to be little bit strange. But
+    this mixin helps avoid duplicate code temporarily.
+    """
 
     initialized = pyqtSignal()
 

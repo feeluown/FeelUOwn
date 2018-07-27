@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 
 def enable(app):
     app.library.register(provider)
-    if app.mode & App.GUIMode:
+    if app.mode & App.GuiMode:
         pm = ProviderModel(
             name='QQ 音乐',
             icon='♫ ',

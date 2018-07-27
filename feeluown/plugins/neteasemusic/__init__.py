@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 def enable(app):
     app.library.register(provider)
 
-    if app.mode & App.GUIMode:
+    if app.mode & App.GuiMode:
         nem = Nem(app)
         pm = ProviderModel(
             name='网易云音乐',

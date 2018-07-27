@@ -9,8 +9,8 @@ import sys
 sys.path.append(os.path.dirname(sys.path[0]))
 
 from fuocore import MpvPlayer, Library
-from fuocore.app import CliMixin
-from fuocore.app import run_pubsub, run
+from fuocore.app import CliAppMixin, run_server
+from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config
 from feeluown.rcfile import load_rcfile
@@ -71,7 +71,7 @@ def main():
     if '-nw' not in sys.argv:
         from PyQt5.QtWidgets import QApplication
         from quamash import QEventLoop
-        from feeluown.guiapp import GuiMixin
+        from feeluown.guiapp import GuiAppMixin
 
         q_app = QApplication(sys.argv)
         q_app.setQuitOnLastWindowClosed(True)
@@ -81,13 +81,13 @@ def main():
         asyncio.set_event_loop(app_event_loop)
         pubsub_gateway, pubsub_server = run_pubsub()
 
-        class _App(App, CliMixin, GuiMixin):
-            mode = App.CLIMode | App.GUIMode
+        class _App(App, CliAppMixin, GuiAppMixin):
+            mode = App.CliMode | App.GuiMode
 
             def __init__(self, player, library, pubsub_gateway):
-                App.__init__(self, player, library)
-                CliMixin.__init__(self, pubsub_gateway)
-                GuiMixin.__init__(self)
+                App.__init__(self, player, library, pubsub_gateway)
+                CliAppMixin.__init__(self)
+                GuiAppMixin.__init__(self)
 
         app = _App(player, library, pubsub_gateway)
         load_rcfile(app)
@@ -95,18 +95,18 @@ def main():
     else:
         pubsub_gateway, pubsub_server = run_pubsub()
 
-        class _App(App, CliMixin):
-            mode = App.CLIMode
+        class _App(App, CliAppMixin):
+            mode = App.CliMode
 
             def __init__(self, player, library, pubsub_gateway):
-                App.__init__(self, player, library)
-                CliMixin.__init__(self, pubsub_gateway)
+                App.__init__(self, player, library, pubsub_gateway)
+                CliAppMixin.__init__(self)
 
         app = _App(player, library, pubsub_gateway)
 
-    live_lyric = app._live_lyric
+    live_lyric = app.live_lyric
     event_loop = asyncio.get_event_loop()
-    event_loop.create_task(run(app, live_lyric))
+    event_loop.create_task(run_server(app, live_lyric))
     try:
         event_loop.run_forever()
         logger.info('Event loop stopped.')
