@@ -231,8 +231,8 @@ class SongsTableContainer(QFrame):
             pass
         self.show()
 
-        source_icon_map = {lib.identifier: lib.icon for lib in self._app.libraries}
-        self.songs_table.setModel(SongsTableModel(songs or [], source_icon_map))
+        source_name_map = {p.identifier: p.name for p in self._app.library.list()}
+        self.songs_table.setModel(SongsTableModel(songs or [], source_name_map))
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):

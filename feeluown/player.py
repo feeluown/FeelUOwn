@@ -2,7 +2,7 @@
 import locale
 import logging
 
-from fuocore.core.player import MpvPlayer
+from fuocore.player import MpvPlayer
 
 
 logger = logging.getLogger(__name__)
