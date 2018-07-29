@@ -212,6 +212,9 @@ class SongsTableContainer(QFrame):
         await asyncio.wait([future_songs, future_desc])
         self.table_overview.set_desc(future_desc.result() or
                                      '<h2>{}</h2>'.format(album.name))
+        self._show_songs(future_songs.result())
+        if album.cover:
+            loop.create_task(self.show_cover(album.cover))
 
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
