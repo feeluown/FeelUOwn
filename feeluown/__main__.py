@@ -8,15 +8,18 @@ import sys
 
 sys.path.append(os.path.dirname(sys.path[0]))
 
-from PyQt5.QtWidgets import QApplication
-from quamash import QEventLoop
+from fuocore import MpvPlayer, Library
+from fuocore.app import CliAppMixin, run_server
+from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config
-from feeluown.app import App
 from feeluown.rcfile import load_rcfile
-from feeluown.consts import (HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
-                             CACHE_DIR, USER_THEMES_DIR, SONG_DIR)
+from feeluown.consts import (
+    HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
+    CACHE_DIR, USER_THEMES_DIR, SONG_DIR
+)
 from feeluown.config import config
+from feeluown.app import App
 
 logger = logging.getLogger(__name__)
 
@@ -61,20 +64,58 @@ sys.path.append(USER_PLUGINS_DIR)
 def main():
     sys.excepthook = excepthook
     parse_args(sys.argv)
+    player = MpvPlayer()
+    player.initialize()
+    library = Library()
 
-    q_app = QApplication(sys.argv)
-    q_app.setQuitOnLastWindowClosed(True)
-    q_app.setApplicationName('FeelUOwn')
+    if '-nw' not in sys.argv:
+        from PyQt5.QtWidgets import QApplication
+        from quamash import QEventLoop
+        from feeluown.guiapp import GuiAppMixin
 
-    app_event_loop = QEventLoop(q_app)
-    asyncio.set_event_loop(app_event_loop)
-    app = App()
-    app.show()
+        q_app = QApplication(sys.argv)
+        q_app.setQuitOnLastWindowClosed(True)
+        q_app.setApplicationName('FeelUOwn')
 
-    load_rcfile(app)
+        app_event_loop = QEventLoop(q_app)
+        asyncio.set_event_loop(app_event_loop)
+        pubsub_gateway, pubsub_server = run_pubsub()
 
-    app_event_loop.run_forever()
-    sys.exit(0)
+        class _App(App, CliAppMixin, GuiAppMixin):
+            mode = App.CliMode | App.GuiMode
+
+            def __init__(self, player, library, pubsub_gateway):
+                App.__init__(self, player, library, pubsub_gateway)
+                CliAppMixin.__init__(self)
+                GuiAppMixin.__init__(self)
+
+        app = _App(player, library, pubsub_gateway)
+        load_rcfile(app)
+        app.show()
+    else:
+        pubsub_gateway, pubsub_server = run_pubsub()
+
+        class _App(App, CliAppMixin):
+            mode = App.CliMode
+
+            def __init__(self, player, library, pubsub_gateway):
+                App.__init__(self, player, library, pubsub_gateway)
+                CliAppMixin.__init__(self)
+
+        app = _App(player, library, pubsub_gateway)
+
+    live_lyric = app.live_lyric
+    event_loop = asyncio.get_event_loop()
+    event_loop.create_task(run_server(app, live_lyric))
+    try:
+        event_loop.run_forever()
+        logger.info('Event loop stopped.')
+    except KeyboardInterrupt:
+        # NOTE: gracefully shutdown?
+        pass
+    finally:
+        pubsub_server.close()
+        event_loop.close()
 
 
 if __name__ == '__main__':

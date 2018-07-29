@@ -29,7 +29,7 @@ from feeluown.components.playlists import (
     PlaylistsView,
     PlaylistsModel,
 )
-from feeluown.components.library import LibrariesView
+from feeluown.components.provider import ProvidersView
 from feeluown.components.history import HistoriesView
 from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
@@ -205,16 +205,16 @@ class LeftPanel(QFrame):
                 self._layout.addWidget(view)
 
         self.playlists_view = PlaylistsView(self)
-        self.libraries_view = LibrariesView(self)
+        self.providers_view = ProvidersView(self)
         self.histories_view = HistoriesView(self)
 
-        self._libraries_con = Container(self.library_header, self.libraries_view)
+        self._providers_con = Container(self.library_header, self.providers_view)
         self._histories_con = Container(self.history_header, self.histories_view)
         self._playlists_con = Container(self.playlists_header, self.playlists_view)
 
         self._splitter = QSplitter(Qt.Vertical, self)
 
-        self.libraries_view.setModel(self._app.libraries)
+        self.providers_view.setModel(self._app.providers)
         self.histories_view.setModel(self._app.histories)
         self.playlists_view.setModel(self._app.playlists)
 
@@ -222,12 +222,12 @@ class LeftPanel(QFrame):
         if use_mac_theme():
             self._layout.setSpacing(0)
             self._layout.setContentsMargins(6, 4, 0, 0)
-        self._splitter.addWidget(self._libraries_con)
+        self._splitter.addWidget(self._providers_con)
         self._splitter.addWidget(self._histories_con)
         self._splitter.addWidget(self._playlists_con)
         self._layout.addWidget(self._splitter)
 
-        self.libraries_view.setFrameShape(QFrame.NoFrame)
+        self.providers_view.setFrameShape(QFrame.NoFrame)
         self.playlists_view.setFrameShape(QFrame.NoFrame)
         self.histories_view.setFrameShape(QFrame.NoFrame)
         self.setMinimumWidth(180)

@@ -212,6 +212,9 @@ class SongsTableContainer(QFrame):
         await asyncio.wait([future_songs, future_desc])
         self.table_overview.set_desc(future_desc.result() or
                                      '<h2>{}</h2>'.format(album.name))
+        self._show_songs(future_songs.result())
+        if album.cover:
+            loop.create_task(self.show_cover(album.cover))
 
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
@@ -231,8 +234,8 @@ class SongsTableContainer(QFrame):
             pass
         self.show()
 
-        source_icon_map = {lib.identifier: lib.icon for lib in self._app.libraries}
-        self.songs_table.setModel(SongsTableModel(songs or [], source_icon_map))
+        source_name_map = {p.identifier: p.name for p in self._app.library.list()}
+        self.songs_table.setModel(SongsTableModel(songs or [], source_name_map))
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):

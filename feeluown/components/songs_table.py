@@ -42,13 +42,13 @@ class Column(Enum):
 
 
 class SongsTableModel(QAbstractTableModel):
-    def __init__(self, songs, source_icon_map=None):
+    def __init__(self, songs, source_name_map=None):
         super().__init__()
         self.songs = songs
         self._source_set = set()
 
         # XXX: icon should be a str (charactor symbol)
-        self._source_icon_map = source_icon_map or {}
+        self._source_name_map = source_name_map or {}
         self._initialize()
 
     def _initialize(self):
@@ -72,12 +72,9 @@ class SongsTableModel(QAbstractTableModel):
         return 5
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        sections = ('', '歌曲标题', '时长', '歌手', '专辑')
+        sections = ('来源', '歌曲标题', '时长', '歌手', '专辑')
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
-                if section == 0:
-                    icons = (self._source_icon_map[s].strip() for s in self._source_set)
-                    return '{}'.format('/'.join(icons))
                 if section < len(sections):
                     return sections[section]
                 return ''
@@ -97,7 +94,7 @@ class SongsTableModel(QAbstractTableModel):
         song = self.songs[index.row()]
         if role == Qt.DisplayRole:
             if index.column() == 0:
-                return self._source_icon_map.get(song.source, '').strip()
+                return self._source_name_map.get(song.source, '').strip()
             elif index.column() == 1:
                 return song.title
             elif index.column() == 2:
@@ -108,6 +105,9 @@ class SongsTableModel(QAbstractTableModel):
                 return song.artists_name
             elif index.column() == 4:
                 return song.album_name
+        elif role == Qt.TextAlignmentRole:
+            if index.column() == 0:
+                return Qt.AlignCenter | Qt.AlignBaseline
         elif role == Qt.EditRole:
             return 1
         elif role == Qt.UserRole:
@@ -204,7 +204,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
     def sizeHint(self, option, index):
-        widths = (0.03, 0.3, 0.1, 0.2, 0.3)
+        widths = (0.1, 0.3, 0.1, 0.2, 0.3)
         width = self.parent().width()
         w = int(width * widths[index.column()])
         return QSize(w, option.rect.height())

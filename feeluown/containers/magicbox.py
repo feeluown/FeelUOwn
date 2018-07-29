@@ -113,7 +113,9 @@ class MagicBox(QTextEdit):
                 self._mode = mode
 
     def _search_library(self, q):
-        songs = self._app.libraries.search(q)
+        songs = []
+        for result in self._app.library.search(q):
+            songs.extend(result.songs)
         self._app.ui.table_container.show_songs(songs)
 
     def _exec_code(self, code):
