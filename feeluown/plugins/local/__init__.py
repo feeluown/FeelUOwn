@@ -16,7 +16,6 @@ logger = logging.getLogger(__name__)
 
 
 def enable(app):
-    return
     provider = LocalProvider()
     logger.info('Register provider: %s' % provider)
     app.library.register(provider)
