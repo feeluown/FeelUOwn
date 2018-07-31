@@ -1,6 +1,6 @@
-# feeluown(feel your own)
+# FeelUOwn - feel your own
 
-**feeluown 的几个终极目标：**
+## 目标
 
 1. 首先得是一个安装简单、使用方便的音乐播放器！
 2. 还要是一个[符合 Unix 哲学](http://feeluown.readthedocs.io/en/latest/philosophy.html#unix-philosophy)的程序
@@ -10,18 +10,16 @@
 - [用户/开发者交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
 - [项目详细文档](http://feeluown.readthedocs.io)
 
-## Features
+## 特性
+[Gallery](https://github.com/cosven/FeelUOwn/wiki/Gallery)
 
 - [x] 容易安装，不折腾
-- [ ] [60%] 网络操作异步化
-- [ ] 基于 TCP 的远程控制
-- [x] 支持本地音乐、网易云音乐部分功能（登录等）
-- [ ] [05%] 文档健全
+- [x] 可以与 tmux/Emacs/vim 轻松集成
+- [x] 支持本地音乐、网易云音乐主要功能（登录等）
+- [ ] [10%] 文档健全
 - [ ] [30%] 简单的插件机制
-- [x] 多平台支持
-
-## screenshot
-![截图](https://user-images.githubusercontent.com/4962134/41827460-2a38b370-7862-11e8-9195-24dd3987c4b3.png)
+- [x] 多音乐平台支持
+- [ ] [10%] 资源占用率低
 
 ## 安装方法
 
