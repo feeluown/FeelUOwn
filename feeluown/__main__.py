@@ -3,13 +3,11 @@
 import asyncio
 import logging
 import os
+
 import traceback
 import sys
 
-sys.path.append(os.path.dirname(sys.path[0]))
-
-from fuocore import MpvPlayer, Library
-from fuocore.app import CliAppMixin, run_server
+from fuocore.app import run_server
 from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config
@@ -19,7 +17,6 @@ from feeluown.consts import (
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR
 )
 from feeluown.config import config
-from feeluown.app import App
 
 logger = logging.getLogger(__name__)
 
@@ -64,14 +61,19 @@ sys.path.append(USER_PLUGINS_DIR)
 def main():
     sys.excepthook = excepthook
     parse_args(sys.argv)
-    player = MpvPlayer()
-    player.initialize()
-    library = Library()
 
-    if '-nw' not in sys.argv:
+    try:
+        import PyQt5
+    except ImportError:
+        logger.warning('PyQt5 not installed, use cli mode')
+        cli_only = True
+    else:
+        cli_only = '-nw' in sys.argv
+
+    if not cli_only:
         from PyQt5.QtWidgets import QApplication
         from quamash import QEventLoop
-        from feeluown.guiapp import GuiAppMixin
+        from feeluown.guiapp import GuiApp
 
         q_app = QApplication(sys.argv)
         q_app.setQuitOnLastWindowClosed(True)
@@ -81,28 +83,18 @@ def main():
         asyncio.set_event_loop(app_event_loop)
         pubsub_gateway, pubsub_server = run_pubsub()
 
-        class _App(App, CliAppMixin, GuiAppMixin):
-            mode = App.CliMode | App.GuiMode
-
-            def __init__(self, player, library, pubsub_gateway):
-                App.__init__(self, player, library, pubsub_gateway)
-                CliAppMixin.__init__(self)
-                GuiAppMixin.__init__(self)
-
-        app = _App(player, library, pubsub_gateway)
+        app = GuiApp(pubsub_gateway)
+        app.initialize()
         load_rcfile(app)
+        # TODO: 调用 show 时，会弹出主界面，但这时界面还没开始绘制
+        # 为了让提升启动速度，一些非必须的初始化操作可以在 show 之后进行
         app.show()
     else:
+        from feeluown.app import CliApp
+
         pubsub_gateway, pubsub_server = run_pubsub()
-
-        class _App(App, CliAppMixin):
-            mode = App.CliMode
-
-            def __init__(self, player, library, pubsub_gateway):
-                App.__init__(self, player, library, pubsub_gateway)
-                CliAppMixin.__init__(self)
-
-        app = _App(player, library, pubsub_gateway)
+        app = CliApp(pubsub_gateway)
+        app.initialize()
 
     live_lyric = app.live_lyric
     event_loop = asyncio.get_event_loop()

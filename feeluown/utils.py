@@ -1,30 +1,10 @@
 import platform
-import time
-from functools import wraps
-from PyQt5.QtGui import QColor
 
 
 def parse_ms(ms):
     minute = int(ms / 60000)
     second = int((ms % 60000) / 1000)
     return minute, second
-
-
-def set_alpha(color, a):
-    r, g, b = color.red(), color.green(), color.blue()
-    return QColor(r, g, b, a)
-
-
-def measure_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        t = time.process_time()
-        result = func(*args, **kwargs)
-        elapsed_time = time.process_time() - t
-        logger.info('function %s executed time: %f s'
-                    % (func.__name__, elapsed_time))
-        return result
-    return wrapper
 
 
 def is_linux():

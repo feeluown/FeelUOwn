@@ -28,10 +28,17 @@ dict_config = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
         },
-        'release': {
+        'cli-release': {
             'formatter': 'standard',
             'level': 'INFO',
             'class': 'logging.StreamHandler',
+        },
+        'gui-release': {
+            'formatter': 'standard',
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': LOG_FILE,
+            'mode': 'w',
         }
     },
     'loggers': {
@@ -40,6 +47,12 @@ dict_config = {
             'level': logging.DEBUG,
             'propagate': False,
         },
+        'fuocore': {
+            'handlers': ['debug'],
+            'level': logging.DEBUG,
+            'propagate': False,
+        },
+        # 其它模块使用这个 logger
         '': {
             'handlers': ['debug'],
             'level': logging.DEBUG,
@@ -55,6 +68,10 @@ def logger_config():
         logging.config.dictConfig(dict_config)
         logging.info('Debug mode.')
     else:
-        dict_config['loggers']['']['handlers'] = ['release']
+        if False:
+            dict_config['loggers']['']['handlers'] = ['gui-release']
+        else:
+            dict_config['loggers']['']['handlers'] = ['cli-release']
+
         logging.config.dictConfig(dict_config)
         logging.info('Release mode.')

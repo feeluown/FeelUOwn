@@ -4,8 +4,6 @@ import logging
 
 from fuocore.qqmusic.provider import provider
 from feeluown.app import App
-from feeluown.components.provider import ProviderModel
-import fuocore.qqmusic.models  # noqa
 
 __alias__ = 'QQ 音乐'
 __feeluown_version__ = '1.1.0'
@@ -18,6 +16,8 @@ logger = logging.getLogger(__name__)
 def enable(app):
     app.library.register(provider)
     if app.mode & App.GuiMode:
+        from feeluown.components.provider import ProviderModel
+
         pm = ProviderModel(
             name='QQ 音乐',
             icon='♫ ',
@@ -28,5 +28,6 @@ def enable(app):
 
 
 def disable(app):
-    app.providers.remove(provider.identifier)
     app.library.deregister(provider)
+    if app.mode & App.GuiMode:
+        app.providers.remove(provider.identifier)

@@ -19,7 +19,7 @@ USER_THEMES_DIR = HOME_DIR + '/themes'
 CACHE_DIR = HOME_DIR + '/cache'
 SONG_DIR = HOME_DIR + '/songs'
 
-LOG_FILE = HOME_DIR + '/run.log'
+LOG_FILE = HOME_DIR + '/feeluown.log'
 
 
 class PlaybackMode(Enum):

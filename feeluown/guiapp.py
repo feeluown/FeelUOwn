@@ -19,15 +19,14 @@ from feeluown.components.history import HistoriesModel
 from feeluown.components.provider import ProvidersModel
 from feeluown.components.playlists import PlaylistsModel
 
+from .app import CliApp, App
 from .consts import APP_ICON
 from .helpers import use_mac_theme
 from .hotkey import Hotkey
 from .img_ctl import ImgController
-from .plugin import PluginsManager
 from .request import Request
 from .tips import TipsManager
 from .ui import Ui
-from .version import VersionManager
 
 logger = logging.getLogger(__name__)
 
@@ -45,32 +44,29 @@ class AppCodeRunnerMixin(object):
         exec(obj, self._g, self._g)
 
 
-class GuiAppMixin(QWidget, AppCodeRunnerMixin):
+class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
     """
     FIXME: Subclass must call initialize to make this mixin
     work properly, which seems to be little bit strange. But
     this mixin helps avoid duplicate code temporarily.
     """
 
-    initialized = pyqtSignal()
+    mode = App.GuiMode | App.CliMode
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, pubsub_gateway):
+        CliApp.__init__(self, pubsub_gateway)
+        QWidget.__init__(self)
 
         self.request = Request(self)
         self.tips_manager = TipsManager(self)
         self.hotkey_manager = Hotkey(self)
         self.img_ctl = ImgController(self)
-        self.plugins_manager = PluginsManager(self)
-        self.version_manager = VersionManager(self)
 
         self.playlists = PlaylistsModel(parent=self)
         self.histories = HistoriesModel(parent=self)
         self.providers = ProvidersModel(parent=self)
 
         self.ui = Ui(self)
-
-        self._init_managers()
 
         self.player_pixmap = None
 
@@ -79,13 +75,11 @@ class GuiAppMixin(QWidget, AppCodeRunnerMixin):
         QApplication.setWindowIcon(QIcon(APP_ICON))
 
         self.bind_signal()
-        self.initialize()
 
     def initialize(self):
-        logger.debug('App start initializing...')
-        self.initialized.emit()
+        super().initialize()
         self.load_qss()
-        logger.debug('App start initializing...done')
+        self.tips_manager.show_random_tip()
 
     def load_qss(self):
         if not use_mac_theme():
@@ -95,6 +89,7 @@ class GuiAppMixin(QWidget, AppCodeRunnerMixin):
         qssfilepath = os.path.join(dirname, 'mac.qss')
         with open(qssfilepath) as f:
             s = f.read()
+
             QApplication.instance().setStyleSheet(s)
 
     def scan_fuo_files(self):
@@ -136,13 +131,6 @@ class GuiAppMixin(QWidget, AppCodeRunnerMixin):
 
         #top_panel.pc_panel.volume_slider.sliderMoved.connect(
         #    self.change_volume)
-
-    def _init_managers(self):
-        self.plugins_manager.scan()
-        app_event_loop = asyncio.get_event_loop()
-        app_event_loop.call_later(
-            8, partial(asyncio.Task, self.version_manager.check_release()))
-        self.tips_manager.show_random_tip()
 
     @contextmanager
     def create_action(self, s):

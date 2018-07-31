@@ -5,10 +5,11 @@ feeluown.helpers
 和应用逻辑相关的一些工具函数
 """
 
-
 import sys
+import time
 import logging
 from contextlib import contextmanager
+from functools import wraps
 
 
 logger = logging.getLogger(__name__)
@@ -44,3 +45,15 @@ def use_mac_theme():
     """
     # return True
     return sys.platform == 'darwin'
+
+
+def measure_time(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        t = time.process_time()
+        result = func(*args, **kwargs)
+        elapsed_time = time.process_time() - t
+        logger.info('function %s executed time: %f s'
+                    % (func.__name__, elapsed_time))
+        return result
+    return wrapper

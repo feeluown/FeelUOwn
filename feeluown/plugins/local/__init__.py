@@ -6,7 +6,6 @@ from functools import partial
 from fuocore.local.provider import LocalProvider
 
 from feeluown.app import App
-from feeluown.components.provider import ProviderModel
 
 __alias__ = '本地音乐'
 __feeluown_version__ = '1.1.0'
@@ -17,10 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 def enable(app):
+    return
     provider = LocalProvider()
     logger.info('Register provider: %s' % provider)
     app.library.register(provider)
     if app.mode & App.GuiMode:
+        from feeluown.components.provider import ProviderModel
+
         pm = ProviderModel(
             name='本地音乐',
             icon='♪ ',
@@ -33,4 +35,4 @@ def enable(app):
 
 
 def disable(app):
-    pass
+    logger.info('唔，不要禁用我')
