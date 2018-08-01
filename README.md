@@ -1,59 +1,61 @@
-# FeelUOwn - feel your own
+## FeelUOwn - feel your own
 
-## 目标
+FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面向 Linux/macOS 用户。
 
-1. 首先得是一个安装简单、使用方便的音乐播放器！
-2. 还要是一个[符合 Unix 哲学](http://feeluown.readthedocs.io/en/latest/philosophy.html#unix-philosophy)的程序
-3. 也希望成为一个 Python 新手可以快速上手的项目
+[![macOS 效果预览](https://user-images.githubusercontent.com/4962134/43506587-1c56c960-959d-11e8-964f-016159cbeeb9.png)](https://github.com/cosven/FeelUOwn/wiki/Gallery)
 
-- [项目开发计划](https://github.com/cosven/FeelUOwn/projects/1)
-- [用户/开发者交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
-- [项目详细文档](http://feeluown.readthedocs.io)
+### 特性
 
-## 特性
-[Gallery](https://github.com/cosven/FeelUOwn/wiki/Gallery)
+- 安装简单，新手友好
+- 默认提供国内各音乐平台插件（网易云、虾米、QQ）
+- 较强的可扩展性可以满足大家折腾的欲望 [Slack 插件示例](https://gist.github.com/cosven/7a746fa61f94a4c83cb6bf654cea6bf8) [MPRIS2 插件](https://github.com/cosven/feeluown-mpris2-plugin)
+  - 和 Emacs 集成、纯命令行使用 [DEMO](https://www.youtube.com/watch?v=-JFXo0J5D9E)
+- 核心模块有较好文档和测试覆盖，欢迎大家参与开发 [详细文档](http://feeluown.readthedocs.org) [开发者/用户交流群](https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ)
 
-- [x] 容易安装，不折腾
-- [x] 可以与 tmux/Emacs/vim 轻松集成
-- [x] 支持本地音乐、网易云音乐主要功能（登录等）
-- [ ] [10%] 文档健全
-- [ ] [30%] 简单的插件机制
-- [x] 多音乐平台支持
-- [ ] [10%] 资源占用率低
+### 使用方法
 
-## 安装方法
+**安装**
 
-```
-pip3 install feeluown>=2.0a0 --user
+```shell
+# Ubuntu 用户可以依次执行以下命令进行安装
+sudo apt-get install python3-pyqt5  # 安装 Python PyQt5 依赖包
+sudo apt-get install libmpv1        # 安装 libmpv1 系统依赖
+pip3 install feeluown>=2.0a0 --upgrade --user
 
-# 安装系统依赖
-## Ubuntu/Debian
-sudo apt-get install python3-pyqt5
-sudo apt-get install fcitx-frontend-qt5  # 使用 fcitx 输入法的用户需要安装
-sudo apt-get install libmpv1  # 安装 mpv 播放器
+## 一些非必须依赖
+sudo apt-get install fcitx-frontend-qt5  # 使用 fcitx 输入法的用户可能需要安装
+
+## 为 feeluown 生成图标（Linux 用户）
 feeluown-genicon   # 生成图标
 
-## MacOS
+# macOS 用户安装方法
 brew install pyqt
 brew install mpv
+pip3 install feeluown>=2.0a0 --upgrade --user
 ```
 
-## 开发
+**使用**
 
-在本地新建一个虚拟环境，clone feeluown 和 feeluown-core 两个项目。
-将两个项目安装到虚拟环境当中，然后进行开发。项目正处于积极开发阶段，
-代码每天都可能有较多修改，建议大家开发前先 rebase；另外，feeluown
-最新代码很可能会依赖 master 分支的 feeluown-core 代码。
-
+```shell
+# 第一种方法：Linux 用户直接点击图标运行程序
+# 第二种方法：在命令行中启动，这时候会弹出 GUI 界面
+feeluown
+# 第三种方法：适用于不需要 GUI 界面的用户（比如使用命令行或者使用 Emacs 插件等）
+feeluown -nw     # -nw 表示 no window
+feeluonw -nw -d  # -d 表示打开 debug 模式，会输出更多日志
 ```
-# install feeluown
-git clone https://github.com/cosven/FeelUOwn.git
-cd feeluown
-pip install -e . # Ensure you have activated your venv
-cd ..
 
-# install feeluown-core
-git clone https://github.com/cosven/feeluown-core
-cd feeluown-core
-pip install -e .
-```
+### 常见问题
+
+##### 怎样参与设计开发、如果编写插件？
+
+目前，一方面可以通过阅读开发者文档来了解项目整体架构；另一方面，可以加入开发者/用户交流群，与大家一起讨论，大部分我自己也会在线，如果有相关疑问，我会尽量和大家沟通。
+
+##### 程序遇到错误怎么办？
+
+一般来说，feeluown 运行时，会将日志输出到 `~/.FeelUOwn/stdout.log` ，如果大家在使用时遇到程序异常，可以新建一个 Issue，将日志或者截图放在 Issue 中，让大家帮忙解答。另外，大家也可以加入交流群，在群中提出建议或者反馈。
+
+##### 有项目开发计划或者 bug 修复排期吗？
+
+大家可以参考[这个项目开发计划](https://github.com/cosven/FeelUOwn/projects)
+

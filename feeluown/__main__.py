@@ -62,13 +62,13 @@ def main():
     sys.excepthook = excepthook
     parse_args(sys.argv)
 
-    try:
-        import PyQt5
-    except ImportError:
-        logger.warning('PyQt5 not installed, use cli mode')
-        cli_only = True
-    else:
-        cli_only = '-nw' in sys.argv
+    cli_only = '-nw' in sys.argv
+    if not cli_only:
+        try:
+            import PyQt5  # noqa
+        except ImportError:
+            logger.warning('PyQt5 is not installed，can only use CLI mode.')
+            cli_only = True
 
     if not cli_only:
         from PyQt5.QtWidgets import QApplication
