@@ -14,7 +14,6 @@ from PyQt5.QtWidgets import (
 
 from fuocore.player import State as PlayerState
 
-from feeluown.config import config
 from feeluown.components.history import HistoriesModel
 from feeluown.components.provider import ProvidersModel
 from feeluown.components.playlists import PlaylistsModel
@@ -91,26 +90,6 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
             s = f.read()
 
             QApplication.instance().setStyleSheet(s)
-
-    def scan_fuo_files(self):
-        fuo_files = config.FUO_FILES
-        f_list = []
-        for filepath in fuo_files:
-            if not os.path.exists(filepath):
-                continue
-            if os.path.isdir(filepath):
-                for fname in os.listdir(filepath):
-                    fpath = os.path.join(filepath, fname)
-                    if os.path.isfile(fpath):
-                        f_list.append(fpath)
-            else:
-                f_list.append(filepath)
-
-        for fpath in f_list:
-            basename = os.path.basename(fpath)
-            if not basename.endswith('.fuo'):
-                continue
-            name = basename.rsplit('.', 1)[0]
 
     def bind_signal(self):
         top_panel = self.ui.top_panel

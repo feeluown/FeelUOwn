@@ -18,7 +18,6 @@ from feeluown.consts import (
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR
 )
 from feeluown.utils import is_port_used
-from feeluown.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +60,8 @@ def setup_argparse():
 
     parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help='开启调试模式')
+    parser.add_argument('--log-to-file', action='store_true', default=False,
+                        help='将日志打到文件中')
 
     # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
     # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
@@ -84,9 +85,10 @@ def main():
         print('\033[0m', end='')
         sys.exit(1)
 
-    config.debug = args.debug
+    debug = args.debug
     mpv_audio_device = args.mpv_audio_device
-    logger_config()
+    cli_only = args.no_window
+    logger_config(debug, to_file=args.log_to_file)
 
     from fuocore.player import MpvPlayer
 
@@ -96,7 +98,6 @@ def main():
     # 设置 exception hook
     sys.excepthook = excepthook
 
-    cli_only = args.no_window
     if not cli_only:
         try:
             import PyQt5  # noqa

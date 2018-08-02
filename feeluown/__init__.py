@@ -4,12 +4,9 @@ import logging
 import logging.config
 
 from .consts import LOG_FILE
-from .config import config
 
 
 __version__ = '2.0a0'
-__upgrade_desc__ = '''
-'''
 
 
 dict_config = {
@@ -63,15 +60,19 @@ dict_config = {
 }
 
 
-def logger_config():
-    if config.debug:
+def logger_config(debug, to_file=False):
+    if debug:
         logging.config.dictConfig(dict_config)
         logging.info('Debug mode.')
     else:
-        if False:
+        if to_file:
             dict_config['loggers']['']['handlers'] = ['gui-release']
+            dict_config['loggers']['feeluown']['handlers'] = ['gui-release']
+            dict_config['loggers']['fuocore']['handlers'] = ['gui-release']
         else:
             dict_config['loggers']['']['handlers'] = ['cli-release']
+            dict_config['loggers']['feeluown']['handlers'] = ['cli-release']
+            dict_config['loggers']['fuocore']['handlers'] = ['cli-release']
 
         logging.config.dictConfig(dict_config)
         logging.info('Release mode.')

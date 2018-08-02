@@ -23,7 +23,6 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from feeluown import __upgrade_desc__
 from feeluown.components.separator import Separator
 from feeluown.components.playlists import (
     PlaylistsView,

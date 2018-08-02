@@ -1,32 +1,7 @@
 #! /usr/bin/env python3
 
-import platform
 import shutil
 import os
-
-
-def install_sys_dep():
-
-    packages = ['python3-pyqt5',
-                'python3-pyqt5.qtmultimedia',
-                'libqt5multimedia5-plugins',
-                'fcitx-frontend-qt5',
-                'mpv']
-
-    linux_distro = platform.linux_distribution()
-    if linux_distro[0] in ('Deepin') or 'ubuntu' in linux_distro[0].lower():
-        print('Download and install software dependency.')
-        os.system('sudo apt-get install -y {packages} 1>/dev/null'
-                  .format(packages=' '.join(packages)))
-        os.system('sudo apt-get install -y {packages} 1>/dev/null'
-                  .format(packages=' '.join(packages)))
-        print('\ninstall finished ~')
-    else:
-        print('You should install these packages by yourself, '
-              'as your linux may not a debian distribution\n')
-        for i, p in enumerate(packages):
-            print(i, ': ', p)
-        print('\npackage name may be different among different systems')
 
 
 def generate_icon():
@@ -43,7 +18,7 @@ def generate_icon():
                   'Type=Application\n'\
                   'Name=FeelUOwn\n'\
                   'Comment=FeelUOwn Launcher\n'\
-                  'Exec=env QT_AUTO_SCREEN_SCALE_FACTOR=1 python3 -m feeluown\n'\
+                  'Exec=python3 -m feeluown\n'\
                   'Icon={feeluown_icon}\n'\
                   'Categories=AudioVideo;Audio;Player;Qt;\n'\
                   'Terminal=false\n'\
@@ -65,14 +40,8 @@ def generate_icon():
         desktop_f = cn_desktop_path + '/' + DESKTOP_FILE
     shutil.copy(f_path, desktop_f)
     os.system('chmod +x %s' % desktop_f)
-    print('gen finished')
+    print('Generate success.')
 
-
-def update():
-    os.system('sudo -H pip3 install --upgrade feeluown')
-    os.system('feeluown-install-dev')
-    os.system('feeluown-genicon')
 
 if __name__ == '__main__':
-    install_sys_dep()
     generate_icon()
