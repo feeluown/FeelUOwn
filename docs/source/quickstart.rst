@@ -47,7 +47,7 @@ macOS
     brew install python3
     brew install pyqt
     brew install mpv
-    pip3 install feeluown>=2.0a0 --upgrade --user
+    pip3 install feeluown>=2.0 --upgrade --user
 
 
 基本使用
