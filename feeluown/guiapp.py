@@ -53,8 +53,8 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
 
     mode = App.GuiMode | App.CliMode
 
-    def __init__(self, pubsub_gateway):
-        CliApp.__init__(self, pubsub_gateway)
+    def __init__(self, pubsub_gateway, player=None):
+        CliApp.__init__(self, pubsub_gateway, player=None)
         QWidget.__init__(self)
 
         self.request = Request(self)

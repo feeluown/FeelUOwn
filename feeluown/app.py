@@ -19,10 +19,13 @@ class App(object):
 
     mode = 0x0000
 
-    def __init__(self):
-        locale.setlocale(locale.LC_NUMERIC, 'C')
-        self.player = MpvPlayer()
-        self.player.initialize()
+    def __init__(self, player=None):
+        if player is None:
+            locale.setlocale(locale.LC_NUMERIC, 'C')
+            self.player = MpvPlayer()
+            self.player.initialize()
+        else:
+            self.player = player
         self.playlist = self.player.playlist
         self.library = Library()
         self.live_lyric = LiveLyric()
@@ -42,8 +45,8 @@ class App(object):
 class CliApp(App):
     mode = App.CliMode
 
-    def __init__(self, pubsub_gateway):
-        super().__init__()
+    def __init__(self, pubsub_gateway, player=None):
+        super().__init__(player=player)
 
         self.pubsub_gateway = pubsub_gateway
         self._live_lyric_publisher = LiveLyricPublisher(pubsub_gateway)

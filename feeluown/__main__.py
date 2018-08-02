@@ -1,5 +1,6 @@
 #! /usr/bin/env python3
 
+import argparse
 import asyncio
 import logging
 import os
@@ -16,15 +17,10 @@ from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR
 )
+from feeluown.utils import is_port_used
 from feeluown.config import config
 
 logger = logging.getLogger(__name__)
-
-
-def parse_args(args):
-    if '-d' in args:
-        config.debug = True
-    logger_config()
 
 
 def ensure_dir():
@@ -58,11 +54,49 @@ sys.path.append(PLUGINS_DIR)
 sys.path.append(USER_PLUGINS_DIR)
 
 
-def main():
-    sys.excepthook = excepthook
-    parse_args(sys.argv)
+def setup_argparse():
+    parser = argparse.ArgumentParser(description='运行 FeelUOwn 播放器')
+    parser.add_argument('-nw', '--no-window', action='store_true', default=False,
+                        help='以 CLI 模式运行')
 
-    cli_only = '-nw' in sys.argv
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
+                        help='开启调试模式')
+
+    # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
+    # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
+
+    # TODO: 需要在文档中给出如何查看有哪些播放设备的方法
+    parser.add_argument(
+        '--mpv-audio-device',
+        default='auto',
+        help='（高级选项）给 mpv 播放器指定播放设备'
+    )
+    return parser
+
+
+def main():
+    parser = setup_argparse()
+    args = parser.parse_args()
+
+    if is_port_used(23333) or is_port_used(23334):
+        print('\033[0;31m', end='')
+        print('Port(23333 or 23334) is used, maybe another feeluown is running?')
+        print('\033[0m', end='')
+        sys.exit(1)
+
+    config.debug = args.debug
+    mpv_audio_device = args.mpv_audio_device
+    logger_config()
+
+    from fuocore.player import MpvPlayer
+
+    player = MpvPlayer(audio_device=bytes(mpv_audio_device, 'utf-8'))
+    player.initialize()
+
+    # 设置 exception hook
+    sys.excepthook = excepthook
+
+    cli_only = args.no_window
     if not cli_only:
         try:
             import PyQt5  # noqa
@@ -83,7 +117,7 @@ def main():
         asyncio.set_event_loop(app_event_loop)
         pubsub_gateway, pubsub_server = run_pubsub()
 
-        app = GuiApp(pubsub_gateway)
+        app = GuiApp(pubsub_gateway, player=player)
         app.initialize()
         load_rcfile(app)
         # TODO: 调用 show 时，会弹出主界面，但这时界面还没开始绘制

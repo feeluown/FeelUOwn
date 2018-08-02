@@ -1,4 +1,5 @@
 import platform
+import socket
 
 
 def parse_ms(ms):
@@ -36,3 +37,9 @@ def emit_requests_progress(response, signal=None):
             if signal is not None:
                 signal.emit(progress)
         return content
+
+
+def is_port_used(port, host='0.0.0.0'):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    rv = sock.connect_ex((host, port))
+    return rv == 0
