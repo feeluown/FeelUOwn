@@ -20,7 +20,7 @@ setup(
         'feeluown.plugins.local',
         ],
     package_data={
-        '': ['*.qss', '*.png']
+        '': ['*.qss', '*.png', '../icons/*.png']
         },
     url='https://github.com/cosven/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],

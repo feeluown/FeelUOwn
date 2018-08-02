@@ -43,7 +43,7 @@ def use_mac_theme():
     目前只是简单为 mac 做一些定制，但如果真的要引入 theme 这个概念，
     单这一个函数是不够的。
     """
-    # return True
+    return True
     return sys.platform == 'darwin'
 
 
