@@ -6,6 +6,7 @@ import os
 
 def generate_icon():
     print('Generate icon, then you can see app in apps list.')
+    os.system('mkdir -p ~/.FeelUOwn')
     DESKTOP_FILE = 'feeluown.desktop'
     current_path = os.path.abspath(os.path.dirname(__file__))
     icon = current_path + '/feeluown.png'
@@ -18,7 +19,7 @@ def generate_icon():
                   'Type=Application\n'\
                   'Name=FeelUOwn\n'\
                   'Comment=FeelUOwn Launcher\n'\
-                  'Exec=python3 -m feeluown\n'\
+                  'Exec=python3 -m feeluown --log-to-file\n'\
                   'Icon={feeluown_icon}\n'\
                   'Categories=AudioVideo;Audio;Player;Qt;\n'\
                   'Terminal=false\n'\
