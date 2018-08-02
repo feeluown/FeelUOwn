@@ -212,7 +212,8 @@ class SongsTableContainer(QFrame):
         await asyncio.wait([future_songs, future_desc])
         self.table_overview.set_desc(future_desc.result() or
                                      '<h2>{}</h2>'.format(album.name))
-        self._show_songs(future_songs.result())
+        songs = future_songs.result()
+        self._show_songs(songs)
         if album.cover:
             loop.create_task(self.show_cover(album.cover))
 
@@ -233,9 +234,10 @@ class SongsTableContainer(QFrame):
         except TypeError:  # no connections at all
             pass
         self.show()
-
+        songs = songs or []
+        logger.debug('Show songs in table, total: %d' % len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        self.songs_table.setModel(SongsTableModel(songs or [], source_name_map))
+        self.songs_table.setModel(SongsTableModel(songs, source_name_map))
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):

@@ -1,17 +1,21 @@
-feeluown
-========
+FeelUOwn - feel your own
+========================
 
-feeluown 的几个终极目标：
+FeelUOwn 是一个用户友好、可玩性强的播放器
 
-1. 首先得是一个安装简单、使用方便的音乐播放器！
-2. 还要是一个符合 :ref:`unix-philosophy` 的程序
-3. 也希望成为一个 Python 新手可以快速上手的项目
+.. image:: https://user-images.githubusercontent.com/4962134/43506587-1c56c960-959d-11e8-964f-016159cbeeb9.png
 
+它主要有以下特性：
 
+- 安装简单，使用方便，新手友好
+- 默认提供国内各音乐平台插件（网易云、虾米、QQ）
+- 与 tmux，Emacs，Vim 等工具可以方便集成
+- 核心模块有较好文档和测试覆盖
 
 .. toctree::
    :maxdepth: 2
-   :caption: 目录:
 
+   quickstart
+   faq
    arch
    philosophy
