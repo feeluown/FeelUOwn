@@ -58,3 +58,14 @@ feeluonw -nw -d  # -d 表示打开 debug 模式，会输出更多日志
 ##### 有项目开发计划或者 bug 修复排期吗？
 
 大家可以参考[这个项目开发计划](https://github.com/cosven/FeelUOwn/projects)
+
+
+### 已知的一些插件
+
+大家如果发现或者自己编写了一些插件，可以在下面进行补充～
+
+| 插件名 | 开发者们  | 状态 |
+| ------- | ------ | -------- |
+| [MPRIS2](https://github.com/cosven/feeluown-mpris2-plugin) | [@cosven](https://github.com/cosven) | 可用 |
+| [macOS 全局快捷键](https://github.com/cosven/feeluown-mac-hotkey-plugin) | [@cosven](https://github.com/cosven)| 暂时不可用 |
+| [Discord RPC Rich Precense 服务](https://github.com/BruceZhang1993/feeluown-discordrpc-plugin) | [@BruceZhang1993](https://github.com/BruceZhang1993) | 可用 |
