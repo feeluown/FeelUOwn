@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+	"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<title>README.html</title>
+
+</head>
+
+<body>
+
+<h2>FeelUOwn - feel your own</h2>
+
+<p>FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面向 Linux/macOS 用户。</p>
+
+<p><a href="https://github.com/cosven/FeelUOwn/wiki/Gallery"><img src="https://user-images.githubusercontent.com/4962134/43506587-1c56c960-959d-11e8-964f-016159cbeeb9.png" alt="macOS 效果预览" title="" /></a></p>
+
+<h3>特性</h3>
+
+<ul>
+<li>安装简单，新手友好</li>
+<li>默认提供国内各音乐平台插件（网易云、虾米、QQ）</li>
+<li>较强的可扩展性可以满足大家折腾的欲望 | <a href="https://gist.github.com/cosven/7a746fa61f94a4c83cb6bf654cea6bf8">Slack 插件示例</a> | <a href="https://github.com/cosven/feeluown-mpris2-plugin">MPRIS2 插件</a>
+<ul>
+<li>和 Emacs 集成、纯命令行使用 | <a href="https://www.youtube.com/watch?v=-JFXo0J5D9E">DEMO</a></li>
+</ul></li>
+<li>核心模块有较好文档和测试覆盖，欢迎大家参与开发 | <a href="http://feeluown.readthedocs.org">详细文档</a> | <a href="https://t.me/joinchat/H7k12hG5HYsGeBErs1tUQQ">开发者/用户交流群</a></li>
+</ul>
+
+<h3>使用方法</h3>
+
+<p><strong>安装</strong></p>
+
+<p>```shell</p>
+
+<h1>Ubuntu 用户可以依次执行以下命令进行安装</h1>
+
+<p>sudo apt-get install python3-pyqt5  # 安装 Python PyQt5 依赖包
+sudo apt-get install libmpv1        # 安装 libmpv1 系统依赖
+pip3 install 'feeluown>=2.0.1' --user -i https://pypi.org/simple/</p>
+
+<h2>为 feeluown 生成图标（Linux 用户）</h2>
+
+<p>feeluown-genicon   # 生成图标</p>
+
+<h2>一些非必须依赖</h2>
+
+<p>sudo apt-get install fcitx-frontend-qt5  # 使用 fcitx 输入法的用户可能需要安装</p>
+
+<h1>macOS 用户安装方法</h1>
+
+<p>brew install pyqt
+brew install mpv
+pip3 install 'feeluown>=2.0.1' --upgrade --user
+```</p>
+
+<p><strong>使用</strong></p>
+
+<p>```shell</p>
+
+<h1>第一种方法：Linux 用户直接点击图标运行程序</h1>
+
+<h1>第二种方法：在命令行中启动，这时候会弹出 GUI 界面</h1>
+
+<p>feeluown</p>
+
+<h1>第三种方法：适用于不需要 GUI 界面的用户（比如使用命令行或者使用 Emacs 插件等）</h1>
+
+<p>feeluown -nw     # -nw 表示 no window
+feeluonw -nw -d  # -d 表示打开 debug 模式，会输出更多日志
+```</p>
+
+<h3>常见问题</h3>
+
+<p>其它常见问题请阅读文档：http://feeluown.readthedocs.io/en/latest/faq.html</p>
+
+<h5>怎样参与设计开发、如果编写插件？</h5>
+
+<p>目前，一方面可以通过阅读开发者文档来了解项目整体架构；另一方面，可以加入开发者/用户交流群，与大家一起讨论，大部分我自己也会在线，如果有相关疑问，我会尽量和大家沟通。</p>
+
+<h5>程序遇到错误怎么办？</h5>
+
+<p>一般来说，feeluown 运行时，会将日志输出到 <code>~/.FeelUOwn/stdout.log</code> ，如果大家在使用时遇到程序异常，可以新建一个 Issue，将日志或者截图放在 Issue 中，让大家帮忙解答。另外，大家也可以加入交流群，在群中提出建议或者反馈。</p>
+
+<h5>有项目开发计划或者 bug 修复排期吗？</h5>
+
+<p>大家可以参考<a href="https://github.com/cosven/FeelUOwn/projects">这个项目开发计划</a></p>
+
+</body>
+</html>

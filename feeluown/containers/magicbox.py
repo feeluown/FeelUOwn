@@ -167,9 +167,8 @@ class MagicBox(QTextEdit):
     def sizeHint(self):
         fm = QFontMetrics(self.font())
         # FIXME: 暂时不是太懂应该怎样正确的计算 w 和 h
-        # 其中，计算 h 的一个原则是让高度正好能够显示一行
-        # 目前在 Linux 下测试 4 正好符合期望
-        h = max(fm.height() + fm.ascent() - fm.descent(), 14) + 4
+        # 计算 h 的一个原则是让高度正好能够显示一行
+        h = max(fm.height() + fm.ascent() - fm.descent(), 14)
         w = self.width() - 4
         opt = QStyleOptionFrame()
         opt.initFrom(self)
