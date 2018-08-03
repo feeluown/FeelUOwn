@@ -14,8 +14,16 @@ FeelUOwn 是一个用户友好、可玩性强的播放器
 
 .. toctree::
    :maxdepth: 2
+   :caption: 用户指南
 
    quickstart
    faq
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 开发者指南
+
+   dev_quickstart
    arch
    philosophy
