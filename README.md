@@ -45,6 +45,7 @@ feeluonw -nw -d  # -d 表示打开 debug 模式，会输出更多日志
 ```
 
 ### 常见问题
+其它常见问题请阅读文档：http://feeluown.readthedocs.io/en/latest/faq.html
 
 ##### 怎样参与设计开发、如果编写插件？
 
