@@ -63,3 +63,7 @@ feeluown.egg-info/
 
 # virtualenv
 .venv/
+
+
+# others
+*.html
