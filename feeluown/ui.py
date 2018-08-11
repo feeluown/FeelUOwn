@@ -84,6 +84,7 @@ class PlayerControlPanel(QFrame):
         self.pp_btn.setObjectName('pp_btn')
         self.next_btn.setObjectName('next_btn')
         self.playlist_btn.setObjectName('playlist_btn')
+        self.volume_btn.setObjectName('volume_btn')
 
         self.progress_slider = ProgressSlider(self)
 
@@ -120,13 +121,13 @@ class PlayerControlPanel(QFrame):
         self._sub_layout.addWidget(self.song_title_label)
         self._sub_layout.addWidget(self.progress_slider)
 
-        self._layout.addSpacing(15)
-        self._layout.addWidget(self.previous_btn)
-        self._layout.addSpacing(5)
-        self._layout.addWidget(self.pp_btn)
-        self._layout.addSpacing(5)
-        self._layout.addWidget(self.next_btn)
         self._layout.addSpacing(20)
+        self._layout.addWidget(self.previous_btn)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.pp_btn)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.next_btn)
+        self._layout.addSpacing(26)
         self._layout.addWidget(self.volume_btn)
         self._layout.addStretch(0)
         self._layout.addWidget(self.position_label)
@@ -138,7 +139,7 @@ class PlayerControlPanel(QFrame):
         self._layout.addStretch(0)
         self._layout.addWidget(self.pms_btn)
         self._layout.addWidget(self.playlist_btn)
-        self._layout.addSpacing(10)
+        self._layout.addSpacing(18)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)

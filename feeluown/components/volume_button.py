@@ -11,7 +11,6 @@ class VolumeSlider(QSlider):
     def __init__(self, parent=None, initial_value=100):
         super().__init__(parent)
 
-        self.setOrientation(Qt.Horizontal)
         self.setMinimum(0)
         self.setMaximum(100)
         self.setValue(initial_value)
@@ -32,7 +31,6 @@ class VolumeSlider(QSlider):
             else:
                 x = (pgeom.width() - geom.width())//2
                 y = -geom.height() - 2
-
             point = QPoint(x, y)
             self.move(parent.mapToGlobal(point))
 
@@ -57,7 +55,7 @@ class VolumeButton(QPushButton):
     UNMUTED_ICON = 0
     MUTED_ICON = 1
 
-    def __init__(self, parent=None, *, vertical=False, icons=None):
+    def __init__(self, parent=None, *, vertical=True, icons=None):
         super().__init__(parent)
         self.setMaximumWidth(40)
         self.icons = icons
