@@ -51,6 +51,9 @@ PlayerControlPanel QPushButton:hover {
 #volume_btn {
     border-image: url(icons/volume.png);
 }
+#volume_btn:checked {
+    background-color: #FFF;
+}
 
 PlayerControlPanel QPushButton:hover {
     outline: none;

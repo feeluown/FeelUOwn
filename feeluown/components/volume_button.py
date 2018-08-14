@@ -1,75 +1,94 @@
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QEvent
+from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import (
+    QVBoxLayout,
     QSlider,
     QPushButton,
     QStyle,
+    QWidget,
 )
 
 
-class VolumeSlider(QSlider):
+class _Slider(QWidget):
+    """A popup slider.
+
+    TODO: this slide can become a independent component?
+    TODO: draw border radius for widget
+    NOTE: inherit from QWidget instead of QSlider since QSlider can not
+    work with Qt.Popup window flag well. Currently, I don't know why.
+    """
+
+    about_to_hide = pyqtSignal()
 
     def __init__(self, parent=None, initial_value=100):
         super().__init__(parent)
 
-        self.setMinimum(0)
-        self.setMaximum(100)
-        self.setValue(initial_value)
+        self._slider = QSlider(self)
+        self._layout = QVBoxLayout(self)
+        self._layout.addWidget(self._slider)
+        self._layout.setSpacing(0)
+        # self._layout.setContentsMargins(0, 0, 0, 0)
+
+        # map slider signal to widget
+        self.valueChanged = self._slider.valueChanged
+
+        self._slider.setMinimum(0)
+        self._slider.setMaximum(100)
+        self._slider.setValue(initial_value)
         self.setWindowFlags(Qt.Popup)
-        self.setAttribute(Qt.WA_TranslucentBackground)
 
     def is_mute(self):
-        return self.value() <= 0
+        return self._slider.value() <= 0
+
+    def hideEvent(self, event):
+        super().hideEvent(event)
+        self.about_to_hide.emit()
 
     def showEvent(self, event):
+        # TODO: move the position calculating logic to VolumeButton class
+        # In general, the widget itself do not care about its position
         parent = self.parent()
         if parent:
             pgeom = parent.geometry()
             geom = self.geometry()
-            if self.orientation() == Qt.Horizontal:
-                x = pgeom.width() + 2
-                y = (pgeom.height() - geom.height())//2
-            else:
-                x = (pgeom.width() - geom.width())//2
-                y = -geom.height() - 2
+            x = (pgeom.width() - geom.width())//2
+            y = -geom.height() - 10
             point = QPoint(x, y)
             self.move(parent.mapToGlobal(point))
-
-    def mouseReleaseEvent(self, event):
-        if self.rect().contains(event.pos()):
-            value = QStyle.sliderValueFromPosition(self.minimum(), self.maximum(),
-                                                   event.x(), self.width())
-            self.setValue(value)
-        else:
-            self.close()
-        event.accept()
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Escape and self.isVisible():
-            self.close()
-
-    def leaveEvent(self, event):
-        self.close()
 
 
 class VolumeButton(QPushButton):
     UNMUTED_ICON = 0
     MUTED_ICON = 1
 
-    def __init__(self, parent=None, *, vertical=True, icons=None):
+    #: (0, 100)
+    change_volume_needed = pyqtSignal([int])
+
+    def __init__(self, parent=None, *, icons=None):
+        # TODO: let slider have orientation?
         super().__init__(parent)
-        self.setMaximumWidth(40)
+
         self.icons = icons
         if self.icons:
             self.icon = VolumeButton.UNMUTED_ICON
             self.setIcon(self.icons['unmuted'])
 
-        self.slider = VolumeSlider(self)
-        if vertical:
-            self.slider.setOrientation(Qt.Vertical)
-        self.slider.valueChanged.connect(self.change_icon)
+        self.slider = _Slider(self)
+        self.slider.hide()
+
+        self.setCheckable(True)
+
+        # TODO: set maximum width in parent widget
+        self.setMaximumWidth(40)
+
+        self.slider.about_to_hide.connect(lambda: self.setChecked(False))
+        self.slider.valueChanged.connect(self.on_slider_value_changed)
         self.clicked.connect(self.slider.show)
 
-    def change_icon(self):
+    def on_slider_value_changed(self, value):
+        self.change_volume_needed.emit(value)
+
+        # update button icon
         if not self.icons:
             return
         if self.slider.is_mute():
@@ -78,6 +97,3 @@ class VolumeButton(QPushButton):
         elif self.icon == VolumeButton.MUTED_ICON:
             self.setIcon(self.icons['unmuted'])
             self.icon = VolumeButton.UNMUTED_ICON
-
-    def connect(self, func):
-        self.slider.valueChanged.connect(func)
