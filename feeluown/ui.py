@@ -67,9 +67,6 @@ class PlayerControlPanel(QFrame):
                 # 按钮文字一般是一个 symbol，长度控制为 40 是满足需求的
                 self.setMaximumWidth(40)
 
-        def _set_player_volume(value):
-            self._app.player.volume = value
-
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
         self.previous_btn = Button(self)
@@ -77,7 +74,8 @@ class PlayerControlPanel(QFrame):
         self.next_btn = Button(self)
         self.pms_btn = Button(self)
         self.volume_btn = VolumeButton(self)
-        self.volume_btn.connect(_set_player_volume)
+        self.volume_btn.change_volume_needed.connect(
+            lambda volume: setattr(self._app.player, 'volume', volume))
         self.playlist_btn = Button(parent=self)
 
         self.previous_btn.setObjectName('previous_btn')
