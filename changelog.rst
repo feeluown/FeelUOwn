@@ -4,6 +4,7 @@ Changelog
 2.0.3 (WIP)
 """""""""""
 - 添加音量滑动条 `#233 <https://github.com/cosven/FeelUOwn/pull/233>`_ `@chen-chao <https://github.com/chen-chao>`_
+- 更换图标
 
 2.0.2 (2018-08-03)
 """"""""""""""""""
