@@ -4,7 +4,7 @@ QWidget {
     font-size: 13px;
 }
 
-QListView {
+LeftPanel QListView {
     background-color: transparent;
 }
 
