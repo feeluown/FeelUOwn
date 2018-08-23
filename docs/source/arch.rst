@@ -1,15 +1,12 @@
-程序架构（WIP）
-===============
+程序架构
+========
 
-在整体设计上，FeelUOwn 由两大部分组成：界面逻辑部分和核心逻辑部分。
+在整体设计上，FeelUOwn 由两大部分组成：界面逻辑部分和核心逻辑部分，
 它们对应着两个项目 `feeluown <https://github.com/cosven/feeluown>`_ 和
-`feeluown-core <https://github.com/cosven/feeluown-core>`_
+`feeluown-core <https://github.com/cosven/feeluown-core>`_ 。
 
-- feeluown 项目主要实现 FeelUOwn 的 GUI 逻辑
-- feeluown-core 中实现一些核心逻辑，它以 fuocore 包的形式存在，`详细文档 <http://feeluown-core.readthedocs.io/zh_CN/latest/>`_：
-
-程序主界面
-----------
+GUI 模块
+--------
 整个 GUI 区域划分比较简单和规整，下图大致的描述了 GUI 的几个主要组成部分。
 
 图中文字部分对应的都是代码中的变量，它们也比较好的反映了对应区域的功能。
@@ -40,3 +37,7 @@
 
   - ``songs_table`` 批量展示歌曲，比如：歌单中的歌曲、搜索结果的歌曲部分等，
   - ``table_overview`` 是对 songs_table 的概览，由封面图和描述组成。
+
+核心模块
+--------
+请看 feeluown-core 的 `设计文档 <https://feeluown-core.readthedocs.io/zh_CN/latest/design.html>`_
