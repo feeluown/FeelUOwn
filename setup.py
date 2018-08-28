@@ -18,6 +18,8 @@ setup(
         'feeluown.plugins.qqmusic',
         'feeluown.plugins.neteasemusic',
         'feeluown.plugins.local',
+        'feeluown.plugins.xiami',
+        'feeluown.protocol',
         ],
     package_data={
         '': ['*.qss', '*.png', '../icons/*.png']
