@@ -4,8 +4,8 @@ import logging
 from functools import partial
 
 from fuocore import LiveLyric, MpvPlayer, Library
-from fuocore.app import LiveLyricPublisher
 
+from .cliapp import LiveLyricPublisher
 from .plugin import PluginsManager
 from .version import VersionManager
 

@@ -8,10 +8,10 @@ import os
 import traceback
 import sys
 
-from fuocore.app import run_server
 from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config
+from feeluown.cliapp import run_server
 from feeluown.rcfile import load_rcfile
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
