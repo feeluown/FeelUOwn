@@ -16,7 +16,7 @@
 
 如果是使用 bash 或者 zsh，大家可以在 ~/.bashrc 或者 ~/.zshrc 文件中加入一行::
 
-  export PAHT=~/.local/bin:$PATH
+  export PATH=~/.local/bin:$PATH
 
 然后重新进入 shell，下次就可以直接运行 feeluown 了。
 
