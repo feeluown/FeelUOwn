@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette, QPainter, QColor
 from PyQt5.QtWidgets import (
     QDialog,
@@ -35,11 +35,13 @@ class DescriptionContainer(QScrollArea):
         self._label.setTextFormat(Qt.RichText)
         self._label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         self.setWidget(self._label)
-        self.setWidgetResizable(True)
 
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self._label.setAlignment(Qt.AlignTop)
+        self.setWidgetResizable(True)
         self.setFrameShape(QFrame.NoFrame)
-        self._label.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self._layout = QVBoxLayout(self)
@@ -65,28 +67,61 @@ class DescriptionContainer(QScrollArea):
             super().keyPressEvent(event)
 
 
+class TableToolbar(QWidget):
+    """
+    歌曲表格的工具栏，比如：
+
+    - 播放全部按钮
+    - TODO 来源过滤
+    """
+
+    play_all_needed = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+        self.play_all_btn = QPushButton('播放全部', self)
+        self.songs_btn = QPushButton('热门歌曲', self)
+        self.desc_btn = QPushButton('介绍', self)
+        self.play_all_btn.clicked.connect(self.play_all_needed.emit)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self._layout.addWidget(self.play_all_btn)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.songs_btn)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.desc_btn)
+        self._layout.addStretch(0)
+
+
 class TableOverview(QFrame):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self._height = 180
+        self._table_toolbar = TableToolbar(self)
+
         self.cover_label = QLabel(self)
         self._desc_container = DescriptionContainer(self)
-
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
         self._layout = QHBoxLayout(self)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self.cover_label.setMinimumWidth(200)
         self._left_sub_layout = QVBoxLayout()
         self._right_sub_layout = QVBoxLayout()
-
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._right_sub_layout.addWidget(self._desc_container)
+        self._right_sub_layout.addWidget(self._table_toolbar)
         self._left_sub_layout.addWidget(self.cover_label)
         self._left_sub_layout.addStretch(0)
         self._layout.addLayout(self._left_sub_layout)
         self._layout.addSpacing(20)
         self._layout.addLayout(self._right_sub_layout)
         self._layout.setStretch(1, 1)
-        self.cover_label.setFixedWidth(200)
-        self.setFixedHeight(self._height)
 
     def set_cover(self, pixmap):
         self.cover_label.setPixmap(
@@ -96,19 +131,6 @@ class TableOverview(QFrame):
     def set_desc(self, desc):
         self._desc_container.show()
         self._desc_container.set_html(desc)
-
-    def keyPressEvent(self, event):
-        key_code = event.key()
-        if key_code == Qt.Key_Space:
-            if self._height < 300:
-                self._height = 300
-                self.setMinimumHeight(self._height)
-                self.setMaximumHeight(self._height)
-            else:
-                self._height = 180
-                self.setMinimumHeight(self._height)
-                self.setMaximumHeight(self._height)
-            event.accept()
 
 
 class SongsTableContainer(QFrame):
@@ -120,14 +142,6 @@ class SongsTableContainer(QFrame):
         self.table_overview = TableOverview(self)
 
         self._layout = QVBoxLayout(self)
-
-        self.setAutoFillBackground(False)
-        if use_mac_theme():
-            self._layout.setContentsMargins(0, 0, 0, 0)
-            self._layout.setSpacing(0)
-        self._layout.addWidget(self.table_overview)
-        self._layout.addWidget(self.songs_table)
-
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
         self.songs_table.show_artist_needed.connect(
@@ -136,6 +150,23 @@ class SongsTableContainer(QFrame):
             lambda album: asyncio.ensure_future(self.show_model(album)))
         self._cover_pixmap = None
         self.hide()
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self.setAutoFillBackground(False)
+        if use_mac_theme():
+            self._layout.setContentsMargins(0, 0, 0, 0)
+            self._layout.setSpacing(0)
+        self._layout.addWidget(self.table_overview)
+        self._layout.addWidget(self.songs_table)
+
+        # FIXME: 更好的计算宽度和高度
+        # 目前是假设知道自己初始化高度大约是 530px
+        # 之后可以考虑按比例来计算
+        self.overview_height = 180
+        self.table_overview.setMaximumHeight(self.overview_height)
+        self._songs_table_height = 530 - self.overview_height
+        self.songs_table.setMinimumHeight(self._songs_table_height)
 
     async def play_song(self, song):
         loop = asyncio.get_event_loop()
@@ -182,7 +213,6 @@ class SongsTableContainer(QFrame):
         def remove_song(song):
             model = self.songs_table.model()
             row = model.songs.index(song)
-            # 如果有 f-string 该有多好！
             msg = 'remove {} from {}'.format(song, playlist)
             with self._app.create_action(msg) as action:
                 rv = playlist.remove(song.identifier)
@@ -190,7 +220,6 @@ class SongsTableContainer(QFrame):
                     model.removeRow(row)
                 else:
                     action.failed()
-
         self.songs_table.song_deleted.connect(lambda song: remove_song(song))
 
     async def show_artist(self, artist):
@@ -247,3 +276,14 @@ class SongsTableContainer(QFrame):
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
+
+    def keyPressEvent(self, event):
+        key_code = event.key()
+        if key_code == Qt.Key_Space:
+            if self.songs_table.isVisible():
+                self.table_overview.setMaximumHeight(self.height())
+                self.songs_table.hide()
+            else:
+                self.table_overview.setMaximumHeight(self.overview_height)
+                self.songs_table.show()
+            event.accept()
