@@ -27,6 +27,9 @@ logger = logging.getLogger(__name__)
 
 
 class DescriptionContainer(QScrollArea):
+
+    space_pressed = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
@@ -63,27 +66,28 @@ class DescriptionContainer(QScrollArea):
         elif key_code == Qt.Key_K:
             value = self.verticalScrollBar().value()
             self.verticalScrollBar().setValue(value - 20)
+        elif key_code == Qt.Key_Space:
+            self.space_pressed.emit()
+            event.accept()
         else:
             super().keyPressEvent(event)
 
 
-class TableToolbar(QWidget):
-    """
-    歌曲表格的工具栏，比如：
 
-    - 播放全部按钮
-    - TODO 来源过滤
-    """
+class TableToolbar(QWidget):
+    _desc_btn_checked_text = '折叠'
+    _desc_btn_unchecked_text = '展开描述'
 
     play_all_needed = pyqtSignal()
+    toggle_desc_needed = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.play_all_btn = QPushButton('播放全部', self)
-        self.songs_btn = QPushButton('热门歌曲', self)
-        self.desc_btn = QPushButton('介绍', self)
+        self.desc_btn = QPushButton(self._desc_btn_unchecked_text, self)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
+        self.desc_btn.clicked.connect(self.on_desc_btn_toggled)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -91,46 +95,18 @@ class TableToolbar(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
         self._layout.addWidget(self.play_all_btn)
-        self._layout.addSpacing(8)
-        self._layout.addWidget(self.songs_btn)
-        self._layout.addSpacing(8)
+        self._layout.addStretch(1)
         self._layout.addWidget(self.desc_btn)
         self._layout.addStretch(0)
 
-
-class TableOverview(QFrame):
-    def __init__(self, parent):
-        super().__init__(parent)
-
-        self._table_toolbar = TableToolbar(self)
-
-        self.cover_label = QLabel(self)
-        self._desc_container = DescriptionContainer(self)
-        self._layout = QHBoxLayout(self)
-        self._setup_ui()
-
-    def _setup_ui(self):
-        self.cover_label.setMinimumWidth(200)
-        self._left_sub_layout = QVBoxLayout()
-        self._right_sub_layout = QVBoxLayout()
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._right_sub_layout.addWidget(self._desc_container)
-        self._right_sub_layout.addWidget(self._table_toolbar)
-        self._left_sub_layout.addWidget(self.cover_label)
-        self._left_sub_layout.addStretch(0)
-        self._layout.addLayout(self._left_sub_layout)
-        self._layout.addSpacing(20)
-        self._layout.addLayout(self._right_sub_layout)
-        self._layout.setStretch(1, 1)
-
-    def set_cover(self, pixmap):
-        self.cover_label.setPixmap(
-            pixmap.scaledToWidth(self.cover_label.width(),
-                                 mode=Qt.SmoothTransformation))
-
-    def set_desc(self, desc):
-        self._desc_container.show()
-        self._desc_container.set_html(desc)
+    def on_desc_btn_toggled(self, checked):
+        if checked:
+            self.play_all_btn.hide()
+            self.desc_btn.setText(self._desc_btn_checked_text)
+        else:
+            self.play_all_btn.show()
+            self.desc_btn.setText(self._desc_btn_unchecked_text)
+        self.toggle_desc_needed.emit()
 
 
 class SongsTableContainer(QFrame):
@@ -139,34 +115,57 @@ class SongsTableContainer(QFrame):
         self._app = app
 
         self.songs_table = SongsTableView(self)
-        self.table_overview = TableOverview(self)
+        self._toolbar = TableToolbar(self)
+        self._cover_label = QLabel(self)
+        self._desc_container_folded = True
+        self._desc_container = DescriptionContainer(self)
+        self._top_container = QWidget(self)
 
-        self._layout = QVBoxLayout(self)
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
         self.songs_table.show_artist_needed.connect(
             lambda artist: asyncio.ensure_future(self.show_model(artist)))
         self.songs_table.show_album_needed.connect(
             lambda album: asyncio.ensure_future(self.show_model(album)))
-        self._cover_pixmap = None
+
+        self._desc_container.space_pressed.connect(self.toggle_desc_container_fold)
+        self._toolbar.toggle_desc_needed.connect(self.toggle_desc_container_fold)
+        self._toolbar.play_all_needed.connect(self.play_all)
+
         self.hide()
         self._setup_ui()
 
     def _setup_ui(self):
+        self._top_layout = QHBoxLayout(self._top_container)
+        self._layout = QVBoxLayout(self)
+        self._cover_label.setMinimumWidth(200)
+        self._left_sub_layout = QVBoxLayout()
+        self._right_sub_layout = QVBoxLayout()
+        self._right_sub_layout.addWidget(self._desc_container)
+        self._right_sub_layout.addWidget(self._toolbar)
+        self._left_sub_layout.addWidget(self._cover_label)
+        self._left_sub_layout.addStretch(0)
+
+        self._top_layout.addLayout(self._left_sub_layout)
+        self._top_layout.addSpacing(20)
+        self._top_layout.addLayout(self._right_sub_layout)
+        self._top_layout.setStretch(1, 1)
+
         self.setAutoFillBackground(False)
         if use_mac_theme():
             self._layout.setContentsMargins(0, 0, 0, 0)
             self._layout.setSpacing(0)
-        self._layout.addWidget(self.table_overview)
+        self._layout.addWidget(self._top_container)
         self._layout.addWidget(self.songs_table)
 
         # FIXME: 更好的计算宽度和高度
         # 目前是假设知道自己初始化高度大约是 530px
         # 之后可以考虑按比例来计算
         self.overview_height = 180
-        self.table_overview.setMaximumHeight(self.overview_height)
+        self._top_container.setMaximumHeight(self.overview_height)
         self._songs_table_height = 530 - self.overview_height
         self.songs_table.setMinimumHeight(self._songs_table_height)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     async def play_song(self, song):
         loop = asyncio.get_event_loop()
@@ -200,13 +199,17 @@ class SongsTableContainer(QFrame):
         self.songs_table.song_deleted.connect(
             lambda song: self._app.playlist.remove(song))
 
+    def set_desc(self, desc):
+        self._desc_container.show()
+        self._desc_container.set_html(desc)
+
     async def show_playlist(self, playlist):
-        self.table_overview.show()
+        self._top_container.show()
         loop = asyncio.get_event_loop()
         songs = await loop.run_in_executor(None, lambda: playlist.songs)
         self._show_songs(songs)
         desc = '<h2>{}</h2>\n{}'.format(playlist.name, playlist.desc or '')
-        self.table_overview.set_desc(desc)
+        self.set_desc(desc)
         if playlist.cover:
             loop.create_task(self.show_cover(playlist.cover))
 
@@ -223,13 +226,13 @@ class SongsTableContainer(QFrame):
         self.songs_table.song_deleted.connect(lambda song: remove_song(song))
 
     async def show_artist(self, artist):
-        self.table_overview.show()
+        self._top_container.show()
         loop = asyncio.get_event_loop()
         future_songs = loop.run_in_executor(None, lambda: artist.songs)
         future_desc = loop.run_in_executor(None, lambda: artist.desc)
         await asyncio.wait([future_songs, future_desc])
         desc = future_desc.result()
-        self.table_overview.set_desc(desc or '<h2>{}</h2>'.format(artist.name))
+        self.set_desc(desc or '<h2>{}</h2>'.format(artist.name))
         self._show_songs(future_songs.result())
         if artist.cover:
             loop.create_task(self.show_cover(artist.cover))
@@ -239,8 +242,8 @@ class SongsTableContainer(QFrame):
         future_songs = loop.run_in_executor(None, lambda: album.songs)
         future_desc = loop.run_in_executor(None, lambda: album.desc)
         await asyncio.wait([future_songs, future_desc])
-        self.table_overview.set_desc(future_desc.result() or
-                                     '<h2>{}</h2>'.format(album.name))
+        self.set_desc(future_desc.result() or
+                      '<h2>{}</h2>'.format(album.name))
         songs = future_songs.result()
         self._show_songs(songs)
         if album.cover:
@@ -254,7 +257,7 @@ class SongsTableContainer(QFrame):
         img.loadFromData(content)
         pixmap = QPixmap(img)
         if not pixmap.isNull():
-            self.table_overview.set_cover(pixmap)
+            self.set_cover(pixmap)
             self.update()
 
     def _show_songs(self, songs):
@@ -271,19 +274,24 @@ class SongsTableContainer(QFrame):
 
     def show_songs(self, songs):
         self._show_songs(songs)
-        self.table_overview.hide()
+        self._top_container.hide()
+
+    def set_cover(self, pixmap):
+        self._cover_label.setPixmap(
+            pixmap.scaledToWidth(self._cover_label.width(),
+                                 mode=Qt.SmoothTransformation))
+
+    def toggle_desc_container_fold(self):
+        # TODO: add toggle animation?
+        if self._desc_container_folded:
+            self._top_container.setMaximumHeight(4000)
+            self.songs_table.hide()
+            self._desc_container_folded = False
+        else:
+            self._top_container.setMaximumHeight(self.overview_height)
+            self.songs_table.show()
+            self._desc_container_folded = True
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
-
-    def keyPressEvent(self, event):
-        key_code = event.key()
-        if key_code == Qt.Key_Space:
-            if self.songs_table.isVisible():
-                self.table_overview.setMaximumHeight(self.height())
-                self.songs_table.hide()
-            else:
-                self.table_overview.setMaximumHeight(self.overview_height)
-                self.songs_table.show()
-            event.accept()
