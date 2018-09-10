@@ -87,6 +87,20 @@ SongsTableView QHeaderView {
     background-color: #EAEAEA;
 }
 
+TableToolbar QPushButton {
+    border-radius: 2px;
+    border: 1px solid #CCC;
+    padding: 2px 8px;
+}
+
+TableToolbar QPushButton:hover {
+    border: 1px solid #AAA;
+}
+
+TableToolbar QPushButton:pressed {
+    background-color: #EAEAEA;
+}
+
 MagicBox {
     border-top: 0;
     border-bottom: 1px solid #DDD;
