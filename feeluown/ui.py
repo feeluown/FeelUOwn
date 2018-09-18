@@ -23,6 +23,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from fuocore.player import PlaybackMode
+
 from feeluown.components.separator import Separator
 from feeluown.components.playlists import (
     PlaylistsView,
@@ -33,7 +35,6 @@ from feeluown.components.history import HistoriesView
 from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 
-from .consts import PlaybackMode
 from .helpers import use_mac_theme
 from .utils import parse_ms
 
@@ -61,28 +62,37 @@ class PlayerControlPanel(QFrame):
         super().__init__(parent)
         self._app = app
 
-        class Button(QPushButton):
+        class IconButton(QPushButton):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
                 # 按钮文字一般是一个 symbol，长度控制为 40 是满足需求的
                 self.setMaximumWidth(40)
 
+        self._playback_modes = list(PlaybackMode.__members__.values())
+        self._pm_alias_map = {
+            PlaybackMode.one_loop: '单曲循环',
+            PlaybackMode.sequential: '顺序播放',
+            PlaybackMode.loop: '循环播放',
+            PlaybackMode.random: '随机播放',
+        }
+
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
-        self.previous_btn = Button(self)
-        self.pp_btn = Button(self)
-        self.next_btn = Button(self)
-        self.pms_btn = Button(self)
+        self.previous_btn = IconButton(self)
+        self.pp_btn = IconButton(self)
+        self.next_btn = IconButton(self)
+        self.pms_btn = QPushButton(self)
         self.volume_btn = VolumeButton(self)
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
-        self.playlist_btn = Button(parent=self)
+        self.playlist_btn = IconButton(parent=self)
 
         self.previous_btn.setObjectName('previous_btn')
         self.pp_btn.setObjectName('pp_btn')
         self.next_btn.setObjectName('next_btn')
         self.playlist_btn.setObjectName('playlist_btn')
         self.volume_btn.setObjectName('volume_btn')
+        self.pms_btn.setObjectName('pms_btn')
 
         self.progress_slider = ProgressSlider(self)
 
@@ -109,7 +119,17 @@ class PlayerControlPanel(QFrame):
         self.next_btn.clicked.connect(self._app.player.play_next)
         self.previous_btn.clicked.connect(self._app.player.play_previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
+        self.pms_btn.clicked.connect(self._switch_playback_mode)
 
+        self._app.player.playlist.playback_mode_changed.connect(
+            self.on_playback_mode_changed)
+        self._app.player.playlist.song_changed.connect(
+            self.on_player_song_changed)
+
+        self._update_pms_btn_text()
+        self._setup_ui()
+
+    def _setup_ui(self):
         # set widget layout
         self.progress_slider.setMinimumWidth(480)
         self.progress_slider.setMaximumWidth(600)
@@ -136,11 +156,22 @@ class PlayerControlPanel(QFrame):
         self._layout.addSpacing(5)
         self._layout.addStretch(0)
         self._layout.addWidget(self.pms_btn)
+        self._layout.addSpacing(8)
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(18)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+
+    def _switch_playback_mode(self):
+        playlist = self._app.player.playlist
+        pm_total = len(self._playback_modes)
+        pm_idx = self._playback_modes.index(playlist.playback_mode)
+        if pm_idx < pm_total - 1:
+            pm_idx += 1
+        else:
+            pm_idx = 0
+        playlist.playback_mode = self._playback_modes[pm_idx]
 
     def on_duration_changed(self, duration):
         m, s = parse_ms(duration)
@@ -153,7 +184,12 @@ class PlayerControlPanel(QFrame):
         self.position_label.setText(t.toString('mm:ss'))
 
     def on_playback_mode_changed(self, playback_mode):
-        self.pms_btn.setText(playback_mode.value)
+        self._update_pms_btn_text()
+
+    def _update_pms_btn_text(self):
+        playback_mode = self._app.player.playlist.playback_mode
+        alias = self._pm_alias_map[playback_mode]
+        self.pms_btn.setText(alias)
 
     def on_player_song_changed(self, song):
         self.song_title_label.setText(

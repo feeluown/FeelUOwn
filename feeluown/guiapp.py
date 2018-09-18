@@ -97,17 +97,10 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.player.state_changed.connect(self._on_player_status_changed)
         self.player.position_changed.connect(self._on_player_position_changed)
         self.player.duration_changed.connect(self._on_player_duration_changed)
-        # FIXME:
-        self.player.playlist.playback_mode_changed.connect(
-            top_panel.pc_panel.on_playback_mode_changed)
-        self.player.playlist.song_changed.connect(
-            top_panel.pc_panel.on_player_song_changed)
-
         self.request.connected_signal.connect(self._on_network_connected)
         self.request.disconnected_signal.connect(self._on_network_disconnected)
         self.request.slow_signal.connect(self._on_network_slow)
         self.request.server_error_signal.connect(self._on_network_server_error)
-
         #top_panel.pc_panel.volume_slider.sliderMoved.connect(
         #    self.change_volume)
 

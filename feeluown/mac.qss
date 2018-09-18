@@ -23,14 +23,24 @@ LeftPanel QListView {
     margin-left: 5px;
 }
 
-PlayerControlPanel QPushButton{
+PlayerControlPanel IconButton, VolumeButton {
     width: 30px;
     height: 30px;
     border-radius: 15px;
     outline: none;
 }
-PlayerControlPanel QPushButton:hover {
-    background-color: #FFF;
+PlayerControlPanel IconButton:hover, VolumeButton:hover {
+    background-color: #EEE;
+}
+#pms_btn {
+    height: 18px;
+    background-color: transparent;
+    border-radius: 3px;
+    border: 1px solid #AAA;
+    padding: 2px 8px;
+}
+#pms_btn:hover {
+    border: 1px solid #777;
 }
 
 #pp_btn {
