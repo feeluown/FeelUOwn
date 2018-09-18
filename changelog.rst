@@ -1,6 +1,10 @@
 Changelog
 ---------
 
+2.1a1 (2018-09-18)
+""""""""""""""""""
+- 支持切换播放模式 @cyliuu
+
 2.1a0 (2018-09-10)
 """"""""""""""""""
 - 添加音量滑动条 `#233 <https://github.com/cosven/FeelUOwn/pull/233>`_ `@chen-chao <https://github.com/chen-chao>`_
