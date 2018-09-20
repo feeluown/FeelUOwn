@@ -23,7 +23,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from fuocore.player import PlaybackMode
+from fuocore.player import PlaybackMode, State
 
 from feeluown.components.separator import Separator
 from feeluown.components.playlists import (
@@ -44,10 +44,23 @@ logger = logging.getLogger(__name__)
 
 
 class ProgressSlider(QSlider):
+    pause_player_needed = pyqtSignal()
+    resume_player_needed = pyqtSignal()
+    change_position_needed = pyqtSignal([int])
+
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setOrientation(Qt.Horizontal)
+        self.sliderPressed.connect(self._on_pressed)
+        self.sliderReleased.connect(self._on_released)
+
+    def _on_pressed(self):
+        self.pause_player_needed.emit()
+
+    def _on_released(self):
+        self.change_position_needed.emit(self.value())
+        self.resume_player_needed.emit()
 
     def set_duration(self, ms):
         self.setRange(0, ms / 1000)
@@ -121,10 +134,15 @@ class PlayerControlPanel(QFrame):
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
 
+        self._app.player.state_changed.connect(self._on_player_state_changed)
         self._app.player.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed)
         self._app.player.playlist.song_changed.connect(
             self.on_player_song_changed)
+        self.progress_slider.resume_player_needed.connect(self._app.player.resume)
+        self.progress_slider.pause_player_needed.connect(self._app.player.pause)
+        self.progress_slider.change_position_needed.connect(
+            lambda value: setattr(self._app.player, 'position', value))
 
         self._update_pms_btn_text()
         self._setup_ui()
@@ -196,6 +214,9 @@ class PlayerControlPanel(QFrame):
             '♪  {title} - {artists_name}'.format(
                 title=song.title,
                 artists_name=song.artists_name))
+
+    def _on_player_state_changed(self, state):
+        self.pp_btn.setChecked(state == State.playing)
 
 
 class TopPanel(QFrame):
