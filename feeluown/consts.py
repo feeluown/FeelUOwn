@@ -19,9 +19,3 @@ CACHE_DIR = HOME_DIR + '/cache'
 SONG_DIR = HOME_DIR + '/songs'
 
 LOG_FILE = HOME_DIR + '/stdout.log'
-
-
-class PlaybackMode(Enum):
-    one_loop = '🔂'
-    loop = '🔁'
-    random = '🔀'

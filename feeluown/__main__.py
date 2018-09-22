@@ -12,7 +12,7 @@ from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config
 from feeluown.cliapp import run_server
-from feeluown.rcfile import load_rcfile
+from feeluown.rcfile import load_rcfile, bind_signals
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR
@@ -90,6 +90,8 @@ def main():
     cli_only = args.no_window
     logger_config(debug, to_file=args.log_to_file)
 
+    load_rcfile()
+
     from fuocore.player import MpvPlayer
 
     player = MpvPlayer(audio_device=bytes(mpv_audio_device, 'utf-8'))
@@ -119,8 +121,8 @@ def main():
         pubsub_gateway, pubsub_server = run_pubsub()
 
         app = GuiApp(pubsub_gateway, player=player)
+        # 初始化 UI 和组件间信号绑定
         app.initialize()
-        load_rcfile(app)
         # TODO: 调用 show 时，会弹出主界面，但这时界面还没开始绘制
         # 为了让提升启动速度，一些非必须的初始化操作可以在 show 之后进行
         app.show()
@@ -130,6 +132,8 @@ def main():
         pubsub_gateway, pubsub_server = run_pubsub()
         app = CliApp(pubsub_gateway)
         app.initialize()
+
+    bind_signals(app)
 
     live_lyric = app.live_lyric
     event_loop = asyncio.get_event_loop()
