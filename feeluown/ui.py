@@ -32,6 +32,7 @@ from feeluown.components.playlists import (
 )
 from feeluown.components.provider import ProvidersView
 from feeluown.components.history import HistoriesView
+from feeluown.components.my_music import MyMusicView
 from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 
@@ -239,9 +240,10 @@ class LeftPanel(QFrame):
         super().__init__(parent)
         self._app = app
 
-        self.library_header = QLabel('我的音乐', self)
+        self.library_header = QLabel('音乐库', self)
         self.playlists_header = QLabel('歌单列表', self)
         self.history_header = QLabel('浏览历史记录', self)
+        self.my_music_header = QLabel('我的音乐', self)
 
         class Container(QWidget):
             def __init__(self, label, view, parent=None):
@@ -253,33 +255,40 @@ class LeftPanel(QFrame):
                 label.setFixedHeight(25)
                 self._layout.addWidget(label)
                 self._layout.addWidget(view)
+                self._layout.addStretch(0)
 
         self.playlists_view = PlaylistsView(self)
         self.providers_view = ProvidersView(self)
         self.histories_view = HistoriesView(self)
+        self.my_music_view = MyMusicView(self)
 
-        self._providers_con = Container(self.library_header, self.providers_view)
-        self._histories_con = Container(self.history_header, self.histories_view)
-        self._playlists_con = Container(self.playlists_header, self.playlists_view)
+        self.providers_con = Container(self.library_header, self.providers_view)
+        self.histories_con = Container(self.history_header, self.histories_view)
+        self.playlists_con = Container(self.playlists_header, self.playlists_view)
+        self.my_music_con = Container(self.my_music_header, self.my_music_view)
 
         self._splitter = QSplitter(Qt.Vertical, self)
 
         self.providers_view.setModel(self._app.providers)
         self.histories_view.setModel(self._app.histories)
         self.playlists_view.setModel(self._app.playlists)
+        self.my_music_view.setModel(self._app.my_music)
 
         self._layout = QVBoxLayout(self)
         if use_mac_theme():
             self._layout.setSpacing(0)
             self._layout.setContentsMargins(6, 4, 0, 0)
-        self._splitter.addWidget(self._providers_con)
-        self._splitter.addWidget(self._histories_con)
-        self._splitter.addWidget(self._playlists_con)
+        self._splitter.addWidget(self.providers_con)
+        self._splitter.addWidget(self.my_music_con)
+        self._splitter.addWidget(self.histories_con)
+        self._splitter.addWidget(self.playlists_con)
         self._layout.addWidget(self._splitter)
+        self._layout.addStretch(0)
 
         self.providers_view.setFrameShape(QFrame.NoFrame)
         self.playlists_view.setFrameShape(QFrame.NoFrame)
         self.histories_view.setFrameShape(QFrame.NoFrame)
+        self.my_music_view.setFrameShape(QFrame.NoFrame)
         self.setMinimumWidth(180)
         self.setMaximumWidth(250)
 
@@ -287,6 +296,13 @@ class LeftPanel(QFrame):
             lambda pl: asyncio.ensure_future(self.show_model(pl)))
         self.histories_view.show_model.connect(
             lambda model: asyncio.ensure_future(self.show_model(model)))
+
+        # 让各个音乐库来决定是否显示这些组件
+        self.playlists_con.hide()
+        self.my_music_con.hide()
+
+        # 历史记录暂时隐藏
+        self.histories_con.hide()
 
     async def show_model(self, playlist):
         await self._app.ui.table_container.show_model(playlist)

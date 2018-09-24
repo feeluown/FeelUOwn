@@ -14,6 +14,10 @@ logger = logging.getLogger(__name__)
 
 
 class Nem(QObject):
+    """
+
+    FIXME: 简化 login_as 和 ready_to_login 两个方法的实现逻辑
+    """
 
     def __init__(self, app):
         super(Nem, self).__init__(parent=app)
@@ -29,6 +33,7 @@ class Nem(QObject):
     def ready_to_login(self):
         if self._user is not None:
             logger.debug('You have already logined in.')
+            asyncio.ensure_future(self.login_as(self._user))
             return
         logger.debug('Trying to load last login user...')
         user = LoginController.load()
@@ -47,8 +52,11 @@ class Nem(QObject):
         self._user = user
         LoginController.save(user)
         left_panel = self._app.ui.left_panel
+        left_panel.playlists_con.show()
+        left_panel.my_music_con.hide()
         loop = asyncio.get_event_loop()
         self._pm.name = '网易云音乐 - {}'.format(user.name)
         playlists = await loop.run_in_executor(None, lambda: user.playlists)
+        self._app.playlists.clear()
         self._app.playlists.add(playlists)
         self._app.playlists.add(user.fav_playlists, is_fav=True)

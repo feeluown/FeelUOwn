@@ -37,8 +37,9 @@ class ProvidersModel(QAbstractListModel):
 
     def assoc(self, provider_id, pm):
         self._association[provider_id] = pm
+        self.beginInsertRows(QModelIndex(), self.rowCount(), self.rowCount() + 1)
         self._provider_list.append(provider_id)
-        self.insertRow(len(self._provider_list))
+        self.endInsertRows()
 
     def get(self, provider_id):
         return self._association.get(provider_id)
@@ -46,8 +47,9 @@ class ProvidersModel(QAbstractListModel):
     def remove(self, provider_id):
         if not self._association.pop(provider_id, None):
             row = self._provider_list.index(provider_id)
+            self.beginRemoveRows(QModelIndex(), row, row + 1)
             self._provider_list.remove(provider_id)
-            self.removeRow(row)
+            self.endRemoveRows()
 
     def rowCount(self, parent=QModelIndex()):
         return len(self._provider_list)
@@ -81,7 +83,7 @@ class ProvidersView(QListView):
         self.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
 
         self.clicked.connect(self._on_clicked)
 
@@ -91,7 +93,15 @@ class ProvidersView(QListView):
             provider._on_click()
 
     def sizeHint(self):
-        height = 10
-        if self.model().rowCount() > 0:
-            height = self.model().rowCount() * self.sizeHintForRow(0)
+        height = self.model().rowCount() * self.sizeHintForRow(0) + 10
         return QSize(self.width(), height)
+
+    def rowsInserted(self, parent, start, end):
+        super().rowsInserted(parent, start, end)
+        print(self.sizeHint().height())
+        self.setFixedHeight(self.sizeHint().height())
+
+    def rowsAboutToBeRemoved(self, parent, start, end):
+        super().rowsAboutToBeRemoved(parent, start ,end)
+        print(self.sizeHint().height())
+        self.setFixedHeight(self.sizeHint().height())

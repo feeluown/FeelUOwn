@@ -64,6 +64,13 @@ class PlaylistsModel(QAbstractListModel):
         playlists.extend(playlist)
         self.endInsertRows()
 
+    def clear(self):
+        total_length = len(self._playlists) + len(self._fav_playlists)
+        self.beginRemoveRows(QModelIndex(), 0, total_length - 1)
+        self._playlists = []
+        self._fav_playlists = []
+        self.endRemoveRows()
+
     def rowCount(self, _):
         return len(self._playlists) + len(self._fav_playlists)
 

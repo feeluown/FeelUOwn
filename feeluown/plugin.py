@@ -12,6 +12,10 @@ logger.setLevel(logging.INFO)
 
 
 class PluginsManager(object):
+    """在 App 初始化完成之后，加载插件
+
+    TODO: 以后可能需要支持在 App 初始化完成之前加载插件
+    """
     def __init__(self, app):
         super().__init__()
         self._app = app

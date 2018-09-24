@@ -17,6 +17,7 @@ from fuocore.player import State as PlayerState
 from feeluown.components.history import HistoriesModel
 from feeluown.components.provider import ProvidersModel
 from feeluown.components.playlists import PlaylistsModel
+from feeluown.components.my_music import MyMusicModel
 
 from .app import CliApp, App
 from .consts import APP_ICON
@@ -64,6 +65,7 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.playlists = PlaylistsModel(parent=self)
         self.histories = HistoriesModel(parent=self)
         self.providers = ProvidersModel(parent=self)
+        self.my_music = MyMusicModel(parent=self)
 
         self.ui = Ui(self)
 
