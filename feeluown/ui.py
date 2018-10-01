@@ -245,7 +245,7 @@ class LeftPanel(QFrame):
         self.history_header = QLabel('浏览历史记录', self)
         self.my_music_header = QLabel('我的音乐', self)
 
-        class Container(QWidget):
+        class Container(QFrame):
             def __init__(self, label, view, parent=None):
                 super().__init__(parent)
 
@@ -256,6 +256,9 @@ class LeftPanel(QFrame):
                 self._layout.addWidget(label)
                 self._layout.addWidget(view)
                 self._layout.addStretch(0)
+                # XXX: 本意是让 Container 下方不要出现多余的空间
+                self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+
 
         self.playlists_view = PlaylistsView(self)
         self.providers_view = ProvidersView(self)
@@ -267,22 +270,20 @@ class LeftPanel(QFrame):
         self.playlists_con = Container(self.playlists_header, self.playlists_view)
         self.my_music_con = Container(self.my_music_header, self.my_music_view)
 
-        self._splitter = QSplitter(Qt.Vertical, self)
-
         self.providers_view.setModel(self._app.providers)
         self.histories_view.setModel(self._app.histories)
         self.playlists_view.setModel(self._app.playlists)
         self.my_music_view.setModel(self._app.my_music)
 
         self._layout = QVBoxLayout(self)
+
         if use_mac_theme():
             self._layout.setSpacing(0)
             self._layout.setContentsMargins(6, 4, 0, 0)
-        self._splitter.addWidget(self.providers_con)
-        self._splitter.addWidget(self.my_music_con)
-        self._splitter.addWidget(self.histories_con)
-        self._splitter.addWidget(self.playlists_con)
-        self._layout.addWidget(self._splitter)
+        self._layout.addWidget(self.providers_con)
+        self._layout.addWidget(self.my_music_con)
+        self._layout.addWidget(self.histories_con)
+        self._layout.addWidget(self.playlists_con)
         self._layout.addStretch(0)
 
         self.providers_view.setFrameShape(QFrame.NoFrame)
@@ -488,7 +489,10 @@ class Ui(object):
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
+        self._left_panel_container = QScrollArea(self._app)
+        self._left_panel_container.setWidgetResizable(True)
         self.left_panel = LeftPanel(self._app, self._splitter)
+        self._left_panel_container.setWidget(self.left_panel)
         self.right_panel = RightPanel(self._app, self._splitter)
 
         # alias
@@ -497,11 +501,11 @@ class Ui(object):
         self.magicbox = MagicBox(self._app)
 
         # 对部件进行一些 UI 层面的初始化
-        self._splitter.addWidget(self.left_panel)
+        self._splitter.addWidget(self._left_panel_container)
         self._splitter.addWidget(self.right_panel)
 
         self.right_panel.setMinimumWidth(780)
-        self.left_panel.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Preferred)
+        self._left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         if use_mac_theme():

@@ -71,7 +71,7 @@ class PlaylistsModel(QAbstractListModel):
         self._fav_playlists = []
         self.endRemoveRows()
 
-    def rowCount(self, _):
+    def rowCount(self, index=QModelIndex()):
         return len(self._playlists) + len(self._fav_playlists)
 
     def flags(self, index):
@@ -110,7 +110,10 @@ class PlaylistsModel(QAbstractListModel):
 
 
 class PlaylistsView(QListView):
+    """歌单列表视图
 
+    该视图会显示所有的元素，理论上不会有滚动条，也不接受滚动事件
+    """
     show_playlist = pyqtSignal([object])
 
     def __init__(self, parent):
@@ -119,8 +122,6 @@ class PlaylistsView(QListView):
         self.setAttribute(Qt.WA_MacShowFocusRect, 0)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-
         self.setDragDropMode(QAbstractItemView.DropOnly)
         self.clicked.connect(self._on_clicked)
 
@@ -191,3 +192,18 @@ class PlaylistsView(QListView):
             e.accept()
         else:
             e.ignore()
+
+    def wheelEvent(self, e):
+        e.ignore()
+
+    def sizeHint(self):
+        height = self.model().rowCount() * self.sizeHintForRow(0) + 10
+        return QSize(self.width(), height)
+
+    def rowsInserted(self, parent, start, end):
+        super().rowsInserted(parent, start, end)
+        self.setMinimumHeight(self.sizeHint().height())
+
+    def rowsAboutToBeRemoved(self, parent, start, end):
+        super().rowsAboutToBeRemoved(parent, start ,end)
+        self.setMinimumHeight(self.sizeHint().height())
