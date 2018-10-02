@@ -1,45 +1,33 @@
 import asyncio
 import logging
-import sys
-
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, pyqtSlot, QTimer
-from PyQt5.QtGui import QFontMetrics, QPainter, QFont, QKeySequence
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, QTimer
+from PyQt5.QtGui import QPainter, QKeySequence
 from PyQt5.QtWidgets import (
-    QAction,
-    QComboBox,
     QFrame,
-    QGridLayout,
     QHBoxLayout,
     QLabel,
-    QMenu,
     QPushButton,
     QScrollArea,
     QSizePolicy,
     QSlider,
     QSplitter,
-    QStatusBar,
     QStyle,
     QVBoxLayout,
-    QWidget,
 )
 
 from fuocore.player import PlaybackMode, State
 
 from feeluown.components.separator import Separator
-from feeluown.components.playlists import (
-    PlaylistsView,
-    PlaylistsModel,
-)
+from feeluown.components.playlists import PlaylistsView
 from feeluown.components.provider import ProvidersView
 from feeluown.components.history import HistoriesView
 from feeluown.components.my_music import MyMusicView
+from feeluown.components.volume_button import VolumeButton
 from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 
 from .helpers import use_mac_theme
 from .utils import parse_ms
-
-from feeluown.components.volume_button import VolumeButton
 
 logger = logging.getLogger(__name__)
 
@@ -476,7 +464,7 @@ class NetworkStatus(QLabel):
         self.update()
 
 
-class Ui(object):
+class Ui:
     def __init__(self, app):
         self._app = app
         self._layout = QVBoxLayout(app)
