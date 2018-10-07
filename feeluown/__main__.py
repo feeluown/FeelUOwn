@@ -8,9 +8,10 @@ import os
 import traceback
 import sys
 
+from fuocore import __version__ as fuocore_version
 from fuocore.pubsub import run as run_pubsub
 
-from feeluown import logger_config
+from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.cliapp import run_server
 from feeluown.rcfile import load_rcfile, bind_signals
 from feeluown.consts import (
@@ -60,9 +61,10 @@ def setup_argparse():
 
     parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help='开启调试模式')
+    parser.add_argument('-v', '--version', action='store_true',
+                        help='显示当前 feeluown 和 fuocore 版本')
     parser.add_argument('--log-to-file', action='store_true', default=False,
                         help='将日志打到文件中')
-
     # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
     # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
 
@@ -78,6 +80,10 @@ def setup_argparse():
 def main():
     parser = setup_argparse()
     args = parser.parse_args()
+
+    if args.version:
+        print('feeluown {}, fuocore {}'.format(feeluown_version, fuocore_version))
+        return
 
     if is_port_used(23333) or is_port_used(23334):
         print('\033[0;31m', end='')

@@ -1,7 +1,7 @@
 程序架构
 ========
 
-在整体设计上，FeelUOwn 由两大部分组成：界面逻辑部分和核心逻辑部分，
+在整体设计上，FeelUOwn 由三大部分组成：界面逻辑部分和核心逻辑部分，
 它们对应着两个项目 `feeluown <https://github.com/cosven/feeluown>`_ 和
 `feeluown-core <https://github.com/cosven/feeluown-core>`_ 。
 
