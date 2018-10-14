@@ -65,6 +65,7 @@ class Xiami(object):
         if dump:
             dump_user(user)
         self._user = user
+        provider.auth(user)
 
     def show_provider(self):
         """展示虾米首页
