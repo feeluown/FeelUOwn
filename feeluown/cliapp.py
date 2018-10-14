@@ -51,7 +51,7 @@ class CliAppMixin(object):
 
 async def handle(conn, addr, app, live_lyric):
     event_loop = asyncio.get_event_loop()
-    event_loop.sock_sendall(conn, b'OK feeluown 1.0.0\n')
+    await event_loop.sock_sendall(conn, b'OK feeluown 1.0.0\n')
     while True:
         try:
             command = await event_loop.sock_recv(conn, 1024)
@@ -67,7 +67,7 @@ async def handle(conn, addr, app, live_lyric):
         logger.debug('RECV: ' + command)
         cmd = CmdParser.parse(command)
         msg = exec_cmd(app, live_lyric, cmd)
-        event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
+        await event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
 
 
 async def run_server(app, live_lyric, *args, **kwargs):
