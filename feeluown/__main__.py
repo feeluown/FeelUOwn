@@ -98,10 +98,8 @@ def main():
 
     load_rcfile()
 
-    from fuocore.player import MpvPlayer
-
-    player = MpvPlayer(audio_device=bytes(mpv_audio_device, 'utf-8'))
-    player.initialize()
+    player_kwargs = dict(
+        audio_device=bytes(mpv_audio_device, 'utf-8'))
 
     # 设置 exception hook
     sys.excepthook = excepthook
@@ -126,7 +124,7 @@ def main():
         asyncio.set_event_loop(app_event_loop)
         pubsub_gateway, pubsub_server = run_pubsub()
 
-        app = GuiApp(pubsub_gateway, player=player)
+        app = GuiApp(pubsub_gateway, player_kwargs=player_kwargs)
         # 初始化 UI 和组件间信号绑定
         app.initialize()
         # TODO: 调用 show 时，会弹出主界面，但这时界面还没开始绘制
@@ -136,7 +134,7 @@ def main():
         from feeluown.app import CliApp
 
         pubsub_gateway, pubsub_server = run_pubsub()
-        app = CliApp(pubsub_gateway)
+        app = CliApp(pubsub_gateway, player_kwargs=player_kwargs)
         app.initialize()
 
     bind_signals(app)

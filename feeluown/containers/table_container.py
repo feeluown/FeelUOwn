@@ -169,9 +169,8 @@ class SongsTableContainer(QFrame):
 
     async def play_song(self, song):
         loop = asyncio.get_event_loop()
-        with self._app.create_action('play {}'.format(song)):
-            await loop.run_in_executor(None, lambda: song.url)
-            self._app.player.play_song(song)
+        await loop.run_in_executor(None, lambda: song.url)
+        self._app.player.play_song(song)
 
     def play_all(self):
         songs = self.songs_table.model().songs

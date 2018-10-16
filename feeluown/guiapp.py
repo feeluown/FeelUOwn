@@ -1,8 +1,6 @@
 import asyncio
 import logging
 import os
-from contextlib import contextmanager
-from functools import partial
 
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QIcon
@@ -53,8 +51,8 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
 
     mode = App.GuiMode | App.CliMode
 
-    def __init__(self, pubsub_gateway, player=None):
-        CliApp.__init__(self, pubsub_gateway, player=None)
+    def __init__(self, pubsub_gateway, player_kwargs=None):
+        CliApp.__init__(self, pubsub_gateway, player_kwargs=player_kwargs)
         QWidget.__init__(self)
 
         self.request = Request(self)
@@ -70,6 +68,7 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.ui = Ui(self)
 
         self.player_pixmap = None
+        self.show_msg = self.ui.magicbox.show_msg
 
         self.resize(1000, 618)
         self.setObjectName('app')
@@ -105,27 +104,6 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.request.server_error_signal.connect(self._on_network_server_error)
         #top_panel.pc_panel.volume_slider.sliderMoved.connect(
         #    self.change_volume)
-
-    @contextmanager
-    def create_action(self, s):
-        show_msg = self.ui.magicbox.show_msg
-
-        class Action(object):
-            def set_progress(self, value):
-                value = int(value * 100)
-                show_msg(s + '...{}%'.format(value), timeout=-1)
-
-            def failed(self):
-                show_msg(s + '...failed', timeout=-1)
-
-        show_msg(s + '...', timeout=-1)  # doing
-        try:
-            yield Action()
-        except Exception:
-            show_msg(s + '...error')  # error
-            raise
-        else:
-            show_msg(s + '...done')  # done
 
     def _on_player_position_changed(self, ms):
         self.ui.top_panel.pc_panel.on_position_changed(ms*1000)

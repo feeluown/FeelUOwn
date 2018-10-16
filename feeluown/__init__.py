@@ -15,7 +15,7 @@ dict_config = {
     'formatters': {
         'standard': {
             'format': "[%(levelname)s] "
-                      "[%(module)s %(funcName)s %(lineno)d] "
+                      "[%(filename)s %(funcName)s %(lineno)d] "
                       ": %(message)s",
         },
     },

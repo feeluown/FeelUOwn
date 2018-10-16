@@ -172,7 +172,7 @@ class PlaylistsView(QListView):
             index, state = result
             rect = self.rectForIndex(index)
             if state is None:
-                text = '⇵'
+                text = '😶'
             elif state is True:
                 text = '👋'
             else:

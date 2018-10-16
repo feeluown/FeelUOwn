@@ -2,10 +2,12 @@ import asyncio
 import locale
 import logging
 from functools import partial
+from contextlib import contextmanager
 
 from fuocore import LiveLyric, MpvPlayer, Library
 
 from .cliapp import LiveLyricPublisher
+from .player import Player
 from .plugin import PluginsManager
 from .version import VersionManager
 
@@ -19,19 +21,16 @@ class App(object):
 
     mode = 0x0000
 
-    def __init__(self, player=None):
-        if player is None:
-            locale.setlocale(locale.LC_NUMERIC, 'C')
-            self.player = MpvPlayer()
-            self.player.initialize()
-        else:
-            self.player = player
+    def __init__(self, player_kwargs=None):
+        self.player = Player(app=self, **(player_kwargs or {}))
         self.playlist = self.player.playlist
         self.library = Library()
         self.live_lyric = LiveLyric()
 
         self.plugin_mgr = PluginsManager(self)
         self.version_mgr = VersionManager(self)
+
+        self.show_msg = logger.info
 
     def initialize(self):
         self.player.position_changed.connect(self.live_lyric.on_position_changed)
@@ -41,12 +40,33 @@ class App(object):
         loop = asyncio.get_event_loop()
         loop.call_later(10, partial(loop.create_task, self.version_mgr.check_release()))
 
+    @contextmanager
+    def create_action(self, s):
+        show_msg = self.show_msg
+
+        class Action:
+            def set_progress(self, value):
+                value = int(value * 100)
+                show_msg(s + '...{}%'.format(value), timeout=-1)
+
+            def failed(self):
+                show_msg(s + '...failed', timeout=-1)
+
+        show_msg(s + '...', timeout=-1)  # doing
+        try:
+            yield Action()
+        except Exception:
+            show_msg(s + '...error')  # error
+            raise
+        else:
+            show_msg(s + '...done')  # done
+
 
 class CliApp(App):
     mode = App.CliMode
 
-    def __init__(self, pubsub_gateway, player=None):
-        super().__init__(player=player)
+    def __init__(self, pubsub_gateway, player_kwargs=None):
+        super().__init__(player_kwargs=player_kwargs)
 
         self.pubsub_gateway = pubsub_gateway
         self._live_lyric_publisher = LiveLyricPublisher(pubsub_gateway)
