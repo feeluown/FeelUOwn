@@ -12,6 +12,8 @@ class Player(MpvPlayer):
 
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        # issue #246
+        locale.setlocale(locale.LC_NUMERIC, 'C')
         self._app = app
         self.initialize()
 
