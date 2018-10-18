@@ -61,7 +61,7 @@ class PlaylistsModel(QAbstractListModel):
             _playlists = [playlist]
         end = start + len(_playlists)
         self.beginInsertRows(QModelIndex(), start, end)
-        playlists.extend(playlist)
+        playlists.extend(_playlists)
         self.endInsertRows()
 
     def clear(self):
