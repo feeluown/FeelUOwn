@@ -32,6 +32,13 @@ PlayerControlPanel IconButton, VolumeButton {
 PlayerControlPanel IconButton:hover, VolumeButton:hover {
     background-color: #EEE;
 }
+#song_source_label {
+    outline: none;
+    border-radius: 2px;
+    color: #888;
+    border: 1px solid #999;
+    font-size: 12px;
+}
 #pms_btn {
     height: 18px;
     background-color: transparent;

@@ -1,8 +1,9 @@
 import asyncio
 import logging
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, QTimer
-from PyQt5.QtGui import QPainter, QKeySequence
+from PyQt5.QtGui import QPainter, QKeySequence, QFontMetrics
 from PyQt5.QtWidgets import (
+    QApplication,
     QFrame,
     QHBoxLayout,
     QLabel,
@@ -114,9 +115,12 @@ class PlayerControlPanel(QFrame):
             self.pp_btn.setCheckable(True)
 
         self.song_title_label = QLabel('No song is playing.', parent=self)
+        self.song_source_label = QLabel('歌曲来源', parent=self)
         self.song_title_label.setAlignment(Qt.AlignCenter)
         self.duration_label = QLabel('00:00', parent=self)
         self.position_label = QLabel('00:00', parent=self)
+
+        self.song_source_label.setObjectName('song_source_label')
 
         self.next_btn.clicked.connect(self._app.player.play_next)
         self.previous_btn.clicked.connect(self._app.player.play_previous)
@@ -140,10 +144,19 @@ class PlayerControlPanel(QFrame):
         # set widget layout
         self.progress_slider.setMinimumWidth(480)
         self.progress_slider.setMaximumWidth(600)
+        self.song_source_label.setFixedHeight(20)
+        self.position_label.setFixedWidth(40)
+        self.duration_label.setFixedWidth(40)
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._sub_layout = QVBoxLayout()
-        self._sub_layout.addWidget(self.song_title_label)
+        self._sub_top_layout = QHBoxLayout()
+        self._sub_top_layout.addStretch(0)
+        self._sub_top_layout.addWidget(self.song_source_label)
+        self._sub_top_layout.addSpacing(5)
+        self._sub_top_layout.addWidget(self.song_title_label)
+        self._sub_top_layout.addStretch(0)
+        self._sub_layout.addLayout(self._sub_top_layout)
         self._sub_layout.addWidget(self.progress_slider)
 
         self._layout.addSpacing(20)
@@ -199,10 +212,14 @@ class PlayerControlPanel(QFrame):
         self.pms_btn.setText(alias)
 
     def on_player_song_changed(self, song):
-        self.song_title_label.setText(
-            '♪  {title} - {artists_name}'.format(
-                title=song.title,
-                artists_name=song.artists_name))
+        source_name_map = {p.identifier: p.name
+                           for p in self._app.library.list()}
+        font_metrics = QFontMetrics(QApplication.font())
+        text = '{} - {}'.format(song.title, song.artists_name)
+        elided_text = font_metrics.elidedText(
+            text, Qt.ElideRight, self.progress_slider.width() - 100)
+        self.song_source_label.setText(source_name_map[song.source])
+        self.song_title_label.setText(elided_text)
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
