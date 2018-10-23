@@ -84,11 +84,18 @@ class PlayerControlPanel(QFrame):
         self.previous_btn = IconButton(self)
         self.pp_btn = IconButton(self)
         self.next_btn = IconButton(self)
+
+        #: playback mode switch button
         self.pms_btn = QPushButton(self)
         self.volume_btn = VolumeButton(self)
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
         self.playlist_btn = IconButton(parent=self)
+
+        #: mark song as favorite button
+        self.like_btn = QPushButton(self)
+        self.mv_btn = QPushButton('MV', self)
+        self.download_btn = QPushButton(self)
 
         self.previous_btn.setObjectName('previous_btn')
         self.pp_btn.setObjectName('pp_btn')
@@ -96,14 +103,21 @@ class PlayerControlPanel(QFrame):
         self.playlist_btn.setObjectName('playlist_btn')
         self.volume_btn.setObjectName('volume_btn')
         self.pms_btn.setObjectName('pms_btn')
+        self.download_btn.setObjectName('download_btn')
+        self.like_btn.setObjectName('like_btn')
+        self.mv_btn.setObjectName('mv_btn')
 
         self.progress_slider = ProgressSlider(self)
 
-        # TODO(simple): implementation
-        self.pms_btn.setToolTip('修改播放模式（未实现，欢迎 PR）')
-        self.volume_btn.setToolTip('调整音量（未实现，欢迎 PR）')
+        self.pms_btn.setToolTip('修改播放模式')
+        self.volume_btn.setToolTip('调整音量')
         self.playlist_btn.setToolTip('显示当前播放列表')
-        self.progress_slider.setToolTip('拖动调节进度（未实现，欢迎 PR）')
+        self.progress_slider.setToolTip('拖动调节进度')
+
+        # TODO: implementation
+        self.mv_btn.setToolTip('播放 MV（未实现，欢迎 PR）')
+        self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
+        self.like_btn.setToolTip('收藏歌曲（未实现，欢迎 PR）')
 
         if not use_mac_theme():
             self.previous_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
@@ -113,6 +127,8 @@ class PlayerControlPanel(QFrame):
             self.playlist_btn.setText('🎶')
         else:
             self.pp_btn.setCheckable(True)
+            self.like_btn.setCheckable(True)
+            self.download_btn.setCheckable(True)
 
         self.song_title_label = QLabel('No song is playing.', parent=self)
         self.song_source_label = QLabel('歌曲来源', parent=self)
@@ -145,17 +161,32 @@ class PlayerControlPanel(QFrame):
         self.progress_slider.setMinimumWidth(480)
         self.progress_slider.setMaximumWidth(600)
         self.song_source_label.setFixedHeight(20)
-        self.position_label.setFixedWidth(40)
-        self.duration_label.setFixedWidth(40)
+        self.progress_slider.setFixedHeight(20)  # half of parent height
+        self.position_label.setFixedWidth(45)
+        self.duration_label.setFixedWidth(45)
+        self.like_btn.setFixedSize(15, 15)
+        self.download_btn.setFixedSize(15, 15)
+        self.mv_btn.setFixedHeight(16)
+
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._sub_layout = QVBoxLayout()
         self._sub_top_layout = QHBoxLayout()
-        self._sub_top_layout.addStretch(0)
+
+        # add space to make top layout align with progress slider
+        self._sub_top_layout.addSpacing(3)
         self._sub_top_layout.addWidget(self.song_source_label)
         self._sub_top_layout.addSpacing(5)
         self._sub_top_layout.addWidget(self.song_title_label)
         self._sub_top_layout.addStretch(0)
+        self._sub_top_layout.addWidget(self.like_btn)
+        self._sub_top_layout.addSpacing(8)
+        self._sub_top_layout.addWidget(self.mv_btn)
+        self._sub_top_layout.addSpacing(8)
+        self._sub_top_layout.addWidget(self.download_btn)
+        self._sub_top_layout.addSpacing(3)
+
+        self._sub_layout.addSpacing(3)
         self._sub_layout.addLayout(self._sub_top_layout)
         self._sub_layout.addWidget(self.progress_slider)
 

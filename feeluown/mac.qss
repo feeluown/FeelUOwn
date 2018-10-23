@@ -2,6 +2,8 @@
 
 QWidget {
     font-size: 13px;
+    /* tips: you can turn on border for debugging */
+    /* border: 1px solid red; */
 }
 
 LeftPanel QListView {
@@ -39,17 +41,6 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover {
     border: 1px solid #999;
     font-size: 12px;
 }
-#pms_btn {
-    height: 18px;
-    background-color: transparent;
-    border-radius: 3px;
-    border: 1px solid #AAA;
-    padding: 2px 8px;
-}
-#pms_btn:hover {
-    border: 1px solid #777;
-}
-
 #pp_btn {
     border-image: url(icons/play.png);
 }
@@ -70,6 +61,19 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover {
 }
 #volume_btn:checked {
     background-color: #FFF;
+}
+#like_btn {
+    border-image: url(icons/like.png);
+}
+#like_btn:checked {
+    border-image: url(icons/like_checked.png);
+
+}
+#download_btn {
+    border-image: url(icons/download.png);
+}
+#download_btn:checked {
+    border-image: url(icons/already_download.png);
 }
 
 PlayerControlPanel QPushButton:hover {
@@ -104,16 +108,32 @@ SongsTableView QHeaderView {
     background-color: #EAEAEA;
 }
 
-TableToolbar QPushButton {
-    border-radius: 2px;
-    border: 1px solid #CCC;
-    padding: 2px 8px;
-}
-
-TableToolbar QPushButton:hover {
+/*
+ * feeluown text button
+ */
+#pms_btn, #mv_btn, TableToolbar QPushButton {
+    border-radius: 3px;
     border: 1px solid #AAA;
 }
-
+#pms_btn {
+    height: 18px;
+    background-color: transparent;
+    padding: 2px 8px;
+}
+#mv_btn {
+    font-size: 9px;
+    padding: 0px 3px;
+    border: 1px solid #AAA;
+}
+TableToolbar QPushButton {
+    padding: 2px 8px;
+}
+#mv_btn:hover, #pms_btn:hover, TableToolbar QPushButton:hover {
+    border: 1px solid #777;
+}
+#mv_btn:pressed, #pms_btn:pressed {
+    background-color: #BCBCBC;
+}
 TableToolbar QPushButton:pressed {
     background-color: #EAEAEA;
 }

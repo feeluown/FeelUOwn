@@ -8,7 +8,11 @@
 - next.png
 - last.png
 - volume.png
-- cur_playlist.png
+- cur\_playlist.png
+- already\_download.png
+- download.png
+- like.png
+- like\_checked.png
 
 这几个图标大小都是 64x64，在原始的图片基础上，我们需要给图片加 margin。
 margin 长宽请参考图片：
