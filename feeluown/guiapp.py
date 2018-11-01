@@ -16,6 +16,8 @@ from feeluown.components.history import HistoriesModel
 from feeluown.components.provider import ProvidersModel
 from feeluown.components.playlists import PlaylistsModel
 from feeluown.components.my_music import MyMusicModel
+from feeluown.components.collections import CollectionsModel
+from feeluown.protocol.collection import CollectionManager
 
 from .app import CliApp, App
 from .consts import APP_ICON
@@ -58,12 +60,16 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.request = Request(self)
         self.tips_manager = TipsManager(self)
         self.hotkey_manager = Hotkey(self)
+        #: collections manager
+        self.coll_mgr = CollectionManager(self)
+
         self.img_ctl = ImgController(self)
 
         self.playlists = PlaylistsModel(parent=self)
         self.histories = HistoriesModel(parent=self)
         self.providers = ProvidersModel(parent=self)
         self.my_music = MyMusicModel(parent=self)
+        self.collections = CollectionsModel(parent=self)
 
         self.ui = Ui(self)
 
@@ -80,6 +86,7 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         super().initialize()
         self.load_qss()
         self.tips_manager.show_random_tip()
+        self.coll_mgr.scan()
 
     def load_qss(self):
         if not use_mac_theme():

@@ -21,6 +21,7 @@ from PyQt5.QtWidgets import (
 from fuocore import ModelType
 from feeluown.helpers import use_mac_theme
 from feeluown.components.songs_table import SongsTableModel, SongsTableView
+from feeluown.components.collection import CollectionItemsView, CollectionItemsModel
 
 
 logger = logging.getLogger(__name__)
@@ -115,6 +116,8 @@ class SongsTableContainer(QFrame):
         self._app = app
 
         self.songs_table = SongsTableView(self)
+        #: collections items view
+        self.clt_items_table = CollectionItemsView(self)
         self._toolbar = TableToolbar(self)
         self._cover_label = QLabel(self)
         self._desc_container_folded = True
@@ -127,6 +130,9 @@ class SongsTableContainer(QFrame):
             lambda artist: asyncio.ensure_future(self.show_model(artist)))
         self.songs_table.show_album_needed.connect(
             lambda album: asyncio.ensure_future(self.show_model(album)))
+
+        self.clt_items_table.show_url.connect(
+            lambda url: asyncio.ensure_future(self.show_url(url)))
 
         self._desc_container.space_pressed.connect(self.toggle_desc_container_fold)
         self._toolbar.toggle_desc_needed.connect(self.toggle_desc_container_fold)
@@ -157,6 +163,7 @@ class SongsTableContainer(QFrame):
             self._layout.setSpacing(0)
         self._layout.addWidget(self._top_container)
         self._layout.addWidget(self.songs_table)
+        self._layout.addWidget(self.clt_items_table)
 
         # FIXME: 更好的计算宽度和高度
         # 目前是假设知道自己初始化高度大约是 530px
@@ -248,6 +255,20 @@ class SongsTableContainer(QFrame):
         if album.cover:
             loop.create_task(self.show_cover(album.cover))
 
+    def show_collection(self, collection):
+        self._top_container.hide()
+        self.songs_table.hide()
+        self.clt_items_table.show()
+        self.clt_items_table.setModel(CollectionItemsModel(collection.items))
+
+    async def show_url(self, url):
+        model = self._app.protocol.get_model(url)
+        if model.meta.model_type == ModelType.song:
+            self._app.player.play_song(model)
+        else:
+            # TODO: add artist/album/user support
+            self._app.show_msg('暂时只支持歌曲，不支持其它歌曲资源')
+
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
         cover_uid = cover.split('/', -1)[-1]
@@ -265,6 +286,8 @@ class SongsTableContainer(QFrame):
         except TypeError:  # no connections at all
             pass
         self.show()
+        self.clt_items_table.hide()
+        self.songs_table.show()
         songs = songs or []
         logger.debug('Show songs in table, total: %d' % len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
