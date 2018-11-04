@@ -2,6 +2,7 @@ from collections import defaultdict
 import logging
 import os
 
+from .config import config
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,6 @@ def load_rcfile(rcfile_path=DEFAULT_RCFILE_PATH):
     if not os.path.exists(DEFAULT_RCFILE_PATH):
         return
 
-    g = {'when': when}
+    g = {'when': when, 'config': config}
     with open(rcfile_path) as f:
         exec(f.read(), g)

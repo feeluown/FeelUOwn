@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import asyncio
 import logging
 from functools import partial
 
-from fuocore.local.provider import LocalProvider
+from fuocore.local import provider
 
 from feeluown.app import App
 
@@ -15,9 +16,19 @@ __desc__ = '本地音乐'
 logger = logging.getLogger(__name__)
 
 
+def show_provider(app):
+    app.playlists.clear()
+    # app.playlists.add(provider.playlists)
+
+    app.ui.left_panel.my_music_con.hide()
+    app.ui.left_panel.playlists_con.hide()
+    app.ui.table_container.show_songs(provider.songs)
+
+
 def enable(app):
-    provider = LocalProvider()
-    logger.info('Register provider: %s' % provider)
+    logger.info('Register provider: %s', provider)
+    loop = asyncio.get_event_loop()
+    future_scan = loop.run_in_executor(None, provider.scan)
     app.library.register(provider)
     if app.mode & App.GuiMode:
         from feeluown.components.provider import ProviderModel
@@ -26,11 +37,11 @@ def enable(app):
             name='本地音乐',
             icon='♪ ',
             desc='点击显示所有本地音乐',
-            on_click=partial(app.ui.table_container.show_songs, provider.songs),
+            on_click=partial(show_provider, app),
         )
-        logger.info('Associate %s with %s' % (provider, pm.name))
+        logger.info('Associate %s with %s', provider, pm.name)
         app.providers.assoc(provider.identifier, pm)
-        app.ui.table_container.show_songs(provider.songs)
+        future_scan.add_done_callback(lambda _: show_provider(app))
 
 
 def disable(app):

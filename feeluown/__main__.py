@@ -12,30 +12,24 @@ from fuocore import __version__ as fuocore_version
 from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config, __version__ as feeluown_version
-from feeluown.cliapp import run_server
-from feeluown.rcfile import load_rcfile, bind_signals
+from feeluown.config import config
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
-    CACHE_DIR, USER_THEMES_DIR, SONG_DIR
+    CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
+from feeluown.rcfile import load_rcfile, bind_signals
 from feeluown.utils import is_port_used
+
 
 logger = logging.getLogger(__name__)
 
 
-def ensure_dir():
-    if not os.path.exists(HOME_DIR):
-        os.mkdir(HOME_DIR)
-    if not os.path.exists(DATA_DIR):
-        os.mkdir(DATA_DIR)
-    if not os.path.exists(USER_PLUGINS_DIR):
-        os.mkdir(USER_PLUGINS_DIR)
-    if not os.path.exists(CACHE_DIR):
-        os.mkdir(CACHE_DIR)
-    if not os.path.exists(USER_THEMES_DIR):
-        os.mkdir(USER_THEMES_DIR)
-    if not os.path.exists(SONG_DIR):
-        os.mkdir(SONG_DIR)
+def ensure_dirs():
+    for d in (HOME_DIR, DATA_DIR,
+              USER_THEMES_DIR, USER_PLUGINS_DIR,
+              CACHE_DIR, SONG_DIR, COLLECTIONS_DIR):
+        if not os.path.exists(d):
+            os.mkdir(d)
 
 
 def excepthook(exc_type, exc_value, tb):
@@ -48,7 +42,7 @@ def excepthook(exc_type, exc_value, tb):
     traceback.print_exception(exc_type, exc_value, tb)
 
 
-ensure_dir()
+ensure_dirs()
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
 sys.path.append(PLUGINS_DIR)
 sys.path.append(USER_PLUGINS_DIR)
@@ -125,6 +119,7 @@ def main():
         pubsub_gateway, pubsub_server = run_pubsub()
 
         app = GuiApp(pubsub_gateway, player_kwargs=player_kwargs)
+        app.config = config
         # 初始化 UI 和组件间信号绑定
         app.initialize()
         # TODO: 调用 show 时，会弹出主界面，但这时界面还没开始绘制
@@ -135,13 +130,13 @@ def main():
 
         pubsub_gateway, pubsub_server = run_pubsub()
         app = CliApp(pubsub_gateway, player_kwargs=player_kwargs)
+        app.config = config
         app.initialize()
 
     bind_signals(app)
 
-    live_lyric = app.live_lyric
     event_loop = asyncio.get_event_loop()
-    event_loop.create_task(run_server(app, live_lyric))
+    app.protocol.run_server()
     try:
         event_loop.run_forever()
         logger.info('Event loop stopped.')

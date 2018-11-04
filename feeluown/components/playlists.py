@@ -35,17 +35,23 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from .textlist import TextlistModel, TextlistView
+
 from feeluown.helpers import action_log, ActionError
 
 
 logger = logging.getLogger(__name__)
 
 
-class PlaylistsModel(QAbstractListModel):
+class PlaylistsModel(TextlistModel):
     def __init__(self, parent):
         super().__init__(parent)
         self._playlists = []
         self._fav_playlists = []
+
+    @property
+    def items(self):
+        return self._playlists + self._fav_playlists
 
     def add(self, playlist, is_fav=False):
         if is_fav:
@@ -65,14 +71,11 @@ class PlaylistsModel(QAbstractListModel):
         self.endInsertRows()
 
     def clear(self):
-        total_length = len(self._playlists) + len(self._fav_playlists)
+        total_length = len(self.items)
         self.beginRemoveRows(QModelIndex(), 0, total_length - 1)
         self._playlists = []
         self._fav_playlists = []
         self.endRemoveRows()
-
-    def rowCount(self, index=QModelIndex()):
-        return len(self._playlists) + len(self._fav_playlists)
 
     def flags(self, index):
         if not index.isValid():
@@ -82,34 +85,19 @@ class PlaylistsModel(QAbstractListModel):
             flags |= Qt.ItemIsDropEnabled
         return flags
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        # XXX: 实际不产生任何效果
-        if role == Qt.DisplayRole and orientation == Qt.Horizontal:
-            return '播放列表'
-        return QVariant()
-
     def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return QVariant()
         row = index.row()
-        # 新创建的 playlists 中的元素是引用
-        playlists = self._playlists + self._fav_playlists
-        if row >= len(playlists) or row < 0:
-            return QVariant()
-
-        playlist = playlists[row]
+        playlist = self.items[row]
         if role == Qt.DisplayRole:
             if row < len(self._playlists):
                 flag = '♬ '
             else:
                 flag = '★ '
             return flag + playlist.name
-        elif role == Qt.UserRole:
-            return playlist
-        return QVariant()
+        return super().data(index, role)
 
 
-class PlaylistsView(QListView):
+class PlaylistsView(TextlistView):
     """歌单列表视图
 
     该视图会显示所有的元素，理论上不会有滚动条，也不接受滚动事件
@@ -119,9 +107,6 @@ class PlaylistsView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.setAttribute(Qt.WA_MacShowFocusRect, 0)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setDragDropMode(QAbstractItemView.DropOnly)
         self.clicked.connect(self._on_clicked)
 
@@ -192,18 +177,3 @@ class PlaylistsView(QListView):
             e.accept()
         else:
             e.ignore()
-
-    def wheelEvent(self, e):
-        e.ignore()
-
-    def sizeHint(self):
-        height = self.model().rowCount() * self.sizeHintForRow(0) + 10
-        return QSize(self.width(), height)
-
-    def rowsInserted(self, parent, start, end):
-        super().rowsInserted(parent, start, end)
-        self.setMinimumHeight(self.sizeHint().height())
-
-    def rowsAboutToBeRemoved(self, parent, start, end):
-        super().rowsAboutToBeRemoved(parent, start ,end)
-        self.setMinimumHeight(self.sizeHint().height())

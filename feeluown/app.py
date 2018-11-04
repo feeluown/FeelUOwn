@@ -6,6 +6,7 @@ from contextlib import contextmanager
 
 from fuocore import LiveLyric, MpvPlayer, Library
 
+from feeluown.protocol import FuoProcotol
 from .cliapp import LiveLyricPublisher
 from .player import Player
 from .plugin import PluginsManager
@@ -27,10 +28,13 @@ class App(object):
         self.library = Library()
         self.live_lyric = LiveLyric()
 
+        self.protocol = FuoProcotol(self)
+
         self.plugin_mgr = PluginsManager(self)
         self.version_mgr = VersionManager(self)
 
-        self.show_msg = logger.info
+    def show_msg(self, msg, *args, **kwargs):
+        logger.info(msg)
 
     def initialize(self):
         self.player.position_changed.connect(self.live_lyric.on_position_changed)

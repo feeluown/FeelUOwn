@@ -92,7 +92,7 @@ class SongsTableModel(QAbstractTableModel):
             return QVariant()
 
         song = self.songs[index.row()]
-        if role == Qt.DisplayRole:
+        if role in (Qt.DisplayRole, Qt.ToolTipRole):
             if index.column() == 0:
                 return self._source_name_map.get(song.source, '').strip()
             elif index.column() == 1:
