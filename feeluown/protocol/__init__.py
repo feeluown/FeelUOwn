@@ -103,6 +103,11 @@ URL_SCHEME = 'fuo'
 
 
 class FuoProcotol:
+    """fuo 控制协议
+
+    TODO: 将这个类的实现移到另外一个模块，而不是放在 __init__.py 中
+    TODO: 将命令的解析逻辑放在这个类里来实现
+    """
     def __init__(self, app):
         self._app = app
         self._library = app.library

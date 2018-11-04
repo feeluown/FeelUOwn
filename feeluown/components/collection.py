@@ -1,110 +1,51 @@
-from enum import Enum
-from functools import partial
-
 from PyQt5.QtCore import (
     pyqtSignal,
-    QAbstractListModel,
-    QAbstractTableModel,
-    QModelIndex,
     Qt,
-    QSize,
-    QTime,
-    QVariant,
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate,
-    QAbstractItemView,
-    QAction,
-    QComboBox,
-    QFrame,
-    QHBoxLayout,
-    QHeaderView,
-    QInputDialog,
-    QListView,
-    QMenu,
-    QPushButton,
-    QStyledItemDelegate,
-    QTableView,
+    QTableWidget,
+    QTableWidgetItem,
     QWidget,
+    QAbstractItemView,
+    QHeaderView,
 )
 
 
-class CollectionItemsModel(QAbstractTableModel):
-    def __init__(self, items):
-        super().__init__()
-        self.items = items
-
-    def flags(self, index):
-        if index.column() == 1:
-            return Qt.ItemIsSelectable
-        return Qt.ItemIsSelectable | Qt.ItemIsEnabled
-
-    def rowCount(self, _=QModelIndex()):
-        return len(self.items)
-
-    def columnCount(self, _):
-        return 2
-
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        sections = ('地址', '描述')
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
-                if section < len(sections):
-                    return sections[section]
-                return ''
-        else:
-            if role == Qt.DisplayRole:
-                return section
-            elif role == Qt.TextAlignmentRole:
-                return Qt.AlignLeft
-        return QVariant()
-
-    def data(self, index, role=Qt.DisplayRole):
-        if not index.isValid():
-            return QVariant()
-        item = self.items[index.row()]
-        if role == Qt.DisplayRole:
-            return item[index.column()]
-        elif role == Qt.UserRole:
-            return item
-        return QVariant()
-
-
-class TableDelegate(QStyledItemDelegate):
-    def __init__(self, parent):
-        super().__init__(parent)
-
-    def paint(self, painter, option, index):
-        super().paint(painter, option, index)
-
-    def sizeHint(self, option, index):
-        widths = (0.4, 0.6)
-        width = self.parent().width()
-        w = int(width * widths[index.column()])
-        return QSize(w, option.rect.height())
-
-
-class CollectionItemsView(QTableView):
-
+class CollectionItemsTable(QTableWidget):
     show_url = pyqtSignal([str])
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent):
+        super().__init__(0, 2, parent)
 
-        self.delegate = TableDelegate(self)
-        self.setItemDelegate(self.delegate)
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.setHorizontalHeaderLabels(['地址', '描述'])
+        self._setup_ui()
 
+        self._items = []
+        self.cellDoubleClicked.connect(
+            lambda row, col: self.show_url.emit(self._items[row][0]))
+
+    def _setup_ui(self):
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
-
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.horizontalHeader().setStretchLastSection(True)
-        self.setAlternatingRowColors(True)
-        self.setShowGrid(False)
+        self.horizontalHeader().setDefaultAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         self.verticalHeader().hide()
+        self.setShowGrid(False)
+        self.setAlternatingRowColors(True)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
 
-        self.activated.connect(self._on_activated)
+        self.setColumnWidth(0, 300)
 
-    def _on_activated(self, index):
-        item = index.data(Qt.UserRole)
-        url, _ = item
-        self.show_url.emit(url)
+    def show_items(self, items):
+        self.setRowCount(0)
+        self._items = []
+        for index, item in enumerate(items):
+            row = index
+            url, desc = item
+            self.setRowCount(row + 1)
+            url_item = QTableWidgetItem(url)
+            desc_item = QTableWidgetItem(desc)
+            self.setItem(row, 0, url_item)
+            self.setItem(row, 1, desc_item)
+        self._items = items

@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import (
 from fuocore import ModelType
 from feeluown.helpers import use_mac_theme
 from feeluown.components.songs_table import SongsTableModel, SongsTableView
-from feeluown.components.collection import CollectionItemsView, CollectionItemsModel
+from feeluown.components.collection import CollectionItemsTable
 
 
 logger = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ class SongsTableContainer(QFrame):
 
         self.songs_table = SongsTableView(self)
         #: collections items view
-        self.clt_items_table = CollectionItemsView(self)
+        self.coll_items_table = CollectionItemsTable(self)
         self._toolbar = TableToolbar(self)
         self._cover_label = QLabel(self)
         self._desc_container_folded = True
@@ -131,7 +131,7 @@ class SongsTableContainer(QFrame):
         self.songs_table.show_album_needed.connect(
             lambda album: asyncio.ensure_future(self.show_model(album)))
 
-        self.clt_items_table.show_url.connect(
+        self.coll_items_table.show_url.connect(
             lambda url: asyncio.ensure_future(self.show_url(url)))
 
         self._desc_container.space_pressed.connect(self.toggle_desc_container_fold)
@@ -163,7 +163,7 @@ class SongsTableContainer(QFrame):
             self._layout.setSpacing(0)
         self._layout.addWidget(self._top_container)
         self._layout.addWidget(self.songs_table)
-        self._layout.addWidget(self.clt_items_table)
+        self._layout.addWidget(self.coll_items_table)
 
         # FIXME: 更好的计算宽度和高度
         # 目前是假设知道自己初始化高度大约是 530px
@@ -258,8 +258,8 @@ class SongsTableContainer(QFrame):
     def show_collection(self, collection):
         self._top_container.hide()
         self.songs_table.hide()
-        self.clt_items_table.show()
-        self.clt_items_table.setModel(CollectionItemsModel(collection.items))
+        self.coll_items_table.show()
+        self.coll_items_table.show_items(collection.items)
 
     async def show_url(self, url):
         model = self._app.protocol.get_model(url)
@@ -286,10 +286,10 @@ class SongsTableContainer(QFrame):
         except TypeError:  # no connections at all
             pass
         self.show()
-        self.clt_items_table.hide()
+        self.coll_items_table.hide()
         self.songs_table.show()
         songs = songs or []
-        logger.debug('Show songs in table, total: %d' % len(songs))
+        logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         self.songs_table.setModel(SongsTableModel(songs, source_name_map))
         self.songs_table.scrollToTop()

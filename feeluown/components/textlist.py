@@ -1,41 +1,13 @@
 import logging
 
 from PyQt5.QtCore import (
-    pyqtSignal,
     QAbstractListModel,
     Qt,
     QModelIndex,
-    QPoint,
-    QRect,
     QSize,
-    QTimer,
     QVariant,
 )
-from PyQt5.QtGui import (
-    QBrush,
-    QColor,
-    QPainter,
-    QPen,
-    QFontMetrics,
-)
-from PyQt5.QtWidgets import (
-    QAbstractItemDelegate,
-    QAbstractItemView,
-    QComboBox,
-    QHBoxLayout,
-    QHeaderView,
-    QItemDelegate,
-    QListView,
-    QPushButton,
-    QSizePolicy,
-    QStyledItemDelegate,
-    QSpinBox,
-    QTableView,
-    QTableWidget,
-    QWidget,
-)
-
-from feeluown.helpers import action_log, ActionError
+from PyQt5.QtWidgets import QListView
 
 
 logger = logging.getLogger(__name__)
@@ -111,5 +83,5 @@ class TextlistView(QListView):
         self.setFixedHeight(self.sizeHint().height())
 
     def rowsAboutToBeRemoved(self, parent, start, end):
-        super().rowsAboutToBeRemoved(parent, start ,end)
+        super().rowsAboutToBeRemoved(parent, start, end)
         self.setFixedHeight(self.sizeHint().height())
