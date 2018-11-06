@@ -244,6 +244,10 @@ class PlayerControlPanel(QFrame):
         self.pms_btn.setText(alias)
 
     def on_player_song_changed(self, song):
+        if song is None:
+            self.song_source_label.setText('歌曲来源')
+            self.song_title_label.setText('No song is playing.')
+            return
         source_name_map = {p.identifier: p.name
                            for p in self._app.library.list()}
         font_metrics = QFontMetrics(QApplication.font())
@@ -364,15 +368,6 @@ class RightPanel(QFrame):
         self._layout.addWidget(self.table_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-
-
-class SongLabel(QLabel):
-    def __init__(self, text=None, parent=None):
-        super().__init__(text, parent)
-        self.set_song('No song is playing')
-
-    def set_song(self, song_text):
-        self.setText('♪  ' + song_text + ' ')
 
 
 class MessageLabel(QLabel):
