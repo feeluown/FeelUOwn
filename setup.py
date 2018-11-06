@@ -36,7 +36,7 @@ setup(
     # FIXME depends on PyQt5
     install_requires=[
         'quamash>=0.5.5',
-        'fuocore>=2.1a1',
+        'fuocore>=2.2a1',
         'requests',
         ],
     tests_require=['pytest'],
