@@ -244,6 +244,7 @@ class SongsTableContainer(QFrame):
             loop.create_task(self.show_cover(artist.cover))
 
     async def show_album(self, album):
+        self._top_container.show()
         loop = asyncio.get_event_loop()
         future_songs = loop.run_in_executor(None, lambda: album.songs)
         future_desc = loop.run_in_executor(None, lambda: album.desc)

@@ -238,11 +238,10 @@ class SongsTableView(QTableView):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # FIXME: PyQt5 seg fault
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         # macOS 的滚动条可以自动隐藏
-        if not use_mac_theme():
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        else:
+        if use_mac_theme():
             self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
