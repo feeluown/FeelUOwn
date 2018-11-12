@@ -60,6 +60,7 @@ feeluown.egg-info/
 # Emacs
 .\#*
 \#*\#
+.dir-locals.el
 
 # virtualenv
 .venv/
