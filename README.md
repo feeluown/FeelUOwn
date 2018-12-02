@@ -22,7 +22,7 @@ FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面�
 # Ubuntu 用户可以依次执行以下命令进行安装
 sudo apt-get install python3-pyqt5  # 安装 Python PyQt5 依赖包
 sudo apt-get install libmpv1        # 安装 libmpv1 系统依赖
-pip3 install 'feeluown>=2.0.1' --user -i https://pypi.org/simple/
+pip3 install 'feeluown>=2.2' --user -i https://pypi.org/simple/
 ## 为 feeluown 生成图标（Linux 用户）
 feeluown-genicon   # 生成图标
 
@@ -32,7 +32,7 @@ sudo apt-get install fcitx-frontend-qt5  # 使用 fcitx 输入法的用户可能
 # macOS 用户安装方法
 brew install pyqt
 brew install mpv
-pip3 install 'feeluown>=2.0.1' --upgrade --user
+pip3 install 'feeluown>=2.2' --upgrade --user
 ```
 
 **使用**
