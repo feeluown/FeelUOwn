@@ -282,7 +282,7 @@ class LeftPanel(QFrame):
         self._app = app
 
         self.library_header = QLabel('音乐库', self)
-        self.collections_header = QLabel('本地收藏', self)
+        self.collections_header = QLabel('本地收藏 (Alpha)', self)
         self.playlists_header = QLabel('歌单列表', self)
         self.history_header = QLabel('浏览历史记录', self)
         self.my_music_header = QLabel('我的音乐', self)
