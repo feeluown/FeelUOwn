@@ -123,6 +123,7 @@ class SongsTableContainer(QFrame):
         self._desc_container_folded = True
         self._desc_container = DescriptionContainer(self)
         self._top_container = QWidget(self)
+        self._cover_container = QWidget(self._top_container)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
@@ -142,18 +143,21 @@ class SongsTableContainer(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
+        self._left_sub_layout = QVBoxLayout(self._cover_container)
         self._top_layout = QHBoxLayout(self._top_container)
         self._layout = QVBoxLayout(self)
+
         self._cover_label.setMinimumWidth(200)
-        self._left_sub_layout = QVBoxLayout()
         self._right_sub_layout = QVBoxLayout()
         self._right_sub_layout.addWidget(self._desc_container)
         self._right_sub_layout.addWidget(self._toolbar)
         self._left_sub_layout.addWidget(self._cover_label)
         self._left_sub_layout.addStretch(0)
+        # 根据 Qt 文档中所说，在大部分平台中，ContentMargin 为 11
+        self._left_sub_layout.setContentsMargins(0, 0, 11, 0)
+        self._left_sub_layout.setSpacing(0)
 
-        self._top_layout.addLayout(self._left_sub_layout)
-        self._top_layout.addSpacing(20)
+        self._top_layout.addWidget(self._cover_container)
         self._top_layout.addLayout(self._right_sub_layout)
         self._top_layout.setStretch(1, 1)
 
@@ -164,6 +168,8 @@ class SongsTableContainer(QFrame):
         self._layout.addWidget(self._top_container)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.coll_items_table)
+
+        self._top_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
 
         # FIXME: 更好的计算宽度和高度
         # 目前是假设知道自己初始化高度大约是 530px
@@ -297,9 +303,12 @@ class SongsTableContainer(QFrame):
 
     def show_songs(self, songs):
         self._show_songs(songs)
-        self._top_container.hide()
+        self._top_container.show()
+        self.hide_desc()
+        self.hide_cover()
 
     def set_cover(self, pixmap):
+        self._cover_container.show()
         self._cover_label.setPixmap(
             pixmap.scaledToWidth(self._cover_label.width(),
                                  mode=Qt.SmoothTransformation))
@@ -318,3 +327,9 @@ class SongsTableContainer(QFrame):
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
+
+    def hide_cover(self):
+        self._cover_container.hide()
+
+    def hide_desc(self):
+        self._desc_container.hide()
