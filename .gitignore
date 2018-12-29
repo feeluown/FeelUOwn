@@ -63,8 +63,8 @@ feeluown.egg-info/
 .dir-locals.el
 
 # virtualenv
+.venv
 .venv/
-
 
 # others
 *.html

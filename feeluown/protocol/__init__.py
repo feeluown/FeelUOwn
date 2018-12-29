@@ -1,12 +1,7 @@
 import asyncio
-from collections import defaultdict
 import logging
-import re
-import sys
-from urllib.parse import urlparse
 
 from fuocore.aio_tcp_server import TcpServer
-from fuocore.models import ModelType
 
 from .handlers import (
     HelpHandler,
@@ -84,24 +79,6 @@ def exec_cmd(app, live_lyric, cmd):
         return rv + '\nOK\n'
 
 
-TYPE_NAMESPACE_MAP = {
-    ModelType.song: 'songs',
-    ModelType.artist: 'artists',
-    ModelType.album: 'albums',
-    ModelType.playlist: 'playlists',
-    ModelType.user: 'users',
-    ModelType.lyric: 'lyrics',
-}
-
-NAMESPACE_TYPE_MAP = {
-    value: key
-    for key, value in TYPE_NAMESPACE_MAP.items()
-}
-
-
-URL_SCHEME = 'fuo'
-
-
 class FuoProcotol:
     """fuo 控制协议
 
@@ -112,32 +89,6 @@ class FuoProcotol:
         self._app = app
         self._library = app.library
         self._live_lyric = app.live_lyric
-
-    @classmethod
-    def get_url(cls, model):
-        source = model.source
-        ns = TYPE_NAMESPACE_MAP[model.meta.model_type]
-        identifier = model.identifier
-        tpl = '{}://{}/{}/{}'  #: url template
-        return tpl.format(URL_SCHEME, source, ns, identifier)
-
-    def get_model(self, url):
-        result = urlparse(url)
-        scheme = result.scheme
-        assert scheme == 'fuo', 'Invalid url.'
-        source = result.netloc
-        source_list = [provider.identifier for provider in self._library.list()]
-        ns_list = list(TYPE_NAMESPACE_MAP.values())
-        p = re.compile(r'^fuo://({})/({})/(\w+)$'
-                       .format('|'.join(source_list), '|'.join(ns_list)))
-        m = p.match(url)
-        if not m:
-            raise RuntimeError('invalid url')
-        source, ns, identifier = m.groups()
-        provider = self._library.get(source)
-        Model = provider.get_model_cls(NAMESPACE_TYPE_MAP[ns])
-        model = Model.get(identifier)
-        return model
 
     async def handle(self, conn, addr):
         app = self._app

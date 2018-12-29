@@ -1,34 +1,37 @@
 import os
 
-from fuocore import ModelType
-from fuocore.models import Model
-
 from feeluown.consts import COLLECTIONS_DIR
+from .parser import ModelParser
 
 
-class Collection(Model):
+class Collection:
 
-    def __init__(self, name, items):
-        self.name = name
-        self.items = items
+    def __init__(self, fpath, parser):
+        self.fpath = fpath
+        self._parser = parser
 
-    @classmethod
-    def from_fuofile(cls, filepath):
+        self.name = ''
+        self.models = []
+
+    def load(self):
+        """解析文件，初始化自己"""
+        filepath = self.fpath
         filename = filepath.rsplit('/')[-1]
         name, _ = filename.split('.')
-        items = []  # (source, model_type, id, desc)
+        self.name = name
         with open(filepath) as f:
             for line in f:
-                if not line.startswith('fuo://'):
-                    continue
-                url, desc = line.split('#')
-                items.append((url.strip(), desc.strip()))
-        return cls(name, items)
+                model = self._parser.parse_line(line)
+                if model is not None:
+                    self.models.append(model)
 
 
 class CollectionManager:
     def __init__(self, app):
         self._app = app
+        self._library = app.library
+
+        self.model_parser = ModelParser(self._library)
 
     def scan(self):
         directorys = self._app.config.COLLECTIONS_DIR + [COLLECTIONS_DIR]
@@ -39,5 +42,7 @@ class CollectionManager:
                 if not filename.endswith('.fuo'):
                     continue
                 filepath = os.path.join(directory, filename)
-                coll = Collection.from_fuofile(filepath)
+                coll = Collection(filepath, self.model_parser)
+                # TODO: 可以调整为并行
+                coll.load()
                 self._app.collections.add(coll)
