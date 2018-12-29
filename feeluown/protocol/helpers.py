@@ -10,6 +10,30 @@ fuocore.protocol.handlers.helper
 TODO: 让代码长得更好看
 """
 
+from fuocore.models import ModelType
+
+
+TYPE_NS_MAP = {
+    ModelType.song: 'songs',
+    ModelType.artist: 'artists',
+    ModelType.album: 'albums',
+    ModelType.playlist: 'playlists',
+    ModelType.user: 'users',
+    ModelType.lyric: 'lyrics',
+}
+URL_SCHEME = 'fuo'
+NS_TYPE_MAP = {
+    value: key
+    for key, value in TYPE_NS_MAP.items()
+}
+
+
+def get_url(model):
+    source = model.source
+    ns = TYPE_NS_MAP[model.meta.model_type]
+    identifier = model.identifier
+    return 'fuo://{}/{}/{}'.format(source, ns, identifier)
+
 
 def _fit_text(text, length, filling=True):
     """裁剪或者填补字符串，控制其显示的长度
@@ -57,28 +81,25 @@ def show_song(song, uri_length=None, brief=False):
     :param uri_length: 控制 song uri 的长度
     :param brief: 是否只显示简要信息
     """
-    artists = song.artists or []
-    artists_name = ','.join([artist.name for artist in artists])
-    title = _fit_text(song.title, 18, filling=False)
-    if song.album is not None:
-        album_name = song.album.name
-        album_uri = str(song.album)
-    else:
-        album_name = 'Unknown'
-        album_uri = ''
+    artists_name = song.artists_name_display
+    title = _fit_text(song.title_display, 18, filling=False)
+    album_name = song.album_name_display
+
+    song_uri = get_url(song)
     if uri_length is not None:
-        song_uri = _fit_text(str(song), uri_length)
-    else:
-        song_uri = str(song)
+        song_uri = _fit_text(song_uri, uri_length)
+
     if brief:
         artists_name = _fit_text(artists_name, 20, filling=False)
         s = '{song}\t# {title} - {artists_name}'.format(
             song=song_uri,
             title=title,
-            artists_name=artists_name,
-            album_name=album_name)
+            artists_name=artists_name)
         return s
-    artists_uri = ','.join(str(artist) for artist in artists)
+
+    # XXX: 这个操作可能会产生网络请求
+    album_uri = get_url(song.album)
+    artists_uri = ','.join(get_url(artist) for artist in song.artists)
     msgs = (
         'provider     {}'.format(song.source),
         '     uri     {}'.format(song_uri),
@@ -92,7 +113,7 @@ def show_song(song, uri_length=None, brief=False):
 
 
 def show_songs(songs):
-    uri_length = max((len(str(song)) for song in songs)) if songs else None
+    uri_length = max((len(get_url(song)) for song in songs)) if songs else None
     return '\n'.join([show_song(song, uri_length=uri_length, brief=True)
                       for song in songs])
 

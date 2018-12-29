@@ -1,6 +1,6 @@
 import re
 
-from fuocore.models import ModelType
+from .helpers import TYPE_NS_MAP, URL_SCHEME, NS_TYPE_MAP
 
 
 class Cmd:
@@ -23,28 +23,6 @@ class CmdParser:
         return Cmd(*cmd_parts)
 
 
-TYPE_NS_MAP = {
-    ModelType.song: 'songs',
-    ModelType.artist: 'artists',
-    ModelType.album: 'albums',
-    ModelType.playlist: 'playlists',
-    ModelType.user: 'users',
-    ModelType.lyric: 'lyrics',
-}
-URL_SCHEME = 'fuo'
-NS_TYPE_MAP = {
-    value: key
-    for key, value in TYPE_NS_MAP.items()
-}
-
-
-def get_url(model):
-    source = model.source
-    ns = TYPE_NS_MAP[model.meta.model_type]
-    identifier = model.identifier
-    return 'fuo://{}/{}/{}'.format(source, ns, identifier)
-
-
 class ModelParser:
     """
     XXX: 名字叫做 Parser 可能不是很合适？这里可能包含类似 Tokenizor 的功能。
@@ -60,7 +38,11 @@ class ModelParser:
         # pylint: disable=too-many-locals
         if not line.startswith('fuo://'):
             return None
-        url, desc = line.split('#')
+        parts = line.split('#')
+        if len(parts) == 2:
+            url, desc = parts
+        else:
+            url, desc = parts[0], ''
         source_list = [provider.identifier for provider in self._library.list()]
         ns_list = list(TYPE_NS_MAP.values())
         p = re.compile(r'^fuo://({})/({})/(\w+)$'
