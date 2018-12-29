@@ -21,7 +21,6 @@ from PyQt5.QtWidgets import (
 from fuocore import ModelType
 from feeluown.helpers import use_mac_theme
 from feeluown.components.songs_table import SongsTableModel, SongsTableView
-from feeluown.components.collection import CollectionItemsTable
 
 
 logger = logging.getLogger(__name__)
@@ -116,8 +115,6 @@ class SongsTableContainer(QFrame):
         self._app = app
 
         self.songs_table = SongsTableView(self)
-        #: collections items view
-        self.coll_items_table = CollectionItemsTable(self)
         self._toolbar = TableToolbar(self)
         self._cover_label = QLabel(self)
         self._desc_container_folded = True
@@ -131,9 +128,6 @@ class SongsTableContainer(QFrame):
             lambda artist: asyncio.ensure_future(self.show_model(artist)))
         self.songs_table.show_album_needed.connect(
             lambda album: asyncio.ensure_future(self.show_model(album)))
-
-        self.coll_items_table.show_url.connect(
-            lambda url: asyncio.ensure_future(self.show_url(url)))
 
         self._desc_container.space_pressed.connect(self.toggle_desc_container_fold)
         self._toolbar.toggle_desc_needed.connect(self.toggle_desc_container_fold)
@@ -167,7 +161,6 @@ class SongsTableContainer(QFrame):
             self._layout.setSpacing(0)
         self._layout.addWidget(self._top_container)
         self._layout.addWidget(self.songs_table)
-        self._layout.addWidget(self.coll_items_table)
 
         self._top_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
 
@@ -264,9 +257,9 @@ class SongsTableContainer(QFrame):
 
     def show_collection(self, collection):
         self._top_container.hide()
-        self.songs_table.hide()
-        self.coll_items_table.show()
-        self.coll_items_table.show_items(collection.items)
+        songs = [model for model in collection.models
+                 if model.meta.model_type == ModelType.song]
+        self.show_songs(songs)
 
     async def show_url(self, url):
         model = self._app.protocol.get_model(url)
@@ -293,7 +286,6 @@ class SongsTableContainer(QFrame):
         except TypeError:  # no connections at all
             pass
         self.show()
-        self.coll_items_table.hide()
         self.songs_table.show()
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))

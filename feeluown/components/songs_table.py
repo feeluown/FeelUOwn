@@ -96,15 +96,13 @@ class SongsTableModel(QAbstractTableModel):
             if index.column() == 0:
                 return self._source_name_map.get(song.source, '').strip()
             elif index.column() == 1:
-                return song.title
+                return song.title_display
             elif index.column() == 2:
-                m, s = parse_ms(song.duration)
-                duration = QTime(0, m, s)
-                return duration.toString('mm:ss')
+                return song.duration_ms_display
             elif index.column() == 3:
-                return song.artists_name
+                return song.artists_name_display
             elif index.column() == 4:
-                return song.album_name
+                return song.album_name_display
         elif role == Qt.TextAlignmentRole:
             if index.column() == 0:
                 return Qt.AlignCenter | Qt.AlignBaseline
@@ -292,9 +290,9 @@ class SongsTableView(QTableView):
 
         songs = self.model().songs
         for i, song in enumerate(songs):
-            if text.lower() not in song.title.lower()\
-                    and text not in song.album_name.lower()\
-                    and text not in song.artists_name.lower():
+            if text.lower() not in song.title_display.lower()\
+                    and text not in song.album_name_display.lower()\
+                    and text not in song.artists_name_display.lower():
                 self.setRowHidden(i, True)
             else:
                 self.setRowHidden(i, False)
