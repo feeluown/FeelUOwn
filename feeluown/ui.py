@@ -282,7 +282,15 @@ class LeftPanel(QFrame):
         self._app = app
 
         self.library_header = QLabel('音乐库', self)
-        self.collections_header = QLabel('本地收藏 (Alpha)', self)
+        self.collections_header = QLabel('本地收藏 (Beta)', self)
+        self.collections_header.setToolTip(
+            '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
+            '每个收藏集都以一个独立 .fuo 文件的存在，'
+            '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
+            '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
+            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，'
+            '以后有时间会添加通过 GUI 拖拽来实现快速收藏的功能，也欢迎 PR。'
+        )
         self.playlists_header = QLabel('歌单列表', self)
         self.history_header = QLabel('浏览历史记录', self)
         self.my_music_header = QLabel('我的音乐', self)

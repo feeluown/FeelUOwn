@@ -59,6 +59,9 @@ class TextlistModel(QAbstractListModel):
             return item
         return QVariant()
 
+    def __len__(self):
+        return len(self._items)
+
 
 class TextlistView(QListView):
 
