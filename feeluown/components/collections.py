@@ -13,6 +13,8 @@ class CollectionsModel(TextlistModel):
         item = self._items[row]
         if role == Qt.DisplayRole:
             return '◎  ' + item.name
+        if role == Qt.ToolTipRole:
+            return item.fpath
         return super().data(index, role)
 
 
