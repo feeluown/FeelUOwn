@@ -4,6 +4,7 @@ import random
 
 from feeluown.consts import COLLECTIONS_DIR
 from .parser import ModelParser
+from .helpers import get_url
 
 
 logger = logging.getLogger(__name__)
@@ -29,6 +30,33 @@ class Collection:
                 model = self._parser.parse_line(line)
                 if model is not None:
                     self.models.append(model)
+
+    def add(self, song):
+        if song not in self.models:
+            line = self._parser.gen_line(song)
+            with open(self.fpath, 'a+') as f:
+                # 如果老的文件没有换行符，也要保证不会出错
+                f.write('\n{}\n'.format(line))
+            self.models.append(song)
+        return True
+
+    def remove(self, song):
+        if song in self.models:
+            url = get_url(song)
+            with open(self.fpath, 'r+', encoding='utf-8') as f:
+                lines = []
+                for line in f:
+                    if line.startswith(url):
+                        continue
+                    lines.append(line)
+                f.seek(0)
+                f.write(''.join(lines))
+                # 确保最后写入一个换行符，让文件更加美观
+                f.write('\n')
+            self.models.remove(song)
+        return True
+
+
 
 
 class CollectionManager:

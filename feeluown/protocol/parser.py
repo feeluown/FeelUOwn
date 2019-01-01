@@ -1,6 +1,15 @@
+import logging
 import re
 
-from .helpers import TYPE_NS_MAP, URL_SCHEME, NS_TYPE_MAP
+from .helpers import (
+    ModelType,
+    TYPE_NS_MAP,
+    URL_SCHEME,
+    NS_TYPE_MAP,
+    get_url,
+)
+
+logger = logging.getLogger(__name__)
 
 
 class Cmd:
@@ -49,7 +58,8 @@ class ModelParser:
                        .format('|'.join(source_list), '|'.join(ns_list)))
         m = p.match(url.strip())
         if not m:
-            raise ValueError('invalid model url')
+            logger.warning('invalid model url')
+            return None
         source, ns, identifier = m.groups()
         provider = self._library.get(source)
         Model = provider.get_model_cls(NS_TYPE_MAP[ns])
@@ -58,6 +68,24 @@ class ModelParser:
             data = ModelParser.parse_song_desc(desc.strip())
             model = Model.create_by_display(identifier=identifier, **data)
         return model
+
+    def gen_line(self, model):
+        """dump model to line"""
+        line = get_url(model)
+        if model.meta.model_type == ModelType.song:
+            desc = self.gen_song_desc(model)
+            line += '\t# '
+            line += desc
+        return line
+
+    @classmethod
+    def gen_song_desc(cls, song):
+        return '{} - {} - {} - {}'.format(
+            song.title_display,
+            song.artists_name_display,
+            song.album_name_display,
+            song.duration_ms_display
+        )
 
     @classmethod
     def parse_song_desc(cls, desc):
@@ -68,5 +96,5 @@ class ModelParser:
             'title': values[0],
             'artists_name': values[1],
             'album_name': values[2],
-            'duration': values[3]
+            'duration_ms': values[3]
         }

@@ -21,11 +21,7 @@ def enable(app):
         pm = ProviderModel(
             name='QQ 音乐',
             icon='♫ ',
-            desc='点击登录 QQ 音乐（未实现，欢迎 PR）\n'
-                 '目前对 QQ 音乐支持比较有限：\n'
-                 '- [x] 搜索音乐\n'
-                 '- [ ] 查看歌手详情（欢迎 PR）\n'
-                 '- [ ] 查看专辑详情（欢迎 PR）\n',
+            desc='点击登录 QQ 音乐（未实现，欢迎 PR）',
             on_click=None,
         )
         app.providers.assoc(provider.identifier, pm)

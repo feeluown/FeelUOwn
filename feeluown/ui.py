@@ -288,8 +288,7 @@ class LeftPanel(QFrame):
             '每个收藏集都以一个独立 .fuo 文件的存在，'
             '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
             '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
-            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，'
-            '以后有时间会添加通过 GUI 拖拽来实现快速收藏的功能，也欢迎 PR。'
+            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。'
         )
         self.playlists_header = QLabel('歌单列表', self)
         self.history_header = QLabel('浏览历史记录', self)

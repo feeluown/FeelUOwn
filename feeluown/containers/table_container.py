@@ -257,9 +257,8 @@ class SongsTableContainer(QFrame):
 
     def show_collection(self, collection):
         self._top_container.hide()
-        songs = [model for model in collection.models
-                 if model.meta.model_type == ModelType.song]
-        self.show_songs(songs)
+        self.show_songs(collection.models)
+        self.songs_table.song_deleted.connect(collection.remove)
 
     async def show_url(self, url):
         model = self._app.protocol.get_model(url)

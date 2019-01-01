@@ -51,6 +51,7 @@ class Xiami(object):
 
         self._pm = ProviderModel(
             name='虾米音乐',
+            icon='♩ ',
             desc='',
             on_click=self.show_provider)
         self._app.providers.assoc(provider.identifier, self._pm)

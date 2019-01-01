@@ -28,6 +28,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
+from fuocore.models import ModelExistence
 from feeluown.utils import parse_ms
 from feeluown.mimedata import ModelMimeData
 from feeluown.helpers import use_mac_theme
@@ -56,12 +57,11 @@ class SongsTableModel(QAbstractTableModel):
             self._source_set.add(song.source)
 
     def flags(self, index):
+        song = index.data(Qt.UserRole)
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        if index.column() in (2, ):
+        if song.exists == ModelExistence.no or index.column() in (0, 2, ):
             return Qt.ItemIsSelectable
-        elif index.column() in (0, ):
-            return Qt.ItemIsSelectable
-        elif index.column() == 1:
+        if index.column() == 1:
             return flags | Qt.ItemIsDragEnabled
         return flags
 
@@ -212,9 +212,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         return False
 
     def updateEditorGeometry(self, editor, option, index):
-        if index.column() == 3:
-            pass
-        else:
+        if index.column() != 3:
             super().updateEditorGeometry(editor, option, index)
 
 
@@ -271,6 +269,12 @@ class SongsTableView(QTableView):
             song = index.data(Qt.UserRole)
             if song.album:
                 self.show_album_needed.emit(song.album)
+        # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
+        # 测试 dataChanged 似乎不能按照预期工作
+        model = self.model()
+        topleft = model.createIndex(index.row(), 0)
+        bottomright = model.createIndex(index.row(), 4)
+        model.dataChanged.emit(topleft, bottomright, [])
 
     def setModel(self, model):
         super().setModel(model)

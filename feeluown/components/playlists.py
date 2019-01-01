@@ -8,7 +8,6 @@ from PyQt5.QtCore import (
     QPoint,
     QRect,
     QSize,
-    QTimer,
     QVariant,
 )
 from PyQt5.QtGui import (
@@ -35,9 +34,8 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 
-from .textlist import TextlistModel, TextlistView
-
 from feeluown.helpers import action_log, ActionError
+from .textlist import TextlistModel, TextlistView
 
 
 logger = logging.getLogger(__name__)
@@ -110,70 +108,39 @@ class PlaylistsView(TextlistView):
         self.setDragDropMode(QAbstractItemView.DropOnly)
         self.clicked.connect(self._on_clicked)
 
-        self._result_timer = QTimer(self)
-        self._result_timer.timeout.connect(self.__on_timeout)
-        self._results = {}  # {row: [index, True]}
-
     def _on_clicked(self, index):
         playlist = index.data(role=Qt.UserRole)
         self.show_playlist.emit(playlist)
 
-    def __on_timeout(self):
-        self._result_timer.stop()
-        self._results.clear()
-        self.viewport().update()
-
     def dropEvent(self, e):
         mimedata = e.mimeData()
-        if mimedata.hasFormat('fuo-model/x-song'):
-            song = mimedata.model
-            index = self.indexAt(e.pos())
-            playlist = index.data(Qt.UserRole)
-            if song.source != playlist.source:
-                e.ignore()
-                return
-            with action_log('Add {} to {}'.format(song, playlist)):
-                self._results[index.row] = (index, None)
-                self.viewport().update()
-                is_success = playlist.add(song.identifier)
-                self._results[index.row] = (index, is_success)
-                self.viewport().update()
-                self._result_timer.start(2000)
-                if not is_success:
-                    raise ActionError
-            e.accept()
-        else:
-            e.ignore()
-
-    def paintEvent(self, e):
-        super().paintEvent(e)
-        if not self._results:
-            return
-        painter = QPainter(self.viewport())
-        option = self.viewOptions()
-        painter.setRenderHint(QPainter.Antialiasing)
-        fm = QFontMetrics(option.font)
-        for row, result in self._results.items():
-            index, state = result
-            rect = self.rectForIndex(index)
-            if state is None:
-                text = '😶'
-            elif state is True:
-                text = '👋'
-            else:
-                text = '🙁'
-            x = rect.width() - 20 + rect.x()
-            # 让字垂直居中
-            y = (rect.height() + fm.ascent() - fm.descent()) / 2 + rect.y()
-            topleft = QPoint(x, y)
-            painter.drawText(topleft, text)
-
-    def dragEnterEvent(self, e):
+        song = mimedata.model
+        index = self.indexAt(e.pos())
+        playlist = index.data(Qt.UserRole)
+        with action_log('Add {} to {}'.format(song, playlist)):
+            self._results[index.row] = (index, None)
+            self.viewport().update()
+            is_success = playlist.add(song.identifier)
+            self._results[index.row] = (index, is_success)
+            self.viewport().update()
+            self._result_timer.start(2000)
+            if not is_success:
+                raise ActionError
         e.accept()
 
     def dragMoveEvent(self, e):
+        mimedata = e.mimeData()
+        song = mimedata.model
         index = self.indexAt(e.pos())
-        if index.flags() & Qt.ItemIsDropEnabled:
+        playlist = index.data(Qt.UserRole)
+        if song.source == playlist.source:
             e.accept()
-        else:
-            e.ignore()
+            return
+        e.ignore()
+
+    def dragEnterEvent(self, e):
+        mimedata = e.mimeData()
+        if mimedata.hasFormat('fuo-model/x-song'):
+            e.accept()
+            return
+        e.ignore()
