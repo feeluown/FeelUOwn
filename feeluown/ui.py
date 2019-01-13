@@ -25,8 +25,10 @@ from feeluown.components.history import HistoriesView
 from feeluown.components.collections import CollectionsView
 from feeluown.components.my_music import MyMusicView
 from feeluown.components.volume_button import VolumeButton
+from feeluown.containers.status_line import StatusLine, StatusLineItem
 from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
+from feeluown.containers.plugin import PluginStatus
 
 from .helpers import use_mac_theme
 from .utils import parse_ms
@@ -546,17 +548,28 @@ class Ui:
         self.pc_panel = self.top_panel.pc_panel
         self.table_container = self.right_panel.table_container
         self.magicbox = MagicBox(self._app)
+        self.status_line = StatusLine(self._app)
+        self.plugin_status_line_item = StatusLineItem(
+            'plugin',
+            PluginStatus(self._app))
+
+        # 暂时没有想到其它好办法让 status_line 高度和 magicbox 保持一样
+        self.status_line.setFixedHeight(self.magicbox.height())
 
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self._left_panel_container)
         self._splitter.addWidget(self.right_panel)
+        self._bottom_layout.addWidget(self.magicbox)
+        self._bottom_layout.addWidget(self.status_line)
+
+        self.status_line.add_item(self.plugin_status_line_item)
 
         self.right_panel.setMinimumWidth(780)
         self._left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         if use_mac_theme():
-            self._layout.addWidget(self.magicbox)
+            self._layout.addLayout(self._bottom_layout)
             self._layout.addWidget(self._splitter)
             self._layout.addWidget(self._top_separator)
             self._layout.addWidget(self.top_panel)
@@ -564,12 +577,12 @@ class Ui:
             self._layout.addWidget(self.top_panel)
             self._layout.addWidget(self._top_separator)
             self._layout.addWidget(self._splitter)
-            self._layout.addWidget(self.magicbox)
+            self._layout.addLayout(self._bottom_layout)
 
-        # self._layout.addLayout(self._bottom_layout)
-        # self._bottom_layout.addWidget(self.magicbox)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+        self._bottom_layout.setSpacing(0)
+        self._bottom_layout.setContentsMargins(0, 0, 0, 0)
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
