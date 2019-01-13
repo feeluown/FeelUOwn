@@ -535,6 +535,10 @@ class Ui:
         if use_mac_theme():
             self._splitter.setHandleWidth(0)
 
+        self.back_btn = QPushButton('⇦', app)
+        self.forward_btn = QPushButton('⇨', app)
+        self.back_btn.setObjectName('back_btn')
+        self.forward_btn.setObjectName('forward_btn')
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
@@ -559,6 +563,8 @@ class Ui:
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self._left_panel_container)
         self._splitter.addWidget(self.right_panel)
+        self._bottom_layout.addWidget(self.back_btn)
+        self._bottom_layout.addWidget(self.forward_btn)
         self._bottom_layout.addWidget(self.magicbox)
         self._bottom_layout.addWidget(self.status_line)
 
