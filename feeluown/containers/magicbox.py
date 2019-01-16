@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (
     QStyle,
     QStyleOptionFrame,
     QTextEdit,
+    QFrame,
 )
 
 
@@ -58,6 +59,7 @@ class MagicBox(QTextEdit):
 
         self._app = app
         # self.setPlaceholderText('搜索歌曲、歌手、专辑、用户；执行 Python 代码等')
+        self.setFrameShape(QFrame.NoFrame)
         self.setPlaceholderText('Search library, exec code, or run command.')
         self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
                         '输入 >>> 前缀之后，可以执行 Python 代码\n'

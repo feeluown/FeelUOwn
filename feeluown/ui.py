@@ -277,6 +277,40 @@ class TopPanel(QFrame):
         self._layout.addWidget(self.pc_panel)
 
 
+class BottomPanel(QFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self._layout = QHBoxLayout(self)
+
+        self.back_btn = QPushButton('⇦', self)
+        self.forward_btn = QPushButton('⇨', self)
+        self.magicbox = MagicBox(self._app)
+        self.status_line = StatusLine(self._app)
+        self.back_btn.setObjectName('back_btn')
+        self.forward_btn.setObjectName('forward_btn')
+        self.setObjectName('bottom_panel')
+
+        self.plugin_status_line_item = StatusLineItem(
+            'plugin',
+            PluginStatus(self._app))
+        self.status_line.add_item(self.plugin_status_line_item)
+
+        self._layout.addWidget(self.back_btn)
+        self._layout.addWidget(self.forward_btn)
+        self._layout.addWidget(self.magicbox)
+        self._layout.addWidget(self.status_line)
+
+        height = self.magicbox.height()
+        self.setFixedHeight(height)
+        self.back_btn.setFixedWidth(height)
+        self.forward_btn.setFixedWidth(height)
+
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+
 class LeftPanel(QFrame):
 
     def __init__(self, app, parent=None):
@@ -346,6 +380,7 @@ class LeftPanel(QFrame):
         self.histories_view.setFrameShape(QFrame.NoFrame)
         self.my_music_view.setFrameShape(QFrame.NoFrame)
         self.collections_view.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.NoFrame)
         self.setMinimumWidth(180)
         self.setMaximumWidth(250)
 
@@ -529,53 +564,39 @@ class Ui:
     def __init__(self, app):
         self._app = app
         self._layout = QVBoxLayout(app)
-        self._bottom_layout = QHBoxLayout()
         self._top_separator = Separator(parent=app)
+        self._bottom_separator = Separator(parent=app)
         self._splitter = QSplitter(app)
         if use_mac_theme():
             self._splitter.setHandleWidth(0)
 
-        self.back_btn = QPushButton('⇦', app)
-        self.forward_btn = QPushButton('⇨', app)
-        self.back_btn.setObjectName('back_btn')
-        self.forward_btn.setObjectName('forward_btn')
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
+        self.bottom_panel = BottomPanel(app, app)
         self._left_panel_container = QScrollArea(self._app)
         self._left_panel_container.setWidgetResizable(True)
+        self._left_panel_container.setFrameShape(QFrame.NoFrame)
         self.left_panel = LeftPanel(self._app, self._splitter)
         self._left_panel_container.setWidget(self.left_panel)
         self.right_panel = RightPanel(self._app, self._splitter)
 
         # alias
+        self.magicbox = self.bottom_panel.magicbox
         self.pc_panel = self.top_panel.pc_panel
         self.table_container = self.right_panel.table_container
-        self.magicbox = MagicBox(self._app)
-        self.status_line = StatusLine(self._app)
-        self.plugin_status_line_item = StatusLineItem(
-            'plugin',
-            PluginStatus(self._app))
-
-        # 暂时没有想到其它好办法让 status_line 高度和 magicbox 保持一样
-        self.status_line.setFixedHeight(self.magicbox.height())
 
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self._left_panel_container)
         self._splitter.addWidget(self.right_panel)
-        self._bottom_layout.addWidget(self.back_btn)
-        self._bottom_layout.addWidget(self.forward_btn)
-        self._bottom_layout.addWidget(self.magicbox)
-        self._bottom_layout.addWidget(self.status_line)
-
-        self.status_line.add_item(self.plugin_status_line_item)
 
         self.right_panel.setMinimumWidth(780)
         self._left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         if use_mac_theme():
-            self._layout.addLayout(self._bottom_layout)
+            self._layout.addWidget(self.bottom_panel)
+            self._layout.addWidget(self._bottom_separator)
             self._layout.addWidget(self._splitter)
             self._layout.addWidget(self._top_separator)
             self._layout.addWidget(self.top_panel)
@@ -583,12 +604,11 @@ class Ui:
             self._layout.addWidget(self.top_panel)
             self._layout.addWidget(self._top_separator)
             self._layout.addWidget(self._splitter)
-            self._layout.addLayout(self._bottom_layout)
+            self._layout.addWidget(self._bottom_separator)
+            self._layout.addWidget(self.bottom_panel)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
-        self._bottom_layout.setSpacing(0)
-        self._bottom_layout.setContentsMargins(0, 0, 0, 0)
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 

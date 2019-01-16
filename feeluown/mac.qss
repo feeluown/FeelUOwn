@@ -14,6 +14,10 @@ QSplitter::handle {
     background-color: transparent;
 }
 
+#bottom_panel {
+    background-color: transparent;
+}
+
 LeftPanel QLabel {
     padding-top: 3px;
     padding-bottom: 3px;
@@ -92,6 +96,7 @@ TopPanel {
 
 RightPanel {
     background-color: #FFF;
+    border: 0;
 }
 
 
@@ -138,17 +143,10 @@ TableToolbar QPushButton:pressed {
     background-color: #EAEAEA;
 }
 
-MagicBox {
-    border-top: 0;
-    border-bottom: 1px solid #DDD;
-    margin-top: -5px;
-}
-
 #back_btn, #forward_btn {
-    width: 30px;
     border: 0;
 }
 
 #back_btn:hover, #forward_btn:hover {
-    font-weight: bold;
+    background-color: #CCC;
 }
