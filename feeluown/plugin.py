@@ -4,10 +4,8 @@ import os
 import importlib
 import logging
 
-from PyQt5.QtCore import pyqtSignal, QObject
-
+from fuocore.dispatch import Signal
 from .consts import USER_PLUGINS_DIR, PLUGINS_DIR
-
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -41,13 +39,13 @@ class Plugin(object):
         self.is_enabled = False
 
 
-class PluginsManager(QObject):
+class PluginsManager:
     """在 App 初始化完成之后，加载插件
 
     TODO: 以后可能需要支持在 App 初始化完成之前加载插件
     """
 
-    scan_finished = pyqtSignal([list])
+    scan_finished = Signal()
 
     def __init__(self, app):
         super().__init__()
