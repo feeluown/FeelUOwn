@@ -28,10 +28,10 @@ def action_log(s):
     logger.info(s + '...')  # doing
     try:
         yield
-    except ActionError:
-        logger.warning(s + '...failed')
-    except Exception:
-        logger.error(s + '...error')  # failed
+    except ActionError as e:
+        logger.warning('%s...failed\nreason: %s', s, str(e))
+    except Exception as e:
+        logger.error('%s...error\nreason: %s', s, str(e))
         raise
     else:
         logger.info(s + '...done')  # done

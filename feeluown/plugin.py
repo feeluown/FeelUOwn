@@ -1,25 +1,34 @@
 # -*- coding: utf-8 -*-
 
-import os
 import importlib
 import logging
+import os
+import pkg_resources
 
 from fuocore.dispatch import Signal
 from .consts import USER_PLUGINS_DIR, PLUGINS_DIR
+from .helpers import action_log, ActionError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-class Plugin(object):
+class InvalidPluginError(Exception):
+    pass
+
+
+class Plugin:
     def __init__(self, module, alias='', version='', desc='',
-                 author='', homepage=''):
+                 author='', homepage='', dist_name=''):
         """插件对象
 
-        :param name: 插件名
+        :param alias: 插件名
         :param version: 插件版本
         :param module: 插件模块对象，它有 enable 和 disable 方法
         :param desc: 插件描述
+        :param author: 插件作者
+        :param homepage: 插件主页
+        :param dist_name: 插件发行版名字
         """
         self.alias = alias
         self.name = module.__name__
@@ -28,13 +37,42 @@ class Plugin(object):
         self.desc = desc
         self.author = author
         self.homepage = homepage
+        self.dist_name = dist_name
         self.is_enabled = False
 
+    @classmethod
+    def create(cls, module):
+        """Plugin 工厂函数
+
+        :param module:
+        :return:
+        """
+        try:
+            # alias, desc, version 为必需字段
+            alias = module.__alias__
+            desc = module.__desc__
+            version = module.__version__
+
+            author = getattr(module, '__author__', '')
+            homepage = getattr(module, '__homepage__', '')
+            dist_name = getattr(module, '__dist_name__', '')
+        except AttributeError as e:
+            raise InvalidPluginError(str(e))
+        else:
+            return Plugin(module,
+                          alias=alias,
+                          desc=desc,
+                          author=author,
+                          homepage=homepage,
+                          dist_name=dist_name)
+
     def enable(self, app):
+        """启用插件"""
         self._module.enable(app)
         self.is_enabled = True
 
     def disable(self, app):
+        """禁用插件"""
         self._module.disable(app)
         self.is_enabled = False
 
@@ -53,29 +91,60 @@ class PluginsManager:
 
         self._plugins = {}
 
-    def load(self, plugin):
+    def enable(self, plugin):
         plugin.enable(self._app)
 
-    def unload(self, plugin):
+    def disable(self, plugin):
         plugin.disable(self._app)
 
     def scan(self):
-        logger.debug('Scaning plugins...')
+
+        self.scan_finished.emit(list(self._plugins.values()))
+
+    def load_module(self, module):
+        with action_log('Creating plugin from module:%s' % module.__name__):
+            try:
+                plugin = Plugin.create(module)
+            except InvalidPluginError as e:
+                raise ActionError(str(e))
+            else:
+                with action_log('Enabling plugin:%s', plugin.name):
+                    self._plugins[plugin.name] = plugin
+                    try:
+                        self.enable(plugin)
+                    except Exception as e:
+                        raise ActionError(str(e))
+
+    def scan_modules_v1(self):
+        """扫描插件模块 v1
+        """
+        modules = []
         modules_name = [p for p in os.listdir(PLUGINS_DIR)
                         if os.path.isdir(os.path.join(PLUGINS_DIR, p))]
         modules_name.extend([p for p in os.listdir(USER_PLUGINS_DIR)
                             if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
+
         for module_name in modules_name:
             try:
                 module = importlib.import_module(module_name)
-                plugin_alias = module.__alias__
-                plugin = Plugin(module, alias=plugin_alias)
-                plugin.enable(self._app)
-                logger.info('detect plugin: %s.' % plugin_alias)
-            except:  # noqa
-                logger.exception('detect a bad plugin %s' % module_name)
+            except Exception as e:
+                logger.exception('Failed to import module %s', module_name)
             else:
-                self._plugins[plugin.name] = plugin
-        logger.debug('Scaning plugins...done')
+                modules.append(module)
+        return modules
 
-        self.scan_finished.emit(list(self._plugins.values()))
+    def scan_modules_v2(self):
+        """扫描插件模块 v2
+
+        扫瞄通过 Python setuptools 机制创建的插件，详情可以参考：
+        https://packaging.python.org/guides/creating-and-discovering-plugins/
+        """
+        modules = []
+        for entry_point in pkg_resources.iter_entry_points('fuo.plugins_v2'):
+            try:
+                module = entry_point.load()
+            except Exception as e:  # noqa
+                logger.exception('Failed to load module %s', entry_point.name)
+            else:
+                modules.append(module)
+        return modules
