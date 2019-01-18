@@ -98,27 +98,31 @@ class PluginsManager:
         plugin.disable(self._app)
 
     def scan(self):
-
+        """扫描并加载插件"""
+        with action_log('Scaning plugins'):
+            self._scan_dirs()
+            self._scan_entry_points()
         self.scan_finished.emit(list(self._plugins.values()))
 
     def load_module(self, module):
+        """加载插件模块并启用插件"""
+        plugin = None
         with action_log('Creating plugin from module:%s' % module.__name__):
             try:
                 plugin = Plugin.create(module)
             except InvalidPluginError as e:
                 raise ActionError(str(e))
-            else:
-                with action_log('Enabling plugin:%s', plugin.name):
-                    self._plugins[plugin.name] = plugin
-                    try:
-                        self.enable(plugin)
-                    except Exception as e:
-                        raise ActionError(str(e))
+        if plugin is None:
+            return
+        with action_log('Enabling plugin:%s' % plugin.name):
+            self._plugins[plugin.name] = plugin
+            try:
+                self.enable(plugin)
+            except Exception as e:
+                raise ActionError(str(e))
 
-    def scan_modules_v1(self):
-        """扫描插件模块 v1
-        """
-        modules = []
+    def _scan_dirs(self):
+        """扫描插件目录中的插件"""
         modules_name = [p for p in os.listdir(PLUGINS_DIR)
                         if os.path.isdir(os.path.join(PLUGINS_DIR, p))]
         modules_name.extend([p for p in os.listdir(USER_PLUGINS_DIR)
@@ -130,21 +134,17 @@ class PluginsManager:
             except Exception as e:
                 logger.exception('Failed to import module %s', module_name)
             else:
-                modules.append(module)
-        return modules
+                self.load_module(module)
 
-    def scan_modules_v2(self):
-        """扫描插件模块 v2
+    def _scan_entry_points(self):
+        """扫瞄通过 setuptools 机制注册的插件
 
-        扫瞄通过 Python setuptools 机制创建的插件，详情可以参考：
         https://packaging.python.org/guides/creating-and-discovering-plugins/
         """
-        modules = []
-        for entry_point in pkg_resources.iter_entry_points('fuo.plugins_v2'):
+        for entry_point in pkg_resources.iter_entry_points('fuo.plugins_v1'):
             try:
                 module = entry_point.load()
             except Exception as e:  # noqa
                 logger.exception('Failed to load module %s', entry_point.name)
             else:
-                modules.append(module)
-        return modules
+                self.load_module(module)
