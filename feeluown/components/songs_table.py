@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum
 from functools import partial
 
 from PyQt5.QtCore import (
@@ -11,10 +11,12 @@ from PyQt5.QtCore import (
     QTime,
     QVariant,
 )
+from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtWidgets import (
     QAbstractItemDelegate,
     QAbstractItemView,
     QAction,
+    QApplication,
     QComboBox,
     QFrame,
     QHBoxLayout,
@@ -34,21 +36,30 @@ from feeluown.mimedata import ModelMimeData
 from feeluown.helpers import use_mac_theme
 
 
-class Column(Enum):
-    song = 0
+class Column(IntEnum):
+    index = 0
+    song = 2
     source = 1
-    duration = 2
-    artist = 3
-    album = 4
+    duration = 3
+    artist = 4
+    album = 5
 
 
 class SongsTableModel(QAbstractTableModel):
-    def __init__(self, songs, source_name_map=None):
-        super().__init__()
-        self.songs = songs
-        self._source_set = set()
+    def __init__(self, songs=None, source_name_map=None, songs_g=None, parent=None):
+        """
 
-        # XXX: icon should be a str (charactor symbol)
+        :param songs: 歌曲列表
+        :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
+        """
+        super().__init__(parent)
+        self.songs_g = songs_g
+        if songs_g is None and songs is not None:
+            self.songs = songs
+        else:
+            self.songs = []
+        self._source_set = set()
+        self._can_fetch_more = self.songs_g is not None
         self._source_name_map = source_name_map or {}
         self._initialize()
 
@@ -56,12 +67,31 @@ class SongsTableModel(QAbstractTableModel):
         for song in self.songs:
             self._source_set.add(song.source)
 
+    def canFetchMore(self, _):
+        return self._can_fetch_more
+
+    def fetchMore(self, _):
+        songs = []
+        for _ in range(len(self.songs), len(self.songs) + 30):
+            try:
+                song = next(self.songs_g)
+            except StopIteration:
+                self._can_fetch_more = False
+                break
+            else:
+                songs.append(song)
+        begin = len(self.songs)
+        self.beginInsertRows(QModelIndex(), begin, begin + len(songs) - 1)
+        self.songs.extend(songs)
+        self.endInsertRows()
+
     def flags(self, index):
         song = index.data(Qt.UserRole)
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        if song.exists == ModelExistence.no or index.column() in (0, 2, ):
+        if song.exists == ModelExistence.no or \
+           index.column() in (Column.source, Column.index, Column.duration):
             return Qt.ItemIsSelectable
-        if index.column() == 1:
+        if index.column() == Column.song:
             return flags | Qt.ItemIsDragEnabled
         return flags
 
@@ -69,15 +99,21 @@ class SongsTableModel(QAbstractTableModel):
         return len(self.songs)
 
     def columnCount(self, _):
-        return 5
+        return 6
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        sections = ('来源', '歌曲标题', '时长', '歌手', '专辑')
+        sections = ('', '来源', '歌曲标题', '时长', '歌手', '专辑')
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
                 if section < len(sections):
                     return sections[section]
                 return ''
+            elif role == Qt.SizeHintRole:
+                widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
+                width = self.parent().width()
+                w = int(width * widths[section])
+                # HELP: 人为指定高度为 25 非常不优雅
+                return QSize(w, 25)
         else:
             if role == Qt.DisplayRole:
                 return section
@@ -93,18 +129,22 @@ class SongsTableModel(QAbstractTableModel):
 
         song = self.songs[index.row()]
         if role in (Qt.DisplayRole, Qt.ToolTipRole):
-            if index.column() == 0:
+            if index.column() == Column.index:
+                return index.row()
+            elif index.column() == Column.source:
                 return self._source_name_map.get(song.source, '').strip()
-            elif index.column() == 1:
+            elif index.column() == Column.song:
                 return song.title_display
-            elif index.column() == 2:
+            elif index.column() == Column.duration:
                 return song.duration_ms_display
-            elif index.column() == 3:
+            elif index.column() == Column.artist:
                 return song.artists_name_display
-            elif index.column() == 4:
+            elif index.column() == Column.album:
                 return song.album_name_display
         elif role == Qt.TextAlignmentRole:
-            if index.column() == 0:
+            if index.column() == Column.index:
+                return Qt.AlignCenter | Qt.AlignVCenter
+            elif index.column() == Column.source:
                 return Qt.AlignCenter | Qt.AlignBaseline
         elif role == Qt.EditRole:
             return 1
@@ -117,7 +157,6 @@ class SongsTableModel(QAbstractTableModel):
             index = indexes[0]
             song = index.data(Qt.UserRole)
             return ModelMimeData(song)
-
 
 
 class ArtistsModel(QAbstractListModel):
@@ -175,7 +214,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                 partial(self.closeEditor.emit, editor, QAbstractItemDelegate.SubmitModelCache))
             editor.play_btn.clicked.connect(partial(self.view.play_song_needed.emit, index.data(role=Qt.UserRole)))
             return editor
-        elif index.column() == 3:
+        elif index.column() == Column.artist:
             editor = ArtistsSelectionView(parent)
             editor.clicked.connect(partial(self.commitData.emit, editor))
             editor.move(parent.mapToGlobal(option.rect.bottomLeft()))
@@ -184,14 +223,14 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         super().setEditorData(editor, index)
-        if index.column() == 3:
+        if index.column() == Column.artist:
             song = index.data(role=Qt.UserRole)
             model = ArtistsModel(song.artists)
             editor.setModel(model)
             editor.setCurrentIndex(QModelIndex())
 
     def setModelData(self, editor, model, index):
-        if index.column() == 3:
+        if index.column() == Column.artist:
             index = editor.currentIndex()
             if index.isValid():
                 artist = index.data(Qt.UserRole)
@@ -202,7 +241,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
     def sizeHint(self, option, index):
-        widths = (0.1, 0.3, 0.1, 0.2, 0.3)
+        widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
         width = self.parent().width()
         w = int(width * widths[index.column()])
         return QSize(w, option.rect.height())
@@ -212,7 +251,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         return False
 
     def updateEditorGeometry(self, editor, option, index):
-        if index.column() != 3:
+        if index.column() != Column.artist:
             super().updateEditorGeometry(editor, option, index)
 
 
@@ -241,7 +280,8 @@ class SongsTableView(QTableView):
             self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
-
+        self.setWordWrap(False)
+        self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
         # self.setSelectionBehavior(QAbstractItemView.SelectRows)
@@ -254,10 +294,10 @@ class SongsTableView(QTableView):
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
-        if index.column() == 1:
+        if index.column() == Column.song:
             song = index.data(Qt.UserRole)
             self.play_song_needed.emit(song)
-        elif index.column() == 3:
+        elif index.column() == Column.artist:
             song = index.data(Qt.UserRole)
             artists = song.artists
             if artists is not None:
@@ -265,7 +305,7 @@ class SongsTableView(QTableView):
                     self.edit(index)
                 else:
                     self.show_artist_needed.emit(artists[0])
-        elif index.column() == 4:
+        elif index.column() == Column.album:
             song = index.data(Qt.UserRole)
             if song.album:
                 self.show_album_needed.emit(song.album)

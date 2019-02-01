@@ -68,3 +68,5 @@ feeluown.egg-info/
 
 # others
 *.html
+
+.pytest_cache/

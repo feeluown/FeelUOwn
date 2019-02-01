@@ -1,0 +1,6886 @@
+[
+  {
+    "albumId": "135727",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img95/15695/1357271392698043.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img95/15695/1357271392698043.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Shades of Purple",
+    "albumSongCount": "14",
+    "albumSubName": "",
+    "arrangement": "M2M",
+    "artistAlbumCount": "6",
+    "artistAlias": "\u7a88\u7a95\u7f8e\u7709",
+    "artistId": "15695",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/95/14213911106695.jpg",
+    "artistName": "M2M",
+    "artistVOs": [
+      {
+        "alias": "\u7a88\u7a95\u7f8e\u7709",
+        "artistId": "15695",
+        "artistName": "M2M"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "S_PAY",
+      "X_FREE",
+      "FEEL_A",
+      "LOE_7DE1L",
+      "CKI_DYS",
+      "S_AUTH"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "M2M",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1348152284000",
+    "length": "225000",
+    "listenFiles": [
+      {
+        "expire": "1534787637082",
+        "fileSize": "930563",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/695/15695/135727/1964537_1479861302601.m4a?auth_key=1535338800-0-0-c4585dc9ea3b055c2fea3dfac882ab81",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534787637082",
+        "fileSize": "1830580",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/695/15695/135727/1964537_1479861302601.m4a?auth_key=1535338800-0-0-c4585dc9ea3b055c2fea3dfac882ab81",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534787637082",
+        "fileSize": "9030170",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/695/15695/135727/1964537_3767503_h.mp3?auth_key=1535338800-0-0-02bb1bd5420826f4147ebef7ec88670a",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534787637082",
+        "fileSize": "3612374",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/695/15695/135727/1964537_3767503_l.mp3?auth_key=1535338800-0-0-e10dcff2cb7c659900d7900985e4996c",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1524753562000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/37/1964537_1524753562_647.xtrc",
+      "lyricId": "14013389",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66CdK",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "92",
+    "panFlag": "0",
+    "pinyin": "The Day You Went Away",
+    "purviewRoleVOs": [
+      {
+        "filesize": "930563",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1830580",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3612374",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9030170",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u7a88\u7a95\u7f8e\u7709",
+        "artistId": "15695",
+        "artistName": "M2M"
+      }
+    ],
+    "singers": "M2M",
+    "songId": "1964537",
+    "songName": "The Day You Went Away",
+    "songStatus": "0",
+    "songwriters": "Larsen, Raven, Rowe",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "112690",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img15/13715/1126901343814688.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img15/13715/1126901343814688.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "No Angel",
+    "albumSongCount": "18",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "27",
+    "artistAlias": "\u8482\u6735",
+    "artistId": "13715",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/80/14213910932780.jpg",
+    "artistName": "Dido",
+    "artistVOs": [
+      {
+        "alias": "\u8482\u6735",
+        "artistId": "13715",
+        "artistName": "Dido"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "WKX_8MM0E",
+      "S_PAY",
+      "X_FREE",
+      "QO_XG9",
+      "LOE_7DE1L",
+      "CKI_DYS",
+      "ZZR_OZU7",
+      "S_AUTH"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Dido Armstrong;Kirk Franklin",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1340793764000",
+    "length": "218000",
+    "listenFiles": [
+      {
+        "expire": "1534787642076",
+        "fileSize": "902353",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/715/13715/112690/1412106_1479873901709.m4a?auth_key=1535338800-0-0-28311cf0ffa47262f1cdeb6ee55529ed",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534787642076",
+        "fileSize": "1773646",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/715/13715/112690/1412106_1479873901709.m4a?auth_key=1535338800-0-0-28311cf0ffa47262f1cdeb6ee55529ed",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534787642076",
+        "fileSize": "8733409",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/715/13715/112690/1412106_4086795_h.mp3?auth_key=1535338800-0-0-2022c672bf26866b7b90d0f08e4e7df6",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534787642076",
+        "fileSize": "3486483",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/715/13715/112690/1412106_4086795_l.mp3?auth_key=1535338800-0-0-b2203af2cdb71ca67bdf2f7334eb3116",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1450854466000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/6/1412106_1433836933_1090.xlrc",
+      "lyricId": "5339",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6YIEb",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "161",
+    "panFlag": "0",
+    "pinyin": "Thank You",
+    "purviewRoleVOs": [
+      {
+        "filesize": "902353",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1773646",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3486483",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8733409",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u8482\u6735",
+        "artistId": "13715",
+        "artistName": "Dido"
+      }
+    ],
+    "singers": "Dido",
+    "songId": "1412106",
+    "songName": "Thank You",
+    "songStatus": "0",
+    "songwriters": "Dido Armstrong;Paul Herman",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "6",
+    "translation": ""
+  },
+  {
+    "albumId": "304787",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img63/14763/3047871392196369.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img63/14763/3047871392196369.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Back Again... No Matter What",
+    "albumSongCount": "18",
+    "albumSubName": "",
+    "arrangement": "Andrew Lloyd Webber / Jim Steinman / Nigel Wright / Simon Franglen / Angela Lupino",
+    "artistAlbumCount": "29",
+    "artistAlias": "\u7537\u5b69\u5730\u5e26 / \u7537\u5b69\u7279\u533a",
+    "artistId": "14763",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/3/14592405872703.jpg",
+    "artistName": "Boyzone",
+    "artistVOs": [
+      {
+        "alias": "\u7537\u5b69\u5730\u5e26 / \u7537\u5b69\u7279\u533a",
+        "artistId": "14763",
+        "artistName": "Boyzone"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "WKX_8MM0E",
+      "S_PAY",
+      "X_FREE",
+      "FEEL_A",
+      "LOE_7DE1L",
+      "CKI_DYS"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Andrew Lloyd Webber / Jim Steinman / Nigel Wright",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1340791393000",
+    "length": "276000",
+    "listenFiles": [
+      {
+        "expire": "1534786942115",
+        "fileSize": "32350042",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/763/14763/304787/3368520_1439410346_h.flac?auth_key=1535338800-0-0-9ac4aeff8c196588b9a0c611d5f6bc2d",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534786942115",
+        "fileSize": "1136009",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/763/14763/304787/3368520_1479874802839.m4a?auth_key=1535338800-0-0-f1d144c229cc2a12e4041d73f220ce3a",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534786942115",
+        "fileSize": "2235093",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/763/14763/304787/3368520_1479874802839.m4a?auth_key=1535338800-0-0-f1d144c229cc2a12e4041d73f220ce3a",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534786942115",
+        "fileSize": "11056224",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/763/14763/304787/3368520_15721293_h.mp3?auth_key=1535338800-0-0-7e20c0abdd3ba91d29cb0ae2ed8665f6",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534786942115",
+        "fileSize": "4422795",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/763/14763/304787/3368520_15721293_l.mp3?auth_key=1535338800-0-0-e406743698ae886dbfdace24aea4a2af",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1501151926000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/20/3368520_1501151926_93.xtrc",
+      "lyricId": "13167019",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66W8j",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "92",
+    "panFlag": "0",
+    "pinyin": "No Matter What",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1136009",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2235093",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4422795",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11056224",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "32350042",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u7537\u5b69\u5730\u5e26 / \u7537\u5b69\u7279\u533a",
+        "artistId": "14763",
+        "artistName": "Boyzone"
+      }
+    ],
+    "singers": "Boyzone",
+    "songId": "3368520",
+    "songName": "No Matter What",
+    "songStatus": "0",
+    "songwriters": "Andrew Lloyd Webber / Jim Steinman / Nigel Wright",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "91855",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img68/12068/918551392894932.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img68/12068/918551392894932.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Up! (Red Album)",
+    "albumSongCount": "19",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "33",
+    "artistAlias": "\u838e\u59ae\u5a05\u00b7\u5510\u6069",
+    "artistId": "12068",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/47/13928945331347.jpg",
+    "artistName": "Shania Twain",
+    "artistVOs": [
+      {
+        "alias": "\u838e\u59ae\u5a05\u00b7\u5510\u6069",
+        "artistId": "12068",
+        "artistName": "Shania Twain"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "WKX_8MM0E",
+      "T_YYKJ",
+      "S_PAY",
+      "W_SLUSY",
+      "X_FREE",
+      "MZ_VZEP",
+      "LOE_7DE1L",
+      "AM_DL5TJ",
+      "CKI_DYS",
+      "HU_0T1BG"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Shania Twain &amp; Robert John &quot;Mutt&quot; Lange",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1392009491000",
+    "length": "269000",
+    "listenFiles": [
+      {
+        "expire": "1534781764203",
+        "fileSize": "35015966",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/68/12068/91855/3541212_1438277114_h.flac?auth_key=1535338800-0-0-e10916857ae45226d2e7c50c27cf296e",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534781764203",
+        "fileSize": "1112434",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/68/12068/91855/3541212_1479876901480.m4a?auth_key=1535338800-0-0-d9afd01a20c70f567ceea2a04b53cc5a",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534781764203",
+        "fileSize": "2188968",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/68/12068/91855/3541212_1479876901480.m4a?auth_key=1535338800-0-0-d9afd01a20c70f567ceea2a04b53cc5a",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534781764203",
+        "fileSize": "10783539",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/68/12068/91855/3541212_60389501_h.mp3?auth_key=1535338800-0-0-32bfcba3890dc7c8db7342af8fc42e90",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534781764203",
+        "fileSize": "4313739",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/68/12068/91855/3541212_60389501_l.mp3?auth_key=1535338800-0-0-646aab0f7007f0de7541478f65975e48",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1519812075000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/12/3541212_1519812075_8944.xtrc",
+      "lyricId": "13869843",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66oMN",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "123",
+    "panFlag": "0",
+    "pinyin": "I'm Gonna Getcha Good! (Red Album Version)",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1112434",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2188968",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4313739",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10783539",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "35015966",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u838e\u59ae\u5a05\u00b7\u5510\u6069",
+        "artistId": "12068",
+        "artistName": "Shania Twain"
+      }
+    ],
+    "singers": "Shania Twain",
+    "songId": "3541212",
+    "songName": "I'm Gonna Getcha Good! (Red Album Version)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "91850",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img68/12068/918501392895505.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img68/12068/918501392895505.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Come on Over",
+    "albumSongCount": "32",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "33",
+    "artistAlias": "\u838e\u59ae\u5a05\u00b7\u5510\u6069",
+    "artistId": "12068",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/47/13928945331347.jpg",
+    "artistName": "Shania Twain",
+    "artistVOs": [
+      {
+        "alias": "\u838e\u59ae\u5a05\u00b7\u5510\u6069",
+        "artistId": "12068",
+        "artistName": "Shania Twain"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "WKX_8MM0E",
+      "I_NZT",
+      "X_FREE",
+      "LOE_7DE1L",
+      "AM_DL5TJ",
+      "CKI_DYS",
+      "HU_0T1BG"
+    ],
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "Shania Twain &amp; R.J. Lange &amp; Robert John &quot;Mutt&quot; Lange",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1440518400000",
+    "length": "211000",
+    "listenFiles": [
+      {
+        "expire": "1534785641232",
+        "fileSize": "25788340",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/68/12068/91850/1390029_1439363447_h.flac?auth_key=1535338800-0-0-5e4c7fe689053a458766fabe7a0f29bd",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534785641232",
+        "fileSize": "876691",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/68/12068/91850/1390029_1479851401920.m4a?auth_key=1535338800-0-0-4f3c00a7912f853721bb47e5007611bb",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534785641232",
+        "fileSize": "1725206",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/68/12068/91850/1390029_1479851401920.m4a?auth_key=1535338800-0-0-4f3c00a7912f853721bb47e5007611bb",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534785641232",
+        "fileSize": "8478437",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/68/12068/91850/1390029_1439363447.mp3?auth_key=1535338800-0-0-bed155c3c72c5d60860db8da5ac9a3ab",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534785641232",
+        "fileSize": "3392535",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/1/68/12068/91852/1390029_250408_l.mp3?auth_key=1535338800-0-0-ca1b9f119e560223e8f936e4574b90f3",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1452567717000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/29/1390029_1452567716_1547.xtrc",
+      "lyricId": "9246207",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66oMH",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "133",
+    "panFlag": "0",
+    "pinyin": "You're Still the One",
+    "purviewRoleVOs": [
+      {
+        "filesize": "876691",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1725206",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3392535",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8478437",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "25788340",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u838e\u59ae\u5a05\u00b7\u5510\u6069",
+        "artistId": "12068",
+        "artistName": "Shania Twain"
+      }
+    ],
+    "singers": "Shania Twain",
+    "songId": "1390029",
+    "songName": "You're Still the One (International Mix)",
+    "songStatus": "0",
+    "songwriters": "Lange, Twain",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "169527",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img46/23646/1695271390562796.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img46/23646/1695271390562796.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Not Going Under",
+    "albumSongCount": "13",
+    "albumSubName": "",
+    "arrangement": "Johan Bob\u00e4ck\uff0cJoachim Nilsson\uff0cSarah Godden",
+    "artistAlbumCount": "12",
+    "artistAlias": "\u739b\u4e3d\u4e9a\u00b7\u827e\u4e3d\u5510\u591a",
+    "artistId": "23646",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/29/14213912083629.jpg",
+    "artistName": "Maria Arredondo",
+    "artistVOs": [
+      {
+        "alias": "\u739b\u4e3d\u4e9a\u00b7\u827e\u4e3d\u5510\u591a",
+        "artistId": "23646",
+        "artistName": "Maria Arredondo"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "WKX_8MM0E",
+      "X_FREE",
+      "FEEL_A",
+      "CKI_DYS"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Johan Bob\u00e4ck\uff0cJoachim Nilsson\uff0cSarah Godden",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1142784000000",
+    "length": "220000",
+    "listenFiles": [
+      {
+        "expire": "1534783678057",
+        "fileSize": "27884032",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/646/23646/169527/2093458_41775491_h.flac?auth_key=1535338800-0-0-71b6180bfa200ab0023712b4aa6ed0af",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534783678057",
+        "fileSize": "908718",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/646/23646/169527/2093458_1479873902830.m4a?auth_key=1535338800-0-0-2c386e9c66c218ff43728e34d2f843b4",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534783678057",
+        "fileSize": "1788260",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/646/23646/169527/2093458_1479873902830.m4a?auth_key=1535338800-0-0-2c386e9c66c218ff43728e34d2f843b4",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534783678057",
+        "fileSize": "8805525",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/646/23646/169527/2093458_3770614_h.mp3?auth_key=1535338800-0-0-ed184cf5d4a10f2af45d5f738acd4ceb",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534783678057",
+        "fileSize": "3522939",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/646/23646/169527/2093458_3770614_l.mp3?auth_key=1535338800-0-0-e5bd0075e5093f3edb8cf391cb61010d",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1448416902000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/58/2093458_1448416902_2186.xtrc",
+      "lyricId": "8705630",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66Z63",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "76",
+    "panFlag": "0",
+    "pinyin": "Cross Every River",
+    "purviewRoleVOs": [
+      {
+        "filesize": "908718",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1788260",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3522939",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8805525",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "27884032",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u739b\u4e3d\u4e9a\u00b7\u827e\u4e3d\u5510\u591a",
+        "artistId": "23646",
+        "artistName": "Maria Arredondo"
+      }
+    ],
+    "singers": "Maria Arredondo",
+    "songId": "2093458",
+    "songName": "Cross Every River",
+    "songStatus": "0",
+    "songwriters": "Johan Bob\u00e4ck\uff0cJoachim Nilsson\uff0cSarah Godden",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "11",
+    "translation": ""
+  },
+  {
+    "albumId": "216150",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img27/11627/2161501375695126.jpeg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img27/11627/2161501375695126.jpeg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Love, Whitney",
+    "albumSongCount": "16",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "60",
+    "artistAlias": "\u60e0\u7279\u59ae\u00b7\u4f11\u65af\u987f",
+    "artistId": "11627",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/88/15163276921788.jpg",
+    "artistName": "Whitney Houston",
+    "artistVOs": [
+      {
+        "alias": "\u60e0\u7279\u59ae\u00b7\u4f11\u65af\u987f",
+        "artistId": "11627",
+        "artistName": "Whitney Houston"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "X_FREE",
+      "FEEL_A",
+      "LOE_7DE1L",
+      "U_864MA",
+      "CKI_DYS"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1340792668000",
+    "length": "290000",
+    "listenFiles": [
+      {
+        "expire": "1534783793186",
+        "fileSize": "31521652",
+        "format": "ape",
+        "listenFile": "http://m740.xiami.net/48/62048/744294/2554137_1442300598.ape?auth_key=1535338800-0-0-8e81fd9f773f0fdf6e65c338ee01bf8f",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534783793186",
+        "fileSize": "1198443",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/627/11627/216150/2554137_1479878702710.m4a?auth_key=1535338800-0-0-69c13405816614d5efc86e2952067de6",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534783793186",
+        "fileSize": "2354669",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/627/11627/216150/2554137_1479878702710.m4a?auth_key=1535338800-0-0-69c13405816614d5efc86e2952067de6",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534783793186",
+        "fileSize": "11601501",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/627/11627/216150/2554137_15931162_h.mp3?auth_key=1535338800-0-0-e9d2199a16f946997b760b06075d7685",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534783793186",
+        "fileSize": "4640599",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/627/11627/216150/2554137_15931162_l.mp3?auth_key=1535338800-0-0-61d89d64090586b9253b81fcb715e216",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1477277053000",
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/37/2554137_1477277053744_7794.xlrc",
+      "lyricId": "11497806",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66Dsi",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "153",
+    "panFlag": "0",
+    "pinyin": "I Have Nothing",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1198443",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2354669",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4640599",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11601501",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "31521652",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u60e0\u7279\u59ae\u00b7\u4f11\u65af\u987f",
+        "artistId": "11627",
+        "artistName": "Whitney Houston"
+      }
+    ],
+    "singers": "Whitney Houston",
+    "songId": "2554137",
+    "songName": "I Have Nothing",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "203589161",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img56/23256/2035891611403589161.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img56/23256/2035891611403589161.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Begin Again (Music From and Inspired By the Original Motion Picture)",
+    "albumSongCount": "16",
+    "albumSubName": "\u6b4c\u66f2\u6539\u53d8\u4eba\u751f / \u518d\u6b21\u51fa\u53d1\u4e4b\u7ebd\u7ea6\u9047\u89c1\u4f60",
+    "arrangement": "",
+    "artistAlbumCount": "4635",
+    "artistAlias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+    "artistId": "23256",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/74/14575277285974.jpg",
+    "artistName": "Soundtrack",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "WKX_8MM0E",
+      "S_PAY",
+      "X_FREE",
+      "W_L14P2",
+      "XM_Q6707",
+      "CKI_DYS",
+      "A_EX"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1405406701000",
+    "length": "240000",
+    "listenFiles": [
+      {
+        "expire": "1534787639166",
+        "fileSize": "24302744",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/60/1107377060/203589161/1773303363_1439366258_h.flac?auth_key=1535338800-0-0-f122ca86db7383e1e09303a02a3b3699",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534787639166",
+        "fileSize": "988782",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/256/23256/203589161/1773303363_1479877503482.m4a?auth_key=1535338800-0-0-fed0fe912c81c8b89b5c383946109a05",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534787639166",
+        "fileSize": "1936478",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/256/23256/203589161/1773303363_1479877503482.m4a?auth_key=1535338800-0-0-fed0fe912c81c8b89b5c383946109a05",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534787639166",
+        "fileSize": "9611131",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/256/23256/203589161/1773303363_15315706_h.mp3?auth_key=1535338800-0-0-9c6e960d817d28d8f1239161af331238",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534787639166",
+        "fileSize": "3845592",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/256/23256/203589161/1773303363_15315706_l.mp3?auth_key=1535338800-0-0-3fad4efb88b234c5544f7633c79b6501",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1519812354000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/63/1773303363_1519812354_5130.xtrc",
+      "lyricId": "13870152",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "80",
+    "panFlag": "0",
+    "pinyin": "Lost Stars",
+    "purviewRoleVOs": [
+      {
+        "filesize": "988782",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1936478",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3845592",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9611131",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "24302744",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Keira Christina Knightley",
+        "artistId": "1107377060",
+        "artistName": "Keira Knightley"
+      }
+    ],
+    "singers": "Keira Knightley",
+    "songId": "1773303363",
+    "songName": "Lost Stars",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "5",
+    "translation": ""
+  },
+  {
+    "albumId": "1482417245",
+    "albumLanguage": "\u5176\u4ed6",
+    "albumLogo": "http://pic.xiami.net/images/album/img16/64916/14824172451394186065.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img16/64916/14824172451394186065.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Frozen (Original Motion Picture Soundtrack)",
+    "albumSongCount": "121",
+    "albumSubName": "\u51b0\u96ea\u5947\u7f18",
+    "arrangement": "Kristen Anderson-Lopez / Robert Lopez",
+    "artistAlbumCount": "4635",
+    "artistAlias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+    "artistId": "23256",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/74/14575277285974.jpg",
+    "artistName": "Soundtrack",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "XD_4BF",
+      "S_PAY",
+      "X_FREE",
+      "FEEL_A",
+      "XM_Q6707",
+      "Z_9OY82"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Kristen Anderson-Lopez / Robert Lopez",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1404984853000",
+    "length": "127000",
+    "listenFiles": [
+      {
+        "expire": "1534783787441",
+        "fileSize": "521097",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/256/23256/1482417245/1772276933_1479860402750.m4a?auth_key=1535338800-0-0-6f81f2f86d8e94bdfd62dc351aa1a6ad",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534783787441",
+        "fileSize": "1017978",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/256/23256/1482417245/1772276933_1479860402751.m4a?auth_key=1535338800-0-0-c320987a342cedd0670b88a60c60fc59",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534783787441",
+        "fileSize": "5088821",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/916/64916/1482417245/1772276933_11139028_h.mp3?auth_key=1535338800-0-0-ec4c1589e166f24aff1334000ac37751",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534783787441",
+        "fileSize": "2035421",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/916/64916/1482417245/1772276933_11139028_l.mp3?auth_key=1535338800-0-0-3016918b736f987fe50d91c40c386f9e",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1448881458000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/33/1772276933_1448854586_6562.trc",
+      "lyricId": "8714279",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "Love Is An Open Door",
+    "purviewRoleVOs": [
+      {
+        "filesize": "521097",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1017978",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "2035421",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "5088821",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u514b\u91cc\u65af\u6c40\u00b7\u8d1d\u5c14 / \u514b\u91cc\u65af\u6ed5\u00b7\u8d1d\u5c14",
+        "artistId": "2099977903",
+        "artistName": "Kristen Bell"
+      },
+      {
+        "alias": "",
+        "artistId": "1403002503",
+        "artistName": "Santino Fontana"
+      }
+    ],
+    "singers": "Kristen Bell;Santino Fontana",
+    "songId": "1772276933",
+    "songName": "Love Is An Open Door",
+    "songStatus": "0",
+    "songwriters": "Kristen Anderson-Lopez / Robert Lopez",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "4",
+    "translation": ""
+  },
+  {
+    "albumId": "167507",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img56/23256/1675071311584949.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img56/23256/1675071311584949.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Once (Music from the Motion Picture)",
+    "albumSongCount": "15",
+    "albumSubName": "\u66fe\u7ecf",
+    "arrangement": "Glen Hansard",
+    "artistAlbumCount": "4635",
+    "artistAlias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+    "artistId": "23256",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/74/14575277285974.jpg",
+    "artistName": "Soundtrack",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "XD_4BF",
+      "P_PYJ",
+      "X_FREE",
+      "W_L14P2",
+      "G_JSF4",
+      "CKI_DYS",
+      "QF_WXH35"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Mark\u00e9ta Irglov\u00e1",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1385142666000",
+    "length": "228000",
+    "listenFiles": [
+      {
+        "expire": "1534783665131",
+        "fileSize": "22722115",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/256/23256/167507/2094010_1438421519_h.flac?auth_key=1535338800-0-0-99884989fa5cda0987c02551597afd4c",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534783665131",
+        "fileSize": "947120",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/256/23256/167507/2094010_1479870302045.m4a?auth_key=1535338800-0-0-34bc375d3ae0f8d06b9a40bd3409a4b8",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534783665131",
+        "fileSize": "1860550",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/256/23256/167507/2094010_1479870302045.m4a?auth_key=1535338800-0-0-34bc375d3ae0f8d06b9a40bd3409a4b8",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534783665131",
+        "fileSize": "9155558",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/455/43455/167507/2094010_10091318_h.mp3?auth_key=1535338800-0-0-017902064ff4bf1d5f771451fe5c1527",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534783665131",
+        "fileSize": "3662948",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/455/43455/167507/2094010_10091318_l.mp3?auth_key=1535338800-0-0-57819268997e7a26ce14810645578a9c",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1502158331000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/10/2094010_1502158331_5675.xtrc",
+      "lyricId": "13232853",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "78",
+    "panFlag": "0",
+    "pinyin": "If You Want Me",
+    "purviewRoleVOs": [
+      {
+        "filesize": "947120",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1860550",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3662948",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9155558",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "22722115",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u739b\u53ef\u5854\u00b7\u4f0a\u5c14\u683c\u6d1b\u5a03 / Marketa Irglova",
+        "artistId": "73529",
+        "artistName": "Mark\u00e9ta Irglov\u00e1"
+      },
+      {
+        "alias": "\u683c\u4f26\u00b7\u6c49\u585e\u5fb7",
+        "artistId": "61625",
+        "artistName": "Glen Hansard"
+      }
+    ],
+    "singers": "Mark\u00e9ta Irglov\u00e1;Glen Hansard",
+    "songId": "2094010",
+    "songName": "If You Want Me",
+    "songStatus": "0",
+    "songwriters": "Mark\u00e9ta Irglov\u00e1",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "1482417245",
+    "albumLanguage": "\u5176\u4ed6",
+    "albumLogo": "http://pic.xiami.net/images/album/img16/64916/14824172451394186065.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img16/64916/14824172451394186065.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Frozen (Original Motion Picture Soundtrack)",
+    "albumSongCount": "121",
+    "albumSubName": "\u51b0\u96ea\u5947\u7f18",
+    "arrangement": "Kristen Anderson-Lopez / Robert Lopez",
+    "artistAlbumCount": "4635",
+    "artistAlias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+    "artistId": "23256",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/74/14575277285974.jpg",
+    "artistName": "Soundtrack",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "XD_4BF",
+      "S_PAY",
+      "X_FREE",
+      "NAU_NZ2FM",
+      "PJA_HY3SY",
+      "XM_Q6707",
+      "Z_9OY82",
+      "A_EX"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Kristen Anderson-Lopez / Robert Lopez",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1436497954000",
+    "length": "224000",
+    "listenFiles": [
+      {
+        "expire": "1534783655162",
+        "fileSize": "23890477",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/329/62329/1482417245/1772276934_1439368837_h.flac?auth_key=1535338800-0-0-9c5e9d13df538aaa97954ef51625462f",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534783655162",
+        "fileSize": "929075",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/256/23256/1482417245/1772276934_1479877509292.m4a?auth_key=1535338800-0-0-7ec98b07d7fcf894bf4088a3698df242",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534783655162",
+        "fileSize": "1825317",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/256/23256/1482417245/1772276934_1479877509292.m4a?auth_key=1535338800-0-0-7ec98b07d7fcf894bf4088a3698df242",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534783655162",
+        "fileSize": "8989414",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/916/64916/1482417245/1772276934_11139029_h.mp3?auth_key=1535338800-0-0-082b61024d9d2c5c9987dcb2ffbb5e4e",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534783655162",
+        "fileSize": "3595652",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/916/64916/1482417245/1772276934_11139029_l.mp3?auth_key=1535338800-0-0-70d0becfac2b09fb692e99d118b97a47",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1524753561000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/34/1772276934_1524753561_982.xtrc",
+      "lyricId": "14013382",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K665YR",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "Let It Go",
+    "purviewRoleVOs": [
+      {
+        "filesize": "929075",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1825317",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3595652",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8989414",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "23890477",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "",
+        "artistId": "62329",
+        "artistName": "Idina Menzel"
+      }
+    ],
+    "singers": "Idina Menzel",
+    "songId": "1772276934",
+    "songName": "Let It Go",
+    "songStatus": "0",
+    "songwriters": "Kristen Anderson-Lopez / Robert Lopez",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "5",
+    "translation": ""
+  },
+  {
+    "albumId": "312172",
+    "albumLanguage": "\u6cd5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img56/23256/3121721395120779.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img56/23256/3121721395120779.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Les chansons d'amour (Bande originale du film)",
+    "albumSongCount": "14",
+    "albumSubName": "\u5df4\u9ece\u5c0f\u60c5\u6b4c",
+    "arrangement": "ne sait pas",
+    "artistAlbumCount": "4635",
+    "artistAlias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+    "artistId": "23256",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/74/14575277285974.jpg",
+    "artistName": "Soundtrack",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "XD_4BF",
+      "MW_AZSO",
+      "X_FREE"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "ne sait pas",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1405406415000",
+    "length": "160000",
+    "listenFiles": [
+      {
+        "expire": "1534782988968",
+        "fileSize": "662559",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/1/256/23256/312172/3458363_278929_l.m4a?auth_key=1535338800-0-0-98a6c4008878e83bffe63b2a650161a3",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534782988968",
+        "fileSize": "6412704",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/1/256/23256/312172/3458363_278929_h.mp3?auth_key=1535338800-0-0-19f0ac39c024b1b4b7d044742088555f",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534782988969",
+        "fileSize": "2566643",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/1/256/23256/312172/3458363_278929_l.mp3?auth_key=1535338800-0-0-3221c878437d25afb847ebaedda8882c",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1500028500000",
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/63/3458363_1500028500560_4273.lrc",
+      "lyricId": "12714695",
+      "lyricType": "2",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "88",
+    "panFlag": "0",
+    "pinyin": "Je n'aime que toi",
+    "purviewRoleVOs": [
+      {
+        "filesize": "662559",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "2566643",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "6412704",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "singers": "Soundtrack",
+    "songId": "3458363",
+    "songName": "Je n'aime que toi",
+    "songStatus": "0",
+    "songwriters": "ne sait pas",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "4",
+    "translation": ""
+  },
+  {
+    "albumId": "172041",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img58/24158/1720411383098523.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img58/24158/1720411383098523.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Lonely Afternoon",
+    "albumSongCount": "6",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "6",
+    "artistAlias": "Bevlyn Khoo / \u610f\u6dcb",
+    "artistId": "24158",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/73/13741474762473.jpg",
+    "artistName": "\u90b1\u610f\u6dcb",
+    "artistVOs": [
+      {
+        "alias": "Bevlyn Khoo / \u610f\u6dcb",
+        "artistId": "24158",
+        "artistName": "\u90b1\u610f\u6dcb"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "M_MAN",
+      "S_PAY",
+      "M_UPCZ",
+      "X_FREE",
+      "MW_AZSO",
+      "IXU_Z3OZ",
+      "E_WKI1R"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1384142153000",
+    "length": "165000",
+    "listenFiles": [
+      {
+        "expire": "1534780916641",
+        "fileSize": "682721",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/158/24158/172041/2125227_101514_l.m4a?auth_key=1535338800-0-0-ec952100d0e1abcdfd4f9926cf2456d6",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534780916641",
+        "fileSize": "3964719",
+        "format": "mp3",
+        "listenFile": "http://m192.xiami.net/158/24158/172041/2125227_101514_l.mp3?auth_key=1535338800-0-0-e9e1bc4328f8caeb90c91af70aa8a001",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534780916641",
+        "fileSize": "2643550",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/158/24158/172041/2125227_101514_l.mp3?auth_key=1535338800-0-0-e9e1bc4328f8caeb90c91af70aa8a001",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1517245816000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/27/2125227_1517245816_7821.trc",
+      "lyricId": "13782064",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "90",
+    "panFlag": "0",
+    "pinyin": "La Vie En Rose (fa )",
+    "purviewRoleVOs": [
+      {
+        "filesize": "682721",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "2643550",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "3964719",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Bevlyn Khoo / \u610f\u6dcb",
+        "artistId": "24158",
+        "artistName": "\u90b1\u610f\u6dcb"
+      }
+    ],
+    "singers": "\u90b1\u610f\u6dcb",
+    "songId": "2125227",
+    "songName": "La Vie En Rose (\u6cd5)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "6",
+    "translation": ""
+  },
+  {
+    "albumId": "1266008391",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img56/23256/12660083911378101539.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img56/23256/12660083911378101539.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "The Great Gatsby (Music from Baz Luhrmann's Film)",
+    "albumSongCount": "21",
+    "albumSubName": "\u4e86\u4e0d\u8d77\u7684\u76d6\u8328\u6bd4 / \u5927\u4ea8\u5c0f\u4f20",
+    "arrangement": "",
+    "artistAlbumCount": "4635",
+    "artistAlias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+    "artistId": "23256",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/74/14575277285974.jpg",
+    "artistName": "Soundtrack",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u539f\u58f0\u5e26",
+        "artistId": "23256",
+        "artistName": "Soundtrack"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "XD_4BF",
+      "S_PAY",
+      "X_FREE",
+      "NRX_L8DIK",
+      "XM_Q6707",
+      "CKI_DYS"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Lana Del Rey;Rick Nowels",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1366668930000",
+    "length": "236000",
+    "listenFiles": [
+      {
+        "expire": "1534787656155",
+        "fileSize": "24887225",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/628/97628/1266008391/1771811908_1439384115_h.flac?auth_key=1535338800-0-0-fcafb2c63d78861a97a9183a73addcf1",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534787656155",
+        "fileSize": "973878",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/256/23256/1266008391/1771811908_1479878102249.m4a?auth_key=1535338800-0-0-cf41bc146bafde6b33f3e286bf182500",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534787656155",
+        "fileSize": "1917081",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/256/23256/1266008391/1771811908_1479878102249.m4a?auth_key=1535338800-0-0-cf41bc146bafde6b33f3e286bf182500",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534787656155",
+        "fileSize": "9445001",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/256/23256/1266008391/1771811908_4404186_h.mp3?auth_key=1535338800-0-0-6332669ccc89f518a1256743b22667fe",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534787656155",
+        "fileSize": "3759502",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/256/23256/1266008391/1771811908_4404186_l.mp3?auth_key=1535338800-0-0-7549cfc282a315f45243166ee7975eb3",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1492400726000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/8/1771811908_1492400726_2409.xtrc",
+      "lyricId": "12337080",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6Kaud",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "120",
+    "panFlag": "0",
+    "pinyin": "Young And Beautiful",
+    "purviewRoleVOs": [
+      {
+        "filesize": "973878",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1917081",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3759502",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9445001",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "24887225",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u62c9\u5a1c\u00b7\u5fb7\u96f7 / Elizabeth Grant / \u30e9\u30ca\u30fb\u30c7\u30eb\u30fb\u30ec\u30a4",
+        "artistId": "97628",
+        "artistName": "Lana Del Rey"
+      }
+    ],
+    "singers": "Lana Del Rey",
+    "songId": "1771811908",
+    "songName": "Young And Beautiful",
+    "songStatus": "0",
+    "songwriters": "Lana Del Rey;Rick Nowels",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "5",
+    "translation": ""
+  },
+  {
+    "albumId": "421723545",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img58/23258/4217235451421723545.jpeg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img58/23258/4217235451421723545.jpeg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "2015 GRAMMY Nominees",
+    "albumSongCount": "24",
+    "albumSubName": "\u683c\u83b1\u7f8e\u7684\u559d\u5f692015",
+    "arrangement": "Iggy Azalea / Kurtis McKenzie / The Invisible Men / Jon Turner / Charli XCX",
+    "artistAlbumCount": "58357",
+    "artistAlias": "\u6b27\u7f8e\u7fa4\u661f / VA / V.A. / \u4f17\u827a\u4eba",
+    "artistId": "23258",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/33/13517382586833.jpg",
+    "artistName": "Various Artists",
+    "artistVOs": [
+      {
+        "alias": "\u6b27\u7f8e\u7fa4\u661f / VA / V.A. / \u4f17\u827a\u4eba",
+        "artistId": "23258",
+        "artistName": "Various Artists"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "WKX_8MM0E",
+      "LOSSLESS",
+      "S_PAY",
+      "R_0TEIZ",
+      "X_FREE",
+      "D_74Z",
+      "NPP_K9P",
+      "CKI_DYS",
+      "ZZR_OZU7",
+      "S_AUTH"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "Iggy Azalea / Kurtis McKenzie / The Invisible Men / Jon Turner / Charli XCX",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1411927830000",
+    "length": "198018",
+    "listenFiles": [
+      {
+        "expire": "1534784503725",
+        "fileSize": "34936842",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/258/23258/421723545/1773884353_1516024447965.wav?auth_key=1535338800-0-0-c5d9574fa81d69d97cf8f571000a0bbf",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534784503725",
+        "fileSize": "813605",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/258/23258/421723545/1773884353_1516024447965.m4a?auth_key=1535338800-0-0-ac7f5b3c88211845ba5d807a8a0162e1",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534784503725",
+        "fileSize": "1610361",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/258/23258/421723545/1773884353_1516024447965.m4a?auth_key=1535338800-0-0-ac7f5b3c88211845ba5d807a8a0162e1",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534784503725",
+        "fileSize": "7924505",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/258/23258/421723545/1773884353_1516024447965.mp3?auth_key=1535338800-0-0-da61188932be0b5a3a870e498e2b6140",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534784503725",
+        "fileSize": "3169801",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/258/23258/421723545/1773884353_1516024447965.mp3?auth_key=1535338800-0-0-da61188932be0b5a3a870e498e2b6140",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1477279217000",
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/53/1773884353_1477279217776_736.xlrc",
+      "lyricId": "11547056",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66pCZ",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "94",
+    "panFlag": "0",
+    "pinyin": "Fancy",
+    "purviewRoleVOs": [
+      {
+        "filesize": "813605",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1610361",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3169801",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "7924505",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "34936842",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "",
+        "artistId": "103500",
+        "artistName": "Iggy Azalea"
+      },
+      {
+        "alias": "",
+        "artistId": "103525",
+        "artistName": "Charli XCX"
+      }
+    ],
+    "singers": "Iggy Azalea;Charli XCX",
+    "songId": "1773884353",
+    "songName": "Fancy",
+    "songStatus": "0",
+    "songwriters": "SHAVE, JONATHAN / KELLY, AMETHYST AMELIA / AITCHISON, CHARLOTTE / TURNER, JOHN / PEBWORTH, JASON / ASTASIO, GEORGE / MCKENZIE, KURTIS",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "378045",
+    "albumLanguage": "\u5176\u4ed6",
+    "albumLogo": "http://pic.xiami.net/images/album/img21/73621/3780451271918627.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img21/73621/3780451271918627.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u0422\u0430\u043a \u041d\u0435\u0436\u043d\u043e",
+    "albumSongCount": "17",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "1",
+    "artistAlias": "\u041b\u0435\u043d\u0430 \u041a\u043d\u044f\u0437\u0435\u0432\u0430",
+    "artistId": "73621",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/92/12719134072792.jpg",
+    "artistName": "Knyazwa Elena",
+    "artistVOs": [
+      {
+        "alias": "\u041b\u0435\u043d\u0430 \u041a\u043d\u044f\u0437\u0435\u0432\u0430",
+        "artistId": "73621",
+        "artistName": "Knyazwa Elena"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "X_FREE",
+      "Z_9OY82"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1355270132000",
+    "length": "217000",
+    "listenFiles": [
+      {
+        "expire": "1534781792224",
+        "fileSize": "887989",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/621/73621/378045/1769481405_1224822_l.m4a?auth_key=1535338800-0-0-44eef0e0b130bda1c53666a6fbf4760d",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534781792224",
+        "fileSize": "8688495",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/621/73621/378045/1769481405_1224822_h.mp3?auth_key=1535338800-0-0-37fad9122655e688d688153bd03b25a4",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534781792224",
+        "fileSize": "3476961",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/621/73621/378045/1769481405_1224822_l.mp3?auth_key=1535338800-0-0-cd0e8f71d34c7b8fa8e94c37af0bd255",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1477714851000",
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/5/1769481405_1477714851454_8011.txt",
+      "lyricId": "4669426",
+      "lyricType": "1",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "136",
+    "panFlag": "0",
+    "pinyin": "\u0422 \u0430 \u043a  \u043d \u0435 \u0436 \u043d \u043e ",
+    "purviewRoleVOs": [
+      {
+        "filesize": "887989",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3476961",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8688495",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u041b\u0435\u043d\u0430 \u041a\u043d\u044f\u0437\u0435\u0432\u0430",
+        "artistId": "73621",
+        "artistName": "Knyazwa Elena"
+      }
+    ],
+    "singers": "Knyazwa Elena",
+    "songId": "1769481405",
+    "songName": "\u0422\u0430\u043a \u043d\u0435\u0436\u043d\u043e",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "326234",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img37/54137/3262341240280348.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img37/54137/3262341240280348.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u30e9\u30f3\u30d7\u5e7b\u60f3",
+    "albumSongCount": "11",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "10",
+    "artistAlias": "\u30e9\u30f3\u30d7",
+    "artistId": "54137",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/94/14715056321994.jpg",
+    "artistName": "Lamp",
+    "artistVOs": [
+      {
+        "alias": "\u30e9\u30f3\u30d7",
+        "artistId": "54137",
+        "artistName": "Lamp"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "M_MAN",
+      "X_FREE",
+      "PK_LYMF",
+      "JKP_N11E",
+      "FQC_QYF"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1367612091000",
+    "length": "193000",
+    "listenFiles": [
+      {
+        "expire": "1534786184367",
+        "fileSize": "793921",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/137/54137/326234/3635434_1479837302810.m4a?auth_key=1535338800-0-0-4ba0ae5e85626e32f4285090fdbac6ce",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534786184367",
+        "fileSize": "1558715",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/137/54137/326234/3635434_1479837302810.m4a?auth_key=1535338800-0-0-4ba0ae5e85626e32f4285090fdbac6ce",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534786184367",
+        "fileSize": "7733067",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/137/54137/326234/3635434_779852_h.mp3?auth_key=1535338800-0-0-0b32e30287f4553caab5ccb510eeadf0",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534786184367",
+        "fileSize": "3097443",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/137/54137/326234/3635434_779852_l.mp3?auth_key=1535338800-0-0-4a054abea1afb2baedf66d4c4e9acd8c",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1532668107000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/34/3635434_1532668107_5873.xtrc",
+      "lyricId": "14200926",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "116",
+    "panFlag": "0",
+    "pinyin": "er shi \u6b73 \u306e lian   ",
+    "purviewRoleVOs": [
+      {
+        "filesize": "793921",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1558715",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3097443",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "7733067",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u30e9\u30f3\u30d7",
+        "artistId": "54137",
+        "artistName": "Lamp"
+      }
+    ],
+    "singers": "Lamp",
+    "songId": "3635434",
+    "songName": "\u4e8c\u5341\u6b73\u306e\u604b  ",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "8",
+    "translation": ""
+  },
+  {
+    "albumId": "377097",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img43/56343/3770971471874103.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img43/56343/3770971471874103.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Sunshine Girl",
+    "albumSongCount": "3",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "43",
+    "artistAlias": "\u6c90\u6708 / \u30e0\u30fc\u30fb\u30e0\u30fc\u30f3",
+    "artistId": "56343",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/96/15159954396896.jpg",
+    "artistName": "moumoon",
+    "artistVOs": [
+      {
+        "alias": "\u6c90\u6708 / \u30e0\u30fc\u30fb\u30e0\u30fc\u30f3",
+        "artistId": "56343",
+        "artistName": "moumoon"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "S_PAY",
+      "X_FREE",
+      "W_GJVE7",
+      "JKP_N11E",
+      "Q_QK"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "K.MISAKI",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1278432000000",
+    "length": "232000",
+    "listenFiles": [
+      {
+        "expire": "1534787671061",
+        "fileSize": "27514972",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/343/56343/377097/1769470092_1438643957_h.flac?auth_key=1535338800-0-0-2f584fd841c4254765e9345fa39a4611",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534787671062",
+        "fileSize": "950529",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/343/56343/377097/1769470092_1479878410317.m4a?auth_key=1535338800-0-0-530e71a06d26c1386fa2f014c70fe8c5",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534787671062",
+        "fileSize": "1867918",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/343/56343/377097/1769470092_1479878410317.m4a?auth_key=1535338800-0-0-530e71a06d26c1386fa2f014c70fe8c5",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534787671061",
+        "fileSize": "9279897",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/343/56343/377097/1769470092_3630676_h.mp3?auth_key=1535338800-0-0-ca0f4b2e6d984e62e78189670f5416ec",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534787671061",
+        "fileSize": "3712680",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/343/56343/377097/1769470092_3630676_l.mp3?auth_key=1535338800-0-0-ba683e9e35a56baeb7ec5e8b255b08c1",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1528181396000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/92/1769470092_1528181396_4617.xtrc",
+      "lyricId": "14107342",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66MdG",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "102",
+    "panFlag": "0",
+    "pinyin": "Sunshine Girl",
+    "purviewRoleVOs": [
+      {
+        "filesize": "950529",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1867918",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3712680",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9279897",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "27514972",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u6c90\u6708 / \u30e0\u30fc\u30fb\u30e0\u30fc\u30f3",
+        "artistId": "56343",
+        "artistName": "moumoon"
+      }
+    ],
+    "singers": "moumoon",
+    "songId": "1769470092",
+    "songName": "Sunshine Girl",
+    "songStatus": "0",
+    "songwriters": "YUKA",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "31601",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img67/129/580da42ae226a_6471367_1477289002.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img67/129/580da42ae226a_6471367_1477289002.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Home Grown",
+    "albumSongCount": "12",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "40",
+    "artistAlias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+    "artistId": "7013",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/52/14213915875252.jpg",
+    "artistName": "\u677e\u305f\u304b\u5b50",
+    "artistVOs": [
+      {
+        "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+        "artistId": "7013",
+        "artistName": "\u677e\u305f\u304b\u5b50"
+      }
+    ],
+    "bakSong": {
+      "albumId": "31595",
+      "albumLanguage": "\u65e5\u8bed",
+      "albumLogo": "http://pic.xiami.net/images/album/img13/7013/315951476773628.jpg",
+      "albumLogoS": "http://pic.xiami.net/images/album/img13/7013/315951476773628.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+      "albumName": "Matsu Takako Single Collection 1999-2005",
+      "albumSongCount": "11",
+      "albumSubName": "",
+      "arrangement": "",
+      "artistAlbumCount": "40",
+      "artistAlias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+      "artistId": "7013",
+      "artistLogo": "http://pic.xiami.net/images/artistlogo/52/14213915875252.jpg",
+      "artistName": "\u677e\u305f\u304b\u5b50",
+      "artistVOs": [
+        {
+          "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+          "artistId": "7013",
+          "artistName": "\u677e\u305f\u304b\u5b50"
+        }
+      ],
+      "bakSongId": "0",
+      "bizTags": [
+        "DF_JHUYD",
+        "LOSSLESS",
+        "X_FREE",
+        "W_L14P2",
+        "JKP_N11E"
+      ],
+      "canReward": "false",
+      "cdSerial": "1",
+      "composer": "",
+      "downloadCount": "false",
+      "exclusive": "false",
+      "flag": "65",
+      "gmtCreate": "1341392871000",
+      "length": "272004",
+      "listenFiles": [
+        {
+          "expire": "1534783690220",
+          "fileSize": "47981052",
+          "format": "wav",
+          "listenFile": "http://m740.xiami.net/13/7013/31595/369523_1476688570002.wav?auth_key=1535338800-0-0-c34277573d8ac7bee0d767a74db01600",
+          "playVolume": "89.0",
+          "quality": "s"
+        },
+        {
+          "expire": "1534783690220",
+          "fileSize": "1120491",
+          "format": "m4a",
+          "listenFile": "http://m32.xiami.net/13/7013/31595/369523_1479879325281.m4a?auth_key=1535338800-0-0-dcbdfb690648eccf19bd772757f8daa9",
+          "playVolume": "89.0",
+          "quality": "e"
+        },
+        {
+          "expire": "1534783690220",
+          "fileSize": "2207657",
+          "format": "m4a",
+          "listenFile": "http://m64.xiami.net/13/7013/31595/369523_1479879325281.m4a?auth_key=1535338800-0-0-dcbdfb690648eccf19bd772757f8daa9",
+          "playVolume": "89.0",
+          "quality": "f"
+        },
+        {
+          "expire": "1534783690220",
+          "fileSize": "10882611",
+          "format": "mp3",
+          "listenFile": "http://m320.xiami.net/13/7013/31595/369523_1476688570002.mp3?auth_key=1535338800-0-0-52476be65e361c91c0d68bde4accb3ac",
+          "playVolume": "89.0",
+          "quality": "h"
+        },
+        {
+          "expire": "1534783690220",
+          "fileSize": "4353043",
+          "format": "mp3",
+          "listenFile": "http://m128.xiami.net/13/7013/31595/369523_1476688570002.mp3?auth_key=1535338800-0-0-52476be65e361c91c0d68bde4accb3ac",
+          "playVolume": "89.0",
+          "quality": "l"
+        }
+      ],
+      "lyricInfo": {
+        "gmtModified": "1532668172000",
+        "isOfficial": "true",
+        "lyricFile": "http://img.xiami.net/lyric/23/369523_1532668172_7986.xtrc",
+        "lyricId": "14201044",
+        "lyricType": "7",
+        "userId": "0"
+      },
+      "musicType": "0",
+      "mvId": "K66ffc",
+      "needPayFlag": "0",
+      "newSubName": "",
+      "offline": "false",
+      "offlineType": "0",
+      "originOffline": "false",
+      "pace": "87",
+      "panFlag": "0",
+      "pinyin": "hua \u306e \u3088 \u3046 \u306b ",
+      "purviewRoleVOs": [
+        {
+          "filesize": "1120491",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "e"
+        },
+        {
+          "filesize": "2207657",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "f"
+        },
+        {
+          "filesize": "4353043",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "l"
+        },
+        {
+          "filesize": "10882611",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "h"
+        },
+        {
+          "filesize": "47981052",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "true",
+              "purpose": "1",
+              "upgradeRole": "3"
+            },
+            {
+              "needPay": "false",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "3"
+            }
+          ],
+          "quality": "s"
+        }
+      ],
+      "singerVOs": [
+        {
+          "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+          "artistId": "7013",
+          "artistName": "\u677e\u305f\u304b\u5b50"
+        }
+      ],
+      "singers": "\u677e\u305f\u304b\u5b50",
+      "songId": "369523",
+      "songName": "\u82b1\u306e\u3088\u3046\u306b",
+      "songStatus": "0",
+      "songwriters": "",
+      "subName": "",
+      "thirdpartyUrl": "",
+      "track": "6",
+      "translation": ""
+    },
+    "bakSongId": "369523",
+    "bizTags": [
+      "W_L14P2",
+      "JKP_N11E",
+      "JBB_DZ8Y4",
+      "S_OFF"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u5409\u7530\u7f8e\u667a\u5b50",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "13",
+    "gmtCreate": "1341392871000",
+    "length": "273000",
+    "listenFiles": [],
+    "lyricInfo": {
+      "gmtModified": "1449151167000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/69/369569_1433836926_6561.xlrc",
+      "lyricId": "6453023",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66ffc",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "hua \u306e \u3088 \u3046 \u306b",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1121141",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2205401",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4373482",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10930843",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+        "artistId": "7013",
+        "artistName": "\u677e\u305f\u304b\u5b50"
+      }
+    ],
+    "singers": "\u677e\u305f\u304b\u5b50",
+    "songId": "369569",
+    "songName": "\u82b1\u306e\u3088\u3046\u306b",
+    "songStatus": "7",
+    "songwriters": "SUNPLAZA",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "8",
+    "translation": ""
+  },
+  {
+    "albumId": "31608",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img13/7013/316081474367636.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img13/7013/316081474367636.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u3044\u3064\u304b\u3001\u685c\u306e\u96e8\u306b\u2026",
+    "albumSongCount": "12",
+    "albumSubName": "\u7ec8\u6709\u4e00\u5929\u8d70\u8fdb\u6a31\u96e8\u4e0b",
+    "arrangement": "",
+    "artistAlbumCount": "40",
+    "artistAlias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+    "artistId": "7013",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/52/14213915875252.jpg",
+    "artistName": "\u677e\u305f\u304b\u5b50",
+    "artistVOs": [
+      {
+        "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+        "artistId": "7013",
+        "artistName": "\u677e\u305f\u304b\u5b50"
+      }
+    ],
+    "bakSong": {
+      "albumId": "320407",
+      "albumLanguage": "\u65e5\u8bed",
+      "albumLogo": "http://pic.xiami.net/images/album/img13/7013/3204071474876623.jpg",
+      "albumLogoS": "http://pic.xiami.net/images/album/img13/7013/3204071474876623.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+      "albumName": "\u5922\u306e\u3057\u305a\u304f",
+      "albumSongCount": "4",
+      "albumSubName": "\u68a6\u7684\u70b9\u6ef4",
+      "arrangement": "\u6b66\u90e8\u8061\u5fd7",
+      "artistAlbumCount": "40",
+      "artistAlias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+      "artistId": "7013",
+      "artistLogo": "http://pic.xiami.net/images/artistlogo/52/14213915875252.jpg",
+      "artistName": "\u677e\u305f\u304b\u5b50",
+      "artistVOs": [
+        {
+          "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+          "artistId": "7013",
+          "artistName": "\u677e\u305f\u304b\u5b50"
+        }
+      ],
+      "bakSongId": "0",
+      "bizTags": [
+        "DF_JHUYD",
+        "X_FREE",
+        "W_L14P2",
+        "JKP_N11E"
+      ],
+      "canReward": "false",
+      "cdSerial": "1",
+      "composer": "\u677e\u305f\u304b\u5b50",
+      "downloadCount": "false",
+      "exclusive": "false",
+      "flag": "1",
+      "gmtCreate": "1341392871000",
+      "length": "304000",
+      "listenFiles": [
+        {
+          "expire": "1534787672079",
+          "fileSize": "1243048",
+          "format": "m4a",
+          "listenFile": "http://m32.xiami.net/13/7013/320407/3562953_1479873003079.m4a?auth_key=1535338800-0-0-f5bd1a7559c0b6c8ae7c7be746f5d8b7",
+          "playVolume": "89.0",
+          "quality": "e"
+        },
+        {
+          "expire": "1534787672079",
+          "fileSize": "2448962",
+          "format": "m4a",
+          "listenFile": "http://m64.xiami.net/13/7013/320407/3562953_1479873003079.m4a?auth_key=1535338800-0-0-f5bd1a7559c0b6c8ae7c7be746f5d8b7",
+          "playVolume": "89.0",
+          "quality": "f"
+        },
+        {
+          "expire": "1534787672079",
+          "fileSize": "12161732",
+          "format": "mp3",
+          "listenFile": "http://m320.xiami.net/13/7013/320407/3562953_11717571_h.mp3?auth_key=1535338800-0-0-c619e641783347b48687e8fadfa15659",
+          "playVolume": "89.0",
+          "quality": "h"
+        },
+        {
+          "expire": "1534787672079",
+          "fileSize": "4864584",
+          "format": "mp3",
+          "listenFile": "http://m128.xiami.net/13/7013/320407/3562953_11717571_l.mp3?auth_key=1535338800-0-0-0831c83fe2b50936a28d316d60414cb8",
+          "playVolume": "89.0",
+          "quality": "l"
+        }
+      ],
+      "lyricInfo": {
+        "gmtModified": "1532668070000",
+        "isOfficial": "true",
+        "lyricFile": "http://img.xiami.net/lyric/53/3562953_1532668070_5586.xtrc",
+        "lyricId": "14200489",
+        "lyricType": "7",
+        "userId": "0"
+      },
+      "musicType": "0",
+      "mvId": "K66oCt",
+      "needPayFlag": "0",
+      "newSubName": "",
+      "offline": "false",
+      "offlineType": "0",
+      "originOffline": "false",
+      "pace": "90",
+      "panFlag": "0",
+      "pinyin": "\u5922 \u306e \u3057 \u305a \u304f ",
+      "purviewRoleVOs": [
+        {
+          "filesize": "1243048",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "e"
+        },
+        {
+          "filesize": "2448962",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "f"
+        },
+        {
+          "filesize": "4864584",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "l"
+        },
+        {
+          "filesize": "12161732",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "0"
+            }
+          ],
+          "quality": "h"
+        },
+        {
+          "filesize": "0",
+          "isExist": "false",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "true",
+              "purpose": "1",
+              "upgradeRole": "1"
+            },
+            {
+              "needPay": "false",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "1"
+            }
+          ],
+          "quality": "s"
+        }
+      ],
+      "singerVOs": [
+        {
+          "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+          "artistId": "7013",
+          "artistName": "\u677e\u305f\u304b\u5b50"
+        }
+      ],
+      "singers": "\u677e\u305f\u304b\u5b50",
+      "songId": "3562953",
+      "songName": "\u5922\u306e\u3057\u305a\u304f",
+      "songStatus": "0",
+      "songwriters": "\u677e\u305f\u304b\u5b50",
+      "subName": "",
+      "thirdpartyUrl": "",
+      "track": "1",
+      "translation": ""
+    },
+    "bakSongId": "3562953",
+    "bizTags": [
+      "FEEL_A",
+      "JKP_N11E",
+      "S_OFF"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u677e\u305f\u304b\u5b50",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "13",
+    "gmtCreate": "1341392871000",
+    "length": "335000",
+    "listenFiles": [],
+    "lyricInfo": {
+      "gmtModified": "1449850579000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/13/369613_1437126608_5505.xlrc",
+      "lyricId": "8313391",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66oCt",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "90",
+    "panFlag": "0",
+    "pinyin": "\u5922 \u306e \u3057 \u305a \u304f ",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1376116",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2711424",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "5370731",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "13422926",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u677e\u9686\u5b50 / \u307e\u3064 \u305f\u304b\u3053",
+        "artistId": "7013",
+        "artistName": "\u677e\u305f\u304b\u5b50"
+      }
+    ],
+    "singers": "\u677e\u305f\u304b\u5b50",
+    "songId": "369613",
+    "songName": "\u5922\u306e\u3057\u305a\u304f",
+    "songStatus": "7",
+    "songwriters": "\u677e\u305f\u304b\u5b50",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "11",
+    "translation": ""
+  },
+  {
+    "albumId": "31949",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img99/7099/319491375877612.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img99/7099/319491375877612.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Good Luck To You",
+    "albumSongCount": "15",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "7",
+    "artistAlias": "Yuri Chika / \u3086\u3046\u308a \u3061\u304b",
+    "artistId": "7099",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/96/14219062154396.jpg",
+    "artistName": "\u6709\u91cc\u77e5\u82b1",
+    "artistVOs": [
+      {
+        "alias": "Yuri Chika / \u3086\u3046\u308a \u3061\u304b",
+        "artistId": "7099",
+        "artistName": "\u6709\u91cc\u77e5\u82b1"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "I_NZT",
+      "X_FREE",
+      "FEEL_A",
+      "D_E1BS6",
+      "JKP_N11E"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "OSABE MASAKAZU",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1383664051000",
+    "length": "196000",
+    "listenFiles": [
+      {
+        "expire": "1534786181059",
+        "fileSize": "806202",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/99/7099/31949/372021_1479872703423.m4a?auth_key=1535338800-0-0-6f26ea1c4d0a9f84ac6843b9213132af",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534786181059",
+        "fileSize": "1581181",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/99/7099/31949/372021_1479872703423.m4a?auth_key=1535338800-0-0-6f26ea1c4d0a9f84ac6843b9213132af",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534786181059",
+        "fileSize": "7844211",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/99/7099/31949/372021_15094911_h.mp3?auth_key=1535338800-0-0-9e0c354d384641398655e7363b717386",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534786181059",
+        "fileSize": "3137991",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/99/7099/31949/372021_15094911_l.mp3?auth_key=1535338800-0-0-ea9bd3321873fe6864e5bd691970e390",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1527677093000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/21/372021_1527677093_3242.xtrc",
+      "lyricId": "14075679",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "92",
+    "panFlag": "0",
+    "pinyin": "\u6d99 \u306e wu zheng ",
+    "purviewRoleVOs": [
+      {
+        "filesize": "806202",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1581181",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3137991",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "7844211",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Yuri Chika / \u3086\u3046\u308a \u3061\u304b",
+        "artistId": "7099",
+        "artistName": "\u6709\u91cc\u77e5\u82b1"
+      }
+    ],
+    "singers": "\u6709\u91cc\u77e5\u82b1",
+    "songId": "372021",
+    "songName": "\u6d99\u306e\u7269\u8a9e",
+    "songStatus": "0",
+    "songwriters": "YURI CHIKA",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "9",
+    "translation": ""
+  },
+  {
+    "albumId": "354777",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img42/56642/3547771375435902.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img42/56642/3547771375435902.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u5c0f\u3055\u306a\u604b\u306e\u3046\u305f",
+    "albumSongCount": "1",
+    "albumSubName": "\u5c0f\u5c0f\u604b\u6b4c",
+    "arrangement": "",
+    "artistAlbumCount": "8",
+    "artistAlias": "\u65b0\u57a3\u7ed3\u8863 / Aragaki Yui / \u3042\u3089\u304c\u304d \u3086\u3044 / Gakki",
+    "artistId": "56642",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/2/15239298353402.jpg",
+    "artistName": "\u65b0\u57a3\u7d50\u8863",
+    "artistVOs": [
+      {
+        "alias": "\u65b0\u57a3\u7ed3\u8863 / Aragaki Yui / \u3042\u3089\u304c\u304d \u3086\u3044 / Gakki",
+        "artistId": "56642",
+        "artistName": "\u65b0\u57a3\u7d50\u8863"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "FEEL_A",
+      "D_E1BS6",
+      "JKP_N11E",
+      "TIT_025",
+      "S_OFF"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "MONGOL800",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "13",
+    "gmtCreate": "1361902905000",
+    "length": "324000",
+    "listenFiles": [],
+    "lyricInfo": {
+      "gmtModified": "1437126599000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/80/1769209480_1437126599_3768.xlrc",
+      "lyricId": "8313228",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6YTo4",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "92",
+    "panFlag": "0",
+    "pinyin": "xiao \u3055 \u306a lian \u306e \u3046 \u305f ",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1328497",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2615141",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "5193106",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "12981983",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u65b0\u57a3\u7ed3\u8863 / Aragaki Yui / \u3042\u3089\u304c\u304d \u3086\u3044 / Gakki",
+        "artistId": "56642",
+        "artistName": "\u65b0\u57a3\u7d50\u8863"
+      }
+    ],
+    "singers": "\u65b0\u57a3\u7d50\u8863",
+    "songId": "1769209480",
+    "songName": "\u5c0f\u3055\u306a\u604b\u306e\u3046\u305f",
+    "songStatus": "7",
+    "songwriters": "\u4e0a\u6c5f\u6d0c\u6e05\u4f5c",
+    "subName": "\u5c0f\u5c0f\u604b\u6b4c",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": "\u5c0f\u5c0f\u604b\u6b4c"
+  },
+  {
+    "albumId": "30543",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img80/425880/305431523425881.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img80/425880/305431523425881.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "LOVE JAM",
+    "albumSongCount": "11",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "57",
+    "artistAlias": "\u5927\u585a\u7231 / \u304a\u304a\u3064\u304b \u3042\u3044 / ai otsuka / \u611b\u3061\u3093 / \u5927\u51a2\u7231",
+    "artistId": "6754",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/33/15209068997033.jpg",
+    "artistName": "\u5927\u585a\u611b",
+    "artistVOs": [
+      {
+        "alias": "\u5927\u585a\u7231 / \u304a\u304a\u3064\u304b \u3042\u3044 / ai otsuka / \u611b\u3061\u3093 / \u5927\u51a2\u7231",
+        "artistId": "6754",
+        "artistName": "\u5927\u585a\u611b"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "S_PAY",
+      "X_FREE",
+      "FEEL_A",
+      "D_E1BS6",
+      "JKP_N11E",
+      "ZZR_OZU7"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u611b",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1092758400000",
+    "length": "274037",
+    "listenFiles": [
+      {
+        "expire": "1534784010042",
+        "fileSize": "48376096",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/754/6754/30543/360771_1524646053861.wav?auth_key=1535338800-0-0-a4c0dcc421b6875712cbf1f40185a277",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534784010042",
+        "fileSize": "1121498",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/754/6754/30543/360771_1524646053860.m4a?auth_key=1535338800-0-0-8d594e0298245ae21eb0637451c7ec6c",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534784010042",
+        "fileSize": "2214638",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/754/6754/30543/360771_1524646053861.m4a?auth_key=1535338800-0-0-d08db7bdebaaae04feabb038e09aa2b1",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534784010042",
+        "fileSize": "10972472",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/754/6754/30543/360771_1524646053861.mp3?auth_key=1535338800-0-0-a764b2c6a22d733a4f40dab740a563c5",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534784010042",
+        "fileSize": "4388988",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/754/6754/30543/360771_1524646053861.mp3?auth_key=1535338800-0-0-a764b2c6a22d733a4f40dab740a563c5",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1533016752000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/71/360771_1533016752_8256.xtrc",
+      "lyricId": "14209986",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "jin yu hua huo",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1121498",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2214638",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4388988",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10972472",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "48376096",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u5927\u585a\u7231 / \u304a\u304a\u3064\u304b \u3042\u3044 / ai otsuka / \u611b\u3061\u3093 / \u5927\u51a2\u7231",
+        "artistId": "6754",
+        "artistName": "\u5927\u585a\u611b"
+      }
+    ],
+    "singers": "\u5927\u585a\u611b",
+    "songId": "360771",
+    "songName": "\u91d1\u9b5a\u82b1\u706b",
+    "songStatus": "0",
+    "songwriters": "\u611b",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "9",
+    "translation": ""
+  },
+  {
+    "albumId": "30352",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img33/6733/303521474274467.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img33/6733/303521474274467.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Wish You The Best",
+    "albumSongCount": "16",
+    "albumSubName": "",
+    "arrangement": "Cybersound",
+    "artistAlbumCount": "71",
+    "artistAlias": "\u4ed3\u6728\u9ebb\u8863 / Kuraki Mai / Mai K",
+    "artistId": "6733",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/58/13929724997258.jpg",
+    "artistName": "\u5009\u6728\u9ebb\u8863",
+    "artistVOs": [
+      {
+        "alias": "\u4ed3\u6728\u9ebb\u8863 / Kuraki Mai / Mai K",
+        "artistId": "6733",
+        "artistName": "\u5009\u6728\u9ebb\u8863"
+      }
+    ],
+    "bakSong": {
+      "albumId": "11665",
+      "albumLanguage": "\u56fd\u8bed",
+      "albumLogo": "http://pic.xiami.net/images/album/img32/2132/116651309665306.png",
+      "albumLogoS": "http://pic.xiami.net/images/album/img32/2132/116651309665306.png@1e_1c_0i_1o_100Q_225w_225h.webp",
+      "albumName": "The Moment",
+      "albumSongCount": "22",
+      "albumSubName": "\u5173\u952e\u65f6\u523b",
+      "arrangement": "Cybersound",
+      "artistAlbumCount": "23",
+      "artistAlias": "Stefanie Sun",
+      "artistId": "2132",
+      "artistLogo": "http://pic.xiami.net/images/artistlogo/61/13916163958761.jpg",
+      "artistName": "\u5b59\u71d5\u59ff",
+      "artistVOs": [
+        {
+          "alias": "Stefanie Sun",
+          "artistId": "2132",
+          "artistName": "\u5b59\u71d5\u59ff"
+        }
+      ],
+      "bakSongId": "0",
+      "bizTags": [
+        "LOSSLESS",
+        "S_PAY",
+        "RI_A5YY",
+        "X_FREE",
+        "XN_BJ9QM",
+        "S_AUTH"
+      ],
+      "canReward": "false",
+      "cdSerial": "2",
+      "composer": "\u5927\u91ce\u611b\u679c",
+      "downloadCount": "false",
+      "exclusive": "false",
+      "flag": "65",
+      "gmtCreate": "1348152284000",
+      "length": "245000",
+      "listenFiles": [
+        {
+          "expire": "1534783699369",
+          "fileSize": "31439410",
+          "format": "flac",
+          "listenFile": "http://m740.xiami.net/733/6733/11665/376405_1439423708_h.flac?auth_key=1535338800-0-0-756595d19fafa15dccf6b749f42a1c40",
+          "playVolume": "89.0",
+          "quality": "s"
+        },
+        {
+          "expire": "1534783699369",
+          "fileSize": "1013593",
+          "format": "m4a",
+          "listenFile": "http://m32.xiami.net/132/2132/11665/376405_1479862202614.m4a?auth_key=1535338800-0-0-665a89578f5b102fa999b07a2792f217",
+          "playVolume": "89.0",
+          "quality": "e"
+        },
+        {
+          "expire": "1534783699369",
+          "fileSize": "1992818",
+          "format": "m4a",
+          "listenFile": "http://m64.xiami.net/132/2132/11665/376405_1479862202614.m4a?auth_key=1535338800-0-0-665a89578f5b102fa999b07a2792f217",
+          "playVolume": "89.0",
+          "quality": "f"
+        },
+        {
+          "expire": "1534783699368",
+          "fileSize": "9807589",
+          "format": "mp3",
+          "listenFile": "http://m320.xiami.net/132/2132/11665/376405_24925_h.mp3?auth_key=1535338800-0-0-a3f219956b70dba526f3819dcf3d45ee",
+          "playVolume": "89.0",
+          "quality": "h"
+        },
+        {
+          "expire": "1534783699369",
+          "fileSize": "3924602",
+          "format": "mp3",
+          "listenFile": "http://m128.xiami.net/132/2132/11665/376405_24925_l.mp3?auth_key=1535338800-0-0-7de7a7193ec9dad1e6d529e8ddaa48f6",
+          "playVolume": "89.0",
+          "quality": "l"
+        }
+      ],
+      "lyricInfo": {
+        "gmtModified": "1506399540000",
+        "isOfficial": "true",
+        "lyricFile": "http://img.xiami.net/lyric/5/376405_1506399539_7684.trc",
+        "lyricId": "13433429",
+        "lyricType": "3",
+        "userId": "0"
+      },
+      "musicType": "0",
+      "mvId": "",
+      "needPayFlag": "2",
+      "newSubName": "",
+      "offline": "false",
+      "offlineType": "0",
+      "originOffline": "false",
+      "pace": "92",
+      "panFlag": "0",
+      "pinyin": "Tonight, I Feel Close To You",
+      "purviewRoleVOs": [
+        {
+          "filesize": "1013593",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "e"
+        },
+        {
+          "filesize": "1992818",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "f"
+        },
+        {
+          "filesize": "3924602",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "l"
+        },
+        {
+          "filesize": "9807589",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "1",
+              "upgradeRole": "4"
+            },
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "h"
+        },
+        {
+          "filesize": "31439410",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "1",
+              "upgradeRole": "4"
+            },
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "s"
+        }
+      ],
+      "singerVOs": [
+        {
+          "alias": "Stefanie Sun",
+          "artistId": "2132",
+          "artistName": "\u5b59\u71d5\u59ff"
+        },
+        {
+          "alias": "\u4ed3\u6728\u9ebb\u8863 / Kuraki Mai / Mai K",
+          "artistId": "6733",
+          "artistName": "\u5009\u6728\u9ebb\u8863"
+        }
+      ],
+      "singers": "\u5b59\u71d5\u59ff;\u5009\u6728\u9ebb\u8863",
+      "songId": "376405",
+      "songName": "Tonight, I Feel Close To You",
+      "songStatus": "0",
+      "songwriters": "\u5009\u6728\u9ebb\u8863 / \u897f\u5ba4\u6597\u7d00\u5b50",
+      "subName": "",
+      "thirdpartyUrl": "",
+      "track": "15",
+      "translation": ""
+    },
+    "bakSongId": "376405",
+    "bizTags": [
+      "I_3LSX",
+      "LOSSLESS",
+      "I_NZT",
+      "CKI_DYS",
+      "S_OFF"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u5927\u91ce\u611b\u679c",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "77",
+    "gmtCreate": "1348152284000",
+    "length": "246000",
+    "listenFiles": [],
+    "lyricInfo": {
+      "gmtModified": "1450621878000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/60/359360_1437126600_6658.xlrc",
+      "lyricId": "8313248",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "Tonight, I Feel Close To You",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1013593",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1992818",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3940070",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9846252",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "31439410",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u4ed3\u6728\u9ebb\u8863 / Kuraki Mai / Mai K",
+        "artistId": "6733",
+        "artistName": "\u5009\u6728\u9ebb\u8863"
+      },
+      {
+        "alias": "Stefanie Sun",
+        "artistId": "2132",
+        "artistName": "\u5b59\u71d5\u59ff"
+      }
+    ],
+    "singers": "\u5009\u6728\u9ebb\u8863;\u5b59\u71d5\u59ff",
+    "songId": "359360",
+    "songName": "Tonight, I Feel Close To You",
+    "songStatus": "7",
+    "songwriters": "\u5009\u6728\u9ebb\u8863 / \u897f\u5ba4\u6597\u7d00\u5b50",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "16",
+    "translation": ""
+  },
+  {
+    "albumId": "371912",
+    "albumLanguage": "\u4fc4\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img92/70992/3719121392358904.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img92/70992/3719121392358904.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u0412\u043e \u043c\u043d\u0435 \u043c\u043e\u044f \u043b\u044e\u0431\u043e\u0432\u044c",
+    "albumSongCount": "12",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "33",
+    "artistAlias": "\u74e6\u5217\u5229\u5a05 / Valeriya",
+    "artistId": "70992",
+    "artistLogo": "http://pic.xiami.net/images/artist/78/12667439243578.gif",
+    "artistName": "\u0412\u0430\u043b\u0435\u0440\u0438\u044f",
+    "artistVOs": [
+      {
+        "alias": "\u74e6\u5217\u5229\u5a05 / Valeriya",
+        "artistId": "70992",
+        "artistName": "\u0412\u0430\u043b\u0435\u0440\u0438\u044f"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "RMQ_7O5",
+      "X_FREE"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1262275200000",
+    "length": "163000",
+    "listenFiles": [
+      {
+        "expire": "1534782421435",
+        "fileSize": "662386",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/992/70992/371912/1769412022_1131795_l.m4a?auth_key=1535338800-0-0-1b04e66841056f7cd0db4fc29bc3a88d",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534782421435",
+        "fileSize": "6531835",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/992/70992/371912/1769412022_1131795_h.mp3?auth_key=1535338800-0-0-1280c97e53a1e75e5d8adf8ceec47586",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534782421435",
+        "fileSize": "2614302",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/992/70992/371912/1769412022_1131795_l.mp3?auth_key=1535338800-0-0-8ab3a769e49d86d159e841f8583f54e4",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1450190453000",
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/upload/22/1769412022_1333287717.lrc",
+      "lyricId": "3885635",
+      "lyricType": "2",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "65",
+    "panFlag": "0",
+    "pinyin": "\u0412 \u043e \u043b \u0448 \u0435 \u0431 \u043d \u044b \u0439  \u0434 \u043e \u043c ",
+    "purviewRoleVOs": [
+      {
+        "filesize": "662386",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "2614302",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "6531835",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u74e6\u5217\u5229\u5a05 / Valeriya",
+        "artistId": "70992",
+        "artistName": "\u0412\u0430\u043b\u0435\u0440\u0438\u044f"
+      }
+    ],
+    "singers": "\u0412\u0430\u043b\u0435\u0440\u0438\u044f",
+    "songId": "1769412022",
+    "songName": "\u0412\u043e\u043b\u0448\u0435\u0431\u043d\u044b\u0439 \u0434\u043e\u043c",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "10",
+    "translation": ""
+  },
+  {
+    "albumId": "462116",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img60/6860/4621161415687934.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img60/6860/4621161415687934.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "pieces",
+    "albumSongCount": "13",
+    "albumSubName": "KOKIA outwork collection",
+    "arrangement": "\u4f0a\u85e4\u771f\u6f84",
+    "artistAlbumCount": "64",
+    "artistAlias": "\u5409\u7530\u4e9c\u7d00\u5b50 / \u5409\u7530\u4e9a\u7eaa\u5b50",
+    "artistId": "6860",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/91/14213915726591.jpg",
+    "artistName": "KOKIA",
+    "artistVOs": [
+      {
+        "alias": "\u5409\u7530\u4e9c\u7d00\u5b50 / \u5409\u7530\u4e9a\u7eaa\u5b50",
+        "artistId": "6860",
+        "artistName": "KOKIA"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "PJA_HY3SY",
+      "JKP_N11E",
+      "OW_V41EI",
+      "S_OFF"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "KOKIA",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "77",
+    "gmtCreate": "1314115200000",
+    "length": "217000",
+    "listenFiles": [],
+    "lyricInfo": {
+      "gmtModified": "1500027725000",
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/64/1770446164_1500027725832_234.xlrc",
+      "lyricId": "12685201",
+      "lyricType": "4",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "75",
+    "panFlag": "0",
+    "pinyin": "EXEC_COSMOFLIPS/.",
+    "purviewRoleVOs": [
+      {
+        "filesize": "887602",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1740435",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3482387",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8702071",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "25907911",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u5409\u7530\u4e9c\u7d00\u5b50 / \u5409\u7530\u4e9a\u7eaa\u5b50",
+        "artistId": "6860",
+        "artistName": "KOKIA"
+      }
+    ],
+    "singers": "KOKIA",
+    "songId": "1770446164",
+    "songName": "EXEC_COSMOFLIPS/.",
+    "songStatus": "7",
+    "songwriters": "KOKIA",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "12",
+    "translation": ""
+  },
+  {
+    "albumId": "30965",
+    "albumLanguage": "\u65e5\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img60/6860/309651423990000.jpeg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img60/6860/309651423990000.jpeg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Aigakikoeru",
+    "albumSongCount": "15",
+    "albumSubName": "",
+    "arrangement": "KOKIA",
+    "artistAlbumCount": "64",
+    "artistAlias": "\u5409\u7530\u4e9c\u7d00\u5b50 / \u5409\u7530\u4e9a\u7eaa\u5b50",
+    "artistId": "6860",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/91/14213915726591.jpg",
+    "artistName": "KOKIA",
+    "artistVOs": [
+      {
+        "alias": "\u5409\u7530\u4e9c\u7d00\u5b50 / \u5409\u7530\u4e9a\u7eaa\u5b50",
+        "artistId": "6860",
+        "artistName": "KOKIA"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "X_FREE",
+      "FEEL_A",
+      "JKP_N11E",
+      "QF_WXH35"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "KOKIA",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1179849600000",
+    "length": "330000",
+    "listenFiles": [
+      {
+        "expire": "1534781816091",
+        "fileSize": "24766682",
+        "format": "ape",
+        "listenFile": "http://m740.xiami.net/730/90730/0/364243_1442297193.ape?auth_key=1535338800-0-0-d7066ffcff7c7c57d8ceb8fed5700468",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534781816091",
+        "fileSize": "1363996",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/860/6860/30965/364243_1479856202894.m4a?auth_key=1535338800-0-0-139a658366c9e7512f6268b2b8d16fda",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534781816091",
+        "fileSize": "2691436",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/860/6860/30965/364243_1479856202894.m4a?auth_key=1535338800-0-0-139a658366c9e7512f6268b2b8d16fda",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534781816091",
+        "fileSize": "13217081",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/860/6860/30965/364243_14171191_h.mp3?auth_key=1535338800-0-0-3d666c36f1c85c9e6cd4c44297494d49",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534781816091",
+        "fileSize": "5287142",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/860/6860/30965/364243_14171191_l.mp3?auth_key=1535338800-0-0-b70b2ef48302a70c2f899b5bfc88b147",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1528181389000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/43/364243_1528181389_1505.xtrc",
+      "lyricId": "14107239",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "72",
+    "panFlag": "0",
+    "pinyin": "\u3042 \u308a \u304c \u3068 \u3046 \u30fb\u30fb\u30fb",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1363996",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2691436",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "5287142",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "13217081",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "24766682",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u5409\u7530\u4e9c\u7d00\u5b50 / \u5409\u7530\u4e9a\u7eaa\u5b50",
+        "artistId": "6860",
+        "artistName": "KOKIA"
+      }
+    ],
+    "singers": "KOKIA",
+    "songId": "364243",
+    "songName": "\u3042\u308a\u304c\u3068\u3046\u30fb\u30fb\u30fb",
+    "songStatus": "0",
+    "songwriters": "KOKIA",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "15",
+    "translation": ""
+  },
+  {
+    "albumId": "32839",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img24/7224/328391472614818.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img24/7224/328391472614818.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Dance Dance Dance",
+    "albumSongCount": "12",
+    "albumSubName": "",
+    "arrangement": "\u6d77\u9e23\u5a01",
+    "artistAlbumCount": "16",
+    "artistAlias": "",
+    "artistId": "7224",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/61/14588149394761.jpg",
+    "artistName": "\u6d77\u9e23\u5a01",
+    "artistVOs": [
+      {
+        "alias": "",
+        "artistId": "7224",
+        "artistName": "\u6d77\u9e23\u5a01"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "S_PAY",
+      "I_NZT",
+      "RI_A5YY",
+      "X_FREE",
+      "PLT_UFQ",
+      "XN_BJ9QM",
+      "S_AUTH"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u6d77\u9e23\u5a01",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1341392871000",
+    "length": "267000",
+    "listenFiles": [
+      {
+        "expire": "1534787648043",
+        "fileSize": "32637033",
+        "format": "ape",
+        "listenFile": "http://m740.xiami.net/224/7224/32839/392059_41706132_h.ape?auth_key=1535338800-0-0-abdc1b5fad9f6de5c33ce56401d06a7c",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534787648043",
+        "fileSize": "1094715",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/224/7224/32839/392059_1479877505662.m4a?auth_key=1535338800-0-0-dcf9ade82926384c3b2b11723845a74b",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534787648043",
+        "fileSize": "2151572",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/224/7224/32839/392059_1479877505662.m4a?auth_key=1535338800-0-0-dcf9ade82926384c3b2b11723845a74b",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534787648043",
+        "fileSize": "10682151",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/224/7224/32839/392059_10746344_h.mp3?auth_key=1535338800-0-0-f901b78ffaa49899f58310d09ad360c5",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534787648043",
+        "fileSize": "4272747",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/224/7224/32839/392059_10746344_l.mp3?auth_key=1535338800-0-0-3a182696bf882e29eee7d0be538800b5",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1530588350000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/59/392059_1530588350_6374.trc",
+      "lyricId": "14168344",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6KA3J",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "lao ren yu hai",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1094715",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2151572",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4272747",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10682151",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "32637033",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "",
+        "artistId": "7224",
+        "artistName": "\u6d77\u9e23\u5a01"
+      }
+    ],
+    "singers": "\u6d77\u9e23\u5a01",
+    "songId": "392059",
+    "songName": "\u8001\u4eba\u4e0e\u6d77",
+    "songStatus": "0",
+    "songwriters": "\u6731\u5176\u6c11",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "4880",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img78/978/48801472446234.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img78/978/48801472446234.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u5fd8\u60c51015",
+    "albumSongCount": "26",
+    "albumSubName": "",
+    "arrangement": "\u4f0d\u4f70 / China Blue",
+    "artistAlbumCount": "36",
+    "artistAlias": "\u4f0d\u4f70",
+    "artistId": "978",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/0/14585402507400.jpg",
+    "artistName": "\u4f0d\u4f70 & China Blue",
+    "artistVOs": [
+      {
+        "alias": "\u4f0d\u4f70",
+        "artistId": "978",
+        "artistName": "\u4f0d\u4f70 & China Blue"
+      }
+    ],
+    "bakSong": {
+      "albumId": "4885",
+      "albumLanguage": "\u56fd\u8bed",
+      "albumLogo": "http://pic.xiami.net/images/album/img78/978/4885.jpg",
+      "albumLogoS": "http://pic.xiami.net/images/album/img78/978/4885.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+      "albumName": "\u4f0d\u4f70\u529b",
+      "albumSongCount": "13",
+      "albumSubName": "2004 \u751f\u547d\u70ed\u529bLive",
+      "arrangement": "\u4f0d\u4f70&amp;China Blue",
+      "artistAlbumCount": "36",
+      "artistAlias": "\u4f0d\u4f70",
+      "artistId": "978",
+      "artistLogo": "http://pic.xiami.net/images/artistlogo/0/14585402507400.jpg",
+      "artistName": "\u4f0d\u4f70 & China Blue",
+      "artistVOs": [
+        {
+          "alias": "\u4f0d\u4f70",
+          "artistId": "978",
+          "artistName": "\u4f0d\u4f70 & China Blue"
+        }
+      ],
+      "bakSongId": "0",
+      "bizTags": [
+        "LOSSLESS",
+        "S_PAY",
+        "RI_A5YY",
+        "X_FREE",
+        "FEEL_A",
+        "HU_0T1BG",
+        "Q_QK"
+      ],
+      "canReward": "false",
+      "cdSerial": "1",
+      "composer": "\u4f0d\u4f70",
+      "downloadCount": "false",
+      "exclusive": "false",
+      "flag": "65",
+      "gmtCreate": "1341392871000",
+      "length": "216000",
+      "listenFiles": [
+        {
+          "expire": "1534786172041",
+          "fileSize": "25815997",
+          "format": "flac",
+          "listenFile": "http://m740.xiami.net/978/978/4885/59105_1439386828_h.flac?auth_key=1535338800-0-0-47fc81ba3a1e29b890afc36d10b7076b",
+          "playVolume": "89.0",
+          "quality": "s"
+        },
+        {
+          "expire": "1534786172042",
+          "fileSize": "888424",
+          "format": "m4a",
+          "listenFile": "http://m32.xiami.net/978/978/4885/59105_1479858002083.m4a?auth_key=1535338800-0-0-0e0811653e4a4424357e71490e5d7573",
+          "playVolume": "89.0",
+          "quality": "e"
+        },
+        {
+          "expire": "1534786172042",
+          "fileSize": "1743760",
+          "format": "m4a",
+          "listenFile": "http://m64.xiami.net/978/978/4885/59105_1479858002083.m4a?auth_key=1535338800-0-0-0e0811653e4a4424357e71490e5d7573",
+          "playVolume": "89.0",
+          "quality": "f"
+        },
+        {
+          "expire": "1534786172041",
+          "fileSize": "8609089",
+          "format": "mp3",
+          "listenFile": "http://m320.xiami.net/978/978/4880/59046_2549769_h.mp3?auth_key=1535338800-0-0-f7f6fd1522952565ca8099fa68a0b213",
+          "playVolume": "89.0",
+          "quality": "h"
+        },
+        {
+          "expire": "1534786172041",
+          "fileSize": "3458995",
+          "format": "mp3",
+          "listenFile": "http://m128.xiami.net/1/978/978/4885/59105_177856_l.mp3?auth_key=1535338800-0-0-76f5fedb86e053f18883f8fe4a5497a9",
+          "playVolume": "89.0",
+          "quality": "l"
+        }
+      ],
+      "lyricInfo": {
+        "gmtModified": "1450061983000",
+        "isOfficial": "true",
+        "lyricFile": "http://img.xiami.net/lyric/5/59105_1450061983_1553.trc",
+        "lyricId": "8911679",
+        "lyricType": "3",
+        "userId": "0"
+      },
+      "musicType": "0",
+      "mvId": "",
+      "needPayFlag": "2",
+      "newSubName": "",
+      "offline": "false",
+      "offlineType": "0",
+      "originOffline": "false",
+      "pace": "0",
+      "panFlag": "0",
+      "pinyin": "tu ran de zi wo   ( L i v e )",
+      "purviewRoleVOs": [
+        {
+          "filesize": "888424",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "e"
+        },
+        {
+          "filesize": "1743760",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "f"
+        },
+        {
+          "filesize": "3458995",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "false",
+              "needVip": "false",
+              "purpose": "1",
+              "upgradeRole": "0"
+            },
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "l"
+        },
+        {
+          "filesize": "8609089",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "1",
+              "upgradeRole": "4"
+            },
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "h"
+        },
+        {
+          "filesize": "25815997",
+          "isExist": "true",
+          "operationVOs": [
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "1",
+              "upgradeRole": "4"
+            },
+            {
+              "needPay": "true",
+              "needVip": "true",
+              "purpose": "2",
+              "upgradeRole": "4"
+            }
+          ],
+          "quality": "s"
+        }
+      ],
+      "singerVOs": [
+        {
+          "alias": "\u4f0d\u4f70",
+          "artistId": "978",
+          "artistName": "\u4f0d\u4f70 & China Blue"
+        }
+      ],
+      "singers": "\u4f0d\u4f70 & China Blue",
+      "songId": "59105",
+      "songName": "\u7a81\u7136\u7684\u81ea\u6211 (Live)",
+      "songStatus": "0",
+      "songwriters": "\u4f0d\u4f70\uff0c\u5f90\u514b",
+      "subName": "",
+      "thirdpartyUrl": "",
+      "track": "3",
+      "translation": ""
+    },
+    "bakSongId": "59105",
+    "bizTags": [
+      "LOSSLESS",
+      "R_0TEIZ",
+      "RI_A5YY",
+      "P_113D",
+      "TIT_025",
+      "S_OFF"
+    ],
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "\u4f0d\u4f70",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "77",
+    "gmtCreate": "1341392871000",
+    "length": "215000",
+    "listenFiles": [],
+    "lyricInfo": {
+      "gmtModified": "1526821318000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/46/59046_1526821314_6033.trc",
+      "lyricId": "11050251",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6KcWj",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "tu ran de zi wo",
+    "purviewRoleVOs": [
+      {
+        "filesize": "888424",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1743760",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3445202",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8609089",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "25815997",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u4f0d\u4f70",
+        "artistId": "978",
+        "artistName": "\u4f0d\u4f70 & China Blue"
+      }
+    ],
+    "singers": "\u4f0d\u4f70 & China Blue",
+    "songId": "59046",
+    "songName": "\u7a81\u7136\u7684\u81ea\u6211",
+    "songStatus": "7",
+    "songwriters": "\u4f0d\u4f70 / \u5f90\u514b",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "9",
+    "translation": ""
+  },
+  {
+    "albumId": "456061",
+    "albumLanguage": "\u82f1\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img13/81413/4560611470903652.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img13/81413/4560611470903652.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Hold On 'til the Night",
+    "albumSongCount": "18",
+    "albumSubName": "",
+    "arrangement": "",
+    "artistAlbumCount": "19",
+    "artistAlias": "\u683c\u96f7\u68ee\u00b7\u8fc8\u514b\u5c14\u00b7\u8521\u65af / Greyson Michael Chance",
+    "artistId": "81413",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/58/15270390012558.jpg",
+    "artistName": "Greyson Chance",
+    "artistVOs": [
+      {
+        "alias": "\u683c\u96f7\u68ee\u00b7\u8fc8\u514b\u5c14\u00b7\u8521\u65af / Greyson Michael Chance",
+        "artistId": "81413",
+        "artistName": "Greyson Chance"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [
+      "LOSSLESS",
+      "WKX_8MM0E",
+      "S_PAY",
+      "VI_7J4",
+      "X_FREE",
+      "FEEL_A",
+      "CKI_DYS"
+    ],
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "David Jost\u3001Alexander Zuckowski",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1405061215000",
+    "length": "272000",
+    "listenFiles": [
+      {
+        "expire": "1534783653029",
+        "fileSize": "35119657",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/413/81413/456061/1770378271_1439446961_h.flac?auth_key=1535338800-0-0-8c52074670f73b05f2c79c9d1f59b6f7",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534783653029",
+        "fileSize": "1120615",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/413/81413/456061/1770378271_1479878101502.m4a?auth_key=1535338800-0-0-2477c61e122dca7f9dfd747bc7926819",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534783653029",
+        "fileSize": "2202881",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/413/81413/456061/1770378271_1479878101502.m4a?auth_key=1535338800-0-0-2477c61e122dca7f9dfd747bc7926819",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534783653029",
+        "fileSize": "10896360",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/413/81413/456061/1770378271_11147622_h.mp3?auth_key=1535338800-0-0-7f6c435c1f2aca3922ab6c94ae708e82",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534783653029",
+        "fileSize": "4359687",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/413/81413/456061/1770378271_11147622_l.mp3?auth_key=1535338800-0-0-e842d0665ac0241f9649043a1a9464f8",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "gmtModified": "1501467213000",
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/71/1770378271_1501467213_3942.xtrc",
+      "lyricId": "13211604",
+      "lyricType": "7",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66RU5",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "111",
+    "panFlag": "0",
+    "pinyin": "Summertrain",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1120615",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2202881",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4359687",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10896360",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "35119657",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "\u683c\u96f7\u68ee\u00b7\u8fc8\u514b\u5c14\u00b7\u8521\u65af / Greyson Michael Chance",
+        "artistId": "81413",
+        "artistName": "Greyson Chance"
+      }
+    ],
+    "singers": "Greyson Chance",
+    "songId": "1770378271",
+    "songName": "Summertrain",
+    "songStatus": "0",
+    "songwriters": "David Jost\u3001Alexander Zuckowski",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "8",
+    "translation": ""
+  }
+]

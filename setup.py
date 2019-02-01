@@ -20,7 +20,13 @@ setup(
         'feeluown.plugins.local',
         'feeluown.plugins.xiami',
         'feeluown.protocol',
+        'fuocore',
+        'fuocore.local',
+        'fuocore.netease',
+        'fuocore.xiami',
+        'fuocore.qqmusic',
         ],
+    py_moduels=['mpv'],
     package_data={
         '': ['*.qss', '*.png', '../icons/*.png']
         },
@@ -36,7 +42,11 @@ setup(
     # FIXME depends on PyQt5
     install_requires=[
         'quamash>=0.5.5',
-        'fuocore>=2.3',
+        'beautifulsoup4>=4.5.3',
+        'marshmallow>=2.13.5',
+        'mutagen>=1.37',
+        'pycryptodome',
+        'fuzzywuzzy',
         'requests',
         ],
     tests_require=['pytest'],

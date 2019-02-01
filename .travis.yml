@@ -1,0 +1,23 @@
+dist: xenial
+sudo: required
+
+language: python
+python:
+    - 3.5
+    - 3.6
+    - 3.7
+
+env:
+    TEST_ENV: travis
+
+install:
+    - sudo apt-get install libmpv1 -y --force-yes
+    - pip install coveralls
+    - pip install pytest mock pytest-cov sphinx_rtd_theme
+    - pip install -e .
+
+script:
+    - make pytest
+
+after_success:
+  - coveralls

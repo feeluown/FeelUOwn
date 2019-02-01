@@ -1,0 +1,22 @@
+{
+  "api": "mtop.alimusic.xuser.facade.xiamiuserservice.login",
+  "data": {
+    "data": {
+      "accessToken": "111c1111111cdb2b3111111111111111",
+      "expires": "1628062717000",
+      "nickName": "\u4f60\u597da",
+      "refreshExpires": "1633246717",
+      "refreshToken": "1111111111111111111111111111",
+      "schemeUrl": "",
+      "userId": "11111"
+    },
+    "header": {
+      "traceId": "11111111111",
+      "version": "1"
+    }
+  },
+  "ret": [
+    "SUCCESS::\u8c03\u7528\u6210\u529f"
+  ],
+  "v": "1.0"
+}

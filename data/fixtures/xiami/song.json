@@ -1,0 +1,147 @@
+{
+  "albumCount": "8095",
+  "albumId": "2103467442",
+  "albumLogo": "http://pic.xiami.net/images/album/img31/180/5a4d859bcb52f_9042931_1515029915.jpg",
+  "albumLogoS": "http://pic.xiami.net/images/album/img31/180/5a4d859bcb52f_9042931_1515029915.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+  "albumName": "\u201c\u8ba9\u5e78\u798f\u7167\u4eae\u4f60\u201d\u6c5f\u82cf\u536b\u89c62018\u8de8\u5e74\u6f14\u5531\u4f1a",
+  "arrangement": "",
+  "artistId": "7169",
+  "artistLogo": "http://pic.xiami.net/images/artist/11952582166627.jpg",
+  "artistName": "\u534e\u8bed\u7fa4\u661f",
+  "bakSongId": "0",
+  "boughtCount": "0",
+  "cdSerial": "1",
+  "collects": [],
+  "comments": "0",
+  "composer": "\u674e\u5b97\u76db",
+  "favor": "false",
+  "flag": "77",
+  "isFavor": "false",
+  "isSpecialShare": "0",
+  "length": "274085",
+  "listenFiles": [],
+  "lyric": "http://img.xiami.net/lyric/98/1801370698_1515406001_2675.lrc",
+  "lyricId": "13744621",
+  "lyricType": "2",
+  "musicType": "0",
+  "mvId": "",
+  "needPayFlag": "0",
+  "offline": "false",
+  "panFlag": "0",
+  "pinyin": "gei zi ji de ge   ( L i v e )",
+  "prices": [],
+  "purviewRoleVOs": [
+    {
+      "filesize": "1128885",
+      "isExist": "true",
+      "operationVOs": [
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "1",
+          "upgradeRole": "1"
+        },
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "2",
+          "upgradeRole": "1"
+        }
+      ],
+      "quality": "e"
+    },
+    {
+      "filesize": "2230056",
+      "isExist": "true",
+      "operationVOs": [
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "1",
+          "upgradeRole": "1"
+        },
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "2",
+          "upgradeRole": "1"
+        }
+      ],
+      "quality": "f"
+    },
+    {
+      "filesize": "4396511",
+      "isExist": "true",
+      "operationVOs": [
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "1",
+          "upgradeRole": "1"
+        },
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "2",
+          "upgradeRole": "1"
+        }
+      ],
+      "quality": "l"
+    },
+    {
+      "filesize": "10991280",
+      "isExist": "true",
+      "operationVOs": [
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "1",
+          "upgradeRole": "1"
+        },
+        {
+          "needPay": "false",
+          "needVip": "false",
+          "purpose": "2",
+          "upgradeRole": "1"
+        }
+      ],
+      "quality": "h"
+    },
+    {
+      "filesize": "48460792",
+      "isExist": "true",
+      "operationVOs": [
+        {
+          "needPay": "false",
+          "needVip": "true",
+          "purpose": "1",
+          "upgradeRole": "1"
+        },
+        {
+          "needPay": "false",
+          "needVip": "true",
+          "purpose": "2",
+          "upgradeRole": "1"
+        }
+      ],
+      "quality": "s"
+    }
+  ],
+  "singerVOs": [
+    {
+      "alias": "Jonathan Lee",
+      "artistId": "573",
+      "artistName": "\u674e\u5b97\u76db"
+    }
+  ],
+  "singers": "\u674e\u5b97\u76db",
+  "songCount": "50",
+  "songId": "1801370698",
+  "songName": "\u7ed9\u81ea\u5df1\u7684\u6b4c (Live)",
+  "songStatus": "7",
+  "songwriters": "\u674e\u5b97\u76db",
+  "styles": [],
+  "subName": "",
+  "thirdpartyUrl": "",
+  "track": "17"
+}

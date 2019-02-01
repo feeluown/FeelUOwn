@@ -1,0 +1,6200 @@
+[
+  {
+    "albumId": "1373093102",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/13730931021394697695.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/13730931021394697695.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u5c71\u4e18",
+    "albumSongCount": "0",
+    "arrangement": "\u674e\u5b97\u76db / Mac Chew",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1373123039000",
+    "length": "405000",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "43516779",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/573/573/1373093102/1772001102_1438309029_h.flac?auth_key=1535425200-0-0-9204063e79b407bd0306b6053dbefffe",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1665804",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/1373093102/1772001102_1479878701605.m4a?auth_key=1535425200-0-0-6b459fd262db75d59cd89c127ecfb401",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "3287124",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/1373093102/1772001102_1479878701605.m4a?auth_key=1535425200-0-0-6b459fd262db75d59cd89c127ecfb401",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "16236822",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/1373093102/1772001102_10919583_h.mp3?auth_key=1535425200-0-0-f5f2f368f5190029f0c3ab129d583005",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "6494612",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/1373093102/1772001102_10919583_l.mp3?auth_key=1535425200-0-0-affe90e85f3e160a32c4ad28580b4f90",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/2/1772001102_1524462811_3461.trc",
+      "lyricId": "13995814",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6KNGd",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "shan qiu",
+    "playCount": "90700675",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1665804",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "3287124",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "6494612",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "16236822",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "43516779",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "1772001102",
+    "songName": "\u5c71\u4e18",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "Hills",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": "Hills"
+  },
+  {
+    "albumId": "378137",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img88/282188/3781371523282189.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img88/282188/3781371523282189.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u5357[\u4e0b]\u4e13\u7ebf",
+    "albumSongCount": "0",
+    "arrangement": "\u7eb5\u8d2f\u7ebf",
+    "artistAlbumCount": "3",
+    "artistAlias": "SuperBand",
+    "artistId": "57908",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/42/15035600535942.jpg",
+    "artistName": "\u7eb5\u8d2f\u7ebf",
+    "artistVOs": [
+      {
+        "alias": "SuperBand",
+        "artistId": "57908",
+        "artistName": "\u7eb5\u8d2f\u7ebf"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1383653603000",
+    "length": "278000",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "30529059",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/908/57908/378137/1769400313_1438236246_h.flac?auth_key=1535425200-0-0-16b71c39512257c41139abf2362859dd",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1143247",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/908/57908/378137/1769400313_1479878409528.m4a?auth_key=1535425200-0-0-74c5faba27657054e5d93c2ff385a577",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "2263295",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/908/57908/378137/1769400313_1479878409528.m4a?auth_key=1535425200-0-0-74c5faba27657054e5d93c2ff385a577",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "11148178",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/908/57908/378137/1769400313_3269356_h.mp3?auth_key=1535425200-0-0-d31be5fc770ad915e6a9cbe523400fa6",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "4459995",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/908/57908/378137/1769400313_3269356_l.mp3?auth_key=1535425200-0-0-0f318a5f0612d9ef950b1292236bf39e",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/13/1769400313_1524734744_6545.trc",
+      "lyricId": "14012182",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66M86",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "gei zi ji de ge",
+    "playCount": "35134781",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1143247",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2263295",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4459995",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11148178",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "30529059",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "1769400313",
+    "songName": "\u7ed9\u81ea\u5df1\u7684\u6b4c",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "Jonathan's Song",
+    "thirdpartyUrl": "",
+    "track": "5",
+    "translation": "Jonathan's Song"
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "\u6d82\u60e0\u6e90",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db / \u8d99\u50b3",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1383713414000",
+    "length": "293049",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "51763030",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388391_1476874738270.wav?auth_key=1535425200-0-0-66b86e097d4d60c7b339a4e8a1d690e3",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1206275",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388391_1479880038181.m4a?auth_key=1535425200-0-0-516e959f914063a9feb2e6ba0195f760",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "2380326",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388391_1479880038181.m4a?auth_key=1535425200-0-0-516e959f914063a9feb2e6ba0195f760",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "11740472",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388391_1476874738270.mp3?auth_key=1535425200-0-0-b1913a16e427f3e83ec37f02a3a56493",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "4696188",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388391_1476874738270.mp3?auth_key=1535425200-0-0-b1913a16e427f3e83ec37f02a3a56493",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/91/388391_1445998338_2453.trc",
+      "lyricId": "8556176",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66FrC",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "wo zhong yu shi qu le ni   ( L i v e )",
+    "playCount": "32338784",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1206275",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2380326",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4696188",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11740472",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "51763030",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388391",
+    "songName": "\u6211\u7ec8\u4e8e\u5931\u53bb\u4e86\u4f60 (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db / \u6c88\u5149\u9060",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "7",
+    "translation": ""
+  },
+  {
+    "albumId": "2557",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25571465703716.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25571465703716.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u674e\u5b97\u76db (\u4e0e\u4ed6\u4eec) \u7684\u51e1\u4eba\u6b4c",
+    "albumSongCount": "0",
+    "arrangement": "\u9c8d\u6bd4\u8fbe",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1384987193000",
+    "length": "231000",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "947596",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2557/378828_1479878406210.m4a?auth_key=1535425200-0-0-a3e77bb16f635132fe050ec644163ffd",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1865522",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2557/378828_1479878406210.m4a?auth_key=1535425200-0-0-a3e77bb16f635132fe050ec644163ffd",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "9244368",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2557/378828_11389548_h.mp3?auth_key=1535425200-0-0-933fb8cf1ea252239dd4717492e6c664",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "3697633",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2557/378828_11389548_l.mp3?auth_key=1535425200-0-0-8ca5d6e1c54eba1798b2b1f4bd5c8a9e",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/28/378828_1502337977_8610.trc",
+      "lyricId": "9558515",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66V6H",
+    "needPayFlag": "2",
+    "newSubName": "\u7535\u89c6\u5267\u300a\u78a7\u6d77\u60c5\u5929\u300b\u7247\u5934\u66f2",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "fan ren ge",
+    "playCount": "29968805",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "947596",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1865522",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3697633",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9244368",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "378828",
+    "songName": "\u51e1\u4eba\u6b4c",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "\u7535\u89c6\u5267\u300a\u78a7\u6d77\u60c5\u5929\u300b\u7247\u5934\u66f2",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "2551",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25511385543663.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25511385543663.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7231\u60c5\u8bba",
+    "albumSongCount": "0",
+    "arrangement": "\u9648\u7231\u73cd / \u5468\u56fd\u4eea",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "3",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1384881495000",
+    "length": "280000",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "28528310",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/573/573/2551/19396_1438294932_h.flac?auth_key=1535425200-0-0-7c0c268b5b1fdab0464faffe8a177f08",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1146571",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2551/19396_1479878100855.m4a?auth_key=1535425200-0-0-5f9148e2230ec8a7f567e5fdd2f61456",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "2280830",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2551/19396_1479878100855.m4a?auth_key=1535425200-0-0-5f9148e2230ec8a7f567e5fdd2f61456",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "11223167",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2551/19396_72267_h.mp3?auth_key=1535425200-0-0-3617d1a4e860a7632180935ee0459d81",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "4494689",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2551/19396_72267_l.mp3?auth_key=1535425200-0-0-786e810647923f6449f3a38f83a3f334",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/96/19396_1467271261_2080.trc",
+      "lyricId": "10095075",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6YF1P",
+    "needPayFlag": "2",
+    "newSubName": "\u7535\u5f71\u300a\u9738\u738b\u522b\u59ec\u300b\u4e3b\u9898\u66f2 / \u7247\u5c3e\u66f2",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "dang ai yi cheng wang shi",
+    "playCount": "26583595",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1146571",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2280830",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4494689",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11223167",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "28528310",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Sandy Lam / \u30b5\u30f3\u30c7\u30a3\u30fb\u30e9\u30e0",
+        "artistId": "1897",
+        "artistName": "\u6797\u5fc6\u83b2"
+      },
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u6797\u5fc6\u83b2;\u674e\u5b97\u76db",
+    "songId": "19396",
+    "songName": "\u5f53\u7231\u5df2\u6210\u5f80\u4e8b",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "\u7535\u5f71\u300a\u9738\u738b\u522b\u59ec\u300b\u4e3b\u9898\u66f2 / \u7247\u5c3e\u66f2",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "2550",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img42/115/5abde7152fde2_5762142_1522394901.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img42/115/5abde7152fde2_5762142_1522394901.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7537\u4eba\u4e09\u5341",
+    "albumSongCount": "0",
+    "arrangement": "Jenny Chin",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1405392546000",
+    "length": "256085",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "45285454",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/2550/19351_1519105003740.wav?auth_key=1535425200-0-0-7be69f3595e9829b2d293efb5b8d4ac0",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1046855",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2550/19351_1519105003740.m4a?auth_key=1535425200-0-0-d9bde189328539d6887d84d85bb201ae",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "2066389",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2550/19351_1519105003740.m4a?auth_key=1535425200-0-0-d9bde189328539d6887d84d85bb201ae",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "10271346",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2550/19351_1519105003740.mp3?auth_key=1535425200-0-0-dd74daf8ad727aa501aa0209fbce2acf",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "4108537",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2550/19351_1519105003740.mp3?auth_key=1535425200-0-0-dd74daf8ad727aa501aa0209fbce2acf",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/51/19351_1457336314_9087.trc",
+      "lyricId": "9588145",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66Fr9",
+    "needPayFlag": "2",
+    "newSubName": "\u53f0\u89c6\u8fde\u7eed\u5267\u300a\u672b\u4ee3\u7687\u5b59\u300b\u4e3b\u9898\u66f2",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "gui mi xin qiao",
+    "playCount": "25687543",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1046855",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2066389",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4108537",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10271346",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "45285454",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "19351",
+    "songName": "\u9b3c\u8ff7\u5fc3\u7a8d",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "\u53f0\u89c6\u8fde\u7eed\u5267\u300a\u672b\u4ee3\u7687\u5b59\u300b\u4e3b\u9898\u66f2",
+    "thirdpartyUrl": "",
+    "track": "7",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "\u9ec4\u97f5\u4ec1",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1404975262000",
+    "length": "309024",
+    "listenFiles": [
+      {
+        "expire": "1534857002581",
+        "fileSize": "54540730",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388395_1476874738270.wav?auth_key=1535425200-0-0-2651c8e697ec56e672b9cca772d3a80d",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "1272098",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388395_1479880037787.m4a?auth_key=1535425200-0-0-f344f882ab132bae00262d9b4fb625e9",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "2506057",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388395_1479880037788.m4a?auth_key=1535425200-0-0-1b21554e255880bf389e05182b734cd8",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "12370546",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388395_1476874738270.mp3?auth_key=1535425200-0-0-0795c33dfa781ef0e11f06f33441d8a3",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002581",
+        "fileSize": "4948217",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388395_1476874738270.mp3?auth_key=1535425200-0-0-0795c33dfa781ef0e11f06f33441d8a3",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/95/388395_1446205125_4296.trc",
+      "lyricId": "8619244",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66EqC",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ling wu   ( L i v e )",
+    "playCount": "12444229",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1272098",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2506057",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4948217",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "12370546",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "54540730",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388395",
+    "songName": "\u9886\u609f (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "11",
+    "translation": ""
+  },
+  {
+    "albumId": "2558",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25581386435546.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25581386435546.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u4e0d\u820d",
+    "albumSongCount": "0",
+    "arrangement": "\u674e\u5b97\u76db",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1440432000000",
+    "length": "283066",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "50015310",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/2558/378870_1523630513673.wav?auth_key=1535425200-0-0-8322cf6836e9dbfb867ea3339c10dec5",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1154302",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2558/378870_1523630513673.m4a?auth_key=1535425200-0-0-5a9db8d57954b0b0ca73f8e72f36bfb0",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2283679",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2558/378870_1523630513673.m4a?auth_key=1535425200-0-0-5a9db8d57954b0b0ca73f8e72f36bfb0",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "11343411",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2558/378870_1523630513673.mp3?auth_key=1535425200-0-0-92a4d707677c82e2a40724c69433e52a",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4537363",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2558/378870_1523630513673.mp3?auth_key=1535425200-0-0-92a4d707677c82e2a40724c69433e52a",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/70/378870_1453979387_62.trc",
+      "lyricId": "9364561",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66BRu",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "wo shi zhen de ai ni",
+    "playCount": "10508641",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1154302",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2283679",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4537363",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11343411",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "50015310",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "378870",
+    "songName": "\u6211\u662f\u771f\u7684\u7231\u4f60",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "2551",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25511385543663.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25511385543663.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7231\u60c5\u8bba",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1383779008000",
+    "length": "269005",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "47461164",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/2551/19375_1517919195810.wav?auth_key=1535425200-0-0-7ca6bfc9e43676d86ec83fb2221d5813",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1102352",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2551/19375_1517919195810.m4a?auth_key=1535425200-0-0-9df165c8f5002f4c23c6d8a792718e38",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2180836",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2551/19375_1517919195810.m4a?auth_key=1535425200-0-0-9df165c8f5002f4c23c6d8a792718e38",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "10764537",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2551/19375_1517919195810.mp3?auth_key=1535425200-0-0-97732626e263bb1edf508bdc699a4d1c",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4305814",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2551/19375_1517919195810.mp3?auth_key=1535425200-0-0-97732626e263bb1edf508bdc699a4d1c",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/75/19375_1528784286_2902.trc",
+      "lyricId": "9531947",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66RUG",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ai de dai jia",
+    "playCount": "9507287",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1102352",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2180836",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4305814",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10764537",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "47461164",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "19375",
+    "songName": "\u7231\u7684\u4ee3\u4ef7",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1440432000000",
+    "length": "280053",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "49479238",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388392_1476874738270.wav?auth_key=1535425200-0-0-0e9ff818ccbc8c2efc6ea5aab8b3f595",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1155001",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388392_1479880037348.m4a?auth_key=1535425200-0-0-60a1dff6b37b7a247de871984bfe690f",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2274713",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388392_1479880037348.m4a?auth_key=1535425200-0-0-60a1dff6b37b7a247de871984bfe690f",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "11222203",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388392_1476874738270.mp3?auth_key=1535425200-0-0-2083880a52b8dfac1a108906041cc560",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4488880",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388392_1476874738270.mp3?auth_key=1535425200-0-0-2083880a52b8dfac1a108906041cc560",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/92/388392_1450249292_4685.trc",
+      "lyricId": "8924125",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66nlc",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ming ming bai bai wo de xin   ( L i v e )",
+    "playCount": "8876925",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1155001",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2274713",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4488880",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11222203",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "49479238",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      },
+      {
+        "alias": "Fish Leong",
+        "artistId": "1836",
+        "artistName": "\u6881\u9759\u8339"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db;\u6881\u9759\u8339",
+    "songId": "388392",
+    "songName": "\u660e\u660e\u767d\u767d\u6211\u7684\u5fc3 (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "8",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "\u5468\u56fd\u4eea",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db \u5468\u56fd\u4eea",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1367989436000",
+    "length": "242049",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "42768970",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388396_1476874738271.wav?auth_key=1535425200-0-0-b7e3f9394f328601265a2b50a184a71e",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "999657",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388396_1479880037669.m4a?auth_key=1535425200-0-0-435d759934f5cb8f75f0d4df164f998c",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1968841",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388396_1479880037669.m4a?auth_key=1535425200-0-0-435d759934f5cb8f75f0d4df164f998c",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "9700831",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388396_1476874738271.mp3?auth_key=1535425200-0-0-5a0145b736452ba3d4d744f52d83e7dd",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "3880332",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388396_1476874738270.mp3?auth_key=1535425200-0-0-891a3d3d790293d5f9739fe6733d9a72",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/96/388396_1525701732_4116.trc",
+      "lyricId": "14047215",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6KJGT",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "yin tian   ( L i v e )",
+    "playCount": "8058244",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "999657",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1968841",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3880332",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9700831",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "42768970",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388396",
+    "songName": "\u9634\u5929 (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "12",
+    "translation": ""
+  },
+  {
+    "albumId": "2564",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25641386435323.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25641386435323.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u751f\u547d\u4e2d\u7684\u7cbe\u7075",
+    "albumSongCount": "0",
+    "arrangement": "\u9648\u5fd7\u8fdc",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1450237829000",
+    "length": "193000",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "19218003",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/573/573/2564/378887_1438665814_h.flac?auth_key=1535425200-0-0-cabd20bbce072e076a675407df6f3ffa",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "788256",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2564/378887_1479876003534.m4a?auth_key=1535425200-0-0-d2f152c61235383be5f08455f03cd5e2",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1544611",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2564/378887_1479876003534.m4a?auth_key=1535425200-0-0-d2f152c61235383be5f08455f03cd5e2",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "7727180",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2564/378887_18592_h.mp3?auth_key=1535425200-0-0-0079960b8fe6f8306eae7ad256c83dd3",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "3092430",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2564/378887_18592_l.mp3?auth_key=1535425200-0-0-4c354455392e6b483f65641a040fa0ef",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/87/378887_1451752505_9329.trc",
+      "lyricId": "9206285",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66Hry",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ji mo nan nai",
+    "playCount": "5552036",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "788256",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1544611",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3092430",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "7727180",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "19218003",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "378887",
+    "songName": "\u5bc2\u5bde\u96be\u8010",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "7",
+    "translation": ""
+  },
+  {
+    "albumId": "7586",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img2/319902/75861527319903.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img2/319902/75861527319903.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u6eda\u77f3\u9999\u6e2f\u9ec4\u91d1\u5341\u5e74 \u9648\u6dd1\u6866\u7cbe\u9009",
+    "albumSongCount": "0",
+    "arrangement": "\u674e\u6b63\u5e06",
+    "artistAlbumCount": "53",
+    "artistAlias": "Sarah Chen",
+    "artistId": "1421",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/2/15139102096602.jpg",
+    "artistName": "\u9648\u6dd1\u6866",
+    "artistVOs": [
+      {
+        "alias": "Sarah Chen",
+        "artistId": "1421",
+        "artistName": "\u9648\u6dd1\u6866"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1405339714000",
+    "length": "259000",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "24537709",
+        "format": "ape",
+        "listenFile": "http://m740.xiami.net/954/1001954/0/93355_1442294687.ape?auth_key=1535425200-0-0-96de72fde06be9c5bfde537b6a4cc9ce",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1074953",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/421/1421/7586/93355_1479873901857.m4a?auth_key=1535425200-0-0-7f07c8cbf1e45878710d37b303d8ac99",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2108697",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/421/1421/7586/93355_1479873901857.m4a?auth_key=1535425200-0-0-7f07c8cbf1e45878710d37b303d8ac99",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "10360326",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/421/1421/7586/93355_2633906_h.mp3?auth_key=1535425200-0-0-9993a548d14e5849a8bb64cddf38fec2",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4145690",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/421/1421/7586/93355_2633906_l.mp3?auth_key=1535425200-0-0-c12a903b3100d0df9fd4f983f02c883e",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/55/93355_1490952767_7682.trc",
+      "lyricId": "12321639",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66oK9",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ni zou ni de lu",
+    "playCount": "5255005",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1074953",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2108697",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4145690",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10360326",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "24537709",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Sarah Chen",
+        "artistId": "1421",
+        "artistName": "\u9648\u6dd1\u6866"
+      },
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u9648\u6dd1\u6866;\u674e\u5b97\u76db",
+    "songId": "93355",
+    "songName": "\u4f60\u8d70\u4f60\u7684\u8def",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1404975273000",
+    "length": "244090",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "43194696",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388412_1476874738272.wav?auth_key=1535425200-0-0-325173fc95e077c67c968870eb466b19",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1007173",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388412_1479879908871.m4a?auth_key=1535425200-0-0-9cfcd692cec3016c8c12998e3fde7e06",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1986847",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388412_1479879908871.m4a?auth_key=1535425200-0-0-9cfcd692cec3016c8c12998e3fde7e06",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "9796962",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388412_1476874738272.mp3?auth_key=1535425200-0-0-7f6c94e52ddf3277daa5f5adb1271d72",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "3918784",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388412_1476874738272.mp3?auth_key=1535425200-0-0-7f6c94e52ddf3277daa5f5adb1271d72",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/12/388412_1446205080_7983.trc",
+      "lyricId": "8617872",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6Yh5W",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "shang xin di tie   ( L i v e )",
+    "playCount": "4569410",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1007173",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1986847",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3918784",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9796962",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "43194696",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388412",
+    "songName": "\u4f24\u5fc3\u5730\u94c1 (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "12",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1133280000000",
+    "length": "252063",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "44558862",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388406_1476874738271.wav?auth_key=1535425200-0-0-90aaaf77b0c2b940ab57e2764c2433a5",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1039024",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388406_1479880036919.m4a?auth_key=1535425200-0-0-41c3d6096356441528f0d495a84a7633",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2046730",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388406_1479880036919.m4a?auth_key=1535425200-0-0-41c3d6096356441528f0d495a84a7633",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "10106252",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388406_1476874738271.mp3?auth_key=1535425200-0-0-07073af4a382b1673cad2ac831a0db8d",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4042500",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388406_1476874738271.mp3?auth_key=1535425200-0-0-07073af4a382b1673cad2ac831a0db8d",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/6/388406_1444639408_1661.trc",
+      "lyricId": "8498244",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6KB5Q",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "wo shi yi zhi xiao xiao niao   ( L i v e )",
+    "playCount": "4255511",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1039024",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2046730",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4042500",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10106252",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "44558862",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388406",
+    "songName": "\u6211\u662f\u4e00\u53ea\u5c0f\u5c0f\u9e1f (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "6",
+    "translation": ""
+  },
+  {
+    "albumId": "2550",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img42/115/5abde7152fde2_5762142_1522394901.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img42/115/5abde7152fde2_5762142_1522394901.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7537\u4eba\u4e09\u5341",
+    "albumSongCount": "0",
+    "arrangement": "\u738b\u7ee7\u5eb7",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db / \u5468\u534e\u5065 / \u54c1\u51a0",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1341392871000",
+    "length": "277056",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "48939086",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/2550/19345_1519105003677.wav?auth_key=1535425200-0-0-139ffdcd63522fa5c53cc53d69b755f0",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1131960",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2550/19345_1519105003676.m4a?auth_key=1535425200-0-0-e64ed74000935ba6e43ab8fd01136c90",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2238319",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2550/19345_1519105003676.m4a?auth_key=1535425200-0-0-e64ed74000935ba6e43ab8fd01136c90",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "11099950",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2550/19345_1519105003676.mp3?auth_key=1535425200-0-0-1b1642b5284f18687c8994dd8e48678c",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4439979",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2550/19345_1519105003676.mp3?auth_key=1535425200-0-0-1b1642b5284f18687c8994dd8e48678c",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/45/19345_1452699032_5521.trc",
+      "lyricId": "9258625",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66c24",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "zui jin bi jiao fan",
+    "playCount": "4153610",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1131960",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2238319",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4439979",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11099950",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "48939086",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Wakin Chau",
+        "artistId": "1258",
+        "artistName": "\u5468\u534e\u5065"
+      },
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      },
+      {
+        "alias": "\u9ec4\u54c1\u51a0 / Victor Wong",
+        "artistId": "389",
+        "artistName": "\u54c1\u51a0"
+      }
+    ],
+    "singers": "\u5468\u534e\u5065;\u674e\u5b97\u76db;\u54c1\u51a0",
+    "songId": "19345",
+    "songName": "\u6700\u8fd1\u6bd4\u8f83\u70e6",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "2552",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25521419594806.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25521419594806.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u6eda\u77f3\u9999\u6e2f\u9ec4\u91d1\u5341\u5e74 \u674e\u5b97\u76db\u7cbe\u9009",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u5362\u51a0\u5ef7",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1476201600000",
+    "length": "285000",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "28475960",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/573/573/2552/19417_1438270016_h.flac?auth_key=1535425200-0-0-e77d58489f434643e9c70bb25e5f183a",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1170685",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2552/19417_1479874501426.m4a?auth_key=1535425200-0-0-e9e67b9bea663cd280c3e11bd7e60ede",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2317014",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2552/19417_1479874501426.m4a?auth_key=1535425200-0-0-e9e67b9bea663cd280c3e11bd7e60ede",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "11411487",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2552/19417_2633898_h.mp3?auth_key=1535425200-0-0-f3570e570f6012db67328c568304528c",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4566151",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2552/19417_2633898_l.mp3?auth_key=1535425200-0-0-32510d06bb5962682a43eadc28635124",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/17/19417_1453977582_8985.trc",
+      "lyricId": "9363691",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66bEm",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "zai hui shou",
+    "playCount": "3964102",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1170685",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2317014",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4566151",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11411487",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "28475960",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "19417",
+    "songName": "\u518d\u56de\u9996",
+    "songStatus": "0",
+    "songwriters": "\u9648\u4e50\u878d",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "8",
+    "translation": ""
+  },
+  {
+    "albumId": "2102653289",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img88/97/582c12f7c4aed_4871788_1479283447.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img88/97/582c12f7c4aed_4871788_1479283447.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u65e2\u7136\u9752\u6625\u7559\u4e0d\u4f4f\uff0c\u8fd8\u662f\u505a\u4e2a\u5927\u53d4\u597d   \u6f14\u5531\u4f1a\u5de1\u56de\u5f71\u97f3\u7eaa\u5f55",
+    "albumPrice": "0.00",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "",
+    "downloadCount": "true",
+    "exclusive": "false",
+    "flag": "65",
+    "gmtCreate": "1479283842000",
+    "length": "294043",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "78291224",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/2102653289/1795277110_1479367771303.wav?auth_key=1535425200-0-0-44d8c3656a0ae414db3cd60153ac4ba7",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1211600",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2102653289/1795277110_1479367771303.m4a?auth_key=1535425200-0-0-7c7df1e11bd03118838f769356c9daf8",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "2384746",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2102653289/1795277110_1479367771303.m4a?auth_key=1535425200-0-0-7c7df1e11bd03118838f769356c9daf8",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "11774954",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2102653289/1795277110_1479367771303.mp3?auth_key=1535425200-0-0-b090da6deca8da4f5c8c40e61b243b84",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "4709981",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2102653289/1795277110_1479367771303.mp3?auth_key=1535425200-0-0-b090da6deca8da4f5c8c40e61b243b84",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/10/1795277110_1526271052_4172.trc",
+      "lyricId": "14054524",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "true",
+    "offlineType": "0",
+    "originOffline": "true",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "wan hun   ( L i v e )",
+    "playCount": "3841193",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1211600",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2384746",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4709981",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11774954",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "78291224",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "3"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "3"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "1795277110",
+    "songName": "\u665a\u5a5a (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "7",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1190908800000",
+    "length": "375048",
+    "listenFiles": [
+      {
+        "expire": "1534857002582",
+        "fileSize": "66230188",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388407_1476874738271.wav?auth_key=1535425200-0-0-3bf2649265e3648218a0d62f3120ccf3",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "1543196",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388407_1479879909154.m4a?auth_key=1535425200-0-0-8cef28f9c564363c8b625b48ab42d42f",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "3042314",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388407_1479879909154.m4a?auth_key=1535425200-0-0-8cef28f9c564363c8b625b48ab42d42f",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "15020407",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388407_1476874738271.mp3?auth_key=1535425200-0-0-b33d75db3d6d0b369bb3eea3ffb54640",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "6008162",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388407_1476874738271.mp3?auth_key=1535425200-0-0-b33d75db3d6d0b369bb3eea3ffb54640",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/7/388407_1444639409_6678.trc",
+      "lyricId": "8498260",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66gLl",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "wo shi zhen de ai ni   ( L i v e )",
+    "playCount": "3839833",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1543196",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "3042314",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "6008162",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "15020407",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "66230188",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388407",
+    "songName": "\u6211\u662f\u771f\u7684\u7231\u4f60 (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "7",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1366406361000",
+    "length": "370044",
+    "listenFiles": [
+      {
+        "expire": "1534857002583",
+        "fileSize": "65338776",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388414_1476874738272.wav?auth_key=1535425200-0-0-47a4718ffb4a69e5349c12fc5aff3581",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "1520776",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388414_1479879909204.m4a?auth_key=1535425200-0-0-8ce83ee8e2d9413db48c0ac893e6466a",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "3000300",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388414_1479879909204.m4a?auth_key=1535425200-0-0-8ce83ee8e2d9413db48c0ac893e6466a",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "14818742",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388414_1476874738272.mp3?auth_key=1535425200-0-0-9814df35b3e766e08a17ea81563d5364",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002582",
+        "fileSize": "5927496",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388414_1476874738272.mp3?auth_key=1535425200-0-0-9814df35b3e766e08a17ea81563d5364",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/14/388414_1444639028_5863.trc",
+      "lyricId": "8496016",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66Ncg",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ai de dai jia   ( L i v e )",
+    "playCount": "3326588",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1520776",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "3000300",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "5927496",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "14818742",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "65338776",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388414",
+    "songName": "\u7231\u7684\u4ee3\u4ef7 (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "14",
+    "translation": ""
+  },
+  {
+    "albumId": "311523",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img21/155/58a55acd5cc28_7753921_1487231693.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img21/155/58a55acd5cc28_7753921_1487231693.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u9738\u738b\u522b\u59ec \u7535\u5f71\u539f\u58f0\u5e26",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "23",
+    "artistAlias": "",
+    "artistId": "1220",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/4/14213910727204.jpg",
+    "artistName": "\u8d75\u5b63\u5e73",
+    "artistVOs": [
+      {
+        "alias": "",
+        "artistId": "1220",
+        "artistName": "\u8d75\u5b63\u5e73"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1384881495000",
+    "length": "278046",
+    "listenFiles": [
+      {
+        "expire": "1534857002583",
+        "fileSize": "49098158",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/220/1220/311523/3450778_1517920694646.wav?auth_key=1535425200-0-0-e446fd9384a5f67d47f6b0a4e82f2b72",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "1142444",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/220/1220/311523/3450778_1517920694646.m4a?auth_key=1535425200-0-0-32ff1c47fd1f37d55269f2e75caecc11",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "2259558",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/220/1220/311523/3450778_1517920694646.m4a?auth_key=1535425200-0-0-32ff1c47fd1f37d55269f2e75caecc11",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "11135476",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/220/1220/311523/3450778_1517920694646.mp3?auth_key=1535425200-0-0-305beaf0a452b8622effabbec21ddedf",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "4454190",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/220/1220/311523/3450778_1517920694646.mp3?auth_key=1535425200-0-0-305beaf0a452b8622effabbec21ddedf",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/78/3450778_1449728207_4071.trc",
+      "lyricId": "8906061",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6YF1P",
+    "needPayFlag": "2",
+    "newSubName": "\u7535\u5f71\u300a\u9738\u738b\u522b\u59ec\u300b\u4e3b\u9898\u66f2",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "dang ai yi cheng wang shi  ",
+    "playCount": "3191673",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1142444",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2259558",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4454190",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11135476",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "49098158",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      },
+      {
+        "alias": "Sandy Lam / \u30b5\u30f3\u30c7\u30a3\u30fb\u30e9\u30e0",
+        "artistId": "1897",
+        "artistName": "\u6797\u5fc6\u83b2"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db;\u6797\u5fc6\u83b2",
+    "songId": "3450778",
+    "songName": "\u5f53\u7231\u5df2\u6210\u5f80\u4e8b",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "\u7535\u5f71\u300a\u9738\u738b\u522b\u59ec\u300b\u4e3b\u9898\u66f2",
+    "thirdpartyUrl": "",
+    "track": "46",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1367957233000",
+    "length": "299042",
+    "listenFiles": [
+      {
+        "expire": "1534857002583",
+        "fileSize": "52812018",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388413_1476874738272.wav?auth_key=1535425200-0-0-fba56c2de4fd9fdbb97d1596487d9265",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "1229801",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388413_1479879908037.m4a?auth_key=1535425200-0-0-bd9159a82b3a340cbf1555b8ed029f56",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "2428300",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388413_1479879908037.m4a?auth_key=1535425200-0-0-bd9159a82b3a340cbf1555b8ed029f56",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "11977664",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388413_1476874738272.mp3?auth_key=1535425200-0-0-9f2ab9e0900ccc9575973a6dbd68300e",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "4791065",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388413_1476874738272.mp3?auth_key=1535425200-0-0-9f2ab9e0900ccc9575973a6dbd68300e",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/13/388413_1532344690_3675.trc",
+      "lyricId": "14192900",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6Yhi3",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "yuan xing   ( L i v e )",
+    "playCount": "3122717",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1229801",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2428300",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4791065",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11977664",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "52812018",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388413",
+    "songName": "\u8fdc\u884c (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "13",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "\u9648\u5fd7\u8fdc",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1404975296000",
+    "length": "203028",
+    "listenFiles": [
+      {
+        "expire": "1534857002583",
+        "fileSize": "35854094",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388389_1476874738270.wav?auth_key=1535425200-0-0-2c5ef69967f684b1e037d0c82a7e0ca4",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "839190",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388389_1479879908841.m4a?auth_key=1535425200-0-0-4dc9d0807f4fab93303f89a6c951c471",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "1649462",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388389_1479879908841.m4a?auth_key=1535425200-0-0-4dc9d0807f4fab93303f89a6c951c471",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "8132440",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388389_1476874738270.mp3?auth_key=1535425200-0-0-44fdb9377053bd3bb3423461cf338250",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "3252975",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388389_1476874738270.mp3?auth_key=1535425200-0-0-44fdb9377053bd3bb3423461cf338250",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/89/388389_1445998245_2564.trc",
+      "lyricId": "8554446",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66FrV",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "ji mo nan nai   ( L i v e )",
+    "playCount": "3093384",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "839190",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1649462",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3252975",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "8132440",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "35854094",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388389",
+    "songName": "\u5bc2\u5bde\u96be\u8010 (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "5",
+    "translation": ""
+  },
+  {
+    "albumId": "416039",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img12/275812/4160391523275814.png",
+    "albumLogoS": "http://pic.xiami.net/images/album/img12/275812/4160391523275814.png@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "Live in Taipei / \u51fa\u53d1\u00b7\u7ec8\u70b9\u7ad9",
+    "albumSongCount": "0",
+    "arrangement": "\u7eb5\u8d2f\u7ebf",
+    "artistAlbumCount": "3",
+    "artistAlias": "SuperBand",
+    "artistId": "57908",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/42/15035600535942.jpg",
+    "artistName": "\u7eb5\u8d2f\u7ebf",
+    "artistVOs": [
+      {
+        "alias": "SuperBand",
+        "artistId": "57908",
+        "artistName": "\u7eb5\u8d2f\u7ebf"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "3",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "false",
+    "flag": "1",
+    "gmtCreate": "1383759569000",
+    "length": "280000",
+    "listenFiles": [
+      {
+        "expire": "1534857002583",
+        "fileSize": "1156021",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/908/57908/416039/1769921576_1479873001597.m4a?auth_key=1535425200-0-0-8c9ebccb15a8e1dfc54eca56eadd6457",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "2273865",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/908/57908/416039/1769921576_1479873001597.m4a?auth_key=1535425200-0-0-8c9ebccb15a8e1dfc54eca56eadd6457",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "7067154",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/908/57908/416039/1769921576_1919513_h.mp3?auth_key=1535425200-0-0-303b0ac91c2cacadb0b2a6b73d830739",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "4486752",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/908/57908/416039/1769921576_1919513_l.mp3?auth_key=1535425200-0-0-6b0e3504288871f670ce18062ba93ee4",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/76/1769921576_1445998344_3122.trc",
+      "lyricId": "8556276",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "0",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "gei zi ji de ge   ( L i v e )",
+    "playCount": "2983759",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1156021",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2273865",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4486752",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "7067154",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "0"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "0",
+        "isExist": "false",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "1"
+          },
+          {
+            "needPay": "false",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "1"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "1769921576",
+    "songName": "\u7ed9\u81ea\u5df1\u7684\u6b4c (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "13",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1133280000000",
+    "length": "332004",
+    "listenFiles": [
+      {
+        "expire": "1534857002583",
+        "fileSize": "58565016",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388415_1476874738272.wav?auth_key=1535425200-0-0-1b9fb217c18c98ca402791fb86f0b9d3",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "1362635",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388415_1479879905097.m4a?auth_key=1535425200-0-0-bfc7d37894dcd521211d7ffc0a8b6566",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "2689303",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388415_1479879905097.m4a?auth_key=1535425200-0-0-bfc7d37894dcd521211d7ffc0a8b6566",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "13282742",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388415_1476874738272.mp3?auth_key=1535425200-0-0-1e4f782e54dadeead2663cf0ab442d4b",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002583",
+        "fileSize": "5313096",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388415_1476874738272.mp3?auth_key=1535425200-0-0-1e4f782e54dadeead2663cf0ab442d4b",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/15/388415_1444639419_8471.trc",
+      "lyricId": "8498586",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K6KTWV",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "zhen xin ying xiong   ( L i v e )",
+    "playCount": "2603106",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1362635",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2689303",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "5313096",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "13282742",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "58565016",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388415",
+    "songName": "\u771f\u5fc3\u82f1\u96c4 (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "15",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u6797\u5fc6\u83b2",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1404975280000",
+    "length": "273068",
+    "listenFiles": [
+      {
+        "expire": "1534857002584",
+        "fileSize": "48272656",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388397_1476874738271.wav?auth_key=1535425200-0-0-54e977c13ddfb6f1f85c1dcb25f00c98",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "1126583",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388397_1479879908034.m4a?auth_key=1535425200-0-0-7d4a80f56c4e0d8cd2b530c5924b03a7",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "2219671",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388397_1479879908034.m4a?auth_key=1535425200-0-0-7d4a80f56c4e0d8cd2b530c5924b03a7",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "10948440",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388397_1476874738271.mp3?auth_key=1535425200-0-0-2782af0a476d495cefd2c13616d8af3b",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "4379375",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388397_1476874738271.mp3?auth_key=1535425200-0-0-2782af0a476d495cefd2c13616d8af3b",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/97/388397_1445998245_8891.trc",
+      "lyricId": "8554444",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66Fr4",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "keng qiang mei gui   ( L i v e )",
+    "playCount": "2479743",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1126583",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2219671",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4379375",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10948440",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "48272656",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388397",
+    "songName": "\u94ff\u9535\u73ab\u7470 (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "13",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1190908800000",
+    "length": "260000",
+    "listenFiles": [
+      {
+        "expire": "1534857002584",
+        "fileSize": "45857156",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388385_1476874738270.wav?auth_key=1535425200-0-0-4456e2b24dca4bcfe74d9636fe9aa58e",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "1070865",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388385_1479879908466.m4a?auth_key=1535425200-0-0-4a4f7b3d8879ea93e70361d78a98af05",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "2107028",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388385_1479879908466.m4a?auth_key=1535425200-0-0-4a4f7b3d8879ea93e70361d78a98af05",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "10400913",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388385_1476874738270.mp3?auth_key=1535425200-0-0-c9054be208132156385231ea9bb2f0e8",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "4160364",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388385_1476874738270.mp3?auth_key=1535425200-0-0-c9054be208132156385231ea9bb2f0e8",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "false",
+      "lyricFile": "http://img.xiami.net/lyric/trc/85/388385_1401259526_6284.lrc",
+      "lyricId": "4152417",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66FrS",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "sheng ming zhong de jing ling   ( L i v e )",
+    "playCount": "2406138",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1070865",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2107028",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4160364",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "10400913",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "45857156",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388385",
+    "songName": "\u751f\u547d\u4e2d\u7684\u7cbe\u7075 (Live)",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1404975599000",
+    "length": "291063",
+    "listenFiles": [
+      {
+        "expire": "1534857002584",
+        "fileSize": "51436120",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388408_1476874738271.wav?auth_key=1535425200-0-0-f5f5dc100d2f7f11fd2dd763a92230d5",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "1200151",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388408_1479879907455.m4a?auth_key=1535425200-0-0-8939417e52b43c64054437c920c1d156",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "2365257",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388408_1479879907455.m4a?auth_key=1535425200-0-0-8939417e52b43c64054437c920c1d156",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "11666284",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388408_1476874738271.mp3?auth_key=1535425200-0-0-8f56b4049841002ae467d44fa6ca92da",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "4666513",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388408_1476874738271.mp3?auth_key=1535425200-0-0-8f56b4049841002ae467d44fa6ca92da",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/8/388408_1445998245_1184.trc",
+      "lyricId": "8554456",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K66FrE",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "dang ai yi cheng wang shi   ( L i v e )",
+    "playCount": "2396673",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "1200151",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "2365257",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "4666513",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "11666284",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "51436120",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      },
+      {
+        "alias": "Fish Leong",
+        "artistId": "1836",
+        "artistName": "\u6881\u9759\u8339"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db;\u6881\u9759\u8339",
+    "songId": "388408",
+    "songName": "\u5f53\u7231\u5df2\u6210\u5f80\u4e8b (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "8",
+    "translation": ""
+  },
+  {
+    "albumId": "2564",
+    "albumLanguage": "",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/25641386435323.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/25641386435323.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u751f\u547d\u4e2d\u7684\u7cbe\u7075",
+    "albumSongCount": "0",
+    "arrangement": "\u9648\u5fd7\u8fdc",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "1",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1476633600000",
+    "length": "241000",
+    "listenFiles": [
+      {
+        "expire": "1534857002584",
+        "fileSize": "24044879",
+        "format": "flac",
+        "listenFile": "http://m740.xiami.net/573/573/2564/378882_1438665804_h.flac?auth_key=1535425200-0-0-204994206616757ac48cebde9b9e60cc",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "985393",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/2564/378882_1479872703697.m4a?auth_key=1535425200-0-0-9919cda64c2b0246779fe68f543c625d",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "1934087",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/2564/378882_1479872703697.m4a?auth_key=1535425200-0-0-9919cda64c2b0246779fe68f543c625d",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "9646664",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/2564/378882_18587_h.mp3?auth_key=1535425200-0-0-97fab2585acdb238123a89c96ba458ef",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "3860227",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/2564/378882_18587_l.mp3?auth_key=1535425200-0-0-9890020bf04549041d240045d80ed89a",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/82/378882_1451299859_7843.trc",
+      "lyricId": "9169167",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "K663P1",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "sheng ming zhong de jing ling",
+    "playCount": "2393817",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "985393",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1934087",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3860227",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9646664",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "24044879",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "378882",
+    "songName": "\u751f\u547d\u4e2d\u7684\u7cbe\u7075",
+    "songStatus": "0",
+    "songwriters": "\u674e\u5b97\u76db",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "2",
+    "translation": ""
+  },
+  {
+    "albumId": "32623",
+    "albumLanguage": "\u56fd\u8bed",
+    "albumLogo": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg",
+    "albumLogoS": "http://pic.xiami.net/images/album/img73/573/326231465803900.jpg@1e_1c_0i_1o_100Q_225w_225h.webp",
+    "albumName": "\u7406\u6027\u4e0e\u611f\u6027 \u4f5c\u54c1\u97f3\u4e50\u4f1a",
+    "albumSongCount": "0",
+    "arrangement": "",
+    "artistAlbumCount": "18",
+    "artistAlias": "Jonathan Lee",
+    "artistId": "573",
+    "artistLogo": "http://pic.xiami.net/images/artistlogo/40/15276625053240.jpg",
+    "artistName": "\u674e\u5b97\u76db",
+    "artistVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "bakSongId": "0",
+    "bizTags": [],
+    "boughtCount": "0",
+    "canReward": "false",
+    "cdSerial": "2",
+    "composer": "\u674e\u5b97\u76db",
+    "downloadCount": "false",
+    "exclusive": "true",
+    "flag": "65",
+    "gmtCreate": "1404975299000",
+    "length": "227079",
+    "listenFiles": [
+      {
+        "expire": "1534857002584",
+        "fileSize": "40174722",
+        "format": "wav",
+        "listenFile": "http://m740.xiami.net/573/573/32623/388401_1476874738271.wav?auth_key=1535425200-0-0-1fcba831ea5f540da01939991bd94345",
+        "playVolume": "89.0",
+        "quality": "s"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "939979",
+        "format": "m4a",
+        "listenFile": "http://m32.xiami.net/573/573/32623/388401_1479879907066.m4a?auth_key=1535425200-0-0-59668694269905af90cdf591c8f02445",
+        "playVolume": "89.0",
+        "quality": "e"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "1846622",
+        "format": "m4a",
+        "listenFile": "http://m64.xiami.net/573/573/32623/388401_1479879907066.m4a?auth_key=1535425200-0-0-59668694269905af90cdf591c8f02445",
+        "playVolume": "89.0",
+        "quality": "f"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "9112554",
+        "format": "mp3",
+        "listenFile": "http://m320.xiami.net/573/573/32623/388401_1476874738271.mp3?auth_key=1535425200-0-0-0cac4da17988797ae3b189f075ddc2b1",
+        "playVolume": "89.0",
+        "quality": "h"
+      },
+      {
+        "expire": "1534857002584",
+        "fileSize": "3645021",
+        "format": "mp3",
+        "listenFile": "http://m128.xiami.net/573/573/32623/388401_1476874738271.mp3?auth_key=1535425200-0-0-0cac4da17988797ae3b189f075ddc2b1",
+        "playVolume": "89.0",
+        "quality": "l"
+      }
+    ],
+    "lyricInfo": {
+      "isOfficial": "true",
+      "lyricFile": "http://img.xiami.net/lyric/1/388401_1527474625_8465.trc",
+      "lyricId": "4152421",
+      "lyricType": "3",
+      "userId": "0"
+    },
+    "musicType": "0",
+    "mvId": "",
+    "needPayFlag": "2",
+    "newSubName": "",
+    "offline": "false",
+    "offlineType": "0",
+    "originOffline": "false",
+    "pace": "0",
+    "panFlag": "0",
+    "pinyin": "yi ge ren   ( L i v e )",
+    "playCount": "2248631",
+    "price": "2.00",
+    "purviewRoleVOs": [
+      {
+        "filesize": "939979",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "e"
+      },
+      {
+        "filesize": "1846622",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "f"
+      },
+      {
+        "filesize": "3645021",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "false",
+            "needVip": "false",
+            "purpose": "1",
+            "upgradeRole": "0"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "l"
+      },
+      {
+        "filesize": "9112554",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "h"
+      },
+      {
+        "filesize": "40174722",
+        "isExist": "true",
+        "operationVOs": [
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "1",
+            "upgradeRole": "4"
+          },
+          {
+            "needPay": "true",
+            "needVip": "true",
+            "purpose": "2",
+            "upgradeRole": "4"
+          }
+        ],
+        "quality": "s"
+      }
+    ],
+    "singerVOs": [
+      {
+        "alias": "Jonathan Lee",
+        "artistId": "573",
+        "artistName": "\u674e\u5b97\u76db"
+      }
+    ],
+    "singers": "\u674e\u5b97\u76db",
+    "songId": "388401",
+    "songName": "\u4e00\u4e2a\u4eba (Live)",
+    "songStatus": "0",
+    "songwriters": "",
+    "subName": "",
+    "thirdpartyUrl": "",
+    "track": "1",
+    "translation": ""
+  }
+]

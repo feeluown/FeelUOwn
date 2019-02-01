@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from functools import partial
 
 from PyQt5.QtCore import Qt, QSize, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette, QPainter, QColor
@@ -233,12 +234,24 @@ class SongsTableContainer(QFrame):
     async def show_artist(self, artist):
         self._top_container.show()
         loop = asyncio.get_event_loop()
-        future_songs = loop.run_in_executor(None, lambda: artist.songs)
+
+        songs_g = None
+        future_songs = None
+        futures = []
         future_desc = loop.run_in_executor(None, lambda: artist.desc)
-        await asyncio.wait([future_songs, future_desc])
+        futures.append(future_desc)
+        if artist.meta.allow_create_songs_g:
+            songs_g = artist.create_songs_g()
+        else:
+            future_songs = loop.run_in_executor(None, lambda: artist.songs)
+            futures.append(future_songs)
+        await asyncio.wait(futures)
         desc = future_desc.result()
         self.set_desc(desc or '<h2>{}</h2>'.format(artist.name))
-        self._show_songs(future_songs.result())
+        if songs_g is not None:
+            self._show_songs(songs_g=songs_g)
+        else:
+            self._show_songs(songs=future_songs.result())
         if artist.cover:
             loop.create_task(self.show_cover(artist.cover))
 
@@ -279,7 +292,7 @@ class SongsTableContainer(QFrame):
             self.set_cover(pixmap)
             self.update()
 
-    def _show_songs(self, songs):
+    def _show_songs(self, songs=None, songs_g=None):
         try:
             self.songs_table.song_deleted.disconnect()
         except TypeError:  # no connections at all
@@ -289,7 +302,17 @@ class SongsTableContainer(QFrame):
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        self.songs_table.setModel(SongsTableModel(songs, source_name_map))
+        if songs_g is not None:  # 优先使用生成器
+            self.songs_table.setModel(SongsTableModel(
+                source_name_map=source_name_map,
+                songs_g=songs_g,
+                parent=self.songs_table))
+        else:
+            self.songs_table.setModel(SongsTableModel(
+                songs=songs,
+                source_name_map=source_name_map,
+                parent=self.songs_table
+            ))
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):
