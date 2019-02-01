@@ -15,7 +15,6 @@ setup(
         'feeluown',
         'feeluown.containers',
         'feeluown.components',
-        'feeluown.plugins.qqmusic',
         'feeluown.plugins.neteasemusic',
         'feeluown.plugins.local',
         'feeluown.plugins.xiami',
@@ -24,7 +23,6 @@ setup(
         'fuocore.local',
         'fuocore.netease',
         'fuocore.xiami',
-        'fuocore.qqmusic',
         ],
     py_moduels=['mpv'],
     package_data={

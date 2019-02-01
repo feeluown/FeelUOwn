@@ -12,6 +12,7 @@ from bs4 import BeautifulSoup
 import requests
 from Crypto.Cipher import AES
 from Crypto.PublicKey import RSA
+from Crypto.Cipher import PKCS1_OAEP
 
 
 site_uri = 'http://music.163.com'
@@ -363,8 +364,8 @@ class API(object):
     def _aes_encrypt(self, text, key):
         pad = 16 - len(text) % 16
         text = text + pad * chr(pad)
-        encryptor = AES.new(key, 2, '0102030405060708')
-        enc_text = encryptor.encrypt(text)
+        encryptor = AES.new(bytes(key, 'utf-8'), 2, b'0102030405060708')
+        enc_text = encryptor.encrypt(bytes(text, 'utf-8'))
         enc_text_encode = base64.b64encode(enc_text)
         return enc_text_encode
 
@@ -376,10 +377,9 @@ class API(object):
             'bee255932575cce10b424d813cfe4875d3e82047b97ddef52741d546b'\
             '8e289dc6935b3ece0462db0a22b8e7'
         reverse_text = text[::-1]
-        pub_key = RSA.construct([int(n, 16), int(e, 16)])
-        encrypt_text = pub_key.encrypt(int(binascii.hexlify(reverse_text), 16),
-                                       None)[0]
-        return format(encrypt_text, 'x').zfill(256)
+        encrypted_text = pow(int(binascii.hexlify(reverse_text), 16),
+                             int(e, 16), int(n, 16))
+        return format(encrypted_text, "x").zfill(256)
 
     def encrypt_request(self, data):
         text = json.dumps(data)
