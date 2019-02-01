@@ -14,7 +14,7 @@ from fuocore.pubsub import run as run_pubsub
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.config import config
 from feeluown.consts import (
-    HOME_DIR, USER_PLUGINS_DIR, PLUGINS_DIR, DATA_DIR,
+    HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
 from feeluown.rcfile import load_rcfile, bind_signals
@@ -44,7 +44,6 @@ def excepthook(exc_type, exc_value, tb):
 
 ensure_dirs()
 os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-sys.path.append(PLUGINS_DIR)
 sys.path.append(USER_PLUGINS_DIR)
 
 

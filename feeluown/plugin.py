@@ -6,7 +6,7 @@ import os
 import pkg_resources
 
 from fuocore.dispatch import Signal
-from .consts import USER_PLUGINS_DIR, PLUGINS_DIR
+from .consts import USER_PLUGINS_DIR
 from .helpers import action_log, ActionError
 
 logger = logging.getLogger(__name__)
@@ -123,10 +123,8 @@ class PluginsManager:
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""
-        modules_name = [p for p in os.listdir(PLUGINS_DIR)
-                        if os.path.isdir(os.path.join(PLUGINS_DIR, p))]
-        modules_name.extend([p for p in os.listdir(USER_PLUGINS_DIR)
-                            if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
+        modules_name = ([p for p in os.listdir(USER_PLUGINS_DIR)
+                         if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
 
         for module_name in modules_name:
             try:

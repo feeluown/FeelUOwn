@@ -15,14 +15,8 @@ setup(
         'feeluown',
         'feeluown.containers',
         'feeluown.components',
-        'feeluown.plugins.neteasemusic',
-        'feeluown.plugins.local',
-        'feeluown.plugins.xiami',
         'feeluown.protocol',
         'fuocore',
-        'fuocore.local',
-        'fuocore.netease',
-        'fuocore.xiami',
         ],
     py_moduels=['mpv'],
     package_data={
@@ -40,10 +34,7 @@ setup(
     # FIXME depends on PyQt5
     install_requires=[
         'quamash>=0.5.5',
-        'beautifulsoup4>=4.5.3',
-        'marshmallow>=2.13.5',
         'mutagen>=1.37',
-        'pycryptodome',
         'fuzzywuzzy',
         'requests',
         ],
