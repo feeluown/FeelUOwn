@@ -1,5 +1,5 @@
-fuocore
-=======
+核心模块
+========
 
 fuocore 提供了音乐播放器依赖的一些常见模块，
 它主要是为 `feeluown <https://github.com/cosven/feeluown>`_ 播放器而设计的，
