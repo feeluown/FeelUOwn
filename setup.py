@@ -34,8 +34,6 @@ setup(
     # FIXME depends on PyQt5
     install_requires=[
         'quamash>=0.5.5',
-        'mutagen>=1.37',
-        'fuzzywuzzy',
         'requests',
         ],
     tests_require=['pytest'],
