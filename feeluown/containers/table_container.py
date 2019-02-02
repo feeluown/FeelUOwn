@@ -126,9 +126,9 @@ class SongsTableContainer(QFrame):
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
         self.songs_table.show_artist_needed.connect(
-            lambda artist: asyncio.ensure_future(self.show_model(artist)))
+            lambda artist: self._app.browser.goto(model=artist))
         self.songs_table.show_album_needed.connect(
-            lambda album: asyncio.ensure_future(self.show_model(album)))
+            lambda album: self._app.browser.goto(model=album))
 
         self._desc_container.space_pressed.connect(self.toggle_desc_container_fold)
         self._toolbar.toggle_desc_needed.connect(self.toggle_desc_container_fold)

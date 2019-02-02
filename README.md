@@ -8,7 +8,7 @@
 
 FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面向 Linux/macOS 用户。
 
-[![macOS 效果预览](https://user-images.githubusercontent.com/4962134/45357853-30348580-b5fa-11e8-8774-187ffb42efdd.png)](https://github.com/cosven/FeelUOwn/wiki/Gallery)
+[![macOS 效果预览](https://user-images.githubusercontent.com/4962134/52162110-ea439f80-2709-11e9-9558-47f015de839b.png)](https://github.com/cosven/FeelUOwn/wiki/Gallery)
 
 
 

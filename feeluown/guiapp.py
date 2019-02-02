@@ -20,6 +20,7 @@ from feeluown.components.collections import CollectionsModel
 from feeluown.protocol.collection import CollectionManager
 
 from .app import CliApp, App
+from .browser import Browser
 from .consts import APP_ICON
 from .helpers import use_mac_theme
 from .hotkey import Hotkey
@@ -62,7 +63,6 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.hotkey_manager = Hotkey(self)
         #: collections manager
         self.coll_mgr = CollectionManager(self)
-
         self.img_ctl = ImgController(self)
 
         self.playlists = PlaylistsModel(parent=self)
@@ -71,6 +71,7 @@ class GuiApp(CliApp, QWidget, AppCodeRunnerMixin):
         self.my_music = MyMusicModel(parent=self)
         self.collections = CollectionsModel(parent=self)
 
+        self.browser = Browser(self)  # 在 ui 初始化之前初始化
         self.ui = Ui(self)
 
         self.player_pixmap = None

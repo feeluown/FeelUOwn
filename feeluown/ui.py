@@ -310,6 +310,11 @@ class BottomPanel(QFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
+        self.back_btn.setEnabled(False)
+        self.forward_btn.setEnabled(False)
+        self.back_btn.clicked.connect(self._app.browser.back)
+        self.forward_btn.clicked.connect(self._app.browser.forward)
+
 
 class LeftPanel(QFrame):
 
@@ -585,6 +590,8 @@ class Ui:
         self.magicbox = self.bottom_panel.magicbox
         self.pc_panel = self.top_panel.pc_panel
         self.table_container = self.right_panel.table_container
+        self.back_btn = self.bottom_panel.back_btn
+        self.forward_btn = self.bottom_panel.forward_btn
 
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self._left_panel_container)

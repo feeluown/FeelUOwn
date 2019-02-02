@@ -9,8 +9,9 @@ fuocore.protocol.handlers.show
     show fuo://local/songs/1  # 显示一首歌的详细信息
 """
 import logging
-import re
 from urllib.parse import urlparse
+
+from fuocore.router import Router, NotFound
 
 from .handlers import AbstractHandler
 from .helpers import (
@@ -21,93 +22,8 @@ from .helpers import (
 logger = logging.getLogger(__name__)
 
 
-class NotFound(Exception):
-    pass
-
-
-class Router(object):
-    rules = []
-    handlers = {}
-
-    @classmethod
-    def register(cls, rule, handler):
-        cls.rules.append(rule)
-        cls.handlers[rule] = handler
-
-    @classmethod
-    def get_handler(cls, rule):
-        return cls.handlers[rule]
-
-
-def _validate_rule(rule):
-    """简单的对 rule 进行校验
-
-    TODO: 代码实现需要改进
-    """
-    if rule:
-        if rule == '/':
-            return
-        parts = rule.split('/')
-        if parts.count('') == 1:
-            return
-    raise ValueError('Invalid rule: {}'.format(rule))
-
-
-def route(rule):
-    """show handler router decorator
-
-    example::
-
-        @route('/<provider_name>/songs')
-        def show_songs(provider_name):
-            pass
-    """
-    _validate_rule(rule)
-
-    def decorator(func):
-        Router.register(rule, func)
-
-        def wrapper(*args, **kwargs):
-            func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-
-def regex_from_rule(rule):
-    """为一个 rule 生成对应的正则表达式
-    >>> regex_from_rule('/<provider>/songs')
-    re.compile('^/(?P<provider>[^\\\/]+)/songs$')
-    """
-    kwargs_regex = re.compile(r'(<.*?>)')
-    pattern = re.sub(
-        kwargs_regex,
-        lambda m: '(?P<{}>[^\/]+)'.format(m.group(0)[1:-1]),
-        rule
-    )
-    regex = re.compile(r'^{}$'.format(pattern))
-    return regex
-
-
-def match(path, rules=Router.rules):
-    """找到 path 对应的 rule，并解析其中的参数
-
-    >>> match('/local/songs', rules=['/<p>/songs'])
-    ('/<p>/songs', {'p': 'local'})
-
-    :return: (rule, params) or None
-    """
-    for rule in rules:
-        url_regex = regex_from_rule(rule)
-        match = url_regex.match(path)
-        if match:
-            params = match.groupdict()
-            return rule, params
-    raise NotFound
-
-
-def dispatch(req, rule, params):
-    handler = Router.get_handler(rule)
-    return handler(req, **params)
+router = Router()
+route = router.route
 
 
 class ShowHandler(AbstractHandler):
@@ -120,12 +36,8 @@ class ShowHandler(AbstractHandler):
         r = urlparse(furi)
         path = '/{}{}'.format(r.netloc, r.path)
         logger.debug('请求 path: {}'.format(path))
-        try:
-            rule, params = match(path)
-        except NotFound as e:
-            # FIXME: 抛一个合理的异常
-            raise Exception('uri 不能被正确识别')
-        return dispatch(self, rule, params)
+        rv = router.dispatch(path, self)
+        return rv
 
 
 @route('/')
