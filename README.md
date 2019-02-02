@@ -1,5 +1,11 @@
 ## FeelUOwn - feel your own
 
+[![Documentation Status](https://readthedocs.org/projects/feeluown/badge/?version=latest)](http://feeluown.readthedocs.org)
+[![Build Status](https://travis-ci.org/cosven/feeluown.svg?branch=master)](https://travis-ci.org/cosven/feeluown)
+[![Coverage Status](https://coveralls.io/repos/github/cosven/feeluown/badge.svg?branch=master&service=github)](https://coveralls.io/github/cosven/feeluown?branch=master)
+[![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/feeluown)
+[![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/feeluown)
+
 FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面向 Linux/macOS 用户。
 
 [![macOS 效果预览](https://user-images.githubusercontent.com/4962134/45357853-30348580-b5fa-11e8-8774-187ffb42efdd.png)](https://github.com/cosven/FeelUOwn/wiki/Gallery)
