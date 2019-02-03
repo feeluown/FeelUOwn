@@ -9,7 +9,6 @@ import traceback
 import sys
 
 from fuocore import __version__ as fuocore_version
-from fuocore.pubsub import run as run_pubsub
 
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.config import config
@@ -115,9 +114,7 @@ def main():
 
         app_event_loop = QEventLoop(q_app)
         asyncio.set_event_loop(app_event_loop)
-        pubsub_gateway, pubsub_server = run_pubsub()
-
-        app = GuiApp(pubsub_gateway, player_kwargs=player_kwargs)
+        app = GuiApp(player_kwargs=player_kwargs)
         app.config = config
         # 初始化 UI 和组件间信号绑定
         app.initialize()
@@ -127,15 +124,13 @@ def main():
     else:
         from feeluown.app import CliApp
 
-        pubsub_gateway, pubsub_server = run_pubsub()
-        app = CliApp(pubsub_gateway, player_kwargs=player_kwargs)
+        app = CliApp(player_kwargs=player_kwargs)
         app.config = config
         app.initialize()
 
     bind_signals(app)
 
     event_loop = asyncio.get_event_loop()
-    app.protocol.run_server()
     try:
         event_loop.run_forever()
         logger.info('Event loop stopped.')
@@ -143,7 +138,7 @@ def main():
         # NOTE: gracefully shutdown?
         pass
     finally:
-        pubsub_server.close()
+        app.shutdown()
         event_loop.close()
 
 

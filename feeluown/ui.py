@@ -147,6 +147,8 @@ class PlayerControlPanel(QFrame):
         self.pms_btn.clicked.connect(self._switch_playback_mode)
 
         self._app.player.state_changed.connect(self._on_player_state_changed)
+        self._app.player.position_changed.connect(self.on_position_changed)
+        self._app.player.duration_changed.connect(self.on_duration_changed)
         self._app.player.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed)
         self._app.player.playlist.song_changed.connect(
@@ -228,14 +230,18 @@ class PlayerControlPanel(QFrame):
         playlist.playback_mode = self._playback_modes[pm_idx]
 
     def on_duration_changed(self, duration):
+        duration = duration * 1000
         m, s = parse_ms(duration)
         t = QTime(0, m, s)
+        self.progress_slider.set_duration(duration)
         self.duration_label.setText(t.toString('mm:ss'))
 
     def on_position_changed(self, position):
+        position = position * 1000
         m, s = parse_ms(position)
         t = QTime(0, m, s)
         self.position_label.setText(t.toString('mm:ss'))
+        self.progress_slider.update_state(ms)
 
     def on_playback_mode_changed(self, playback_mode):
         self._update_pms_btn_text()
@@ -275,6 +281,7 @@ class TopPanel(QFrame):
         self.setFixedHeight(60)
 
         self._layout.addWidget(self.pc_panel)
+
 
 
 class BottomPanel(QFrame):
@@ -621,7 +628,7 @@ class Ui:
 
         self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
 
-        self._app.hotkey_manager.registe(
+        self._app.hotkey_mgr.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.magicbox.setFocus
         )

@@ -1,48 +1,64 @@
 import asyncio
-import locale
 import logging
 from functools import partial
 from contextlib import contextmanager
 
-from fuocore import LiveLyric, MpvPlayer, Library
+from fuocore import LiveLyric, Library
+from fuocore.pubsub import run as run_pubsub
 
-from feeluown.protocol import FuoProcotol
-from .cliapp import LiveLyricPublisher
+from .protocol import FuoProcotol
 from .player import Player
 from .plugin import PluginsManager
+from .publishers import LiveLyricPublisher
+from .request import Request
 from .version import VersionManager
 
 
 logger = logging.getLogger(__name__)
 
 
-class App(object):
+class App:
     CliMode = 0x0001
     GuiMode = 0x0010
 
-    mode = 0x0000
+    # mode = 0x0000
+    mode = CliMode
 
     def __init__(self, player_kwargs=None):
+        super().__init__()
         self.player = Player(app=self, **(player_kwargs or {}))
         self.playlist = self.player.playlist
         self.library = Library()
         self.live_lyric = LiveLyric()
-
         self.protocol = FuoProcotol(self)
-
         self.plugin_mgr = PluginsManager(self)
         self.version_mgr = VersionManager(self)
-
-    def show_msg(self, msg, *args, **kwargs):
-        logger.info(msg)
+        self.request = Request(self)
+        self._g = {}
 
     def initialize(self):
         self.player.position_changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(self.live_lyric.on_song_changed)
-
         self.plugin_mgr.scan()
+
+        self.pubsub_gateway, self.pubsub_server = run_pubsub()
+        self.protocol.run_server()
+
+        self._ll_publisher = LiveLyricPublisher(self.pubsub_gateway)
+        self.live_lyric.sentence_changed.connect(self._ll_publisher.publish)
         loop = asyncio.get_event_loop()
         loop.call_later(10, partial(loop.create_task, self.version_mgr.check_release()))
+
+    def exec_(self, code):
+        obj = compile(code, '<string>', 'single')
+        self._g.update({
+            'app': self,
+            'player': self.player
+        })
+        exec(obj, self._g, self._g)
+
+    def show_msg(self, msg, *args, **kwargs):
+        logger.info(msg)
 
     @contextmanager
     def create_action(self, s):
@@ -65,14 +81,7 @@ class App(object):
         else:
             show_msg(s + '...done')  # done
 
-
-class CliApp(App):
-    mode = App.CliMode
-
-    def __init__(self, pubsub_gateway, player_kwargs=None):
-        super().__init__(player_kwargs=player_kwargs)
-
-        self.pubsub_gateway = pubsub_gateway
-        self._live_lyric_publisher = LiveLyricPublisher(pubsub_gateway)
-
-        self.live_lyric.sentence_changed.connect(self._live_lyric_publisher.publish)
+    def shutdown(self):
+        self.pubsub_server.close()
+        self.player.stop()
+        self.player.shutdown()

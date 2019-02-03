@@ -1,22 +1,22 @@
 import logging
 import requests
 
-from PyQt5.QtCore import QObject, pyqtSignal
+from fuocore.dispatch import Signal
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 
 logger = logging.getLogger(__name__)
 
 
-class Request(QObject):
-    connected_signal = pyqtSignal()
-    disconnected_signal = pyqtSignal()
-    slow_signal = pyqtSignal()
-    server_error_signal = pyqtSignal()
-
+class Request:
     def __init__(self, app):
         super().__init__(parent=app)
         self._app = app
+
+        self.connected_signal = Signal()
+        self.disconnected_signal = Signal()
+        self.slow_signal = Signal()
+        self.server_error_signal = Signal()
 
     def get(self, *args, **kw):
         logger.info('request.get %s %s' % (args, kw))
