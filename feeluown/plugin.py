@@ -135,7 +135,7 @@ class PluginsManager:
                 self.load_module(module)
 
     def _scan_entry_points(self):
-        """扫瞄通过 setuptools 机制注册的插件
+        """扫描通过 setuptools 机制注册的插件
 
         https://packaging.python.org/guides/creating-and-discovering-plugins/
         """
