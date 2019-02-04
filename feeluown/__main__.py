@@ -10,15 +10,14 @@ import sys
 
 from fuocore import __version__ as fuocore_version
 
+from feeluown.app import App, create_app
 from feeluown import logger_config, __version__ as feeluown_version
-from feeluown.config import config
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
 from feeluown.rcfile import load_rcfile, bind_signals
 from feeluown.utils import is_port_used
-
 
 logger = logging.getLogger(__name__)
 
@@ -106,7 +105,6 @@ def main():
     if not cli_only:
         from PyQt5.QtWidgets import QApplication
         from quamash import QEventLoop
-        from feeluown.guiapp import GuiApp
 
         q_app = QApplication(sys.argv)
         q_app.setQuitOnLastWindowClosed(True)
@@ -114,20 +112,9 @@ def main():
 
         app_event_loop = QEventLoop(q_app)
         asyncio.set_event_loop(app_event_loop)
-        app = GuiApp(player_kwargs=player_kwargs)
-        app.config = config
-        # 初始化 UI 和组件间信号绑定
-        app.initialize()
-        # TODO: 调用 show 时，会弹出主界面，但这时界面还没开始绘制
-        # 为了让提升启动速度，一些非必须的初始化操作可以在 show 之后进行
-        app.show()
-    else:
-        from feeluown.app import CliApp
 
-        app = CliApp(player_kwargs=player_kwargs)
-        app.config = config
-        app.initialize()
-
+    mode = App.CliMode if cli_only else App.GuiMode
+    app = create_app(mode, **player_kwargs)
     bind_signals(app)
 
     event_loop = asyncio.get_event_loop()

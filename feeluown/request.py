@@ -9,10 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class Request:
-    def __init__(self, app):
-        super().__init__(parent=app)
-        self._app = app
-
+    def __init__(self):
         self.connected_signal = Signal()
         self.disconnected_signal = Signal()
         self.slow_signal = Signal()

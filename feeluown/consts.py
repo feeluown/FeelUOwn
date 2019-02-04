@@ -3,11 +3,7 @@
 import os
 from enum import Enum
 
-
-THEMES_DIR = './feeluown/themes'
 APP_ICON = './feeluown/feeluown.png'
-DEFAULT_THEME_NAME = 'Tomorrow Night'
-
 
 HOME_DIR = os.path.expanduser('~') + '/.FeelUOwn'
 

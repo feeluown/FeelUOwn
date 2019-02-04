@@ -6,6 +6,8 @@ from contextlib import contextmanager
 from fuocore import LiveLyric, Library
 from fuocore.pubsub import run as run_pubsub
 
+from .config import config
+from .consts import APP_ICON
 from .protocol import FuoProcotol
 from .player import Player
 from .plugin import PluginsManager
@@ -20,34 +22,6 @@ logger = logging.getLogger(__name__)
 class App:
     CliMode = 0x0001
     GuiMode = 0x0010
-
-    # mode = 0x0000
-    mode = CliMode
-
-    def __init__(self, player_kwargs=None):
-        super().__init__()
-        self.player = Player(app=self, **(player_kwargs or {}))
-        self.playlist = self.player.playlist
-        self.library = Library()
-        self.live_lyric = LiveLyric()
-        self.protocol = FuoProcotol(self)
-        self.plugin_mgr = PluginsManager(self)
-        self.version_mgr = VersionManager(self)
-        self.request = Request(self)
-        self._g = {}
-
-    def initialize(self):
-        self.player.position_changed.connect(self.live_lyric.on_position_changed)
-        self.playlist.song_changed.connect(self.live_lyric.on_song_changed)
-        self.plugin_mgr.scan()
-
-        self.pubsub_gateway, self.pubsub_server = run_pubsub()
-        self.protocol.run_server()
-
-        self._ll_publisher = LiveLyricPublisher(self.pubsub_gateway)
-        self.live_lyric.sentence_changed.connect(self._ll_publisher.publish)
-        loop = asyncio.get_event_loop()
-        loop.call_later(10, partial(loop.create_task, self.version_mgr.check_release()))
 
     def exec_(self, code):
         obj = compile(code, '<string>', 'single')
@@ -85,3 +59,107 @@ class App:
         self.pubsub_server.close()
         self.player.stop()
         self.player.shutdown()
+
+
+def attach_attrs(app, **player_kwargs):
+    """初始化 app 属性"""
+    app.library = Library()
+    app.player = Player(app=app, **(player_kwargs or {}))
+    app.playlist = app.player.playlist
+    app.live_lyric = LiveLyric()
+    app.protocol = FuoProcotol(app)
+    app.plugin_mgr = PluginsManager(app)
+    app.version_mgr = VersionManager(app)
+    app.request = Request()
+    app._g = {}
+
+    if app.mode & app.GuiMode:
+        from feeluown.components.history import HistoriesModel
+        from feeluown.components.provider import ProvidersModel
+        from feeluown.components.playlists import PlaylistsModel
+        from feeluown.components.my_music import MyMusicModel
+        from feeluown.components.collections import CollectionsModel
+        from feeluown.protocol.collection import CollectionManager
+
+        from .browser import Browser
+        from .hotkey import Hotkey
+        from .img_ctl import ImgController
+        from .theme import ThemeManager
+        from .tips import TipsManager
+        from .ui import Ui
+
+        app.coll_mgr = CollectionManager(app)
+        app.theme_mgr = ThemeManager(app)
+        app.tips_mgr = TipsManager(app)
+        app.hotkey_mgr = Hotkey(app)
+        app.img_ctl = ImgController(app)
+        app.playlists = PlaylistsModel(parent=app)
+        app.histories = HistoriesModel(parent=app)
+        app.providers = ProvidersModel(parent=app)
+        app.my_music = MyMusicModel(parent=app)
+        app.collections = CollectionsModel(parent=app)
+        app.browser = Browser(app)
+        app.ui = Ui(app)
+        app.show_msg = app.ui.magicbox.show_msg
+
+
+def initialize(app):
+    app.player.position_changed.connect(app.live_lyric.on_position_changed)
+    app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
+    app.pubsub_gateway, app.pubsub_server = run_pubsub()
+    app.plugin_mgr.scan()
+    app.protocol.run_server()
+    if app.mode & App.GuiMode:
+        app.theme_mgr.load_light()
+        app.tips_mgr.show_random_tip()
+        app.coll_mgr.scan()
+
+    app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
+    app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
+    loop = asyncio.get_event_loop()
+    loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
+
+
+def create_app(mode, **player_kwargs):
+    bases = [App]
+
+    if mode & App.GuiMode:
+        from PyQt5.QtGui import QIcon
+        from PyQt5.QtWidgets import QApplication, QWidget
+
+        class GuiApp(QWidget):
+            mode = App.GuiMode
+
+            def __init__(self):
+                super().__init__()
+                self.resize(1000, 618)
+                self.setObjectName('app')
+                QApplication.setWindowIcon(QIcon(APP_ICON))
+
+            def closeEvent(self, _):
+                try:
+                    self.shutdown()
+                finally:
+                    QApplication.quit()
+
+        bases.append(GuiApp)
+
+        if mode & App.CliMode:
+
+            class CliApp:
+                pass
+
+            bases.append(CliApp)
+
+        class FApp(*bases):
+            def __init__(self, mode):
+                for base in bases:
+                    base.__init__(self)
+                self.mode = mode
+
+    app = FApp(mode)
+    app.config = config
+    attach_attrs(app, **player_kwargs)
+    initialize(app)
+    if app.mode & App.GuiMode:
+        app.show()

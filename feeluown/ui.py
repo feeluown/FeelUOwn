@@ -241,7 +241,7 @@ class PlayerControlPanel(QFrame):
         m, s = parse_ms(position)
         t = QTime(0, m, s)
         self.position_label.setText(t.toString('mm:ss'))
-        self.progress_slider.update_state(ms)
+        self.progress_slider.update_state(position)
 
     def on_playback_mode_changed(self, playback_mode):
         self._update_pms_btn_text()
