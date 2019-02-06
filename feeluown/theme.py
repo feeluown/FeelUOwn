@@ -16,7 +16,7 @@ class ThemeManager:
         filepath = os.path.abspath(__file__)
         dirname = os.path.dirname(filepath)
         qssfilepath = os.path.join(dirname, 'light.qss')
-        with open(qssfilepath) as f:
+        with open(qssfilepath, encoding='UTF-8') as f:
             s = f.read()
             QApplication.instance().setStyleSheet(s)
 
