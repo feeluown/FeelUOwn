@@ -25,7 +25,7 @@ class Collection:
         filename = filepath.rsplit('/')[-1]
         name, _ = filename.split('.')
         self.name = name
-        with open(filepath) as f:
+        with open(filepath, encoding='utf-8') as f:
             for line in f:
                 model = self._parser.parse_line(line)
                 if model is not None:
@@ -34,7 +34,7 @@ class Collection:
     def add(self, song):
         if song not in self.models:
             line = self._parser.gen_line(song)
-            with open(self.fpath, 'a+') as f:
+            with open(self.fpath, 'a+', encoding='utf-8') as f:
                 # 如果老的文件没有换行符，也要保证不会出错
                 f.write('\n{}\n'.format(line))
             self.models.append(song)
@@ -100,7 +100,7 @@ class CollectionManager:
         filename = random.choice(filenames)
         fpath = os.path.join(COLLECTIONS_DIR, filename)
         if not os.path.exists(fpath):
-            with open(fpath, 'w') as f:
+            with open(fpath, 'w', encoding='utf-8') as f:
                 lines = [
                     'fuo://netease/songs/16841667  # No Matter What - Boyzone',
                     'fuo://netease/songs/65800     # 最佳损友 - 陈奕迅',

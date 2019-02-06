@@ -34,5 +34,5 @@ def load_rcfile(rcfile_path=DEFAULT_RCFILE_PATH):
         return
 
     g = {'when': when, 'config': config}
-    with open(rcfile_path) as f:
+    with open(rcfile_path, encoding='UTF-8') as f:
         exec(f.read(), g)

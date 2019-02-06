@@ -350,6 +350,103 @@ class LyricModel(BaseModel):
         fields = ['song', 'content', 'trans_content']
 
 
+class Media:
+    """视音频媒体文件或者链接
+
+    hd/md/ld 在这里是相对概念，hd >= md >= ld。我们在构造 Media 对象的时候，
+    将质量最高的标记为高清，将质量最低的媒体文件标记为低清。
+    如果某个视频或者音乐只有一种质量，那么 hd/sd/ld 中应该有两个值为 None。
+
+    :param str sq: 无损
+    :param str hd: 高清
+    :param str md: 标清
+    :param str ld: 低清
+
+    使用示例::
+
+        hd, sd, ld = media
+        as_high_as_possible = hd or sd or ld
+
+    >>> list(Media.Q.better_than(Media.Q.hd))[0] == Media.Q.sq
+    True
+    >>> list(Media.Q.better_than(Media.Q.sq))
+    []
+    >>> media = Media(hd='xx', sd='yy')
+    >>> media.get(Media.Q.hd)
+    'xx'
+    >>> media.get(Media.Q.sq)
+    """
+    class Q(IntEnum):  # Quality
+        sq = 16
+        hd = 8
+        sd = 4
+        ld = 2
+
+        @classmethod
+        def better_than(cls, q):
+            asc = (cls.ld, cls.sd, cls.hd, cls.sq)
+            for _q in asc:
+                if _q > q:
+                    yield _q
+
+        @classmethod
+        def worse_than(cls, q):
+            desc = (cls.sq, cls.hd, cls.sd, cls.ld)
+            for _q in desc:
+                if _q < q:
+                    yield _q
+
+    class S(IntEnum):  # Strategy
+        none = 0
+        better = 1
+        worse = 2
+
+    def __init__(self, sq=None, hd=None, sd=None, ld=None):
+        self.sq = sq
+        self.hd = hd
+        self.sd = sd
+        self.ld = ld
+
+    @property
+    def url_ahap(self):
+        """return url with best quality(as high as possible)"""
+        return self.sq or self.hd or self.sd or self.ld
+
+    @property
+    def url_alap(self):
+        """return url with worsest quality(as low as possible)"""
+        return self.ld or self.sd or self.hd or self.sq
+
+    def get_url(self, q=Q.hd, s=S.better):
+        """复杂茦略"""
+        mapping = {
+            Media.Q.sq: self.sq,
+            Media.Q.hd: self.hd,
+            Media.Q.sd: self.sd,
+            Media.Q.ld: self.ld
+        }
+        uri = mapping[q]
+        if uri is not None:
+            return uri
+        if s == Media.S.better:
+            for _q in Media.Q.better_than(q):
+                if mapping[_q] is not None:
+                    return mapping[_q]
+        elif s == Media.s.worse:
+            for _q in Media.Q.worse_than(q):
+                if mapping[_q] is not None:
+                    return mapping[_q]
+
+
+class MvModel(BaseModel):
+    """Mv Model
+
+    :param Media media: 可播放的媒体
+    """
+    class Meta:
+        fields = ['name', 'media', 'desc', 'cover', 'artist']
+
+
 class SongModel(BaseModel):
     """Song Model
 
@@ -364,7 +461,7 @@ class SongModel(BaseModel):
         model_type = ModelType.song.value
         # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
-                  'duration']
+                  'duration', 'mv']
         fields_display = ['title', 'artists_name', 'album_name', 'duration_ms']
 
     @property
