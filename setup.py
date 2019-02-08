@@ -35,6 +35,7 @@ setup(
     install_requires=[
         'quamash>=0.5.5',
         'requests',
+        'pyopengl',
         ],
     tests_require=['pytest'],
     entry_points={

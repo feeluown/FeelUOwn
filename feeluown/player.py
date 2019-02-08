@@ -33,3 +33,6 @@ class Player(MpvPlayer):
         super().__init__(playlist=Playlist(app), *args, **kwargs)
         self._app = app
         self.initialize()
+
+    def play_mv(self, mv):
+        pass

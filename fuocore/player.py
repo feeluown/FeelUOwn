@@ -22,6 +22,7 @@ from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 import locale
 import logging
+import platform
 import random
 
 from mpv import MPV, MpvEventID, MpvEventEndFile, \
@@ -398,13 +399,18 @@ class MpvPlayer(AbstractPlayer):
 
     TODO: make me singleton
     """
-    def __init__(self, audio_device=b'auto', *args, **kwargs):
+    def __init__(self, audio_device=b'auto', winid=None, *args, **kwargs):
         super(MpvPlayer, self).__init__(*args, **kwargs)
         # https://github.com/cosven/FeelUOwn/issues/246
         locale.setlocale(locale.LC_NUMERIC, 'C')
-        self._mpv = MPV(ytdl=False,
+        mpvkwargs = {}
+        if winid is not None:
+            mpvkwargs['wid'] = winid
+        mpvkwargs['vo'] = 'opengl-cb'
+        self._mpv = MPV(ytdl=True,
                         input_default_bindings=True,
-                        input_vo_keyboard=True)
+                        input_vo_keyboard=True,
+                        **mpvkwargs)
 
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
 
@@ -418,7 +424,7 @@ class MpvPlayer(AbstractPlayer):
             lambda name, duration: self._on_duration_changed(duration)
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
-        self._mpv.event_callbacks.append(self._on_event)
+        self._mpv._event_callbacks.append(self._on_event)
         self._playlist.song_changed.connect(self._on_song_changed)
         self.song_finished.connect(self._on_song_finished)
         logger.info('Player initialize finished.')

@@ -43,7 +43,7 @@ class LiveLyric(object):
     # TODO: performance optimization?
     def on_position_changed(self, position):
         """bind position changed signal with this"""
-        if not self._lyric:
+        if position is None or not self._lyric:
             return
 
         pos = find_previous(position*1000 + 300, self._pos_list)

@@ -123,9 +123,8 @@ def main():
         logger.info('Event loop stopped.')
     except KeyboardInterrupt:
         # NOTE: gracefully shutdown?
-        pass
-    finally:
         app.shutdown()
+    finally:
         event_loop.close()
 
 

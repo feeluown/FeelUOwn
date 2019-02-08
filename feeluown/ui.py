@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore.player import PlaybackMode, State
+from fuocore.models import Media
 
 from feeluown.components.separator import Separator
 from feeluown.components.playlists import PlaylistsView
@@ -237,6 +238,8 @@ class PlayerControlPanel(QFrame):
         self.duration_label.setText(t.toString('mm:ss'))
 
     def on_position_changed(self, position):
+        if position is None:
+            return
         position = position * 1000
         m, s = parse_ms(position)
         t = QTime(0, m, s)
@@ -264,6 +267,11 @@ class PlayerControlPanel(QFrame):
             text, Qt.ElideRight, self.progress_slider.width() - 100)
         self.song_source_label.setText(source_name_map[song.source])
         self.song_title_label.setText(elided_text)
+        if song.mv is not None:
+            self.mv_btn.setToolTip(song.mv.name)
+            self.mv_btn.setEnabled(True)
+        else:
+            self.mv_btn.setEnabled(False)
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
@@ -599,6 +607,8 @@ class Ui:
         self.table_container = self.right_panel.table_container
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
+        self.mpv_widget = app._mpv_widget
+        self.mv_btn = self.pc_panel.mv_btn
 
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self._left_panel_container)
@@ -608,18 +618,12 @@ class Ui:
         self._left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        if use_mac_theme():
-            self._layout.addWidget(self.bottom_panel)
-            self._layout.addWidget(self._bottom_separator)
-            self._layout.addWidget(self._splitter)
-            self._layout.addWidget(self._top_separator)
-            self._layout.addWidget(self.top_panel)
-        else:
-            self._layout.addWidget(self.top_panel)
-            self._layout.addWidget(self._top_separator)
-            self._layout.addWidget(self._splitter)
-            self._layout.addWidget(self._bottom_separator)
-            self._layout.addWidget(self.bottom_panel)
+        self._layout.addWidget(self.bottom_panel)
+        self._layout.addWidget(self._bottom_separator)
+        self._layout.addWidget(self._splitter)
+        self._layout.addWidget(self.mpv_widget)
+        self._layout.addWidget(self._top_separator)
+        self._layout.addWidget(self.top_panel)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -627,7 +631,7 @@ class Ui:
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
         self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
-
+        self.mv_btn.clicked.connect(self._toggle_mv)
         self._app.hotkey_mgr.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.magicbox.setFocus
@@ -636,3 +640,18 @@ class Ui:
     def show_player_playlist(self):
         songs = self._app.playlist.list()
         self.table_container.show_player_playlist(songs)
+
+    def _toggle_mv(self):
+        if self.mpv_widget.isVisible():
+            self._bottom_separator.show()
+            self.bottom_panel.show()
+            self._splitter.show()
+            self.mpv_widget.hide()
+            self._app.player.play_previous()
+        else:
+            self._bottom_separator.hide()
+            self.bottom_panel.hide()
+            self._splitter.hide()
+            self.mpv_widget.show()
+            song = self._app.player.current_song
+            self._app.player.play(song.mv.media.url_ahap)

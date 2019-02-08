@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
+# ------------------------------------------------
+#
+# based on v0.3.9, modified by @cosven
+#
+# Changes:
+#
+# * https://github.com/jaseg/python-mpv/issues/84
+#
 
 from ctypes import *
 import ctypes.util
@@ -308,7 +316,7 @@ class MpvEventClientMessage(Structure):
 WakeupCallback = CFUNCTYPE(None, c_void_p)
 
 OpenGlCbUpdateFn = CFUNCTYPE(None, c_void_p)
-OpenGlCbGetProcAddrFn = CFUNCTYPE(None, c_void_p, c_char_p)
+OpenGlCbGetProcAddrFn = CFUNCTYPE(c_void_p, c_void_p, c_char_p)
 
 def _handle_func(name, args, restype, errcheck, ctx=MpvHandle):
     func = getattr(backend, name)

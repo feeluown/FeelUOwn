@@ -64,14 +64,27 @@ class App:
 def attach_attrs(app, **player_kwargs):
     """初始化 app 属性"""
     app.library = Library()
-    app.player = Player(app=app, **(player_kwargs or {}))
-    app.playlist = app.player.playlist
     app.live_lyric = LiveLyric()
     app.protocol = FuoProcotol(app)
     app.plugin_mgr = PluginsManager(app)
     app.version_mgr = VersionManager(app)
     app.request = Request()
     app._g = {}
+
+    app.player = Player(app=app, **(player_kwargs or {}))
+    app.playlist = app.player.playlist
+
+    if app.mode & app.GuiMode:
+        # 需要在 mpv 初始化之前拿到 MpvWidget 的 winid,
+        # 所以在这里单独先初始化 mpv_widget,并将 mpv_widget
+        # 做为 app 的临时属性。
+        # 理论上程序其它部分应该通过 app.ui.mpv_widget 来访问 mpv_widget.
+        #
+        # TODO: 调研 _mpv_set_option 给 mpv 设置 winid
+        from .containers.mpv_widget import MpvWidget
+        app._mpv_widget = MpvWidget(app)
+        app._mpv_widget.hide()
+        # player_kwargs['winid'] = app._mpv_widget.winid
 
     if app.mode & app.GuiMode:
         from feeluown.components.history import HistoriesModel
@@ -80,6 +93,7 @@ def attach_attrs(app, **player_kwargs):
         from feeluown.components.my_music import MyMusicModel
         from feeluown.components.collections import CollectionsModel
         from feeluown.protocol.collection import CollectionManager
+        from feeluown.containers.mpv_widget import MpvWidget
 
         from .browser import Browser
         from .hotkey import Hotkey
@@ -100,6 +114,7 @@ def attach_attrs(app, **player_kwargs):
         app.collections = CollectionsModel(parent=app)
         app.browser = Browser(app)
         app.ui = Ui(app)
+        app.ui.mpv_widget = app._mpv_widget
         app.show_msg = app.ui.magicbox.show_msg
 
 
@@ -136,26 +151,26 @@ def create_app(mode, **player_kwargs):
                 self.setObjectName('app')
                 QApplication.setWindowIcon(QIcon(APP_ICON))
 
-            def closeEvent(self, _):
+            def closeEvent(self, e):
                 try:
                     self.shutdown()
-                finally:
-                    QApplication.quit()
+                except:
+                    QApplication.exit()
 
         bases.append(GuiApp)
 
-        if mode & App.CliMode:
+    if mode & App.CliMode:
 
-            class CliApp:
-                pass
+        class CliApp:
+            pass
 
-            bases.append(CliApp)
+        bases.append(CliApp)
 
-        class FApp(*bases):
-            def __init__(self, mode):
-                for base in bases:
-                    base.__init__(self)
-                self.mode = mode
+    class FApp(*bases):
+        def __init__(self, mode):
+            for base in bases:
+                base.__init__(self)
+            self.mode = mode
 
     app = FApp(mode)
     app.config = config
@@ -163,3 +178,4 @@ def create_app(mode, **player_kwargs):
     initialize(app)
     if app.mode & App.GuiMode:
         app.show()
+    return app
