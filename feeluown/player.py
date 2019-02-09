@@ -34,5 +34,5 @@ class Player(MpvPlayer):
         self._app = app
         self.initialize()
 
-    def play_mv(self, mv):
+    def play_video(self, video):
         pass

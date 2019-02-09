@@ -116,7 +116,7 @@ SongsTableView QHeaderView {
 /*
  * feeluown text button
  */
-#pms_btn, #mv_btn, TableToolbar QPushButton {
+#pms_btn, #mv_btn, #toggle_video_btn, TableToolbar QPushButton {
     border-radius: 3px;
     border: 1px solid #AAA;
 }
@@ -130,10 +130,13 @@ SongsTableView QHeaderView {
     padding: 0px 3px;
     border: 1px solid #AAA;
 }
+#toggle_video_btn {
+    padding: 0px 3px;
+}
 TableToolbar QPushButton {
     padding: 2px 8px;
 }
-#mv_btn:hover, #pms_btn:hover, TableToolbar QPushButton:hover {
+#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover, TableToolbar QPushButton:hover {
     border: 1px solid #777;
 }
 #mv_btn:pressed, #pms_btn:pressed {

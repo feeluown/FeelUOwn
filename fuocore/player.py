@@ -411,8 +411,10 @@ class MpvPlayer(AbstractPlayer):
                         input_default_bindings=True,
                         input_vo_keyboard=True,
                         **mpvkwargs)
-
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
+
+        # TODO: 之后可以考虑将这个属性加入到 AbstractPlayer 中
+        self.video_format_changed = Signal()
 
     def initialize(self):
         self._mpv.observe_property(
@@ -423,6 +425,10 @@ class MpvPlayer(AbstractPlayer):
             'duration',
             lambda name, duration: self._on_duration_changed(duration)
         )
+        self._mpv.observe_property(
+            'video-format',
+            lambda name, vformat: self._on_video_format_changed(vformat)
+        )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv._event_callbacks.append(self._on_event)
         self._playlist.song_changed.connect(self._on_song_changed)
@@ -430,7 +436,7 @@ class MpvPlayer(AbstractPlayer):
         logger.info('Player initialize finished.')
 
     def shutdown(self):
-        del self._mpv
+        self._mpv.terminate()
 
     def play(self, url):
         # NOTE - API DESGIN: we should return None, see
@@ -513,6 +519,15 @@ class MpvPlayer(AbstractPlayer):
         super(MpvPlayer, MpvPlayer).volume.__set__(self, value)
         self._mpv.volume = self.volume
 
+    @property
+    def video_format(self):
+        self._video_format
+
+    @video_format.setter
+    def video_format(self, vformat):
+        self._video_format = vformat
+        self.video_format_changed.emit(vformat)
+
     def _on_position_changed(self, position):
         self._position = position
         self.position_changed.emit(position)
@@ -521,6 +536,9 @@ class MpvPlayer(AbstractPlayer):
         """listening to mpv duration change event"""
         logger.debug('Player receive duration changed signal')
         self.duration = duration
+
+    def _on_video_format_changed(self, vformat):
+        self.video_format = vformat
 
     def _on_song_changed(self, song):
         """播放列表 current_song 发生变化后的回调

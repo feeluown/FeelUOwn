@@ -153,9 +153,10 @@ def create_app(mode, **player_kwargs):
 
             def closeEvent(self, e):
                 try:
+                    app.ui.mpv_widget.close()
                     self.shutdown()
-                except:
-                    QApplication.exit()
+                finally:
+                    QApplication.quit()
 
         bases.append(GuiApp)
 

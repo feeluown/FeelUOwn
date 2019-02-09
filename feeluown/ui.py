@@ -95,11 +95,11 @@ class PlayerControlPanel(QFrame):
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
         self.playlist_btn = IconButton(parent=self)
-
         #: mark song as favorite button
         self.like_btn = QPushButton(self)
         self.mv_btn = QPushButton('MV', self)
         self.download_btn = QPushButton(self)
+        self.toggle_video_btn = QPushButton('△', self)
 
         self.previous_btn.setObjectName('previous_btn')
         self.pp_btn.setObjectName('pp_btn')
@@ -110,6 +110,7 @@ class PlayerControlPanel(QFrame):
         self.download_btn.setObjectName('download_btn')
         self.like_btn.setObjectName('like_btn')
         self.mv_btn.setObjectName('mv_btn')
+        self.toggle_video_btn.setObjectName('toggle_video_btn')
 
         self.progress_slider = ProgressSlider(self)
 
@@ -118,21 +119,13 @@ class PlayerControlPanel(QFrame):
         self.playlist_btn.setToolTip('显示当前播放列表')
         self.progress_slider.setToolTip('拖动调节进度')
 
-        # TODO: implementation
-        self.mv_btn.setToolTip('播放 MV（未实现，欢迎 PR）')
+        self.mv_btn.setToolTip('播放 MV')
         self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
         self.like_btn.setToolTip('收藏歌曲（未实现，欢迎 PR）')
-
-        if not use_mac_theme():
-            self.previous_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipBackward))
-            self.pp_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaPlay))
-            self.next_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaSkipForward))
-            self.volume_btn.setIcon(self.style().standardIcon(QStyle.SP_MediaVolume))
-            self.playlist_btn.setText('🎶')
-        else:
-            self.pp_btn.setCheckable(True)
-            self.like_btn.setCheckable(True)
-            self.download_btn.setCheckable(True)
+        self.pp_btn.setChecked(True)
+        self.like_btn.setChecked(True)
+        self.download_btn.setChecked(True)
+        self.toggle_video_btn.hide()
 
         self.song_title_label = QLabel('No song is playing.', parent=self)
         self.song_source_label = QLabel('歌曲来源', parent=self)
@@ -154,6 +147,8 @@ class PlayerControlPanel(QFrame):
             self.on_playback_mode_changed)
         self._app.player.playlist.song_changed.connect(
             self.on_player_song_changed)
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed)
         self.progress_slider.resume_player_needed.connect(self._app.player.resume)
         self.progress_slider.pause_player_needed.connect(self._app.player.pause)
         self.progress_slider.change_position_needed.connect(
@@ -215,6 +210,8 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.pms_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.playlist_btn)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.toggle_video_btn)
         self._layout.addSpacing(18)
 
         self._layout.setSpacing(0)
@@ -276,6 +273,11 @@ class PlayerControlPanel(QFrame):
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
 
+    def on_video_format_changed(self, vformat):
+        if vformat is None:
+            self.toggle_video_btn.hide()
+        else:
+            self.toggle_video_btn.show()
 
 class TopPanel(QFrame):
     def __init__(self, app, parent=None):
@@ -289,7 +291,6 @@ class TopPanel(QFrame):
         self.setFixedHeight(60)
 
         self._layout.addWidget(self.pc_panel)
-
 
 
 class BottomPanel(QFrame):
@@ -434,152 +435,6 @@ class RightPanel(QFrame):
         self._layout.setSpacing(0)
 
 
-class MessageLabel(QLabel):
-    def __init__(self, app, parent=None):
-        super().__init__(parent)
-        self._app = app
-
-        self.setObjectName('message_label')
-        self._interval = 3
-        self.timer = QTimer()
-        self.queue = []
-        self.hide()
-
-        self.timer.timeout.connect(self.access_message_queue)
-
-    @property
-    def common_style(self):
-        style_str = '''
-            #{0} {{
-                padding-left: 3px;
-                padding-right: 5px;
-            }}
-        '''.format(self.objectName())
-        return style_str
-
-    def _set_error_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.color1_light.name(),
-                   theme.color7_light.name())
-        self.setStyleSheet(style_str + self.common_style)
-
-    def _set_normal_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-                color: {2};
-            }}
-        '''.format(self.objectName(),
-                   theme.color6_light.name(),
-                   theme.color7.name())
-        self.setStyleSheet(style_str + self.common_style)
-
-    def show_message(self, text, error=False):
-        if self.isVisible():
-            self.queue.append({'error': error, 'message': text})
-            self._interval = 1.5
-            return
-        if error:
-            self._set_error_style()
-        else:
-            self._set_normal_style()
-        self.setText(str(len(self.queue)) + ': ' + text)
-        self.show()
-        self.timer.start(self._interval * 1000)
-
-    def access_message_queue(self):
-        self.hide()
-        if self.queue:
-            m = self.queue.pop(0)
-            self.show_message(m['message'], m['error'])
-        else:
-            self._interval = 3
-
-
-class NetworkStatus(QLabel):
-    def __init__(self, app, text=None, parent=None):
-        super().__init__(text, parent)
-        self._app = app
-
-        self.setToolTip('这里显示的是当前网络状态')
-        self.setObjectName('network_status_label')
-        self._progress = 100
-        self._show_progress = False
-
-        self.set_state(1)
-
-    def paintEvent(self, event):
-        if self._show_progress:
-            painter = QPainter(self)
-            p_bg_color = self._app.theme_manager.current_theme.color0
-            painter.fillRect(self.rect(), p_bg_color)
-            bg_color = self._app.theme_manager.current_theme.color3
-            rect = self.rect()
-            percent = self._progress * 1.0 / 100
-            rect.setWidth(int(rect.width() * percent))
-            painter.fillRect(rect, bg_color)
-            painter.drawText(self.rect(), Qt.AlignVCenter | Qt.AlignHCenter,
-                             str(self._progress) + '%')
-            self._show_progress = False
-        else:
-            super().paintEvent(event)
-
-    @property
-    def common_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-                color: {2};
-                padding-left: 5px;
-                padding-right: 5px;
-                font-size: 14px;
-                font-weight: bold;
-            }}
-        '''.format(self.objectName(),
-                   theme.color3.name(),
-                   theme.background.name())
-        return style_str
-
-    def set_theme_style(self):
-        self.setStyleSheet(self.common_style)
-
-    def _set_error_style(self):
-        theme = self._app.theme_manager.current_theme
-        style_str = '''
-            #{0} {{
-                background: {1};
-            }}
-        '''.format(self.objectName(),
-                   theme.color5.name())
-        self.setStyleSheet(self.common_style + style_str)
-
-    def _set_normal_style(self):
-        self.setStyleSheet(self.common_style)
-
-    def set_state(self, state):
-        if state == 0:
-            self._set_error_style()
-            self.setText('✕')
-        elif state == 1:
-            self._set_normal_style()
-            self.setText('✓')
-
-    def show_progress(self, progress):
-        self._progress = progress
-        self._show_progress = True
-        if self._progress == 100:
-            self._show_progress = False
-        self.update()
-
-
 class Ui:
     def __init__(self, app):
         self._app = app
@@ -608,7 +463,7 @@ class Ui:
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
         self.mpv_widget = app._mpv_widget
-        self.mv_btn = self.pc_panel.mv_btn
+        self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
         # 对部件进行一些 UI 层面的初始化
         self._splitter.addWidget(self._left_panel_container)
@@ -631,27 +486,36 @@ class Ui:
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
         self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
-        self.mv_btn.clicked.connect(self._toggle_mv)
+        self.pc_panel.mv_btn.clicked.connect(self._play_mv)
+        self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
         self._app.hotkey_mgr.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.magicbox.setFocus
         )
 
+    def _play_mv(self):
+        song = self._app.player.current_song
+        url = song.mv.media.url_ahap
+        self._app.player.play(url)
+        self.show_video_widget()
+
     def show_player_playlist(self):
         songs = self._app.playlist.list()
         self.table_container.show_player_playlist(songs)
 
-    def _toggle_mv(self):
+    def _toggle_video_widget(self):
         if self.mpv_widget.isVisible():
             self._bottom_separator.show()
             self.bottom_panel.show()
             self._splitter.show()
             self.mpv_widget.hide()
-            self._app.player.play_previous()
+            self.pc_panel.toggle_video_btn.setText('△')
         else:
-            self._bottom_separator.hide()
-            self.bottom_panel.hide()
-            self._splitter.hide()
-            self.mpv_widget.show()
-            song = self._app.player.current_song
-            self._app.player.play(song.mv.media.url_ahap)
+            self.show_video_widget()
+
+    def show_video_widget(self):
+        self._bottom_separator.hide()
+        self.bottom_panel.hide()
+        self._splitter.hide()
+        self.mpv_widget.show()
+        self.pc_panel.toggle_video_btn.setText('▽')
