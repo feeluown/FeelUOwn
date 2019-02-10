@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import QShortcut
 
 
-class Hotkey(object):
+class HotkeyManager(object):
+    """集中管理各个组件的快捷键"""
+
     def __init__(self, app):
         self._app = app
 

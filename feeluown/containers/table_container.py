@@ -284,7 +284,7 @@ class SongsTableContainer(QFrame):
     async def show_cover(self, cover):
         # FIXME: cover_hash may not work properly someday
         cover_uid = cover.split('/', -1)[-1]
-        content = await self._app.img_ctl.get(cover, cover_uid)
+        content = await self._app.img_mgr.get(cover, cover_uid)
         img = QImage()
         img.loadFromData(content)
         pixmap = QPixmap(img)

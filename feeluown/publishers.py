@@ -1,3 +1,8 @@
+"""
+这个模块存放 Publisher
+"""
+
+
 class LiveLyricPublisher(object):
     topic = 'topic.live_lyric'
 

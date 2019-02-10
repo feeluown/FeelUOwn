@@ -9,6 +9,13 @@ logger = logging.getLogger(__name__)
 
 
 class ThemeManager:
+    """检测系统主题，自动适配
+
+    **TODO**:
+
+    - 添加 dark 主题
+    - 检测系统主题
+    """
     def __init__(self, app):
         self._app = app
 

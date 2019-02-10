@@ -11,7 +11,11 @@ from .consts import CACHE_DIR
 logger = logging.getLogger(__name__)
 
 
-class ImgController(object):
+class ImgManager(object):
+    """图片下载、缓存管理
+
+    TOOD: 该模块相关逻辑需要重新梳理
+    """
     def __init__(self, app):
         super().__init__()
         self._app = app

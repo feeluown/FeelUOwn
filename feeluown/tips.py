@@ -1,4 +1,6 @@
 class TipsManager(object):
+    """在合适的时候展示一些使用 Tip"""
+
     tips = [
         '你知道 mpris2 插件可以配合 osdlyrics 使用吗?',
         '双击歌手就可以浏览歌手的热门歌曲',

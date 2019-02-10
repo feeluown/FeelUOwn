@@ -92,8 +92,8 @@ def attach_attrs(app, **player_kwargs):
         from feeluown.protocol.collection import CollectionManager
 
         from .browser import Browser
-        from .hotkey import Hotkey
-        from .img_ctl import ImgController
+        from .hotkey import HotkeyManager
+        from .image import ImgManager
         from .theme import ThemeManager
         from .tips import TipsManager
         from .ui import Ui
@@ -101,8 +101,8 @@ def attach_attrs(app, **player_kwargs):
         app.coll_mgr = CollectionManager(app)
         app.theme_mgr = ThemeManager(app)
         app.tips_mgr = TipsManager(app)
-        app.hotkey_mgr = Hotkey(app)
-        app.img_ctl = ImgController(app)
+        app.hotkey_mgr = HotkeyManager(app)
+        app.img_mgr = ImgManager(app)
         app.playlists = PlaylistsModel(parent=app)
         app.histories = HistoriesModel(parent=app)
         app.providers = ProvidersModel(parent=app)
