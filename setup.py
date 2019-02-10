@@ -15,7 +15,7 @@ setup(
         'feeluown',
         'feeluown.containers',
         'feeluown.components',
-        'feeluown.protocol',
+        'feeluown.cmds',
         'fuocore',
         ],
     py_moduels=['mpv'],

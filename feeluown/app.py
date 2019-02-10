@@ -89,7 +89,7 @@ def attach_attrs(app, **player_kwargs):
         from feeluown.components.playlists import PlaylistsModel
         from feeluown.components.my_music import MyMusicModel
         from feeluown.components.collections import CollectionsModel
-        from feeluown.protocol.collection import CollectionManager
+        from feeluown.protocol import CollectionManager
 
         from .browser import Browser
         from .hotkey import HotkeyManager

@@ -14,6 +14,7 @@ Changelog
 - 给 SongModel 添加 mv 属性
 - 添加 Media 类（支持无损、高、中、低质量的视音频）
 - 支持播放 mv
+- 将 protocol 包拆分 protocol 模块和 cmds 包
 
 2.3 (2019-01-01)
 """"""""""""""""

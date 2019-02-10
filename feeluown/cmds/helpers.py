@@ -1,6 +1,6 @@
 """
-fuocore.protocol.handlers.helper
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fuocore.cmds.helper
+~~~~~~~~~~~~~~~~~~~
 
 良好的用文字展示一个对象
 

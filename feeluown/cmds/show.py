@@ -1,6 +1,6 @@
 """
-fuocore.protocol.handlers.show
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+fuocore.cmds.show
+~~~~~~~~~~~~~~~~~
 
 处理 ``show`` 命令::
 
@@ -11,9 +11,9 @@ fuocore.protocol.handlers.show
 import logging
 from urllib.parse import urlparse
 
-from fuocore.router import Router, NotFound
+from fuocore.router import Router
 
-from .handlers import AbstractHandler
+from .base import AbstractHandler
 from .helpers import (
     show_song, show_artist, show_album, show_user,
     show_playlist
