@@ -280,6 +280,7 @@ class PlayerControlPanel(QFrame):
         else:
             self.toggle_video_btn.show()
 
+
 class TopPanel(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -507,8 +508,6 @@ class Ui:
 
     def _toggle_video_widget(self):
         if self.mpv_widget.isVisible():
-            self._bottom_separator.show()
-            self.bottom_panel.show()
             self._splitter.show()
             self.mpv_widget.hide()
             self.pc_panel.toggle_video_btn.setText('△')
@@ -516,8 +515,6 @@ class Ui:
             self.show_video_widget()
 
     def show_video_widget(self):
-        self._bottom_separator.hide()
-        self.bottom_panel.hide()
         self._splitter.hide()
         self.mpv_widget.show()
         self.pc_panel.toggle_video_btn.setText('▽')
