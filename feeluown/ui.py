@@ -16,8 +16,9 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from fuocore.player import PlaybackMode, State
 from fuocore.models import Media
+from fuocore.player import PlaybackMode, State
+from fuocore.utils import parse_ms
 
 from feeluown.components.separator import Separator
 from feeluown.components.playlists import PlaylistsView
@@ -33,7 +34,6 @@ from feeluown.containers.plugin import PluginStatus
 from feeluown.containers.mpv_widget import MpvOpenGLWidget
 
 from .helpers import use_mac_theme
-from .utils import parse_ms
 
 logger = logging.getLogger(__name__)
 

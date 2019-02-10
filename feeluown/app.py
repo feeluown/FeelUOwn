@@ -20,10 +20,13 @@ logger = logging.getLogger(__name__)
 
 
 class App:
+    """App 基类"""
+
     CliMode = 0x0001
     GuiMode = 0x0010
 
     def exec_(self, code):
+        """执行 Python 代码"""
         obj = compile(code, '<string>', 'single')
         self._g.update({
             'app': self,
@@ -32,10 +35,16 @@ class App:
         exec(obj, self._g, self._g)
 
     def show_msg(self, msg, *args, **kwargs):
+        """在程序中显示消息，一般是用来显示程序当前状态"""
         logger.info(msg)
 
     @contextmanager
     def create_action(self, s):
+        """根据操作描述生成 Action (alpha)
+
+        设计缘由：用户需要知道目前程序正在进行什么操作，进度怎么样，
+        结果是失败或者成功。这里将操作封装成 Action。
+        """
         show_msg = self.show_msg
 
         class Action:

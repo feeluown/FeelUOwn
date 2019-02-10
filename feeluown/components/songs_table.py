@@ -31,7 +31,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore.models import ModelExistence
-from feeluown.utils import parse_ms
+from fuocore.utils import parse_ms
 from feeluown.mimedata import ModelMimeData
 from feeluown.helpers import use_mac_theme
 

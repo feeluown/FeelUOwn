@@ -9,6 +9,7 @@ import traceback
 import sys
 
 from fuocore import __version__ as fuocore_version
+from fuocore.utils import is_port_used
 
 from feeluown.app import App, create_app
 from feeluown import logger_config, __version__ as feeluown_version
@@ -17,7 +18,6 @@ from feeluown.consts import (
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
 from feeluown.rcfile import load_rcfile, bind_signals
-from feeluown.utils import is_port_used
 
 logger = logging.getLogger(__name__)
 
