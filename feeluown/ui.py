@@ -16,7 +16,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from fuocore.models import Media
 from fuocore.player import PlaybackMode, State
 from fuocore.utils import parse_ms
 
@@ -26,12 +25,12 @@ from feeluown.components.provider import ProvidersView
 from feeluown.components.history import HistoriesView
 from feeluown.components.collections import CollectionsView
 from feeluown.components.my_music import MyMusicView
-from feeluown.components.volume_button import VolumeButton
-from feeluown.containers.status_line import StatusLine, StatusLineItem
-from feeluown.containers.magicbox import MagicBox
+from feeluown.widgets.volume_button import VolumeButton
+from feeluown.widgets.statusline import StatusLine, StatusLineItem
+from feeluown.widgets.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 from feeluown.containers.plugin import PluginStatus
-from feeluown.containers.mpv_widget import MpvOpenGLWidget
+from feeluown.widgets.mpv_widget import MpvOpenGLWidget
 
 from .helpers import use_mac_theme
 

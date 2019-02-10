@@ -27,6 +27,7 @@ FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面�
 ```shell
 # Ubuntu 用户可以依次执行以下命令进行安装
 sudo apt-get install python3-pyqt5  # 安装 Python PyQt5 依赖包
+sudo apt-get install python3-pyqt5.qtopengl
 sudo apt-get install libmpv1        # 安装 libmpv1 系统依赖
 pip3 install 'feeluown>=2.2' --user -i https://pypi.org/simple/
 ## 为 feeluown 生成图标（Linux 用户）
