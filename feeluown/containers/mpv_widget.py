@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QMetaObject, pyqtSlot
+from PyQt5.QtCore import QMetaObject, pyqtSlot
 from PyQt5.QtWidgets import QOpenGLWidget
 from PyQt5.QtOpenGL import QGLContext
 
@@ -18,7 +18,20 @@ def get_proc_addr(_, name):
     return addr
 
 
-class MpvWidget(QOpenGLWidget):
+class MpvOpenGLWidget(QOpenGLWidget):
+    """Mpv 视频输出窗口
+
+    销毁时，应该调用 shutdown 方法来释放资源。
+
+    该 Widget 是模仿一些 C++ 程序编写而成（详见项目 research 目录下的例子），
+    我们对背后的原理不太理解，目前测试是可以正常工作的。
+
+    目前主要的疑问有：
+
+    - [ ] shutdown 方法期望是用来释放资源的，目前的写法不知是否合理？
+          应该在什么时候调用 shutdown 方法？
+    """
+
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app
@@ -31,6 +44,13 @@ class MpvWidget(QOpenGLWidget):
         self.frameSwapped.connect(self.swapped)
 
         self._mpv_gl_inited = False
+
+    def shutdown(self):
+        if self._mpv_gl_inited:
+            self.makeCurrent()
+            if self.mpv_gl:
+                _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_fake_c, None)
+            _mpv_opengl_cb_uninit_gl(self.mpv_gl)
 
     def initializeGL(self):
         _mpv_opengl_cb_init_gl(self.mpv_gl, None, self.get_proc_addr_c, None)
@@ -66,12 +86,10 @@ class MpvWidget(QOpenGLWidget):
     def swapped(self):
         _mpv_opengl_cb_report_flip(self.mpv_gl, 0)
 
-    def shutdown(self):
-        if self._mpv_gl_inited:
-            self.makeCurrent()
-            if self.mpv_gl:
-                _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_fake_c, None)
-            _mpv_opengl_cb_uninit_gl(self.mpv_gl)
-
     def closeEvent(self, _):
         self.shutdown()
+
+
+# TODO: 实现 MpvEmbeddedWidget
+class MpvEmbeddedWidget:
+    pass

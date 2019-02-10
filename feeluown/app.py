@@ -75,25 +75,12 @@ def attach_attrs(app, **player_kwargs):
     app.playlist = app.player.playlist
 
     if app.mode & app.GuiMode:
-        # 需要在 mpv 初始化之前拿到 MpvWidget 的 winid,
-        # 所以在这里单独先初始化 mpv_widget,并将 mpv_widget
-        # 做为 app 的临时属性。
-        # 理论上程序其它部分应该通过 app.ui.mpv_widget 来访问 mpv_widget.
-        #
-        # TODO: 调研 _mpv_set_option 给 mpv 设置 winid
-        from .containers.mpv_widget import MpvWidget
-        app._mpv_widget = MpvWidget(app)
-        app._mpv_widget.hide()
-        # player_kwargs['winid'] = app._mpv_widget.winid
-
-    if app.mode & app.GuiMode:
         from feeluown.components.history import HistoriesModel
         from feeluown.components.provider import ProvidersModel
         from feeluown.components.playlists import PlaylistsModel
         from feeluown.components.my_music import MyMusicModel
         from feeluown.components.collections import CollectionsModel
         from feeluown.protocol.collection import CollectionManager
-        from feeluown.containers.mpv_widget import MpvWidget
 
         from .browser import Browser
         from .hotkey import Hotkey
@@ -114,7 +101,6 @@ def attach_attrs(app, **player_kwargs):
         app.collections = CollectionsModel(parent=app)
         app.browser = Browser(app)
         app.ui = Ui(app)
-        app.ui.mpv_widget = app._mpv_widget
         app.show_msg = app.ui.magicbox.show_msg
 
 

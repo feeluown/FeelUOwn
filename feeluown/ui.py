@@ -30,6 +30,7 @@ from feeluown.containers.status_line import StatusLine, StatusLineItem
 from feeluown.containers.magicbox import MagicBox
 from feeluown.containers.table_container import SongsTableContainer
 from feeluown.containers.plugin import PluginStatus
+from feeluown.containers.mpv_widget import MpvOpenGLWidget
 
 from .helpers import use_mac_theme
 from .utils import parse_ms
@@ -455,6 +456,8 @@ class Ui:
         self.left_panel = LeftPanel(self._app, self._splitter)
         self._left_panel_container.setWidget(self.left_panel)
         self.right_panel = RightPanel(self._app, self._splitter)
+        self.mpv_widget = MpvOpenGLWidget(self._app)
+        self.mpv_widget.hide()
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -462,7 +465,6 @@ class Ui:
         self.table_container = self.right_panel.table_container
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
-        self.mpv_widget = app._mpv_widget
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
         # 对部件进行一些 UI 层面的初始化
