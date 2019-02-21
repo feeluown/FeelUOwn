@@ -146,8 +146,6 @@ class PlayerControlPanel(QFrame):
             self.on_playback_mode_changed)
         self._app.player.playlist.song_changed.connect(
             self.on_player_song_changed)
-        self._app.player.video_format_changed.connect(
-            self.on_video_format_changed)
         self.progress_slider.resume_player_needed.connect(self._app.player.resume)
         self.progress_slider.pause_player_needed.connect(self._app.player.pause)
         self.progress_slider.change_position_needed.connect(
@@ -271,12 +269,6 @@ class PlayerControlPanel(QFrame):
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
-
-    def on_video_format_changed(self, vformat):
-        if vformat is None:
-            self.toggle_video_btn.hide()
-        else:
-            self.toggle_video_btn.show()
 
 
 class TopPanel(QFrame):
@@ -478,6 +470,9 @@ class Ui:
         self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
         self.pc_panel.mv_btn.clicked.connect(self._play_mv)
         self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed)
+
         self._app.hotkey_mgr.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.magicbox.setFocus
@@ -493,15 +488,29 @@ class Ui:
         songs = self._app.playlist.list()
         self.table_container.show_player_playlist(songs)
 
+    def on_video_format_changed(self, vformat):
+        if vformat is None:
+            self.hide_video_widget()
+            self.toggle_video_btn.hide()
+        else:
+            self.toggle_video_btn.show()
+
     def _toggle_video_widget(self):
         if self.mpv_widget.isVisible():
-            self._splitter.show()
-            self.mpv_widget.hide()
-            self.pc_panel.toggle_video_btn.setText('△')
+            self.hide_video_widget()
         else:
             self.show_video_widget()
 
+    def hide_video_widget(self):
+        self.mpv_widget.hide()
+        self._splitter.show()
+        self.bottom_panel.show()
+        self._bottom_separator.show()
+        self.pc_panel.toggle_video_btn.setText('△')
+
     def show_video_widget(self):
+        self.bottom_panel.hide()
+        self._bottom_separator.hide()
         self._splitter.hide()
         self.mpv_widget.show()
         self.pc_panel.toggle_video_btn.setText('▽')
