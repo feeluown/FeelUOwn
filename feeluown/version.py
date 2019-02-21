@@ -1,7 +1,7 @@
 import asyncio
 import logging
-from distutils.version import StrictVersion
 from functools import partial
+from pkg_resources import parse_version
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
@@ -30,8 +30,8 @@ class VersionManager(object):
             logger.warning('检查更新失败')
         else:
             rv = resp.json()
-            latest = StrictVersion(rv['info']['version'])
-            current = StrictVersion(__version__)
+            latest = parse_version(rv['info']['version'])
+            current = parse_version(__version__)
             if latest > current:
                 msg = '检测到新版本 %s，当前版本为 %s' % (latest, current)
                 logger.warning(msg)

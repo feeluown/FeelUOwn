@@ -27,6 +27,7 @@ route = router.route
 
 
 class ShowHandler(AbstractHandler):
+    cmds = 'show'
 
     def handle(self, cmd):
         if cmd.args:

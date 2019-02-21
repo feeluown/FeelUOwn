@@ -13,8 +13,8 @@ setup(
     author_email='yinshaowen241@gmail.com',
     packages=[
         'feeluown',
-        'feeluown.containers',
-        'feeluown.components',
+        'feeluown.widgets',
+        'feeluown.uimodels',
         'feeluown.cmds',
         'fuocore',
         ],

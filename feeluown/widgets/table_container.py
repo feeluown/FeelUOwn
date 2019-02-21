@@ -1,27 +1,22 @@
 import asyncio
 import logging
-from functools import partial
 
-from PyQt5.QtCore import Qt, QSize, pyqtSignal
-from PyQt5.QtGui import QImage, QPixmap, QFont, QPalette, QPainter, QColor
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import (
-    QDialog,
     QFrame,
     QHBoxLayout,
     QLabel,
-    QLineEdit,
-    QListView,
     QPushButton,
     QScrollArea,
     QSizePolicy,
-    QTabBar,
     QVBoxLayout,
     QWidget,
 )
 
 from fuocore import ModelType
 from feeluown.helpers import use_mac_theme
-from feeluown.components.songs_table import SongsTableModel, SongsTableView
+from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
 
 
 logger = logging.getLogger(__name__)
@@ -196,7 +191,6 @@ class SongsTableContainer(QFrame):
             func = self.show_playlist
         else:
             def func(model): pass  # seems silly
-        self._app.histories.append(model)
         with self._app.create_action('show {}'.format(str(model))):
             await func(model)
 

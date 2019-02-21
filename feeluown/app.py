@@ -84,11 +84,13 @@ def attach_attrs(app, **player_kwargs):
     app.playlist = app.player.playlist
 
     if app.mode & app.GuiMode:
-        from feeluown.components.history import HistoriesModel
-        from feeluown.components.provider import ProvidersModel
-        from feeluown.components.playlists import PlaylistsModel
-        from feeluown.components.my_music import MyMusicModel
-        from feeluown.components.collections import CollectionsModel
+        from feeluown.widgets.provider import ProvidersModel
+        from feeluown.widgets.playlists import PlaylistsModel
+        from feeluown.widgets.my_music import MyMusicModel
+        from feeluown.widgets.collections import CollectionsModel
+        from feeluown.uimodels.provider import ProviderUiManager
+        from feeluown.uimodels.playlist import PlaylistUiManager
+        from feeluown.uimodels.my_music import MyMusicUiManager
         from feeluown.protocol import CollectionManager
 
         from .browser import Browser
@@ -98,16 +100,20 @@ def attach_attrs(app, **player_kwargs):
         from .tips import TipsManager
         from .ui import Ui
 
+        # GUI 的一些辅助管理模块
         app.coll_mgr = CollectionManager(app)
         app.theme_mgr = ThemeManager(app)
         app.tips_mgr = TipsManager(app)
         app.hotkey_mgr = HotkeyManager(app)
         app.img_mgr = ImgManager(app)
-        app.playlists = PlaylistsModel(parent=app)
-        app.histories = HistoriesModel(parent=app)
-        app.providers = ProvidersModel(parent=app)
-        app.my_music = MyMusicModel(parent=app)
+
+        # GUI 组件的数据管理模块
+        app.pvd_uimgr = ProviderUiManager(app)
+        app.pl_uimgr = PlaylistUiManager(app)
+        app.mymusic_uimgr = MyMusicUiManager(app)
+
         app.collections = CollectionsModel(parent=app)
+
         app.browser = Browser(app)
         app.ui = Ui(app)
         app.show_msg = app.ui.magicbox.show_msg
