@@ -1,5 +1,5 @@
-模块设计
-========
+核心模块设计
+============
 
 fuocore 是 feeluown core 的缩写，它是 feeluown 的核心模块。
 而 fuocore 又由几个小模块组成，它们分别是：

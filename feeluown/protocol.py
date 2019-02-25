@@ -195,8 +195,6 @@ class Collection:
         return True
 
 
-
-
 class CollectionManager:
     def __init__(self, app):
         self._app = app

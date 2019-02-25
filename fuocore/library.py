@@ -1,6 +1,11 @@
 """
-fuocore.library
----------------
+音乐库模块
+~~~~~~~~~~
+
+>>> from fuo_netease import provider
+>>> library = Library()
+>>> library.register(provider)
+>>> library.search('周杰伦')
 """
 
 import logging
@@ -11,30 +16,27 @@ logger = logging.getLogger(__name__)
 
 
 class Library(object):
-    """library manages a set of providers
-
-    Library is the entry point for music resources
-    """
+    """音乐库，管理资源提供方以及资源"""
     def __init__(self):
         self._providers = set()
 
     def register(self, provider):
-        """add a provider to library"""
+        """注册资源提供方"""
         self._providers.add(provider)
 
     def deregister(self, provider):
-        """remove a provider to library"""
+        """反注册资源提供方"""
         self._providers.remove(provider)
 
     def get(self, identifier):
-        """get provider by id"""
+        """通过资源提供方唯一标识获取提供方实例"""
         for provider in self._providers:
             if provider.identifier == identifier:
                 return provider
         return None
 
     def list(self):
-        """list all providers"""
+        """列出所有资源提供方"""
         return list(self._providers)
 
     def search(self, keyword, source_in=None, **kwargs):

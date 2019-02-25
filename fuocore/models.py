@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-fuocore.models
-~~~~~~~~~~~~~~
+音乐资源模型
+~~~~~~~~~~~~
 
 这个模块定义了音乐资源的模型，如歌曲模型： ``SongModel`` , 歌手模型： ``ArtistModel`` 。
 它们都类似这样::
@@ -10,19 +10,67 @@ fuocore.models
     class XyzModel(BaseModel):
         class Meta:
             model_type = ModelType.xyz
-            fields = ['a', 'b', 'c']
+            fields = ['identifier', 'a', 'b', 'c']
 
         @property
         def ab(self):
             return self.a + self.b
 
-同时，为了减少实现这些模型时带来的重复代码，这里还实现了：
 
-- ModelMeta: Model 元类，进行一些黑科技处理：比如解析 Model Meta 类
-- ModelMetadata: Model meta 属性对应的类
-- BaseModel: 基类
+可以看到，XyzModel 继承于 BaseModel，并且有个 Meta 类属性。
+在这个例子种，Meta 类保存了 XyzModel 的一些元信息：Xyz 模型有哪些字段(fields),
+以及 Xyz 模型的类型(model_type).
 
-ModelMetadata, ModelMeta, BaseModel 几个类是互相依赖的。
+.. note::
+
+    有同学或许会觉得：在 XyzModel 类中又定义了一个 Meta 类，这不是很奇怪么？
+    这个设计是借鉴 django Model Meta 设计，目的是尽量保证 XyzModel
+    属性名字空间简洁干净。
+
+创建模型实例
+++++++++++++++++
+
+我们支持两种创建模型的方法，每种方法都有其适用的场景。
+
+**最容易想到的的创建实例的方法是通过构造函数创建** 。
+
+以 SongModel 为例::
+
+    song = SongModel(identifier=123, title='Love Story',
+                     url='http://xxx.mp3', duration=1000.0)
+
+可以看出，这个方法要求我们知道大部分属性的准确的值。当我们能通过网络请求（或其它方式）
+获取到了一个实例的所有准确信息时，我们推荐用这个方式来实例化。举个例子，
+feeluown-netease 的 NeteaseSongModel.get 方法就是通过这种方法来实例化对像的。
+
+但有时候，我们可能只知道实例 identifier、名字两个信息，并且我们不是特别确定这个名字是否正确，
+那我们就不应该使用上述方法。
+
+这时，我们可以 **通过 create_by_display 方法来创建实例** .
+这个方法一般不会用到，目前主要用于 feeluown 内部，这里不多介绍。
+
+实例生命周期
+++++++++++++++++
+
+两种方式创建的实例所处的生命阶段是不一样的。在一个实例的生命周期中，
+它有三个阶段：display, inited, gotten. 通过构造函数创建的实例所处的阶段是
+inited, 通过 create_by_display 方法创建的实例所处阶段是 dispaly.
+
+::
+
+    -----------
+    | dispaly |  ----
+    -----------      \        ----------
+                      ------> | gotten |
+    ----------       /        ----------
+    | inited |  -----
+    ----------
+
+当实例处于 display 和 inited 阶段时，它们的某些字段可能还没有被初始化，
+值是 None. 这时侯，如果调用方访问了这个实例的任意一个未初始化的字段，
+就会触发实例的进化：调用 Model.get 方法来获取实例所有属性的值，
+用这些值来重新初始化实例，初始化完毕后实例就会进入 gotten 阶段。
+详细逻辑请阅读 ``BaseModel.__getattribute__`` 源码。
 """
 
 from enum import IntEnum
@@ -49,13 +97,26 @@ class ModelType(IntEnum):
 
 
 class ModelStage(IntEnum):
-    """Model 所处的阶段，有大小关系"""
+    """Model 所处的阶段，有大小关系
+
+    通过 create_by_display 工厂函数创建的实例，实例所处阶段为 display,
+    通过构造函数创建的实例，阶段为 inited, 如果 model 已经 get 过，
+    则阶段为 gotten.
+
+    目前，主要是 __getattribute__ 方法需要读取 model 所处的阶段，
+    避免重复 get model。
+    """
     display = 4
     inited = 8
     gotten = 16
 
 
 class ModelExistence(IntEnum):
+    """资源是否真的存在
+
+    在许多音乐平台，当一个歌手、专辑不存在时，它们的接口可能构造一个
+    id 为 0, name 为 None 的字典。这类 model.exists 应该被置为 no。
+    """
     no = -1
     unknown = 0
     yes = 1
@@ -242,30 +303,30 @@ class BaseModel(Model):
         if name in cls.meta.fields \
            and name not in cls.meta.fields_no_get \
            and value is None \
-           and self.stage < ModelStage.gotten:
-            if cls.meta.allow_get:
-                logger.info("Model {} {}'s value is None, try to get detail."
-                            .format(repr(self), name))
-                obj = cls.get(self.identifier)
-                if obj is not None:
-                    for field in cls.meta.fields:
-                        if field in ('identifier', ):
-                            continue
-                        # 这里不能使用 getattr，否则有可能会无限 get
-                        fv = object.__getattribute__(obj, field)
-                        # 如果字段属于 fields_no_get 且值为 None，则不覆盖
-                        # 比如 UserModel 的 cookies 的字段，cookies
-                        # 这类需要权限认证的信息往往不能在 get 时获取，
-                        # 而需要在特定上下文单独设置
-                        if not (fv is None and field in cls.meta.fields_no_get):
-                            setattr(self, field, fv)
-                    self.stage = ModelStage.gotten
-                    self.exists = ModelExistence.yes
-                else:
-                    self.exists = ModelExistence.no
-                    logger.warning('Model {} get return None'.format(cls_name))
+           and cls.meta.allow_get \
+           and self.stage < ModelStage.gotten \
+           and self.exists != ModelExistence.no:
+
+            logger.info("Model {} {}'s value is None, try to get detail."
+                        .format(repr(self), name))
+            obj = cls.get(self.identifier)
+            if obj is not None:
+                for field in cls.meta.fields:
+                    if field in ('identifier', ):
+                        continue
+                    # 这里不能使用 getattr，否则有可能会无限 get
+                    fv = object.__getattribute__(obj, field)
+                    # 如果字段属于 fields_no_get 且值为 None，则不覆盖
+                    # 比如 UserModel 的 cookies 的字段，cookies
+                    # 这类需要权限认证的信息往往不能在 get 时获取，
+                    # 而需要在特定上下文单独设置
+                    if not (fv is None and field in cls.meta.fields_no_get):
+                        setattr(self, field, fv)
+                self.stage = ModelStage.gotten
+                self.exists = ModelExistence.yes
             else:
-                logger.warning("Model {} does't allow get".format(cls_name))
+                self.exists = ModelExistence.no
+                logger.warning('Model {} get return None'.format(cls_name))
             value = object.__getattribute__(self, name)
         return value
 
@@ -504,6 +565,7 @@ class PlaylistModel(BaseModel):
     class Meta:
         model_type = ModelType.playlist.value
         fields = ['name', 'cover', 'songs', 'desc']
+        allow_create_songs_g = False
 
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
@@ -520,6 +582,9 @@ class PlaylistModel(BaseModel):
 
         If song is not in playlist, return true.
         """
+        pass
+
+    def create_songs_g(self):
         pass
 
 

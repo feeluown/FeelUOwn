@@ -1,3 +1,8 @@
+"""
+播放列表管理
+~~~~~~~~~~~~~
+"""
+
 from feeluown.widgets.playlists import PlaylistsModel
 
 from fuocore.models import PlaylistModel

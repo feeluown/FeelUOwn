@@ -12,21 +12,32 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
 
+from unittest.mock import MagicMock
+
+
+class Mock(MagicMock):
+    def __getattr__(self, name):
+        return MagicMock()
+
+
+MOCK_MODULES = ['mpv', 'PyQt5']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
+sys.path.insert(0, os.path.abspath('../..'))
 
 # -- Project information -----------------------------------------------------
 
 project = 'feeluown'
-copyright = '2018, cosven'
+copyright = '2019, cosven'
 author = 'cosven'
 
 # The short X.Y version
-version = '2.1'
+version = '3.0'
 # The full version, including alpha/beta/rc tags
-release = '2.1'
+release = '3.0.dev0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -166,3 +177,9 @@ texinfo_documents = [
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
+
+
+
+# -- Options for autodoc ---------------------------
+# created by @cosven
+autodoc_member_order = 'bysource'

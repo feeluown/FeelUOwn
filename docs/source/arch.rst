@@ -1,12 +1,45 @@
 程序架构
 ========
 
-在整体设计上，FeelUOwn 由三大部分组成：界面逻辑部分和核心逻辑部分，
-它们对应着两个项目 `feeluown <https://github.com/cosven/feeluown>`_ 和
-`feeluown-core <https://github.com/cosven/feeluown-core>`_ 。
+FeelUOwn 中有一个核心对象 ``app``, 它是我们进行几乎一切操作的入口。
+在初始化 app 时，我们会实例化一些类，比如 Library/LiveLyric, 这些实例工作不依赖
+app 对象，我们把它们放在 fuocore 包中。另外，我们也会创建很多 Manager 实例，
+比如 PluginManager/HotkeyManager 等，它们往往都是依赖 app 的，
+我们目前将它们各自作为一个模块放在 feeluown 包中。
 
-GUI 模块
+主要模块
 --------
+
+======   =================   =======================
+稳定         名字                模块
+======   =================   =======================
+🔴       音乐资源模型          :py:mod:`fuocore.models`
+🔴       音乐库               :py:class:`fuocore.library.Library`
+🔴       播放器               :py:mod:`fuocore.player`
+🔴       歌词                 :py:class:`fuocore.live_lyric.LiveLyric`
+🔴       fuo 协议             :py:class:`feeluown.protocol.FuoProcotol`
+🔴       版本                 :py:class:`feeluown.version.VersionManager`
+🔴       小提示管理            :py:class:`feeluown.tips.TipsManager`
+🔴       本地收藏管理           :py:class:`feeluown.protocol.CollectionManager`
+🔴       浏览历史记录           :py:mod:`feeluown.browser`
+🔴       快捷键管理            :py:class:`feeluown.hotkey.HotkeyManager`
+🔴       图片管理              :py:mod:`feeluown.image`
+🔴       资源提供方 UI        :py:class:`feeluown.uimodels.ProviderUiManager`
+🔴       我的音乐 UI          :py:class:`feeluown.uimodels.MyMusicUiManager`
+🔴       歌单列表 UI          :py:mod:`feeluown.uimodels.playlist`
+======   =================   =======================
+
+
+界面
+--------
+
+FeelUOwn 启动时有两种模式可以选择，CLI 模式和 GUI 模式，大部分 Manager
+可以在两种模式下工作，也有一部分 Manager只在 GUI 模式下工作，这些 Manager
+往往和 UI 操作相关。
+
+FeelUOwn UI 部分的核心对象是 ``app.ui``, 我们下面就从界面开始，
+来详细了解 FeelUOwn 程序的整体架构。
+
 整个 GUI 区域划分比较简单和规整，下图大致的描述了 GUI 的几个主要组成部分。
 
 图中文字部分对应的都是代码中的变量，它们也比较好的反映了对应区域的功能。
@@ -37,7 +70,3 @@ GUI 模块
 
   - ``songs_table`` 批量展示歌曲，比如：歌单中的歌曲、搜索结果的歌曲部分等，
   - ``table_overview`` 是对 songs_table 的概览，由封面图和描述组成。
-
-核心模块
---------
-请看 feeluown-core 的 `设计文档 <https://feeluown-core.readthedocs.io/zh_CN/latest/design.html>`_

@@ -206,8 +206,12 @@ class SongsTableContainer(QFrame):
     async def show_playlist(self, playlist):
         self._top_container.show()
         loop = asyncio.get_event_loop()
-        songs = await loop.run_in_executor(None, lambda: playlist.songs)
-        self._show_songs(songs)
+        if playlist.meta.allow_create_songs_g:
+            songs_g = playlist.create_songs_g()
+            self._show_songs(songs_g=songs_g)
+        else:
+            songs = await loop.run_in_executor(None, lambda: playlist.songs)
+            self._show_songs(songs)
         desc = '<h2>{}</h2>\n{}'.format(playlist.name, playlist.desc or '')
         self.set_desc(desc)
         if playlist.cover:
