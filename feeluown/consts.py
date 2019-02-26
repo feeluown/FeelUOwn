@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import os
-from enum import Enum
 
 APP_ICON = './feeluown/feeluown.png'
 

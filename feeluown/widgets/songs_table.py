@@ -8,20 +8,15 @@ from PyQt5.QtCore import (
     QModelIndex,
     Qt,
     QSize,
-    QTime,
     QVariant,
 )
-from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtWidgets import (
     QAbstractItemDelegate,
     QAbstractItemView,
     QAction,
-    QApplication,
-    QComboBox,
     QFrame,
     QHBoxLayout,
     QHeaderView,
-    QInputDialog,
     QListView,
     QMenu,
     QPushButton,
@@ -31,7 +26,6 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore.models import ModelExistence
-from fuocore.utils import parse_ms
 from feeluown.mimedata import ModelMimeData
 from feeluown.helpers import use_mac_theme
 

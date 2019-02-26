@@ -1,31 +1,9 @@
 import io
 import sys
 
-from PyQt5.QtCore import (
-    pyqtSignal,
-    QSize,
-    Qt,
-    QRect,
-    QTimer,
-)
-from PyQt5.QtGui import (
-    QColor,
-    QFont,
-    QTextCursor,
-    QFontDatabase,
-    QFontMetrics,
-    QPainter,
-    QPalette,
-    QTextCharFormat,
-    QTextOption,
-)
-from PyQt5.QtWidgets import (
-    QApplication,
-    QLineEdit,
-    QSizePolicy,
-    QStyle,
-    QFrame,
-)
+from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtGui import QFontDatabase
+from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 
 class MagicBox(QLineEdit):

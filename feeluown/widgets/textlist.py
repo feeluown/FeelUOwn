@@ -5,19 +5,12 @@ from PyQt5.QtCore import (
     Qt,
     QModelIndex,
     QPoint,
-    QRect,
     QSize,
     QTimer,
     QVariant,
 )
-from PyQt5.QtGui import (
-    QBrush,
-    QColor,
-    QPainter,
-    QPen,
-    QFontMetrics,
-)
-from PyQt5.QtWidgets import QListView, QAbstractItemView
+from PyQt5.QtGui import QPainter, QFontMetrics
+from PyQt5.QtWidgets import QListView
 
 
 logger = logging.getLogger(__name__)

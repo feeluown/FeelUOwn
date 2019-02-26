@@ -1,10 +1,8 @@
-from PyQt5.QtCore import Qt, QPoint, pyqtSignal, QEvent
-from PyQt5.QtGui import QColor
+from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
     QVBoxLayout,
     QSlider,
     QPushButton,
-    QStyle,
     QWidget,
 )
 

@@ -1,7 +1,7 @@
 import asyncio
 import logging
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, QTimer
-from PyQt5.QtGui import QPainter, QKeySequence, QFontMetrics
+from PyQt5.QtCore import Qt, QTime, pyqtSignal
+from PyQt5.QtGui import QKeySequence, QFontMetrics
 from PyQt5.QtWidgets import (
     QApplication,
     QFrame,
@@ -12,7 +12,6 @@ from PyQt5.QtWidgets import (
     QSizePolicy,
     QSlider,
     QSplitter,
-    QStyle,
     QVBoxLayout,
 )
 
@@ -417,6 +416,7 @@ class RightPanel(QFrame):
 
 
 class Ui:
+
     def __init__(self, app):
         self._app = app
         self._layout = QVBoxLayout(app)
@@ -430,10 +430,10 @@ class Ui:
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
         self.bottom_panel = BottomPanel(app, app)
-        self._left_panel_container = QScrollArea(self._app)
+        self._left_panel_container = QScrollArea(app)
         self._left_panel_container.setWidgetResizable(True)
         self._left_panel_container.setFrameShape(QFrame.NoFrame)
-        self.left_panel = LeftPanel(self._app, self._splitter)
+        self.left_panel = LeftPanel(self._app, self._left_panel_container)
         self._left_panel_container.setWidget(self.left_panel)
         self.right_panel = RightPanel(self._app, self._splitter)
         self.mpv_widget = MpvOpenGLWidget(self._app)

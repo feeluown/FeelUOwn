@@ -2,36 +2,11 @@ import logging
 
 from PyQt5.QtCore import (
     pyqtSignal,
-    QAbstractListModel,
     Qt,
     QModelIndex,
-    QPoint,
-    QRect,
-    QSize,
-    QVariant,
-)
-from PyQt5.QtGui import (
-    QBrush,
-    QColor,
-    QPainter,
-    QPen,
-    QFontMetrics,
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate,
     QAbstractItemView,
-    QComboBox,
-    QHBoxLayout,
-    QHeaderView,
-    QItemDelegate,
-    QListView,
-    QPushButton,
-    QSizePolicy,
-    QStyledItemDelegate,
-    QSpinBox,
-    QTableView,
-    QTableWidget,
-    QWidget,
 )
 
 from feeluown.helpers import action_log, ActionError

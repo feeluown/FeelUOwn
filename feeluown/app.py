@@ -84,9 +84,6 @@ def attach_attrs(app, **player_kwargs):
     app.playlist = app.player.playlist
 
     if app.mode & app.GuiMode:
-        from feeluown.widgets.provider import ProvidersModel
-        from feeluown.widgets.playlists import PlaylistsModel
-        from feeluown.widgets.my_music import MyMusicModel
         from feeluown.widgets.collections import CollectionsModel
         from feeluown.uimodels.provider import ProviderUiManager
         from feeluown.uimodels.playlist import PlaylistUiManager

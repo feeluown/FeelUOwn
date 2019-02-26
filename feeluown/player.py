@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import asyncio
+
 import logging
 
 from fuocore.player import MpvPlayer, Playlist as _Playlist
