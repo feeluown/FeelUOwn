@@ -173,9 +173,9 @@ class Collection:
         if song not in self.models:
             line = self._parser.gen_line(song)
             with open(self.fpath, 'a+', encoding='utf-8') as f:
-                # 如果老的文件没有换行符，也要保证不会出错
-                f.write('\n{}\n'.format(line))
-            self.models.append(song)
+                f.seek(0)
+                f.write('{}\n'.format(line))
+            self.models.insert(0, song)
         return True
 
     def remove(self, song):
@@ -189,8 +189,10 @@ class Collection:
                     lines.append(line)
                 f.seek(0)
                 f.write(''.join(lines))
+                f.truncate()
                 # 确保最后写入一个换行符，让文件更加美观
-                f.write('\n')
+                if not lines[-1].endswith('\n'):
+                    f.write('\n')
             self.models.remove(song)
         return True
 
