@@ -140,7 +140,7 @@ def create_app(mode, **player_kwargs):
     bases = [App]
 
     if mode & App.GuiMode:
-        from PyQt5.QtGui import QIcon
+        from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
         class GuiApp(QWidget):
@@ -150,7 +150,7 @@ def create_app(mode, **player_kwargs):
                 super().__init__()
                 self.resize(1000, 618)
                 self.setObjectName('app')
-                QApplication.setWindowIcon(QIcon(APP_ICON))
+                self.setWindowIcon(QIcon(QPixmap(APP_ICON)))
 
             def closeEvent(self, e):
                 try:

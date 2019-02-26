@@ -70,3 +70,4 @@ feeluown.egg-info/
 *.html
 
 .pytest_cache/
+*.dat
