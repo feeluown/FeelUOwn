@@ -172,9 +172,10 @@ class Collection:
     def add(self, song):
         if song not in self.models:
             line = self._parser.gen_line(song)
-            with open(self.fpath, 'a+', encoding='utf-8') as f:
-                f.seek(0)
-                f.write('{}\n'.format(line))
+            with open(self.fpath, 'r+', encoding='utf-8') as f:
+                content = f.read()
+                f.seek(0, 0)
+                f.write(line + '\n' + content)
             self.models.insert(0, song)
         return True
 
