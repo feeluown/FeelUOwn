@@ -120,9 +120,9 @@ class PlayerControlPanel(QFrame):
         self.mv_btn.setToolTip('播放 MV')
         self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
         self.like_btn.setToolTip('收藏歌曲（未实现，欢迎 PR）')
-        self.pp_btn.setChecked(True)
-        self.like_btn.setChecked(True)
-        self.download_btn.setChecked(True)
+        self.pp_btn.setCheckable(True)
+        self.like_btn.setCheckable(True)
+        self.download_btn.setCheckable(True)
         self.toggle_video_btn.hide()
 
         self.song_title_label = QLabel('No song is playing.', parent=self)
