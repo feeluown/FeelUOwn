@@ -433,9 +433,9 @@ class Media:
     >>> list(Media.Q.better_than(Media.Q.sq))
     []
     >>> media = Media(hd='xx', sd='yy')
-    >>> media.get(Media.Q.hd)
+    >>> media.get_url(Media.Q.hd)
     'xx'
-    >>> media.get(Media.Q.sq)
+    >>> media.get_url(Media.Q.sq)
     """
     class Q(IntEnum):  # Quality
         sq = 16

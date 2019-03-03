@@ -6,7 +6,8 @@ from fuocore.player import MpvPlayer, Playlist, PlaybackMode, State
 
 
 MP3_URL = os.path.join(os.path.dirname(__file__),
-                       '../data/fixtures/ybwm-ts.mp3')
+                       '../data/sample.mp3')
+MPV_SLEEP_SECOND = 0.1  # 留给 MPV 反应的时间
 
 
 class FakeSongModel:  # pylint: disable=all
@@ -24,6 +25,7 @@ class TestPlayer(TestCase):
         self.player.initialize()
 
     def tearDown(self):
+        self.player.stop()
         self.player.shutdown()
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
@@ -35,29 +37,29 @@ class TestPlayer(TestCase):
     def test_duration(self):
         # This may failed?
         self.player.play(MP3_URL)
-        time.sleep(0.1)
+        time.sleep(MPV_SLEEP_SECOND)
         self.assertIsNotNone(self.player.duration)
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
     def test_seek(self):
         self.player.play(MP3_URL)
-        time.sleep(0.1)
+        time.sleep(MPV_SLEEP_SECOND)
         self.player.position = 100
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
     def test_replay(self):
         song = FakeValidSongModel()
         self.player.play_song(song)
-        time.sleep(0.1)
+        time.sleep(MPV_SLEEP_SECOND)
         self.player.position = 100
         self.player.replay()
-        time.sleep(0.1)
+        time.sleep(MPV_SLEEP_SECOND)
         self.assertTrue(self.player.position < 10)
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
     def test_play_pause_toggle_resume_stop(self):
         self.player.play(MP3_URL)
-        time.sleep(0.1)
+        time.sleep(MPV_SLEEP_SECOND)
         self.player.toggle()
         self.assertEqual(self.player.state, State.paused)
         self.player.resume()
@@ -182,7 +184,7 @@ class TestPlayerAndPlaylist(TestCase):
         """当播放列表只有一首歌时，移除它"""
         s1 = FakeValidSongModel()
         self.playlist.current_song = s1
-        time.sleep(0.1)  # 让 Mpv 真正的开始播放
+        time.sleep(MPV_SLEEP_SECOND)  # 让 Mpv 真正的开始播放
         self.assertTrue(self.player.state, State.playing)
         self.playlist.remove(s1)
         self.assertEqual(len(self.playlist), 0)

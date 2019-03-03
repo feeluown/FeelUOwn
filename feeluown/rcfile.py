@@ -2,8 +2,6 @@ from collections import defaultdict
 import logging
 import os
 
-from .config import config
-
 logger = logging.getLogger(__name__)
 
 
@@ -29,7 +27,7 @@ def bind_signals(app):
             signal.connect(slot)
 
 
-def load_rcfile(rcfile_path=DEFAULT_RCFILE_PATH):
+def load_rcfile(config, rcfile_path=DEFAULT_RCFILE_PATH):
     if not os.path.exists(DEFAULT_RCFILE_PATH):
         return
 

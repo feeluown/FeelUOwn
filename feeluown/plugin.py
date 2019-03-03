@@ -4,6 +4,7 @@ import importlib
 import logging
 import os
 import pkg_resources
+import sys
 
 from fuocore.dispatch import Signal
 from .consts import USER_PLUGINS_DIR
@@ -125,7 +126,7 @@ class PluginsManager:
         """扫描插件目录中的插件"""
         modules_name = ([p for p in os.listdir(USER_PLUGINS_DIR)
                          if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
-
+        sys.path.append(USER_PLUGINS_DIR)
         for module_name in modules_name:
             try:
                 module = importlib.import_module(module_name)

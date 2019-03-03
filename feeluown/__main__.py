@@ -40,11 +40,6 @@ def excepthook(exc_type, exc_value, tb):
     traceback.print_exception(exc_type, exc_value, tb)
 
 
-ensure_dirs()
-os.chdir(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..'))
-sys.path.append(USER_PLUGINS_DIR)
-
-
 def setup_argparse():
     parser = argparse.ArgumentParser(description='运行 FeelUOwn 播放器')
     parser.add_argument('-nw', '--no-window', action='store_true', default=False,
@@ -69,6 +64,10 @@ def setup_argparse():
 
 
 def main():
+    from feeluown.config import Config
+
+    sys.excepthook = excepthook
+
     parser = setup_argparse()
     args = parser.parse_args()
 
@@ -82,27 +81,30 @@ def main():
         print('\033[0m', end='')
         sys.exit(1)
 
-    debug = args.debug
-    mpv_audio_device = args.mpv_audio_device
-    cli_only = args.no_window
-    logger_config(debug, to_file=args.log_to_file)
+    ensure_dirs()
 
-    load_rcfile()
+    config = Config()
+    config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
+    config.deffield('MODE', desc='CLI or GUI 模式')
+    config.deffield('MPV_AUDIO_DEVICE', desc='MPV 播放设备')
+    config.deffield('COLLECTIONS_DIR', desc='本地收藏所在目录')
 
-    player_kwargs = dict(
-        audio_device=bytes(mpv_audio_device, 'utf-8'))
+    load_rcfile(config)
 
-    # 设置 exception hook
-    sys.excepthook = excepthook
+    # 命令行选项的优先级高于 rcfile
+    config.DEBUG = args.debug
+    config.MPV_AUDIO_DEVICE = args.mpv_audio_device
 
-    if not cli_only:
+    config.MODE = App.CliMode if args.no_window else App.GuiMode
+    logger_config(config.DEBUG, to_file=args.log_to_file)
+    if config.MODE & App.GuiMode:
         try:
             import PyQt5  # noqa
         except ImportError:
             logger.warning('PyQt5 is not installed，can only use CLI mode.')
-            cli_only = True
+            config.MODE = App.CliMode
 
-    if not cli_only:
+    if config.MODE & App.GuiMode:
         from PyQt5.QtWidgets import QApplication
         from quamash import QEventLoop
 
@@ -113,8 +115,7 @@ def main():
         app_event_loop = QEventLoop(q_app)
         asyncio.set_event_loop(app_event_loop)
 
-    mode = App.CliMode if cli_only else App.GuiMode
-    app = create_app(mode, **player_kwargs)
+    app = create_app(config)
     bind_signals(app)
 
     event_loop = asyncio.get_event_loop()

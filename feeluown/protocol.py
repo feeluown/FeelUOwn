@@ -206,7 +206,7 @@ class CollectionManager:
         self.model_parser = ModelParser(self._library)
 
     def scan(self):
-        directorys = self._app.config.COLLECTIONS_DIR + [COLLECTIONS_DIR]
+        directorys = self._app.config.COLLECTIONS_DIR or [] + [COLLECTIONS_DIR]
         self._app.collections.clear()
         for directory in directorys:
             directory = os.path.expanduser(directory)

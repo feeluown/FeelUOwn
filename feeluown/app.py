@@ -6,7 +6,6 @@ from contextlib import contextmanager
 from fuocore import LiveLyric, Library
 from fuocore.pubsub import run as run_pubsub
 
-from .config import config
 from .consts import APP_ICON
 from .protocol import FuoProcotol
 from .player import Player
@@ -70,7 +69,7 @@ class App:
         self.player.shutdown()
 
 
-def attach_attrs(app, **player_kwargs):
+def attach_attrs(app):
     """初始化 app 属性"""
     app.library = Library()
     app.live_lyric = LiveLyric()
@@ -80,6 +79,9 @@ def attach_attrs(app, **player_kwargs):
     app.request = Request()
     app._g = {}
 
+    player_kwargs = dict(
+        audio_device=bytes(app.config.MPV_AUDIO_DEVICE, 'utf-8')
+    )
     app.player = Player(app=app, **(player_kwargs or {}))
     app.playlist = app.player.playlist
 
@@ -133,9 +135,10 @@ def initialize(app):
     loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
 
 
-def create_app(mode, **player_kwargs):
+def create_app(config):
     bases = [App]
 
+    mode = config.MODE
     if mode & App.GuiMode:
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
@@ -173,7 +176,7 @@ def create_app(mode, **player_kwargs):
 
     app = FApp(mode)
     app.config = config
-    attach_attrs(app, **player_kwargs)
+    attach_attrs(app)
     initialize(app)
     if app.mode & App.GuiMode:
         app.show()

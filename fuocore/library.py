@@ -2,10 +2,12 @@
 音乐库模块
 ~~~~~~~~~~
 
->>> from fuo_netease import provider
->>> library = Library()
->>> library.register(provider)
->>> library.search('周杰伦')
+.. code::
+
+    from fuo_netease import provider
+    library = Library()
+    library.register(provider)
+    library.search('周杰伦')
 """
 
 import logging
