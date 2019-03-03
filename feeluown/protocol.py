@@ -206,10 +206,16 @@ class CollectionManager:
         self.model_parser = ModelParser(self._library)
 
     def scan(self):
-        directorys = self._app.config.COLLECTIONS_DIR or [] + [COLLECTIONS_DIR]
+        if isinstance(self._app.config.COLLECTIONS_DIR, list):
+            directorys = self._app.config.COLLECTIONS_DIR or [] + [COLLECTIONS_DIR]
+        else:
+            directorys = [COLLECTIONS_DIR, self._app.config.COLLECTIONS_DIR]
         self._app.collections.clear()
         for directory in directorys:
             directory = os.path.expanduser(directory)
+            if not os.path.exists(directory):
+                logger.warning('Collection Dir:{} does not exist.'.format(directory))
+                continue
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):
                     continue
