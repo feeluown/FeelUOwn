@@ -86,8 +86,8 @@ def main():
     config = Config()
     config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
     config.deffield('MODE', desc='CLI or GUI 模式')
-    config.deffield('MPV_AUDIO_DEVICE', desc='MPV 播放设备')
-    config.deffield('COLLECTIONS_DIR', desc='本地收藏所在目录')
+    config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
+    config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
 
     load_rcfile(config)
 

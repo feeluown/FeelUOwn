@@ -206,10 +206,12 @@ class CollectionManager:
         self.model_parser = ModelParser(self._library)
 
     def scan(self):
-        if isinstance(self._app.config.COLLECTIONS_DIR, list):
-            directorys = self._app.config.COLLECTIONS_DIR or [] + [COLLECTIONS_DIR]
-        else:
-            directorys = [COLLECTIONS_DIR, self._app.config.COLLECTIONS_DIR]
+        directorys = [COLLECTIONS_DIR]
+        if self._app.config.COLLECTIONS_DIR:
+            if isinstance(self._app.config.COLLECTIONS_DIR, list):
+                directorys += self._app.config.COLLECTIONS_DIR
+            else:
+                directorys.append(COLLECTIONS_DIR)
         self._app.collections.clear()
         for directory in directorys:
             directory = os.path.expanduser(directory)
