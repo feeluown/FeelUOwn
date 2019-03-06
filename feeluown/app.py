@@ -153,11 +153,13 @@ def create_app(config):
                 QApplication.setWindowIcon(QIcon(QPixmap(APP_ICON)))
 
             def closeEvent(self, e):
-                try:
-                    app.ui.mpv_widget.close()
-                    self.shutdown()
-                finally:
-                    QApplication.quit()
+                app.ui.mpv_widget.close()
+                event_loop = asyncio.get_event_loop()
+                event_loop.stop()
+                # try:
+                #     self.shutdown()
+                # finally:
+                #     QApplication.quit()
 
         bases.append(GuiApp)
 

@@ -37,6 +37,9 @@ setup(
         'requests',
         'pyopengl',
         ],
+    extra_requires=[
+        'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
+    ],
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [

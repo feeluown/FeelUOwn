@@ -40,6 +40,30 @@ def excepthook(exc_type, exc_value, tb):
     traceback.print_exception(exc_type, exc_value, tb)
 
 
+def create_config():
+    from feeluown.config import Config
+    config = Config()
+    config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
+    config.deffield('MODE', desc='CLI or GUI 模式')
+    config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
+    config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
+    return config
+
+
+def check_ports():
+    if is_port_used(23333) or is_port_used(23334):
+        print('\033[0;31m', end='')
+        print('Port(23333 or 23334) is used, maybe another feeluown is running?')
+        print('\033[0m', end='')
+        sys.exit(1)
+
+
+def map_args_to_config(args, config):
+    config.DEBUG = args.debug
+    config.MPV_AUDIO_DEVICE = args.mpv_audio_device
+    config.MODE = App.CliMode if args.no_window else App.GuiMode
+
+
 def setup_argparse():
     parser = argparse.ArgumentParser(description='运行 FeelUOwn 播放器')
     parser.add_argument('-nw', '--no-window', action='store_true', default=False,
@@ -63,9 +87,17 @@ def setup_argparse():
     return parser
 
 
-def main():
-    from feeluown.config import Config
+def enable_mac_hotkey():
+    try:
+        from .global_hotkey_mac import MacGlobalHotkeyManager
+    except ImportError as e:
+        logger.warning("Can't start mac hotkey listener: %s", str(e))
+    else:
+        mac_global_hotkey_mgr = MacGlobalHotkeyManager()
+        mac_global_hotkey_mgr.start()
 
+
+def main():
     sys.excepthook = excepthook
 
     parser = setup_argparse()
@@ -75,28 +107,13 @@ def main():
         print('feeluown {}, fuocore {}'.format(feeluown_version, fuocore_version))
         return
 
-    if is_port_used(23333) or is_port_used(23334):
-        print('\033[0;31m', end='')
-        print('Port(23333 or 23334) is used, maybe another feeluown is running?')
-        print('\033[0m', end='')
-        sys.exit(1)
-
+    check_ports()
     ensure_dirs()
-
-    config = Config()
-    config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
-    config.deffield('MODE', desc='CLI or GUI 模式')
-    config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
-    config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
-
+    config = create_config()
     load_rcfile(config)
-
-    # 命令行选项的优先级高于 rcfile
-    config.DEBUG = args.debug
-    config.MPV_AUDIO_DEVICE = args.mpv_audio_device
-
-    config.MODE = App.CliMode if args.no_window else App.GuiMode
+    map_args_to_config(args, config)
     logger_config(config.DEBUG, to_file=args.log_to_file)
+
     if config.MODE & App.GuiMode:
         try:
             import PyQt5  # noqa
@@ -118,14 +135,18 @@ def main():
     app = create_app(config)
     bind_signals(app)
 
+    if sys.platform.lower() == 'darwin':
+        enable_mac_hotkey()
+
     event_loop = asyncio.get_event_loop()
     try:
         event_loop.run_forever()
-        logger.info('Event loop stopped.')
     except KeyboardInterrupt:
         # NOTE: gracefully shutdown?
-        app.shutdown()
+        pass
     finally:
+        event_loop.stop()
+        app.shutdown()
         event_loop.close()
 
 

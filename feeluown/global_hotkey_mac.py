@@ -1,0 +1,112 @@
+# -*- coding=utf8 -*-
+
+import logging
+import os
+import socket
+import threading
+
+import Quartz
+from AppKit import NSSystemDefined
+from AppKit import NSKeyUp, NSEvent, NSBundle
+
+__alias__ = 'mac 全局快捷键'
+__version__ = '2.0'
+__desc__ = 'mac 全局快捷键'
+
+logger = logging.getLogger(__name__)
+
+
+def send_cmd(cmd):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('0.0.0.0', 23333))
+    sock.recv(1024)
+    sock.sendall(bytes(cmd, 'utf-8') + b'\n')
+    sock.close()
+
+
+def keyboard_tap_callback(proxy, type_, event, refcon):
+    NSBundle.mainBundle().infoDictionary()['NSAppTransportSecurity'] =\
+        dict(NSAllowsArbitraryLoads=True)
+    if type_ < 0 or type_ > 0x7fffffff:
+        logger.error('Unkown mac event')
+        run_event_loop()
+        logger.error('restart mac key board event loop')
+        return event
+    try:
+        key_event = NSEvent.eventWithCGEvent_(event)
+    except:
+        logger.info("mac event cast error")
+        return event
+    if key_event.subtype() == 8:
+        key_code = (key_event.data1() & 0xFFFF0000) >> 16
+        key_state = (key_event.data1() & 0xFF00) >> 8
+        if key_code in (16, 19, 20):
+            # 16 for play-pause, 19 for next, 20 for previous
+            if key_state == NSKeyUp:
+                if key_code == 19:
+                    logger.info('mac hotkey: play next')
+                    send_cmd('next')
+                elif key_code == 20:
+                    logger.info('mac hotkey: play last')
+                    send_cmd('previous')
+                elif key_code == 16:
+                    logger.info('mac hotkey: toggle')
+                    send_cmd('toggle')
+            return None
+    return event
+
+
+def run_event_loop():
+    logger.info('try to load mac hotkey event loop')
+    # Set up a tap, with type of tap, location, options and event mask
+    tap = Quartz.CGEventTapCreate(
+        Quartz.kCGSessionEventTap,  # Session level is enough for our needs
+        Quartz.kCGHeadInsertEventTap,  # Insert wherever, we do not filter
+        Quartz.kCGEventTapOptionDefault,
+        # NSSystemDefined for media keys
+        Quartz.CGEventMaskBit(NSSystemDefined),
+        keyboard_tap_callback,
+        None
+    )
+
+    run_loop_source = Quartz.CFMachPortCreateRunLoopSource(
+        None, tap, 0)
+    Quartz.CFRunLoopAddSource(
+        Quartz.CFRunLoopGetCurrent(),
+        run_loop_source,
+        Quartz.kCFRunLoopDefaultMode
+    )
+    # Enable the tap
+    Quartz.CGEventTapEnable(tap, True)
+    # and run! This won't return until we exit or are terminated.
+    Quartz.CFRunLoopRun()
+    logger.error('mac hotkey event loop exit')
+    return []
+
+
+class MacGlobalHotkeyManager:
+
+    def __init__(self):
+        self._t = None
+        self._started = False
+
+    def start(self):
+        if os.environ.get('TMUX') is not None:
+            logger.warning('Mac hotkey listener can not run in tmux!')
+        else:
+            logger.info('Start mac global hotkey listener.')
+            self._t = threading.Thread(
+                target=run_event_loop,
+                name='MacGlobalHotkeyListener'
+            )
+            self._t.daemon = True
+            self._t.start()
+            self._started = True
+
+    def stop(self):
+        # FIXME: 经过测试发现，这个 stop 函数并不会正常工作。
+        # 现在是将 thread 为 daemon thread，让线程在程序退出时停止。
+        if self._started:
+            loop = Quartz.CFRunLoopGetCurrent()
+            Quartz.CFRunLoopStop(loop)
+            self._t.join()

@@ -22,7 +22,6 @@ from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 import locale
 import logging
-import platform
 import random
 
 from mpv import MPV, MpvEventID, MpvEventEndFile, \
@@ -39,6 +38,7 @@ class State(IntEnum):
     Player states.
     """
     stopped = 0
+    #: 处于 paused 状态时，current_song 也可能为 False
     paused = 1
     playing = 2
 
@@ -500,10 +500,10 @@ class MpvPlayer(AbstractPlayer):
             self.state = State.playing
 
     def stop(self):
-        logger.info('stop player...')
         self._mpv.pause = True
         self.state = State.stopped
         self._mpv.playlist_clear()
+        logger.info('Player stopped.')
 
     @property
     def position(self):

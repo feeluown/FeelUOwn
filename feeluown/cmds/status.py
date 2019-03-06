@@ -20,7 +20,8 @@ class StatusHandler(AbstractHandler):
             'volume:    {}'.format(player.volume),
             'state:     {}'.format(player.state.name),
         ]
-        if player.state in (State.paused, State.playing):
+        if player.state in (State.playing, State.paused) and \
+           player.current_song is not None:
             msgs += [
                 'duration:  {}'.format(player.duration),
                 'position:  {}'.format(player.position),
