@@ -9,6 +9,7 @@ import traceback
 import sys
 
 from fuocore import __version__ as fuocore_version
+from fuocore.dispatch import Signal
 from fuocore.utils import is_port_used
 
 from feeluown.app import App, create_app
@@ -98,6 +99,8 @@ def enable_mac_hotkey():
 
 
 def main():
+    # 让程序能正确的找到图标等资源
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
     sys.excepthook = excepthook
 
     parser = setup_argparse()
@@ -132,13 +135,12 @@ def main():
         app_event_loop = QEventLoop(q_app)
         asyncio.set_event_loop(app_event_loop)
 
+    event_loop = asyncio.get_event_loop()
+    Signal.setup_aio_support(loop=event_loop)
     app = create_app(config)
     bind_signals(app)
-
     if sys.platform.lower() == 'darwin':
         enable_mac_hotkey()
-
-    event_loop = asyncio.get_event_loop()
     try:
         event_loop.run_forever()
     except KeyboardInterrupt:

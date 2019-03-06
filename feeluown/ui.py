@@ -30,7 +30,7 @@ from feeluown.widgets.table_container import SongsTableContainer
 from feeluown.widgets.statusline_items import PluginStatus
 from feeluown.widgets.mpv_widget import MpvOpenGLWidget
 
-from .helpers import use_mac_theme
+from .helpers import use_mac_theme, async_run
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class PlayerControlPanel(QFrame):
         self._app.player.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed)
         self._app.player.playlist.song_changed.connect(
-            self.on_player_song_changed)
+            self.on_player_song_changed, aioqueue=True)
         self.progress_slider.resume_player_needed.connect(self._app.player.resume)
         self.progress_slider.pause_player_needed.connect(self._app.player.pause)
         self.progress_slider.change_position_needed.connect(
@@ -255,13 +255,18 @@ class PlayerControlPanel(QFrame):
         source_name_map = {p.identifier: p.name
                            for p in self._app.library.list()}
         font_metrics = QFontMetrics(QApplication.font())
-        text = '{} - {}'.format(song.title, song.artists_name)
+        text = '{} - {}'.format(song.title_display, song.artists_name_display)
         elided_text = font_metrics.elidedText(
             text, Qt.ElideRight, self.progress_slider.width() - 100)
         self.song_source_label.setText(source_name_map[song.source])
         self.song_title_label.setText(elided_text)
-        if song.mv is not None:
-            self.mv_btn.setToolTip(song.mv.name)
+        loop = asyncio.get_event_loop()
+        loop.create_task(self.update_mv_btn_status(song))
+
+    async def update_mv_btn_status(self, song):
+        mv = await async_run(lambda: song.mv)
+        if mv:
+            self.mv_btn.setToolTip(mv.name)
             self.mv_btn.setEnabled(True)
         else:
             self.mv_btn.setEnabled(False)

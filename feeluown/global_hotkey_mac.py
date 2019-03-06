@@ -33,6 +33,10 @@ def keyboard_tap_callback(proxy, type_, event, refcon):
         logger.error('restart mac key board event loop')
         return event
     try:
+        # 这段代码如果运行在非主线程，它会有如下输出，根据目前探索，
+        # 这并不影响它的运行，我们暂时可以忽略它。
+        # Python pid(11)/euid(11) is calling TIS/TSM in non-main thread environment.
+        # ERROR : This is NOT allowed.
         key_event = NSEvent.eventWithCGEvent_(event)
     except:
         logger.info("mac event cast error")
@@ -95,6 +99,8 @@ class MacGlobalHotkeyManager:
             logger.warning('Mac hotkey listener can not run in tmux!')
         else:
             logger.info('Start mac global hotkey listener.')
+            # mac event loop 最好运行在主线程中，但是测试发现它也可以运行
+            # 在非主线程。但不能运行在子进程中。
             self._t = threading.Thread(
                 target=run_event_loop,
                 name='MacGlobalHotkeyListener'

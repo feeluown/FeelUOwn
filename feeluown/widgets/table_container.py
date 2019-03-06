@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore import ModelType
-from feeluown.helpers import use_mac_theme
+from feeluown.helpers import use_mac_theme, async_run
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
 
 
@@ -170,8 +170,7 @@ class SongsTableContainer(QFrame):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     async def play_song(self, song):
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(None, lambda: song.url)
+        await async_run(lambda: song.url)
         self._app.player.play_song(song)
 
     def play_all(self):
@@ -210,7 +209,7 @@ class SongsTableContainer(QFrame):
             songs_g = playlist.create_songs_g()
             self._show_songs(songs_g=songs_g)
         else:
-            songs = await loop.run_in_executor(None, lambda: playlist.songs)
+            songs = await async_run(lambda: playlist.songs, loop=loop)
             self._show_songs(songs)
         desc = '<h2>{}</h2>\n{}'.format(playlist.name, playlist.desc or '')
         self.set_desc(desc)
@@ -236,12 +235,12 @@ class SongsTableContainer(QFrame):
         songs_g = None
         future_songs = None
         futures = []
-        future_desc = loop.run_in_executor(None, lambda: artist.desc)
+        future_desc = async_run(lambda: artist.desc)
         futures.append(future_desc)
         if artist.meta.allow_create_songs_g:
             songs_g = artist.create_songs_g()
         else:
-            future_songs = loop.run_in_executor(None, lambda: artist.songs)
+            future_songs = async_run(lambda: artist.songs)
             futures.append(future_songs)
         await asyncio.wait(futures)
         desc = future_desc.result()
@@ -256,8 +255,8 @@ class SongsTableContainer(QFrame):
     async def show_album(self, album):
         self._top_container.show()
         loop = asyncio.get_event_loop()
-        future_songs = loop.run_in_executor(None, lambda: album.songs)
-        future_desc = loop.run_in_executor(None, lambda: album.desc)
+        future_songs = async_run(lambda: album.songs)
+        future_desc = async_run(lambda: album.desc)
         await asyncio.wait([future_songs, future_desc])
         self.set_desc(future_desc.result() or
                       '<h2>{}</h2>'.format(album.name))
