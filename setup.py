@@ -34,6 +34,7 @@ setup(
     # FIXME depends on PyQt5
     install_requires=[
         'quamash>=0.5.5',
+        'janus',
         'requests',
         'pyopengl',
         ],

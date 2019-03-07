@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import asyncio
+import janus
 import logging
 import weakref
 
@@ -36,16 +36,16 @@ class Signal:
 
         这个和 qt signal 的设计类似。
         """
-        cls.aioqueue = asyncio.Queue()
+        cls.aioqueue = janus.Queue()
         loop.create_task(Signal.worker())
         cls.has_aio_support = True
 
     @classmethod
     async def worker(cls):
         while True:
-            func, args = await cls.aioqueue.get()
+            func, args = await cls.aioqueue.async_q.get()
             func(*args)
-            cls.aioqueue.task_done()
+            cls.aioqueue.async_q.task_done()
 
     def emit(self, *args):
         for receiver in self.receivers:
@@ -59,7 +59,7 @@ class Signal:
                         uid = gen_id(func)
                         aioqueue = uid in self.aioqueued_receiver_ids
                         if aioqueue:
-                            Signal.aioqueue.put_nowait((func, args))
+                            Signal.aioqueue.sync_q.put_nowait((func, args))
                         else:
                             func(*args)
                     else:
