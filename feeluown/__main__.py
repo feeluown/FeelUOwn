@@ -48,6 +48,7 @@ def create_config():
     config.deffield('MODE', desc='CLI or GUI 模式')
     config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
     config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
+    config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能')
     return config
 
 
@@ -63,6 +64,7 @@ def map_args_to_config(args, config):
     config.DEBUG = args.debug
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device
     config.MODE = App.CliMode if args.no_window else App.GuiMode
+    config.FORCE_MAC_HOTKEY = args.force_mac_hotkey
 
 
 def setup_argparse():
@@ -76,6 +78,8 @@ def setup_argparse():
                         help='显示当前 feeluown 和 fuocore 版本')
     parser.add_argument('--log-to-file', action='store_true', default=False,
                         help='将日志打到文件中')
+    parser.add_argument('--force-mac-hotkey', action='store_true', default=False,
+                        help='强制开启 mac 全局热键')
     # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
     # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
 
@@ -88,15 +92,18 @@ def setup_argparse():
     return parser
 
 
-def enable_mac_hotkey():
+def enable_mac_hotkey(force=False):
     try:
         from .global_hotkey_mac import MacGlobalHotkeyManager
     except ImportError as e:
         logger.warning("Can't start mac hotkey listener: %s", str(e))
     else:
         mac_global_hotkey_mgr = MacGlobalHotkeyManager()
-        mac_global_hotkey_mgr.start()
-
+        if os.environ.get('TMUX') is not None and force is not True:
+            logger.warning('经测试，macOS 的全局快捷键不能在 tmux 中使用!'
+                           '你可以在启动时加入 `--force-mac-hotkey` 选项来强制开启。')
+        else:
+            mac_global_hotkey_mgr.start()
 
 def main():
     # 让程序能正确的找到图标等资源
@@ -140,7 +147,7 @@ def main():
     app = create_app(config)
     bind_signals(app)
     if sys.platform.lower() == 'darwin':
-        enable_mac_hotkey()
+        enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
     try:
         event_loop.run_forever()
     except KeyboardInterrupt:

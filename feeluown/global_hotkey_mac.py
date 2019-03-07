@@ -1,7 +1,6 @@
 # -*- coding=utf8 -*-
 
 import logging
-import os
 import socket
 import threading
 
@@ -95,19 +94,15 @@ class MacGlobalHotkeyManager:
         self._started = False
 
     def start(self):
-        if os.environ.get('TMUX') is not None:
-            logger.warning('Mac hotkey listener can not run in tmux!')
-        else:
-            logger.info('Start mac global hotkey listener.')
-            # mac event loop 最好运行在主线程中，但是测试发现它也可以运行
-            # 在非主线程。但不能运行在子进程中。
-            self._t = threading.Thread(
-                target=run_event_loop,
-                name='MacGlobalHotkeyListener'
-            )
-            self._t.daemon = True
-            self._t.start()
-            self._started = True
+        # mac event loop 最好运行在主线程中，但是测试发现它也可以运行
+        # 在非主线程。但不能运行在子进程中。
+        self._t = threading.Thread(
+            target=run_event_loop,
+            name='MacGlobalHotkeyListener'
+        )
+        self._t.daemon = True
+        self._t.start()
+        self._started = True
 
     def stop(self):
         # FIXME: 经过测试发现，这个 stop 函数并不会正常工作。
