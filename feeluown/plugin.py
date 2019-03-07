@@ -107,20 +107,17 @@ class PluginsManager:
 
     def load_module(self, module):
         """加载插件模块并启用插件"""
-        plugin = None
-        with action_log('Creating plugin from module:%s' % module.__name__):
+        with action_log('Enabling plugin:%s' % module.__name__):
             try:
                 plugin = Plugin.create(module)
             except InvalidPluginError as e:
                 raise ActionError(str(e))
-        if plugin is None:
-            return
-        with action_log('Enabling plugin:%s' % plugin.name):
-            self._plugins[plugin.name] = plugin
-            try:
-                self.enable(plugin)
-            except Exception as e:
-                raise ActionError(str(e))
+            else:
+                self._plugins[plugin.name] = plugin
+                try:
+                    self.enable(plugin)
+                except Exception as e:
+                    raise ActionError(str(e))
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""
