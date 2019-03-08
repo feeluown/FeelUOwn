@@ -25,7 +25,8 @@ class PlaylistHandler(AbstractHandler):
         furi_list = furis.split(',')
         for furi in furi_list:
             song = self.model_parser.parse_line(furi)
-            playlist.add(song)
+            if song is not None:
+                playlist.add(song)
 
     def remove(self, song_uri):
         # FIXME: a little bit tricky

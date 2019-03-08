@@ -66,7 +66,6 @@ class ModelParser:
         source, ns, identifier = m.groups()
         provider = self._library.get(source)
         Model = provider.get_model_cls(NS_TYPE_MAP[ns])
-        model = None
         if ns == 'songs':
             data = ModelParser.parse_song_desc(desc.strip())
             model = Model.create_by_display(identifier=identifier, **data)
