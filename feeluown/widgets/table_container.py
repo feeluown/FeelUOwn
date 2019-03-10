@@ -231,37 +231,27 @@ class SongsTableContainer(QFrame):
     async def show_artist(self, artist):
         self._top_container.show()
         loop = asyncio.get_event_loop()
-
-        songs_g = None
-        future_songs = None
-        futures = []
-        future_desc = async_run(lambda: artist.desc)
-        futures.append(future_desc)
+        songs = songs_g = None
         if artist.meta.allow_create_songs_g:
             songs_g = artist.create_songs_g()
         else:
-            future_songs = async_run(lambda: artist.songs)
-            futures.append(future_songs)
-        await asyncio.wait(futures)
-        desc = future_desc.result()
-        self.set_desc(desc or '<h2>{}</h2>'.format(artist.name))
+            songs = await async_run(lambda: artist.songs)
         if songs_g is not None:
             self._show_songs(songs_g=songs_g)
         else:
-            self._show_songs(songs=future_songs.result())
+            self._show_songs(songs=songs)
+        desc = await async_run(lambda: artist.desc)
+        self.set_desc(desc or '<h2>{}</h2>'.format(artist.name))
         if artist.cover:
             loop.create_task(self.show_cover(artist.cover))
 
     async def show_album(self, album):
         self._top_container.show()
         loop = asyncio.get_event_loop()
-        future_songs = async_run(lambda: album.songs)
-        future_desc = async_run(lambda: album.desc)
-        await asyncio.wait([future_songs, future_desc])
-        self.set_desc(future_desc.result() or
-                      '<h2>{}</h2>'.format(album.name))
-        songs = future_songs.result()
+        songs = await async_run(lambda: album.songs)
         self._show_songs(songs)
+        desc = await async_run(lambda: album.desc)
+        self.set_desc(desc or '<h2>{}</h2>'.format(album.name))
         if album.cover:
             loop.create_task(self.show_cover(album.cover))
 
