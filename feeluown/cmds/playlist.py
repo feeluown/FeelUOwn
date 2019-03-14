@@ -16,12 +16,12 @@ class PlaylistHandler(AbstractHandler):
         elif cmd.action == 'list':
             return self.list()
         elif cmd.action == 'next':
-            self.app.player.play_next()
+            self.player.play_next()
         elif cmd.action == 'previous':
-            self.app.player.play_previous()
+            self.player.play_previous()
 
     def add(self, furis):
-        playlist = self.app.playlist
+        playlist = self.playlist
         furi_list = furis.split(',')
         for furi in furi_list:
             song = self.model_parser.parse_line(furi)
@@ -30,14 +30,14 @@ class PlaylistHandler(AbstractHandler):
 
     def remove(self, song_uri):
         # FIXME: a little bit tricky
-        for song in self.app.playlist.list():
+        for song in self.playlist.list():
             if get_url(song) == song_uri:
-                self.app.playlist.remove(song)
+                self.playlist.remove(song)
                 break
 
     def list(self):
-        songs = self.app.playlist.list()
+        songs = self.playlist.list()
         return show_songs(songs)
 
     def clear(self):
-        self.app.playlist.clear()
+        self.playlist.clear()

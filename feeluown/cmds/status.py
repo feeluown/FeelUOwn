@@ -8,8 +8,8 @@ class StatusHandler(AbstractHandler):
     cmds = 'status'
 
     def handle(self, cmd):
-        player = self.app.player
-        playlist = self.app.playlist
+        player = self.player
+        playlist = self.playlist
         live_lyric = self.live_lyric
         repeat = int(playlist.playback_mode in
                      (PlaybackMode.one_loop, PlaybackMode.loop))

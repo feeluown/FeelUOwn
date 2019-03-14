@@ -13,11 +13,11 @@ class SearchHandler(AbstractHandler):
 
     def search_songs(self, query):
         logger.debug('搜索 %s ...', query)
-        providers = self.app.library.list()
+        providers = self.library.list()
         source_in = [provd.identifier for provd in providers
                      if provd.Song.meta.allow_get]
         songs = []
-        for result in self.app.library.search(query, source_in=source_in):
+        for result in self.library.search(query, source_in=source_in):
             logger.debug('从 %s 搜索到 %d 首歌曲，取前 20 首',
                          result.source, len(result.songs))
             songs.extend(result.songs[:20])

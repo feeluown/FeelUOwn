@@ -17,10 +17,12 @@ class HandlerMeta(type):
 
 
 class AbstractHandler(metaclass=HandlerMeta):
-    def __init__(self, app):
-        self.app = app
-        self.live_lyric = app.live_lyric
-        self.model_parser = ModelParser(self.app.library)
+    def __init__(self, library, player, playlist, live_lyric):
+        self.library = library
+        self.player = player
+        self.playlist = playlist
+        self.live_lyric = live_lyric
+        self.model_parser = ModelParser(library)
 
     def handle(self, cmd):
         raise NotImplementedError

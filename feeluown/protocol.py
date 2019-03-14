@@ -141,7 +141,11 @@ class FuoProcotol:
                 break
             logger.debug('RECV: %s', command)
             cmd = CmdParser.parse(command)
-            msg = exec_cmd(app, cmd)
+            msg = exec_cmd(cmd,
+                           library=app.library,
+                           player=app.player,
+                           playlist=app.playlist,
+                           live_lyric=app.live_lyric)
             await event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
 
     def run_server(self):

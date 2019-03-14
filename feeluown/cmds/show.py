@@ -44,20 +44,20 @@ class ShowHandler(AbstractHandler):
 @route('/')
 def list_providers(req):
     provider_names = (provider.name for provider in
-                      req.app.library.list())
+                      req.library.list())
     return '\n'.join(('fuo://' + name for name in provider_names))
 
 
 @route('/<provider>/songs/<sid>')
 def song_detail(req, provider, sid):
-    provider = req.app.library.get(provider)
+    provider = req.library.get(provider)
     song = provider.Song.get(sid)
     return show_song(song)
 
 
 @route('/<provider>/songs/<sid>/lyric')
 def lyric(req, provider, sid):
-    provider = req.app.library.get(provider)
+    provider = req.library.get(provider)
     song = provider.Song.get(sid)
     if song.lyric:
         return song.lyric.content
@@ -66,27 +66,27 @@ def lyric(req, provider, sid):
 
 @route('/<provider>/artists/<aid>')
 def artist_detail(req, provider, aid):
-    provider = req.app.library.get(provider)
+    provider = req.library.get(provider)
     artist = provider.Artist.get(aid)
     return show_artist(artist)
 
 
 @route('/<provider>/albums/<bid>')
 def album_detail(req, provider, bid):
-    provider = req.app.library.get(provider)
+    provider = req.library.get(provider)
     album = provider.Album.get(bid)
     return show_album(album)
 
 
 @route('/<provider>/users/<uid>')
 def user_detail(req, provider, uid):
-    provider = req.app.library.get(provider)
+    provider = req.library.get(provider)
     user = provider.User.get(uid)
     return show_user(user)
 
 
 @route('/<provider>/playlists/<pid>')
 def playlist_detail(req, provider, pid):
-    provider = req.app.library.get(provider)
+    provider = req.library.get(provider)
     playlist = provider.Playlist.get(pid)
     return show_playlist(playlist)
