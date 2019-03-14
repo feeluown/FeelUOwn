@@ -17,9 +17,9 @@ class HandlerMeta(type):
 
 
 class AbstractHandler(metaclass=HandlerMeta):
-    def __init__(self, app, live_lyric):
+    def __init__(self, app):
         self.app = app
-        self.live_lyric = live_lyric
+        self.live_lyric = app.live_lyric
         self.model_parser = ModelParser(self.app.library)
 
     def handle(self, cmd):

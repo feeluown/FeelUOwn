@@ -20,7 +20,7 @@ app 对象，我们把它们放在 fuocore 包中。另外，我们也会创建�
 🔴       fuo 协议             :py:class:`feeluown.protocol.FuoProcotol`
 🔴       版本                 :py:class:`feeluown.version.VersionManager`
 🔴       小提示管理            :py:class:`feeluown.tips.TipsManager`
-🔴       本地收藏管理           :py:class:`feeluown.protocol.CollectionManager`
+🔴       本地收藏管理           :py:class:`feeluown.collection.CollectionManager`
 🔴       浏览历史记录           :py:mod:`feeluown.browser`
 🔴       快捷键管理            :py:class:`feeluown.hotkey.HotkeyManager`
 🔴       图片管理              :py:mod:`feeluown.image`

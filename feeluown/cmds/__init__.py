@@ -43,7 +43,7 @@ class CmdResolver:
 cmd_resolver = CmdResolver(cmd_handler_mapping)
 
 
-def exec_cmd(app, live_lyric, cmd):
+def exec_cmd(app, cmd):
     # FIXME: 要么只传 app，要么把 player, live_lyric 等分别传进来
     # 目前更使用 app 作为参数
 
@@ -57,7 +57,7 @@ def exec_cmd(app, live_lyric, cmd):
     if cmd.args:
         rv += ' {}'.format(' '.join(cmd.args))
     try:
-        cmd_rv = handler_cls(app, live_lyric).handle(cmd)
+        cmd_rv = handler_cls(app).handle(cmd)
         if cmd_rv:
             rv += '\n' + cmd_rv
     except Exception as e:

@@ -90,7 +90,7 @@ def attach_attrs(app):
         from feeluown.uimodels.provider import ProviderUiManager
         from feeluown.uimodels.playlist import PlaylistUiManager
         from feeluown.uimodels.my_music import MyMusicUiManager
-        from feeluown.protocol import CollectionManager
+        from feeluown.collection import CollectionManager
 
         from .browser import Browser
         from .hotkey import HotkeyManager
