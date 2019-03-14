@@ -144,7 +144,7 @@ class Playlist(object):
         """remove all songs from playlists"""
 
         self.current_song = None
-        self._songs = []
+        self._songs.clear()
         self._bad_songs.clear()
 
     def list(self):

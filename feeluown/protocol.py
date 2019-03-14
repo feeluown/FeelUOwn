@@ -122,8 +122,17 @@ class FuoProcotol:
         event_loop = asyncio.get_event_loop()
         await event_loop.sock_sendall(conn, b'OK feeluown 1.0.0\n')
         while True:
+            command = b''
             try:
-                command = await event_loop.sock_recv(conn, 1024)
+                max_bytes = 1024 * 1024
+                per_bytes = 256
+                while len(command) < max_bytes:
+                    part = await event_loop.sock_recv(conn, per_bytes)
+                    command += part
+                    if len(part) < per_bytes:
+                        break
+                else:
+                    logger.warning('The length of command should be less than 1K')
             except ConnectionResetError:
                 logger.debug('客户端断开连接')
                 break
@@ -144,7 +153,7 @@ class FuoProcotol:
         event_loop = asyncio.get_event_loop()
         event_loop.create_task(
             TcpServer(host, port, handle_func=self.handle).run())
-        logger.info('Fuo daemon run in {}:{}'.format(host, port))
+        logger.info('Fuo daemon run at {}:{}'.format(host, port))
 
 
 class Collection:
