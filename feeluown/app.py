@@ -4,12 +4,12 @@ from functools import partial
 from contextlib import contextmanager
 
 from fuocore import LiveLyric, Library
-from fuocore.protocol import FuoProtocol
 from fuocore.pubsub import run as run_pubsub
 
 from .consts import APP_ICON
 from .player import Player
 from .plugin import PluginsManager
+from .server import FuoServer
 from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
@@ -78,10 +78,10 @@ def attach_attrs(app):
     )
     app.player = Player(app=app, **(player_kwargs or {}))
     app.playlist = app.player.playlist
-    app.protocol = FuoProtocol(library=app.library,
-                               player=app.player,
-                               playlist=app.playlist,
-                               live_lyric=app.live_lyric)
+    app.server = FuoServer(library=app.library,
+                           player=app.player,
+                           playlist=app.playlist,
+                           live_lyric=app.live_lyric)
     app.plugin_mgr = PluginsManager(app)
     app.version_mgr = VersionManager(app)
     app.request = Request()
@@ -125,7 +125,7 @@ def initialize(app):
     app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
     app.pubsub_gateway, app.pubsub_server = run_pubsub()
     app.plugin_mgr.scan()
-    app.protocol.run_server()
+    app.server.run()
     if app.mode & App.GuiMode:
         app.theme_mgr.load_light()
         app.tips_mgr.show_random_tip()

@@ -3,7 +3,7 @@ import logging
 from collections import deque
 
 from fuocore.router import Router, NotFound
-from feeluown.protocol import ModelParser, get_url
+from fuocore.protocol import ModelParser, get_url
 
 logger = logging.getLogger(__name__)
 

@@ -1,0 +1,2 @@
+class FuocoreException(Exception):
+    pass

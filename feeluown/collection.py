@@ -2,7 +2,7 @@ import os
 import logging
 import random
 
-from feeluown.protocol import ModelParser, get_url
+from fuocore.protocol import ModelParser, get_url
 from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
