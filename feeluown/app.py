@@ -21,9 +21,9 @@ logger = logging.getLogger(__name__)
 class App:
     """App 基类"""
 
-    DaemonMode = 0x0001
-    GuiMode = 0x0010
-    CliMode = 0x0100
+    DaemonMode = 0x0001  # 开启 daemon
+    GuiMode = 0x0010     # 显示 GUI
+    CliMode = 0x0100     # 命令行模式
 
     def exec_(self, code):
         """执行 Python 代码"""
@@ -83,7 +83,7 @@ def attach_attrs(app):
     app.request = Request()
     app._g = {}
 
-    if app.mode & (app.CliMode | app.GuiMode):
+    if app.mode & (app.DaemonMode | app.GuiMode):
         app.version_mgr = VersionManager(app)
 
     if app.mode & app.GuiMode:
@@ -124,7 +124,7 @@ def initialize(app):
     app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
     app.plugin_mgr.scan()
 
-    if app.mode & app.CliMode:
+    if app.mode & app.DaemonMode:
         app.server = FuoServer(library=app.library,
                                player=app.player,
                                playlist=app.playlist,
@@ -139,7 +139,7 @@ def initialize(app):
         app.tips_mgr.show_random_tip()
         app.coll_mgr.scan()
 
-    if app.mode & (App.CliMode | App.GuiMode):
+    if app.mode & (App.DaemonMode | App.GuiMode):
         loop = asyncio.get_event_loop()
         loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
 

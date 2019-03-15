@@ -46,10 +46,11 @@ def create_config():
     from feeluown.config import Config
     config = Config()
     config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
-    config.deffield('MODE', desc='CLI or GUI 模式')
+    config.deffield('MODE', default=0x0000, desc='CLI or GUI 模式')
     config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
     config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
     config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能')
+    config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
     return config
 
 
@@ -57,13 +58,6 @@ def check_daemon_started():
     if is_port_used(23333) or is_port_used(23334):
         return True
     return False
-
-
-def map_args_to_config(args, config):
-    config.DEBUG = args.debug
-    config.MPV_AUDIO_DEVICE = args.mpv_audio_device
-    config.MODE = App.CliMode if args.no_window else (App.GuiMode | App.CliMode)
-    config.FORCE_MAC_HOTKEY = args.force_mac_hotkey
 
 
 def setup_argparse():
@@ -131,81 +125,126 @@ def enable_mac_hotkey(force=False):
             mac_global_hotkey_mgr.start()
 
 
-def main():
-    parser = setup_argparse()
-    args = parser.parse_args()
+def prepare_gui():
+    from PyQt5.QtWidgets import QApplication
+    from quamash import QEventLoop
 
-    run_as_daemon = args.daemon
-    run_once = False
-    is_daemon_started = check_daemon_started()
+    q_app = QApplication(sys.argv)
+    q_app.setQuitOnLastWindowClosed(True)
+    q_app.setApplicationName('FeelUOwn')
 
-    # TODO: 将 CliMode 改成 DaemonMode
+    app_event_loop = QEventLoop(q_app)
+    asyncio.set_event_loop(app_event_loop)
+    return True
 
-    if args.cmd is not None:  # 当命令行工具来使用
-        run_once, run_as_daemon = True, False
-        # 服务端不启动也能执行的命令
+
+def run_purecli_or_continue(args, is_daemon_started):
+    if args.cmd is not None:
+        if is_daemon_started:
+            climain()
+            sys.exit(0)
         cli_cmds = ('show', 'play', 'search')
         # 如果服务端已经启动，则将命令发送给服务端处理
-        if is_daemon_started:
-            return climain()
         if args.cmd not in cli_cmds:
             print_error('Fuo daemon not started.')
-            return
+            sys.exit(1)
 
-    if args.version:
-        print('feeluown {}, fuocore {}'.format(feeluown_version, fuocore_version))
-        return
 
-    if run_as_daemon and is_daemon_started:
-        print_error('Fuo daemon is already started.')
-        sys.exit(1)
-
-    if not (run_as_daemon or run_once):
-        return
-
+def setup_basics():
     # 让程序能正确的找到图标等资源
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
     sys.excepthook = excepthook
-
     ensure_dirs()
-    config = create_config()
-    load_rcfile(config)
-    map_args_to_config(args, config)
-    logger_config(config.DEBUG, to_file=args.log_to_file)
 
+
+def setup_config(args, config):
+    config.DEBUG = args.debug
+    config.MPV_AUDIO_DEVICE = args.mpv_audio_device
+    config.FORCE_MAC_HOTKEY = args.force_mac_hotkey
+    config.LOG_TO_FILE = args.log_to_file
+
+    run_once = args.cmd is not None
+    if run_once:
+        config.LOG_TO_FILE = True
+        config.MODE = App.CliMode
+    else:
+        if not args.no_window:
+            try:
+                import PyQt5  # noqa
+            except ImportError:
+                logger.warning('PyQt5 is not installed, can only use daemon mode.')
+            else:
+                config.MODE |= App.GuiMode
+        if args.daemon:
+            config.MODE |= App.DaemonMode
+
+
+def setup_with_config(config):
+    logger_config(config.DEBUG, to_file=config.LOG_TO_FILE)
     if config.MODE & App.GuiMode:
-        try:
-            import PyQt5  # noqa
-        except ImportError:
-            logger.warning('PyQt5 is not installed，can only use CLI mode.')
-            config.MODE = App.CliMode
-
-    if config.MODE & App.GuiMode:
-        from PyQt5.QtWidgets import QApplication
-        from quamash import QEventLoop
-
-        q_app = QApplication(sys.argv)
-        q_app.setQuitOnLastWindowClosed(True)
-        q_app.setApplicationName('FeelUOwn')
-
-        app_event_loop = QEventLoop(q_app)
-        asyncio.set_event_loop(app_event_loop)
-
-    event_loop = asyncio.get_event_loop()
-    Signal.setup_aio_support(loop=event_loop)
-    app = create_app(config)
-    bind_signals(app)
+        prepare_gui()
     if sys.platform.lower() == 'darwin':
         enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
+
+
+def run_and_exit(app):
+    from fuocore.cmds import interprete
+    rv = interprete(sys.argv[1] + ' ' + sys.argv[2],
+                    library=app.library,
+                    player=app.player,
+                    playlist=app.playlist,
+                    live_lyric=app.live_lyric)
+    if sys.argv[1] == 'play':
+        app.player._mpv.wait_for_playback()
+    print(rv)
+    sys.exit(0)
+
+
+def run_forever_and_exit(app):
+    loop = asyncio.get_event_loop()
     try:
-        event_loop.run_forever()
+        loop.run_forever()
     except KeyboardInterrupt:
         # NOTE: gracefully shutdown?
         pass
     finally:
-        event_loop.stop()
+        loop.stop()
         app.shutdown()
-        event_loop.close()
+        loop.close()
+    sys.exit(0)
+
+
+def main():
+    parser = setup_argparse()
+    args = parser.parse_args()
+    is_daemon_started = check_daemon_started()
+
+    # 根据启动参数，确认是需要继续执行，还是运行客户端命令即可
+    run_purecli_or_continue(args, is_daemon_started)
+
+    # 查看版本信息
+    if args.version:
+        print('feeluown {}'.format(feeluown_version))
+        return
+
+    setup_basics()
+    config = create_config()
+    setup_config(args, config)
+
+    if config.MODE & App.DaemonMode and is_daemon_started:
+        print_error('Fuo daemon is already started.')
+        sys.exit(1)
+
+    setup_with_config(config)
+
+    Signal.setup_aio_support(loop=asyncio.get_event_loop())
+    app = create_app(config)
+    bind_signals(app)
+
+    if config.MODE & App.CliMode:
+        run_and_exit(app)
+    run_forever_and_exit(app)
+
 
 
 if __name__ == '__main__':
