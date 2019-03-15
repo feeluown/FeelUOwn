@@ -13,6 +13,7 @@ from fuocore.dispatch import Signal
 from fuocore.utils import is_port_used
 
 from feeluown.app import App, create_app
+from feeluown.cli import main as climain, print_error
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
@@ -52,25 +53,49 @@ def create_config():
     return config
 
 
-def check_ports():
+def check_daemon_started():
     if is_port_used(23333) or is_port_used(23334):
-        print('\033[0;31m', end='')
-        print('Port(23333 or 23334) is used, maybe another feeluown is running?')
-        print('\033[0m', end='')
-        sys.exit(1)
+        return True
+    return False
 
 
 def map_args_to_config(args, config):
     config.DEBUG = args.debug
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device
-    config.MODE = App.CliMode if args.no_window else App.GuiMode
+    config.MODE = App.CliMode if args.no_window else (App.GuiMode | App.CliMode)
     config.FORCE_MAC_HOTKEY = args.force_mac_hotkey
 
 
 def setup_argparse():
     parser = argparse.ArgumentParser(description='运行 FeelUOwn 播放器')
+    subparsers = parser.add_subparsers(description='客户端命令', dest='cmd')
+
+    play_parser = subparsers.add_parser('play')
+    show_parser = subparsers.add_parser('show')
+    search_parser = subparsers.add_parser('search')
+
+    pause_parser = subparsers.add_parser('pause')
+    resume_parser = subparsers.add_parser('resume')
+    toggle_parser = subparsers.add_parser('toggle')
+    stop_parser = subparsers.add_parser('stop')
+    next_parser = subparsers.add_parser('next')
+    previous_parser = subparsers.add_parser('previous')
+    list_parser = subparsers.add_parser('list')
+    clear_parser = subparsers.add_parser('clear')
+    remove_parser = subparsers.add_parser('remove')
+    status_parser = subparsers.add_parser('status')
+    exec_parser = subparsers.add_parser('exec')
+
+    play_parser.add_argument('uri', help='歌曲 uri')
+    show_parser.add_argument('uri', help='显示资源详细信息')
+    remove_parser.add_argument('uri', help='从播放列表移除歌曲')
+    search_parser.add_argument('keyword', help='搜索关键字')
+    exec_parser.add_argument('code', help='Python 代码')
+
+    parser.add_argument('--daemon', action='store_true', default=True,
+                        help='在后台运行')
     parser.add_argument('-nw', '--no-window', action='store_true', default=False,
-                        help='以 CLI 模式运行')
+                        help='不显示 GUI 窗口')
 
     parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help='开启调试模式')
@@ -105,19 +130,43 @@ def enable_mac_hotkey(force=False):
         else:
             mac_global_hotkey_mgr.start()
 
-def main():
-    # 让程序能正确的找到图标等资源
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-    sys.excepthook = excepthook
 
+def main():
     parser = setup_argparse()
     args = parser.parse_args()
+
+    run_as_daemon = args.daemon
+    run_once = False
+    is_daemon_started = check_daemon_started()
+
+    # TODO: 将 CliMode 改成 DaemonMode
+
+    if args.cmd is not None:  # 当命令行工具来使用
+        run_once, run_as_daemon = True, False
+        # 服务端不启动也能执行的命令
+        cli_cmds = ('show', 'play', 'search')
+        # 如果服务端已经启动，则将命令发送给服务端处理
+        if is_daemon_started:
+            return climain()
+        if args.cmd not in cli_cmds:
+            print_error('Fuo daemon not started.')
+            return
 
     if args.version:
         print('feeluown {}, fuocore {}'.format(feeluown_version, fuocore_version))
         return
 
-    check_ports()
+    if run_as_daemon and is_daemon_started:
+        print_error('Fuo daemon is already started.')
+        sys.exit(1)
+
+    if not (run_as_daemon or run_once):
+        return
+
+    # 让程序能正确的找到图标等资源
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    sys.excepthook = excepthook
+
     ensure_dirs()
     config = create_config()
     load_rcfile(config)
