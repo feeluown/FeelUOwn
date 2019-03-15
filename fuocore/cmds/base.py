@@ -1,4 +1,4 @@
-from feeluown.protocol import ModelParser
+from fuocore.protocol import ModelParser
 
 cmd_handler_mapping = {}
 

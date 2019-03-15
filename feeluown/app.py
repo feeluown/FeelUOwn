@@ -4,10 +4,10 @@ from functools import partial
 from contextlib import contextmanager
 
 from fuocore import LiveLyric, Library
+from fuocore.protocol import FuoProtocol
 from fuocore.pubsub import run as run_pubsub
 
 from .consts import APP_ICON
-from .protocol import FuoProcotol
 from .player import Player
 from .plugin import PluginsManager
 from .publishers import LiveLyricPublisher
@@ -73,17 +73,19 @@ def attach_attrs(app):
     """初始化 app 属性"""
     app.library = Library()
     app.live_lyric = LiveLyric()
-    app.protocol = FuoProcotol(app)
-    app.plugin_mgr = PluginsManager(app)
-    app.version_mgr = VersionManager(app)
-    app.request = Request()
-    app._g = {}
-
     player_kwargs = dict(
         audio_device=bytes(app.config.MPV_AUDIO_DEVICE, 'utf-8')
     )
     app.player = Player(app=app, **(player_kwargs or {}))
     app.playlist = app.player.playlist
+    app.protocol = FuoProtocol(library=app.library,
+                               player=app.player,
+                               playlist=app.playlist,
+                               live_lyric=app.live_lyric)
+    app.plugin_mgr = PluginsManager(app)
+    app.version_mgr = VersionManager(app)
+    app.request = Request()
+    app._g = {}
 
     if app.mode & app.GuiMode:
         from feeluown.widgets.collections import CollectionsModel

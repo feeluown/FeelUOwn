@@ -101,21 +101,18 @@ class ModelParser:
         }
 
 
-class FuoProcotol:
+class FuoProtocol:
     """fuo 控制协议
 
-    TODO: 将这个类的实现移到另外一个模块，而不是放在 __init__.py 中
     TODO: 将命令的解析逻辑放在这个类里来实现
     """
-    def __init__(self, app):
-        self._app = app
-        self._library = app.library
-        self._live_lyric = app.live_lyric
+    def __init__(self, *, library, player, playlist, live_lyric):
+        self._library = library
+        self._player = player
+        self._playlist = playlist
+        self._live_lyric = live_lyric
 
     async def handle(self, conn, addr):
-        app = self._app
-        live_lyric = self._live_lyric
-
         event_loop = asyncio.get_event_loop()
         await event_loop.sock_sendall(conn, b'OK feeluown 1.0.0\n')
         while True:
@@ -142,10 +139,10 @@ class FuoProcotol:
             logger.debug('RECV: %s', command)
             cmd = CmdParser.parse(command)
             msg = exec_cmd(cmd,
-                           library=app.library,
-                           player=app.player,
-                           playlist=app.playlist,
-                           live_lyric=app.live_lyric)
+                           library=self._library,
+                           player=self._player,
+                           playlist=self._playlist,
+                           live_lyric=self._live_lyric)
             await event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))
 
     def run_server(self):
@@ -157,4 +154,4 @@ class FuoProcotol:
         logger.info('Fuo daemon run at {}:{}'.format(host, port))
 
 
-from feeluown.cmds import exec_cmd, CmdParser
+from fuocore.cmds import exec_cmd, CmdParser

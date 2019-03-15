@@ -1,4 +1,4 @@
-from feeluown.protocol import get_url
+from fuocore.protocol import get_url
 from .helpers import show_songs
 from .base import AbstractHandler
 
