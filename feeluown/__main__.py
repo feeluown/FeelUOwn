@@ -12,7 +12,7 @@ from fuocore.dispatch import Signal
 from fuocore.utils import is_port_used
 
 from feeluown.app import App, create_app
-from feeluown.cli import main as climain, print_error
+from feeluown.cli import main as climain, print_error, setup_cli_argparse
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
@@ -55,29 +55,8 @@ def create_config():
 
 def setup_argparse():
     parser = argparse.ArgumentParser(description='运行 FeelUOwn 播放器')
-    subparsers = parser.add_subparsers(description='客户端命令', dest='cmd')
 
-    play_parser = subparsers.add_parser('play')
-    show_parser = subparsers.add_parser('show')
-    search_parser = subparsers.add_parser('search')
-
-    pause_parser = subparsers.add_parser('pause')
-    resume_parser = subparsers.add_parser('resume')
-    toggle_parser = subparsers.add_parser('toggle')
-    stop_parser = subparsers.add_parser('stop')
-    next_parser = subparsers.add_parser('next')
-    previous_parser = subparsers.add_parser('previous')
-    list_parser = subparsers.add_parser('list')
-    clear_parser = subparsers.add_parser('clear')
-    remove_parser = subparsers.add_parser('remove')
-    status_parser = subparsers.add_parser('status')
-    exec_parser = subparsers.add_parser('exec')
-
-    play_parser.add_argument('uri', help='歌曲 uri')
-    show_parser.add_argument('uri', help='显示资源详细信息')
-    remove_parser.add_argument('uri', help='从播放列表移除歌曲')
-    search_parser.add_argument('keyword', help='搜索关键字')
-    exec_parser.add_argument('code', help='Python 代码')
+    setup_cli_argparse(parser)
 
     parser.add_argument('--daemon', action='store_true', default=True,
                         help='在后台运行')
@@ -137,6 +116,11 @@ def init(args, config):
     0: run loop
     -1: error
     """
+    # 让程序能正确的找到图标资源
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    sys.excepthook = excepthook
+    ensure_dirs()
+
     if args.version:
         print('feeluown {}'.format(feeluown_version))
         return 1
@@ -144,11 +128,6 @@ def init(args, config):
     if args.cmd is not None:
         run_cli(args, config)
         return 1
-
-    # 让程序能正确的找到图标资源
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-    sys.excepthook = excepthook
-    ensure_dirs()
 
     # 从 rcfile 中加载配置和代码
     load_rcfile(config)
@@ -180,7 +159,7 @@ def setup_app(args, config):
 def run_cli(args, config):
     is_daemon_started = is_port_used(23333) or is_port_used(23334)
     if is_daemon_started:
-        climain()
+        climain(args)
         sys.exit(0)
     cli_cmds = ('show', 'play', 'search')
     # 如果服务端已经启动，则将命令发送给服务端处理
