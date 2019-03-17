@@ -140,7 +140,8 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def process_resp(self, resp):
         if resp.code == 'OK':
-            print(resp.content)
+            if resp.content:
+                print(resp.content)
         else:
             print_error(resp.content)
 
