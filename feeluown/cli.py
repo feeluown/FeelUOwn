@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from fuocore.cmds import interprete
+from fuocore.cmds.helpers import show_song
 from feeluown.consts import CACHE_DIR
 
 
@@ -257,15 +258,28 @@ def climain(args):
 
 
 def oncemain(app, args):
-    # 这个实现有点 hack，我们
+    """
+    目前的实现有的碰运气，这里可能有一些潜在的问题，
+    以后有需求（或者时间）的时候，可以仔细探索下。
+
+    目前已知的可能存在问题（隐患）的点：
+
+    1. 我们只是创建一个 app 对象，没有运行 asyncio event loop,
+    2. 像本地音乐插件，它会启动一个异步的任务来扫描本地歌曲，
+       我们在这里也没有等待任务结束，就开始执行之后的流程了。
+
+    另外，理论上，该模式的逻辑理应只应该依赖 fuocore 中的模块，
+    目前是严格遵守这个要求的。
+    """
+
     client = OnceClient(app)
     dispatch(args, client)
 
     if args.cmd == 'play':
         song = app.player.current_song
         if song is not None:
-            print('Playing: {} - {}'
-                  .format(song.title, song.artists_name))
+            print('Playing: \n\n\t{}'
+                  .format('\n\t'.join(show_song(song).splitlines())))
         else:
             print('Playing: {}'.format(app.player.current_url))
         try:

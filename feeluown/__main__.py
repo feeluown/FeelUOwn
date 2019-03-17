@@ -170,15 +170,9 @@ def run_cli(args, config):
 
 
 def run_once(args, config):
-    """
-    run_once 目前的实现有的碰运气
+    import warnings
+    warnings.filterwarnings("ignore")
 
-    我们只是创建一个 app 对象，没有运行 asyncio event loop,
-    可能有一些潜在的问题，以后有需求（或者时间）的时候，
-    可以仔细探索下。
-
-    另外，理论上， once 模式的逻辑只应该依赖 fuocore 中的模块
-    """
     config.MODE = App.CliMode
     config.LOG_TO_FILE = True
     app = setup_app(args, config)

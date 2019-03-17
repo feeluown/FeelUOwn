@@ -8,11 +8,17 @@ from .helpers import show_song
 def score(src, tar):
     s1 = int(SequenceMatcher(None, src, tar).ratio() * 50)
     s2 = 50
-    parts = src.split(' ')
-    each_part_s = int(50 / len(parts))
-    for part in parts:
-        if part not in tar:
-            s2 -= each_part_s
+    delimiters = [' - ', '-', ' ']
+    parts = []
+    for delimiter in delimiters:
+        if delimiter in src:
+            parts = src.split(delimiter)
+            break
+    if parts:
+        each_part_s = int(50 / len(parts))
+        for part in parts:
+            if part not in tar:
+                s2 -= each_part_s
     return s1 + s2
 
 
@@ -25,7 +31,7 @@ class PlayerHandler(AbstractHandler):
 
     def handle(self, cmd):
         if cmd.action == 'play':
-            s = cmd.args[0].strip()
+            s = ' '.join(cmd.args)
             return self.play(s)
         elif cmd.action == 'pause':
             # FIXME: please follow ``Law of Demeter``
