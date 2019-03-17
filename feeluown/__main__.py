@@ -8,7 +8,6 @@ import os
 import traceback
 import sys
 
-from fuocore import __version__ as fuocore_version
 from fuocore.dispatch import Signal
 from fuocore.utils import is_port_used
 
@@ -52,12 +51,6 @@ def create_config():
     config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能')
     config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
     return config
-
-
-def check_daemon_started():
-    if is_port_used(23333) or is_port_used(23334):
-        return True
-    return False
 
 
 def setup_argparse():
@@ -138,57 +131,71 @@ def prepare_gui():
     return True
 
 
-def run_purecli_or_continue(args, is_daemon_started):
+def init(args, config):
+    """
+    1: run cli or simple cmd
+    0: run loop
+    -1: error
+    """
+    if args.version:
+        print('feeluown {}'.format(feeluown_version))
+        return 1
+
     if args.cmd is not None:
-        if is_daemon_started:
-            climain()
-            sys.exit(0)
-        cli_cmds = ('show', 'play', 'search')
-        # 如果服务端已经启动，则将命令发送给服务端处理
-        if args.cmd not in cli_cmds:
-            print_error('Fuo daemon not started.')
-            sys.exit(1)
+        run_cli(args, config)
+        return 1
 
-
-def setup_basics():
-    # 让程序能正确的找到图标等资源
+    # 让程序能正确的找到图标资源
     os.chdir(os.path.join(os.path.dirname(__file__), '..'))
     sys.excepthook = excepthook
     ensure_dirs()
 
+    # 从 rcfile 中加载配置和代码
+    load_rcfile(config)
 
-def setup_config(args, config):
+    # 根据命令行参数来更新配置
     config.DEBUG = args.debug
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device
     config.FORCE_MAC_HOTKEY = args.force_mac_hotkey
     config.LOG_TO_FILE = args.log_to_file
-
-    run_once = args.cmd is not None
-    if run_once:
-        config.LOG_TO_FILE = True
-        config.MODE = App.CliMode
-    else:
-        if not args.no_window:
-            try:
-                import PyQt5  # noqa
-            except ImportError:
-                logger.warning('PyQt5 is not installed, can only use daemon mode.')
-            else:
-                config.MODE |= App.GuiMode
-        if args.daemon:
-            config.MODE |= App.DaemonMode
+    if not args.no_window:
+        try:
+            import PyQt5  # noqa
+        except ImportError:
+            logger.warning('PyQt5 is not installed, can only use daemon mode.')
+        else:
+            config.MODE |= App.GuiMode
+    if args.daemon:
+        config.MODE |= App.DaemonMode
 
 
-def setup_with_config(config):
+def setup_app(args, config):
     logger_config(config.DEBUG, to_file=config.LOG_TO_FILE)
-    if config.MODE & App.GuiMode:
-        prepare_gui()
-    if sys.platform.lower() == 'darwin':
-        enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
+    Signal.setup_aio_support()
+    app = create_app(config)
+    bind_signals(app)
+    return app
 
 
-def run_and_exit(app):
+def run_cli(args, config):
+    is_daemon_started = is_port_used(23333) or is_port_used(23334)
+    if is_daemon_started:
+        climain()
+        sys.exit(0)
+    cli_cmds = ('show', 'play', 'search')
+    # 如果服务端已经启动，则将命令发送给服务端处理
+    if args.cmd not in cli_cmds:
+        print_error('Fuo daemon not started.')
+        sys.exit(1)
+    run_once(args, config)
+
+
+def run_once(args, config):
     from fuocore.cmds import interprete
+
+    config.MODE = App.CliMode
+    config.LOG_TO_FILE = True
+    app = setup_app(args, config)
     rv = interprete(sys.argv[1] + ' ' + sys.argv[2],
                     library=app.library,
                     player=app.player,
@@ -200,7 +207,18 @@ def run_and_exit(app):
     sys.exit(0)
 
 
-def run_forever_and_exit(app):
+def run_forever(args, config):
+    is_daemon_started = is_port_used(23333) or is_port_used(23334)
+    if config.MODE & App.DaemonMode and is_daemon_started:
+        print_error('Fuo daemon is already started.')
+        sys.exit(1)
+
+    if config.MODE & App.GuiMode:
+        prepare_gui()
+    if sys.platform.lower() == 'darwin':
+        enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
+
+    app = setup_app(args, config)
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
@@ -211,40 +229,22 @@ def run_forever_and_exit(app):
         loop.stop()
         app.shutdown()
         loop.close()
-    sys.exit(0)
 
 
 def main():
+    """
+    启动步骤：
+
+    1. 判断是否只需要运行一次客户端
+       比如运行 fuo status 命令
+    2.
+    """
     parser = setup_argparse()
     args = parser.parse_args()
-    is_daemon_started = check_daemon_started()
-
-    # 根据启动参数，确认是需要继续执行，还是运行客户端命令即可
-    run_purecli_or_continue(args, is_daemon_started)
-
-    # 查看版本信息
-    if args.version:
-        print('feeluown {}'.format(feeluown_version))
-        return
-
-    setup_basics()
     config = create_config()
-    setup_config(args, config)
-
-    if config.MODE & App.DaemonMode and is_daemon_started:
-        print_error('Fuo daemon is already started.')
-        sys.exit(1)
-
-    setup_with_config(config)
-
-    Signal.setup_aio_support(loop=asyncio.get_event_loop())
-    app = create_app(config)
-    bind_signals(app)
-
-    if config.MODE & App.CliMode:
-        run_and_exit(app)
-    run_forever_and_exit(app)
-
+    res = init(args, config)
+    if res != 1:
+        run_forever(args, config)
 
 
 if __name__ == '__main__':
