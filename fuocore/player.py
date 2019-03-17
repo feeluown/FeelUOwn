@@ -270,6 +270,8 @@ class AbstractPlayer(metaclass=ABCMeta):
         self._state = State.stopped
         self._duration = None
 
+        self._current_url = None
+
         #: player position changed signal
         self.position_changed = Signal()
 
@@ -302,6 +304,10 @@ class AbstractPlayer(metaclass=ABCMeta):
         """
         self._state = value
         self.state_changed.emit(value)
+
+    @property
+    def current_url(self):
+        return self._current_url
 
     @property
     def current_song(self):
@@ -450,6 +456,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.play(url)
         self._mpv.pause = False
         self.state = State.playing
+        self._current_url = url
         self.media_changed.emit(url)
 
     def play_song(self, song):
@@ -502,6 +509,7 @@ class MpvPlayer(AbstractPlayer):
     def stop(self):
         self._mpv.pause = True
         self.state = State.stopped
+        self._current_url = None
         self._mpv.playlist_clear()
         logger.info('Player stopped.')
 
@@ -554,7 +562,6 @@ class MpvPlayer(AbstractPlayer):
                 self.play_next()
         else:
             self.stop()
-
 
     def _on_event(self, event):
         if event['event_id'] == MpvEventID.END_FILE:

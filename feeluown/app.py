@@ -65,7 +65,8 @@ class App:
             show_msg(s + '...done')  # done
 
     def shutdown(self):
-        self.pubsub_server.close()
+        if self.mode & App.DaemonMode:
+            self.pubsub_server.close()
         self.player.stop()
         self.player.shutdown()
 

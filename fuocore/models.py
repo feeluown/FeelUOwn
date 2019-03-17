@@ -300,6 +300,10 @@ class BaseModel(Model):
         cls = type(self)
         cls_name = cls.__name__
         value = object.__getattribute__(self, name)
+
+        if name in ('identifier', 'meta', '_meta', 'stage', 'exists'):
+            return value
+
         if name in cls.meta.fields \
            and name not in cls.meta.fields_no_get \
            and value is None \

@@ -1,10 +1,9 @@
-from __future__ import print_function
-
 import os
 import sys
 from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
+from fuocore.cmds import interprete
 from feeluown.consts import CACHE_DIR
 
 
@@ -71,6 +70,12 @@ class Response:
         self.code = code
         self.content = content
 
+    @classmethod
+    def from_text(cls, text):
+        if text.endswith('OK\n'):
+            return Response(code='OK', content='\n'.join(text.split('\n')[1:-2]))
+        return Response('Oops', content='An error occured in server.')
+
 
 class Client(object):
     def __init__(self, sock):
@@ -80,10 +85,7 @@ class Client(object):
         self.recv()  # welcome message
         self.sock.send(bytes(req.raw + '\n', 'utf-8'))
         result = self.recv()
-        text = result.decode('utf-8')
-        if text.endswith('OK\n'):
-            return Response(code='OK', content='\n'.join(text.split('\n')[1:-2]))
-        return Response('Oops', content='An error occured in server.')
+        return Response.from_text(result.decode('utf-8'))
 
     def recv(self):
         result = b''
@@ -224,12 +226,48 @@ class ExecHandler(BaseHandler):
         self._req.args = ('<<EOF\n{}\nEOF\n\n'.format(code), )
 
 
-def main(args):
-    """dispatch request"""
+class OnceClient:
+    def __init__(self, app):
+        self._app = app
+
+    def send(self, req):
+        app = self._app
+        rv = interprete(req.raw,
+                        library=app.library,
+                        player=app.player,
+                        playlist=app.playlist,
+                        live_lyric=app.live_lyric)
+        return Response.from_text(rv)
+
+
+def dispatch(args, client):
     HandlerCls = cmd_handler_mapping[args.cmd]
     handler = HandlerCls(args)
     resp = handler.before_request()
     if resp is None:
-        with connect() as cli:
-            resp = cli.send(handler.get_req())
+        resp = client.send(handler.get_req())
     handler.process_resp(resp)
+
+
+def climain(args):
+    """dispatch request"""
+    with connect() as cli:
+        dispatch(args, cli)
+
+
+def oncemain(app, args):
+    # 这个实现有点 hack，我们
+    client = OnceClient(app)
+    dispatch(args, client)
+
+    if args.cmd == 'play':
+        song = app.player.current_song
+        if song is not None:
+            print('正在播放：{} - {}'
+                  .format(song.title, song.artists_name))
+        else:
+            print('正在播放：{}'.format(app.player.current_url))
+        try:
+            app.player._mpv.wait_for_playback()
+        except KeyboardInterrupt:
+            app.player.stop()

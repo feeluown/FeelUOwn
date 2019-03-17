@@ -12,7 +12,7 @@ from fuocore.dispatch import Signal
 from fuocore.utils import is_port_used
 
 from feeluown.app import App, create_app
-from feeluown.cli import main as climain, print_error, setup_cli_argparse
+from feeluown.cli import climain, oncemain, print_error, setup_cli_argparse
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
@@ -170,19 +170,20 @@ def run_cli(args, config):
 
 
 def run_once(args, config):
-    from fuocore.cmds import interprete
+    """
+    run_once 目前的实现有的碰运气
 
+    我们只是创建一个 app 对象，没有运行 asyncio event loop,
+    可能有一些潜在的问题，以后有需求（或者时间）的时候，
+    可以仔细探索下。
+
+    另外，理论上， once 模式的逻辑只应该依赖 fuocore 中的模块
+    """
     config.MODE = App.CliMode
     config.LOG_TO_FILE = True
     app = setup_app(args, config)
-    rv = interprete(sys.argv[1] + ' ' + sys.argv[2],
-                    library=app.library,
-                    player=app.player,
-                    playlist=app.playlist,
-                    live_lyric=app.live_lyric)
-    if sys.argv[1] == 'play':
-        app.player._mpv.wait_for_playback()
-    print(rv)
+    oncemain(app, args)
+    app.shutdown()
     sys.exit(0)
 
 
