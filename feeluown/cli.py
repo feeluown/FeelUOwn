@@ -264,10 +264,10 @@ def oncemain(app, args):
     if args.cmd == 'play':
         song = app.player.current_song
         if song is not None:
-            print('正在播放：{} - {}'
+            print('Playing: {} - {}'
                   .format(song.title, song.artists_name))
         else:
-            print('正在播放：{}'.format(app.player.current_url))
+            print('Playing: {}'.format(app.player.current_url))
         try:
             app.player._mpv.wait_for_playback()
         except KeyboardInterrupt:
