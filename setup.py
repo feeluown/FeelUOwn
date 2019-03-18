@@ -5,8 +5,7 @@ from setuptools import setup
 import feeluown
 
 
-setup(
-    name='feeluown',
+setup( name='feeluown',
     version=feeluown.__version__,
     description='*nix music player',
     author='Cosven',
@@ -39,6 +38,7 @@ setup(
         'pyopengl',
         ],
     extra_requires={
+        'batteries': ['fuo-local', 'fuo-xiami', 'fuo-netease', 'fuo-qqmusic'],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
     },
     tests_require=['pytest'],
