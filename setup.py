@@ -5,7 +5,8 @@ from setuptools import setup
 import feeluown
 
 
-setup( name='feeluown',
+setup(
+    name='feeluown',
     version=feeluown.__version__,
     description='*nix music player',
     author='Cosven',
@@ -21,7 +22,8 @@ setup( name='feeluown',
     package_data={
         '': ['*.qss', '*.png', '../icons/*.png']
         },
-    url='https://github.com/cosven/FeelUOwn', keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
+    url='https://github.com/cosven/FeelUOwn',
+    keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
     classifiers=(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
