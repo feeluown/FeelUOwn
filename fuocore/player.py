@@ -25,7 +25,7 @@ import logging
 import random
 
 from mpv import MPV, MpvEventID, MpvEventEndFile, \
-        _mpv_set_property_string, _mpv_set_option_string
+        _mpv_set_property_string
 
 from fuocore.dispatch import Signal
 
@@ -450,8 +450,7 @@ class MpvPlayer(AbstractPlayer):
         # QMediaPlayer API reference for more details.
 
         logger.debug("Player will play: '%s'", url)
-        video_option_value = b'auto' if video else b'no'
-        _mpv_set_option_string(self._mpv.handle, b'video', video_option_value)
+        self._mpv.handle.vid = b'auto' if video else b'no'
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
