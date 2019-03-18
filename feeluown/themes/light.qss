@@ -1,0 +1,48 @@
+RightPanel {
+    background-color: #FFF;
+}
+
+TopPanel {
+    background-color: qlineargradient(
+        x1: 0, y1: 0, x2: 0, y2: 1,
+        stop: 0 #EEE, stop: 0.4 #DDD, stop: 0.7 #CCC, stop: 1 #BBB
+    );
+}
+
+#mv_btn:pressed, #pms_btn:pressed {
+    background-color: #BCBCBC;
+}
+TableToolbar QPushButton:pressed {
+    background-color: #EAEAEA;
+}
+
+#pp_btn {
+    border-image: url(icons/play.png);
+}
+#pp_btn:checked {
+    border-image: url(icons/pause.png);
+}
+#previous_btn {
+    border-image: url(icons/last.png);
+}
+#next_btn {
+    border-image: url(icons/next.png);
+}
+#playlist_btn {
+    border-image: url(icons/cur_playlist.png);
+}
+#volume_btn {
+    border-image: url(icons/volume.png);
+}
+#like_btn {
+    border-image: url(icons/like.png);
+}
+#like_btn:checked {
+    border-image: url(icons/like_checked.png);
+}
+#download_btn {
+    border-image: url(icons/download.png);
+}
+#download_btn:checked {
+    border-image: url(icons/already_download.png);
+}

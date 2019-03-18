@@ -69,7 +69,6 @@ class DescriptionContainer(QScrollArea):
             super().keyPressEvent(event)
 
 
-
 class TableToolbar(QWidget):
     _desc_btn_checked_text = '折叠'
     _desc_btn_unchecked_text = '展开描述'

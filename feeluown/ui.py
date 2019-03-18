@@ -448,6 +448,7 @@ class Ui:
         self.magicbox = self.bottom_panel.magicbox
         self.pc_panel = self.top_panel.pc_panel
         self.table_container = self.right_panel.table_container
+        self.songs_table = self.right_panel.table_container
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn

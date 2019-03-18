@@ -135,7 +135,7 @@ def initialize(app):
         app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
 
     if app.mode & App.GuiMode:
-        app.theme_mgr.load_light()
+        app.theme_mgr.autoload()
         app.tips_mgr.show_random_tip()
         app.coll_mgr.scan()
 

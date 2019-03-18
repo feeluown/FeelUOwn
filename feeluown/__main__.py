@@ -46,6 +46,7 @@ def create_config():
     config = Config()
     config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
     config.deffield('MODE', default=0x0000, desc='CLI or GUI 模式')
+    config.deffield('THEME', default='auto', desc='auto/light/dark')
     config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
     config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
     config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能')

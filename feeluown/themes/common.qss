@@ -1,21 +1,7 @@
-/* 主题：时代在进步 */
-
 QWidget {
     font-size: 13px;
     /* tips: you can turn on border for debugging */
     /* border: 1px solid red; */
-}
-
-LeftPanel QListView {
-    background-color: transparent;
-}
-
-QSplitter::handle {
-    background-color: transparent;
-}
-
-#bottom_panel {
-    background-color: transparent;
 }
 
 LeftPanel QLabel {
@@ -29,6 +15,18 @@ LeftPanel QListView {
     margin-left: 5px;
 }
 
+LeftPanel QListView, BottomPanel, QSplitter::handle, SongsTableView {
+    background-color: transparent;
+}
+
+DescriptionContainer, DescriptionContainer QLabel {
+    background-color: transparent;
+}
+
+/*
+ * buttons
+ */
+
 PlayerControlPanel IconButton, VolumeButton {
     width: 30px;
     height: 30px;
@@ -36,7 +34,11 @@ PlayerControlPanel IconButton, VolumeButton {
     outline: none;
 }
 PlayerControlPanel IconButton:hover, VolumeButton:hover {
-    background-color: #EEE;
+    /* just to make button (looks) smaller */
+    border-width: 3px;
+}
+#volume_btn:checked {
+    border-width: 3px;
 }
 #song_source_label {
     outline: none;
@@ -45,77 +47,12 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover {
     border: 1px solid #999;
     font-size: 12px;
 }
-#pp_btn {
-    border-image: url(icons/play.png);
-}
-#pp_btn:checked {
-    border-image: url(icons/pause.png);
-}
-#previous_btn {
-    border-image: url(icons/last.png);
-}
-#next_btn {
-    border-image: url(icons/next.png);
-}
-#playlist_btn {
-    border-image: url(icons/cur_playlist.png);
-}
-#volume_btn {
-    border-image: url(icons/volume.png);
-}
-#volume_btn:checked {
-    background-color: #FFF;
-}
-#like_btn {
-    border-image: url(icons/like.png);
-}
-#like_btn:checked {
-    border-image: url(icons/like_checked.png);
-
-}
-#download_btn {
-    border-image: url(icons/download.png);
-}
-#download_btn:checked {
-    border-image: url(icons/already_download.png);
-}
-
 PlayerControlPanel QPushButton:hover {
     outline: none;
 }
 PlayerControlPanel QPushButton:focus {
     outline: none;
 }
-
-TopPanel {
-    background-color: qlineargradient(
-        x1: 0, y1: 0, x2: 0, y2: 1,
-        stop: 0 #EEE, stop: 0.4 #DDD, stop: 0.7 #CCC, stop: 1 #BBB
-    );
-}
-
-RightPanel {
-    background-color: #FFF;
-    border: 0;
-}
-
-
-DescriptionContainer {
-    background-color: transparent;
-}
-
-DescriptionContainer QLabel {
-    border: 0;
-    background-color: transparent;
-}
-
-SongsTableView QHeaderView {
-    background-color: #EAEAEA;
-}
-
-/*
- * feeluown text button
- */
 #pms_btn, #mv_btn, #toggle_video_btn, TableToolbar QPushButton {
     border-radius: 3px;
     border: 1px solid #AAA;
