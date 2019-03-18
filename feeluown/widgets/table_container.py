@@ -152,9 +152,8 @@ class SongsTableContainer(QFrame):
         self._top_layout.setStretch(1, 1)
 
         self.setAutoFillBackground(False)
-        if use_mac_theme():
-            self._layout.setContentsMargins(0, 0, 0, 0)
-            self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
         self._layout.addWidget(self._top_container)
         self._layout.addWidget(self.songs_table)
 

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import os
 import platform
 import socket
 import time
@@ -93,3 +94,10 @@ def find_previous(element, l):
 
         if current <= element < l[index+1]:
             return current
+
+
+def get_osx_theme():
+    """1 for dark, -1 for light"""
+    with os.popen('defaults read -g AppleInterfaceStyle') as pipe:
+        theme = pipe.read().strip()
+    return 1 if theme == 'Dark' else -1
