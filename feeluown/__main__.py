@@ -197,10 +197,9 @@ def run_forever(args, config):
 
     if config.MODE & App.GuiMode:
         prepare_gui()
+    app = setup_app(args, config)
     if sys.platform.lower() == 'darwin':
         enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
-
-    app = setup_app(args, config)
     loop = asyncio.get_event_loop()
     try:
         loop.run_forever()
