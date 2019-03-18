@@ -17,7 +17,7 @@ setup( name='feeluown',
         'fuocore',
         'fuocore.cmds',
         ],
-    py_moduels=['mpv'],
+    py_modules=['mpv'],
     package_data={
         '': ['*.qss', '*.png', '../icons/*.png']
         },
