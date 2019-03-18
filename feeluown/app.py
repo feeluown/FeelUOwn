@@ -21,8 +21,9 @@ logger = logging.getLogger(__name__)
 class App:
     """App 基类"""
 
-    CliMode = 0x0001
-    GuiMode = 0x0010
+    DaemonMode = 0x0001  # 开启 daemon
+    GuiMode = 0x0010     # 显示 GUI
+    CliMode = 0x0100     # 命令行模式
 
     def exec_(self, code):
         """执行 Python 代码"""
@@ -64,7 +65,8 @@ class App:
             show_msg(s + '...done')  # done
 
     def shutdown(self):
-        self.pubsub_server.close()
+        if self.mode & App.DaemonMode:
+            self.pubsub_server.close()
         self.player.stop()
         self.player.shutdown()
 
@@ -78,14 +80,12 @@ def attach_attrs(app):
     )
     app.player = Player(app=app, **(player_kwargs or {}))
     app.playlist = app.player.playlist
-    app.server = FuoServer(library=app.library,
-                           player=app.player,
-                           playlist=app.playlist,
-                           live_lyric=app.live_lyric)
     app.plugin_mgr = PluginsManager(app)
-    app.version_mgr = VersionManager(app)
     app.request = Request()
     app._g = {}
+
+    if app.mode & (app.DaemonMode | app.GuiMode):
+        app.version_mgr = VersionManager(app)
 
     if app.mode & app.GuiMode:
         from feeluown.widgets.collections import CollectionsModel
@@ -123,18 +123,25 @@ def attach_attrs(app):
 def initialize(app):
     app.player.position_changed.connect(app.live_lyric.on_position_changed)
     app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
-    app.pubsub_gateway, app.pubsub_server = run_pubsub()
     app.plugin_mgr.scan()
-    app.server.run()
+    if app.mode & app.DaemonMode:
+        app.server = FuoServer(library=app.library,
+                               player=app.player,
+                               playlist=app.playlist,
+                               live_lyric=app.live_lyric)
+        app.pubsub_gateway, app.pubsub_server = run_pubsub()
+        app.server.run()
+        app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
+        app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
+
     if app.mode & App.GuiMode:
         app.theme_mgr.load_light()
         app.tips_mgr.show_random_tip()
         app.coll_mgr.scan()
 
-    app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
-    app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
-    loop = asyncio.get_event_loop()
-    loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
+    if app.mode & (App.DaemonMode | App.GuiMode):
+        loop = asyncio.get_event_loop()
+        loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
 
 
 def create_app(config):

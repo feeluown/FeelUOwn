@@ -15,8 +15,8 @@ setup(
         'feeluown',
         'feeluown.widgets',
         'feeluown.uimodels',
-        'feeluown.cmds',
         'fuocore',
+        'fuocore.cmds',
         ],
     py_moduels=['mpv'],
     package_data={
@@ -38,13 +38,14 @@ setup(
         'requests',
         'pyopengl',
         ],
-    extra_requires=[
+    extra_requires={
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
-    ],
+    },
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
                 "feeluown=feeluown.__main__:main",
+                "fuo=feeluown.__main__:main",
                 "feeluown-genicon=feeluown.install:generate_icon",
                 # "feeluown-update=feeluown.install:update"
             ]

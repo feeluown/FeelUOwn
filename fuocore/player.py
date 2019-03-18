@@ -25,7 +25,7 @@ import logging
 import random
 
 from mpv import MPV, MpvEventID, MpvEventEndFile, \
-        _mpv_set_property_string
+        _mpv_set_property_string, _mpv_set_option_string
 
 from fuocore.dispatch import Signal
 
@@ -270,6 +270,8 @@ class AbstractPlayer(metaclass=ABCMeta):
         self._state = State.stopped
         self._duration = None
 
+        self._current_url = None
+
         #: player position changed signal
         self.position_changed = Signal()
 
@@ -302,6 +304,10 @@ class AbstractPlayer(metaclass=ABCMeta):
         """
         self._state = value
         self.state_changed.emit(value)
+
+    @property
+    def current_url(self):
+        return self._current_url
 
     @property
     def current_song(self):
@@ -352,11 +358,12 @@ class AbstractPlayer(metaclass=ABCMeta):
             self.duration_changed.emit(value)
 
     @abstractmethod
-    def play(self, url):
+    def play(self, url, video=True):
         """play media
 
         :param url: a local file absolute path, or a http url that refers to a
             media file
+        :param video: show video or not
         """
 
     @abstractmethod
@@ -438,11 +445,13 @@ class MpvPlayer(AbstractPlayer):
     def shutdown(self):
         self._mpv.terminate()
 
-    def play(self, url):
+    def play(self, url, video=True):
         # NOTE - API DESGIN: we should return None, see
         # QMediaPlayer API reference for more details.
 
         logger.debug("Player will play: '%s'", url)
+        video_option_value = b'auto' if video else b'no'
+        _mpv_set_option_string(self._mpv.handle, b'video', video_option_value)
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
@@ -450,6 +459,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.play(url)
         self._mpv.pause = False
         self.state = State.playing
+        self._current_url = url
         self.media_changed.emit(url)
 
     def play_song(self, song):
@@ -502,6 +512,7 @@ class MpvPlayer(AbstractPlayer):
     def stop(self):
         self._mpv.pause = True
         self.state = State.stopped
+        self._current_url = None
         self._mpv.playlist_clear()
         logger.info('Player stopped.')
 
@@ -554,7 +565,6 @@ class MpvPlayer(AbstractPlayer):
                 self.play_next()
         else:
             self.stop()
-
 
     def _on_event(self, event):
         if event['event_id'] == MpvEventID.END_FILE:

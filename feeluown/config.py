@@ -24,7 +24,7 @@ class Config:
             try:
                 object.__getattribute__(self, name)
             except AttributeError:
-                return None
+                return self._fields[name].default
         return object.__getattribute__(self, name)
 
     def __setattr__(self, name, value):
