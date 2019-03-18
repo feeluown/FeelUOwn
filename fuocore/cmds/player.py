@@ -30,6 +30,7 @@ class PlayerHandler(AbstractHandler):
     cmds = ('play', 'pause', 'stop', 'resume', 'toggle', )
 
     def handle(self, cmd):
+        # TODO: 支持设置是否显示视频
         if cmd.action == 'play':
             s = ' '.join(cmd.args)
             return self.play(s)
@@ -50,7 +51,7 @@ class PlayerHandler(AbstractHandler):
                 self.player.play_song(song)
             return
         elif s.startswith('http'):
-            return self.player.play(s)
+            return self.player.play(s, video=False)
 
         # 取每个提供方的第一个搜索结果
         source_song_map = defaultdict()

@@ -25,7 +25,7 @@ import logging
 import random
 
 from mpv import MPV, MpvEventID, MpvEventEndFile, \
-        _mpv_set_property_string
+        _mpv_set_property_string, _mpv_set_option_string
 
 from fuocore.dispatch import Signal
 
@@ -358,11 +358,12 @@ class AbstractPlayer(metaclass=ABCMeta):
             self.duration_changed.emit(value)
 
     @abstractmethod
-    def play(self, url):
+    def play(self, url, video=True):
         """play media
 
         :param url: a local file absolute path, or a http url that refers to a
             media file
+        :param video: show video or not
         """
 
     @abstractmethod
@@ -444,11 +445,13 @@ class MpvPlayer(AbstractPlayer):
     def shutdown(self):
         self._mpv.terminate()
 
-    def play(self, url):
+    def play(self, url, video=True):
         # NOTE - API DESGIN: we should return None, see
         # QMediaPlayer API reference for more details.
 
         logger.debug("Player will play: '%s'", url)
+        video_option_value = b'auto' if video else b'no'
+        _mpv_set_option_string(self._mpv.handle, b'video', video_option_value)
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
