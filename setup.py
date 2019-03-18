@@ -14,6 +14,7 @@ setup(
     packages=[
         'feeluown',
         'feeluown.widgets',
+        'feeluown.widgets.statusline_items',
         'feeluown.uimodels',
         'fuocore',
         'fuocore.cmds',

@@ -3,6 +3,10 @@ Changelog
 
 3.0a2 (2019-03-18)
 """"""""""""""""""
+- 往 setup.py packages 中添加 feeluown.widgets.statuline_items 包
+
+3.0a2 (2019-03-18)
+""""""""""""""""""
 - 修复 setup.py 中的 typo
 
 3.0a0 (2019-03-18)
