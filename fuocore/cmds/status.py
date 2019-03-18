@@ -15,17 +15,17 @@ class StatusHandler(AbstractHandler):
                      (PlaybackMode.one_loop, PlaybackMode.loop))
         random = int(playlist.playback_mode == PlaybackMode.random)
         msgs = [
-            'repeat    {}'.format(repeat),
-            'random    {}'.format(random),
-            'volume    {}'.format(player.volume),
-            'state     {}'.format(player.state.name),
+            'repeat:    {}'.format(repeat),
+            'random:    {}'.format(random),
+            'volume:    {}'.format(player.volume),
+            'state:     {}'.format(player.state.name),
         ]
         if player.state in (State.playing, State.paused) and \
            player.current_song is not None:
             msgs += [
-                'duration  {}'.format(player.duration),
-                'position  {}'.format(player.position),
-                'song      {}'.format(show_song(player.current_song, brief=True)),  # noqa
-                'lyric-s   {}'.format(live_lyric.current_sentence),
+                'duration:  {}'.format(player.duration),
+                'position:  {}'.format(player.position),
+                'song:      {}'.format(show_song(player.current_song, brief=True)),  # noqa
+                'lyric-s:   {}'.format(live_lyric.current_sentence),
             ]
         return '\n'.join(msgs)

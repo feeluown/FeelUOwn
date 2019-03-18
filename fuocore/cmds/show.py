@@ -52,7 +52,8 @@ def list_providers(req):
 def song_detail(req, provider, sid):
     provider = req.library.get(provider)
     song = provider.Song.get(sid)
-    return show_song(song)
+    if song is not None:
+        return show_song(song)
 
 
 @route('/<provider>/songs/<sid>/lyric')

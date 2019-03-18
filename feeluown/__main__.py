@@ -4,7 +4,7 @@ import argparse
 import asyncio
 import logging
 import os
-
+import textwrap
 import traceback
 import sys
 
@@ -54,19 +54,27 @@ def create_config():
 
 
 def setup_argparse():
-    parser = argparse.ArgumentParser(description='运行 FeelUOwn 播放器')
+    parser = argparse.ArgumentParser(
+        description=textwrap.dedent('''\
+        FeelUOwn - modern music player (daemon).
+
+        Example:
+            - fuo                        # start fuo server
+            - fuo status                 # lookup server status
+            - fuo play "no matter what"  # search and play "no matter what"
+        '''),
+        formatter_class=argparse.RawTextHelpFormatter)
 
     setup_cli_argparse(parser)
-
-    parser.add_argument('--daemon', action='store_true', default=True,
-                        help='在后台运行')
-    parser.add_argument('-nw', '--no-window', action='store_true', default=False,
-                        help='不显示 GUI 窗口')
 
     parser.add_argument('-d', '--debug', action='store_true', default=False,
                         help='开启调试模式')
     parser.add_argument('-v', '--version', action='store_true',
                         help='显示当前 feeluown 和 fuocore 版本')
+    parser.add_argument('-ns', '--no-server', action='store_true', default=False,
+                        help='不运行 server')
+    parser.add_argument('-nw', '--no-window', action='store_true', default=False,
+                        help='不显示 GUI')
     parser.add_argument('--log-to-file', action='store_true', default=False,
                         help='将日志打到文件中')
     parser.add_argument('--force-mac-hotkey', action='store_true', default=False,
@@ -144,7 +152,7 @@ def init(args, config):
             logger.warning('PyQt5 is not installed, can only use daemon mode.')
         else:
             config.MODE |= App.GuiMode
-    if args.daemon:
+    if not args.no_server:
         config.MODE |= App.DaemonMode
 
 

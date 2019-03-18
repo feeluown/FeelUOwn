@@ -1,4 +1,6 @@
+import argparse
 import os
+import textwrap
 import sys
 from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
@@ -18,9 +20,18 @@ def print_error(*args, **kwargs):
 
 
 def setup_cli_argparse(parser):
-    subparsers = parser.add_subparsers(description='客户端命令', dest='cmd')
+    subparsers = parser.add_subparsers(dest='cmd')
 
-    play_parser = subparsers.add_parser('play')
+    play_parser = subparsers.add_parser(
+        'play',
+        description=textwrap.dedent('''\
+        Example:
+            - fuo play fuo://netease/songs/3027393
+            - fuo play "in the end"
+            - fuo play 稻香-周杰伦
+        '''),
+        formatter_class=argparse.RawTextHelpFormatter
+    )
     show_parser = subparsers.add_parser('show')
     search_parser = subparsers.add_parser('search')
 
@@ -104,7 +115,7 @@ class Client(object):
 @contextmanager
 def connect():
     sock = socket(AF_INET, SOCK_STREAM)
-    sock.connect(('localhost', 23333))
+    sock.connect(('0.0.0.0', 23333))
     client = Client(sock)
     try:
         yield client
@@ -278,8 +289,7 @@ def oncemain(app, args):
     if args.cmd == 'play':
         song = app.player.current_song
         if song is not None:
-            print('Playing: \n\n\t{}'
-                  .format('\n\t'.join(show_song(song).splitlines())))
+            print('Playing: {}'.format(show_song(song, brief=True)))
         else:
             print('Playing: {}'.format(app.player.current_url))
         try:
