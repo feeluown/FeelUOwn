@@ -66,7 +66,7 @@ class ModelParser:
             data = ModelParser.parse_song_desc(desc.strip())
             model = Model.create_by_display(identifier=identifier, **data)
         else:
-            model = Model.get(identifier)
+            model = None
         return model
 
     def gen_line(self, model):
