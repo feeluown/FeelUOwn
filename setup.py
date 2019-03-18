@@ -21,8 +21,7 @@ setup( name='feeluown',
     package_data={
         '': ['*.qss', '*.png', '../icons/*.png']
         },
-    url='https://github.com/cosven/FeelUOwn',
-    keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
+    url='https://github.com/cosven/FeelUOwn', keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
     classifiers=(
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
@@ -37,8 +36,8 @@ setup( name='feeluown',
         'requests',
         'pyopengl',
         ],
-    extra_requires={
-        'batteries': ['fuo-local', 'fuo-xiami', 'fuo-netease', 'fuo-qqmusic'],
+    extras_require={
+        'battery': ['fuo-local', 'fuo-xiami', 'fuo-netease', 'fuo-qqmusic'],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
     },
     tests_require=['pytest'],
