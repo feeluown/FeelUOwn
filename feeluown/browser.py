@@ -75,7 +75,7 @@ class Browser:
             try:
                 self.router.dispatch(uri, self._app)
             except NotFound:
-                self._app.message('Uri not found.')
+                self._app.show_msg('Uri:{} handler not found.'.format(uri))
                 return
         self._last_uri = self.current_uri
         if model is not None:

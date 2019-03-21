@@ -634,6 +634,7 @@ class UserModel(BaseModel):
         model_type = ModelType.user.value
         fields = ['name', 'playlists', 'fav_playlists', 'fav_songs',
                   'fav_albums', 'fav_artists']
+        fields_display = ['name']
 
     def add_to_fav_songs(self, song_id):
         """add song to favorite songs, return True if success
