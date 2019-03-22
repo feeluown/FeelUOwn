@@ -8,7 +8,6 @@ import sys
 
 from fuocore.dispatch import Signal
 from .consts import USER_PLUGINS_DIR
-from .helpers import action_log, ActionError
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -100,24 +99,23 @@ class PluginsManager:
 
     def scan(self):
         """扫描并加载插件"""
-        with action_log('Scaning plugins'):
+        with self._app.create_action('Scaning plugins'):
             self._scan_dirs()
             self._scan_entry_points()
         self.scan_finished.emit(list(self._plugins.values()))
 
     def load_module(self, module):
         """加载插件模块并启用插件"""
-        with action_log('Enabling plugin:%s' % module.__name__):
+        with self._app.create_action('Enabling plugin:%s' % module.__name__) as action:
             try:
                 plugin = Plugin.create(module)
             except InvalidPluginError as e:
-                raise ActionError(str(e))
-            else:
-                self._plugins[plugin.name] = plugin
-                try:
-                    self.enable(plugin)
-                except Exception as e:
-                    raise ActionError(str(e))
+                action.failed(str(e))
+            self._plugins[plugin.name] = plugin
+            try:
+                self.enable(plugin)
+            except Exception as e:
+                action.failed(str(e))
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""

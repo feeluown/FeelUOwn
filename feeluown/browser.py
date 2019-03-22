@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from collections import deque
+from urllib.parse import urlencode
 
 from fuocore.router import Router, NotFound
 from fuocore.protocol import ModelParser, get_url
@@ -30,11 +31,14 @@ class Browser:
     def ui(self):
         return self._app.ui
 
-    def goto(self, model=None, uri=None):
+    def goto(self, model=None, uri=None, query=None):
         """跳转到 model 页面或者具体的地址
 
         必须提供 model 或者 uri 其中一个参数，都提供时，以 model 为准。
         """
+        if query:
+            qs = urlencode(query)
+            uri = uri + '?' + qs
         self._goto(model, uri)
         if self._last_uri is not None and self._last_uri != self.current_uri:
             self._back_stack.append(self._last_uri)
@@ -69,14 +73,19 @@ class Browser:
         """真正的跳转逻辑"""
         if model is None:
             model = self._to_model(uri)
-        if model is not None:
-            self._render(model)
         else:
-            try:
-                self.router.dispatch(uri, self._app)
-            except NotFound:
-                self._app.show_msg('Uri:{} handler not found.'.format(uri))
-                return
+            uri = self._to_uri(model)
+        if not uri.startswith('fuo://'):
+            uri = 'fuo://' + uri
+        with self._app.create_action('-> {}'.format(uri)) as action:
+            if model is not None:
+                self._render(model)
+            else:
+                try:
+                    self.router.dispatch(uri, {'app': self._app})
+                except NotFound:
+                    action.failed('not found.'.format(uri))
+                    return
         self._last_uri = self.current_uri
         if model is not None:
             self.current_uri = self._to_uri(model)

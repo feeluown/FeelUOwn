@@ -374,7 +374,7 @@ class LeftPanel(QFrame):
         self.providers_view.setModel(self._app.pvd_uimgr.model)
         self.playlists_view.setModel(self._app.pl_uimgr.model)
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)
-        self.collections_view.setModel(self._app.collections)
+        self.collections_view.setModel(self._app.coll_uimgr.model)
 
         self._layout = QVBoxLayout(self)
 
@@ -394,18 +394,22 @@ class LeftPanel(QFrame):
         self.setFrameShape(QFrame.NoFrame)
         self.setMinimumWidth(180)
         self.setMaximumWidth(250)
-
-        self.playlists_view.show_playlist.connect(
-            lambda pl: asyncio.ensure_future(self.show_model(pl)))
-        self.collections_view.show_collection.connect(
-            lambda collection: self._app.ui.table_container.show_collection(collection))
-
         # 让各个音乐库来决定是否显示这些组件
         self.playlists_con.hide()
         self.my_music_con.hide()
 
-    async def show_model(self, model):
-        await self._app.ui.table_container.show_model(model)
+        self.playlists_view.show_playlist.connect(
+            lambda pl: self._app.browser.goto(model=pl))
+        self._app.browser.route('/colls/<identifier>')(self.__handle_show_coll)
+        self.collections_view.show_collection.connect(self.show_coll)
+
+    def show_coll(self, coll):
+        coll_id = self._app.coll_uimgr.get_coll_id(coll)
+        self._app.browser.goto(uri='/colls/{}'.format(coll_id))
+
+    def __handle_show_coll(self, req, identifier):
+        coll = self._app.coll_uimgr.get(int(identifier))
+        self._app.ui.table_container.show_collection(coll)
 
 
 class RightPanel(QFrame):

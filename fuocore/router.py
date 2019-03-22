@@ -1,24 +1,35 @@
 import re
+from collections import namedtuple
+from urllib.parse import parse_qsl, urlsplit
 
 
 class NotFound(Exception):
     pass
 
 
-def match(path, rules):
+def match(url, rules):
     """找到 path 对应的 rule，并解析其中的参数
 
     >>> match('/local/songs', rules=['/<p>/songs'])
-    ('/<p>/songs', {'p': 'local'})
+    ('/<p>/songs', {'p': 'local'}, {})
+    >>> match('/search?q=hello+world', rules=['/search'])
+    ('/search', {}, {'q': 'hello world'})
 
     :return: (rule, params) or None
     """
+    split_result = urlsplit(url)
+    path = split_result.path
+    qs = split_result.query
     for rule in rules:
         url_regex = regex_from_rule(rule)
         match = url_regex.match(path)
         if match:
+            # parse_qsl 的结果有可能是 [('a', 'b'), ('a', 'c')],
+            # 对应的 query string 是 a=b&a=c, 我们这里暂时不允许这种情况，
+            # 所以这里暂时直接将解析的结果转换成字典
+            query = dict(parse_qsl(qs))
             params = match.groupdict()
-            return rule, params
+            return rule, params, query
     raise NotFound
 
 
@@ -51,6 +62,9 @@ def regex_from_rule(rule):
     return regex
 
 
+Request = namedtuple('Request', ['uri', 'rule', 'params', 'query', 'ctx'])
+
+
 class Router(object):
     def __init__(self):
         self.rules = []
@@ -80,7 +94,8 @@ class Router(object):
             return wrapper
         return decorator
 
-    def dispatch(self, uri, req):
-        rule, params = match(uri, self.rules)
+    def dispatch(self, uri, ctx):
+        rule, params, query = match(uri, self.rules)
         handler = self.handlers[rule]
+        req = Request(uri=uri, rule=rule, params=params, query=query, ctx=ctx)
         return handler(req, **params)

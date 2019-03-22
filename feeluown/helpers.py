@@ -32,20 +32,6 @@ class ActionError(Exception):
     pass
 
 
-@contextmanager
-def action_log(s):
-    logger.info(s + '...')  # doing
-    try:
-        yield
-    except ActionError as e:
-        logger.warning('%s...failed\nreason: %s', s, str(e))
-    except Exception as e:
-        logger.error('%s...error\nreason: %s', s, str(e))
-        raise
-    else:
-        logger.info(s + '...done')  # done
-
-
 def use_mac_theme():
     """判断是否需要使用 mac 主题
 
