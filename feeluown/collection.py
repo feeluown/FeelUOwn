@@ -76,7 +76,7 @@ class CollectionManager:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
                 directorys += self._app.config.COLLECTIONS_DIR
             else:
-                directorys.append(COLLECTIONS_DIR)
+                directorys.append(self._app.config.COLLECTIONS_DIR)
         for directory in directorys:
             directory = os.path.expanduser(directory)
             if not os.path.exists(directory):
