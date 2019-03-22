@@ -47,19 +47,24 @@ class App:
         """
         show_msg = self.show_msg
 
+        class ActionError(Exception):
+            pass
+
         class Action:
             def set_progress(self, value):
                 value = int(value * 100)
                 show_msg(s + '...{}%'.format(value), timeout=-1)
 
-            def failed(self):
-                show_msg(s + '...failed', timeout=-1)
+            def failed(self, msg=''):
+                raise ActionError(msg)
 
         show_msg(s + '...', timeout=-1)  # doing
         try:
             yield Action()
-        except Exception:
-            show_msg(s + '...error')  # error
+        except ActionError as e:
+            show_msg(s + '...failed\t{}'.format(str(e)))
+        except Exception as e:
+            show_msg(s + '...error\t{}'.format(str(e)))  # error
             raise
         else:
             show_msg(s + '...done')  # done
@@ -92,6 +97,7 @@ def attach_attrs(app):
         from feeluown.uimodels.provider import ProviderUiManager
         from feeluown.uimodels.playlist import PlaylistUiManager
         from feeluown.uimodels.my_music import MyMusicUiManager
+        from feeluown.uimodels.collection import CollectionUiManager
         from feeluown.collection import CollectionManager
 
         from .browser import Browser
@@ -112,8 +118,7 @@ def attach_attrs(app):
         app.pvd_uimgr = ProviderUiManager(app)
         app.pl_uimgr = PlaylistUiManager(app)
         app.mymusic_uimgr = MyMusicUiManager(app)
-
-        app.collections = CollectionsModel(parent=app)
+        app.coll_uimgr = CollectionUiManager(app)
 
         app.browser = Browser(app)
         app.ui = Ui(app)
@@ -137,7 +142,7 @@ def initialize(app):
     if app.mode & App.GuiMode:
         app.theme_mgr.autoload()
         app.tips_mgr.show_random_tip()
-        app.coll_mgr.scan()
+        app.coll_uimgr.initialize()
 
     if app.mode & (App.DaemonMode | App.GuiMode):
         loop = asyncio.get_event_loop()
@@ -188,7 +193,7 @@ def create_app(config):
     app = FApp(mode)
     app.config = config
     attach_attrs(app)
-    initialize(app)
     if app.mode & App.GuiMode:
         app.show()
+    initialize(app)
     return app

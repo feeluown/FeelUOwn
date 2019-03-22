@@ -188,8 +188,7 @@ class SongsTableContainer(QFrame):
             func = self.show_playlist
         else:
             def func(model): pass  # seems silly
-        with self._app.create_action('show {}'.format(str(model))):
-            await func(model)
+        await func(model)
 
     def show_player_playlist(self, songs):
         self.show_songs(songs)

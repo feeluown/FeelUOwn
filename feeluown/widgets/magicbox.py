@@ -19,7 +19,7 @@ class MagicBox(QLineEdit):
         self.setPlaceholderText('搜索歌曲、歌手、专辑、用户；执行 Python 代码')
         self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
                         '输入 >>> 前缀之后，可以执行 Python 代码\n'
-                        '输入 $ 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
+                        '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedHeight(28)
@@ -35,6 +35,7 @@ class MagicBox(QLineEdit):
         self.textChanged.connect(self.__on_text_edited)
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
+        self._app.browser.route('/search')(self.__handle_search)
 
     def show_msg(self, text, timeout=2000):
         if not text:
@@ -53,8 +54,7 @@ class MagicBox(QLineEdit):
         if mode == 'cmd':
             self.setReadOnly(False)
             self._timer.stop()
-            if self._cmd_text:
-                self.setText(self._cmd_text)
+            self.setText(self._cmd_text or '')
             # 注意在所有操作完成之后再关闭 blockSignals
             # 然后修改当前 mode
             self.blockSignals(False)
@@ -65,6 +65,11 @@ class MagicBox(QLineEdit):
                 self.setReadOnly(True)
                 self._cmd_text = self.text()
                 self._mode = mode
+
+    def __handle_search(self, req):
+        q = req.query.get('q', '')
+        if q:
+            self._search_library(q)
 
     def _search_library(self, q):
         songs = []
@@ -98,7 +103,7 @@ class MagicBox(QLineEdit):
         if text.startswith('>>> '):
             self._exec_code(text[4:])
         else:
-            self._search_library(text)
+            self._app.browser.goto(uri='/search', query={'q': text})
 
     def __on_timeout(self):
         self._set_mode('cmd')

@@ -9,7 +9,6 @@ from PyQt5.QtWidgets import (
     QAbstractItemView,
 )
 
-from feeluown.helpers import action_log, ActionError
 from .textlist import TextlistModel, TextlistView
 
 
@@ -92,15 +91,12 @@ class PlaylistsView(TextlistView):
         song = mimedata.model
         index = self.indexAt(e.pos())
         playlist = index.data(Qt.UserRole)
-        with action_log('Add {} to {}'.format(song, playlist)):
-            self._results[index.row] = (index, None)
-            self.viewport().update()
-            is_success = playlist.add(song.identifier)
-            self._results[index.row] = (index, is_success)
-            self.viewport().update()
-            self._result_timer.start(2000)
-            if not is_success:
-                raise ActionError
+        self._results[index.row] = (index, None)
+        self.viewport().update()
+        is_success = playlist.add(song.identifier)
+        self._results[index.row] = (index, is_success)
+        self.viewport().update()
+        self._result_timer.start(2000)
         e.accept()
 
     def dragMoveEvent(self, e):

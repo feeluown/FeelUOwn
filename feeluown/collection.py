@@ -2,6 +2,7 @@ import os
 import logging
 import random
 
+from fuocore.models import ModelType
 from fuocore.protocol import ModelParser, get_url
 from feeluown.consts import COLLECTIONS_DIR
 
@@ -11,6 +12,8 @@ logger = logging.getLogger(__name__)
 class Collection:
 
     def __init__(self, fpath, parser):
+        # TODO: 以后考虑添加 identifier 字段，identifier
+        # 字段应该尽量设计成可以跨电脑使用
         self.fpath = fpath
         self._parser = parser
 
@@ -26,7 +29,8 @@ class Collection:
         with open(filepath, encoding='utf-8') as f:
             for line in f:
                 model = self._parser.parse_line(line)
-                if model is not None:
+                if model is not None and \
+                   model.meta.model_type == ModelType.song:
                     self.models.append(model)
 
     def add(self, song):
@@ -66,13 +70,13 @@ class CollectionManager:
         self.model_parser = ModelParser(self._library)
 
     def scan(self):
+        has_coll = False
         directorys = [COLLECTIONS_DIR]
         if self._app.config.COLLECTIONS_DIR:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
                 directorys += self._app.config.COLLECTIONS_DIR
             else:
                 directorys.append(COLLECTIONS_DIR)
-        self._app.collections.clear()
         for directory in directorys:
             directory = os.path.expanduser(directory)
             if not os.path.exists(directory):
@@ -85,13 +89,14 @@ class CollectionManager:
                 coll = Collection(filepath, self.model_parser)
                 # TODO: 可以调整为并行
                 coll.load()
-                self._app.collections.add(coll)
+                has_coll = True
+                yield coll
 
-        if not self._app.collections:
+        if not has_coll:
             fpath = self.gen_defualt_fuo()
             coll = Collection(fpath, self.model_parser)
             coll.load()
-            self._app.collections.add(coll)
+            yield coll
 
     @classmethod
     def gen_defualt_fuo(cls):
