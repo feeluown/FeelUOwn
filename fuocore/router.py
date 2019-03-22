@@ -14,6 +14,7 @@ def match(url, rules):
     ('/<p>/songs', {'p': 'local'}, {})
     >>> match('/search?q=hello+world', rules=['/search'])
     ('/search', {}, {'q': 'hello world'})
+
     :return: (rule, params) or None
     """
     split_result = urlsplit(url)
