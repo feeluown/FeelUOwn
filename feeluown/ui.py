@@ -138,11 +138,11 @@ class PlayerControlPanel(QFrame):
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
 
-        self._app.player.state_changed.connect(self._on_player_state_changed)
+        self._app.player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
         self._app.player.position_changed.connect(self.on_position_changed)
-        self._app.player.duration_changed.connect(self.on_duration_changed)
+        self._app.player.duration_changed.connect(self.on_duration_changed, aioqueue=True)
         self._app.player.playlist.playback_mode_changed.connect(
-            self.on_playback_mode_changed)
+            self.on_playback_mode_changed, aioqueue=True)
         self._app.player.playlist.song_changed.connect(
             self.on_player_song_changed, aioqueue=True)
         self.progress_slider.resume_player_needed.connect(self._app.player.resume)
@@ -481,7 +481,7 @@ class Ui:
         self.pc_panel.mv_btn.clicked.connect(self._play_mv)
         self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
         self._app.player.video_format_changed.connect(
-            self.on_video_format_changed)
+            self.on_video_format_changed, aioqueue=True)
 
         self._app.hotkey_mgr.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
