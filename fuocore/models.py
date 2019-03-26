@@ -294,8 +294,7 @@ class BaseModel(Model):
         """
         获取 model 某一属性时，如果该属性值为 None 且该属性是 field
         且该属性允许触发 get 方法，这时，我们尝试通过获取 model
-        详情来初始化这个字段，于此同时，还会重新给除 identifier
-        外的所 fields 重新赋值。
+        详情来初始化这个字段，于此同时，还会重新给部分 fields 重新赋值。
         """
         cls = type(self)
         cls_name = cls.__name__
@@ -311,8 +310,8 @@ class BaseModel(Model):
            and self.stage < ModelStage.gotten \
            and self.exists != ModelExistence.no:
 
-            logger.info("Model {} {}'s value is None, try to get detail."
-                        .format(repr(self), name))
+            logger.debug("Model {} {}'s value is None, try to get detail."
+                         .format(repr(self), name))
             obj = cls.get(self.identifier)
             if obj is not None:
                 for field in cls.meta.fields:

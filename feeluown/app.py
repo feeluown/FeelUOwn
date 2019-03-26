@@ -25,6 +25,8 @@ class App:
     GuiMode = 0x0010     # 显示 GUI
     CliMode = 0x0100     # 命令行模式
 
+    instance = None
+
     def exec_(self, code):
         """执行 Python 代码"""
         obj = compile(code, '<string>', 'single')
@@ -191,6 +193,7 @@ def create_app(config):
             self.mode = mode
 
     app = FApp(mode)
+    App.instance = app
     app.config = config
     attach_attrs(app)
     if app.mode & App.GuiMode:

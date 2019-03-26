@@ -14,65 +14,64 @@ dict_config = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': "[%(levelname)s] "
-                      "[%(filename)s %(funcName)s %(lineno)d] "
-                      ": %(message)s",
+            'format': "[%(asctime)s %(levelname)s %(module)s] : %(message)s",
+        },
+        'thread': {
+            'format': "[%(asctime)s %(levelname)s %(module)s %(thread)d] : %(message)s",
         },
     },
-    'handlers': {
-        'debug': {
-            'formatter': 'standard',
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-        },
-        'cli-release': {
-            'formatter': 'standard',
-            'level': 'INFO',
-            'class': 'logging.StreamHandler',
-        },
-        'gui-release': {
-            'formatter': 'standard',
-            'level': 'INFO',
-            'class': 'logging.FileHandler',
-            'filename': LOG_FILE,
-            'mode': 'w',
-        }
-    },
-    'loggers': {
-        'feeluown': {
-            'handlers': ['debug'],
-            'level': logging.DEBUG,
-            'propagate': False,
-        },
-        'fuocore': {
-            'handlers': ['debug'],
-            'level': logging.DEBUG,
-            'propagate': False,
-        },
-        # 其它模块使用这个 logger
-        '': {
-            'handlers': ['debug'],
-            'level': logging.DEBUG,
-            'propagate': True,
-        }
-
-    }
+    'handlers': {},
+    'loggers': {},
 }
 
 
-def logger_config(debug, to_file=False):
-    if debug:
-        logging.config.dictConfig(dict_config)
-        logging.info('Debug mode.')
-    else:
-        if to_file:
-            dict_config['loggers']['']['handlers'] = ['gui-release']
-            dict_config['loggers']['feeluown']['handlers'] = ['gui-release']
-            dict_config['loggers']['fuocore']['handlers'] = ['gui-release']
-        else:
-            dict_config['loggers']['']['handlers'] = ['cli-release']
-            dict_config['loggers']['feeluown']['handlers'] = ['cli-release']
-            dict_config['loggers']['fuocore']['handlers'] = ['cli-release']
+def logger_config(verbose=1, to_file=False):
+    """configure logger
 
-        logging.config.dictConfig(dict_config)
-        logging.info('Release mode.')
+    :param to_file: redirect log to file
+    :param verbose: verbose level.
+                    0: show all (>=)warning level log
+                    1: show all info level log
+                    2: show feeluown/fuocore debug level log and all info log
+                    3: show all debug log
+    """
+    handler = {'level': 'DEBUG', 'formatter': 'standard'}
+    logger = {
+        'handlers': [''],
+        'propagate': True,
+    }
+
+    dict_config['handlers'][''] = handler
+    dict_config['loggers'][''] = logger
+
+    if to_file:
+        handler.update({
+            'class': 'logging.FileHandler',
+            'filename': LOG_FILE,
+            'mode': 'w'
+        })
+    else:
+        handler.update({'class': 'logging.StreamHandler'})
+
+    if verbose <= 0:
+        handler['level'] = 'WARNING'
+        logger['level'] = logging.WARNING
+    elif verbose <= 1:
+        handler['level'] = 'INFO'
+        logger['level'] = logging.INFO
+    else:
+        handler['level'] = 'DEBUG'
+        logger['level'] = logging.INFO
+        if verbose >= 3:
+            logger['level'] = logging.DEBUG
+        else:
+            # set logger for feeluown/fuocore
+            fuo_logger = {
+                'handlers': [''],
+                'level': loggers.DEBUG,
+                'propagate': False,
+            }
+            dict_config['loggers']['feeluown'] = fuo_logger
+            dict_config['loggers']['fuocore'] = fuo_logger
+
+    logging.config.dictConfig(dict_config)

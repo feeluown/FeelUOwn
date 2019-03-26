@@ -62,33 +62,36 @@ def setup_argparse():
         Example:
             - fuo                        # start fuo server
             - fuo status                 # lookup server status
-            - fuo play "no matter what"  # search and play "no matter what"
+            - fuo play 晴天-周杰伦       # search and play
         '''),
-        formatter_class=argparse.RawTextHelpFormatter)
+        formatter_class=argparse.RawTextHelpFormatter,
+        prog='feeluown')
 
     setup_cli_argparse(parser)
 
-    parser.add_argument('-d', '--debug', action='store_true', default=False,
-                        help='开启调试模式')
-    parser.add_argument('-v', '--version', action='store_true',
-                        help='显示当前 feeluown 和 fuocore 版本')
+    parser.add_argument('-V', '--version', action='version',
+                        version='%(prog)s {}'.format(feeluown_version))
     parser.add_argument('-ns', '--no-server', action='store_true', default=False,
                         help='不运行 server')
     parser.add_argument('-nw', '--no-window', action='store_true', default=False,
                         help='不显示 GUI')
+    parser.add_argument('--force-mac-hotkey', action='store_true',
+                        help='强制开启 mac 全局热键')
+
+    # options about log
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
+                        help='开启调试模式')
+    parser.add_argument('-v', '--verbose', action='count',
+                        help='输出详细的日志')
     parser.add_argument('--log-to-file', action='store_true', default=False,
                         help='将日志打到文件中')
-    parser.add_argument('--force-mac-hotkey', action='store_true', default=False,
-                        help='强制开启 mac 全局热键')
+
     # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
     # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
 
     # TODO: 需要在文档中给出如何查看有哪些播放设备的方法
     parser.add_argument(
-        '--mpv-audio-device',
-        default='auto',
-        help='（高级选项）给 mpv 播放器指定播放设备'
-    )
+        '--mpv-audio-device', help='（高级选项）指定播放设备')
     return parser
 
 
@@ -130,10 +133,6 @@ def init(args, config):
     sys.excepthook = excepthook
     ensure_dirs()
 
-    if args.version:
-        print('feeluown {}'.format(feeluown_version))
-        return 1
-
     if args.cmd is not None:
         run_cli(args, config)
         return 1
@@ -142,10 +141,12 @@ def init(args, config):
     load_rcfile(config)
 
     # 根据命令行参数来更新配置
-    config.DEBUG = args.debug
-    config.MPV_AUDIO_DEVICE = args.mpv_audio_device
-    config.FORCE_MAC_HOTKEY = args.force_mac_hotkey
-    config.LOG_TO_FILE = args.log_to_file
+    # 注：用户在 rcfile 文件中也可以配置这些选项的值
+    # 所以我们不能这样实现 config.DEBUG = args.debug，而是像下面这样
+    config.DEBUG = args.debug or config.DEBUG
+    config.MPV_AUDIO_DEVICE = args.mpv_audio_device or config.MPV_AUDIO_DEVICE
+    config.FORCE_MAC_HOTKEY = bool(args.force_mac_hotkey or config.FORCE_MAC_HOTKEY)
+    config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE)
     if not args.no_window:
         try:
             import PyQt5  # noqa
@@ -158,7 +159,11 @@ def init(args, config):
 
 
 def setup_app(args, config):
-    logger_config(config.DEBUG, to_file=config.LOG_TO_FILE)
+    if config.DEBUG:
+        verbose = 3
+    else:
+        verbose = args.verbose or 0
+    logger_config(verbose=verbose, to_file=config.LOG_TO_FILE)
     Signal.setup_aio_support()
     app = create_app(config)
     bind_signals(app)
@@ -203,6 +208,13 @@ def run_forever(args, config):
         enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
     loop = asyncio.get_event_loop()
     try:
+        if not config.MODE & App.GuiMode:
+            if config.MODE & App.DaemonMode:
+                # when started with daemon mode, show some message to tell user
+                # that the program is running.
+                print('Fuo daemon running on 0.0.0.0:23333 (tcp)')
+            else:
+                print('Fuo running with no daemon and no window')
         loop.run_forever()
     except KeyboardInterrupt:
         # NOTE: gracefully shutdown?
