@@ -414,6 +414,9 @@ class MpvPlayer(AbstractPlayer):
         if winid is not None:
             mpvkwargs['wid'] = winid
         mpvkwargs['vo'] = 'opengl-cb'
+        # set log_handler if you want to debug
+        # mpvkwargs['log_handler'] = self.__log_handler
+        # mpvkwargs['msg_level'] = 'all=v'
         self._mpv = MPV(ytdl=True,
                         input_default_bindings=True,
                         input_vo_keyboard=True,
@@ -450,7 +453,19 @@ class MpvPlayer(AbstractPlayer):
         # QMediaPlayer API reference for more details.
 
         logger.debug("Player will play: '%s'", url)
-        self._mpv.handle.vid = b'auto' if video else b'no'
+
+        if video:
+            # FIXME: for some property, we need to set via setattr, however,
+            #  some need to be set via _mpv_set_property_string
+            self._mpv.handle.vid = b'auto'
+            # it seems that ytdl will auto choose the default format
+            #  if we set ytdl-format to ''
+            _mpv_set_property_string(self._mpv.handle, b'ytdl-format', b'')
+        else:
+            # set vid to no and ytdl-format to bestaudio/best
+            # see https://mpv.io/manual/stable/#options-vid for more details
+            self._mpv.handle.vid = b'no'
+            _mpv_set_property_string(self._mpv.handle, b'ytdl-format', b'bestaudio/best')
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
@@ -577,3 +592,6 @@ class MpvPlayer(AbstractPlayer):
             self.replay()
         else:
             self.play_next()
+
+    def __log_handler(self, loglevel, component, message):
+        print('[{}] {}: {}'.format(loglevel, component, message))

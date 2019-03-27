@@ -4,6 +4,7 @@ from functools import partial
 from contextlib import contextmanager
 
 from fuocore import LiveLyric, Library
+from fuocore.dispatch import Signal
 from fuocore.pubsub import run as run_pubsub
 
 from .consts import APP_ICON
@@ -13,6 +14,7 @@ from .server import FuoServer
 from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
+from .rcfile import bind_signals
 
 
 logger = logging.getLogger(__name__)
@@ -149,6 +151,8 @@ def initialize(app):
     if app.mode & (App.DaemonMode | App.GuiMode):
         loop = asyncio.get_event_loop()
         loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
+    bind_signals(app)
+    app.initialized.emit(app)
 
 
 def create_app(config):
@@ -191,6 +195,7 @@ def create_app(config):
             for base in bases:
                 base.__init__(self)
             self.mode = mode
+            self.initialized = Signal()
 
     app = FApp(mode)
     App.instance = app

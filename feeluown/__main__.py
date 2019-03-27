@@ -18,7 +18,7 @@ from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
-from feeluown.rcfile import load_rcfile, bind_signals
+from feeluown.rcfile import load_rcfile
 
 logger = logging.getLogger(__name__)
 
@@ -133,10 +133,6 @@ def init(args, config):
     sys.excepthook = excepthook
     ensure_dirs()
 
-    if args.cmd is not None:
-        run_cli(args, config)
-        return 1
-
     # 从 rcfile 中加载配置和代码
     load_rcfile(config)
 
@@ -147,6 +143,12 @@ def init(args, config):
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device or config.MPV_AUDIO_DEVICE
     config.FORCE_MAC_HOTKEY = bool(args.force_mac_hotkey or config.FORCE_MAC_HOTKEY)
     config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE)
+
+    if args.cmd is not None:
+        # load some config before start run_cli
+        run_cli(args, config)
+        return 1
+
     if not args.no_window:
         try:
             import PyQt5  # noqa
@@ -166,7 +168,6 @@ def setup_app(args, config):
     logger_config(verbose=verbose, to_file=config.LOG_TO_FILE)
     Signal.setup_aio_support()
     app = create_app(config)
-    bind_signals(app)
     return app
 
 
@@ -188,7 +189,6 @@ def run_once(args, config):
     warnings.filterwarnings("ignore")
 
     config.MODE = App.CliMode
-    config.LOG_TO_FILE = True
     app = setup_app(args, config)
     oncemain(app, args)
     app.shutdown()
