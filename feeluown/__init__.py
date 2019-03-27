@@ -68,7 +68,7 @@ def logger_config(verbose=1, to_file=False):
             # set logger for feeluown/fuocore
             fuo_logger = {
                 'handlers': [''],
-                'level': loggers.DEBUG,
+                'level': logging.DEBUG,
                 'propagate': False,
             }
             dict_config['loggers']['feeluown'] = fuo_logger

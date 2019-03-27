@@ -119,10 +119,15 @@ class PluginsManager:
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""
-        modules_name = ([p for p in os.listdir(USER_PLUGINS_DIR)
-                         if os.path.isdir(os.path.join(USER_PLUGINS_DIR))])
+        module_name_list = []
+        for fname in os.listdir(USER_PLUGINS_DIR):
+            if os.path.isdir(os.path.join(USER_PLUGINS_DIR, fname)):
+                module_name_list.append(fname)
+            else:
+                if fname.endswith('.py'):
+                    module_name_list.append(fname[:-3])
         sys.path.append(USER_PLUGINS_DIR)
-        for module_name in modules_name:
+        for module_name in module_name_list:
             try:
                 module = importlib.import_module(module_name)
             except Exception as e:
