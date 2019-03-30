@@ -26,7 +26,7 @@ Ubuntu
 
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
-    pip3 install feeluown>=2.0a0 --upgrade --user
+    pip3 install 'feeluown>=3.0a5[battery]' --upgrade --user
 
     # 运行 feeluown -h 来测试安装是否成功
     # 如果提示 Commmand Not Found，请查看文档「常见问题」部分
@@ -47,41 +47,35 @@ macOS
     brew install python3
     brew install pyqt
     brew install mpv
-    pip3 install feeluown>=2.0 --upgrade --user
+    pip3 install 'feeluown>=3.0a5[battery,macos]' --upgrade --user
 
 
 基本使用
 --------
 
-FeelUOwn 有两种模式：GUI/CLI 混合模式和 CLI 模式。
-CLI 全称是 Command Line Interface，也就常说的命令行用户界面，
-FeelUOwn 支持用户只启用 CLI 而不开启 GUI，但一般建议大家使用混合模式。
-
 大家有几种方式启动 FeelUOwn：
 
-1. 直接双击桌面 FeelUOwn 图标，这时启动 GUI/CLI 混合模式
+1. 直接双击桌面 FeelUOwn 图标，这时启动 GUI/Daemon 混合模式
 2. 在命令行中运行 ``feeluown`` 命令，这时也是混合模式
-3. 在命令行中运行 ``feeluown -nw`` 命令，这时是 CLI 模式
+3. 在命令行中运行 ``feeluown -nw`` 命令，这时是 Daemon 模式
 
-CLI 模式的使用方法，这里简单说明：
-（提示：如果不熟悉命令行，CLI 模式可能会有一定的折腾）
-
-.. code:: sh
-
-    pip3 install feeluown-cli --user --upgrade # 安装 fuocli 工具
-
-    feeluown -nw  # 使用 CLI 模式启动 feeluown
-    fuocli status  # 查看播放器状态
-    fuocli search 周杰伦  # 搜索歌曲
-    fuocli play fuo://netease/songs/470302665  # 播放：（世界が终るまでは…）《灌篮高手》
-
-
-如果大家对 `NetCat <https://en.wikipedia.org/wiki/Netcat>`_ 工具熟悉，也可以不安装上面 feeluown-cli
+Daemon 模式的使用方法，这里简单说明：
+（提示：如果不熟悉命令行，DAEMON 模式可能会有一定的折腾）
 
 .. code:: sh
 
-    nc localhost 23334
+    feeluown -nw  # 使用 Daemon 模式启动 feeluown
+    fuo status  # 查看播放器状态
+    fuo search 周杰伦  # 搜索歌曲
+    fuo play fuo://netease/songs/470302665  # 播放：（世界が终るまでは…）《灌篮高手》
+
+
+如果大家对 `NetCat <https://en.wikipedia.org/wiki/Netcat>`_ 工具熟悉
+
+.. code:: sh
+
+    nc localhost 23333
     # 输入 `status` 命令，可以查看播放器状态
-    # 输入 `fuocli play fuo://netease/songs/470302665` 可以播放音乐
+    # 输入 `fuo play fuo://netease/songs/470302665` 可以播放音乐
 
-关于 CLI 更多使用细节，大家可以参考 `feeluonw-cli 项目文档 <https://github.com/cosven/feeluown-cli>`_
+关于 Daemon 更多使用细节，大家可以参考运行 ``fuo -h`` 来查看帮助文档
