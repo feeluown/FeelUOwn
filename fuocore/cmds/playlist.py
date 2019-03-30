@@ -1,7 +1,7 @@
 from fuocore.protocol import get_url
+from fuocore.models import ModelType
 from .helpers import show_songs
 from .base import AbstractHandler
-
 
 class PlaylistHandler(AbstractHandler):
     cmds = ('add', 'remove', 'list', 'next', 'previous', 'clear',)
@@ -24,9 +24,14 @@ class PlaylistHandler(AbstractHandler):
         playlist = self.playlist
         furi_list = furis.split(',')
         for furi in furi_list:
-            song = self.model_parser.parse_line(furi)
-            if song is not None:
-                playlist.add(song)
+            obj = self.model_parser.parse_line(furi)
+            if obj is not None:
+                obj_type = type(obj).meta.model_type
+                if obj_type == ModelType.song:
+                    playlist.add(obj)
+                elif obj_type == ModelType.playlist:
+                    for song in obj.songs:
+                        playlist.add(song)
 
     def remove(self, song_uri):
         # FIXME: a little bit tricky
