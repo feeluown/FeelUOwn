@@ -49,7 +49,8 @@ def create_config():
     config.deffield('THEME', default='auto', desc='auto/light/dark')
     config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
     config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
-    config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能')
+    config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能',
+                    warn='Will be remove in version 3.0')
     config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
     return config
 
@@ -75,8 +76,6 @@ def setup_argparse():
                         help='不运行 server')
     parser.add_argument('-nw', '--no-window', action='store_true', default=False,
                         help='不显示 GUI')
-    parser.add_argument('--force-mac-hotkey', action='store_true',
-                        help='强制开启 mac 全局热键')
 
     # options about log
     parser.add_argument('-d', '--debug', action='store_true', default=False,
@@ -95,18 +94,14 @@ def setup_argparse():
     return parser
 
 
-def enable_mac_hotkey(force=False):
+def enable_mac_hotkey():
     try:
         from .global_hotkey_mac import MacGlobalHotkeyManager
     except ImportError as e:
         logger.warning("Can't start mac hotkey listener: %s", str(e))
     else:
         mac_global_hotkey_mgr = MacGlobalHotkeyManager()
-        if os.environ.get('TMUX') is not None and force is not True:
-            logger.warning('经测试，macOS 的全局快捷键不能在 tmux 中使用!'
-                           '你可以在启动时加入 `--force-mac-hotkey` 选项来强制开启。')
-        else:
-            mac_global_hotkey_mgr.start()
+        mac_global_hotkey_mgr.start()
 
 
 def prepare_gui():
@@ -141,7 +136,6 @@ def init(args, config):
     # 所以我们不能这样实现 config.DEBUG = args.debug，而是像下面这样
     config.DEBUG = args.debug or config.DEBUG
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device or config.MPV_AUDIO_DEVICE
-    config.FORCE_MAC_HOTKEY = bool(args.force_mac_hotkey or config.FORCE_MAC_HOTKEY)
     config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE)
 
     if args.cmd is not None:
@@ -205,7 +199,7 @@ def run_forever(args, config):
         prepare_gui()
     app = setup_app(args, config)
     if sys.platform.lower() == 'darwin':
-        enable_mac_hotkey(force=config.FORCE_MAC_HOTKEY)
+        enable_mac_hotkey()
     loop = asyncio.get_event_loop()
     try:
         if not config.MODE & App.GuiMode:

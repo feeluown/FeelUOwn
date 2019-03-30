@@ -1,10 +1,11 @@
 import logging
+import warnings
 from collections import namedtuple
 
 logger = logging.getLogger(__name__)
 
 
-Field = namedtuple('Field', ('name', 'type_', 'default', 'desc'))
+Field = namedtuple('Field', ('name', 'type_', 'default', 'desc', 'warn'))
 
 
 class Config:
@@ -29,17 +30,21 @@ class Config:
 
     def __setattr__(self, name, value):
         if name in self._fields:
+            field = self._fields[name]
+            if field.warn is not None:
+                warnings.warn('Config field({}): {}'.format(name, field.warn), stacklevel=2)
             # TODO: 校验值类型
             object.__setattr__(self, name, value)
         else:
             logger.warning('Assign to an undeclared config key.')
 
-    def deffield(self, name, type_=None, default=None, desc=''):
+    def deffield(self, name, type_=None, default=None, desc='', warn=None):
         """定义字段信息"""
         if name not in self._fields:
             self._fields[name] = Field(name=name,
                                        type_=type_,
                                        default=default,
-                                       desc=desc)
+                                       desc=desc,
+                                       warn=warn)
         else:
             raise ValueError('Field({}) is already defined.'.format(name))

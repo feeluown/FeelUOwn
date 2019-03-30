@@ -28,9 +28,10 @@ def bind_signals(app):
 
 
 def load_rcfile(config, rcfile_path=DEFAULT_RCFILE_PATH):
-    if not os.path.exists(DEFAULT_RCFILE_PATH):
+    if not os.path.exists(rcfile_path):
         return
 
     g = {'when': when, 'config': config}
     with open(rcfile_path, encoding='UTF-8') as f:
-        exec(f.read(), g)
+        code = compile(f.read(), rcfile_path, 'exec')
+        exec(code, g)

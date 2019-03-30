@@ -8,10 +8,6 @@ import Quartz
 from AppKit import NSSystemDefined
 from AppKit import NSKeyUp, NSEvent, NSBundle
 
-__alias__ = 'mac 全局快捷键'
-__version__ = '2.0'
-__desc__ = 'mac 全局快捷键'
-
 logger = logging.getLogger(__name__)
 
 
@@ -62,15 +58,38 @@ def keyboard_tap_callback(proxy, type_, event, refcon):
 def run_event_loop():
     logger.info('try to load mac hotkey event loop')
     # Set up a tap, with type of tap, location, options and event mask
-    tap = Quartz.CGEventTapCreate(
-        Quartz.kCGSessionEventTap,  # Session level is enough for our needs
-        Quartz.kCGHeadInsertEventTap,  # Insert wherever, we do not filter
-        Quartz.kCGEventTapOptionDefault,
-        # NSSystemDefined for media keys
-        Quartz.CGEventMaskBit(NSSystemDefined),
-        keyboard_tap_callback,
-        None
-    )
+    def create_tap():
+        return Quartz.CGEventTapCreate(
+            Quartz.kCGSessionEventTap,  # Session level is enough for our needs
+            Quartz.kCGHeadInsertEventTap,  # Insert wherever, we do not filter
+            Quartz.kCGEventTapOptionDefault,
+            # NSSystemDefined for media keys
+            Quartz.CGEventMaskBit(NSSystemDefined),
+            keyboard_tap_callback,
+            None
+        )
+    tap = create_tap()
+    if tap is None:
+        logger.error('Error occurred when trying to listen global hotkey. '
+                     'trying to popup a prompt dialog to ask for permission.')
+        # we do not use pyobjc-framework-ApplicationServices directly, since it
+        # causes segfault when call AXIsProcessTrustedWithOptions function
+        import objc
+        AS = objc.loadBundle('CoreServices', globals(),
+                             '/System/Library/Frameworks/ApplicationServices.framework')
+        objc.loadBundleFunctions(AS, globals(),
+                                 [('AXIsProcessTrustedWithOptions', b'Z@')])
+        objc.loadBundleVariables(AS, globals(),
+                                 [('kAXTrustedCheckOptionPrompt', b'@')])
+        trusted = AXIsProcessTrustedWithOptions({kAXTrustedCheckOptionPrompt: True})
+        if not trusted:
+            logger.info('Have popuped a prompt dialog to ask for accessibility.'
+                        'You can restart feeluown after you grant access to it.')
+        else:
+            logger.warning('Have already grant accessibility, '
+                           'but we still can not listen global hotkey,'
+                           'theoretically, this should not happen.')
+        return
 
     run_loop_source = Quartz.CFMachPortCreateRunLoopSource(
         None, tap, 0)
