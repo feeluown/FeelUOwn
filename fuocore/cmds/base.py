@@ -24,5 +24,5 @@ class AbstractHandler(metaclass=HandlerMeta):
         self.live_lyric = live_lyric
         self.model_parser = ModelParser(library)
 
-    def handle(self, cmd):
+    def handle(self, cmd, output_format):
         raise NotImplementedError

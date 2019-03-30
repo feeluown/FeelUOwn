@@ -24,6 +24,7 @@ class FuoServer:
     async def handle_conn(self, conn, addr):
         event_loop = asyncio.get_event_loop()
         await event_loop.sock_sendall(conn, b'OK feeluown 1.0.0\n')
+        output_format = "plain"
         while True:
             command = b''
             try:
@@ -45,10 +46,24 @@ class FuoServer:
             if not command:
                 conn.close()
                 break
-            logger.debug('RECV: %s', command)
-            msg = interprete(command,
-                             library=self._library,
-                             player=self._player,
-                             playlist=self._playlist,
-                             live_lyric=self._live_lyric)
+            if command.startswith("format"):
+                is_valid = True
+                if command.find("plain") != -1:
+                    output_format = "plain"
+                elif command.find("json") != -1:
+                    output_format = "json"
+                else:
+                    is_valid = False
+                if is_valid:
+                    msg = "OK output format switched to " + output_format + "\n"
+                else:
+                    msg = "Oops invalid format! output format is " + output_format + "\n"
+            else:
+                logger.debug('RECV: %s', command)
+                msg = interprete(command,
+                                 library=self._library,
+                                 player=self._player,
+                                 playlist=self._playlist,
+                                 live_lyric=self._live_lyric,
+                                 output_format=output_format)
             await event_loop.sock_sendall(conn, bytes(msg, 'utf-8'))

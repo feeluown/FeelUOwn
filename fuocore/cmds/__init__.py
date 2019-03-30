@@ -111,7 +111,7 @@ class CmdResolver:
 cmd_resolver = CmdResolver(cmd_handler_mapping)
 
 
-def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
+def exec_cmd(cmd, *args, library, player, playlist, live_lyric, output_format):
     logger.debug('EXEC_CMD: ' + str(cmd))
 
     handler_cls = cmd_resolver.get_handler(cmd.action)
@@ -130,7 +130,7 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
                               player=player,
                               playlist=playlist,
                               live_lyric=live_lyric)
-        cmd_rv = handler.handle(cmd)
+        cmd_rv = handler.handle(cmd, output_format=output_format)
         if cmd_rv:
             rv += '\n' + cmd_rv
     except Exception as e:
@@ -141,11 +141,12 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
         return rv + '\nOK\n'
 
 
-def interprete(text, *args, library, player, playlist, live_lyric):
+def interprete(text, *args, library, player, playlist, live_lyric, output_format="plain"):
     tokens = CmdLexer().get_tokens(text)
     cmd = CmdParser().parse(tokens)
     return exec_cmd(cmd,
                     library=library,
                     player=player,
                     playlist=playlist,
-                    live_lyric=live_lyric)
+                    live_lyric=live_lyric,
+                    output_format=output_format)

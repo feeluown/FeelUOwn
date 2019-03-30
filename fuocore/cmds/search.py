@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 class SearchHandler(AbstractHandler):
     cmds = 'search'
 
-    def handle(self, cmd):
+    def handle(self, cmd, output_format):
         return self.search_songs(cmd.args[0])
 
     def search_songs(self, query):

@@ -6,7 +6,7 @@ from .base import AbstractHandler
 class PlaylistHandler(AbstractHandler):
     cmds = ('add', 'remove', 'list', 'next', 'previous', 'clear',)
 
-    def handle(self, cmd):
+    def handle(self, cmd, output_format):
         if cmd.action == 'add':
             return self.add(cmd.args[0].strip())
         elif cmd.action == 'remove':

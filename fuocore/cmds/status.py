@@ -7,7 +7,7 @@ from .helpers import show_song
 class StatusHandler(AbstractHandler):
     cmds = 'status'
 
-    def handle(self, cmd):
+    def handle(self, cmd, output_format):
         player = self.player
         playlist = self.playlist
         live_lyric = self.live_lyric

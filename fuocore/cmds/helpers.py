@@ -3,6 +3,7 @@ fuocore.cmds.helper
 ~~~~~~~~~~~~~~~~~~~
 
 良好的用文字展示一个对象
+TODO: 负责返回 json 对象
 
 展示的时候需要注意以下几点：
 1. 让 awk、grep 等 shell 工具容易处理
@@ -11,7 +12,11 @@ TODO: 让代码长得更好看
 """
 
 from fuocore.models import ModelType
+import json
+from enum import IntEnum
+import logging
 
+logger = logging.getLogger(__name__)
 
 TYPE_NS_MAP = {
     ModelType.song: 'songs',
@@ -27,6 +32,35 @@ NS_TYPE_MAP = {
     for key, value in TYPE_NS_MAP.items()
 }
 
+class ReturnStatus(IntEnum):
+    success = 0
+    fail = 1
+    error = -1
+
+RETURN_STATUS_MAP = {
+    ReturnStatus.success: 'success',
+    ReturnStatus.fail: 'fail',
+    ReturnStatus.error: 'error'
+}
+
+class ReturnMessage:
+    def __init__(self, status=ReturnStatus.success, data={}, msg="", output_format="json"):
+        self.status = status
+        self.data = data
+        self.msg = msg
+        self.output_format = output_format
+    def dumps(self):
+        code = RETURN_STATUS_MAP[self.status]
+        msg_dict = {"status": RETURN_STATUS_MAP[self.status]}
+        logger.debug(self.data)
+        if self.data:
+            msg_dict["data"] = self.data
+        if self.msg:
+            msg_dict["msg"] = self.msg
+        if self.output_format == "json":
+            return json.dumps({"status": code, "data": self.data, "msg": self.msg})
+        else:
+            return
 
 def get_url(model):
     source = model.source
@@ -111,6 +145,39 @@ def show_song(song, uri_length=None, brief=False):
     )
     return '\n'.join(msgs)
 
+def show_song_json(song, brief=False):
+    # 返回描述歌曲的 json 对象
+    artists_name = song.artists_name_display
+    title = song.title_display
+    album_name = song.album_name_display
+
+    song_uri = get_url(song)
+
+    result = ReturnMessage()
+
+    if brief:
+        data = dict()
+        data["song"] = song_uri
+        data["title"] = title
+        data["artists_name"] = artists_name
+        result.data = data
+        return result.dumps()
+
+    # XXX: 这个操作可能会产生网络请求
+    album_uri = get_url(song.album)
+    artists_uri = [get_url(artist) for artist in song.artists]
+    data = dict()
+    data["provider"] = song.source
+    data["uri"] = song_uri
+    data["title"] = song.title
+    data["duration"] = song.duration
+    data["url"] = song.url
+    data["artists_uri"] = artists_uri
+    data["artists_name"] = artists_name
+    data["album_uri"] = album_uri
+    data["album_name"] = album_name
+    result.data = data
+    return result.dumps()
 
 def show_songs(songs):
     uri_length = max((len(get_url(song)) for song in songs)) if songs else None

@@ -15,7 +15,7 @@ from fuocore.router import Router
 
 from .base import AbstractHandler
 from .helpers import (
-    show_song, show_artist, show_album, show_user,
+    show_song, show_song_json, show_artist, show_album, show_user,
     show_playlist
 )
 
@@ -29,7 +29,7 @@ route = router.route
 class ShowHandler(AbstractHandler):
     cmds = 'show'
 
-    def handle(self, cmd):
+    def handle(self, cmd, output_format):
         if cmd.args:
             furi = cmd.args[0]
         else:
@@ -37,7 +37,7 @@ class ShowHandler(AbstractHandler):
         r = urlparse(furi)
         path = '/{}{}'.format(r.netloc, r.path)
         logger.debug('请求 path: {}'.format(path))
-        rv = router.dispatch(path, {'library': self.library})
+        rv = router.dispatch(path, {'library': self.library, 'output_format': output_format})
         return rv
 
 
@@ -53,7 +53,11 @@ def song_detail(req, provider, sid):
     provider = req.ctx['library'].get(provider)
     song = provider.Song.get(sid)
     if song is not None:
-        return show_song(song)
+        output_format = req.ctx['output_format']
+        if output_format == "plain":
+            return show_song(song)
+        else:
+            return show_song_json(song)
 
 
 @route('/<provider>/songs/<sid>/lyric')
