@@ -57,37 +57,92 @@ scheme 统一为 fuo。
 
 注：除了这类标识资源的 uri，我们以后可能会有其它格式的 uri。
 
+带有简单描述的资源标识符
+'''''''''''''''''''''''''''
+一个 uri 虽然可以标识一个资源，但是 uri 能够携带的信息往往不够，客户端拿到 uri 后，
+肉眼识别不出来这是个什么东西，所以我们可以给 uri 附上一个简短描述，对于 **歌曲** 来说：
+
+.. code:: text
+
+    {song uri}{      }# {title}-{artists_name}-{album_name}-{duration_ms}
+                |      |                   |
+          空格或者\t  分割符#       描述（所有字段均为可选，但必须按照顺序）
+
+用户，歌手，专辑格式定义分别如下：
+
+.. code:: text
+
+    {user uri}       # {name}
+    {artist uri}     # {name}
+    {album uri}      # {album_name}-{artist_name}
+
+注：之后可以考虑支持带有复杂描述的资源标识符，可能类似（待研究和讨论）
+
+.. code:: text
+
+    fuo://{provider}/songs/{identifier} <<EOF
+      title:     hello world
+      artist:    fuo://{provider}/artists/{identifier}  # {name}
+      album:     fuo://{provider}/artists/{identifier}  # {album_name}-{artists_name}
+      duration:  123.01
+      url:       http://xxx/yyy.mp3
+    EOF
+
+
 命令控制
 ------------
 
-fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可以通过一问一答的方式来进行通信。
+fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可以通过一问一答的方式来进行通信。。
+
+在客户端连接上服务端时，服务端会建立一个会话，并发送类似 ``OK feeluown 1.0.0\\n`` 的信息，
+客户端接收到这个消息后，就可以正常的发送请求了。在一个会话中，服务端需要响应完前一个请求之后，
+才能响应第二个请求（目前看不需要多路复用等技术）。
+
+注：下面写的很多设计目前都没有实现，算是一个 fuo 协议 RFC 草稿。
 
 请求（Request）
 ''''''''''''''''
+请求是一行文字，以换行符结束，具体结构如下
 
 .. code::
 
-   {cmd} [param] [options]
+   {cmd}    {param} [{options}]        #:   {req_options}
+     |        |         |             |         |
+   命令      参数    命令选项          分隔     请求选项
 
-注：目前客户端需要等待服务端返回才能发起第二个请求，否则会把收到的请求合并成一个，
-造成无法识别的问题（后续会改进这个问题）。
+命令选项和请求选项都是以 ``,`` 为选项分隔符。举几个例子：
 
-回答（Response）
+.. code::
+
+   # 播放一首歌（不带任何选项的请求）
+   play fuo://local/songs/1
+
+   # 播放一首歌，输出格式为 json （设置了请求选项）
+   play fuo://local/songs/1  #: format=json
+
+   # 搜索纵观线关键字，结果可以分多次返回（设置了请求选项）
+   # 这里 less 请求选项是 less=true 的简写
+   search 纵贯线  #: less
+
+   # 从网易云音乐中搜索名字类似张震岳的歌手，返回前 20 个结果（设置了命令选项）
+   search 张震岳 [type=artist,source=netease,limit=20,offset=0]
+
+响应（Response）
 ''''''''''''''''''''
+响应体分为两个部分：头和内容，以 ``\r\n\r\n`` 为一个响应的结束。
+
+**头** : 头是响应体的第一行。
 
 .. code::
 
    # 成功
-   ACK {cmd} [param] [options]
-   ...
-   OK
+   ACK {cmd} ok #: more,json
+   {}\r\n\r\n
 
    # 失败
-   ACK {cmd} [param] [options]
-   ...
-   Oops
+   ACK {cmd} oops
+   oops: errmsg\r\n\r\n
 
-注：目前没有设计分包的处理，之后会考虑这个问题。
 
 下面是目前支持的所有命令：
 
