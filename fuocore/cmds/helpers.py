@@ -50,7 +50,6 @@ class ReturnMessage:
         self.msg = msg
         self.output_format = output_format
     def dumps(self):
-        code = RETURN_STATUS_MAP[self.status]
         msg_dict = {"status": RETURN_STATUS_MAP[self.status]}
         logger.debug(self.data)
         if self.data:
@@ -58,7 +57,7 @@ class ReturnMessage:
         if self.msg:
             msg_dict["msg"] = self.msg
         if self.output_format == "json":
-            return json.dumps({"status": code, "data": self.data, "msg": self.msg})
+            return json.dumps(msg_dict)
         else:
             return
 
