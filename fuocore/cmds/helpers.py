@@ -155,7 +155,7 @@ def show_song_json(song, brief=False):
     result = ReturnMessage()
 
     if brief:
-        data = dict()
+        data = {}
         data["song"] = song_uri
         data["title"] = title
         data["artists_name"] = artists_name
@@ -165,7 +165,7 @@ def show_song_json(song, brief=False):
     # XXX: 这个操作可能会产生网络请求
     album_uri = get_url(song.album)
     artists_uri = [get_url(artist) for artist in song.artists]
-    data = dict()
+    data = {}
     data["provider"] = song.source
     data["uri"] = song_uri
     data["title"] = song.title

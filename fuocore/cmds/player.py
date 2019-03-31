@@ -59,7 +59,7 @@ class PlayerHandler(AbstractHandler):
             if output_format == "plain":
                 return self.player.play(s, video=False)
             else:
-                data = dict()
+                data = {}
                 data["type"] = "http"
                 data["player"] = self.player.play(s, video=False)
                 result = ReturnMessage(data=data, output_format=output_format)
@@ -88,7 +88,7 @@ class PlayerHandler(AbstractHandler):
                     msg += 'options::\n' + '\n'.join(lines)
                 return msg
             else:
-                data = dict()
+                data = {}
                 data["selected"] = get_url(songs[0])
                 data["songs"] = list(map(get_url, songs))
                 result = ReturnMessage(data=data, output_format=output_format)

@@ -10,7 +10,7 @@ def parse(content):
     >>> parse("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
     {0.0: ' 作曲 : 周杰伦', 1000.0: ' 作词 : 周杰伦'}
     """
-    ms_sentence_map = dict()
+    ms_sentence_map = {}
     sentence_pattern = re.compile(r'\[(\d+(:\d+){0,2}(\.\d+)?)\]')
     lines = content.splitlines()
     for line in lines:
