@@ -3,6 +3,12 @@ fuo 协议
 
 **fuo 协议** 是 feeluown 播放器的控制协议，它主要是用来提升 feeluown 的可扩展性。
 
+fuo 协议在设计时优先考虑以下几点：
+
+1. 可读性好
+2. 请求简单（使用 netcat 工具可以轻松发送请求）
+3. 解析代码简单
+
 feeluown 以默认参数启动时，会相应的启动一个 TCP 服务，监听 23333 端口，
 我们可以使用 fuo 协议，通过该 TCP 服务来与播放器通信。比如：
 
@@ -10,13 +16,6 @@ feeluown 以默认参数启动时，会相应的启动一个 TCP 服务，监听
 
     ~ > nc localhost 23333
     OK feeluown 1.0.0
-    status
-    ACK status
-    repeat:    1
-    random:    0
-    volume:    100
-    state:     stopped
-    OK
 
 目前（3.0 版本），协议主要包含两个方面的内容：
 
@@ -34,7 +33,7 @@ scheme 统一为 fuo。
 
 .. code::
 
-    fuo//{res_provider}/{res_type}/{res_identifier}
+    fuo://{res_provider}/{res_type}/{res_identifier}
              |              |              |
          资源提供方 id     资源类型         资源id
 
@@ -92,17 +91,17 @@ scheme 统一为 fuo。
 命令控制
 ------------
 
-fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可以通过一问一答的方式来进行通信。。
+fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可以通过一问一答的方式来进行通信。
+（注：fuo 协议不依赖 TCP 传输，不过目前 feeluown daemon 启动时只提供了基于 tcp 的 transport。）
 
-在客户端连接上服务端时，服务端会建立一个会话，并发送类似 ``OK feeluown 1.0.0\\n`` 的信息，
-客户端接收到这个消息后，就可以正常的发送请求了。在一个会话中，服务端需要响应完前一个请求之后，
-才能响应第二个请求（目前看不需要多路复用等技术）。
+在客户端连接上服务端时，服务端会建立一个会话，并发送类似 ``OK feeluown 1.0.0\n`` 的信息，
+客户端接收到这个消息后，就可以正常的发送请求了。在一个会话中，服务端会依次响应接收到的请求。
 
-注：下面写的很多设计目前都没有实现，算是一个 fuo 协议 RFC 草稿。
+注：下面写的很多设计目前都没有实现，算是一个 RFC 草稿。
 
 请求（Request）
 ''''''''''''''''
-请求是一行文字，以换行符结束，具体结构如下
+请求是一行文字，以 ``\r\n`` 或者 ``\n`` 结束，具体结构如下
 
 .. code::
 
@@ -115,33 +114,38 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 .. code::
 
    # 播放一首歌（不带任何选项的请求）
-   play fuo://local/songs/1
+   play fuo://local/songs/1\r\n
 
    # 播放一首歌，输出格式为 json （设置了请求选项）
-   play fuo://local/songs/1  #: format=json
+   play fuo://local/songs/1  #: format=json\r\n
 
    # 搜索纵观线关键字，结果可以分多次返回（设置了请求选项）
    # 这里 less 请求选项是 less=true 的简写
-   search 纵贯线  #: less
+   search 纵贯线  #: less\r\n
 
    # 从网易云音乐中搜索名字类似张震岳的歌手，返回前 20 个结果（设置了命令选项）
-   search 张震岳 [type=artist,source=netease,limit=20,offset=0]
+   search 张震岳 [type=artist,source=netease,limit=20,offset=0]\r\n
 
 响应（Response）
 ''''''''''''''''''''
-响应体分为两个部分：头和内容，以 ``\r\n\r\n`` 为一个响应的结束。
+响应体分为两个部分：头和内容，以 ``\r\n`` 为一个响应的结束。
 
-**头** : 头是响应体的第一行。
+**头** : 头是响应体的第一行。头中会告诉客户端请求成功或者失败，body 长度，请求选项。
+客户端应该根据 length 信息来拆分响应。
 
 .. code::
 
    # 成功
-   ACK {cmd} ok #: more,json
-   {}\r\n\r\n
+   ACK {cmd} ok {length} #: more,json\r\n
+   {body}\r\n
 
    # 失败
-   ACK {cmd} oops
-   oops: errmsg\r\n\r\n
+   ACK {cmd} oops {length}\r\n
+   {err_type}: {err_msg}\r\n
+
+   # 示例
+   ACK play ok 0\r\n
+   \r\n
 
 
 下面是目前支持的所有命令：
