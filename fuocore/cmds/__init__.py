@@ -36,7 +36,7 @@ class CmdLexer:
     ['play', 'import os']
     """
     def __init__(self, *args, **kwargs):
-        pass
+        self._buf = bytearray()
 
     def get_tokens(self, text):
         pos = 0

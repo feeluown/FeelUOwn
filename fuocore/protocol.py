@@ -98,3 +98,41 @@ class ModelParser:
             'album_name': values[2],
             'duration_ms': values[3]
         }
+
+
+class FuoServerProtocol(asyncio.Protocol):
+    __slots__ = ()
+
+    def __init__(self, loop=None):
+        self._loop = loop
+        self.transport = None
+        self.cmd_lexer = CmdLexer()
+
+    async def start(self):
+        """start communication with client"""
+        self.transport.write(b'OK fuo 3.0\r\n')
+
+    def connection_made(self, transport):
+        peername = transport.get_extra_info('peername')
+        logger.debug('{} connceted to fuo daemon.'.format(peername))
+        self.transport = transport
+        self._loop.create_task(self.start())
+
+    def connection_lost(self, exc):
+        self.transport = None
+
+    def pause_write(self):
+        pass
+
+    def resume_write(self):
+        pass
+
+    def data_received(self, data):
+        pass
+
+    def eof_received(self):
+        """Client closed the connection"""
+        pass
+
+
+from fuocore.cmds import CmdLexer

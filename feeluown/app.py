@@ -130,16 +130,18 @@ def attach_attrs(app):
 
 
 def initialize(app):
+    loop = asyncio.get_event_loop()
     app.player.position_changed.connect(app.live_lyric.on_position_changed)
     app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
     app.plugin_mgr.scan()
     if app.mode & app.DaemonMode:
-        app.server = FuoServer(library=app.library,
+        app.server = FuoServer(loop=loop,
+                               library=app.library,
                                player=app.player,
                                playlist=app.playlist,
                                live_lyric=app.live_lyric)
+        loop.create_task(app.server.run())
         app.pubsub_gateway, app.pubsub_server = run_pubsub()
-        app.server.run()
         app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
         app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
 
@@ -149,7 +151,6 @@ def initialize(app):
         app.coll_uimgr.initialize()
 
     if app.mode & (App.DaemonMode | App.GuiMode):
-        loop = asyncio.get_event_loop()
         loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
     bind_signals(app)
     app.initialized.emit(app)
