@@ -16,9 +16,7 @@ class FuoServer:
 
     async def run(self, host='0.0.0.0', port=23333):
         loop = asyncio.get_event_loop()
-        server = await loop.create_server(self.protocol_factory, host, port)
-        async with server:
-            await server.serve_forever()
+        await loop.create_server(self.protocol_factory, host, port)
         logger.info('Fuo daemon run at {}:{}'.format(host, port))
 
     def protocol_factory(self):
