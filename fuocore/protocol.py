@@ -100,39 +100,88 @@ class ModelParser:
         }
 
 
-class FuoServerProtocol(asyncio.Protocol):
-    __slots__ = ()
+class FuoServerProtocol(asyncio.streams.FlowControlMixin):
+    """asyncio-style fuo server protocol
 
+    Implementation reference:
+
+    - asyncio.streams.StreamReaderProtocol
+    - aiohttp.web_protocol.RequestHandler
+    """
     def __init__(self, loop=None):
+        super().__init__(loop)
         self._loop = loop
-        self.transport = None
-        self.cmd_lexer = CmdLexer()
+
+        # StreamReader provides some convinient file-object-like methods
+        # like readline, which is really useful for our implementation.
+        self._reader = None  # type: asyncio.StreamReader
+        self._writer = None
 
     async def start(self):
-        """start communication with client"""
-        self.transport.write(b'OK fuo 3.0\r\n')
+        """connection handler"""
+        # we should call drain after each write to do flow control,
+        # though it is not so important in this case.
+        self._writer.write(b'OK fuo 3.0\r\n')
+        await self._writer.drain()
+        while not self._connection_lost:
+            try:
+                line = await self._reader.readline()
+            except ConnectionResetError:
+                break
+            except Exception as e:
+                logger.exception('unexpected error.')
+            else:
+                self._writer.write(b'x\r\n')
+                # self._writer.write(b'x'*1024*1024*10)
+                await self._writer.drain()
+                #self.transport.close()
+        print('start finished')
 
     def connection_made(self, transport):
         peername = transport.get_extra_info('peername')
         logger.debug('{} connceted to fuo daemon.'.format(peername))
-        self.transport = transport
+        self._reader = asyncio.StreamReader(loop=self._loop)
+        self._writer = asyncio.StreamWriter(
+            transport, self, self._reader, self._loop)
+        # Unlike aiohttp RequestHandler, we will never cancel the handler task,
+        # our task should die when it is supposed to. For instance, when the
+        # client close the connection, StreamReader readline method will
+        # raise ConnectionResetErrror, the handler task should
+        # catch the exc and exit.
         self._loop.create_task(self.start())
 
     def connection_lost(self, exc):
-        self.transport = None
-
-    def pause_write(self):
-        pass
-
-    def resume_write(self):
-        pass
+        """called when our transport is closed"""
+        if self._reader is not None:
+            if exc is None:
+                self._reader.feed_eof()
+            else:
+                self._reader.set_exception(exc)
+        super().connection_lost(exc)
+        # HELP: if you dive into aiohttp RequestHandler or StreamReaderProtocol,
+        # you can see that they set reader, writer...almost
+        # every thing to None when connection lost. I just dont know why.
+        # I have done some experiment, the reader and writer can be
+        # gc-collected even if we do not set it to None manually.
+        # they can be deleted after protocol(self) is deleted.
+        self._reader = None
+        self._writer = None
 
     def data_received(self, data):
-        pass
+        self._reader.feed_data(data)
 
     def eof_received(self):
-        """Client closed the connection"""
-        pass
+        """client has written eof
+
+        Explaination: this means the client will send no more data,
+        client has close the socket or shutdown with SHUT_WR/SHUT_RDWR flag.
+        If we use tcpdump to do packet capture, we can see a FIN packet.
+
+        For fuo protocol, if client shutdown the write pipe, we believe that
+        the client is closing the socket, we will just close the socket,
+        send no data any more, even if the last response may not complete.
+        """
+        return False
 
 
 from fuocore.cmds import CmdLexer
