@@ -103,10 +103,13 @@ class ModelParser:
 class FuoServerProtocol(asyncio.streams.FlowControlMixin):
     """asyncio-style fuo server protocol
 
-    Implementation reference:
-
+    Implementation references:
     - asyncio.streams.StreamReaderProtocol
     - aiohttp.web_protocol.RequestHandler
+
+    TODO:
+    - add request timeout: close connection if no action happens
+    - add graceful shutdown: close connection before exit
     """
     def __init__(self, loop=None):
         super().__init__(loop)
@@ -117,37 +120,39 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         self._reader = None  # type: asyncio.StreamReader
         self._writer = None
 
+        self._peername = None
+
+    async def read_request(self):
+        """read a whole request
+
+        Read one line or multiline, parse it and return a request object.
+        """
+        line_bytes = await self._reader.readline()
+        line_text = line_bytes.decode('utf-8').strip()
+
     async def start(self):
         """connection handler"""
         # we should call drain after each write to do flow control,
         # though it is not so important in this case.
-        self._writer.write(b'OK fuo 3.0\r\n')
-        await self._writer.drain()
-        while not self._connection_lost:
-            try:
-                line = await self._reader.readline()
-            except ConnectionResetError:
-                break
-            except Exception as e:
-                logger.exception('unexpected error.')
-            else:
-                self._writer.write(b'x\r\n')
-                # self._writer.write(b'x'*1024*1024*10)
-                await self._writer.drain()
-                #self.transport.close()
-        print('start finished')
+        try:
+            self._writer.write(b'OK fuo 3.0\r\n')
+            await self._writer.drain()
+            while not self._connection_lost:
+                req = await self.read_request()
+        except ConnectionResetError:
+            # client close the connection
+            pass
 
     def connection_made(self, transport):
-        peername = transport.get_extra_info('peername')
-        logger.debug('{} connceted to fuo daemon.'.format(peername))
+        self._peername = transport.get_extra_info('peername')
+        logger.debug('%s connceted to fuo daemon.', self._peername)
         self._reader = asyncio.StreamReader(loop=self._loop)
         self._writer = asyncio.StreamWriter(
             transport, self, self._reader, self._loop)
         # Unlike aiohttp RequestHandler, we will never cancel the handler task,
         # our task should die when it is supposed to. For instance, when the
-        # client close the connection, StreamReader readline method will
-        # raise ConnectionResetErrror, the handler task should
-        # catch the exc and exit.
+        # client close the connection, connection lost with ConnectionResetErrror,
+        # the handler task should catch the exc and exit.
         self._loop.create_task(self.start())
 
     def connection_lost(self, exc):
@@ -166,6 +171,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         # they can be deleted after protocol(self) is deleted.
         self._reader = None
         self._writer = None
+        logger.debug('%s disconnceted from fuo daemon.', self._peername)
 
     def data_received(self, data):
         self._reader.feed_data(data)
@@ -182,6 +188,3 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         send no data any more, even if the last response may not complete.
         """
         return False
-
-
-from fuocore.cmds import CmdLexer

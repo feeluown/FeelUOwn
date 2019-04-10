@@ -11,7 +11,7 @@ lint:
 unittest: pytest
 
 pytest:
-	pytest
+	TEST_ENV=travis pytest
 
 test: lint unittest
 

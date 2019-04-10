@@ -101,7 +101,7 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 
 请求（Request）
 ''''''''''''''''
-请求是一行文字，以 ``\r\n`` 或者 ``\n`` 结束，具体结构如下
+请求是一行文本，以 ``\r\n`` 或者 ``\n`` 结束，具体结构如下
 
 .. code::
 
@@ -114,17 +114,37 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 .. code::
 
    # 播放一首歌（不带任何选项的请求）
-   play fuo://local/songs/1\r\n
+   play fuo://local/songs/1
 
    # 播放一首歌，输出格式为 json （设置了请求选项）
-   play fuo://local/songs/1  #: format=json\r\n
+   play fuo://local/songs/1  #: format=json
 
    # 搜索纵观线关键字，结果可以分多次返回（设置了请求选项）
    # 这里 less 请求选项是 less=true 的简写
-   search 纵贯线  #: less\r\n
+   search 纵贯线  #: less
 
    # 从网易云音乐中搜索名字类似张震岳的歌手，返回前 20 个结果（设置了命令选项）
-   search 张震岳 [type=artist,source=netease,limit=20,offset=0]\r\n
+   search 张震岳 [type=artist,source=netease,limit=20,offset=0]
+
+
+请求也可以是多行文本，使用多行文本时，需要遵守下面的格式（类似 bash here document）
+
+.. code::
+
+   {cmd} [{options}]  #: {req_options} <<EOF
+   param
+   EOF
+
+
+在多行文本表示的命令中，document 即是命令的参数，这种命令只能接收一个参数。
+举个例子
+
+.. code::
+
+   exec <<EOF
+   print('hello, feeluown')
+   player.pause()
+   EOF
 
 响应（Response）
 ''''''''''''''''''''
@@ -136,16 +156,16 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 .. code::
 
    # 成功
-   ACK {cmd} ok {length} #: more,json\r\n
-   {body}\r\n
+   ACK {cmd} ok {length} #: more,json
+   {body}
 
    # 失败
-   ACK {cmd} oops {length}\r\n
-   {err_type}: {err_msg}\r\n
+   ACK {cmd} oops {length}
+   {err_type}: {err_msg}
 
    # 示例
-   ACK play ok 0\r\n
-   \r\n
+   ACK play ok 0
+
 
 
 下面是目前支持的所有命令：

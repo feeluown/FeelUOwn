@@ -1,0 +1,165 @@
+r"""
+ps: some regex are copied from jinja2/lexer.py and pygments/lexer.py
+
+regex usage example(doctest)
+
+>>> name_re.match('abc_def').group()
+'abc_def'
+>>> string_re.match("'fuo://local/songs/1  # 晴天 - 周杰伦'").group()
+"'fuo://local/songs/1  # 晴天 - 周杰伦'"
+>>> string_re.match(r"'\'")
+>>> furi_re.match('fuo://local/songs/1').group()
+'fuo://local/songs/1'
+"""
+
+import re
+import sys
+from collections import namedtuple, deque
+
+from .excs import FuoSyntaxError
+
+
+TOKEN_NAME = sys.intern('name')
+TOKEN_FURI = sys.intern('furi')  # fuo uri
+TOKEN_STRING = sys.intern('string')
+TOKEN_UNQUOTE_STRING = sys.intern('unquote-string')
+TOKEN_WHITESPACE = sys.intern('whitespace')
+TOKEN_INTEGER = sys.intern('integer')
+TOKEN_FLOAT = sys.intern('float')
+TOKEN_COMMA = sys.intern('comma')
+TOKEN_LBRACKET = sys.intern('lbracket')
+TOKEN_RBRACKET = sys.intern('rbracket')
+TOKEN_EQ = sys.intern('eq')
+TOKEN_REQ_DELIMETER = sys.intern('req_delimeter')
+TOKEN_EOF = sys.intern('eof')
+
+# 匹配变量名或者参数名或者选项名
+# 一个字母或者下划线开头
+name_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*')
+
+# 匹配 whitespace 字符，包括 [ \t\n\r\f\v]
+# 它也会匹配 unicode 中的 whitespace 字符，比如 \u2003
+# >>> whitespace_re.match('\u2003哈哈')
+# ... <re.Match object; span=(0, 1), match='\u2003'>
+whitespace_re = re.compile(r'\s+')
+
+# 匹配 '' 或者 "" 包裹的字符串
+# [^'\\]* 是为了方便处理 '\' 这种情况
+# 在 re.S 模式下，. 可以匹配任意字符，包括 \n
+string_re = re.compile(r"('([^'\\]*(?:\\.[^'\\]*)*)'"
+                       r'|"([^"\\]*(?:\\.[^"\\]*)*)")', re.S)
+furi_re = re.compile(r'fuo://[/\w+\d+]*')
+unquote_string_re = re.compile(r'[\w-]+')
+
+integer_re = re.compile(r'\d+')
+float_re = re.compile(r'(?<!\.)\d+\.\d+')
+newline_re = re.compile(r'(\r\n|\r|\n)')
+comma_re = re.compile(r',')
+lbracket_re = re.compile(r'\[')
+rbracket_re = re.compile(r'\]')
+req_delimeter_re = re.compile(r'#:')
+equal_re = re.compile(r'=')
+
+
+Token = namedtuple('Token', ['column', 'type_', 'value'])
+
+base_rules = [
+    (TOKEN_FURI, furi_re),
+    (TOKEN_NAME, name_re),
+    (TOKEN_WHITESPACE, whitespace_re),
+    (TOKEN_FLOAT, float_re),
+    (TOKEN_INTEGER, integer_re),
+    (TOKEN_STRING, string_re),
+    (TOKEN_UNQUOTE_STRING, unquote_string_re),
+    (TOKEN_EQ, equal_re),
+]
+
+root_rules = base_rules + [
+    (TOKEN_LBRACKET, lbracket_re),
+    (TOKEN_REQ_DELIMETER, req_delimeter_re),
+]
+
+bracket_rules = base_rules + [
+    (TOKEN_COMMA, comma_re),
+    (TOKEN_RBRACKET, rbracket_re),
+]
+
+req_rules = base_rules + [
+    (TOKEN_COMMA, comma_re),
+]
+
+state_rules = {
+    'root': root_rules,
+    'bracket': bracket_rules,
+    'req': req_rules,
+}
+
+
+def get_state_expect(state):
+    if state == 'bracket':
+        return ']'
+    raise ValueError('state: %s has no need' % str(state))
+
+
+class Lexer:
+    """fuo protocol request-line lexer
+
+    >>> list(token.value for token in Lexer().tokenize('play fuo://local'))
+    ['play', 'fuo://local']
+    >>> text = "play 'fuo://local/songs1 # 晴天 - 周杰伦'"
+    >>> list(token.value for token in Lexer().tokenize(text))
+    ['play', 'fuo://local/songs1 # 晴天 - 周杰伦']
+    >>> text2 = "search 哈哈 [artist=喵]  #: less"
+    >>> list(token.value for token in Lexer().tokenize(text2))
+    ['search', '哈哈', '[', 'artist', '=', '喵', ']', '#:', 'less']
+    """
+
+    def tokenize(self, source):
+        def err(msg, column):
+            raise FuoSyntaxError(msg, text=source, column=column)
+
+        pos = 0
+        state_stack = deque()
+        state = 'root'
+        while 1:
+            for rule in state_rules[state]:
+                type_, regex = rule
+                m = regex.match(source, pos)
+                if m is None:
+                    continue
+                value = m.group()
+                if type_ == TOKEN_STRING:
+                    value = value[1:-1]
+                elif type_ == TOKEN_INTEGER:
+                    value = int(value)
+                elif type_ == TOKEN_FLOAT:
+                    value = float(value)
+                token = Token(pos, type_, value)
+
+                if type_ == TOKEN_LBRACKET:
+                    state_stack.append(state)
+                    state = 'bracket'
+                elif type_ == TOKEN_REQ_DELIMETER:
+                    if state != 'root':
+                        expect = get_state_expect(state)
+                        err("expected token '%s' at pos %d" % (expect, pos), pos)
+                    state_stack.append(state)
+                    state = 'req'
+                elif type_ == TOKEN_RBRACKET:
+                    if state != 'bracket':
+                        err("unexpected token ']' at pos %d" % pos, pos)
+                    state = state_stack.pop()
+                if token.type_ != TOKEN_WHITESPACE:
+                    yield token
+                pos = m.end()
+                break
+            else:
+                if pos == len(source):
+                    if state not in ('root', 'req'):
+                        expect = get_state_expect(state)
+                        err("expected token '%s', but EOL reached" % expect, pos)
+                    else:
+                        # yield Token(pos, TOKEN_EOF, '')
+                        break
+                else:
+                    err("unexpected token '%s' at pos %d" % (source[pos], pos), pos)

@@ -18,6 +18,7 @@ setup(
         'feeluown.uimodels',
         'fuocore',
         'fuocore.cmds',
+        'fuocore.protocol',
         ],
     py_modules=['mpv'],
     package_data={

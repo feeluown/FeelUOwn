@@ -35,9 +35,6 @@ class CmdLexer:
     >>> list(CmdLexer().get_tokens("play <<EOF import os\nEOF\n"))
     ['play', 'import os']
     """
-    def __init__(self, *args, **kwargs):
-        self._buf = bytearray()
-
     def get_tokens(self, text):
         pos = 0
         while pos < len(text):
