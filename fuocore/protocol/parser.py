@@ -41,6 +41,7 @@ from .lexer import (
     TOKEN_NAME, TOKEN_FURI, TOKEN_STRING, TOKEN_UNQUOTE_STRING,
     TOKEN_INTEGER, TOKEN_FLOAT, TOKEN_COMMA,
     TOKEN_LBRACKET, TOKEN_RBRACKET, TOKEN_EQ, TOKEN_REQ_DELIMETER,
+    TOKEN_HEREDOC_OP, TOKEN_HEREDOC_WORD,
 )
 from .request import Request
 
@@ -66,6 +67,7 @@ class Parser:
             req.cmd_args = self._parse_values()
             req.cmd_options = self._parse_cmd_options()
             req.options = self._parse_req_options()
+            req.has_heredoc, req.heredoc_word = self._parse_heredoc()
         except _EOF:
             # 上述步骤出现 EOF 都属于正常情况
             pass
@@ -203,5 +205,20 @@ class Parser:
 
     def _parse_req_options(self):
         next_token = self._next_token()  # 消费 REQ_DELIMETER
-        assert next_token.type_ == TOKEN_REQ_DELIMETER
+        if next_token.type_ != TOKEN_REQ_DELIMETER:
+            self._current_token = next_token
+            return {}
         return self._parse_options()
+
+    def _parse_heredoc(self):
+        token = self._next_token()
+        if token.type_ != TOKEN_HEREDOC_OP:
+            self._current_token = token
+            return False, None
+        try:
+            next_token = self._next_token()
+        except _EOF:
+            raise FuoSyntaxError(self._end_column)
+        else:
+            assert next_token.type_ == TOKEN_HEREDOC_WORD
+            return True, next_token.value

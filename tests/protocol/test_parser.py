@@ -89,3 +89,9 @@ class TestParser(TestCase):
         source = "play #: miao miao"
         with self.assertRaises(FuoSyntaxError):
             Parser(lexer.tokenize(source), source).parse()
+
+    def test_parse_heredoc(self):
+        source = "play << EOF"
+        req = Parser(lexer.tokenize(source), source).parse()
+        self.assertEqual(req.has_heredoc, True)
+        self.assertEqual(req.heredoc_word, 'EOF')

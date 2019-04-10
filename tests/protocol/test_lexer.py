@@ -32,3 +32,11 @@ class TestLexer(TestCase):
         self.assertEqual(next(tokens).value, 1)
         self.assertEqual(next(tokens).value, 1.5)
         self.assertEqual(next(tokens).value, 'aha')
+
+    def test_heredoc_simple(self):
+        """test if lexer can recognize heredoc start"""
+        tokens = lexer.tokenize('<<EOF')
+        self.assertEqual(next(tokens).value, '<<')
+        token = next(tokens)
+        self.assertEqual(token.value, 'EOF')
+        self.assertEqual(token.type_, 'heredoc_word')
