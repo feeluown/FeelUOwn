@@ -263,10 +263,10 @@ class Playlist(object):
 class AbstractPlayer(metaclass=ABCMeta):
     """Player abstrace base class"""
 
-    def __init__(self, playlist=Playlist(), **kwargs):
+    def __init__(self, playlist=None, **kwargs):
         self._position = 0  # seconds
         self._volume = 100  # (0, 100)
-        self._playlist = playlist
+        self._playlist = playlist or Playlist()
         self._state = State.stopped
         self._duration = None
 
