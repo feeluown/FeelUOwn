@@ -7,15 +7,6 @@ fuocore.player
 This module difines :class:`.AbstractPlayer` ，and implement a :class:`.MpvPlayer`
 based on mpv. In addition, it defines :class:`.Playlist` class, which is used
 by the player to manage playlist.
-
-**Simple Usage**
-
-.. sourcecode:: python
-
-    >>> from fuocore.player import MpvPlayer
-    >>> player = MpvPlayer()
-    >>> player.initialize()
-    >>> player.play('xxx')  # local file path or http url
  """
 
 from abc import ABCMeta, abstractmethod
