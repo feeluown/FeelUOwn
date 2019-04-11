@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from fuocore.protocol import FuoServerProtocol, Response
-from fuocore.cmds import exec_cmd, Cmd, CmdException
+from fuocore.cmds import exec_cmd, Cmd
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +25,9 @@ class FuoServer:
         cmd = Cmd(req.cmd, *req.cmd_args)
         success, msg = exec_cmd(
             cmd,
-            library=self._app._library,
-            player=self._app._player,
-            playlist=self._app._playlist,
-            live_lyric=self._app._live_lyric)
+            library=self._app.library,
+            player=self._app.player,
+            playlist=self._app.playlist,
+            live_lyric=self._app.live_lyric)
         code = 'ok' if success else 'oops'
         return Response(code=code, msg=msg, req=req)

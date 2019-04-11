@@ -221,7 +221,7 @@ class Parser:
         try:
             next_token = self._next_token()
         except _EOF:
-            raise FuoSyntaxError(self._end_column)
+            self._error(self._end_column)
         else:
             assert next_token.type_ == TOKEN_HEREDOC_WORD
             return True, next_token.value

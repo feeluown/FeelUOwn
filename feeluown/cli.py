@@ -101,7 +101,7 @@ class Client(object):
         rfile.readline()  # welcome message
         self.sock.send(bytes(req.raw + '\n', 'utf-8'))
         line = rfile.readline().decode('utf-8').strip()
-        _, _, code, length = line.split(' ')
+        _, code, length = line.split(' ')
         buf = bytearray()
         while len(buf) < int(length) + 2:
             buf.extend(rfile.readline())

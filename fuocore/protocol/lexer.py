@@ -149,7 +149,7 @@ class Lexer:
                 if pos == len(source):
                     if state not in ('root', 'req', 'heredoc'):
                         expect = get_state_expect(state)
-                        err("expected token '%s', but EOL reached" % expect, pos)
+                        err("expected token '%s', but end of line reached" % expect, pos)
                     else:
                         break
                 else:

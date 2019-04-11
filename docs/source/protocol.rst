@@ -193,15 +193,15 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 .. code::
 
    # 成功
-   ACK {cmd} ok {length} #: more,json
+   ACK ok {length} #: more,json
    {body}
 
    # 失败
-   ACK {cmd} oops {length}
+   ACK oops {length}
    {err_type}: {err_msg}
 
    # 示例
-   ACK play ok 0
+   ACK ok 0
 
 
 下面是目前支持的所有命令：

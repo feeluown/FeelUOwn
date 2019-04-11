@@ -18,7 +18,7 @@ class Request:
 
 
 class Response:
-    def __init__(self, code, msg, req, options=None):
+    def __init__(self, code, msg, req=None, options=None):
         self.code = code
         self.msg = msg
         self.options = options or {}

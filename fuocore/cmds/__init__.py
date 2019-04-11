@@ -52,7 +52,7 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
 
     handler_cls = cmd_resolver.get_handler(cmd.action)
     if handler_cls is None:
-        return False, 'Command not found!'
+        return False, 'cmd not found!'
 
     try:
         handler = handler_cls(library=library,
@@ -62,7 +62,7 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
         rv = handler.handle(cmd)
     except Exception as e:
         logger.exception('handle cmd({}) error'.format(cmd))
-        return False, 'internal error'
+        return False, 'internal server error'
     else:
         if rv is None:
             rv = ''
