@@ -5,7 +5,7 @@ import sys
 from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
-from fuocore.cmds import interprete
+from fuocore.cmds import exec_cmd, Cmd
 from fuocore.cmds.helpers import show_song
 from feeluown.consts import CACHE_DIR
 
@@ -73,6 +73,9 @@ class Request:
             text += ' '.join(self.args)
         return text
 
+    def to_cmd(self):
+        return Cmd(self.cmd, *self.args)
+
     def __str__(self):
         return '{} {}'.format(self.cmd, self.args)
 
@@ -94,19 +97,19 @@ class Client(object):
         self.sock = sock
 
     def send(self, req):
-        self.recv()  # welcome message
+        rfile = self.sock.makefile('rb')
+        rfile.readline()  # welcome message
         self.sock.send(bytes(req.raw + '\n', 'utf-8'))
-        result = self.recv()
-        return Response.from_text(result.decode('utf-8'))
-
-    def recv(self):
-        result = b''
-        while True:
-            b = self.sock.recv(256)
-            result += b
-            if len(b) < 256:
-                break
-        return result
+        line = rfile.readline().decode('utf-8').strip()
+        _, _, code, length = line.split(' ')
+        buf = bytearray()
+        while len(buf) < int(length) + 2:
+            buf.extend(rfile.readline())
+        text = bytes(buf[:-2]).decode('utf-8')
+        if code.lower() == 'ok':
+            return Response(code='OK', content=text)
+        else:
+            return Response(code='Oops', content=text)
 
     def close(self):
         self.sock.close()
@@ -245,12 +248,13 @@ class OnceClient:
 
     def send(self, req):
         app = self._app
-        rv = interprete(req.raw,
-                        library=app.library,
-                        player=app.player,
-                        playlist=app.playlist,
-                        live_lyric=app.live_lyric)
-        return Response.from_text(rv)
+        success, msg = exec_cmd(req.to_cmd(),
+                                library=app.library,
+                                player=app.player,
+                                playlist=app.playlist,
+                                live_lyric=app.live_lyric)
+        code = 'OK' if success else 'Oops'
+        return Response(code=code, content=msg)
 
 
 def dispatch(args, client):
