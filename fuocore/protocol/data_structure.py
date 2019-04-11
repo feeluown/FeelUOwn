@@ -12,3 +12,15 @@ class Request:
 
         self.has_heredoc = has_heredoc
         self.heredoc_word = heredoc_word
+
+    def set_heredoc_body(self, body):
+        self.cmd_args = [body]
+
+
+class Response:
+    def __init__(self, code, msg, req, options=None):
+        self.code = code
+        self.msg = msg
+        self.options = options or {}
+
+        self.req = req

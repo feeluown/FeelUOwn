@@ -37,13 +37,14 @@ parse tree::
 """
 
 from .excs import FuoSyntaxError
+from .lexer import Lexer
 from .lexer import (
     TOKEN_NAME, TOKEN_FURI, TOKEN_STRING, TOKEN_UNQUOTE_STRING,
     TOKEN_INTEGER, TOKEN_FLOAT, TOKEN_COMMA,
     TOKEN_LBRACKET, TOKEN_RBRACKET, TOKEN_EQ, TOKEN_REQ_DELIMETER,
     TOKEN_HEREDOC_OP, TOKEN_HEREDOC_WORD,
 )
-from .request import Request
+from .data_structure import Request
 
 
 class _EOF(Exception):
@@ -53,8 +54,8 @@ class _EOF(Exception):
 class Parser:
     """fuo 请求解析器"""
 
-    def __init__(self, token_stream, source):
-        self.tokens = token_stream
+    def __init__(self, source):
+        self.tokens = Lexer().tokenize(source)
         self._source = source
 
         self._end_column = len(self._source) - 1

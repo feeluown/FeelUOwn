@@ -11,9 +11,9 @@ async def coro():
 class TestFuoServerProtocol(TestCase):
     def setUp(self):
         self.loop = asyncio.new_event_loop()
-        self.protocol = FuoServerProtocol(self.loop)
+        self.protocol = FuoServerProtocol(req_handler=lambda: (), loop=self.loop)
 
-    @mock.patch.object(FuoServerProtocol, 'start')
+    @mock.patch.object(FuoServerProtocol, 'start', return_value=coro())
     def test_connection_made(self, mock_start):
         """reader and writer should be inited, start task should be created"""
         transport = mock.Mock()
@@ -45,7 +45,7 @@ class TestFuoServerProtocol(TestCase):
         self.assertTrue(mock_readline.called)
 
     @mock.patch.object(asyncio.StreamReader, 'feed_eof')
-    @mock.patch.object(FuoServerProtocol, 'start')
+    @mock.patch.object(FuoServerProtocol, 'start', return_value=coro())
     def test_connection_lost(self, mock_start, mock_feed_eof):
         """connection_lost should feed_eof"""
         transport = mock.Mock()
@@ -53,7 +53,7 @@ class TestFuoServerProtocol(TestCase):
         self.protocol.connection_lost(None)
         self.assertTrue(mock_feed_eof.called)
 
-    @mock.patch.object(FuoServerProtocol, 'start')
+    @mock.patch.object(FuoServerProtocol, 'start', return_value=coro())
     def test_eof_received(self, mock_start):
         """eof_received should return False or None"""
         transport = mock.Mock()

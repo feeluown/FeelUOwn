@@ -9,7 +9,7 @@ class FuoSyntaxError(FuoProtocolError):
     >>> print(e.human_readabe_msg)
     FuoSyntaxError:
       > play 'fuo
-                ^
+                 ^
     """
     def __init__(self, *args, column=None, text=None):
         super().__init__(*args)
@@ -28,6 +28,6 @@ class FuoSyntaxError(FuoProtocolError):
             tpl = '{msg}\n  > {text}\n    {arrow}'
             msg = tpl.format(text=self.text,
                              msg=basic_msg,
-                             arrow=(self.column - 1) * ' ' + '^')
+                             arrow=(self.column) * ' ' + '^')
             return msg
         return basic_msg
