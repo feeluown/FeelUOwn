@@ -11,7 +11,7 @@ async def coro():
 class TestFuoServerProtocol(TestCase):
     def setUp(self):
         self.loop = asyncio.new_event_loop()
-        self.protocol = FuoServerProtocol(req_handler=lambda: (), loop=self.loop)
+        self.protocol = FuoServerProtocol(handle_req=lambda: (), loop=self.loop)
 
     @mock.patch.object(FuoServerProtocol, 'start', return_value=coro())
     def test_connection_made(self, mock_start):

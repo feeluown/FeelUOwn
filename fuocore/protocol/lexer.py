@@ -1,17 +1,3 @@
-r"""
-ps: some regex are copied from jinja2/lexer.py and pygments/lexer.py
-
-regex usage example(doctest)
-
->>> name_re.match('abc_def').group()
-'abc_def'
->>> string_re.match("'fuo://local/songs/1  # 晴天 - 周杰伦'").group()
-"'fuo://local/songs/1  # 晴天 - 周杰伦'"
->>> string_re.match(r"'\'")
->>> furi_re.match('fuo://local/songs/1').group()
-'fuo://local/songs/1'
-"""
-
 import re
 import sys
 from collections import namedtuple, deque
@@ -19,6 +5,7 @@ from collections import namedtuple, deque
 from .excs import FuoSyntaxError
 
 
+# 注：下面很多正则都是从 jinja2/lexer.py 和 pygments/lexer.py 拷贝过来
 TOKEN_NAME = sys.intern('name')
 TOKEN_FURI = sys.intern('furi')  # fuo uri
 TOKEN_STRING = sys.intern('string')
@@ -34,19 +21,8 @@ TOKEN_REQ_DELIMETER = sys.intern('req_delimeter')
 TOKEN_HEREDOC_OP = sys.intern('heredoc_op')
 TOKEN_HEREDOC_WORD = sys.intern('heredoc_word')
 
-# 匹配变量名或者参数名或者选项名
-# 一个字母或者下划线开头
 name_re = re.compile(r'[a-zA-Z_][a-zA-Z0-9_]*')
-
-# 匹配 whitespace 字符，包括 [ \t\n\r\f\v]
-# 它也会匹配 unicode 中的 whitespace 字符，比如 \u2003
-# >>> whitespace_re.match('\u2003哈哈')
-# ... <re.Match object; span=(0, 1), match='\u2003'>
 whitespace_re = re.compile(r'\s+')
-
-# 匹配 '' 或者 "" 包裹的字符串
-# [^'\\]* 是为了方便处理 '\' 这种情况
-# 在 re.S 模式下，. 可以匹配任意字符，包括 \n
 string_re = re.compile(r"('([^'\\]*(?:\\.[^'\\]*)*)'"
                        r'|"([^"\\]*(?:\\.[^"\\]*)*)")', re.S)
 furi_re = re.compile(r'fuo://[/\w+\d+]*')
@@ -111,7 +87,7 @@ def get_state_expect(state):
 
 
 class Lexer:
-    """fuo protocol request-line lexer
+    """fuo 协议请求的词法分析器
 
     >>> list(token.value for token in Lexer().tokenize('play fuo://local'))
     ['play', 'fuo://local']

@@ -22,9 +22,9 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
     - add request timeout: close connection if no action happens
     - add graceful shutdown: close connection before exit
     """
-    def __init__(self, req_handler, loop):
+    def __init__(self, handle_req, loop):
         super().__init__(loop)
-        self._req_handler = req_handler
+        self._handle_req = handle_req
         self._loop = loop
 
         # StreamReader provides some convinient file-object-like methods
@@ -103,7 +103,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                         break
                     elif req is 0:  # ignore the empty request
                         continue
-                    resp = self._req_handler(req)
+                    resp = self._handle_req(req)
                     await self.write_response(resp)
         except ConnectionResetError:
             # client close the connection

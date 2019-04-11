@@ -7,7 +7,7 @@ ps: 和常见的编程语言不一样，fuo 请求语法和 shell 命令的语�
 但是第一作者(cosven)对 optparse 没啥太大的兴趣，而对编程语言的 parser
 比较感冒，于是就以下面这种形式实现了这个 Parser。
 
-grammer::
+上下文无关文法::
 
     expr: cmd (value)* (cmd_option)? (req_option)?
     req_option: REQ_DELIMETER options
@@ -17,7 +17,6 @@ grammer::
     values: (value)*
     value: NAME | STRING | INTEGER | FLOAT | FURI | UNQUOTE_STRING
     cmd: NAME
-
 
 ``search faint [artist="linkin park"]  #: json``
 
@@ -52,14 +51,17 @@ class _EOF(Exception):
 
 
 class Parser:
-    """fuo 请求解析器"""
+    """fuo 请求语法分析器
+
+    使用递归下降思想实现，自顶向下，LL(1)。
+    """
 
     def __init__(self, source):
         self.tokens = Lexer().tokenize(source)
         self._source = source
 
         self._end_column = len(self._source) - 1
-        self._current_token = None
+        self._current_token = None  # one lookahead token
 
     def parse(self):
         cmd = self._parse_cmd()

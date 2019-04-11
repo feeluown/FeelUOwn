@@ -135,11 +135,7 @@ def initialize(app):
     app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
     app.plugin_mgr.scan()
     if app.mode & app.DaemonMode:
-        app.server = FuoServer(loop=loop,
-                               library=app.library,
-                               player=app.player,
-                               playlist=app.playlist,
-                               live_lyric=app.live_lyric)
+        app.server = FuoServer(app, loop=loop)
         loop.create_task(app.server.run())
         app.pubsub_gateway, app.pubsub_server = run_pubsub()
         app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)

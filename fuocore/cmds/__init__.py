@@ -39,6 +39,15 @@ cmd_resolver = CmdResolver(cmd_handler_mapping)
 
 
 def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
+    """执行命令
+
+    .. note::
+
+        此函数理论上是可以脱离 feeluown 的 App 概念来运行的，
+        所以目前这里没有将 app 设计为参数。
+        但在实践中，这个设计似乎会让代码可读性变差，是值得探讨的。
+    """
+
     logger.debug('EXEC_CMD: ' + str(cmd))
 
     handler_cls = cmd_resolver.get_handler(cmd.action)

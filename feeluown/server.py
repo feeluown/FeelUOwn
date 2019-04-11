@@ -8,12 +8,9 @@ logger = logging.getLogger(__name__)
 
 
 class FuoServer:
-    def __init__(self, *, loop, library, player, playlist, live_lyric):
+    def __init__(self, app, loop):
+        self._app = app
         self._loop = loop
-        self._library = library
-        self._player = player
-        self._playlist = playlist
-        self._live_lyric = live_lyric
 
     async def run(self, host='0.0.0.0', port=23333):
         loop = asyncio.get_event_loop()
@@ -21,16 +18,16 @@ class FuoServer:
         logger.info('Fuo daemon run at {}:{}'.format(host, port))
 
     def protocol_factory(self):
-        return FuoServerProtocol(req_handler=self.handle_req,
+        return FuoServerProtocol(handle_req=self.handle_req,
                                  loop=self._loop)
 
     def handle_req(self, req, session=None):
         cmd = Cmd(req.cmd, *req.cmd_args)
         success, msg = exec_cmd(
             cmd,
-            library=self._library,
-            player=self._player,
-            playlist=self._playlist,
-            live_lyric=self._live_lyric)
+            library=self._app._library,
+            player=self._app._player,
+            playlist=self._app._playlist,
+            live_lyric=self._app._live_lyric)
         code = 'ok' if success else 'oops'
         return Response(code=code, msg=msg, req=req)
