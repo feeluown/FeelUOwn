@@ -99,36 +99,93 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 
 注：下面写的很多设计目前都没有实现，算是一个 RFC 草稿。
 
+消息（Message）
+'''''''''''''''''''
+和 HTTP 消息类似，fuo 消息是 feeluown 服务端和客户端之间交换数据的方式。
+有两种类型的消息：
+
+- 请求：由客户端发送用来触发服务端的一个动作
+- 响应：服务端对请求的应答
+
+
 请求（Request）
-''''''''''''''''
-请求是一行文字，以 ``\r\n`` 或者 ``\n`` 结束，具体结构如下
+'''''''''''''''''''
+请求可以是一行文本，也可以是多行。
+
+当请求为一行文本时，它以 ``\r\n`` 或者 ``\n`` 结束，具体结构如下：
 
 .. code::
 
-   {cmd}    {param} [{options}]        #:   {req_options}
+   {cmd}    {param} [{options}]        #:   {req_options}  \r\n
      |        |         |             |         |
    命令      参数    命令选项          分隔     请求选项
 
-命令选项和请求选项都是以 ``,`` 为选项分隔符。举几个例子：
+这一行，我们称之为 ``request-line`` 。其中，
+命令是必须项。参数和命令选项都是视具体命令而定，有的是可选，有的则必须提供。
+命令选项由 ``[]`` 包裹，选项都是 key-value 形式，比如 ``[artist="linkin park",json=true]`` 。
+
+举几个例子：
 
 .. code::
 
-   # 播放一首歌（不带任何选项的请求）
-   play fuo://local/songs/1\r\n
+   # 查看服务端状态，只需要提供命令即可
+   status
 
-   # 播放一首歌，输出格式为 json （设置了请求选项）
-   play fuo://local/songs/1  #: format=json\r\n
+   # 播放一首歌曲，必须提供一个参数
+   play fuo://local/songs/1
+   play "晴天 - 周杰伦"
+
+   # 搜索关键字为晴天、歌手为周杰伦、来源为网易云的歌曲
+   # 搜索命令必须提供一个参数，命令选项可选
+   # （注：该功能目前还未实现，欢迎 PR）
+   search 晴天 [artist=周杰伦,source=netease]
+
+
+请求选项由 ``#:`` 与命令选项分隔。而请求选项格式和命令选项格式是相同的，
+都是 key=value 形式。在我们设计中，请求选项可能包含以下（目前均未实现，欢迎 PR）：
+
+- 输出格式： ``format=json``
+- 分页输出： ``less=true`` 可以简写为 ``less``
+
+举几个例子：
+
+.. code::
+
 
    # 搜索纵观线关键字，结果可以分多次返回（设置了请求选项）
    # 这里 less 请求选项是 less=true 的简写
-   search 纵贯线  #: less\r\n
+   search 纵贯线  #: less
 
-   # 从网易云音乐中搜索名字类似张震岳的歌手，返回前 20 个结果（设置了命令选项）
-   search 张震岳 [type=artist,source=netease,limit=20,offset=0]\r\n
+   # 使用 JSON 格式返回
+   search 纵贯线 #: format=json,less
+
+
+请求消息也可以是多行文本，使用多行文本时，需要遵守下面的格式（类似 bash here document）
+
+.. code::
+
+   {cmd} [{options}]  #: {req_options} <<EOF
+   document
+   EOF
+
+
+在多行文本表示的命令中，document 即是命令的参数，这种命令只能接收一个参数。
+举个例子
+
+.. code::
+
+   # 让服务端执行代码
+   exec <<EOF
+   print('hello, feeluown')
+   player.pause()
+   EOF
+
+   # 它基本相当于
+   exec "print('hello, feeluown'); player.pause()"
 
 响应（Response）
 ''''''''''''''''''''
-响应体分为两个部分：头和内容，以 ``\r\n`` 为一个响应的结束。
+响应体分为两个部分：头(``status-line``) 和内容(``body``)，以 ``\r\n`` 为一个响应的结束。
 
 **头** : 头是响应体的第一行。头中会告诉客户端请求成功或者失败，body 长度，请求选项。
 客户端应该根据 length 信息来拆分响应。
@@ -136,16 +193,15 @@ fuo 协议定义了一些语义化的命令，客户端和 fuo (服务端) 可�
 .. code::
 
    # 成功
-   ACK {cmd} ok {length} #: more,json\r\n
-   {body}\r\n
+   ACK ok {length} #: more,json
+   {body}
 
    # 失败
-   ACK {cmd} oops {length}\r\n
-   {err_type}: {err_msg}\r\n
+   ACK oops {length}
+   {err_type}: {err_msg}
 
    # 示例
-   ACK play ok 0\r\n
-   \r\n
+   ACK ok 0
 
 
 下面是目前支持的所有命令：

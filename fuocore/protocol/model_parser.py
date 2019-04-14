@@ -1,12 +1,9 @@
-import asyncio
 import logging
 import re
 
 from fuocore.models import ModelType
 
 logger = logging.getLogger(__name__)
-
-__all__ = ('ModelParser',)
 
 
 TYPE_NS_MAP = {

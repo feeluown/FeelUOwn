@@ -1,6 +1,6 @@
 import os
 import time
-from unittest import TestCase, skipIf
+from unittest import TestCase, skipIf, mock
 
 from fuocore.player import MpvPlayer, Playlist, PlaybackMode, State
 
@@ -22,6 +22,7 @@ class TestPlayer(TestCase):
 
     def setUp(self):
         self.player = MpvPlayer()
+        self.player.volume = 0
         self.player.initialize()
 
     def tearDown(self):
@@ -90,7 +91,8 @@ class TestPlaylist(TestCase):
         self.playlist.add(self.s1)
         self.assertEqual(len(self.playlist), 2)
 
-    def test_remove_current_song(self):
+    @mock.patch.object(MpvPlayer, 'play')
+    def test_remove_current_song(self, mock_play):
         s3 = FakeSongModel()
         self.playlist.add(s3)
         self.playlist.current_song = self.s2
@@ -102,7 +104,8 @@ class TestPlaylist(TestCase):
         self.playlist.remove(self.s1)
         self.assertEqual(len(self.playlist), 1)
 
-    def test_remove_2(self):
+    @mock.patch.object(MpvPlayer, 'play')
+    def test_remove_2(self, mock_play):
         """播放器正在播放，移除一首歌"""
         self.playlist.current_song = self.s2
         self.playlist.remove(self.s1)
@@ -114,7 +117,7 @@ class TestPlaylist(TestCase):
         self.playlist.remove(FakeSongModel())
         self.assertEqual(len(self.playlist), 2)
 
-    def test_remove_3(self):
+    def test_remove_4(self):
         """移除一首被标记为无效的歌曲"""
         self.playlist.mark_as_bad(self.s2)
         self.assertEqual(len(self.playlist._bad_songs), 1)
@@ -156,15 +159,15 @@ class TestPlayerAndPlaylist(TestCase):
 
     def setUp(self):
         self.player = MpvPlayer()
-        self.playlist = self.player.playlist
         self.player.initialize()
 
     def tearDown(self):
-        self.playlist.clear()
+        self.player.stop()
         self.player.shutdown()
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
-    def test_change_song(self):
+    @mock.patch.object(MpvPlayer, 'play')
+    def test_change_song(self, _):
         s1 = FakeValidSongModel()
         s2 = FakeValidSongModel()
 
@@ -180,12 +183,12 @@ class TestPlayerAndPlaylist(TestCase):
         self.assertTrue(playlist.current_song, s1)
 
     @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
-    def test_remove_current_song_2(self):
+    @mock.patch.object(MpvPlayer, 'play')
+    def test_remove_current_song_2(self, mock_play):
         """当播放列表只有一首歌时，移除它"""
         s1 = FakeValidSongModel()
-        self.playlist.current_song = s1
+        self.player.playlist.current_song = s1
         time.sleep(MPV_SLEEP_SECOND)  # 让 Mpv 真正的开始播放
-        self.assertTrue(self.player.state, State.playing)
-        self.playlist.remove(s1)
-        self.assertEqual(len(self.playlist), 0)
+        self.player.playlist.remove(s1)
+        self.assertEqual(len(self.player.playlist), 0)
         self.assertEqual(self.player.state, State.stopped)

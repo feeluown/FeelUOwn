@@ -10,29 +10,7 @@ fuocore.cmds.helper
 TODO: 让代码长得更好看
 """
 
-from fuocore.models import ModelType
-
-
-TYPE_NS_MAP = {
-    ModelType.song: 'songs',
-    ModelType.artist: 'artists',
-    ModelType.album: 'albums',
-    ModelType.playlist: 'playlists',
-    ModelType.user: 'users',
-    ModelType.lyric: 'lyrics',
-}
-URL_SCHEME = 'fuo'
-NS_TYPE_MAP = {
-    value: key
-    for key, value in TYPE_NS_MAP.items()
-}
-
-
-def get_url(model):
-    source = model.source
-    ns = TYPE_NS_MAP[model.meta.model_type]
-    identifier = model.identifier
-    return 'fuo://{}/{}/{}'.format(source, ns, identifier)
+from fuocore.protocol import get_url
 
 
 def _fit_text(text, length, filling=True):

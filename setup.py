@@ -18,6 +18,7 @@ setup(
         'feeluown.uimodels',
         'fuocore',
         'fuocore.cmds',
+        'fuocore.protocol',
         ],
     py_modules=['mpv'],
     package_data={
@@ -43,7 +44,7 @@ setup(
         'battery': ['fuo-local', 'fuo-xiami', 'fuo-netease', 'fuo-qqmusic'],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
     },
-    tests_require=['pytest'],
+    tests_require=['pytest', 'pytest-cov'],
     entry_points={
         'console_scripts': [
                 "feeluown=feeluown.__main__:main",
