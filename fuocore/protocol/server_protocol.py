@@ -106,8 +106,18 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                         break
                     elif req is 0:  # ignore the empty request
                         continue
-                    resp = self._handle_req(req)
-                    await self.write_response(resp)
+                    # 通常来说，客户端如果想断开连接，只需要自己主动关闭连接即可，
+                    # 但如果客户端不方便主动断开，可以发送 quit 命令，
+                    # 让服务端来主动关闭连接。
+                    #
+                    # 客户端不方便主动断开的例子：当用户使用 NetCat 发送请求时，
+                    # 用户想在读取完一个 fuo 响应后断开。
+                    if req.cmd == 'quit':
+                        # FIXME: 理论上最好能等待 close 结束
+                        self._writer.close()
+                    else:
+                        resp = self._handle_req(req)
+                        await self.write_response(resp)
         except ConnectionResetError:
             # client close the connection
             pass
