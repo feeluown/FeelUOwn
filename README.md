@@ -1,8 +1,8 @@
 ## FeelUOwn - feel your own
 
 [![Documentation Status](https://readthedocs.org/projects/feeluown/badge/?version=latest)](http://feeluown.readthedocs.org)
-[![Build Status](https://travis-ci.org/cosven/feeluown.svg?branch=master)](https://travis-ci.org/cosven/feeluown)
-[![Coverage Status](https://coveralls.io/repos/github/cosven/feeluown/badge.svg?branch=master&service=github)](https://coveralls.io/github/cosven/feeluown?branch=master)
+[![Build Status](https://travis-ci.org/cosven/FeelUOwn.svg?branch=master)](https://travis-ci.org/cosven/FeelUOwn)
+[![Coverage Status](https://coveralls.io/repos/github/cosven/FeelUOwn/badge.svg?branch=master&service=github)](https://coveralls.io/github/cosven/FeelUOwn?branch=master)
 [![PyPI](https://img.shields.io/pypi/v/fuocore.svg)](https://pypi.python.org/pypi/feeluown)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/feeluown)
 
@@ -30,7 +30,7 @@ FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器，主要面�
 sudo apt-get install python3-pyqt5  # 安装 Python PyQt5 依赖包
 sudo apt-get install python3-pyqt5.qtopengl
 sudo apt-get install libmpv1        # 安装 libmpv1 系统依赖
-pip3 install 'feeluown[battery]>=3.0a4' --user -i https://pypi.org/simple/
+pip3 install 'feeluown[battery]>=3.0a6' --user -i https://pypi.org/simple/
 ## 为 feeluown 生成图标（Linux 用户）
 feeluown-genicon   # 生成图标
 
@@ -77,5 +77,4 @@ feeluonw -nw -d  # -d 表示打开 debug 模式，会输出更多日志
 | 插件名 | 开发者们  | 状态 |
 | ------- | ------ | -------- |
 | [MPRIS2](https://github.com/cosven/feeluown-mpris2-plugin) | [@cosven](https://github.com/cosven) | 可用 |
-| [macOS 全局快捷键](https://github.com/cosven/feeluown-mac-hotkey-plugin) | [@cosven](https://github.com/cosven)| 未测试 |
 | [Discord RPC Rich Precense 服务](https://github.com/BruceZhang1993/feeluown-discordrpc-plugin) | [@BruceZhang1993](https://github.com/BruceZhang1993) | 可用 |
