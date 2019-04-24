@@ -41,7 +41,10 @@ setup(
         'pyopengl',
         ],
     extras_require={
-        'battery': ['fuo-local', 'fuo-xiami', 'fuo-netease', 'fuo-qqmusic'],
+        'battery': ['fuo-local>=0.1.1',
+                    'fuo-xiami>=0.1.2',
+                    'fuo-netease',
+                    'fuo-qqmusic>=0.1.2'],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
     },
     tests_require=['pytest', 'pytest-cov'],
