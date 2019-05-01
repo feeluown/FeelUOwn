@@ -88,7 +88,8 @@ class ModelParser:
     def parse_song_desc(cls, desc):
         values = desc.split(' - ')
         if len(values) < 4:
-            values.extend([''] * (4 - len(values)))
+            values = values if values != [''] else [None]
+            values.extend([None] * (4 - len(values)))
         return {
             'title': values[0],
             'artists_name': values[1],

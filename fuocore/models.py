@@ -303,7 +303,7 @@ class BaseModel(Model):
         if name in ('identifier', 'meta', '_meta', 'stage', 'exists'):
             return value
 
-        if name in cls.meta.fields \
+        if (name in cls.meta.fields or name.replace("_display", "") in cls.meta.fields_display) \
            and name not in cls.meta.fields_no_get \
            and value is None \
            and cls.meta.allow_get \
