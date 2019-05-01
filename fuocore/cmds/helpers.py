@@ -53,15 +53,16 @@ def _fit_text(text, length, filling=True):
         return text[:(len_index_map[remain - 1] + 1)] + ' …'
 
 
-def show_song(song, uri_length=None, brief=False):
+def show_song(song, uri_length=None, brief=False, fetch=False):
     """以一行文字的方式显示一首歌的信息
 
     :param uri_length: 控制 song uri 的长度
     :param brief: 是否只显示简要信息
+    :param fetch: 是否在线请求未初始化的属性
     """
-    artists_name = song.artists_name_display
-    title = _fit_text(song.title_display, 18, filling=False)
-    album_name = song.album_name_display
+    artists_name = song.artists_name if fetch else song.artists_name_display
+    title = _fit_text(song.title if fetch else song.title_display, 18, filling=False)
+    album_name = song.album_name if fetch else song.album_name_display
 
     song_uri = get_url(song)
     if uri_length is not None:
