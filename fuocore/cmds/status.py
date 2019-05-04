@@ -25,7 +25,7 @@ class StatusHandler(AbstractHandler):
             msgs += [
                 'duration:  {}'.format(player.duration),
                 'position:  {}'.format(player.position),
-                'song:      {}'.format(show_song(player.current_song, brief=True)),  # noqa
+                'song:      {}'.format(show_song(player.current_song, brief=True, fetch=True)),  # noqa
                 'lyric-s:   {}'.format(live_lyric.current_sentence),
             ]
         return '\n'.join(msgs)
