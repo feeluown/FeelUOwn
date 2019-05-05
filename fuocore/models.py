@@ -310,6 +310,16 @@ class BaseModel(Model):
            and self.stage < ModelStage.gotten \
            and self.exists != ModelExistence.no:
 
+            # debug snippet: show info of the caller that trigger the model.get call
+            #
+            # import inspect
+            # frame = inspect.currentframe()
+            # caller = frame.f_back
+            # logger.info(
+            #     '%s %d %s',
+            #     caller.f_code.co_filename, caller.f_lineno, caller.f_code.co_name
+            # )
+
             logger.debug("Model {} {}'s value is None, try to get detail."
                          .format(repr(self), name))
             obj = cls.get(self.identifier)
