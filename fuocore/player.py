@@ -257,8 +257,7 @@ class AbstractPlayer(metaclass=ABCMeta):
     def __init__(self, playlist=None, **kwargs):
         self._position = 0  # seconds
         self._volume = 100  # (0, 100)
-        if playlist is not None:
-            self._playlist = Playlist() if playlist is None else playlist
+        self._playlist = Playlist() if playlist is None else playlist
         self._state = State.stopped
         self._duration = None
 
