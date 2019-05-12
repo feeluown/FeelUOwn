@@ -1,78 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-音乐资源模型
-~~~~~~~~~~~~
-
-这个模块定义了音乐资源的模型，如歌曲模型： ``SongModel`` , 歌手模型： ``ArtistModel`` 。
-它们都类似这样::
-
-    class XyzModel(BaseModel):
-        class Meta:
-            model_type = ModelType.xyz
-            fields = ['identifier', 'a', 'b', 'c']
-
-        @property
-        def ab(self):
-            return self.a + self.b
-
-
-可以看到，XyzModel 继承于 BaseModel，并且有个 Meta 类属性。
-在这个例子种，Meta 类保存了 XyzModel 的一些元信息：Xyz 模型有哪些字段(fields),
-以及 Xyz 模型的类型(model_type).
-
-.. note::
-
-    有同学或许会觉得：在 XyzModel 类中又定义了一个 Meta 类，这不是很奇怪么？
-    这个设计是借鉴 django Model Meta 设计，目的是尽量保证 XyzModel
-    属性名字空间简洁干净。
-
-创建模型实例
-++++++++++++++++
-
-我们支持两种创建模型的方法，每种方法都有其适用的场景。
-
-**最容易想到的的创建实例的方法是通过构造函数创建** 。
-
-以 SongModel 为例::
-
-    song = SongModel(identifier=123, title='Love Story',
-                     url='http://xxx.mp3', duration=1000.0)
-
-可以看出，这个方法要求我们知道大部分属性的准确的值。当我们能通过网络请求（或其它方式）
-获取到了一个实例的所有准确信息时，我们推荐用这个方式来实例化。举个例子，
-feeluown-netease 的 NeteaseSongModel.get 方法就是通过这种方法来实例化对像的。
-
-但有时候，我们可能只知道实例 identifier、名字两个信息，并且我们不是特别确定这个名字是否正确，
-那我们就不应该使用上述方法。
-
-这时，我们可以 **通过 create_by_display 方法来创建实例** .
-这个方法一般不会用到，目前主要用于 feeluown 内部，这里不多介绍。
-
-实例生命周期
-++++++++++++++++
-
-两种方式创建的实例所处的生命阶段是不一样的。在一个实例的生命周期中，
-它有三个阶段：display, inited, gotten. 通过构造函数创建的实例所处的阶段是
-inited, 通过 create_by_display 方法创建的实例所处阶段是 dispaly.
-
-::
-
-    -----------
-    | dispaly |  ----
-    -----------      \        ----------
-                      ------> | gotten |
-    ----------       /        ----------
-    | inited |  -----
-    ----------
-
-当实例处于 display 和 inited 阶段时，它们的某些字段可能还没有被初始化，
-值是 None. 这时侯，如果调用方访问了这个实例的任意一个未初始化的字段，
-就会触发实例的进化：调用 Model.get 方法来获取实例所有属性的值，
-用这些值来重新初始化实例，初始化完毕后实例就会进入 gotten 阶段。
-详细逻辑请阅读 ``BaseModel.__getattribute__`` 源码。
-"""
-
 from enum import IntEnum
 import logging
 
@@ -248,20 +175,16 @@ class Model(metaclass=ModelMeta):
 
 
 class BaseModel(Model):
-    """Base model for music resource.
-
-    :param identifier: model object identifier, unique in each provider
-
-    :cvar allow_get: meta var, whether model has a valid get method
-    :cvar allow_list: meta var, whether model has a valid list method
-    """
+    """Base model for music resource"""
 
     class Meta:
-        allow_get = True
-        allow_list = False
+        """Model metadata"""
+
+        allow_get = True  #: whether model has a valid get method
+        allow_list = False  #: whether model has a valid list method
         model_type = ModelType.dummy.value
 
-        #: Model 所有字段，子类可以通过设置该字段以添加其它字段
+        #: declare model fields, each model must have an identifier field
         fields = ['identifier']
 
         #: Model 用来展示的字段
@@ -345,6 +268,7 @@ class BaseModel(Model):
 
     @classmethod
     def create_by_display(cls, identifier, **kwargs):
+        """create model instance with identifier and display fields"""
         model = cls(identifier=identifier)
         model.stage = ModelStage.display
         model.exists = ModelExistence.unknown
@@ -355,10 +279,7 @@ class BaseModel(Model):
 
     @classmethod
     def get(cls, identifier):
-        """获取 model 详情
-
-        这个方法必须尽量初始化所有字段，确保它们的值不是 None。
-        """
+        """get model instance by identifier"""
 
     @classmethod
     def list(cls, identifier_list):
@@ -366,13 +287,8 @@ class BaseModel(Model):
 
 
 class ArtistModel(BaseModel):
-    """Artist Model
+    """Artist Model"""
 
-    :param str name: artist name
-    :param str cover: artist cover image url
-    :param list songs: artist songs
-    :param str desc: artist description
-    """
     class Meta:
         model_type = ModelType.artist.value
         fields = ['name', 'cover', 'songs', 'desc', 'albums']
@@ -388,14 +304,6 @@ class ArtistModel(BaseModel):
 
 
 class AlbumModel(BaseModel):
-    """Album Model
-
-    :param str name: album name
-    :param str cover: album cover image url
-    :param list songs: album songs
-    :param list artists: album artists
-    :param str desc: album description
-    """
     class Meta:
         model_type = ModelType.album.value
 
@@ -513,24 +421,11 @@ class Media:
 
 
 class MvModel(BaseModel):
-    """Mv Model
-
-    :param Media media: 可播放的媒体
-    """
     class Meta:
         fields = ['name', 'media', 'desc', 'cover', 'artist']
 
 
 class SongModel(BaseModel):
-    """Song Model
-
-    :param str title: song title
-    :param str url: song url (http url or local filepath)
-    :param float duration: song duration
-    :param AlbumModel album: album which song belong to
-    :param list artists: song artists :class:`.ArtistModel`
-    :param LyricModel lyric: song lyric
-    """
     class Meta:
         model_type = ModelType.song.value
         # TODO: 支持低/中/高不同质量的音乐文件
@@ -568,13 +463,6 @@ class SongModel(BaseModel):
 
 
 class PlaylistModel(BaseModel):
-    """Playlist Model
-
-    :param name: playlist name
-    :param cover: playlist cover image url
-    :param desc: playlist description
-    :param songs: playlist songs
-    """
     class Meta:
         model_type = ModelType.playlist.value
         fields = ['name', 'cover', 'songs', 'desc']
@@ -603,9 +491,6 @@ class PlaylistModel(BaseModel):
 
 class SearchModel(BaseModel):
     """Search Model
-
-    :param q: search query string
-    :param songs: songs in search result
 
     TODO: support album and artist
     """

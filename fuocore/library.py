@@ -1,15 +1,3 @@
-"""
-音乐库模块
-~~~~~~~~~~~~~~
-
-.. code::
-
-    from fuo_netease import provider
-    library = Library()
-    library.register(provider)
-    library.search('周杰伦')
-"""
-
 import logging
 
 from .utils import log_exectime
@@ -44,7 +32,8 @@ class Library(object):
     def search(self, keyword, source_in=None, **kwargs):
         """search song/artist/album by keyword
 
-        TODO: search album or artist
+        - TODO: support search album or artist
+        - TODO: support search with filters(by artist or by source)
         """
         for provider in self._providers:
             if source_in is not None:
@@ -114,3 +103,9 @@ class Library(object):
                 if len(valid_standby_list) >= 2:
                     break
         return valid_standby_list
+
+    def list_standby(self, model, onlyone=True):
+        """
+        - TODO: implement list_standby method
+        """
+        pass
