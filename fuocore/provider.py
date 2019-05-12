@@ -47,7 +47,6 @@ class AbstractProvider(ABC):
     def __init__(self):
         self._user = None
 
-
     def get_model_cls(self, model_type):
         name = _TYPE_NAME_MAP[model_type]
         return getattr(self, name)
@@ -68,7 +67,13 @@ class AbstractProvider(ABC):
 
     @contextmanager
     def auth_as(self, user):
-        """auth as a user temporarily"""
+        """auth as a user temporarily
+
+        Usage::
+
+            with auth_as(user):
+                ...
+        """
         old_user = self._user
         self.auth(user)
         try:
