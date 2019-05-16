@@ -199,16 +199,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         self.view = parent
 
     def createEditor(self, parent, option, index):
-        # Yeah, I'm a genius, again.
-        if index.column() in (2, ):
-            editor = SongOpsEditor(parent)
-            editor.play_btn.clicked.connect(
-                partial(self.closeEditor.emit, editor, QAbstractItemDelegate.SubmitModelCache))
-            editor.download_btn.clicked.connect(
-                partial(self.closeEditor.emit, editor, QAbstractItemDelegate.SubmitModelCache))
-            editor.play_btn.clicked.connect(partial(self.view.play_song_needed.emit, index.data(role=Qt.UserRole)))
-            return editor
-        elif index.column() == Column.artist:
+        if index.column() == Column.artist:
             editor = ArtistsSelectionView(parent)
             editor.clicked.connect(partial(self.commitData.emit, editor))
             editor.move(parent.mapToGlobal(option.rect.bottomLeft()))
