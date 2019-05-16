@@ -13,7 +13,7 @@ env:
 install:
     - sudo apt-get install libmpv1 -y --force-yes
     - pip install coveralls
-    - pip install pytest mock pytest-cov sphinx_rtd_theme
+    - pip install pytest mock pytest-cov pytest-asyncio sphinx_rtd_theme
     - pip install -e .
 
 script:
