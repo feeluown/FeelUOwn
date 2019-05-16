@@ -1,8 +1,48 @@
 import logging
 
-from .utils import log_exectime
+from fuocore import aio
+from fuocore.models import BaseModel, ModelType
+from fuocore.utils import log_exectime
 
 logger = logging.getLogger(__name__)
+
+
+def _sort_song_standby(song, standby_list):
+    """sort song standby list by similarity"""
+
+    def get_score(standby):
+        """
+        score strategy
+
+        1. title + album > artist
+        2. artist > title > album
+        """
+
+        score = 10
+        if song.artists_name_display != standby.artists_name_display:
+            score -= 4
+        if song.title_display != standby.title_display:
+            score -= 3
+        if song.album_name_display != standby.album_name_display:
+            score -= 2
+        return score
+
+    sorted_standby_list = sorted(
+        standby_list,
+        key=lambda standby: get_score(standby),
+        reverse=True
+    )
+
+    return sorted_standby_list
+
+
+def _extract_and_sort_song_standby_list(song, result_g):
+    standby_list = []
+    for result in result_g:
+        for standby in result.songs[:2]:
+            standby_list.append(standby)
+    sorted_standby_list = _sort_song_standby(song, standby_list)
+    return sorted_standby_list
 
 
 class Library(object):
@@ -29,17 +69,21 @@ class Library(object):
         """列出所有资源提供方"""
         return list(self._providers)
 
+    def _filter(self, identifier_in=None):
+        if identifier_in is None:
+            return iter(self._providers)
+        return filter(lambda p: p.identifier in identifier_in, self.list())
+
     def search(self, keyword, source_in=None, **kwargs):
         """search song/artist/album by keyword
 
         - TODO: support search album or artist
         - TODO: support search with filters(by artist or by source)
-        """
-        for provider in self._providers:
-            if source_in is not None:
-                if provider.identifier not in source_in:
-                    continue
 
+        :param keyword: search keyword
+        :param source_id: None or provider identifier list
+        """
+        for provider in self._filter(identifier_in=source_in):
             try:
                 result = provider.search(keyword=keyword)
             except Exception as e:
@@ -47,6 +91,25 @@ class Library(object):
                 logger.error('Search %s in %s failed.' % (keyword, provider))
             else:
                 yield result
+
+    async def a_search(self, keyword, source_in=None, timeout=None, **kwargs):
+        """async version of search
+
+        TODO: add Happy Eyeballs requesting strategy if needed
+        """
+        fs = []  # future list
+        for provider in self._filter(identifier_in=source_in):
+            future = aio.run_in_executor(None, provider.search, keyword)
+            fs.append(future)
+        result = []
+
+        # TODO: use async generator when we only support Python 3.6 or above
+        for future in aio.as_completed(fs, timeout=timeout):
+            try:
+                result.append(await future)
+            except Exception as e:
+                logger.exception(str(e))
+        return result
 
     @log_exectime
     def list_song_standby(self, song, onlyone=True):
@@ -56,56 +119,41 @@ class Library(object):
         song is not available in one provider, we can try to acquire it from other
         providers.
 
-        Standby choosing strategy: search from all providers, select two song from each provide.
-        Those standby song should have same title and artist name.
-
-        TODO: maybe we should read a strategy from user config, user
-        knows which provider owns copyright about an artist.
-
         FIXME: this method will send several network requests,
         which may block the caller.
 
         :param song: song model
-        :param exclude: exclude providers list
+        :param onlyone: return only one element in result
         :return: list of songs (maximum count: 2)
         """
-        def get_score(standby):
-            score = 1
-            # 分数占比关系：
-            # title + album > artist
-            # artist > title > album
-            if song.artists_name != standby.artists_name:
-                score -= 0.4
-            if song.title != standby.title:
-                score -= 0.3
-            if song.album_name != standby.album_name:
-                score -= 0.2
-            return score
-
-        valid_sources = [p.identifier for p in self.list() if p.identifier != song.source]
+        valid_sources = [pvd.identifier for pvd in self.list()
+                         if pvd.identifier != song.source]
         q = '{} {}'.format(song.title, song.artists_name)
-
-        standby_list = []
-        for result in self.search(q, source_in=valid_sources, limit=10):
-            for standby in result.songs[:2]:
-                standby_list.append(standby)
-        standby_list = sorted(
-            standby_list,
-            key=lambda standby: get_score(standby), reverse=True
-        )
-
-        valid_standby_list = []
-        for standby in standby_list:
-            if standby.url:
-                valid_standby_list.append(standby)
-                if get_score(standby) == 1 or onlyone:
+        result_g = self.search(q, source_in=valid_sources)
+        sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
+        # choose one or two valid standby
+        result = []
+        for standby in sorted_standby_list:
+            if standby.url:  # this may trigger network request
+                result.append(standby)
+                if onlyone or len(result) >= 2:
                     break
-                if len(valid_standby_list) >= 2:
-                    break
-        return valid_standby_list
+        return result
 
-    def list_standby(self, model, onlyone=True):
+    async def a_list_song_standby(self, song, onlyone=True):
+        """async version of list_song_standby
         """
-        - TODO: implement list_standby method
-        """
-        pass
+        valid_sources = [pvd.identifier for pvd in self.list()
+                         if pvd.identifier != song.source]
+        q = '{} {}'.format(song.title, song.artists_name)
+        result_g = await self.a_search(q, source_in=valid_sources)
+        sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
+        # choose one or two valid standby
+        result = []
+        for standby in sorted_standby_list:
+            url = await aio.run_in_executor(None, lambda: standby.url)
+            if url:
+                result.append(standby)
+                if onlyone or len(result) >= 2:
+                    break
+        return result

@@ -500,6 +500,7 @@ class SearchModel(BaseModel):
         # XXX: songs should be a empty list instead of None
         # when there is not song.
         fields = ['q', 'songs']
+        fields_no_get = ['q']
 
     def __str__(self):
         return 'fuo://{}?q={}'.format(self.source, self.q)
