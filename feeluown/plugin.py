@@ -115,6 +115,7 @@ class PluginsManager:
             try:
                 self.enable(plugin)
             except Exception as e:
+                logger.exception('Enable plugin:{} failed'.format(plugin.alias))
                 action.failed(str(e))
 
     def _scan_dirs(self):

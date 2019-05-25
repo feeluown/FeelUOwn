@@ -103,12 +103,18 @@ class SongsTableModel(QAbstractTableModel):
                     return sections[section]
                 return ''
             elif role == Qt.SizeHintRole:
-                widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
-                width = self.parent().width()
-                w = int(width * widths[section])
                 # we set height to 25 since the header can be short under macOS.
                 # HELP: set height to fixed value manually is not so elegant
-                return QSize(w, 25)
+                height = 25
+                # HELP: the last column width percent should be 1-others.
+                # 0.3 may cause the header wider than the tableview
+                # (for example, under KDE Plasma 5.15.5 with QT 5.12.3),
+                # which is unacceptable. In fact, the width percent can be 0.2
+                # or even less since we have enabled StretchLastSection.
+                widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.2)
+                width = self.parent().width()
+                w = int(width * widths[section])
+                return QSize(w, height)
         else:
             if role == Qt.DisplayRole:
                 return section
