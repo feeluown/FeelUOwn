@@ -106,7 +106,8 @@ class SongsTableModel(QAbstractTableModel):
                 widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
                 width = self.parent().width()
                 w = int(width * widths[section])
-                # HELP: 人为指定高度为 25 非常不优雅
+                # we set height to 25 since the header can be short under macOS.
+                # HELP: set height to fixed value manually is not so elegant
                 return QSize(w, 25)
         else:
             if role == Qt.DisplayRole:
@@ -226,6 +227,12 @@ class SongsTableDelegate(QStyledItemDelegate):
         super().paint(painter, option, index)
 
     def sizeHint(self, option, index):
+        """set proper width for each column
+
+        HELP: If we do not set width here, the column width
+        can be uncertain. I don't know why this would happen,
+        since we have set width for the header.
+        """
         widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
         width = self.parent().width()
         w = int(width * widths[index.column()])
@@ -260,9 +267,7 @@ class SongsTableView(QTableView):
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        # macOS 的滚动条可以自动隐藏
-        if use_mac_theme():
-            self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
         self.setWordWrap(False)
