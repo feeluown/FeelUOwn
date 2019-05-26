@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import threading
 
 from fuocore import aio
 from fuocore.player import MpvPlayer, Playlist as _Playlist
@@ -14,6 +15,11 @@ class Playlist(_Playlist):
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
+
+        #: mainthread asyncio loop ref
+        # We know that feeluown is a asyncio-app, and we can assume
+        # that the playlist is inited in main thread.
+        self._loop = asyncio.get_event_loop()
 
         #: find-song-standby task
         self._task = None
@@ -32,8 +38,6 @@ class Playlist(_Playlist):
             self._task.cancel()
             self._task = None
 
-        self._task = aio.create_task(self._app.library.a_list_song_standby(song))
-
         def _current_song_setter(task):
             nonlocal song
             try:
@@ -48,7 +52,14 @@ class Playlist(_Playlist):
             finally:
                 self._task = None
 
-        self._task.add_done_callback(_current_song_setter)
+        def fetch_in_bg():
+            self._task = aio.create_task(self._app.library.a_list_song_standby(song))
+            self._task.add_done_callback(_current_song_setter)
+
+        if threading.current_thread() is threading.main_thread():
+            fetch_in_bg()
+        else:
+            self._loop.call_soon_threadsafe(fetch_in_bg)
 
 
 class Player(MpvPlayer):

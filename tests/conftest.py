@@ -1,3 +1,5 @@
+from unittest.mock import MagicMock
+
 import pytest
 
 from fuocore.library import Library
@@ -90,3 +92,8 @@ def library(provider):
     library = Library()
     library.register(provider)
     return library
+
+
+@pytest.fixture
+def app_mock():
+    return MagicMock()

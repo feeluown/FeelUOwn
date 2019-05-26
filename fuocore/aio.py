@@ -14,7 +14,9 @@ import sys
 
 
 if sys.version_info >= (3, 7):
-    create_task = asyncio.create_task
+    # create_task is temporarily not working properly with quamash
+    # https://github.com/harvimt/quamash/issues/116
+    create_task = asyncio.ensure_future
 else:
     create_task = asyncio.ensure_future
 
