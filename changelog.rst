@@ -7,6 +7,7 @@ Changelog
 3.0a8 (WIP)
 ~~~~~~~~~~~~~~~~~~
 - 修复歌曲播放不能自动 fallback
+- 重新设计 fuocore.models.Media
 
 3.0a7 (2019-04-24)
 ~~~~~~~~~~~~~~~~~~
