@@ -334,9 +334,12 @@ class LyricModel(BaseModel):
         fields = ['song', 'content', 'trans_content']
 
 
-class MvModel(BaseModel):
+class MvModel(BaseModel, MultiQualityMixin):
+    QualityCls = Quality.Video
+
     class Meta:
         fields = ['name', 'media', 'desc', 'cover', 'artist']
+        support_multi_quality = False
 
 
 class SongModel(BaseModel, MultiQualityMixin):

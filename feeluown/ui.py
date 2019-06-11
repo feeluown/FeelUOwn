@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from fuocore.models import Media
 from fuocore.player import PlaybackMode, State
 from fuocore.utils import parse_ms
 
@@ -491,7 +490,7 @@ class Ui:
 
     def _play_mv(self):
         song = self._app.player.current_song
-        url = song.mv.media.select_url(Media.Q.sq)
+        url, _ = song.mv.select_url()
         self._app.player.play(url)
         self.show_video_widget()
 

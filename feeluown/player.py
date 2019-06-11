@@ -27,7 +27,9 @@ class Playlist(_Playlist):
     @_Playlist.current_song.setter
     def current_song(self, song):
         """如果歌曲 url 无效，则尝试从其它平台找一个替代品"""
-        if song is None or song.url:
+        if song is None or \
+           (song.meta.support_multi_quality and song.list_quality()) or \
+           song.url:
             _Playlist.current_song.fset(self, song)
             return
         self.mark_as_bad(song)
