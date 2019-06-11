@@ -3,6 +3,8 @@
 from enum import IntEnum
 import logging
 
+from fuocore.media import MultiQualityMixin, Quality
+
 
 logger = logging.getLogger(__name__)
 
@@ -332,69 +334,24 @@ class LyricModel(BaseModel):
         fields = ['song', 'content', 'trans_content']
 
 
-class Media:
-    """physical media resource for song/mv"""
+class MvModel(BaseModel, MultiQualityMixin):
+    QualityCls = Quality.Video
 
-    class Q(IntEnum):  # Quality
-        #: lossless for audio, 1080p+ for video
-        sq = 16
-        #: about 200kpbs for audio, 720p for video
-        hd = 8
-        #: about 100kpbs for audio, 480p for video
-        sd = 4
-        ld = 2
-
-        @classmethod
-        def list(cls):
-            # desc ordering
-            return [cls.sq, cls.hd, cls.sd, cls.ld]
-
-    class S(IntEnum):
-        updown = 0
-        downup = 1
-
-    def list_q(self):
-        """list available quality"""
-
-    def select_url(self, q, s=S.updown):
-        """select a url by quality and fallback strategy
-
-        :param q: quality
-        :param s: fallback strategy
-        """
-        S = Media.S
-        q_l = self.list_q()
-        if not q_l:
-            return None
-        q_ordered = sorted(q_l, reverse=(s == S.downup))
-        target_q = q_ordered[0]
-        for _q in q_ordered:
-            if _q == q or \
-               (s == S.downup and _q < q) or \
-               (s == S.updown and _q > q):
-                target_q = _q
-                break
-        return self.get_url(target_q)
-
-    def get_url(self, q):
-        """get url by quality
-
-        if q is not available, return None.
-        """
-
-
-class MvModel(BaseModel):
     class Meta:
         fields = ['name', 'media', 'desc', 'cover', 'artist']
+        support_multi_quality = False
 
 
-class SongModel(BaseModel):
+class SongModel(BaseModel, MultiQualityMixin):
+    QualityCls = Quality.Audio
+
     class Meta:
         model_type = ModelType.song.value
-        # TODO: 支持低/中/高不同质量的音乐文件
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration', 'mv', 'media']
         fields_display = ['title', 'artists_name', 'album_name', 'duration_ms']
+
+        support_multi_quality = False
 
     @property
     def artists_name(self):

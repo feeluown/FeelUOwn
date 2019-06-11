@@ -23,7 +23,10 @@
 - fuocore 包相关代码都应该添加相应测试
 
 
-yixi
+特殊风格
+-----------
+
+- 标记了 alpha 的函数和类，它们的设计都是不确定的，外部应该尽少依赖
 
 
 .. _Sphinx docstring format: https://sphinx-rtd-tutorial.readthedocs.io/en/latest/docstrings.html#the-sphinx-docstring-format

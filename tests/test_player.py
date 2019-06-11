@@ -14,8 +14,15 @@ class FakeSongModel:  # pylint: disable=all
     pass
 
 
+class Meta:
+    support_multi_quality = True
+
+
 class FakeValidSongModel:
+    meta = Meta
     url = MP3_URL
+    def select_url(self, _):
+        return MP3_URL, _
 
 
 class TestPlayer(TestCase):
