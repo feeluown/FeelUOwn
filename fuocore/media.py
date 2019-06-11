@@ -9,6 +9,8 @@ class Quality:
     [<Audio.shq: 'shq'>, <Audio.lq: 'lq'>]
     >>> Quality.SortPolicy.apply('hq><', ['shq', 'hq', 'sq', 'lq'])
     ['hq', 'sq', 'shq', 'lq']
+    >>> Quality.SortPolicy.apply('>>>', [3, 2, 1])
+    [3, 2, 1]
     """
 
     class SortPolicy:

@@ -197,6 +197,7 @@ class MpvPlayer(AbstractPlayer):
         如果变化后的歌曲是 None，则停止播放。
         """
         if song is not None:
+            # DOUBT: fetch url asynchronously? or fetch url earlier?
             if song.meta.support_multi_quality:
                 url, quality = song.select_url('hq<>')
             else:
