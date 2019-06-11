@@ -2,7 +2,6 @@ from collections import namedtuple
 from unittest import TestCase, mock
 
 from fuocore.models import Model, BaseModel, display_property
-from fuocore.models import MultiQualityMixin, Media
 
 
 class FakeProvider:
@@ -88,26 +87,3 @@ class TestDisplayProperty(TestCase):
         a2.a_display = 'a2'
         self.assertEqual(a1.a_display, '')
         self.assertEqual(a2.a_display, 'a2')
-
-class TestMultiQuality(TestCase):
-
-    @mock.patch.object(MultiQualityMixin, 'list_q')
-    @mock.patch.object(MultiQualityMixin, 'get_url')
-    def test_select_url(self, mock_get_url, mock_list_q):
-        model = MultiQualityMixin()
-
-        mock_list_q.return_value=Media.Q.list()
-        model.select_url(Media.Q.hd)
-        mock_get_url.assert_called_with(Media.Q.hd)
-
-        mock_list_q.return_value=[Media.Q.ld, Media.Q.sq]
-        model.select_url(Media.Q.hd)
-        mock_get_url.assert_called_with(Media.Q.sq)
-
-        mock_list_q.return_value=[Media.Q.ld, Media.Q.sq]
-        model.select_url(Media.Q.hd, s=Media.S.downup)
-        mock_get_url.assert_called_with(Media.Q.ld)
-
-    @mock.patch.object(MultiQualityMixin, 'list_q', return_value=[])
-    def test_select_url_when_no_valid_quality(self, mock_list_q):
-        self.assertIsNone(MultiQualityMixin().select_url(Media.Q.ld))
