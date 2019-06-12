@@ -1,40 +1,10 @@
-# -*- coding: utf-8 -*-
-
-"""
-fuocore.player
---------------
-
-This module defines :class:`.AbstractPlayer` ，and implement a :class:`.MpvPlayer`
-based on mpv. In addition, it defines :class:`.Playlist` class, which is used
-by the player to manage playlist.
-
-what happend when a song is played::
-
-    Playlist                                         MpvPlayer
-
-        current_song.setter ---[song_changed]---> play
-           ^                                      |
-           |                                      |
-           |<- play_song                          |
-           |<- play_next/play_previous            |
-           |<- play_next <-|                      |
-           |<- replay    <-| mode==one_loop       |
-                           |                      v
-                           |                    play ---[media_changed]--->
-                     [song_finished]
-                           |
-                           |
-                           ---- event(END_FILE)
-
-                                                     libmpv
-"""
-
 from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 import logging
 import random
 
 from fuocore.dispatch import Signal
+from fuocore.media import Media
 
 
 logger = logging.getLogger(__name__)
@@ -62,10 +32,6 @@ class PlaybackMode(IntEnum):
 
 class Playlist(object):
     """player playlist provide a list of song model to play
-
-    NOTE - Design: Why we use song model instead of url? Theoretically,
-    using song model may increase the coupling. However, simple url
-    do not obtain enough metadata.
     """
 
     def __init__(self, songs=None, playback_mode=PlaybackMode.loop):
@@ -321,12 +287,7 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     @property
     def current_song(self):
-        """当前正在播放的歌曲
-
-        .. warning:
-
-           即使
-        """
+        """alias of playlist.current_song"""
         return self._playlist.current_song
 
     @property
@@ -375,6 +336,23 @@ class AbstractPlayer(metaclass=ABCMeta):
             media file
         :param video: show video or not
         """
+
+    def prepare_media(self, song, done_cb=None):
+        """prepare media data
+
+        In practice, we usually need to perform some web requests to extract
+        media data from song object, which may block the whole thread.
+        We can override this method to make the request action non-blocking,
+        when the action finishes, invoke done callback.
+        """
+        if song.meta.support_multi_quality:
+            url, quality = song.select_url('hq<>')
+        else:
+            url = song.url
+        media = Media(url) if url else None
+        if done_cb is not None:
+            done_cb(media)
+        return media
 
     @abstractmethod
     def play_song(self, song):

@@ -196,17 +196,15 @@ class MpvPlayer(AbstractPlayer):
         判断变化后的歌曲是否有效的，有效则播放，否则将它标记为无效歌曲。
         如果变化后的歌曲是 None，则停止播放。
         """
-        if song is not None:
-            # DOUBT: fetch url asynchronously? or fetch url earlier?
-            if song.meta.support_multi_quality:
-                url, quality = song.select_url('hq<>')
-            else:
-                url = song.url
-            if url:
-                self.play(url)
+        def prepare_callback(media):
+            if media is not None:
+                self.play(media)
             else:
                 self._playlist.mark_as_bad(song)
                 self.play_next()
+
+        if song is not None:
+            media = self.prepare_media(song, done_cb=prepare_callback)
         else:
             self.stop()
 
