@@ -13,6 +13,13 @@ from fuocore.player import MpvPlayer, Playlist as _Playlist
 logger = logging.getLogger(__name__)
 
 
+def call_soon(func, loop):
+    if threading.current_thread() is threading.main_thread():
+        func()
+    else:
+        loop.call_soon_threadsafe(func)
+
+
 class Playlist(_Playlist):
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,10 +67,7 @@ class Playlist(_Playlist):
             self._task = aio.create_task(self._app.library.a_list_song_standby(song))
             self._task.add_done_callback(_current_song_setter)
 
-        if threading.current_thread() is threading.main_thread():
-            fetch_in_bg()
-        else:
-            self._loop.call_soon_threadsafe(fetch_in_bg)
+        call_soon(fetch_in_bg, self._loop)
 
 
 class Player(MpvPlayer):
@@ -71,6 +75,7 @@ class Player(MpvPlayer):
     def __init__(self, app, *args, **kwargs):
         super().__init__(playlist=Playlist(app), *args, **kwargs)
         self._app = app
+        self._loop = asyncio.get_event_loop()
         self.initialize()
 
     def prepare_media(self, song, done_cb=None):
@@ -87,5 +92,9 @@ class Player(MpvPlayer):
             fetch = partial(song.select_url, 'hq<>')
         else:
             fetch = lambda: (song.url, None)
-        future = aio.run_in_executor(None, fetch)
-        future.add_done_callback(callback)
+
+        def fetch_in_bg():
+            future = self._loop.run_in_executor(None, fetch)
+            future.add_done_callback(callback)
+
+        call_soon(fetch_in_bg, self._loop)
