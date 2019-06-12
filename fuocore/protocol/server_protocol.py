@@ -104,7 +104,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                 else:
                     if req is None:  # client close the connection
                         break
-                    elif req is 0:  # ignore the empty request
+                    elif req == 0:  # ignore the empty request
                         continue
                     # 通常来说，客户端如果想断开连接，只需要自己主动关闭连接即可，
                     # 但如果客户端不方便主动断开，可以发送 quit 命令，

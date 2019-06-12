@@ -15,7 +15,7 @@ class ExecHandler(AbstractHandler):
         sys.stdout = output
         try:
             self.exec_(code)
-        except Exception as e:
+        except Exception:
             traceback.print_exc()
         finally:
             sys.stderr = sys.__stderr__

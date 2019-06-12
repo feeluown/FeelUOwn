@@ -20,8 +20,6 @@ from fuocore.models import (
 )
 
 
-
-
 _TYPE_NAME_MAP = {
     ModelType.song: 'Song',
     ModelType.artist: 'Artist',

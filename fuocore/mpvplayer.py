@@ -214,7 +214,7 @@ class MpvPlayer(AbstractPlayer):
                 self.play_next()
 
         if song is not None:
-            media = self.prepare_media(song, done_cb=prepare_callback)
+            self.prepare_media(song, done_cb=prepare_callback)
         else:
             self.stop()
 

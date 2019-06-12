@@ -60,7 +60,7 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
                               playlist=playlist,
                               live_lyric=live_lyric)
         rv = handler.handle(cmd)
-    except Exception as e:
+    except Exception:
         logger.exception('handle cmd({}) error'.format(cmd))
         return False, 'internal server error'
     else:

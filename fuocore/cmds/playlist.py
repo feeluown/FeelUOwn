@@ -3,6 +3,7 @@ from fuocore.models import ModelType
 from .helpers import show_songs
 from .base import AbstractHandler
 
+
 class PlaylistHandler(AbstractHandler):
     cmds = ('add', 'remove', 'list', 'next', 'previous', 'clear',)
 

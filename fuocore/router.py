@@ -48,14 +48,15 @@ def _validate_rule(rule):
 
 
 def regex_from_rule(rule):
-    """为一个 rule 生成对应的正则表达式
+    r"""为一个 rule 生成对应的正则表达式
+
     >>> regex_from_rule('/<provider>/songs')
-    re.compile('^/(?P<provider>[^\\\/]+)/songs$')
+    re.compile('^/(?P<provider>[^\\/]+)/songs$')
     """
     kwargs_regex = re.compile(r'(<.*?>)')
     pattern = re.sub(
         kwargs_regex,
-        lambda m: '(?P<{}>[^\/]+)'.format(m.group(0)[1:-1]),
+        lambda m: r'(?P<{}>[^\/]+)'.format(m.group(0)[1:-1]),
         rule
     )
     regex = re.compile(r'^{}$'.format(pattern))

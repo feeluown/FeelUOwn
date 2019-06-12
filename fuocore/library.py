@@ -1,7 +1,6 @@
 import logging
 
 from fuocore import aio
-from fuocore.models import BaseModel, ModelType
 from fuocore.utils import log_exectime
 
 logger = logging.getLogger(__name__)

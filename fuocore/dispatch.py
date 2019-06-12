@@ -69,7 +69,7 @@ class Signal:
                         func(*args)
                 else:
                     logger.debug('receiver:{} is dead'.format(receiver))
-            except Exception as e:
+            except Exception:
                 logger.exception('receiver %s raise error' % receiver)
 
     def _ref(self, receiver):
