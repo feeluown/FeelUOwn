@@ -4,7 +4,6 @@ import logging
 import random
 
 from fuocore.dispatch import Signal
-from fuocore.media import Media
 
 
 logger = logging.getLogger(__name__)
@@ -337,6 +336,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         :param video: show video or not
         """
 
+    @abstractmethod
     def prepare_media(self, song, done_cb=None):
         """prepare media data
 
@@ -344,15 +344,10 @@ class AbstractPlayer(metaclass=ABCMeta):
         media data from song object, which may block the whole thread.
         We can override this method to make the request action non-blocking,
         when the action finishes, invoke done callback.
+
+        :param song: SongModel instance
+        :param done_cb: prepare done callback
         """
-        if song.meta.support_multi_quality:
-            url, quality = song.select_url('hq<>')
-        else:
-            url = song.url
-        media = Media(url) if url else None
-        if done_cb is not None:
-            done_cb(media)
-        return media
 
     @abstractmethod
     def play_song(self, song):

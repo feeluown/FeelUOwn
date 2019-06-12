@@ -3,8 +3,10 @@
 import asyncio
 import logging
 import threading
+from functools import partial
 
 from fuocore import aio
+from fuocore.media import Media
 from fuocore.player import MpvPlayer, Playlist as _Playlist
 
 
@@ -71,5 +73,19 @@ class Player(MpvPlayer):
         self._app = app
         self.initialize()
 
-    def play_video(self, video):
-        pass
+    def prepare_media(self, song, done_cb=None):
+        def callback(future):
+            try:
+                url, quality = future.result()
+            except Exception as e:
+                logger.exception('prepare media data failed')
+            else:
+                media = Media(url) if url else None
+                self.play(media)
+
+        if song.meta.support_multi_quality:
+            fetch = partial(song.select_url, 'hq<>')
+        else:
+            fetch = lambda: (song.url, None)
+        future = aio.run_in_executor(None, fetch)
+        future.add_done_callback(callback)

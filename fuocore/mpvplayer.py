@@ -101,6 +101,16 @@ class MpvPlayer(AbstractPlayer):
         # TODO: we will emit a media object
         self.media_changed.emit(media)
 
+    def prepare_media(self, song, done_cb=None):
+        if song.meta.support_multi_quality:
+            url, quality = song.select_url('hq<>')
+        else:
+            url = song.url
+        media = Media(url) if url else None
+        if done_cb is not None:
+            done_cb(media)
+        return media
+
     def play_song(self, song):
         """播放指定歌曲
 
