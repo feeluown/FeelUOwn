@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
+from fuocore.media import MediaType
 from fuocore.player import PlaybackMode, State
 from fuocore.utils import parse_ms
 
@@ -145,6 +146,8 @@ class PlayerControlPanel(QFrame):
             self.on_playback_mode_changed, aioqueue=True)
         self._app.player.playlist.song_changed.connect(
             self.on_player_song_changed, aioqueue=True)
+        self._app.player.media_changed.connect(
+            self.on_player_media_changed, aioqueue=True)
         self.progress_slider.resume_player_needed.connect(self._app.player.resume)
         self.progress_slider.pause_player_needed.connect(self._app.player.pause)
         self.progress_slider.change_position_needed.connect(
@@ -262,6 +265,15 @@ class PlayerControlPanel(QFrame):
         self.song_title_label.setText(elided_text)
         loop = asyncio.get_event_loop()
         loop.create_task(self.update_mv_btn_status(song))
+
+    def on_player_media_changed(self, media):
+        if media is not None and media.type_ == MediaType.audio:
+            metadata = media.metadata
+            if metadata.bitrate:
+                text = self.song_source_label.text()
+                bitrate_text = str(metadata.bitrate) + 'kbps'
+                self.song_source_label.setText(
+                    '{} - {}'.format(text, bitrate_text))
 
     async def update_mv_btn_status(self, song):
         mv = await async_run(lambda: song.mv)
