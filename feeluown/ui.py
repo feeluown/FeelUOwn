@@ -490,8 +490,8 @@ class Ui:
 
     def _play_mv(self):
         song = self._app.player.current_song
-        url, _ = song.mv.select_url()
-        self._app.player.play(url)
+        media, _ = song.mv.select_media()
+        self._app.player.play(media)
         self.show_video_widget()
 
     def show_player_playlist(self):

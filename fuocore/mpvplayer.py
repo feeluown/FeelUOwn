@@ -103,10 +103,10 @@ class MpvPlayer(AbstractPlayer):
 
     def prepare_media(self, song, done_cb=None):
         if song.meta.support_multi_quality:
-            url, quality = song.select_url('hq<>')
+            media, quality = song.select_media('hq<>')
         else:
-            url = song.url
-        media = Media(url) if url else None
+            media = song.url
+        media = Media(media) if media else None
         if done_cb is not None:
             done_cb(media)
         return media

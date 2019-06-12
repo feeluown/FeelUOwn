@@ -81,15 +81,15 @@ class Player(MpvPlayer):
     def prepare_media(self, song, done_cb=None):
         def callback(future):
             try:
-                url, quality = future.result()
+                media, quality = future.result()
             except Exception as e:
                 logger.exception('prepare media data failed')
             else:
-                media = Media(url) if url else None
-                self.play(media)
+                media = Media(media) if media else None
+                done_cb(media)
 
         if song.meta.support_multi_quality:
-            fetch = partial(song.select_url, 'hq<>')
+            fetch = partial(song.select_media, 'hq<>')
         else:
             fetch = lambda: (song.url, None)
 

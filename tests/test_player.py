@@ -3,6 +3,7 @@ import time
 from unittest import TestCase, skipIf, mock
 
 from fuocore.player import MpvPlayer, Playlist, PlaybackMode, State
+from .helpers import is_travis_env
 
 
 MP3_URL = os.path.join(os.path.dirname(__file__),
@@ -21,7 +22,7 @@ class Meta:
 class FakeValidSongModel:
     meta = Meta
     url = MP3_URL
-    def select_url(self, _):
+    def select_media(self, _):
         return MP3_URL, _
 
 
@@ -36,7 +37,7 @@ class TestPlayer(TestCase):
         self.player.stop()
         self.player.shutdown()
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(is_travis_env, '')
     def test_play(self):
         self.player.play(MP3_URL)
         self.player.stop()

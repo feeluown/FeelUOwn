@@ -1,9 +1,7 @@
-from unittest import TestCase
+from unittest import TestCase, mock
 
 from fuocore.dispatch import Signal
 from fuocore.dispatch import receiver
-
-from .helpers import mock
 
 
 class A(object):

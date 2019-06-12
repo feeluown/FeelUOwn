@@ -125,7 +125,7 @@ class MultiQualityMixin:
     def list_quality(self):
         """list available quality"""
 
-    def select_url(self, policy=None):
+    def select_media(self, policy=None):
         """select a url by quality(and fallback policy)
 
         :param policy: fallback priority/policy
@@ -149,15 +149,57 @@ class MultiQualityMixin:
         for quality in sorted_q_list:
             if quality in available_q_set:
                 break
-        return self.get_url(quality), quality
+        return self.get_media(quality), quality
 
-    def get_url(self, quality):
-        """get url by quality
+    def get_media(self, quality):
+        """get media by quality
 
         if q is not available, return None.
         """
 
 
+class MediaType:
+    audio = 'audio'
+    video = 'video'
+    image = 'image'
+
+
+class AudioMeta:
+    def __init__(self, bitrate=None, format=None):
+        #: audio bitrate, unit is kbps, int
+        self.bitrate = bitrate
+        #: audio format, string
+        self.format = format
+
+    def __repr__(self):
+        return '<AudioMeta format={format} bitrate={bitrate}>'.format(
+            format=self.format,
+            bitrate=self.bitrate,
+        )
+
+
+TYPE_METACLS_MAP = {
+    MediaType.audio: AudioMeta,
+}
+
+
 class Media:
-    def __init__(self, url):
-        self.url = url
+    def __init__(self, url, type_=MediaType.audio, **kwargs):
+        if isinstance(url, Media):
+            self._copy(url)
+        else:
+            self.url = url
+            self.type_ = type_
+
+            metacls = TYPE_METACLS_MAP[type_]
+            self._metadata = metacls(**kwargs)
+
+    @classmethod
+    def _copy(self, media):
+        self.url = media.url
+        self.type_ = media.type_
+        self._metadata = media._metadata
+
+    @property
+    def metadata(self):
+        return self._metadata
