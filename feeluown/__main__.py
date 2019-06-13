@@ -52,6 +52,8 @@ def create_config():
     config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能',
                     warn='Will be remove in version 3.0')
     config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
+    config.deffield('AUDIO_SELECT_POLICY', default='hq<>')
+    config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     return config
 
 

@@ -89,7 +89,7 @@ class Player(MpvPlayer):
                 done_cb(media)
 
         if song.meta.support_multi_quality:
-            fetch = partial(song.select_media, 'hq<>')
+            fetch = partial(song.select_media, self._app.config.AUDIO_SELECT_POLICY)
         else:
             fetch = lambda: (song.url, None)
 
