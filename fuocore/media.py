@@ -14,6 +14,29 @@ class Quality:
     """
 
     class SortPolicy:
+        """media sort policy
+
+        For example, when the quality list is: ``[hp, h, s, l]``,
+        then policy will be interpreted like this::
+
+            h<<> = h -> hp -> s  -> l
+            h>>> = h -> s  -> l  -> hp
+            h><  = h -> s  -> hp -> l
+            h<>  = h -> hp -> s  -> l
+            >>>  = hp -> h -> s  -> l  # doctest: +SKIP
+            <<<  = l -> s -> h -> hp
+
+        Code Example::
+
+            policy = 'hq<>'  # priority: hq shq sq lq
+            song.select_media(policy)
+            song.select_media('>>>')  # shq hq sq lq
+
+            video_policy = 'sd<>'  # priority: sd hd ld fhd
+            video.select_media(video_policy)
+        """
+
+        #: policy rules, {name:regex} mapping
         rules = (
             ('rlrl', r'(\w+)><'),
             ('lrlr', r'(\w+)<>'),
@@ -31,15 +54,6 @@ class Quality:
             :param l: quality value list
             :return: sorted quality value list
             :raise ValueError: policy source string is invalid
-
-            For example, when the l is: [hp, h, s, l]
-
-            h<<> = h -> hp -> s  -> l
-            h>>> = h -> s  -> l  -> hp
-            h><  = h -> s  -> hp -> l
-            h<>  = h -> hp -> s  -> l
-            >>>  = hp -> h -> s  -> l    # doctest: +SKIP
-            <<<  = l -> s -> h -> hp
             """
             rule, q = cls._parse(source)
             if rule in ('rrr', 'lll'):
@@ -109,10 +123,10 @@ class Quality:
             return list(cls)[-1]
 
     class Audio(Mixin, Enum):
-        shq = 'shq'  #: super high quality(>=320kbps)
-        hq = 'hq'    #: high quality
-        sq = 'sq'    #: standard quality
-        lq = 'lq'    #: low quality
+        shq = 'shq'  #: super high quality(>320kbps)
+        hq = 'hq'    #: high quality(~=320kbps)
+        sq = 'sq'    #: standard quality(~=200kbps)
+        lq = 'lq'    #: low quality(~=100kbps)
 
     class Video(Mixin, Enum):
         fhd = 'fhd'  #: full high definition
@@ -126,7 +140,7 @@ class MultiQualityMixin:
         """list available quality"""
 
     def select_media(self, policy=None):
-        """select a url by quality(and fallback policy)
+        """select a media by quality(and fallback policy)
 
         :param policy: fallback priority/policy
         """
@@ -184,6 +198,7 @@ TYPE_METACLS_MAP = {
 
 
 class Media:
+
     def __init__(self, url, type_=MediaType.audio, **kwargs):
         if isinstance(url, Media):
             self._copy(url)

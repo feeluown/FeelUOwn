@@ -11,8 +11,10 @@ _registered_signal_slot = defaultdict(list)
 
 
 def when(signal_name, func):
-    """
+    """register signal callback
+
     :param signal_name: app.{object}.{signal_name}
+    :param func: siganl callback function
 
     >>> def func(): pass
     >>> when('app.initialized', func)

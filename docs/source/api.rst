@@ -6,7 +6,7 @@
 .. _media_assets_management:
 
 媒体资源管理
-------------------
+--------------------
 
 音乐库部分负责管理 feeluown 的音乐资源，包括歌曲、歌手、专辑详情获取，
 专辑、歌单封面获取及缓存（这是设计目标，部分逻辑目前未实现）。它主要由几个部分组成：
@@ -605,6 +605,100 @@ model 可能会触发一个网络请求，从资源提供方的服务端来获�
    .. automethod:: remove_from_fav_albums
    .. automethod:: add_to_fav_artists
    .. automethod:: remove_from_fav_artists
+
+
+.. _media:
+
+资源文件
+~~~~~~~~~~~~~~~
+
+在 feeluown 中， :term:`media` 代表媒体实体资源，我们称 media 为资源文件。
+上面我们有讲到歌曲和 MV 等资源模型，一个资源模型可以对应多个资源文件，
+比如一首歌曲可以有多个音频文件、或者多个链接，这些音频文件的质量可能不一样（高中低），
+文件格式可能也不一样（mp3,flac,wav）等。
+
+在 feeluown 中，我们定义了三种媒体资源类型：音频，视频，图片。
+
+.. autoclass:: fuocore.media.MediaType
+   :members:
+   :undoc-members:
+
+每个资源都有特定的质量，对于音频，我们一般根据比特率来判断；对于视频，
+我们根据分辨率来判断；对于图片，我们目前还没有设定标准。
+
+在 feeluown 中，我们 *约定* **比特率** 为 320kbps 的音频文件质量为 ``hq`` (high quality),
+大于 320kbps 的为 ``shq`` (super high quality)，一般是无损音乐，200kbps
+左右的音频为 ``sq`` (standard quality)， 比特率小于 200kbps 的音频质量为 ``lq`` (low quality)。
+
+.. autoclass:: fuocore.media.Quality.Audio
+   :members:
+   :undoc-members:
+
+对于视频，根据视频分辨率来定义文件质量。规则如下：
+
+============     ======================
+分辨率              品质
+============     ======================
+4k                ``fhd`` (full high definition)
+720p ~ 1080p      ``hd`` (high definition)
+480p              ``sd`` (standard definition)
+<480p             ``ld`` (low definition)
+============     ======================
+
+.. autoclass:: fuocore.media.Quality.Video
+   :members:
+   :undoc-members:
+
+当资源提供方提供的资源有多种质量时，比如一首歌有多个播放链接，我们可以让
+SongModel 继承 ``MultiQualityMixin`` 类，并实现 ``list_quality``
+和 ``get_media`` 两个方法：
+
+.. autoclass:: fuocore.media.MultiQualityMixin
+   :members:
+
+``select_media`` 方法的参数为 policy，policy 是一个符合一定规则的字符串，
+由 ``SortPolicy`` 类负责解析。
+
+::
+
+   >>> policy = '>>>'
+   >>> media = song.select_media(policy)
+   >>> if media is None:
+   >>>     player.stop()
+   >>> else:
+   >>>     player.play(media)
+
+SortPolicy 类定义了 6 中规则，见如下的 rules 变量文档。
+
+.. autoclass:: fuocore.media.Quality.SortPolicy
+
+   .. py:attribute:: rules
+
+      policy 字符串规则。这里 ``rlrl`` 的意思是 right left right left，
+      它对应的规则是 ``r'(\w+)><'`` 规则中 ``\w`` 匹配的是质量字符串， ``>``
+      代表向右 ``right`` ， ``<`` 代表向左 ``left`` 。
+
+      举个例子，对于策略 ``hq><`` ，我们可以这样理解：我们有一个从高到低的排好序的列表
+      ``[shq, hq, sq, lq]`` ， 以 hq 为中心，先向右看，为 sq，再向左看一位，
+      为 shq, 重复向右和向左看的逻辑，就可以得到这样一个优先级： ``hq -> sq -> shq -> lq``
+
+      ::
+
+          rules = (
+              ('rlrl', r'(\w+)><'),
+              ('lrlr', r'(\w+)<>'),
+              ('llr', r'(\w+)<<>'),
+              ('rrl', r'(\w+)>><'),
+              ('rrr', r'(\w+)?>>>'),
+              ('lll', r'(\w+)?<<<'),
+          )
+
+media 对象中包含了资源文件的元信息，对于音频文件，有 bitrate, format
+（以后会根据需要添加新属性，比如 size），这个元信息保存在 ``media.metadata`` 中，
+metadata 是 ``AudioMeta`` 的实例。对于视频文件，metadata 则是 ``VideoMeta``
+（暂时未实现） 的实例。
+
+.. autoclass:: fuocore.media.AudioMeta
 
 .. _media_player:
 

@@ -29,3 +29,12 @@
 
      和 Song 不一样，Song 逐重强调一首歌的元信息部分，比如歌曲名称、歌手等。
      理论上，我们可以从 Media(Audio) 中解析出部分 Song 信息。
+
+   FeelUOwn
+     项目名
+
+   feeluown
+     包名（Python 包），程序名
+
+   fuo
+     程序名
