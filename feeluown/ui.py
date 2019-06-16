@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from PyQt5.QtCore import Qt, QTime, pyqtSignal
+from PyQt5.QtCore import Qt, QTime, pyqtSignal, QSize
 from PyQt5.QtGui import QKeySequence, QFontMetrics
 from PyQt5.QtWidgets import (
     QApplication,
@@ -48,6 +48,10 @@ class ProgressSlider(QSlider):
         self.sliderPressed.connect(self._on_pressed)
         self.sliderReleased.connect(self._on_released)
 
+    def sizeHint(self):
+        size = super().sizeHint()
+        return QSize(360, size.height())
+
     def _on_pressed(self):
         self.pause_player_needed.emit()
 
@@ -71,8 +75,6 @@ class PlayerControlPanel(QFrame):
         class IconButton(QPushButton):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
-                # 按钮文字一般是一个 symbol，长度控制为 40 是满足需求的
-                self.setMaximumWidth(40)
 
         self._playback_modes = list(PlaybackMode.__members__.values())
         self._pm_alias_map = {
@@ -158,18 +160,16 @@ class PlayerControlPanel(QFrame):
 
     def _setup_ui(self):
         # set widget layout
-        self.progress_slider.setMinimumWidth(480)
-        self.progress_slider.setMaximumWidth(600)
         self.song_source_label.setFixedHeight(20)
         self.progress_slider.setFixedHeight(20)  # half of parent height
         self.position_label.setFixedWidth(45)
         self.duration_label.setFixedWidth(45)
+        self.position_label.setAlignment(Qt.AlignRight)
         self.like_btn.setFixedSize(15, 15)
         self.download_btn.setFixedSize(15, 15)
         self.mv_btn.setFixedHeight(16)
 
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
         self._sub_layout = QVBoxLayout()
         self._sub_top_layout = QHBoxLayout()
 
@@ -198,21 +198,23 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.next_btn)
         self._layout.addSpacing(26)
         self._layout.addWidget(self.volume_btn)
+        # 18 = 200(left_panel_width) - 4 * 30(btn) - 20 - 8 - 8 -26
+        self._layout.addSpacing(18)
         self._layout.addStretch(0)
         self._layout.addWidget(self.position_label)
         self._layout.addSpacing(7)
         self._layout.addLayout(self._sub_layout)
+        self._layout.setStretchFactor(self._sub_layout, 1)
         self._layout.addSpacing(7)
         self._layout.addWidget(self.duration_label)
-        self._layout.addSpacing(5)
         self._layout.addStretch(0)
+        self._layout.addSpacing(18)
         self._layout.addWidget(self.pms_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.toggle_video_btn)
         self._layout.addSpacing(18)
-
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
@@ -404,8 +406,6 @@ class LeftPanel(QFrame):
         self.my_music_view.setFrameShape(QFrame.NoFrame)
         self.collections_view.setFrameShape(QFrame.NoFrame)
         self.setFrameShape(QFrame.NoFrame)
-        self.setMinimumWidth(180)
-        self.setMaximumWidth(250)
         # 让各个音乐库来决定是否显示这些组件
         self.playlists_con.hide()
         self.my_music_con.hide()
@@ -414,6 +414,10 @@ class LeftPanel(QFrame):
             lambda pl: self._app.browser.goto(model=pl))
         self._app.browser.route('/colls/<identifier>')(self.__handle_show_coll)
         self.collections_view.show_collection.connect(self.show_coll)
+
+    def sizeHint(self):
+        size = super().sizeHint()
+        return QSize(200, size.height())
 
     def show_coll(self, coll):
         coll_id = self._app.coll_uimgr.get_coll_id(coll)
@@ -431,9 +435,14 @@ class RightPanel(QFrame):
 
         self._layout = QHBoxLayout(self)
         self.table_container = SongsTableContainer(self._app, self)
+        self.table_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._layout.addWidget(self.table_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
+
+    def sizeHint(self):
+        size = super().sizeHint()
+        return QSize(760, size.height())
 
 
 class Ui:
@@ -444,8 +453,6 @@ class Ui:
         self._top_separator = Separator(parent=app)
         self._bottom_separator = Separator(parent=app)
         self._splitter = QSplitter(app)
-        if use_mac_theme():
-            self._splitter.setHandleWidth(0)
 
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
@@ -469,13 +476,29 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        # 对部件进行一些 UI 层面的初始化
+        self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
+        self.pc_panel.mv_btn.clicked.connect(self._play_mv)
+        self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True)
+
+        self._app.hotkey_mgr.registe(
+            [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
+            self.magicbox.setFocus
+        )
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+        self._splitter.setHandleWidth(0)
         self._splitter.addWidget(self._left_panel_container)
         self._splitter.addWidget(self.right_panel)
 
-        self.right_panel.setMinimumWidth(780)
         self._left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._left_panel_container.setMinimumWidth(200)
 
         self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._bottom_separator)
@@ -488,17 +511,6 @@ class Ui:
         self._layout.setContentsMargins(0, 0, 0, 0)
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
-
-        self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
-        self.pc_panel.mv_btn.clicked.connect(self._play_mv)
-        self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
-        self._app.player.video_format_changed.connect(
-            self.on_video_format_changed, aioqueue=True)
-
-        self._app.hotkey_mgr.registe(
-            [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
-            self.magicbox.setFocus
-        )
 
     def _play_mv(self):
         song = self._app.player.current_song

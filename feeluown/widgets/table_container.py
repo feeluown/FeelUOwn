@@ -157,15 +157,8 @@ class SongsTableContainer(QFrame):
         self._layout.addWidget(self.songs_table)
 
         self._top_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Maximum)
-
-        # FIXME: 更好的计算宽度和高度
-        # 目前是假设知道自己初始化高度大约是 530px
-        # 之后可以考虑按比例来计算
         self.overview_height = 180
         self._top_container.setMaximumHeight(self.overview_height)
-        self._songs_table_height = 530 - self.overview_height
-        self.songs_table.setMinimumHeight(self._songs_table_height)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
     async def play_song(self, song):
         await async_run(lambda: song.url)

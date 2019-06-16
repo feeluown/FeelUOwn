@@ -157,6 +157,7 @@ def create_app(config):
 
     mode = config.MODE
     if mode & App.GuiMode:
+        from PyQt5.QtCore import QSize
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
@@ -165,7 +166,6 @@ def create_app(config):
 
             def __init__(self):
                 super().__init__()
-                self.resize(1000, 618)
                 self.setObjectName('app')
                 QApplication.setWindowIcon(QIcon(QPixmap(APP_ICON)))
 
@@ -177,6 +177,10 @@ def create_app(config):
                 #     self.shutdown()
                 # finally:
                 #     QApplication.quit()
+
+            def sizeHint(self):
+                return QSize(1000, 618)
+
 
         bases.append(GuiApp)
 
