@@ -164,7 +164,8 @@ class PlayerControlPanel(QFrame):
         self.progress_slider.setFixedHeight(20)  # half of parent height
         self.position_label.setFixedWidth(45)
         self.duration_label.setFixedWidth(45)
-        self.position_label.setAlignment(Qt.AlignRight)
+        # on macOS, we should set AlignVCenter flag
+        self.position_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.like_btn.setFixedSize(15, 15)
         self.download_btn.setFixedSize(15, 15)
         self.mv_btn.setFixedHeight(16)
