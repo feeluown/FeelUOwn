@@ -113,7 +113,7 @@ class Browser:
 
     def _render(self, model):
         """渲染 model 页面"""
-        asyncio.ensure_future(self.ui.table_container.show_model(model))
+        asyncio.ensure_future(self.ui.songs_table_container.show_model(model))
 
     def on_history_changed(self):
         self.ui.back_btn.setEnabled(self.can_back)

@@ -75,7 +75,7 @@ class MagicBox(QLineEdit):
         songs = []
         for result in self._app.library.search(q):
             songs.extend(result.songs)
-        self._app.ui.table_container.show_songs(songs)
+        self._app.ui.songs_table_container.show_songs(songs)
 
     def _exec_code(self, code):
         """执行代码并重定向代码的 stdout/stderr"""
@@ -96,7 +96,7 @@ class MagicBox(QLineEdit):
         if self._mode == 'cmd':
             self._cmd_text = text
         if not text.startswith('>'):
-            self._app.ui.table_container.search(text)
+            self._app.ui.songs_table_container.search(text)
 
     def __on_return_pressed(self):
         text = self.text()

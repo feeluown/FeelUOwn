@@ -56,6 +56,7 @@ node_modules
 dist/
 build/
 feeluown.egg-info/
+.eggs/
 
 # Emacs
 .\#*

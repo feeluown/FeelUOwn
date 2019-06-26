@@ -12,8 +12,10 @@ env:
 
 install:
     - sudo apt-get install libmpv1 -y --force-yes
+    - pip install PyQt5
     - pip install coveralls
-    - pip install pytest flake8 pytest-cov pytest-asyncio sphinx_rtd_theme
+    - pip install sphinx_rtd_theme
+    - pip install pytest flake8 pytest-cov pytest-asyncio pytest-qt
     - pip install -e .
 
 script:

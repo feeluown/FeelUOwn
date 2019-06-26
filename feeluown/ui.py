@@ -27,7 +27,7 @@ from feeluown.widgets.my_music import MyMusicView
 from feeluown.widgets.volume_button import VolumeButton
 from feeluown.widgets.statusline import StatusLine, StatusLineItem
 from feeluown.widgets.magicbox import MagicBox
-from feeluown.widgets.table_container import SongsTableContainer
+from feeluown.widgets.songs_table_container import SongsTableContainer
 from feeluown.widgets.statusline_items import PluginStatus
 from feeluown.widgets.mpv_widget import MpvOpenGLWidget
 
@@ -141,19 +141,21 @@ class PlayerControlPanel(QFrame):
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
 
-        self._app.player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
-        self._app.player.position_changed.connect(self.on_position_changed)
-        self._app.player.duration_changed.connect(self.on_duration_changed, aioqueue=True)
-        self._app.player.playlist.playback_mode_changed.connect(
+        player = self._app.player
+
+        player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
+        player.position_changed.connect(self.on_position_changed)
+        player.duration_changed.connect(self.on_duration_changed, aioqueue=True)
+        player.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed, aioqueue=True)
-        self._app.player.playlist.song_changed.connect(
+        player.playlist.song_changed.connect(
             self.on_player_song_changed, aioqueue=True)
-        self._app.player.media_changed.connect(
+        player.media_changed.connect(
             self.on_player_media_changed, aioqueue=True)
-        self.progress_slider.resume_player_needed.connect(self._app.player.resume)
-        self.progress_slider.pause_player_needed.connect(self._app.player.pause)
+        self.progress_slider.resume_player_needed.connect(player.resume)
+        self.progress_slider.pause_player_needed.connect(player.pause)
         self.progress_slider.change_position_needed.connect(
-            lambda value: setattr(self._app.player, 'position', value))
+            lambda value: setattr(player, 'position', value))
 
         self._update_pms_btn_text()
         self._setup_ui()
@@ -375,7 +377,6 @@ class LeftPanel(QFrame):
                 # XXX: 本意是让 Container 下方不要出现多余的空间
                 self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
 
-
         self.playlists_view = PlaylistsView(self)
         self.providers_view = ProvidersView(self)
         self.my_music_view = MyMusicView(self)
@@ -426,7 +427,7 @@ class LeftPanel(QFrame):
 
     def __handle_show_coll(self, req, identifier):
         coll = self._app.coll_uimgr.get(int(identifier))
-        self._app.ui.table_container.show_collection(coll)
+        self._app.ui.songs_table_container.show_collection(coll)
 
 
 class RightPanel(QFrame):
@@ -435,9 +436,8 @@ class RightPanel(QFrame):
         self._app = app
 
         self._layout = QHBoxLayout(self)
-        self.table_container = SongsTableContainer(self._app, self)
-        self.table_container.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._layout.addWidget(self.table_container)
+        self.songs_table_container = SongsTableContainer(self._app, self)
+        self._layout.addWidget(self.songs_table_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
@@ -471,8 +471,8 @@ class Ui:
         # alias
         self.magicbox = self.bottom_panel.magicbox
         self.pc_panel = self.top_panel.pc_panel
-        self.table_container = self.right_panel.table_container
-        self.songs_table = self.right_panel.table_container
+        self.songs_table_container = self.right_panel.songs_table_container
+        self.songs_table = self.right_panel.songs_table_container
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
@@ -497,7 +497,6 @@ class Ui:
         self._splitter.addWidget(self._left_panel_container)
         self._splitter.addWidget(self.right_panel)
 
-        self._left_panel_container.setSizePolicy(QSizePolicy.Minimum, QSizePolicy.Expanding)
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._left_panel_container.setMinimumWidth(200)
 
@@ -521,7 +520,7 @@ class Ui:
 
     def show_player_playlist(self):
         songs = self._app.playlist.list()
-        self.table_container.show_player_playlist(songs)
+        self.songs_table_container.show_player_playlist(songs)
 
     def on_video_format_changed(self, vformat):
         if vformat is None:

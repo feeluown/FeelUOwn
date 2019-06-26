@@ -19,12 +19,16 @@ class Collection:
 
         self.name = ''
         self.models = []
+        self.updated_at = None
+        self.created_at = None
 
     def load(self):
         """解析文件，初始化自己"""
         filepath = self.fpath
         filename = filepath.rsplit('/')[-1]
         name, _ = filename.split('.')
+        stat_result = os.stat(filepath)
+        self.updated_at = stat_result.st_mtime
         self.name = name
         with open(filepath, encoding='utf-8') as f:
             for line in f:

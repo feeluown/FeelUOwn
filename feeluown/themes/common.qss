@@ -53,7 +53,7 @@ PlayerControlPanel QPushButton:hover {
 PlayerControlPanel QPushButton:focus {
     outline: none;
 }
-#pms_btn, #mv_btn, #toggle_video_btn, TableToolbar QPushButton {
+#pms_btn, #mv_btn, #toggle_video_btn, SongsTableToolbar QPushButton {
     border-radius: 3px;
     border: 1px solid #AAA;
 }
@@ -70,16 +70,16 @@ PlayerControlPanel QPushButton:focus {
 #toggle_video_btn {
     padding: 0px 3px;
 }
-TableToolbar QPushButton {
+SongsTableToolbar QPushButton {
     padding: 2px 8px;
 }
-#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover, TableToolbar QPushButton:hover {
+#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover, SongsTableToolbar QPushButton:hover {
     border: 1px solid #777;
 }
 #mv_btn:pressed, #pms_btn:pressed {
     background-color: #BCBCBC;
 }
-TableToolbar QPushButton:pressed {
+SongsTableToolbar QPushButton:pressed {
     background-color: #EAEAEA;
 }
 
