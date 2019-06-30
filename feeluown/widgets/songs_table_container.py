@@ -26,9 +26,8 @@ class SongsTableContainer(QFrame):
         super().__init__(parent)
         self._app = app
 
-        self._meta_widget = SongsTableMetaWidget(parent=self)
+        self.meta_widget = SongsTableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
-        self._desc_label = QLabel(self)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
@@ -37,8 +36,8 @@ class SongsTableContainer(QFrame):
         self.songs_table.show_album_needed.connect(
             lambda album: self._app.browser.goto(model=album))
 
-        self._meta_widget.toolbar.play_all_needed.connect(self.play_all)
-        self._meta_widget.toggle_full_window_needed.connect(self.toggle_meta_full_window)
+        self.meta_widget.toolbar.play_all_needed.connect(self.play_all)
+        self.meta_widget.toggle_full_window_needed.connect(self.toggle_meta_full_window)
 
         self.hide()
         self._setup_ui()
@@ -47,7 +46,7 @@ class SongsTableContainer(QFrame):
         self.setAutoFillBackground(False)
 
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self._meta_widget)
+        self._layout.addWidget(self.meta_widget)
         self._layout.addWidget(self.songs_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
@@ -88,10 +87,10 @@ class SongsTableContainer(QFrame):
         else:
             songs = await async_run(lambda: playlist.songs, loop=loop)
             self._show_songs(songs)
-        self._meta_widget.clear()
-        self._meta_widget.title = playlist.name
+        self.meta_widget.clear()
+        self.meta_widget.title = playlist.name
         desc = await async_run(lambda: playlist.desc)
-        self._meta_widget.desc = desc
+        self.meta_widget.desc = desc
         if playlist.cover:
             loop.create_task(self.show_cover(playlist.cover))
 
@@ -119,28 +118,28 @@ class SongsTableContainer(QFrame):
         else:
             self._show_songs(songs=songs)
         desc = await async_run(lambda: artist.desc)
-        self._meta_widget.clear()
-        self._meta_widget.title = artist.name
-        self._meta_widget.desc = desc
+        self.meta_widget.clear()
+        self.meta_widget.title = artist.name
+        self.meta_widget.desc = desc
         if artist.cover:
             loop.create_task(self.show_cover(artist.cover))
 
     async def show_album(self, album):
         loop = asyncio.get_event_loop()
         songs = await async_run(lambda: album.songs)
-        self._meta_widget.clear()
+        self.meta_widget.clear()
         self._show_songs(songs)
         desc = await async_run(lambda: album.desc)
-        self._meta_widget.title = album.name
-        self._meta_widget.desc = desc
+        self.meta_widget.title = album.name
+        self.meta_widget.desc = desc
         if album.cover:
             loop.create_task(self.show_cover(album.cover))
 
     def show_collection(self, collection):
-        self._meta_widget.clear()
-        self._meta_widget.title = collection.name
-        self._meta_widget.updated_at = collection.updated_at
-        self._meta_widget.created_at = collection.created_at
+        self.meta_widget.clear()
+        self.meta_widget.title = collection.name
+        self.meta_widget.updated_at = collection.updated_at
+        self.meta_widget.created_at = collection.created_at
         self._show_songs(collection.models)
         self.songs_table.song_deleted.connect(collection.remove)
 
@@ -187,7 +186,7 @@ class SongsTableContainer(QFrame):
         self.songs_table.scrollToTop()
 
     def show_songs(self, songs):
-        self._meta_widget.clear()
+        self.meta_widget.clear()
         self._show_songs(songs)
 
     def search(self, text):
@@ -195,7 +194,7 @@ class SongsTableContainer(QFrame):
             self.songs_table.filter_row(text)
 
     def set_cover(self, pixmap):
-        self._meta_widget.set_cover_pixmap(pixmap)
+        self.meta_widget.set_cover_pixmap(pixmap)
 
     def toggle_meta_full_window(self, fullwindow_needed):
         if fullwindow_needed:

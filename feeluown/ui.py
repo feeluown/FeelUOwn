@@ -472,6 +472,8 @@ class Ui:
         self.magicbox = self.bottom_panel.magicbox
         self.pc_panel = self.top_panel.pc_panel
         self.songs_table_container = self.right_panel.songs_table_container
+        # backward compatible, old name is table_container
+        self.table_container = self.songs_table_container
         self.songs_table = self.right_panel.songs_table_container
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn

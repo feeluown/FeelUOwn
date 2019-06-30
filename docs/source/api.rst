@@ -1,7 +1,8 @@
 接口参考手册
 ==============
 
-这个参考手册描述了 feeluown 的几大组成部分以及各组成部分的主要模块。
+这个参考手册描述了 feeluown 的几大组成部分，各组成部分的主要模块，
+以及模块的相对稳定接口。
 
 .. _media_assets_management:
 
@@ -757,6 +758,12 @@ metadata 是 ``AudioMeta`` 的实例。对于视频文件，metadata 则是 ``Vi
 
 GUI 相关管理模块
 -----------------
+
+.. note::
+
+   目前，大部分 GUI 组件的接口都不稳定，我们在实现插件时，如果需要从操作 GUI 组件，
+   请调用以下模块的接口。如果我们想实现的功能通过以下接口在暂时实现不了，
+   请和 @cosven 联系。
 
 .. automodule:: feeluown.browser
    :members:
