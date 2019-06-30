@@ -47,8 +47,7 @@ setup(
                     'fuo-qqmusic>=0.1.2'],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
     },
-    setup_requires=['pytest-runner'],
-    tests_require=['pytest', 'pytest-cov', 'pytest-asyncio', 'pytest-qt'],
+    tests_require=['pytest-runner', 'pytest', 'pytest-cov', 'pytest-asyncio', 'pytest-qt'],
     entry_points={
         'console_scripts': [
                 "feeluown=feeluown.__main__:main",
