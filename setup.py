@@ -43,7 +43,7 @@ setup(
     extras_require={
         'battery': ['fuo-local>=0.1.1',
                     'fuo-xiami>=0.1.2',
-                    'fuo-netease',
+                    'fuo-netease>=0.2',
                     'fuo-qqmusic>=0.1.2'],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
     },
