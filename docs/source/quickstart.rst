@@ -26,7 +26,7 @@ Ubuntu
 
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
-    pip3 install 'feeluown>=3.0a5[battery]' --upgrade --user
+    pip3 install 'feeluown>=3.0[battery]' --upgrade --user
 
     # 运行 feeluown -h 来测试安装是否成功
     # 如果提示 Commmand Not Found，请查看文档「常见问题」部分
@@ -47,8 +47,16 @@ macOS
     brew install python3
     brew install pyqt
     brew install mpv
-    pip3 install 'feeluown>=3.0a5[battery,macos]' --upgrade --user
+    pip3 install 'feeluown>=3.0[battery,macos]' --upgrade --user
 
+Windows
+~~~~~~~
+
+1. 安装 Python 3，Windows 10 用户可以从应用商店搜索安装（Win 7 用户可自行搜索）
+2. 下载 `mpv-1.dll <https://github.com/cosven/FeelUOwn/releases/download/v3.0.1/mpv-1.dll>`_ ，
+   将 mpv-1.dll 放入 ``C:\Windows\System32`` 目录。
+3. 安装 PyQt5，在 cmd 中运行 ``pip3 install PyQt5 -i https://pypi.douban.com/simple``
+4. 安装 feeluown，在 cmd 中运行 ``pip3 install feeluown[battery]``
 
 基本使用
 --------
