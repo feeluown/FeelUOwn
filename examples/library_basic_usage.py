@@ -1,11 +1,18 @@
 #! /usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+"""
+You should install two package from pypi:
+
+1. fuo-netease
+2. fuo-xiami
+"""
+
 import logging
 from fuocore.library import Library
 
-from fuocore.xiami import provider as xp
-from fuocore.netease import provider as np
+from fuo_xiami import provider as xp
+from fuo_netease import provider as np
 
 logging.basicConfig()
 logger = logging.getLogger('fuocore')
