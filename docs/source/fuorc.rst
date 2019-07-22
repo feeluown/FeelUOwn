@@ -4,10 +4,10 @@
 类似 Vim 的 ``.vimrc`` 、Emacs 的 ``init.el`` ，feeluown 也有自己的配置文件 ``.fuorc`` 。
 
 fuorc 文件是一个 Python 脚本，它位于 ``~/.fuorc`` 目录下，我们可以在其中使用任意 Python 语法。
-feeluown 启动时，第一步就是加载将解析该配置文件。通常，我们可以在配置文件中作以下事情：
+feeluown 启动时，第一步就是加载并解析该配置文件。通常，我们可以在配置文件中作以下事情：
 
 1. 配置部分选项
-2. 写一个简单的插件
+2. 定制一些小功能
 
 一个 fuorc 文件示例::
 
@@ -21,7 +21,7 @@ feeluown 启动时，第一步就是加载将解析该配置文件。通常，�
   config.AUDIO_SELECT_POLICY = '>>>'
 
 
-  # 一个小插件：切换歌曲时，发送系统通知
+  # 一个小功能：切换歌曲时，发送系统通知
   def notify_song_changed(song):
       if song is not None:
           title = song.title_display
@@ -44,15 +44,21 @@ feeluown 启动时，第一步就是加载将解析该配置文件。通常，�
 --------------
 
 feeluown 使用 Python 的 exec 方法来加载（执行）配置文件。执行时，
-会暴露多个变量、函数、类到这个作用域中。
+会暴露 config 对象和部分函数到这个作用域中。
 
 函数
 ~~~~~~~~
 
-.. autofunction:: feeluown.rcfile.when
+目前暴露到该作用域的函数有
 
-变量
-~~~~~~~
+.. autofunction:: feeluown.fuoexec.add_hook
+
+.. autofunction:: feeluown.fuoexec.rm_hook
+
+.. autofunction:: feeluown.fuoexec.source
+
+config 对象
+~~~~~~~~~~~~~
 
 ``config`` 是 :class:`feeluown.config.Config` 的实例，常见使用场景有两种::
 

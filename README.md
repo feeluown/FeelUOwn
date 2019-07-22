@@ -13,9 +13,12 @@ FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器～
 ### 特性
 
 - 安装简单，新手友好，默认提供国内各音乐平台插件（网易云、虾米、QQ）
-- 较强的可扩展性可以满足大家折腾的欲望 | [Slack 插件示例](https://gist.github.com/cosven/7a746fa61f94a4c83cb6bf654cea6bf8) | [MPRIS2 插件](https://github.com/cosven/feeluown-mpris2-plugin)
-  - 和 Emacs 集成、纯命令行使用 | [DEMO](https://www.youtube.com/watch?v=-JFXo0J5D9E)
-- 核心模块有较好文档和测试覆盖，欢迎大家参与开发 | [详细文档](http://feeluown.readthedocs.org) | [开发者/用户交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)
+- 基于文本的歌单，方便与朋友分享、设备之间同步
+- 提供基于 TCP 的控制协议
+- 类似 `vimrc` 和 `.emacs` 的配置文件 `.fuorc`
+- 核心模块有较好文档和测试覆盖，有友善的开发上手文档
+
+更多细节请点击 [特性文档](https://feeluown.readthedocs.io/en/latest/features.html)
 
 ### 文档
 
