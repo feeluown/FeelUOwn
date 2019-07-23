@@ -113,7 +113,7 @@ provider 是我们访问具体一个音乐平台资源音乐的入口。
 
 .. code:: python
 
-   from fuocore.netease import provider
+   from fuo_netease import provider
    user_a = obj  # UserModel
    provider.auth(user_a)
 

@@ -3,7 +3,7 @@
 
 import logging
 
-from fuocore.netease.models import NSongModel
+from fuo_netease.models import NSongModel
 
 logging.basicConfig()
 logger = logging.getLogger('fuocore')
