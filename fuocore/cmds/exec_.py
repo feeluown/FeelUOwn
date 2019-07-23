@@ -2,6 +2,7 @@ import io
 import sys
 import traceback
 
+from feeluown.fuoexec import fuoexec
 from .base import AbstractHandler
 
 
@@ -15,7 +16,7 @@ class ExecHandler(AbstractHandler):
         sys.stdout = output
         try:
             self.exec_(code)
-        except Exception:
+        except:  # noqa: E722
             traceback.print_exc()
         finally:
             sys.stderr = sys.__stderr__
@@ -25,7 +26,4 @@ class ExecHandler(AbstractHandler):
 
     def exec_(self, code):
         obj = compile(code, '<string>', 'exec')
-        g = {
-            'player': self.player
-        }
-        exec(obj, g, g)
+        fuoexec(obj)

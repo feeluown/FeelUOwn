@@ -18,7 +18,9 @@ from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
-from feeluown.rcfile import load_rcfile
+
+from feeluown.fuoexec import fuoexec_load_rcfile
+
 
 logger = logging.getLogger(__name__)
 
@@ -121,18 +123,12 @@ def prepare_gui():
 
 def init(args, config):
     """
-    1: run cli or simple cmd
-    0: run loop
-    -1: error
+    return value:
+
+    1: run cli
+    2: run once (run simple cmd)
+    3: run loop
     """
-    # 让程序能正确的找到图标资源
-    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
-    sys.excepthook = excepthook
-    ensure_dirs()
-
-    # 从 rcfile 中加载配置和代码
-    load_rcfile(config)
-
     # 根据命令行参数来更新配置
     # 注：用户在 rcfile 文件中也可以配置这些选项的值
     # 所以我们不能这样实现 config.DEBUG = args.debug，而是像下面这样
@@ -141,9 +137,14 @@ def init(args, config):
     config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE)
 
     if args.cmd is not None:
-        # load some config before start run_cli
-        run_cli(args, config)
-        return 1
+        is_daemon_started = is_port_used(23333) or is_port_used(23334)
+        if is_daemon_started:
+            return 1  # run_cli
+        cli_cmds = ('show', 'play', 'search')
+        if args.cmd not in cli_cmds:
+            print_error('Fuo daemon not started.')
+            sys.exit(1)
+        return 2  # run_once
 
     if not args.no_window:
         try:
@@ -154,6 +155,7 @@ def init(args, config):
             config.MODE |= App.GuiMode
     if not args.no_server:
         config.MODE |= App.DaemonMode
+    return 3
 
 
 def setup_app(args, config):
@@ -168,16 +170,8 @@ def setup_app(args, config):
 
 
 def run_cli(args, config):
-    is_daemon_started = is_port_used(23333) or is_port_used(23334)
-    if is_daemon_started:
-        climain(args)
-        sys.exit(0)
-    cli_cmds = ('show', 'play', 'search')
-    # 如果服务端已经启动，则将命令发送给服务端处理
-    if args.cmd not in cli_cmds:
-        print_error('Fuo daemon not started.')
-        sys.exit(1)
-    run_once(args, config)
+    climain(args)
+    sys.exit(0)
 
 
 def run_once(args, config):
@@ -222,18 +216,23 @@ def run_forever(args, config):
 
 
 def main():
-    """
-    启动步骤：
-
-    1. 判断是否只需要运行一次客户端
-       比如运行 fuo status 命令
-    2.
-    """
     parser = setup_argparse()
     args = parser.parse_args()
     config = create_config()
+
+    # make media assets available
+    os.chdir(os.path.join(os.path.dirname(__file__), '..'))
+    ensure_dirs()
+    fuoexec_load_rcfile(config)
+
     res = init(args, config)
-    if res != 1:
+
+    if res == 1:
+        # load some config before start run_cli
+        run_cli(args, config)
+    elif res == 2:
+        run_once(args, config)
+    else:
         run_forever(args, config)
 
 

@@ -14,8 +14,7 @@ from .server import FuoServer
 from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
-from .rcfile import bind_signals
-
+from .fuoexec import fuoexec_after_app_attrs_attached
 
 logger = logging.getLogger(__name__)
 
@@ -148,7 +147,6 @@ def initialize(app):
 
     if app.mode & (App.DaemonMode | App.GuiMode):
         loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
-    bind_signals(app)
     app.initialized.emit(app)
 
 
@@ -197,11 +195,11 @@ def create_app(config):
                 base.__init__(self)
             self.mode = mode
             self.initialized = Signal()
-
     app = FApp(mode)
     App.instance = app
     app.config = config
     attach_attrs(app)
+    fuoexec_after_app_attrs_attached(app)
     if app.mode & App.GuiMode:
         app.show()
     initialize(app)
