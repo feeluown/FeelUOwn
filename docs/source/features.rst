@@ -46,7 +46,8 @@
 
   因此，它 **可以方便的与 Tmux, Emacs, Slack 等常用程序和软件集成**
 
-    - `Emacs 简单客户端 <https://github.com/feeluown/emacs-fuo>`_
+    - `Emacs 简单客户端 <https://github.com/feeluown/emacs-fuo>`_ ，
+      `DEMO 演示视频 <https://www.youtube.com/watch?v=-JFXo0J5D9E>`_
     - Tmux 集成截图
 
       .. image:: https://user-images.githubusercontent.com/4962134/43565894-1586891e-965f-11e8-9cde-50973acfb573.png
