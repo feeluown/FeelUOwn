@@ -47,7 +47,7 @@ macOS
     brew install python3
     brew install pyqt
     brew install mpv
-    pip3 install 'feeluown>=3.0[battery,macos]' --upgrade --user
+    pip3 install 'feeluown[battery,macos]>=3.0' --upgrade
 
 Windows
 ~~~~~~~
