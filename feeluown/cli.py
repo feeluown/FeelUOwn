@@ -1,4 +1,5 @@
 import argparse
+import asyncio
 import os
 import textwrap
 import sys
@@ -273,20 +274,6 @@ def climain(args):
 
 
 def oncemain(app, args):
-    """
-    目前的实现有的碰运气，这里可能有一些潜在的问题，
-    以后有需求（或者时间）的时候，可以仔细探索下。
-
-    目前已知的可能存在问题（隐患）的点：
-
-    1. 我们只是创建一个 app 对象，没有运行 asyncio event loop,
-    2. 像本地音乐插件，它会启动一个异步的任务来扫描本地歌曲，
-       我们在这里也没有等待任务结束，就开始执行之后的流程了。
-
-    另外，理论上，该模式的逻辑理应只应该依赖 fuocore 中的模块，
-    目前是严格遵守这个要求的。
-    """
-
     client = OnceClient(app)
     dispatch(args, client)
 
@@ -295,8 +282,20 @@ def oncemain(app, args):
         if song is not None:
             print('Playing: {}'.format(show_song(song, brief=True)))
         else:
-            print('Playing: {}'.format(app.player.current_url))
+            print('Playing: {}'.format(app.player.current_media))
+        loop = asyncio.get_event_loop()
         try:
-            app.player._mpv.wait_for_playback()
+            # mpv wait_for_playback will wait until one song is finished,
+            # if we have multiple song to play, this will not work well.
+            future = loop.run_in_executor(
+                None,
+                # pylint: disable=protected-access
+                app.player._mpv.wait_for_playback)
+            loop.run_until_complete(future)
         except KeyboardInterrupt:
-            app.player.stop()
+            pass
+        finally:
+            loop.stop()
+            app.shutdown()
+            loop.close()
+    sys.exit(0)

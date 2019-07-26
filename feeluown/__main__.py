@@ -181,8 +181,6 @@ def run_once(args, config):
     config.MODE = App.CliMode
     app = setup_app(args, config)
     oncemain(app, args)
-    app.shutdown()
-    sys.exit(0)
 
 
 def run_forever(args, config):
