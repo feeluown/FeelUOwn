@@ -14,3 +14,4 @@ SONG_DIR = HOME_DIR + '/songs'
 COLLECTIONS_DIR = HOME_DIR + '/collections'
 
 LOG_FILE = HOME_DIR + '/stdout.log'
+DEFAULT_RCFILE_PATH = os.path.expanduser('~/.fuorc')
