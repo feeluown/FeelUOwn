@@ -52,19 +52,15 @@
 程序启动流程
 ----------------------
 
-入口文件为 ``feeluown/__main__.py`` ，主函数为 main 函数。
+``feeluown(fuo)`` 命令入口文件为 ``feeluown/entry_points/run.py`` ，主函数为 run 函数。
 
-main 函数启动主要流程如下::
+run 函数启动主要流程如下::
 
   1. 缩进时表示函数调用，比如 run_once 依次调用了 setup_app, oncemain,
      app.shutdown 三个方法。
 
   +------------------------------------------------------------------+
-  |           create_config                                          |
-  |                 |                                                |
-  |         fuoexec_load_rcfile                                      |
-  |                 |                                                |
-  |               init                                               |
+  |                run                                               |
   |     +-----------+---------------+                                |
   |     |           |               |                                |
   |  run_cli     run_once       run_forever                          |
