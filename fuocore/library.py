@@ -73,18 +73,18 @@ class Library(object):
             return iter(self._providers)
         return filter(lambda p: p.identifier in identifier_in, self.list())
 
-    def search(self, keyword, source_in=None, **kwargs):
-        """search song/artist/album by keyword
+    def search(self, keyword, stype=1, source_in=None, **kwargs):
+        """search song/artist/album/playlist by keyword
 
         - TODO: support search album or artist
         - TODO: support search with filters(by artist or by source)
 
         :param keyword: search keyword
-        :param source_id: None or provider identifier list
+        :param source_in: None or provider identifier list
         """
         for provider in self._filter(identifier_in=source_in):
             try:
-                result = provider.search(keyword=keyword)
+                result = provider.search(keyword=keyword, stype=stype, **kwargs)
             except Exception as e:
                 logger.exception(str(e))
                 logger.error('Search %s in %s failed.' % (keyword, provider))

@@ -145,6 +145,9 @@ def show_playlist(playlist, brief=False):
         content = '\n'.join(parts)
     return content
 
+def show_playlists(playlists):
+    return '\n'.join([show_playlist(song,brief=True) for song in playlists])
+
 
 def show_user(user):
     parts = [
@@ -153,3 +156,10 @@ def show_user(user):
     ]
     parts += ['\t' + show_playlist(p, brief=True) for p in user.playlists]
     return '\n'.join(parts)
+
+
+def show_results(results, stype):
+    if stype == 1:
+        return show_songs(results)
+    elif stype == 1000:
+        return show_playlists(results)

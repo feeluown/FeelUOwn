@@ -417,9 +417,9 @@ class SearchModel(BaseModel):
     class Meta:
         model_type = ModelType.dummy.value
 
-        # XXX: songs should be a empty list instead of None
-        # when there is not song.
-        fields = ['q', 'songs']
+        # XXX: songs/playlists should be a empty list instead of None
+        # when there is not result.
+        fields = ['q', 'songs', 'playlists']
         fields_no_get = ['q']
 
     def __str__(self):
