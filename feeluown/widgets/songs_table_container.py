@@ -185,9 +185,12 @@ class SongsTableContainer(QFrame):
             ))
         self.songs_table.scrollToTop()
 
-    def show_songs(self, songs):
+    def show_songs(self, songs=None, songs_g=None):
         self.meta_widget.clear()
-        self._show_songs(songs)
+        if songs_g is not None:
+            self._show_songs(songs_g=songs_g)
+        else:
+            self._show_songs(songs)
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:

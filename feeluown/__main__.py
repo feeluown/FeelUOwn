@@ -50,7 +50,7 @@ def create_config():
     config.deffield('MODE', default=0x0000, desc='CLI or GUI 模式')
     config.deffield('THEME', default='auto', desc='auto/light/dark')
     config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
-    config.deffield('COLLECTIONS_DIR',  desc='本地收藏所在目录')
+    config.deffield('COLLECTIONS_DIR', desc='本地收藏所在目录')
     config.deffield('FORCE_MAC_HOTKEY', desc='强制开启 macOS 全局快捷键功能',
                     warn='Will be remove in version 3.0')
     config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
@@ -100,7 +100,7 @@ def setup_argparse():
 
 def enable_mac_hotkey():
     try:
-        from .global_hotkey_mac import MacGlobalHotkeyManager
+        from feeluown.global_hotkey_mac import MacGlobalHotkeyManager
     except ImportError as e:
         logger.warning("Can't start mac hotkey listener: %s", str(e))
     else:
