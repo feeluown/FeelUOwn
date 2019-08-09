@@ -485,6 +485,8 @@ class Ui:
         self._app.player.video_format_changed.connect(
             self.on_video_format_changed, aioqueue=True)
 
+        self.pc_panel.download_btn.clicked.connect(self._download_song)
+
         self._app.hotkey_mgr.registe(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.magicbox.setFocus
@@ -513,6 +515,17 @@ class Ui:
         self._layout.setContentsMargins(0, 0, 0, 0)
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
+
+    def _download_song(self):
+        song = self._app.player.current_song
+        try:
+            from fuo_dl import prepare_url, prepare_filename, download_song
+        except:
+            logger.warning('Invalid download plugin.')
+        else:
+            download_url, ext = prepare_url(song, self._app)
+            filename, tag_obj = prepare_filename(song, ext)
+            download_song(download_url, filename, tag_obj)
 
     def _play_mv(self):
         song = self._app.player.current_song
