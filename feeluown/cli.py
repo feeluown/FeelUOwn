@@ -284,18 +284,11 @@ def oncemain(app, args):
         else:
             print('Playing: {}'.format(app.player.current_media))
         loop = asyncio.get_event_loop()
-        try:
-            # mpv wait_for_playback will wait until one song is finished,
-            # if we have multiple song to play, this will not work well.
-            future = loop.run_in_executor(
-                None,
-                # pylint: disable=protected-access
-                app.player._mpv.wait_for_playback)
-            loop.run_until_complete(future)
-        except KeyboardInterrupt:
-            pass
-        finally:
-            loop.stop()
-            app.shutdown()
-            loop.close()
-    sys.exit(0)
+        # mpv wait_for_playback will wait until one song is finished,
+        # if we have multiple song to play, this will not work well.
+        future = loop.run_in_executor(
+            None,
+            # pylint: disable=protected-access
+            app.player._mpv.wait_for_playback)
+        return future
+    return None

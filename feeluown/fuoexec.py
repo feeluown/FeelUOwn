@@ -32,7 +32,7 @@ def fuoexec_load_rcfile(config):
         source(DEFAULT_RCFILE_PATH)
 
 
-def fuoexec_after_app_attrs_attached(app):
+def fuoexec_init(app):
     signals_slots_mgr.initialize(app)
 
 

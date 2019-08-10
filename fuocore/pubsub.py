@@ -12,7 +12,7 @@ class DeadSubscriber(Exception):
     pass
 
 
-class Subscriber(object):
+class Subscriber:
     def __init__(self, addr, conn):
         self._addr = addr
         self._conn = conn
@@ -33,7 +33,7 @@ def sendto_subscriber(subscriber, msg):
         raise DeadSubscriber
 
 
-class Gateway(object):
+class Gateway:
     def __init__(self):
         self.topics = set()
         self._relations = defaultdict(set)  # {'topic': subscriber_set}
@@ -101,22 +101,17 @@ def handle(conn, addr, gateway, *args, **kwargs):
         break
 
 
-def run(host='0.0.0.0', port=23334):
+def create(host='0.0.0.0', port=23334):
     gateway = Gateway()
     server = TcpServer(handle_func=handle, host=host, port=port)
+    return gateway, server
+
+
+def run(gateway, server):
     t = Thread(target=server.run, args=(gateway,), name='TcpServerThread')
     server.thread = t
     t.setDaemon(True)
     t.start()
-    logger.info('Fuo pubsub server running  at {host}:{port}'.format(
-        host=host, port=port))
-    return gateway, server
-
-
-if __name__ == '__main__':
-    import time
-    gateway, server = run()
-    gateway.add_topic('topic.live_lyric')
-    while True:
-        time.sleep(1)
-        gateway.publish('miao\n', 'topic.live_lyric')
+    host, port = server.host, server.port
+    logger.info('Fuo pubsub server running  at {host}:{port}'
+                .format(host=host, port=port))

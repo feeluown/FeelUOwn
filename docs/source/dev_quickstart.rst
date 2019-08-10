@@ -52,56 +52,8 @@
 程序启动流程
 ----------------------
 
-入口文件为 ``feeluown/__main__.py`` ，主函数为 main 函数。
+``feeluown(fuo)`` 命令入口文件为 ``feeluown/entry_points/run.py`` ，主函数为 run 函数。
 
-main 函数启动主要流程如下::
 
-  1. 缩进时表示函数调用，比如 run_once 依次调用了 setup_app, oncemain,
-     app.shutdown 三个方法。
-
-  +------------------------------------------------------------------+
-  |           create_config                                          |
-  |                 |                                                |
-  |         fuoexec_load_rcfile                                      |
-  |                 |                                                |
-  |               init                                               |
-  |     +-----------+---------------+                                |
-  |     |           |               |                                |
-  |  run_cli     run_once       run_forever                          |
-  |     +               |               |                            |
-  |  climain            setup_app       prepare_gui<if GuiMode>      |
-  |                     |               |                            |
-  |                     oncemain        setup_app                    |
-  |                     |               |                            |
-  |                     app.shutdown    enable_mac_hotkey<if Darwin> |
-  |                                     |                            |
-  |                                     loop.run_forever             |
-  |                                     |                            |
-  |                                     app.shutdown                 |
-  +------------------------------------------------------------------+
-  +------------------------------------------------------------------+
-  |                                                                  |
-  |                setup_app                                         |
-  |                    |                                             |
-  |          Signal.setup_aio_support                                |
-  |                    |                                             |
-  |               create_app                                         |
-  |                        |                                         |
-  |                        app = FApp()                              |
-  |                        App.instance = app                        |
-  |                        app.config = config                       |
-  |                        |                                         |
-  |                        attatch_attrs(app)                        |
-  |                        |                                         |
-  |                        fuoexec_after_app_attrs_attached          |
-  |                        |                                         |
-  |                        app.show<if GuiMode>                      |
-  |                        |                                         |
-  |                        initialize                                |
-  |                        |                                         |
-  |                        app.initialized.emit                      |
-  |                                                                  |
-  +------------------------------------------------------------------+
-
-.. _feeluown: http://github.com/cosven/feeluown
+.. _feeluown: http://github.com/feeluown/feeluown
 .. _廖雪峰的Git教程: https://www.liaoxuefeng.com/wiki/0013739516305929606dd18361248578c67b8067c8c017b000
