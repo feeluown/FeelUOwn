@@ -516,9 +516,14 @@ class Ui:
 
     def _play_mv(self):
         song = self._app.player.current_song
-        media, _ = song.mv.select_media()
-        self._app.player.play(media)
-        self.show_video_widget()
+        mv = song.mv
+        if mv is not None:
+            if mv.meta.support_multi_quality:
+                media, _ = mv.select_media()
+            else:
+                media = mv.media
+            self._app.player.play(media)
+            self.show_video_widget()
 
     def show_player_playlist(self):
         songs = self._app.playlist.list()
