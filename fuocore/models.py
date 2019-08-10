@@ -480,3 +480,64 @@ class UserModel(BaseModel):
 
     def remove_from_fav_artists(self, artist_id):
         pass
+
+
+class GeneratorProxy:
+    """Help you manage paginated data
+
+    We only want to launch web request when we need the resource
+    Formerly, we use Python generator to achieve this lazy fetch
+    feature. However, we can't extract any pagination meta info,
+    such as total count and current offset, from the ordinary
+    generator.
+
+    GeneratorProxy implements the iterator protocol, wraps the
+    generator and store the pagination state.
+
+    **Usage example**:
+
+    >>> def fetch_songs(page=1, page_size=50):
+    ...     return list(range(page * page_size,
+    ...                       (page + 1) * page_size))
+    ...
+    >>> def create_songs_g():
+    ...     page = 0
+    ...     total_page = 2
+    ...     page_size = 2
+    ...
+    ...     def g():
+    ...         nonlocal page, page_size
+    ...         while page < total_page:
+    ...            for song in fetch_songs(page, page_size):
+    ...                yield song
+    ...            page += 1
+    ...
+    ...     total = total_page * page_size
+    ...     return GeneratorProxy(g(), total)
+    ...
+    >>> g = create_songs_g()
+    >>> g.offset, g.count
+    (0, 4)
+    >>> next(g), next(g)
+    (0, 1)
+    >>> list(g)
+    [2, 3]
+    >>> g.offset, g.count
+    (4, 4)
+    """
+
+    def __init__(self, g, count, offset=0):
+        self._g = g
+        self.count = count
+        self.offset = offset
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        if self.count is None:
+            return next(self._g)
+        if self.offset < self.count:
+            self.offset += 1
+            return next(self._g)
+        raise StopIteration
