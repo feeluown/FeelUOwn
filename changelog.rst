@@ -1,5 +1,10 @@
 Changelog
 ---------
+3.0.2 (WIP)
+"""""""""""""""""""""
+- refactor: 重构 `__main__` 模块，加入 `entry_points` 包
+- refactor: 加入 fuoexec 模块
+- feat: 支持在 macOS 上生成 .app 文件
 
 3.0.1 (2019-06-30)
 """""""""""""""""""""
