@@ -64,7 +64,7 @@ def setup_cli_argparse(parser):
     play_parser.add_argument('uri', help='歌曲 uri')
     show_parser.add_argument('uri', help='显示资源详细信息')
     remove_parser.add_argument('uri', help='从播放列表移除歌曲')
-    add_parser.add_argument('uri', help='添加歌曲到播放列表')
+    add_parser.add_argument('uri', nargs='?', help='添加歌曲到播放列表')
     search_parser.add_argument('keyword', help='搜索关键字')
     search_parser.add_argument('options', nargs='?', help='命令选项 (e.g., type=playlist)')
     """
@@ -241,7 +241,6 @@ class HandlerWithWriteListCache(BaseHandler):
             if options_str.startswith('[') and options_str.endswith(']'):
                 self._req.options_str = options_str
             else:
-                breakpoint()
                 self._req.options_str = '[{}]'.format(options_str)
 
     def process_resp(self, resp):
