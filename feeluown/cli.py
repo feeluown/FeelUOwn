@@ -35,7 +35,18 @@ def setup_cli_argparse(parser):
         formatter_class=argparse.RawTextHelpFormatter
     )
     show_parser = subparsers.add_parser('show')
-    search_parser = subparsers.add_parser('search')
+    search_parser = subparsers.add_parser(
+        'search',
+        description=textwrap.dedent('''\
+        Example:
+            - fuo search hero
+            - fuo search 李宗盛 source=xiami,type=artist
+            - fuo search 李宗盛 [source=xiami,type=artist]
+            - fuo search lizongsheng "source='xiami,qq',type=artist"
+            - fuo search 李宗盛 "[source='xiami,qq',type=artist]"
+        '''),
+        formatter_class=argparse.RawTextHelpFormatter
+    )
 
     pause_parser = subparsers.add_parser('pause')
     resume_parser = subparsers.add_parser('resume')
@@ -57,7 +68,8 @@ def setup_cli_argparse(parser):
     search_parser.add_argument('keyword', help='搜索关键字')
     search_parser.add_argument('options', nargs='?', help='命令选项 (e.g., type=playlist)')
     """
-    FIXME: redesign options argument to make following examples works
+    FIXME: maybe we should redesign options argument or add another way
+           to make following examples works
 
     1. search zjl source='artist,album'
 
@@ -67,15 +79,6 @@ def setup_cli_argparse(parser):
       search zjl source=artist,album
 
     though user can write this: search zjl source=\'artist,album\'.
-
-    2. search zjl [source='artist,album',miao=1]
-
-    Python reads::
-
-      search zjl t
-
-    this will work: search zjl \[source=\'artist,album\',miao=1\],
-    but this would be pretty hard for user to type in terminal.
     """
     exec_parser.add_argument('code', nargs='?', help='Python 代码')
 
