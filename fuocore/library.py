@@ -1,6 +1,7 @@
 import logging
 
 from fuocore import aio
+from fuocore.models import SearchType
 from fuocore.utils import log_exectime
 
 logger = logging.getLogger(__name__)
@@ -73,23 +74,26 @@ class Library(object):
             return iter(self._providers)
         return filter(lambda p: p.identifier in identifier_in, self.list())
 
-    def search(self, keyword, source_in=None, **kwargs):
-        """search song/artist/album by keyword
+    def search(self, keyword, type_in=None, source_in=None, **kwargs):
+        """search song/artist/album/playlist by keyword
 
-        - TODO: support search album or artist
-        - TODO: support search with filters(by artist or by source)
+        please use a_search method if you can.
 
         :param keyword: search keyword
-        :param source_id: None or provider identifier list
+        :param type_in: search type
+        :param source_in: None or provider identifier list
+
+        - TODO: support search with filters(by artist or by source)
         """
+        type_in = SearchType.batch_parse(type_in) if type_in else [SearchType.so]
         for provider in self._filter(identifier_in=source_in):
-            try:
-                result = provider.search(keyword=keyword)
-            except Exception as e:
-                logger.exception(str(e))
-                logger.error('Search %s in %s failed.' % (keyword, provider))
-            else:
-                yield result
+            for type_ in type_in:
+                try:
+                    result = provider.search(keyword=keyword, type_=type_, **kwargs)
+                except Exception:  # pylint: disable=broad-except
+                    logger.exception('Search %s in %s failed.', keyword, provider)
+                else:
+                    yield result
 
     async def a_search(self, keyword, source_in=None, timeout=None, **kwargs):
         """async version of search

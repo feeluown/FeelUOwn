@@ -68,7 +68,7 @@ class Parser:
         req = Request(cmd)
         try:
             req.cmd_args = self._parse_values()
-            req.cmd_options = self._parse_cmd_options()
+            req.cmd_options = self.parse_cmd_options()
             req.options = self._parse_req_options()
             req.has_heredoc, req.heredoc_word = self._parse_heredoc()
         except _EOF:
@@ -193,7 +193,7 @@ class Parser:
             break
         return options
 
-    def _parse_cmd_options(self):
+    def parse_cmd_options(self):
         """
         cmd_options: LBRACKET ((option_expr)(COMMA option_expr)*)? RBRACKET
         """

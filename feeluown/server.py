@@ -23,7 +23,7 @@ class FuoServer:
                                  loop=self._loop)
 
     def handle_req(self, req, session=None):
-        cmd = Cmd(req.cmd, *req.cmd_args)
+        cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
         success, msg = exec_cmd(
             cmd,
             library=self._app.library,

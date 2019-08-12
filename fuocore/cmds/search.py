@@ -1,25 +1,52 @@
 import logging
 from .base import AbstractHandler
-from .helpers import show_songs
+from .helpers import show_search
 
 logger = logging.getLogger(__name__)
 
 
 class SearchHandler(AbstractHandler):
+    """
+
+    Supported query parameters:
+
+    search keyword
+    search keyword [type=playlist]
+
+    TODO:
+
+    search keyword [type=all,source=netease,limit=10]
+    """
+
     cmds = 'search'
 
     def handle(self, cmd):
-        return self.search_songs(cmd.args[0])
+        return self.search(cmd.args[0], cmd.options)
 
-    def search_songs(self, query):
-        logger.debug('搜索 %s ...', query)
+    def search(self, keyword, options=None):
+        """
+
+        :param string keyword: serach keyword
+        :param dict options: search options
+        :return:
+        """
         providers = self.library.list()
         source_in = [provd.identifier for provd in providers
                      if provd.Song.meta.allow_get]
-        songs = []
-        for result in self.library.search(query, source_in=source_in):
-            logger.debug('从 %s 搜索到 %d 首歌曲，取前 20 首',
-                         result.source, len(result.songs))
-            songs.extend(result.songs[:20])
-        logger.debug('总共搜索到 %d 首歌曲', len(songs))
-        return show_songs(songs)
+        params = {'source_in': source_in}
+        if options is not None:
+            type_in = options.pop('type', None)
+            source_in = options.pop('source', None)
+            if type_in is not None:
+                params['type_in'] = type_in
+            if source_in is not None:
+                params['source_in'] = source_in.split(',')
+            if options:
+                logger.warning('Unknown cmd options: %s', options)
+        output = ''
+        # TODO: limit output lines
+        for result in self.library.search(keyword, **params):
+            if output:
+                output += '\n'
+            output += show_search(result)
+        return output

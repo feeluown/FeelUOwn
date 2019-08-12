@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from enum import IntEnum
+from enum import IntEnum, Enum
 import logging
 
 from fuocore.media import MultiQualityMixin, Quality
@@ -23,6 +23,67 @@ class ModelType(IntEnum):
     lyric = 5
 
     user = 17
+
+
+class SearchType(Enum):
+    pl = 'playlist'
+    al = 'album'
+    ar = 'artist'
+    so = 'song'
+
+    @classmethod
+    def parse(cls, obj):
+        """get member from object
+
+        :param obj: string or SearchType member
+        :return: SearchType member
+
+        >>> SearchType.parse('playlist')
+        <SearchType.pl: 'playlist'>
+        >>> SearchType.parse(SearchType.pl)
+        <SearchType.pl: 'playlist'>
+        >>> SearchType.parse('xxx')
+        Traceback (most recent call last):
+          ...
+        ValueError: 'xxx' is not a valid SearchType value
+        """
+        if isinstance(obj, SearchType):
+            return obj
+
+        type_aliases_map = {
+            cls.pl: ('playlist', 'pl'),
+            cls.al: ('album', 'al'),
+            cls.ar: ('artist', 'ar'),
+            cls.so: ('song', 'so')
+        }
+        for type_, aliases in type_aliases_map.items():
+            if obj in aliases:
+                return type_
+        raise ValueError("'%s' is not a valid SearchType value" % obj)
+
+    @classmethod
+    def batch_parse(cls, obj):
+        """get list of member from obj
+
+        :param obj: obj can be string, list of string or list of member
+        :return: list of member
+
+        >>> SearchType.batch_parse('pl,ar')
+        [<SearchType.pl: 'playlist'>, <SearchType.ar: 'artist'>]
+        >>> SearchType.batch_parse(['pl', 'ar'])
+        [<SearchType.pl: 'playlist'>, <SearchType.ar: 'artist'>]
+        >>> SearchType.batch_parse('al')
+        [<SearchType.al: 'album'>]
+        >>> SearchType.batch_parse(SearchType.al)
+        [<SearchType.al: 'album'>]
+        >>> SearchType.batch_parse([SearchType.al])
+        [<SearchType.al: 'album'>]
+        """
+        if isinstance(obj, SearchType):
+            return [obj]
+        if isinstance(obj, str):
+            return [cls.parse(s) for s in obj.split(',')]
+        return [cls.parse(s) for s in obj]
 
 
 class ModelStage(IntEnum):
@@ -419,8 +480,8 @@ class SearchModel(BaseModel):
 
         # XXX: songs should be a empty list instead of None
         # when there is not song.
-        fields = ['q', 'songs']
-        fields_no_get = ['q']
+        fields = ['q', 'songs', 'playlists', 'artists', 'albums']
+        fields_no_get = ['q', 'songs', 'playlists']
 
     def __str__(self):
         return 'fuo://{}?q={}'.format(self.source, self.q)

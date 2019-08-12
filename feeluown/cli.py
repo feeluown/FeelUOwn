@@ -8,6 +8,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 
 from fuocore.cmds import exec_cmd, Cmd
 from fuocore.cmds.helpers import show_song
+from fuocore.protocol import Parser
 from feeluown.consts import CACHE_DIR
 
 
@@ -54,6 +55,7 @@ def setup_cli_argparse(parser):
     remove_parser.add_argument('uri', help='从播放列表移除歌曲')
     add_parser.add_argument('uri', help='添加歌曲到播放列表')
     search_parser.add_argument('keyword', help='搜索关键字')
+    search_parser.add_argument('options', nargs='?', help='命令选项 (e.g., type=playlist)')
     exec_parser.add_argument('code', nargs='?', help='Python 代码')
 
 
@@ -61,21 +63,53 @@ cmd_handler_mapping = {}
 
 
 class Request:
-    def __init__(self, cmd, *args, **options):
+    def __init__(self, cmd, *args, options_str=None):
+        """cli request object
+
+        :param string cmd: cmd name (e.g. search)
+        :param list args: cmd arguments
+        :param string options_str: cmd options
+
+        >>> req = Request('search',
+        ...               'linkin park',
+        ...               options_str='[type=pl,source=xiami]')
+        >>> req.raw
+        'search "linkin park" [type=pl,source=xiami]'
+        >>> req.to_cmd().options
+        '{"type": "pl", "source": "xiami"}'
+        """
         self.cmd = cmd
         self.args = args
-        self.options = options
+        self.options_str = options_str
 
     @property
     def raw(self):
-        text = self.cmd
-        if self.args:
-            text += ' '
-            text += ' '.join(self.args)
-        return text
+        """generate syntactically correct request
+
+        HELP: currently, we use escape func to handle whitespace
+        in order to generate syntactically correct request. However,
+        if double quote exists in value, the escape function should
+        be broken. I think some code generatin skills can solve
+        this problem, e.g., generate code from AST?
+        """
+        def escape(value):
+            # add double quotes if whitespace in value
+            return '"{}"'.format(value) if ' ' in value else value
+
+        options_str = self.options_str
+
+        return '{cmd} {args_str} {options_str}'.format(
+            cmd=self.cmd,
+            args_str=' '.join((escape(arg) for arg in self.args)),
+            options_str=(options_str if options_str else '')
+        )
 
     def to_cmd(self):
-        return Cmd(self.cmd, *self.args)
+        if self.options_str:
+            options = Parser(self.options_str).parse_cmd_options()
+        else:
+            options = {}
+        return Cmd(self.cmd, *self.args, options=options)
 
     def __str__(self):
         return '{} {}'.format(self.cmd, self.args)
@@ -149,7 +183,7 @@ class BaseHandler(metaclass=HandlerMeta):
         self._req = Request(args.cmd)
 
     def before_request(self):
-        pass
+        """before request hook"""
 
     def get_req(self):
         return self._req
@@ -186,6 +220,13 @@ class HandlerWithWriteListCache(BaseHandler):
         cmd = self.args.cmd
         if cmd == 'search':
             self._req.args = (self.args.keyword, )
+            options_str = self.args.options
+            if not options_str:
+                return
+            if options_str.startswith('[') and options_str.endswith(']'):
+                self._req.options_str = options_str
+            else:
+                self._req.options_str = '[{}]'.format(options_str)
 
     def process_resp(self, resp):
         if resp.code != 'OK' or not resp.content:

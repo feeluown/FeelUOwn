@@ -10,6 +10,8 @@ fuocore.cmds.helper
 TODO: 让代码长得更好看
 """
 
+from itertools import chain
+
 from fuocore.protocol import get_url
 
 
@@ -97,7 +99,11 @@ def show_songs(songs):
                       for song in songs])
 
 
-def show_artist(artist):
+def show_artist(artist, brief=False):
+    if brief:
+        return '{uri}\t# {name}'.format(
+            uri=get_url(artist),
+            name=artist.name)
     msgs = [
         'provider:      {}'.format(artist.source),
         'identifier:    {}'.format(artist.identifier),
@@ -112,6 +118,13 @@ def show_artist(artist):
 
 
 def show_album(album, brief=False):
+    if brief:
+        return '{uri}\t# {name} - {artists_name}'.format(
+            uri=get_url(album),
+            name=album.name,
+            artists_name=album.artists_name
+        )
+
     msgs = [
         'provider:      {}'.format(album.source),
         'identifier:    {}'.format(album.identifier),
@@ -123,11 +136,10 @@ def show_album(album, brief=False):
         artists_name = ','.join([artist.name for artist in artists])
         msgs_artists = ['artists:       {}\t#{}'.format(artists_id, artists_name)]
         msgs += msgs_artists
-    if not brief:
-        msgs_songs_header = ['songs::']
-        msgs_songs = ['\t' + each for each in show_songs(album.songs).split('\n')]
-        msgs += msgs_songs_header
-        msgs += msgs_songs
+    msgs_songs_header = ['songs::']
+    msgs_songs = ['\t' + each for each in show_songs(album.songs).split('\n')]
+    msgs += msgs_songs_header
+    msgs += msgs_songs
     return '\n'.join(msgs)
 
 
@@ -146,6 +158,11 @@ def show_playlist(playlist, brief=False):
     return content
 
 
+def show_playlists(playlists):
+    return '\n'.join((show_playlist(playlist, brief=True)
+                      for playlist in playlists))
+
+
 def show_user(user):
     parts = [
         'name:        {}'.format(user.name),
@@ -153,3 +170,17 @@ def show_user(user):
     ]
     parts += ['\t' + show_playlist(p, brief=True) for p in user.playlists]
     return '\n'.join(parts)
+
+
+def show_search(search):
+    """show search result model"""
+
+    song_part = map(lambda so: show_song(so, brief=True),
+                    search.songs or [])
+    pl_part = map(lambda pl: show_playlist(pl, brief=True),
+                  search.playlists or [])
+    ar_part = map(lambda ar: show_artist(ar, brief=True),
+                  search.artists or [])
+    al_part = map(lambda al: show_album(al, brief=True),
+                  search.albums or [])
+    return '\n'.join(chain(song_part, ar_part, al_part, pl_part))

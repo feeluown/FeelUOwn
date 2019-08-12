@@ -19,9 +19,10 @@ class CmdException(FuocoreException):
 
 
 class Cmd:
-    def __init__(self, action, *args, **kwargs):
+    def __init__(self, action, *args, options=None):
         self.action = action
         self.args = args
+        self.options = options
 
     def __str__(self):
         return 'action:{} args:{}'.format(self.action, self.args)
