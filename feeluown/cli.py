@@ -228,14 +228,6 @@ class SimpleHandler(BaseHandler):
     )
 
 
-class OneArgHandler(BaseHandler):
-    cmds = ('remove', )
-
-    def before_request(self):
-        if self.args.cmd == 'remove':
-            self._req.args = (self.args.uri, )
-
-
 class HandlerWithWriteListCache(BaseHandler):
     cmds = ('list', 'search')
 
@@ -266,7 +258,7 @@ class HandlerWithWriteListCache(BaseHandler):
 
 
 class HandlerWithReadListCache(BaseHandler):
-    cmds = ('show', 'play')
+    cmds = ('show', 'play', 'remove')
 
     def before_request(self):
         uri = self.args.uri
