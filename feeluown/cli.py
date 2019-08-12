@@ -56,6 +56,27 @@ def setup_cli_argparse(parser):
     add_parser.add_argument('uri', help='添加歌曲到播放列表')
     search_parser.add_argument('keyword', help='搜索关键字')
     search_parser.add_argument('options', nargs='?', help='命令选项 (e.g., type=playlist)')
+    """
+    FIXME: redesign options argument to make following examples works
+
+    1. search zjl source='artist,album'
+
+    if quote in options str, bash will remove it, the string
+    Python reads will become::
+
+      search zjl source=artist,album
+
+    though user can write this: search zjl source=\'artist,album\'.
+
+    2. search zjl [source='artist,album',miao=1]
+
+    Python reads::
+
+      search zjl t
+
+    this will work: search zjl \[source=\'artist,album\',miao=1\],
+    but this would be pretty hard for user to type in terminal.
+    """
     exec_parser.add_argument('code', nargs='?', help='Python 代码')
 
 
@@ -97,7 +118,6 @@ class Request:
             return '"{}"'.format(value) if ' ' in value else value
 
         options_str = self.options_str
-
         return '{cmd} {args_str} {options_str}'.format(
             cmd=self.cmd,
             args_str=' '.join((escape(arg) for arg in self.args)),
@@ -226,6 +246,7 @@ class HandlerWithWriteListCache(BaseHandler):
             if options_str.startswith('[') and options_str.endswith(']'):
                 self._req.options_str = options_str
             else:
+                breakpoint()
                 self._req.options_str = '[{}]'.format(options_str)
 
     def process_resp(self, resp):
