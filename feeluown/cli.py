@@ -255,7 +255,7 @@ class HandlerWithReadListCache(BaseHandler):
                 i = 0
                 for line in f:
                     if i == lineno:
-                        uri = line
+                        uri = line.split('#')[0].strip()
                         break
                     i += 1
         self._req.args = (uri, )
