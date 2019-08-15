@@ -13,6 +13,7 @@ setup(
     author_email='yinshaowen241@gmail.com',
     packages=[
         'feeluown',
+        'feeluown.entry_points',
         'feeluown.widgets',
         'feeluown.widgets.statusline_items',
         'feeluown.uimodels',

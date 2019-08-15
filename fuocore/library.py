@@ -1,4 +1,5 @@
 import logging
+from functools import partial
 
 from fuocore import aio
 from fuocore.models import SearchType
@@ -102,7 +103,7 @@ class Library(object):
         """
         fs = []  # future list
         for provider in self._filter(identifier_in=source_in):
-            future = aio.run_in_executor(None, provider.search, keyword)
+            future = aio.run_in_executor(None, partial(provider.search, keyword, type_=SearchType.so))
             fs.append(future)
         result = []
 
