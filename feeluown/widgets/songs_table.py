@@ -82,7 +82,7 @@ class SongsTableModel(QAbstractTableModel):
     def flags(self, index):
         song = index.data(Qt.UserRole)
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        if song.exists == ModelExistence.no or \
+        if song and song.exists == ModelExistence.no or \
            index.column() in (Column.source, Column.index, Column.duration):
             return Qt.ItemIsSelectable
         if index.column() == Column.song:
