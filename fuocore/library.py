@@ -103,7 +103,9 @@ class Library(object):
         """
         fs = []  # future list
         for provider in self._filter(identifier_in=source_in):
-            future = aio.run_in_executor(None, partial(provider.search, keyword, type_=SearchType.so))
+            future = aio.run_in_executor(
+                None,
+                partial(provider.search, keyword, type_=SearchType.so))
             fs.append(future)
         result = []
 
