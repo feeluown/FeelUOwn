@@ -60,8 +60,10 @@ def setup_cli_argparse(parser):
     add_parser = subparsers.add_parser('add')
     status_parser = subparsers.add_parser('status')
     exec_parser = subparsers.add_parser('exec')
+    download_parser = subparsers.add_parser('download')
 
     play_parser.add_argument('uri', help='歌曲 uri')
+    download_parser.add_argument('uri', help='歌曲 uri')
     show_parser.add_argument('uri', help='显示资源详细信息')
     remove_parser.add_argument('uri', help='从播放列表移除歌曲')
     add_parser.add_argument('uri', nargs='?', help='添加歌曲到播放列表')
@@ -189,12 +191,8 @@ class HandlerMeta(type):
     def __new__(cls, name, bases, attrs):
         klass = type.__new__(cls, name, bases, attrs)
         if 'cmds' in attrs:
-            cmds = attrs['cmds']
-            if isinstance(cmds, str):
-                cmd_handler_mapping[cmds] = klass
-            else:
-                for cmd in cmds:
-                    cmd_handler_mapping[cmd] = klass
+            for cmd in attrs['cmds']:
+                cmd_handler_mapping[cmd] = klass
         return klass
 
 
@@ -257,7 +255,7 @@ class HandlerWithWriteListCache(BaseHandler):
 
 
 class HandlerWithReadListCache(BaseHandler):
-    cmds = ('show', 'play', 'remove')
+    cmds = ('show', 'play', 'remove', 'download')
 
     def before_request(self):
         uri = self.args.uri

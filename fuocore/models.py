@@ -2,8 +2,12 @@
 
 from enum import IntEnum, Enum
 import logging
+import os
+
+import requests
 
 from fuocore.media import MultiQualityMixin, Quality
+from feeluown.consts import SONG_DIR
 
 
 logger = logging.getLogger(__name__)
@@ -432,6 +436,13 @@ class SongModel(BaseModel, MultiQualityMixin):
     @property
     def filename(self):
         return '{} - {}.mp3'.format(self.title, self.artists_name)
+
+    def save(self):
+        save_path = os.path.join(SONG_DIR, self.filename)
+        r = requests.get(self.url)
+        with open(save_path, 'wb') as f:
+            f.write(r.content)
+        return save_path
 
     def __str__(self):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa

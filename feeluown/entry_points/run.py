@@ -29,7 +29,7 @@ def run():
         # `fuo play fuo://xxx/songs/12345`. Under these circumstances,
         # we should try to make feeluown work as they expected to.
         # Currently, we have three such commands:
-        cmds = ('show', 'play', 'search')
+        cmds = ('show', 'play', 'search', 'download')
         if args.cmd in cmds:
             return run_once(args, config)
 

@@ -10,6 +10,7 @@ from .player import PlayerHandler  # noqa
 from .search import SearchHandler  # noqa
 from .show import ShowHandler  # noqa
 from .exec_ import ExecHandler  # noqa
+from .download import DownloadHandler  # noqa
 
 logger = logging.getLogger(__name__)
 

@@ -181,7 +181,7 @@ class MpvPlayer(AbstractPlayer):
 
     @property
     def video_format(self):
-        self._video_format
+        return self._video_format
 
     @video_format.setter
     def video_format(self, vformat):
