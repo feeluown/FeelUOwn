@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (
 from fuocore import ModelType
 from feeluown.helpers import use_mac_theme, async_run
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
-from feeluown.widgets.songs_table_meta import SongsTableMetaWidget
+from feeluown.widgets.table_meta import TableMetaWidget
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class SongsTableContainer(QFrame):
         super().__init__(parent)
         self._app = app
 
-        self.meta_widget = SongsTableMetaWidget(parent=self)
+        self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
 
         self.songs_table.play_song_needed.connect(

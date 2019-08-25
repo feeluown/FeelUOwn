@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from feeluown.widgets.songs_table_toolbar import SongsTableToolbar
+from feeluown.widgets.table_toolbar import SongsTableToolbar
 
 
 class DescriptionContainer(QScrollArea):
@@ -54,7 +54,7 @@ class DescriptionContainer(QScrollArea):
             super().keyPressEvent(event)
 
 
-class SongsTableMetaWidget(QWidget):
+class TableMetaWidget(QWidget):
 
     toggle_full_window_needed = pyqtSignal([bool])
 
