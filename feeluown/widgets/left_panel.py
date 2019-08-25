@@ -1,5 +1,5 @@
 from PyQt5.QtCore import QSize
-from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy
+from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea
 
 from feeluown.helpers import use_mac_theme
 from feeluown.widgets.playlists import PlaylistsView
@@ -8,7 +8,18 @@ from feeluown.widgets.collections import CollectionsView
 from feeluown.widgets.my_music import MyMusicView
 
 
-class LeftPanel(QFrame):
+class LeftPanel(QScrollArea):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self.setWidgetResizable(True)
+        self.setFrameShape(QFrame.NoFrame)
+
+        self.p = _LeftPanel(app, self)
+
+
+class _LeftPanel(QFrame):
 
     def __init__(self, app, parent=None):
         super().__init__(parent)

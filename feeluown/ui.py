@@ -1,8 +1,6 @@
 import logging
 from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
-    QFrame,
-    QScrollArea,
     QSizePolicy,
     QSplitter,
     QVBoxLayout,
@@ -31,11 +29,7 @@ class Ui:
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
         self.bottom_panel = BottomPanel(app, app)
-        self._left_panel_container = QScrollArea(app)
-        self._left_panel_container.setWidgetResizable(True)
-        self._left_panel_container.setFrameShape(QFrame.NoFrame)
-        self.left_panel = LeftPanel(self._app, self._left_panel_container)
-        self._left_panel_container.setWidget(self.left_panel)
+        self.left_panel = LeftPanel(self._app,)
         self.right_panel = RightPanel(self._app, self._splitter)
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.mpv_widget.hide()
@@ -68,11 +62,11 @@ class Ui:
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
 
         self._splitter.setHandleWidth(0)
-        self._splitter.addWidget(self._left_panel_container)
+        self._splitter.addWidget(self.left_panel)
         self._splitter.addWidget(self.right_panel)
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._left_panel_container.setMinimumWidth(200)
+        self.left_panel.setMinimumWidth(200)
 
         self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._bottom_separator)
