@@ -31,10 +31,12 @@
      理论上，我们可以从 Media(Audio) 中解析出部分 Song 信息。
 
    FeelUOwn
-     项目名
+     项目名，泛指 FeelUOwn 整个项目。从 GitHub repo 角度看，它指 github.com/feeluown
+     目录下所有的项目。
 
    feeluown
-     包名（Python 包），程序名
+     包名（Python 包），程序名。从 GitHub repo 角度看，
+     它特指 github.com/feeluown/feeluown 这个项目。
 
    fuo
      程序名

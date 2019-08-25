@@ -585,12 +585,42 @@ class GeneratorProxy:
     [2, 3]
     >>> g.offset, g.count
     (4, 4)
+
+    .. versionadded:: 3.1
     """
 
     def __init__(self, g, count, offset=0):
+        """init
+
+        :param g: Python generator
+        :param offset: current offset
+        :param count: total count. count can be None, which means the
+                      total count is unknown
+        """
         self._g = g
         self.count = count
         self.offset = offset
+
+    @classmethod
+    def wrap(cls, g):
+        """wrap a ordinary generator
+
+        When we can't determine if the generator is GeneratorProxy or not,
+        we can use the wrap method. So that we will not need to write
+        code like this::
+
+            if not isinstance(songs_g, GeneratorProxy):
+                songs_g = GeneratorProxy(songs_g, count=None)
+            else:
+                songs_g = songs_g
+
+        just type::
+
+            songs_g = GeneratorProxy.wrap(songs_g)
+        """
+        if isinstance(g, GeneratorProxy):
+            return g
+        return cls(g, count=None)
 
     def __iter__(self):
         return self
