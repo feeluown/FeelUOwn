@@ -1,3 +1,9 @@
+LINT_FILES = fuocore/
+LINT_FILES += feeluown/entry_points
+LINT_FILES += feeluown/app.py
+LINT_FILES += feeluown/ui.py
+LINT_FILES += feeluown/widgets/*_panel.py
+
 .PHONY: docs
 
 all: unittest
@@ -6,7 +12,7 @@ docs:
 	cd docs && make html
 
 lint:
-	flake8 fuocore/ feeluown/entry_points feeluown/app.py
+	flake8 $(LINT_FILES)
 
 unittest: pytest
 
