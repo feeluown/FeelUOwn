@@ -23,6 +23,7 @@ Ubuntu
 
     # 安装 PyQt5
     sudo apt-get install python3-pyqt5
+    sudo apt-get install python3-pyqt5.qtopengl
 
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
