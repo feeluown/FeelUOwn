@@ -17,6 +17,7 @@ class LeftPanel(QScrollArea):
         self.setFrameShape(QFrame.NoFrame)
 
         self.p = _LeftPanel(app, self)
+        self.setWidget(self.p)
 
 
 class _LeftPanel(QFrame):
