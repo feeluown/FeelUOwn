@@ -172,6 +172,12 @@ class TableMetaWidget(QWidget):
         if not self.cover:
             self.cover_label.hide()
 
+    def _refresh_toolbar(self):
+        if self.is_artist:
+            self.toolbar.artist_mode()
+        else:
+            self.toolbar.songs_mode()
+
     def clear(self):
         self.title = None
         self.subtitle = None
@@ -180,6 +186,7 @@ class TableMetaWidget(QWidget):
         self.created_at = None
         self.updated_at = None
         self.creator = None
+        self.is_artist = False
 
     def set_cover_pixmap(self, pixmap):
         self.cover_label.show()
@@ -194,6 +201,7 @@ class TableMetaWidget(QWidget):
     created_at = getset_property('created_at', _refresh_meta_label)
     updated_at = getset_property('updated_at', _refresh_meta_label)
     creator = getset_property('creator', _refresh_meta_label)
+    is_artist = getset_property('is_artist', _refresh_toolbar)
 
     def toggle_full_window(self):
         if self._is_fullwindow:

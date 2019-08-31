@@ -11,16 +11,35 @@ class SongsTableToolbar(QWidget):
     _desc_btn_unchecked_text = '展开描述'
 
     play_all_needed = pyqtSignal()
+    show_songs_needed = pyqtSignal()
+    show_albums_needed = pyqtSignal()
     toggle_desc_needed = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.play_all_btn = QPushButton('播放全部', self)
+        self.show_songs_btn = QPushButton(parent=self)
+        self.show_albums_btn = QPushButton(parent=self)
         self.desc_btn = QPushButton(self._desc_btn_unchecked_text, self)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
         self.desc_btn.clicked.connect(self.on_desc_btn_toggled)
+        self.show_albums_btn.clicked.connect(self.show_albums_needed.emit)
+        self.show_songs_btn.clicked.connect(self.show_songs_needed.emit)
+
+        self.show_songs_btn.hide()
+        self.show_albums_btn.hide()
         self._setup_ui()
+
+    def artist_mode(self):
+        self.show_songs_btn.setText('热门歌曲')
+        self.show_albums_btn.setText('专辑')
+        self.show_songs_btn.show()
+        self.show_albums_btn.show()
+
+    def songs_mode(self):
+        self.show_songs_btn.hide()
+        self.show_albums_btn.hide()
 
     def _setup_ui(self):
         self.desc_btn.hide()
@@ -29,7 +48,11 @@ class SongsTableToolbar(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
         self._layout.addWidget(self.play_all_btn)
+        self._layout.addSpacing(10)
+        self._layout.addWidget(self.show_songs_btn)
         self._layout.addSpacing(5)
+        self._layout.addWidget(self.show_albums_btn)
+        self._layout.addStretch(10)
         self._layout.addWidget(self.desc_btn)
         self._layout.addStretch(1)
 
