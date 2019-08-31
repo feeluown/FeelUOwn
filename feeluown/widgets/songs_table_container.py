@@ -14,6 +14,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore import ModelType
+from fuocore import aio
 from feeluown.helpers import use_mac_theme, async_run
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
 from feeluown.widgets.table_meta import TableMetaWidget
@@ -21,7 +22,171 @@ from feeluown.widgets.table_meta import TableMetaWidget
 logger = logging.getLogger(__name__)
 
 
+class Delegate:
+    async def setUp(self, container):
+        # pylint: disable=attribute-defined-outside-init
+        self.container = container
+        self.meta_widget = container.meta_widget
+        self.toolbar = container.meta_widget.toolbar
+        # pylint: disable=protected-access
+        self._app = container._app
+
+    async def render(self):
+        pass
+
+    async def tearDown(self):
+        pass
+
+    #
+    # utils function for delegate
+    #
+    async def show_cover(self, cover):
+        app = self.container._app
+        # FIXME: cover_hash may not work properly someday
+        cover_uid = cover.split('/', -1)[-1]
+        content = await app.img_mgr.get(cover, cover_uid)
+        img = QImage()
+        img.loadFromData(content)
+        pixmap = QPixmap(img)
+        if not pixmap.isNull():
+            self.meta_widget.set_cover_pixmap(pixmap)
+            self.container.update()
+
+    def show_songs(self, songs=None, songs_g=None):
+        container = self.container
+
+        container.show()
+        container.songs_table.show()
+        songs = songs or []
+        logger.debug('Show songs in table, total: %d', len(songs))
+        source_name_map = {p.identifier: p.name for p in self._app.library.list()}
+        if songs_g is not None:  # 优先使用生成器
+            container.songs_table.setModel(SongsTableModel(
+                source_name_map=source_name_map,
+                songs_g=songs_g,
+                parent=container.songs_table))
+        else:
+            container.songs_table.setModel(SongsTableModel(
+                songs=songs,
+                source_name_map=source_name_map,
+                parent=container.songs_table
+            ))
+        container.songs_table.scrollToTop()
+
+
+class ArtistDelegate(Delegate):
+    def __init__(self, artist):
+        self.artist = artist
+
+    async def render(self):
+        artist = self.artist
+
+        loop = asyncio.get_event_loop()
+        songs = songs_g = None
+        if artist.meta.allow_create_songs_g:
+            songs_g = artist.create_songs_g()
+        else:
+            songs = await async_run(lambda: artist.songs)
+        if songs_g is not None:
+            self.show_songs(songs_g=songs_g)
+        else:
+            self.show_songs(songs=songs)
+        desc = await async_run(lambda: artist.desc)
+        self.meta_widget.title = artist.name
+        self.meta_widget.desc = desc
+        self.meta_widget.toolbar.artist_mode()
+        cover = await async_run(lambda: artist.cover)
+        loop.create_task(self.show_cover(cover))
+
+
+class PlaylistDelegate(Delegate):
+    def __init__(self, playlist):
+        self.playlist = playlist
+
+    async def render(self):
+        playlist = self.playlist
+        container = self.container
+
+        loop = asyncio.get_event_loop()
+        if playlist.meta.allow_create_songs_g:
+            songs_g = playlist.create_songs_g()
+            self.show_songs(songs_g=songs_g)
+        else:
+            songs = await async_run(lambda: playlist.songs, loop=loop)
+            self.show_songs(songs)
+        self.meta_widget.clear()
+        self.meta_widget.title = playlist.name
+        desc = await async_run(lambda: playlist.desc)
+        self.meta_widget.desc = desc
+        if playlist.cover:
+            loop.create_task(self.show_cover(playlist.cover))
+
+        def remove_song(song):
+            model = container.songs_table.model()
+            row = model.songs.index(song)
+            msg = 'remove {} from {}'.format(song, playlist)
+            with container._app.create_action(msg) as action:
+                rv = playlist.remove(song.identifier)
+                if rv:
+                    model.removeRow(row)
+                else:
+                    action.failed()
+        container.songs_table.song_deleted.connect(lambda song: remove_song(song))
+
+
+class AlbumDelegate(Delegate):
+    def __init__(self, album):
+        self.album = album
+
+    async def render(self):
+        album = self.album
+        container = self.container
+
+        loop = asyncio.get_event_loop()
+        songs = await async_run(lambda: album.songs)
+        self.meta_widget.clear()
+        self.show_songs(songs)
+        desc = await async_run(lambda: album.desc)
+        self.meta_widget.title = album.name
+        self.meta_widget.desc = desc
+        if album.cover:
+            loop.create_task(self.show_cover(album.cover))
+
+
+class CollectionDelegate(Delegate):
+    def __init__(self, collection):
+        self.collection = collection
+
+    async def render(self):
+        collection = self.collection
+        container = self.container
+
+        self.meta_widget.clear()
+        self.meta_widget.title = collection.name
+        self.meta_widget.updated_at = collection.updated_at
+        self.meta_widget.created_at = collection.created_at
+        self.show_songs(collection.models)
+        container.songs_table.song_deleted.connect(collection.remove)
+
+
+class PlayerPlaylistDelegate(Delegate):
+
+    async def render(self):
+        container = self.container
+        player = container.app.player
+        playlist = player.playlist
+
+        self.meta_widget.clear()
+        self.show_songs(songs=playlist.list())
+        container.songs_table.song_deleted.connect(
+            lambda song: container._app.playlist.remove(song))
+
+
 class SongsTableContainer(QFrame):
+    """
+    1. SongsTableContainer 应该重命名为 TableContainer 或更加抽象的概念
+    2. Delegate 应该尽量操作数据，而非 UI
+    """
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -42,6 +207,8 @@ class SongsTableContainer(QFrame):
         self.hide()
         self._setup_ui()
 
+        self._delegate = None
+
     def _setup_ui(self):
         self.setAutoFillBackground(False)
 
@@ -50,6 +217,27 @@ class SongsTableContainer(QFrame):
         self._layout.addWidget(self.songs_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
+
+    async def set_delegate(self, delegate):
+        if delegate is None:
+            return
+
+        # tear down last delegate
+        if self._delegate is not None:
+            await self._delegate.tearDown()
+
+        # clear meta widget
+        self.meta_widget.clear()
+
+        # disconnect songs_table signal
+        try:
+            self.songs_table.song_deleted.disconnect()
+        except TypeError:  # no connections at all
+            pass
+
+        await delegate.setUp(self)
+        self._delegate = delegate
+        await self._delegate.render()
 
     async def play_song(self, song):
         await async_run(lambda: song.url)
@@ -63,138 +251,24 @@ class SongsTableContainer(QFrame):
         self._app.player.play_next()
 
     async def show_model(self, model):
-        model_type = ModelType(model._meta.model_type)
+        model_type = ModelType(model.meta.model_type)
         if model_type == ModelType.album:
-            func = self.show_album
+            delegate = AlbumDelegate(model)
         elif model_type == ModelType.artist:
-            func = self.show_artist
+            delegate = ArtistDelegate(model)
         elif model_type == ModelType.playlist:
-            func = self.show_playlist
+            delegate = PlaylistDelegate(model)
         else:
-            def func(model): pass  # seems silly
-        await func(model)
+            delegate = None
+        await self.set_delegate(delegate)
 
-    def show_player_playlist(self, songs):
-        self.show_songs(songs)
-        self.songs_table.song_deleted.connect(
-            lambda song: self._app.playlist.remove(song))
-
-    async def show_playlist(self, playlist):
-        loop = asyncio.get_event_loop()
-        if playlist.meta.allow_create_songs_g:
-            songs_g = playlist.create_songs_g()
-            self._show_songs(songs_g=songs_g)
-        else:
-            songs = await async_run(lambda: playlist.songs, loop=loop)
-            self._show_songs(songs)
-        self.meta_widget.clear()
-        self.meta_widget.title = playlist.name
-        desc = await async_run(lambda: playlist.desc)
-        self.meta_widget.desc = desc
-        if playlist.cover:
-            loop.create_task(self.show_cover(playlist.cover))
-
-        def remove_song(song):
-            model = self.songs_table.model()
-            row = model.songs.index(song)
-            msg = 'remove {} from {}'.format(song, playlist)
-            with self._app.create_action(msg) as action:
-                rv = playlist.remove(song.identifier)
-                if rv:
-                    model.removeRow(row)
-                else:
-                    action.failed()
-        self.songs_table.song_deleted.connect(lambda song: remove_song(song))
-
-    async def show_artist(self, artist):
-        loop = asyncio.get_event_loop()
-        songs = songs_g = None
-        if artist.meta.allow_create_songs_g:
-            songs_g = artist.create_songs_g()
-        else:
-            songs = await async_run(lambda: artist.songs)
-        if songs_g is not None:
-            self._show_songs(songs_g=songs_g)
-        else:
-            self._show_songs(songs=songs)
-        desc = await async_run(lambda: artist.desc)
-        self.meta_widget.clear()
-        self.meta_widget.title = artist.name
-        self.meta_widget.desc = desc
-        if artist.cover:
-            loop.create_task(self.show_cover(artist.cover))
-
-    async def show_album(self, album):
-        loop = asyncio.get_event_loop()
-        songs = await async_run(lambda: album.songs)
-        self.meta_widget.clear()
-        self._show_songs(songs)
-        desc = await async_run(lambda: album.desc)
-        self.meta_widget.title = album.name
-        self.meta_widget.desc = desc
-        if album.cover:
-            loop.create_task(self.show_cover(album.cover))
-
-    def show_collection(self, collection):
-        self.meta_widget.clear()
-        self.meta_widget.title = collection.name
-        self.meta_widget.updated_at = collection.updated_at
-        self.meta_widget.created_at = collection.created_at
-        self._show_songs(collection.models)
-        self.songs_table.song_deleted.connect(collection.remove)
-
-    async def show_url(self, url):
-        model = self._app.protocol.get_model(url)
-        if model.meta.model_type == ModelType.song:
-            self._app.player.play_song(model)
-        else:
-            # TODO: add artist/album/user support
-            self._app.show_msg('暂时只支持歌曲，不支持其它歌曲资源')
-
-    async def show_cover(self, cover):
-        # FIXME: cover_hash may not work properly someday
-        cover_uid = cover.split('/', -1)[-1]
-        content = await self._app.img_mgr.get(cover, cover_uid)
-        img = QImage()
-        img.loadFromData(content)
-        pixmap = QPixmap(img)
-        if not pixmap.isNull():
-            self.set_cover(pixmap)
-            self.update()
-
-    def _show_songs(self, songs=None, songs_g=None):
-        try:
-            self.songs_table.song_deleted.disconnect()
-        except TypeError:  # no connections at all
-            pass
-        self.show()
-        self.songs_table.show()
-        songs = songs or []
-        logger.debug('Show songs in table, total: %d', len(songs))
-        source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        if songs_g is not None:  # 优先使用生成器
-            self.songs_table.setModel(SongsTableModel(
-                source_name_map=source_name_map,
-                songs_g=songs_g,
-                parent=self.songs_table))
-        else:
-            self.songs_table.setModel(SongsTableModel(
-                songs=songs,
-                source_name_map=source_name_map,
-                parent=self.songs_table
-            ))
-        self.songs_table.scrollToTop()
-
-    def show_songs(self, songs=None, songs_g=None):
-        self.meta_widget.clear()
-        self._show_songs(songs=songs, songs_g=songs_g)
+    def show_collection(self, coll):
+        delegate = CollectionDelegate(coll)
+        aio.create_task(self.set_delegate(delegate))
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
-
-    def set_cover(self, pixmap):
-        self.meta_widget.set_cover_pixmap(pixmap)
 
     def toggle_meta_full_window(self, fullwindow_needed):
         if fullwindow_needed:
