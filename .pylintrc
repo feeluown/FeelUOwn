@@ -4,4 +4,5 @@ disable=
     too-few-public-methods,
     no-name-in-module,  # seems not working for PyQt5
     too-many-instance-attributes,  # qt widget class can has many attributes
+    unnecessary-lambda,  # pylint is a little bit silly
     invalid-name

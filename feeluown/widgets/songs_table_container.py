@@ -1,21 +1,12 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import (
-    QFrame,
-    QLabel,
-    QScrollArea,
-    QSizePolicy,
-    QVBoxLayout,
-    QTabBar,
-    QTabWidget,
-)
+from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from fuocore import ModelType
 from fuocore import aio
-from feeluown.helpers import use_mac_theme, async_run
+from feeluown.helpers import async_run
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
 from feeluown.widgets.table_meta import TableMetaWidget
 
@@ -25,9 +16,9 @@ logger = logging.getLogger(__name__)
 class Delegate:
     async def setUp(self, container):
         # pylint: disable=attribute-defined-outside-init
-        self.container = container
         self.meta_widget = container.meta_widget
         self.toolbar = container.meta_widget.toolbar
+        self.songs_table = container.songs_table
         # pylint: disable=protected-access
         self._app = container._app
 
@@ -41,7 +32,7 @@ class Delegate:
     # utils function for delegate
     #
     async def show_cover(self, cover):
-        app = self.container._app
+        app = self._app
         # FIXME: cover_hash may not work properly someday
         cover_uid = cover.split('/', -1)[-1]
         content = await app.img_mgr.get(cover, cover_uid)
@@ -50,28 +41,26 @@ class Delegate:
         pixmap = QPixmap(img)
         if not pixmap.isNull():
             self.meta_widget.set_cover_pixmap(pixmap)
-            self.container.update()
 
     def show_songs(self, songs=None, songs_g=None):
-        container = self.container
+        songs_table = self.songs_table
 
-        container.show()
-        container.songs_table.show()
+        songs_table.show()
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         if songs_g is not None:  # 优先使用生成器
-            container.songs_table.setModel(SongsTableModel(
+            songs_table.setModel(SongsTableModel(
                 source_name_map=source_name_map,
                 songs_g=songs_g,
-                parent=container.songs_table))
+                parent=songs_table))
         else:
-            container.songs_table.setModel(SongsTableModel(
+            songs_table.setModel(SongsTableModel(
                 songs=songs,
                 source_name_map=source_name_map,
-                parent=container.songs_table
+                parent=songs_table
             ))
-        container.songs_table.scrollToTop()
+        songs_table.scrollToTop()
 
 
 class ArtistDelegate(Delegate):
@@ -105,7 +94,6 @@ class PlaylistDelegate(Delegate):
 
     async def render(self):
         playlist = self.playlist
-        container = self.container
 
         loop = asyncio.get_event_loop()
         if playlist.meta.allow_create_songs_g:
@@ -122,16 +110,16 @@ class PlaylistDelegate(Delegate):
             loop.create_task(self.show_cover(playlist.cover))
 
         def remove_song(song):
-            model = container.songs_table.model()
+            model = self.songs_table.model()
             row = model.songs.index(song)
             msg = 'remove {} from {}'.format(song, playlist)
-            with container._app.create_action(msg) as action:
+            with self._app.create_action(msg) as action:
                 rv = playlist.remove(song.identifier)
                 if rv:
                     model.removeRow(row)
                 else:
                     action.failed()
-        container.songs_table.song_deleted.connect(lambda song: remove_song(song))
+        self.songs_table.song_deleted.connect(lambda song: remove_song(song))
 
 
 class AlbumDelegate(Delegate):
@@ -140,7 +128,6 @@ class AlbumDelegate(Delegate):
 
     async def render(self):
         album = self.album
-        container = self.container
 
         loop = asyncio.get_event_loop()
         songs = await async_run(lambda: album.songs)
@@ -159,34 +146,28 @@ class CollectionDelegate(Delegate):
 
     async def render(self):
         collection = self.collection
-        container = self.container
 
         self.meta_widget.clear()
         self.meta_widget.title = collection.name
         self.meta_widget.updated_at = collection.updated_at
         self.meta_widget.created_at = collection.created_at
         self.show_songs(collection.models)
-        container.songs_table.song_deleted.connect(collection.remove)
+        self.songs_table.song_deleted.connect(collection.remove)
 
 
 class PlayerPlaylistDelegate(Delegate):
 
     async def render(self):
-        container = self.container
-        player = container.app.player
+        player = self._app.player
         playlist = player.playlist
 
         self.meta_widget.clear()
         self.show_songs(songs=playlist.list())
-        container.songs_table.song_deleted.connect(
-            lambda song: container._app.playlist.remove(song))
+        self.songs_table.song_deleted.connect(
+            lambda song: self._app.playlist.remove(song))
 
 
 class SongsTableContainer(QFrame):
-    """
-    1. SongsTableContainer 应该重命名为 TableContainer 或更加抽象的概念
-    2. Delegate 应该尽量操作数据，而非 UI
-    """
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -221,6 +202,8 @@ class SongsTableContainer(QFrame):
     async def set_delegate(self, delegate):
         if delegate is None:
             return
+
+        self.show()
 
         # tear down last delegate
         if self._delegate is not None:
