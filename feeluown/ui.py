@@ -38,10 +38,10 @@ class Ui:
         # alias
         self.magicbox = self.bottom_panel.magicbox
         self.pc_panel = self.top_panel.pc_panel
-        self.songs_table_container = self.right_panel.songs_table_container
-        # backward compatible, old name is table_container
-        self.table_container = self.songs_table_container
-        self.songs_table = self.right_panel.songs_table_container
+        self.table_container = self.right_panel.table_container
+        # backward compatible, old name is songs_table_container
+        self.songs_table_container = self.table_container
+        self.songs_table = self.table_container.songs_table
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
@@ -93,8 +93,7 @@ class Ui:
             self.show_video_widget()
 
     def show_player_playlist(self):
-        songs = self._app.playlist.list()
-        self.songs_table_container.show_player_playlist(songs)
+        self.table_container.show_player_playlist()
 
     def on_video_format_changed(self, vformat):
         if vformat is None:

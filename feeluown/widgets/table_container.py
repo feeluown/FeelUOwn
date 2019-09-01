@@ -161,7 +161,7 @@ class PlayerPlaylistDelegate(Delegate):
             lambda song: self._app.playlist.remove(song))
 
 
-class SongsTableContainer(QFrame):
+class TableContainer(QFrame):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -247,6 +247,9 @@ class SongsTableContainer(QFrame):
     def show_collection(self, coll):
         delegate = CollectionDelegate(coll)
         aio.create_task(self.set_delegate(delegate))
+
+    def show_player_playlist(self):
+        aio.create_task(self.set_delegate(PlayerPlaylistDelegate()))
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:

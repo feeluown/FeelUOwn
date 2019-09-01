@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QSize
 from PyQt5.QtWidgets import QFrame, QHBoxLayout
-from feeluown.widgets.songs_table_container import SongsTableContainer
+from feeluown.widgets.table_container import TableContainer
 
 
 class RightPanel(QFrame):
@@ -9,8 +9,8 @@ class RightPanel(QFrame):
         self._app = app
 
         self._layout = QHBoxLayout(self)
-        self.songs_table_container = SongsTableContainer(self._app, self)
-        self._layout.addWidget(self.songs_table_container)
+        self.table_container = TableContainer(self._app, self)
+        self._layout.addWidget(self.table_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
