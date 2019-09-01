@@ -49,17 +49,11 @@ class Delegate:
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        if songs_g is not None:  # 优先使用生成器
-            songs_table.setModel(SongsTableModel(
-                source_name_map=source_name_map,
-                songs_g=songs_g,
-                parent=songs_table))
-        else:
-            songs_table.setModel(SongsTableModel(
-                songs=songs,
-                source_name_map=source_name_map,
-                parent=songs_table
-            ))
+        songs_table.setModel(SongsTableModel(
+            source_name_map=source_name_map,
+            songs_g=songs_g,
+            songs=songs,
+            parent=songs_table))
         songs_table.scrollToTop()
 
 
@@ -200,24 +194,29 @@ class SongsTableContainer(QFrame):
         self._layout.setSpacing(0)
 
     async def set_delegate(self, delegate):
+        """set ui delegate
+
+        TODO: add lock for set_delegate
+        """
+
         if delegate is None:
             return
 
-        self.show()
-
+        # firstly, tear down everything
         # tear down last delegate
         if self._delegate is not None:
             await self._delegate.tearDown()
-
-        # clear meta widget
         self.meta_widget.clear()
-
         # disconnect songs_table signal
         try:
             self.songs_table.song_deleted.disconnect()
         except TypeError:  # no connections at all
             pass
 
+        # secondly, do basic things
+        self.show()
+
+        # thirdly, setup new delegate
         await delegate.setUp(self)
         self._delegate = delegate
         await self._delegate.render()

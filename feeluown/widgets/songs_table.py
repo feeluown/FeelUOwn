@@ -11,7 +11,6 @@ from PyQt5.QtCore import (
     QVariant,
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate,
     QAbstractItemView,
     QAction,
     QFrame,
@@ -27,7 +26,6 @@ from PyQt5.QtWidgets import (
 
 from fuocore.models import ModelExistence
 from feeluown.mimedata import ModelMimeData
-from feeluown.helpers import use_mac_theme
 
 
 class Column(IntEnum):
@@ -48,10 +46,7 @@ class SongsTableModel(QAbstractTableModel):
         """
         super().__init__(parent)
         self.songs_g = songs_g
-        if songs_g is None and songs is not None:
-            self.songs = songs
-        else:
-            self.songs = []
+        self.songs = (songs or []) if songs_g is None else []
         self._source_set = set()
         self._can_fetch_more = self.songs_g is not None
         self._source_name_map = source_name_map or {}
@@ -280,9 +275,7 @@ class SongsTableView(QTableView):
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
-        # self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        #self.setFocusPolicy(Qt.NoFocus)
         self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setDragEnabled(True)
