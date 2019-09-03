@@ -32,7 +32,7 @@ class SongsTableToolbar(QWidget):
         self._setup_ui()
 
     def artist_mode(self):
-        self.show_songs_btn.setText('热门歌曲')
+        self.show_songs_btn.setText('歌曲')
         self.show_albums_btn.setText('专辑')
         self.show_songs_btn.show()
         self.show_albums_btn.show()
