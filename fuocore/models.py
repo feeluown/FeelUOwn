@@ -355,14 +355,17 @@ class ArtistModel(BaseModel):
     class Meta:
         model_type = ModelType.artist.value
         fields = ['name', 'cover', 'songs', 'desc', 'albums']
-        #: alpha
         allow_create_songs_g = False
+        allow_create_albums_g = False
 
     def __str__(self):
         return 'fuo://{}/artists/{}'.format(self.source, self.identifier)
 
     def create_songs_g(self):
         """create songs generator(alpha)"""
+        pass
+
+    def create_albums_g(self):
         pass
 
 
