@@ -24,6 +24,7 @@ class ImgManager(object):
     async def get(self, img_url, img_name):
         fpath = self.cache.get(img_name)
         if fpath is not None:
+            logger.info('read image:%s from cache', img_name)
             with open(fpath, 'rb') as f:
                 content = f.read()
             self.cache.update(img_name)

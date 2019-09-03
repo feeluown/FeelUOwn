@@ -7,10 +7,18 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 from fuocore import ModelType
 from fuocore import aio
 from feeluown.helpers import async_run
+from feeluown.widgets.album import AlbumListModel, AlbumListView
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
 from feeluown.widgets.table_meta import TableMetaWidget
 
 logger = logging.getLogger(__name__)
+
+
+def fetch_image_wrapper(img_mgr):
+    def fetch_image(url, cb, uid):
+        task = aio.create_task(img_mgr.get(url, uid))
+        task.add_done_callback(cb)
+    return fetch_image
 
 
 class Delegate:
@@ -19,8 +27,11 @@ class Delegate:
         self.meta_widget = container.meta_widget
         self.toolbar = container.meta_widget.toolbar
         self.songs_table = container.songs_table
+        self.albums_table = container.albums_table
         # pylint: disable=protected-access
         self._app = container._app
+
+        self.real_show_model = container.show_model
 
     async def render(self):
         pass
@@ -42,10 +53,22 @@ class Delegate:
         if not pixmap.isNull():
             self.meta_widget.set_cover_pixmap(pixmap)
 
+    def show_model(self, model):
+        aio.create_task(self.real_show_model(model))
+
+    def show_albums(self, albums_g=None):
+        self.songs_table.hide()
+        self.albums_table.show()
+        model = AlbumListModel(albums_g,
+                               fetch_image_wrapper(self._app.img_mgr),
+                               parent=self.albums_table)
+        self.albums_table.setModel(model)
+        self.albums_table.scrollToTop()
+
     def show_songs(self, songs=None, songs_g=None):
+        self.albums_table.hide()
         songs_table = self.songs_table
 
-        songs_table.show()
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
@@ -55,6 +78,7 @@ class Delegate:
             songs=songs,
             parent=songs_table))
         songs_table.scrollToTop()
+        songs_table.show()
 
 
 class ArtistDelegate(Delegate):
@@ -64,22 +88,36 @@ class ArtistDelegate(Delegate):
     async def render(self):
         artist = self.artist
 
-        loop = asyncio.get_event_loop()
+        self.songs_table.show()
+
+        # bind signal first
+        self.meta_widget.toolbar.show_songs_needed.connect(
+            lambda: self.show_songs(songs_g=songs_g, songs=songs))
+        if artist.meta.allow_create_albums_g:
+            self.meta_widget.toolbar.show_albums_needed.connect(
+                lambda: self.show_albums(self.artist.create_albums_g()))
+            self.albums_table.show_album_needed.connect(self.show_model)
+
+        # fetch and render metadata
+        desc = await async_run(lambda: artist.desc)
+        self.meta_widget.title = artist.name
+        self.meta_widget.desc = desc
+        cover = await async_run(lambda: artist.cover)
+        self.meta_widget.toolbar.artist_mode()
+
+        # fetch and render songs
         songs = songs_g = None
         if artist.meta.allow_create_songs_g:
             songs_g = artist.create_songs_g()
         else:
             songs = await async_run(lambda: artist.songs)
-        if songs_g is not None:
-            self.show_songs(songs_g=songs_g)
-        else:
-            self.show_songs(songs=songs)
-        desc = await async_run(lambda: artist.desc)
-        self.meta_widget.title = artist.name
-        self.meta_widget.desc = desc
-        self.meta_widget.toolbar.artist_mode()
-        cover = await async_run(lambda: artist.cover)
-        loop.create_task(self.show_cover(cover))
+        self.show_songs(songs_g=songs_g, songs=songs)
+
+        # render cover
+        aio.create_task(self.show_cover(cover))
+
+    async def tearDown(self):
+        pass
 
 
 class PlaylistDelegate(Delegate):
@@ -168,6 +206,7 @@ class TableContainer(QFrame):
 
         self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
+        self.albums_table = AlbumListView(parent=self)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
@@ -190,6 +229,7 @@ class TableContainer(QFrame):
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
         self._layout.addWidget(self.songs_table)
+        self._layout.addWidget(self.albums_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
@@ -207,13 +247,22 @@ class TableContainer(QFrame):
         if self._delegate is not None:
             await self._delegate.tearDown()
         self.meta_widget.clear()
+        self.songs_table.hide()
+        self.albums_table.hide()
         # disconnect songs_table signal
-        try:
-            self.songs_table.song_deleted.disconnect()
-        except TypeError:  # no connections at all
-            pass
+        signals = (
+            self.songs_table.song_deleted,
+            self.meta_widget.toolbar.show_albums_needed,
+            self.meta_widget.toolbar.show_songs_needed,
+            self.albums_table.show_album_needed,
+        )
+        for signal in signals:
+            try:
+                signal.disconnect()
+            except TypeError:
+                pass
 
-        # secondly, do basic things
+        # secondly, prepare environment
         self.show()
 
         # thirdly, setup new delegate
