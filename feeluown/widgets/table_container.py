@@ -297,6 +297,13 @@ class TableContainer(QFrame):
         delegate = CollectionDelegate(coll)
         aio.create_task(self.set_delegate(delegate))
 
+    def show_songs(self, songs=None, songs_g=None):
+        """(DEPRECATED) provided only for backward compatibility"""
+        delegate = Delegate()
+        task = aio.create_task(self.set_delegate(delegate))
+        task.add_done_callback(
+            lambda _: delegate.show_songs(songs=songs, songs_g=songs_g))
+
     def show_player_playlist(self):
         aio.create_task(self.set_delegate(PlayerPlaylistDelegate()))
 
