@@ -108,6 +108,8 @@ class AlbumListModel(QAbstractListModel):
         self.colors.extend(colors)
         self.endInsertRows()
 
+        # FIXME: since album.cover may trigger web request,
+        # this may block the UI
         for album in albums:
             cover = album.cover
             self.fetch_image(cover,

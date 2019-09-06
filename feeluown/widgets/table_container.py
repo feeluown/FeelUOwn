@@ -170,8 +170,9 @@ class AlbumDelegate(Delegate):
         desc = await async_run(lambda: album.desc)
         self.meta_widget.title = album.name
         self.meta_widget.desc = desc
-        if album.cover:
-            loop.create_task(self.show_cover(album.cover))
+        cover = await async_run(lambda: album.cover)
+        if cover:
+            loop.create_task(self.show_cover(cover))
 
 
 class CollectionDelegate(Delegate):
