@@ -56,10 +56,11 @@ class Delegate:
     def show_model(self, model):
         aio.create_task(self.real_show_model(model))
 
-    def show_albums(self, albums_g=None):
+    def show_albums(self, albums=None, albums_g=None):
         self.songs_table.hide()
         self.albums_table.show()
-        model = AlbumListModel(albums_g,
+        model = AlbumListModel(albums,
+                               albums_g,
                                fetch_image_wrapper(self._app.img_mgr),
                                parent=self.albums_table)
         self.albums_table.setModel(model)
@@ -95,8 +96,11 @@ class ArtistDelegate(Delegate):
             lambda: self.show_songs(songs_g=songs_g, songs=songs))
         if artist.meta.allow_create_albums_g:
             self.meta_widget.toolbar.show_albums_needed.connect(
-                lambda: self.show_albums(self.artist.create_albums_g()))
-            self.albums_table.show_album_needed.connect(self.show_model)
+                lambda: self.show_albums(albums_g=self.artist.create_albums_g()))
+        else:
+            self.meta_widget.toolbar.show_albums_needed.connect(
+                lambda: self.show_albums(albums=self.artist.albums))
+        self.albums_table.show_album_needed.connect(self.show_model)
 
         # fetch and render metadata
         desc = await async_run(lambda: artist.desc)
@@ -114,7 +118,8 @@ class ArtistDelegate(Delegate):
         self.show_songs(songs_g=songs_g, songs=songs)
 
         # render cover
-        aio.create_task(self.show_cover(cover))
+        if cover:
+            aio.create_task(self.show_cover(cover))
 
     async def tearDown(self):
         pass

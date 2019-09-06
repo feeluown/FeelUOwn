@@ -71,7 +71,7 @@ def calc_cover_width(width):
 
 
 class AlbumListModel(QAbstractListModel):
-    def __init__(self, albums_g, fetch_image, parent=None):
+    def __init__(self, albums, albums_g, fetch_image, parent=None):
         """
         :param albums_g: :class:`fuocore.models.GeneratorProxy:
         """
@@ -80,9 +80,10 @@ class AlbumListModel(QAbstractListModel):
         self.albums_g = GeneratorProxy.wrap(albums_g)
         self.fetch_image = fetch_image
         # false: no more, true: maybe more
-        self._maybe_has_more = True
-        self.albums = []
-        self.colors = []
+        self._maybe_has_more = albums_g is not None
+        self.albums  = (albums or []) if albums_g is None else []
+        self.colors = [random.choice(list(COLORS.values()))
+                  for _ in range(0, len(albums))] if albums_g is None else []
         self.pixmaps = {}  # {uri: QPixmap}
 
     def rowCount(self, parent=QModelIndex()):
@@ -111,8 +112,8 @@ class AlbumListModel(QAbstractListModel):
         for album in albums:
             cover = album.cover
             self.fetch_image(cover,
-                             self._fetch_image_callback(album),
-                             uid=get_url(album) + '/cover')
+                            self._fetch_image_callback(album),
+                            uid=get_url(album) + '/cover')
 
     def _fetch_image_callback(self, album):
         def cb(future):
