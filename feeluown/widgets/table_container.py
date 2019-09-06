@@ -56,7 +56,7 @@ class Delegate:
     def show_model(self, model):
         aio.create_task(self.real_show_model(model))
 
-    def show_albums(self, albums_g=None):
+    def show_albums(self, albums_g):
         self.songs_table.hide()
         self.albums_table.show()
         model = AlbumListModel(albums_g,
@@ -93,6 +93,7 @@ class ArtistDelegate(Delegate):
         # bind signal first
         self.meta_widget.toolbar.show_songs_needed.connect(
             lambda: self.show_songs(songs_g=songs_g, songs=songs))
+        # we only show album that implements create_albums_g
         if artist.meta.allow_create_albums_g:
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
@@ -114,7 +115,8 @@ class ArtistDelegate(Delegate):
         self.show_songs(songs_g=songs_g, songs=songs)
 
         # render cover
-        aio.create_task(self.show_cover(cover))
+        if cover:
+            aio.create_task(self.show_cover(cover))
 
     async def tearDown(self):
         pass

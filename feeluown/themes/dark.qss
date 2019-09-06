@@ -49,5 +49,5 @@ TableToolbar QPushButton:pressed {
     border-image: url(icons/download_dark.png);
 }
 #download_btn:checked {
-    border-image: url(icons/already_download_dark.png);
+    border-image: url(icons/already_downloaded_dark.png);
 }
