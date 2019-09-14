@@ -138,20 +138,21 @@ class TableMetaWidget(QWidget):
         creator = self.creator
         creator_part = '👤 <a href="fuo://local/users/{}">{}</a>'\
             .format(creator, creator) if creator else ''
+        created_part = updated_part = songs_count_part = ''
         if self.updated_at:
             updated_at = datetime.fromtimestamp(self.updated_at)
             updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'\
                 .format(updated_at.strftime('%Y-%m-%d'))
-        else:
-            updated_part = ''
         if self.created_at:
             created_at = datetime.fromtimestamp(self.created_at)
             created_part = '🕛 创建于 <code style="font-size: small">{}</code>'\
                 .format(created_at.strftime('%Y-%m-%d'))
-        else:
-            created_part = ''
-        if creator_part or updated_part or created_part:
-            parts = [creator_part, created_part, updated_part]
+        if self.songs_count is not None:
+            text = self.songs_count if self.songs_count != -1 else '未知'
+            songs_count_part = '歌曲数 <code style="font-size: small">{}</code>'\
+                .format(text)
+        if creator_part or updated_part or created_part or songs_count_part:
+            parts = [creator_part, created_part, updated_part, songs_count_part]
             valid_parts = [p for p in parts if p]
             content = ' | '.join(valid_parts)
             text = '<span style="color: grey">{}</span>'.format(content)
@@ -187,6 +188,7 @@ class TableMetaWidget(QWidget):
         self.updated_at = None
         self.creator = None
         self.is_artist = False
+        self.songs_count = None
 
     def set_cover_pixmap(self, pixmap):
         self.cover_label.show()
@@ -200,6 +202,7 @@ class TableMetaWidget(QWidget):
     cover = getset_property('cover', _refresh_cover)
     created_at = getset_property('created_at', _refresh_meta_label)
     updated_at = getset_property('updated_at', _refresh_meta_label)
+    songs_count = getset_property('songs_count', _refresh_meta_label)
     creator = getset_property('creator', _refresh_meta_label)
     is_artist = getset_property('is_artist', _refresh_toolbar)
 

@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from fuocore import ModelType
 from fuocore import aio
+from fuocore.models import GeneratorProxy
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
@@ -65,7 +66,14 @@ class Delegate:
         self.albums_table.setModel(model)
         self.albums_table.scrollToTop()
 
-    def show_songs(self, songs=None, songs_g=None):
+    def show_songs(self, songs=None, songs_g=None, show_count=False):
+        if show_count:
+            if songs is not None:
+                self.meta_widget.songs_count = len(songs)
+            if songs_g is not None:
+                count = songs_g.count
+                self.meta_widget.songs_count = -1 if count is None else count
+
         self.albums_table.hide()
         songs_table = self.songs_table
 
@@ -91,8 +99,6 @@ class ArtistDelegate(Delegate):
         self.songs_table.show()
 
         # bind signal first
-        self.meta_widget.toolbar.show_songs_needed.connect(
-            lambda: self.show_songs(songs_g=songs_g, songs=songs))
         # we only show album that implements create_albums_g
         if artist.meta.allow_create_albums_g:
             self.meta_widget.toolbar.show_albums_needed.connect(
@@ -112,7 +118,9 @@ class ArtistDelegate(Delegate):
             songs_g = artist.create_songs_g()
         else:
             songs = await async_run(lambda: artist.songs)
-        self.show_songs(songs_g=songs_g, songs=songs)
+        self.show_songs(songs_g=songs_g, songs=songs, show_count=True)
+        self.meta_widget.toolbar.show_songs_needed.connect(
+            lambda: self.show_songs(songs_g=songs_g, songs=songs, show_count=True))
 
         # render cover
         if cover:
@@ -130,13 +138,13 @@ class PlaylistDelegate(Delegate):
         playlist = self.playlist
 
         loop = asyncio.get_event_loop()
+        songs = songs_g = None
         if playlist.meta.allow_create_songs_g:
-            songs_g = playlist.create_songs_g()
-            self.show_songs(songs_g=songs_g)
+            songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
         else:
             songs = await async_run(lambda: playlist.songs, loop=loop)
-            self.show_songs(songs)
-        self.meta_widget.clear()
+        self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
+
         self.meta_widget.title = playlist.name
         desc = await async_run(lambda: playlist.desc)
         self.meta_widget.desc = desc
@@ -165,7 +173,6 @@ class AlbumDelegate(Delegate):
 
         loop = asyncio.get_event_loop()
         songs = await async_run(lambda: album.songs)
-        self.meta_widget.clear()
         self.show_songs(songs)
         desc = await async_run(lambda: album.desc)
         self.meta_widget.title = album.name
@@ -182,7 +189,6 @@ class CollectionDelegate(Delegate):
     async def render(self):
         collection = self.collection
 
-        self.meta_widget.clear()
         self.meta_widget.title = collection.name
         self.meta_widget.updated_at = collection.updated_at
         self.meta_widget.created_at = collection.created_at
@@ -196,7 +202,6 @@ class PlayerPlaylistDelegate(Delegate):
         player = self._app.player
         playlist = player.playlist
 
-        self.meta_widget.clear()
         self.show_songs(songs=playlist.list())
         self.songs_table.song_deleted.connect(
             lambda song: self._app.playlist.remove(song))

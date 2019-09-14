@@ -165,6 +165,7 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addWidget(self.song_source_label)
         self._sub_top_layout.addSpacing(5)
         self._sub_top_layout.addWidget(self.song_title_label)
+        self._sub_top_layout.addSpacing(5)
         self._sub_top_layout.addStretch(0)
         self._sub_top_layout.addWidget(self.like_btn)
         self._sub_top_layout.addSpacing(8)
@@ -248,8 +249,10 @@ class PlayerControlPanel(QFrame):
                            for p in self._app.library.list()}
         font_metrics = QFontMetrics(QApplication.font())
         text = '{} - {}'.format(song.title_display, song.artists_name_display)
+        # width -> three button + source label + text <= progress slider
+        # three button: 63, source label: 150
         elided_text = font_metrics.elidedText(
-            text, Qt.ElideRight, self.progress_slider.width() - 100)
+            text, Qt.ElideRight, self.progress_slider.width() - 200)
         self.song_source_label.setText(source_name_map[song.source])
         self.song_title_label.setText(elided_text)
         loop = asyncio.get_event_loop()
