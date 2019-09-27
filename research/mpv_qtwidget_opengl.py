@@ -79,8 +79,8 @@ class MpvWidget(QOpenGLWidget):
 
 if __name__ == '__main__':
     import locale
-    locale.setlocale(locale.LC_NUMERIC, 'C')
     app = QApplication([])
+    locale.setlocale(locale.LC_NUMERIC, 'C')
     widget = MpvWidget()
     widget.show()
     url = 'data/test.webm'
