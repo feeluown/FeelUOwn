@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from enum import IntEnum, Enum
 import logging
+from enum import IntEnum, Enum
 
 from fuocore.media import MultiQualityMixin, Quality
+from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
 
 
 logger = logging.getLogger(__name__)
@@ -544,94 +545,3 @@ class UserModel(BaseModel):
 
     def remove_from_fav_artists(self, artist_id):
         pass
-
-
-class GeneratorProxy:
-    """Help you manage paginated data
-
-    We only want to launch web request when we need the resource
-    Formerly, we use Python generator to achieve this lazy fetch
-    feature. However, we can't extract any pagination meta info,
-    such as total count and current offset, from the ordinary
-    generator.
-
-    GeneratorProxy implements the iterator protocol, wraps the
-    generator and store the pagination state.
-
-    **Usage example**:
-
-    >>> def fetch_songs(page=1, page_size=50):
-    ...     return list(range(page * page_size,
-    ...                       (page + 1) * page_size))
-    ...
-    >>> def create_songs_g():
-    ...     page = 0
-    ...     total_page = 2
-    ...     page_size = 2
-    ...
-    ...     def g():
-    ...         nonlocal page, page_size
-    ...         while page < total_page:
-    ...            for song in fetch_songs(page, page_size):
-    ...                yield song
-    ...            page += 1
-    ...
-    ...     total = total_page * page_size
-    ...     return GeneratorProxy(g(), total)
-    ...
-    >>> g = create_songs_g()
-    >>> g.offset, g.count
-    (0, 4)
-    >>> next(g), next(g)
-    (0, 1)
-    >>> list(g)
-    [2, 3]
-    >>> g.offset, g.count
-    (4, 4)
-
-    .. versionadded:: 3.1
-    """
-
-    def __init__(self, g, count, offset=0):
-        """init
-
-        :param g: Python generator
-        :param offset: current offset
-        :param count: total count. count can be None, which means the
-                      total count is unknown
-        """
-        self._g = g
-        self.count = count
-        self.offset = offset
-
-    @classmethod
-    def wrap(cls, g):
-        """wrap a ordinary generator
-
-        When we can't determine if the generator is GeneratorProxy or not,
-        we can use the wrap method. So that we will not need to write
-        code like this::
-
-            if not isinstance(songs_g, GeneratorProxy):
-                songs_g = GeneratorProxy(songs_g, count=None)
-            else:
-                songs_g = songs_g
-
-        just type::
-
-            songs_g = GeneratorProxy.wrap(songs_g)
-        """
-        if isinstance(g, GeneratorProxy):
-            return g
-        return cls(g, count=None)
-
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        if self.count is None:
-            return next(self._g)
-        if self.offset < self.count:
-            self.offset += 1
-            return next(self._g)
-        raise StopIteration

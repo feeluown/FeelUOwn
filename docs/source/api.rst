@@ -276,7 +276,7 @@ model 可能会触发一个网络请求，从资源提供方的服务端来获�
 2. 访问展示值总是安全的，不会触发网络请求。当值为空时，返回空字符串。
 3. 展示值和对应字段真正的值可能不一样（从第 2 点可以推断出来）
 
-流式分页
+分页读
 '''''''''''''''''
 服务端提供大数据集时往往会采用分页技术。对于服务端（API），接口一般有两种设计：
 
@@ -289,10 +289,22 @@ model 可能会触发一个网络请求，从资源提供方的服务端来获�
 1. 流式分页（常见于信息流，比如知乎的个人关注页）
 2. 电梯式分页（常见于搜索结果，比如百度搜索的结果页）
 
-这两种设计各有优劣，feeluown 目前也是使用流式分页。比如一个播放列表歌曲有上千首，则用户需要一直往下拉。
-在接口层面，fuocore 模块提供了 GeneratorProxy 来帮助实现分页。
+这两种设计各有优劣，在 UI 上，feeluown 目前也是使用流式分页。比如一个歌单有上千首，
+则用户需要一直往下拉。在接口层面，fuocore 模块提供了 SequentialReader 来帮助实现流式分页。
 
-.. autoclass:: fuocore.models.GeneratorProxy
+.. autoclass:: fuocore.reader.SequentialReader
+
+流式分页存在一个问题，必须按照顺序来获取数据。而有些场景，我们希望根据 index 来获取数据。
+举个例子，假设一个播放列表有 3000 首歌曲，在随机播放模式下，系统需要随机选择了 index
+为 2500 的歌曲，这时候，我们不能去把 index<2500 的歌曲全部拉取下来。
+feeluown 提供了 RandomReader 类来实现这个功能
+
+.. autoclass:: fuocore.reader.RandomReader
+   :members:
+   :special-members: __init__
+
+.. autoclass:: fuocore.reader.RandomSequentialReader
+
 
 模型实例化
 '''''''''''''''''
@@ -799,6 +811,12 @@ GUI 相关管理模块
    :members:
 
 .. automodule:: feeluown.uimodels.playlist
+   :members:
+
+异常
+------------------
+
+.. automodule:: fuocore.excs
    :members:
 
 
