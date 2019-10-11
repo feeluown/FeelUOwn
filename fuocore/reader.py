@@ -5,9 +5,11 @@ to fetch the whole playlist. Generally, we call this design Pagination.
 Moreover, different provider has different pagination API.
 For feeluown, we want a unified API, so we create the Reader class.
 """
+import logging
 
 from fuocore.excs import ReadFailed
 
+logger = logging.getLogger(__name__)
 
 __all__ = (
     'SequentialReader',
@@ -151,6 +153,7 @@ class RandomReader(Reader):
         # TODO: make this method thread safe
         assert start <= end, "start should less than end"
         try:
+            logger.info('trigger read_func(%d, %d)', start, end)
             objs = self._read_func(start, end)
         except:  # noqa: E722
             raise ReadFailed
