@@ -152,7 +152,7 @@ class RandomReader(Reader):
         assert start <= end, "start should less than end"
         try:
             objs = self._read_func(start, end)
-        except:
+        except:  # noqa: E722
             raise ReadFailed
         else:
             self._objects[start:end] = objs
