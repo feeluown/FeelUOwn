@@ -103,6 +103,11 @@ class Playlist:
         if song in self._bad_songs:
             self._bad_songs.remove(song)
 
+    def init_from(self, songs):
+        """(alpha) temporarily, should only called by player.play_songs"""
+        self.clear()
+        self._songs = songs
+
     def clear(self):
         """remove all songs from playlists"""
 

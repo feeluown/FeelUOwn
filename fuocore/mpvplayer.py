@@ -127,6 +127,11 @@ class MpvPlayer(AbstractPlayer):
         else:
             self._playlist.current_song = song
 
+    def play_songs(self, songs):
+        """(alpha) play list of songs"""
+        self.playlist.init_from(songs)
+        self.play_next()
+
     def play_next(self):
         """播放下一首歌曲
 
