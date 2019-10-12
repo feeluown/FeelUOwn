@@ -289,10 +289,7 @@ class TableContainer(QFrame):
             songs = songs_g.readall()
         else:
             songs = model.songs
-        self._app.player.playlist.clear()
-        for song in songs:
-            self._app.player.playlist.add(song)
-        self._app.player.play_next()
+        self._app.player.play_songs(songs=songs)
 
     async def show_model(self, model):
         model_type = ModelType(model.meta.model_type)
