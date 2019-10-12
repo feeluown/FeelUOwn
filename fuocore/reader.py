@@ -104,7 +104,7 @@ class SequentialReader(Reader):
 
             songs_g = SequentialReader.wrap(songs_g)
         """
-        if isinstance(g, SequentialReader):
+        if isinstance(g, Reader):
             return g
         return cls(g, count=None)
 
@@ -123,17 +123,19 @@ class SequentialReader(Reader):
 class RandomReader(Reader):
     allow_random_read = True
 
-    def __init__(self, count, read_func, max_per_read=100):
+    def __init__(self, count, read_func, max_per_read):
         """random reader constructor
 
         :param int count: total number of objects
         :param function read_func: func(start: int, end: int) -> list
-        :param int max_per_read:
+        :param int max_per_read: max count per read, it must big than 0
         """
         self.count = count
         self._ranges = []  # list of tuple
         self._objects = [None] * count
         self._read_func = read_func
+
+        assert max_per_read > 0, 'max_per_read must big than 0'
         self._max_per_read = max_per_read
 
     def read(self, index):
@@ -149,6 +151,29 @@ class RandomReader(Reader):
         self._read_range(*r)
         return self._objects[index]
 
+    def readall(self):
+        """read all objects
+
+        :return list: list of objects
+        :raises ReadFailed:
+        """
+        start = 0
+        end = 0
+        count = self.count
+        while end < count:
+            end = min(count, end + self._max_per_read)
+            self._read_range(start, end)
+            start = end
+        return self._objects
+
+    def explain_readall(self):
+        read_times = self.count / self._max_per_read
+        if self.count % self._max_per_read > 0:
+            read_times += 1
+        return {'count': self.count,
+                'max_per_read': self._max_per_read,
+                'read_times': read_times}
+
     def _read_range(self, start, end):
         # TODO: make this method thread safe
         assert start <= end, "start should less than end"
@@ -156,8 +181,14 @@ class RandomReader(Reader):
             logger.info('trigger read_func(%d, %d)', start, end)
             objs = self._read_func(start, end)
         except:  # noqa: E722
-            raise ReadFailed
+            raise ReadFailed('read_func raise error')
         else:
+            expected = end - start
+            actual = len(objs)
+            if expected != actual:
+                raise ReadFailed('read_func returns unexpected number of objects: '
+                                 'expected={}, actual={}'
+                                 .format(expected, actual))
             self._objects[start:end] = objs
             self._refresh_ranges()
 

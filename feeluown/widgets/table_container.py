@@ -283,7 +283,12 @@ class TableContainer(QFrame):
         self._app.player.play_song(song)
 
     def play_all(self):
-        songs = self.songs_table.model().songs
+        model = self.songs_table.model()
+        songs_g = model.songs_g
+        if songs_g is not None and songs_g.allow_random_read:
+            songs = songs_g.readall()
+        else:
+            songs = model.songs
         self._app.player.playlist.clear()
         for song in songs:
             self._app.player.playlist.add(song)

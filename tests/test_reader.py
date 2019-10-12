@@ -3,7 +3,7 @@ from unittest import mock, TestCase
 from fuocore.reader import RandomReader, RandomSequentialReader
 
 
-class TestReader(TestCase):
+class TestRandomReader(TestCase):
     # pylint: disable=protected-access
 
     def setUp(self):
@@ -17,7 +17,11 @@ class TestReader(TestCase):
         self.p._refresh_ranges()
         assert self.p._ranges == ranges
 
-    def test_usage(self):
+    def test_init_reader(self):
+        with self.assertRaises(AssertionError):
+            RandomReader(100, lambda: 1, 0)
+
+    def test_read(self):
         mock_read_func = mock.MagicMock()
         mock_read_func.return_value = list(range(20, 30))
         self.p._read_func = mock_read_func
@@ -26,6 +30,21 @@ class TestReader(TestCase):
         obj = self.p.read(25)
         self.assertEqual(obj, 25)
         mock_read_func.assert_called_once_with(20, 30)
+
+    def test_readall(self):
+        mock_read_func = mock.MagicMock()
+        self.p = RandomReader(102, read_func=mock_read_func, max_per_read=50)
+        mock_read_func.side_effect = [list(range(0, 50)),
+                                      list(range(50, 100)),
+                                      list(range(100, 102))]
+        objs = self.p.readall()
+        self.assertEqual(len(objs), 102)
+        self.assertEqual(objs[0], 0)
+        mock_read_func.assert_has_calls([
+            mock.call(0, 50),
+            mock.call(50, 100),
+            mock.call(100, 102),
+        ])
 
     def test__has_index(self):
         yes, r = self.p._has_index(45)
@@ -57,7 +76,7 @@ class TestRandomSequentialReader(TestCase):
     def test_usage(self):
         count = 11
         mock_read_func = mock.MagicMock()
-        mock_read_func.return_value = list(range(0, 10))
+        mock_read_func.side_effect = [list(range(0, 10)), list(range(10, 11))]
         reader = RandomSequentialReader(count,
                                         read_func=mock_read_func,
                                         max_per_read=10)
