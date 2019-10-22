@@ -157,6 +157,10 @@ class RandomReader(Reader):
         :return list: list of objects
         :raises ReadFailed:
         """
+        # all objects have been read
+        if len(self._ranges) == 1 and self._ranges[0] == (0, self.count):
+            return self._objects
+
         start = 0
         end = 0
         count = self.count
@@ -166,13 +170,13 @@ class RandomReader(Reader):
             start = end
         return self._objects
 
-    def explain_readall(self):
-        read_times = self.count / self._max_per_read
-        if self.count % self._max_per_read > 0:
-            read_times += 1
-        return {'count': self.count,
-                'max_per_read': self._max_per_read,
-                'read_times': read_times}
+    # def explain_readall(self):
+    #     read_times = self.count / self._max_per_read
+    #     if self.count % self._max_per_read > 0:
+    #         read_times += 1
+    #     return {'count': self.count,
+    #             'max_per_read': self._max_per_read,
+    #             'read_times': read_times}
 
     def _read_range(self, start, end):
         # TODO: make this method thread safe
