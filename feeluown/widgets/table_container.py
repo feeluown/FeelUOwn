@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from fuocore import ModelType
 from fuocore import aio
+from fuocore.excs import ReadFailed
 from fuocore.models import GeneratorProxy
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView
@@ -291,15 +292,18 @@ class TableContainer(QFrame):
                 songs = task.result()
             except asyncio.CancelledError:
                 pass
+            except ReadFailed as e:
+                self._app.show_msg('[play-all] read songs failed: {}'.format(str(e)))
             else:
                 self._app.player.play_songs(songs=songs)
-            self.meta_widget.toolbar.play_all_btn.setEnabled(True)
+            finally:
+                self.meta_widget.toolbar.enter_state_playall_end()
 
         model = self.songs_table.model()
         songs_g = model.songs_g
         if songs_g is not None and songs_g.allow_random_read:
             task = task_spec.bind_blocking_io(songs_g.readall)
-            self.meta_widget.toolbar.play_all_btn.setEnabled(False)
+            self.meta_widget.toolbar.enter_state_playall_start()
             task.add_done_callback(songs_g_readall_cb)
             return
         songs = model.songs

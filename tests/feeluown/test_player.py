@@ -1,5 +1,4 @@
 import asyncio
-import threading
 from unittest import mock
 
 import pytest
@@ -8,14 +7,9 @@ from feeluown.player import Playlist, Player
 from tests.helpers import is_travis_env
 
 
-async def a_list_song_standby(song):
-    pass
-
-
 @pytest.mark.filterwarnings('ignore:coroutine')
 @pytest.mark.asyncio
 async def test_set_cursong_in_non_mainthread(app_mock, song):
-    app_mock.library.a_list_song_standby = a_list_song_standby
     pl = Playlist(app_mock)
 
     def set_in_non_mainthread():
@@ -37,7 +31,6 @@ async def test_set_cursong_in_non_mainthread(app_mock, song):
 @pytest.mark.asyncio
 async def test_prepare_media(app_mock, song):
     player = Player(app_mock)
-    loop = asyncio.get_event_loop()
     mock_func = mock.MagicMock()
     player.prepare_media(song, mock_func)
     # this may fail, since we should probably wait a little bit longer
@@ -52,7 +45,7 @@ async def test_prepare_media_in_non_mainthread(app_mock, song):
     loop = asyncio.get_event_loop()
     mock_func = mock.MagicMock()
     try:
-        media = await loop.run_in_executor(
+        await loop.run_in_executor(
             None, player.prepare_media, song, mock_func)
     except RuntimeError:
         pytest.fail('Prepare media in non mainthread should work')

@@ -41,6 +41,18 @@ class SongsTableToolbar(QWidget):
         self.show_songs_btn.hide()
         self.show_albums_btn.hide()
 
+    def enter_state_playall_start(self):
+        self.play_all_btn.setEnabled(False)
+        # currently, this is called only when feeluown is fetching songs,
+        # so when we enter state_playall_start, we set play all btn text
+        # to this.
+        self.play_all_btn.setText('正在获取全部歌曲...')
+
+    def enter_state_playall_end(self):
+        self.play_all_btn.setText('正在获取全部歌曲...done')
+        self.play_all_btn.setEnabled(True)
+        self.play_all_btn.setText('播放全部')
+
     def _setup_ui(self):
         self.desc_btn.hide()
 
