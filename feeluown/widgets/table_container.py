@@ -283,12 +283,26 @@ class TableContainer(QFrame):
         self._app.player.play_song(song)
 
     def play_all(self):
+        task_name = 'play-all'
+        task_spec = self._app.task_mgr.get_or_create(task_name)
+
+        def songs_g_readall_cb(task):
+            try:
+                songs = task.result()
+            except asyncio.CancelledError:
+                pass
+            else:
+                self._app.player.play_songs(songs=songs)
+            self.meta_widget.toolbar.play_all_btn.setEnabled(True)
+
         model = self.songs_table.model()
         songs_g = model.songs_g
         if songs_g is not None and songs_g.allow_random_read:
-            songs = songs_g.readall()
-        else:
-            songs = model.songs
+            task = task_spec.bind_blocking_io(songs_g.readall)
+            self.meta_widget.toolbar.play_all_btn.setEnabled(False)
+            task.add_done_callback(songs_g_readall_cb)
+            return
+        songs = model.songs
         self._app.player.play_songs(songs=songs)
 
     async def show_model(self, model):
