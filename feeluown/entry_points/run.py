@@ -1,8 +1,13 @@
-from fuocore.utils import is_port_used
-from .base import create_config, setup_argparse
+from feeluown.patch import patch_quamash_qeventloop
 
-from .run_cli import run_cli
-from .run_app import run_once, run_forever
+patch_quamash_qeventloop()
+
+# pylint: disable=wrong-import-position
+from fuocore.utils import is_port_used  # noqa: E402
+from .base import create_config, setup_argparse  # noqa: E402
+
+from .run_cli import run_cli  # noqa: E402
+from .run_app import run_once, run_forever  # noqa: E402
 
 
 def run():
