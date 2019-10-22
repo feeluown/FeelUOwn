@@ -2,6 +2,7 @@ LINT_FILES = fuocore/
 LINT_FILES += feeluown/entry_points
 LINT_FILES += feeluown/app.py
 LINT_FILES += feeluown/ui.py
+LINT_FILES += feeluown/task.py
 LINT_FILES += feeluown/widgets/*_panel.py
 LINT_FILES += feeluown/widgets/table_container.py
 LINT_FILES += feeluown/widgets/songs_table.py

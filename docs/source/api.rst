@@ -781,6 +781,9 @@ metadata 是 ``AudioMeta`` 的实例。对于视频文件，metadata 则是 ``Vi
 通用管理模块
 ----------------
 
+.. automodule:: feeluown.task
+   :members:
+
 .. automodule:: feeluown.version
 
 .. automodule:: feeluown.tips
