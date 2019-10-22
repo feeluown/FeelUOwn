@@ -26,8 +26,9 @@ class PreemptiveTaskSpec:
     def _before_bind(self):
         if self._task is None:
             return
+        if not self._task.done():
+            logger.info('preemptive-task(%s): try to cancel previous', self.name)
         self._task.cancel()
-        logger.info('preemptive-task(%s): try to cancel previous', self.name)
         self._task = None
 
     def bind_coro(self, coro):

@@ -43,12 +43,6 @@ class Playlist(_Playlist):
             return
         self.mark_as_bad(song)
 
-        logger.info('song:%s is invalid, try to get standby', song)
-        if self._task is not None:
-            logger.info('try to cancel another find-song-standby task')
-            self._task.cancel()
-            self._task = None
-
         def _current_song_setter(task):
             nonlocal song
             try:
@@ -60,14 +54,12 @@ class Playlist(_Playlist):
                     # DOUBT: how Python closures works?
                     song = songs[0]
                 _Playlist.current_song.fset(self, song)
-            finally:
-                self._task = None
 
-        def fetch_in_bg():
-            self._task = aio.create_task(self._app.library.a_list_song_standby(song))
-            self._task.add_done_callback(_current_song_setter)
-
-        call_soon(fetch_in_bg, self._loop)
+        logger.info('song:%s is invalid, try to get standby', song)
+        name = 'find-song-standby'
+        task_spec = self._app.task_mgr.get_or_create(name)
+        task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
+        task.add_done_callback(_current_song_setter)
 
 
 class Player(MpvPlayer):
