@@ -15,6 +15,7 @@ from .server import FuoServer
 from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
+from .task import TaskManager
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,7 @@ class App:
 
 def attach_attrs(app):
     """初始化 app 属性"""
+    loop = asyncio.get_event_loop()
     app.library = Library()
     app.live_lyric = LiveLyric()
     player_kwargs = dict(
@@ -79,6 +81,7 @@ def attach_attrs(app):
     app.playlist = app.player.playlist
     app.plugin_mgr = PluginsManager(app)
     app.request = Request()
+    app.task_mgr = TaskManager(app, loop)
 
     if app.mode & (app.DaemonMode | app.GuiMode):
         app.version_mgr = VersionManager(app)
