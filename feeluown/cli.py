@@ -87,16 +87,17 @@ cmd_handler_mapping = {}
 
 
 class Request:
-    def __init__(self, cmd, *args, options_str=None):
+    def __init__(self, cmd, *args, options_str=None, heredoc=None):
         """cli request object
 
         :param string cmd: cmd name (e.g. search)
         :param list args: cmd arguments
         :param string options_str: cmd options
+        :param string heredoc:
 
         >>> req = Request('search',
         ...               'linkin park',
-        ...               options_str='[type=pl,source=xiami]')
+        ...               options_str='[type=pl,source=xiami]',)
         >>> req.raw
         'search "linkin park" [type=pl,source=xiami]'
         >>> req.to_cmd().options
@@ -105,6 +106,7 @@ class Request:
         self.cmd = cmd
         self.args = args
         self.options_str = options_str
+        self.heredoc = heredoc
 
     @property
     def raw(self):
@@ -121,11 +123,14 @@ class Request:
             return '"{}"'.format(value) if ' ' in value else value
 
         options_str = self.options_str
-        return '{cmd} {args_str} {options_str}'.format(
+        raw = '{cmd} {args_str} {options_str}'.format(
             cmd=self.cmd,
             args_str=' '.join((escape(arg) for arg in self.args)),
             options_str=(options_str if options_str else '')
         )
+        if self.heredoc is not None:
+            raw += ' <<EOF\n{}\nEOF\n\n'.format(self.heredoc)
+        return raw
 
     def to_cmd(self):
         if self.options_str:
@@ -296,7 +301,9 @@ class ExecHandler(BaseHandler):
         code = self.args.code
         if code is None:
             code = sys.stdin.read()
-        self._req.args = ('<<EOF\n{}\nEOF\n\n'.format(code), )
+            self._req.heredoc = code
+        else:
+            self._req.args = (code, )
 
 
 class OnceClient:
