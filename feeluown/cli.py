@@ -110,17 +110,20 @@ class Request:
 
     @property
     def raw(self):
-        """generate syntactically correct request
+        """generate syntactically correct request"""
 
-        HELP: currently, we use escape func to handle whitespace
-        in order to generate syntactically correct request. However,
-        if double quote exists in value, the escape function should
-        be broken. I think some code generatin skills can solve
-        this problem, e.g., generate code from AST?
-        """
         def escape(value):
-            # add double quotes if whitespace in value
-            return '"{}"'.format(value) if ' ' in value else value
+            # if value is not furi/float/integer, than we surround the value
+            # with double quotes
+            from fuocore.protocol.lexer import furi_re, integer_re, float_re
+
+            regex_list = (furi_re, float_re, integer_re)
+            for regex in regex_list:
+                if regex.match(value):
+                    break
+            else:
+                value = '"{}"'.format(value)
+            return value
 
         options_str = self.options_str
         raw = '{cmd} {args_str} {options_str}'.format(
@@ -322,6 +325,12 @@ class OnceClient:
 
 
 def dispatch(args, client):
+    if '"' in (getattr(args, 'cli', '') or '') \
+       or '"' in (getattr(args, 'code', '') or '') \
+       or '"' in (getattr(args, 'keyword', '') or ''):
+        print_error("command args must not contain charactor '\"'")
+        return
+
     HandlerCls = cmd_handler_mapping[args.cmd]
     handler = HandlerCls(args)
     resp = handler.before_request()
@@ -334,6 +343,7 @@ def climain(args):
     """dispatch request"""
     with connect() as cli:
         dispatch(args, cli)
+
 
 
 def oncemain(app, args):
