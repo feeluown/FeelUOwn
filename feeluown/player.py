@@ -79,6 +79,10 @@ class Playlist(_Playlist):
             task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
             task.add_done_callback(find_song_standby_cb)
 
+        if song is None:
+            _Playlist.current_song.fset(self, song)
+            return
+
         task_spec = self._app.task_mgr.get_or_create('validate-song')
         future = task_spec.bind_blocking_io(validate_song, song)
         future.add_done_callback(validate_song_cb)
