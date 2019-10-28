@@ -1,11 +1,17 @@
 Changelog
 ---------
-3.0.2 (WIP)
+
+3.1 (2019-10-28)
 """""""""""""""""""""
 - refactor: 重构 `__main__` 模块，加入 `entry_points` 包
 - refactor: 加入 fuoexec 模块
 - feat: 支持在 macOS 上生成 .app 文件
-- feat: 支持搜索歌手，专辑，播放列表
+- feat: 支持搜索歌手，专辑，播放列表，比如 ``fuo search 理性与感性 type=album``
+- feat: 可以播放 Youtube 的 url，比如 ``fuo play https://youtube.com/xxx``
+- feat: 支持展示歌手专辑列表
+- enhance: 对于大的播放列表，仍然可以播放全部
+- enhance: 当 provider API 失效时，也能为歌曲找替代品
+- bugfix: 若干已知 bugfix
 
 3.0.1 (2019-06-30)
 """""""""""""""""""""
