@@ -35,31 +35,54 @@ class Playlist(_Playlist):
 
     @_Playlist.current_song.setter
     def current_song(self, song):
-        """如果歌曲 url 无效，则尝试从其它平台找一个替代品"""
-        if song is None or \
-           (song.meta.support_multi_quality and song.list_quality()) or \
-           song.url:
-            _Playlist.current_song.fset(self, song)
-            return
-        self.mark_as_bad(song)
+        """if song has not valid medai, we find a replacement in other providers"""
 
-        def _current_song_setter(task):
-            nonlocal song
+        def validate_song(song):
+            # TODO: except specific exception
+            valid_quality_list = []
+            if song.meta.support_multi_quality:
+                try:
+                    valid_quality_list = song.list_quality()
+                except:  # noqa
+                    pass
+            try:
+                url = song.url
+            except:  # noqa
+                url = ''
+            return bool(valid_quality_list or url)
+
+        def find_song_standby_cb(task):
+            final_song = song
             try:
                 songs = task.result()
             except asyncio.CancelledError:
                 logger.debug('badsong-autoreplace task is cancelled')
             else:
                 if songs:
-                    # DOUBT: how Python closures works?
-                    song = songs[0]
-                _Playlist.current_song.fset(self, song)
+                    final_song = songs[0]
+                    logger.info('find song standby success: %s', final_song)
+                else:
+                    logger.info('find song standby failed: not found')
+                _Playlist.current_song.fset(self, final_song)
 
-        logger.info('song:%s is invalid, try to get standby', song)
-        name = 'find-song-standby'
-        task_spec = self._app.task_mgr.get_or_create(name)
-        task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
-        task.add_done_callback(_current_song_setter)
+        def validate_song_cb(future):
+            try:
+                valid = future.result()
+            except:  # noqa
+                valid = False
+            if valid:
+                _Playlist.current_song.fset(self, song)
+                return
+            self.mark_as_bad(song)
+            logger.info('song:%s is invalid, try to find standby', song)
+            task_spec = self._app.task_mgr.get_or_create('find-song-standby')
+            task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
+            task.add_done_callback(find_song_standby_cb)
+
+        task_spec = self._app.task_mgr.get_or_create('validate-song')
+        future = task_spec.bind_blocking_io(validate_song, song)
+        future.add_done_callback(validate_song_cb)
+
 
 
 class Player(MpvPlayer):

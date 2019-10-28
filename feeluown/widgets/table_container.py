@@ -280,7 +280,6 @@ class TableContainer(QFrame):
         await self._delegate.render()
 
     async def play_song(self, song):
-        await async_run(lambda: song.url)
         self._app.player.play_song(song)
 
     def play_all(self):

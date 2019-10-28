@@ -151,7 +151,7 @@ class Library(object):
         """
         valid_sources = [pvd.identifier for pvd in self.list()
                          if pvd.identifier != song.source]
-        q = '{} {}'.format(song.title, song.artists_name)
+        q = '{} {}'.format(song.title_display, song.artists_name_display)
         result_g = await self.a_search(q, source_in=valid_sources)
         sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
         # choose one or two valid standby
