@@ -181,6 +181,7 @@ def init_app(app):
         app.theme_mgr.autoload()
         app.tips_mgr.show_random_tip()
         app.coll_uimgr.initialize()
+        app.browser.initialize()
         app.show()
 
 

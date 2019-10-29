@@ -79,7 +79,7 @@ class Browser:
             uri = 'fuo://' + uri
         with self._app.create_action('-> {}'.format(uri)) as action:
             if model is not None:
-                self._render(model)
+                self._render_model(model)
             else:
                 try:
                     self.router.dispatch(uri, {'app': self._app})
@@ -111,10 +111,29 @@ class Browser:
     # UI Controllers
     # --------------
 
-    def _render(self, model):
+    def _render_model(self, model):
         """渲染 model 页面"""
         asyncio.ensure_future(self.ui.songs_table_container.show_model(model))
+
+    def _render_coll(self, _, identifier):
+        coll = self._app.coll_uimgr.get(int(identifier))
+        self._app.ui.songs_table_container.show_collection(coll)
 
     def on_history_changed(self):
         self.ui.back_btn.setEnabled(self.can_back)
         self.ui.forward_btn.setEnabled(self.can_forward)
+
+    # --------------
+    # initialization
+    # --------------
+
+    def initialize(self):
+        """browser should be initialized after all ui components are created
+
+        1. bind routes with handler
+        """
+        urlpatterns = [
+            ('/colls/<identifier>', self._render_coll),
+        ]
+        for url, handler in urlpatterns:
+            self.route(url)(handler)

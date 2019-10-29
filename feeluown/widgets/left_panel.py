@@ -89,7 +89,6 @@ class _LeftPanel(QFrame):
 
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
-        self._app.browser.route('/colls/<identifier>')(self.__handle_show_coll)
         self.collections_view.show_collection.connect(self.show_coll)
 
     def sizeHint(self):
@@ -99,7 +98,3 @@ class _LeftPanel(QFrame):
     def show_coll(self, coll):
         coll_id = self._app.coll_uimgr.get_coll_id(coll)
         self._app.browser.goto(uri='/colls/{}'.format(coll_id))
-
-    def __handle_show_coll(self, req, identifier):
-        coll = self._app.coll_uimgr.get(int(identifier))
-        self._app.ui.songs_table_container.show_collection(coll)
