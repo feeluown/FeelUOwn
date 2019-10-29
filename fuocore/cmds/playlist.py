@@ -9,7 +9,7 @@ class PlaylistHandler(AbstractHandler):
 
     def handle(self, cmd):
         if cmd.action == 'add':
-            return self.add(cmd.args[0].strip())
+            return self.add(cmd.args)
         elif cmd.action == 'remove':
             return self.remove(cmd.args[0].strip())
         elif cmd.action == 'clear':
@@ -21,10 +21,10 @@ class PlaylistHandler(AbstractHandler):
         elif cmd.action == 'previous':
             self.player.play_previous()
 
-    def add(self, furis):
+    def add(self, furi_list):
         playlist = self.playlist
-        furi_list = furis.split(',')
         for furi in furi_list:
+            furi = furi.strip()
             obj = self.model_parser.parse_line(furi)
             if obj is not None:
                 obj_type = type(obj).meta.model_type

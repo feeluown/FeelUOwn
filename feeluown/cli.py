@@ -294,7 +294,7 @@ class AddHandler(BaseHandler):
                 furi_list.append(line.strip())
         else:
             furi_list = [self.args.uri]
-        self._req.args = (','.join(furi_list), )
+        self._req.args = (' '.join(furi_list), )
 
 
 class ExecHandler(BaseHandler):
