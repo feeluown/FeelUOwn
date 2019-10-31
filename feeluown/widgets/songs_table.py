@@ -126,7 +126,7 @@ class SongsTableModel(QAbstractTableModel):
         song = self.songs[index.row()]
         if role in (Qt.DisplayRole, Qt.ToolTipRole):
             if index.column() == Column.index:
-                return index.row()
+                return index.row() + 1
             elif index.column() == Column.source:
                 return self._source_name_map.get(song.source, '').strip()
             elif index.column() == Column.song:

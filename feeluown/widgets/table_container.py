@@ -105,6 +105,14 @@ class ArtistDelegate(Delegate):
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
             self.albums_table.show_album_needed.connect(self.show_model)
+        if hasattr(self.artist, 'albums2'):
+            self.meta_widget.toolbar.show_albums2_needed.connect(
+                lambda: self.show_albums(self.artist.create_albums2_g()))
+            self.albums_table.show_album_needed.connect(self.show_model)
+        if hasattr(self.artist, 'albums3'):
+            self.meta_widget.toolbar.show_albums3_needed.connect(
+                lambda: self.show_albums(self.artist.create_albums3_g()))
+            self.albums_table.show_album_needed.connect(self.show_model)
 
         # fetch and render metadata
         desc = await async_run(lambda: artist.desc)
