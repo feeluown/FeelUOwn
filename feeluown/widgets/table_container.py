@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from fuocore import ModelType
 from fuocore import aio
-from fuocore.excs import ReadFailed
+from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView
@@ -138,17 +138,32 @@ class PlaylistDelegate(Delegate):
     async def render(self):
         playlist = self.playlist
 
+        # show playlist title
+        self.meta_widget.title = playlist.name
+
+        # show playlist song list
         loop = asyncio.get_event_loop()
         songs = songs_g = None
-        if playlist.meta.allow_create_songs_g:
-            songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
+        try:
+            if playlist.meta.allow_create_songs_g:
+                songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
+            else:
+                songs = await async_run(lambda: playlist.songs, loop=loop)
+        except ProviderIOError as e:
+            self._app.show_msg('read playlist/songs failed：{}'.format(str(e)))
+            logger.exception('read playlist/songs failed')
         else:
-            songs = await async_run(lambda: playlist.songs, loop=loop)
-        self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
+            self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
 
-        self.meta_widget.title = playlist.name
-        desc = await async_run(lambda: playlist.desc)
-        self.meta_widget.desc = desc
+        # show playlist description
+        try:
+            desc = await async_run(lambda: playlist.desc)
+        except ProviderIOError as e:
+            self._app.show_msg('read playlist/desc failed：{}'.format(str(e)))
+        else:
+            self.meta_widget.desc = desc
+
+        # show playlist cover
         if playlist.cover:
             loop.create_task(self.show_cover(playlist.cover))
 
@@ -291,7 +306,7 @@ class TableContainer(QFrame):
                 songs = task.result()
             except asyncio.CancelledError:
                 pass
-            except ReadFailed as e:
+            except ProviderIOError as e:
                 self._app.show_msg('[play-all] read songs failed: {}'.format(str(e)))
             else:
                 self._app.player.play_songs(songs=songs)

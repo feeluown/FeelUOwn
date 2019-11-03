@@ -44,10 +44,11 @@ class Playlist(_Playlist):
                 try:
                     valid_quality_list = song.list_quality()
                 except:  # noqa
-                    pass
+                    logger.exception('[playlist] check song quality list failed')
             try:
                 url = song.url
             except:  # noqa
+                logger.exception('[playlist] get song url failed')
                 url = ''
             return bool(valid_quality_list or url)
 
@@ -74,7 +75,7 @@ class Playlist(_Playlist):
                 _Playlist.current_song.fset(self, song)
                 return
             self.mark_as_bad(song)
-            logger.info('song:%s is invalid, try to find standby', song)
+            self._app.show_msg('{} is invalid, try to find standby'.format(str(song)))
             task_spec = self._app.task_mgr.get_or_create('find-song-standby')
             task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
             task.add_done_callback(find_song_standby_cb)
