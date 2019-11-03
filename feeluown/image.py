@@ -22,7 +22,7 @@ class ImgManager(object):
         self.cache = _ImgCache(self._app)
 
     async def get(self, img_url, img_name):
-        if img_name.split('//')[1].startswith('local'):
+        if not img_url and img_name.split('//')[1].startswith('local'):
             return self.get_from_files(img_url, img_name)
         fpath = self.cache.get(img_name)
         if fpath is not None:
