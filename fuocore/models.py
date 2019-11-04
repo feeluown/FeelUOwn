@@ -370,6 +370,32 @@ class ArtistModel(BaseModel):
         pass
 
 
+class AlbumType(Enum):
+    """Album type enumeration
+
+    中文解释::
+
+        Single 和 EP 会有一些交集，在展示时，会在一起展示，比如 Singles & EPs。
+        Compilation 和 Retrospective 也会有交集，展示时，也通常放在一起，统称“合辑”。
+
+    References:
+
+    1. https://www.zhihu.com/question/22888388/answer/33255107
+    2. https://zh.wikipedia.org/wiki/%E5%90%88%E8%BC%AF
+    """
+    standard = 'standard'
+
+    single = 'single'
+    ep = 'EP'
+
+    live = 'live'
+
+    compilation = 'compilation'
+    retrospective = 'retrospective'
+
+    unknown = 'unknown'
+
+
 class AlbumModel(BaseModel):
     class Meta:
         model_type = ModelType.album.value
@@ -377,7 +403,13 @@ class AlbumModel(BaseModel):
         # TODO: 之后可能需要给 Album 多加一个字段用来分开表示 artist 和 singer
         # 从意思上来区分的话：artist 是专辑制作人，singer 是演唱者
         # 像虾米音乐中，它即提供了专辑制作人信息，也提供了 singer 信息
-        fields = ['name', 'cover', 'songs', 'artists', 'desc']
+        fields = ['name', 'cover', 'songs', 'artists', 'desc', 'type']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        if kwargs.get('type') is None:
+            self.type = AlbumType.unknown
 
     def __str__(self):
         return 'fuo://{}/albums/{}'.format(self.source, self.identifier)

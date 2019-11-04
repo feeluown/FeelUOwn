@@ -483,6 +483,11 @@ feeluown 提供了 RandomReader 类来实现这个功能
 
    .. automethod:: create_songs_g
 
+
+.. autoclass:: fuocore.models.AlbumType
+   :members:
+   :undoc-members:
+
 .. autoclass:: fuocore.models.AlbumModel
    :members: artists_name
    :undoc-members:
@@ -503,6 +508,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
          desc      :class:`str`
          name      :class:`str`
          songs     :class:`list`           list of :class:`.SongModel`
+         type      :class:`AlbumType`
          ========  =====================   ======================
 
 .. autoclass:: fuocore.models.LyricModel

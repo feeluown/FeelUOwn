@@ -6,6 +6,7 @@ LINT_FILES += feeluown/task.py
 LINT_FILES += feeluown/widgets/*_panel.py
 LINT_FILES += feeluown/widgets/table_container.py
 LINT_FILES += feeluown/widgets/songs_table.py
+LINT_FILES += tests/test_*_model.py
 
 .PHONY: docs
 
