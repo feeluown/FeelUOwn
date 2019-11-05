@@ -6,8 +6,9 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from fuocore import ModelType
 from fuocore import aio
-from fuocore.excs import ReadFailed
+from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy
+from fuocore.protocol import get_url
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
@@ -44,10 +45,8 @@ class Delegate:
     #
     # utils function for delegate
     #
-    async def show_cover(self, cover):
+    async def show_cover(self, cover, cover_uid):
         app = self._app
-        # FIXME: cover_hash may not work properly someday
-        cover_uid = cover.split('/', -1)[-1]
         content = await app.img_mgr.get(cover, cover_uid)
         img = QImage()
         img.loadFromData(content)
@@ -105,13 +104,13 @@ class ArtistDelegate(Delegate):
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
             self.albums_table.show_album_needed.connect(self.show_model)
-        if hasattr(self.artist, 'albums2'):
-            self.meta_widget.toolbar.show_albums2_needed.connect(
-                lambda: self.show_albums(self.artist.create_albums2_g()))
-            self.albums_table.show_album_needed.connect(self.show_model)
-        if hasattr(self.artist, 'albums3'):
-            self.meta_widget.toolbar.show_albums3_needed.connect(
-                lambda: self.show_albums(self.artist.create_albums3_g()))
+        # if hasattr(self.artist, 'albums'):
+        #     self.meta_widget.toolbar.show_mini_albums_albums_needed.connect(
+        #         lambda: self.show_albums(self.artist.create_mini_albums_g()))
+        #     self.albums_table.show_album_needed.connect(self.show_model)
+        if hasattr(self.artist, 'contributed_albums'):
+            self.meta_widget.toolbar.show_contributed_albums_needed.connect(
+                lambda: self.show_albums(self.artist.create_contributed_albums_g()))
             self.albums_table.show_album_needed.connect(self.show_model)
 
         # fetch and render metadata
@@ -133,7 +132,7 @@ class ArtistDelegate(Delegate):
 
         # render cover
         if cover:
-            aio.create_task(self.show_cover(cover))
+            aio.create_task(self.show_cover(cover, get_url(artist) + '/cover'))
 
     async def tearDown(self):
         pass
@@ -146,19 +145,34 @@ class PlaylistDelegate(Delegate):
     async def render(self):
         playlist = self.playlist
 
+        # show playlist title
+        self.meta_widget.title = playlist.name
+
+        # show playlist song list
         loop = asyncio.get_event_loop()
         songs = songs_g = None
-        if playlist.meta.allow_create_songs_g:
-            songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
+        try:
+            if playlist.meta.allow_create_songs_g:
+                songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
+            else:
+                songs = await async_run(lambda: playlist.songs, loop=loop)
+        except ProviderIOError as e:
+            self._app.show_msg('read playlist/songs failed：{}'.format(str(e)))
+            logger.exception('read playlist/songs failed')
         else:
-            songs = await async_run(lambda: playlist.songs, loop=loop)
-        self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
+            self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
 
-        self.meta_widget.title = playlist.name
-        desc = await async_run(lambda: playlist.desc)
-        self.meta_widget.desc = desc
+        # show playlist description
+        try:
+            desc = await async_run(lambda: playlist.desc)
+        except ProviderIOError as e:
+            self._app.show_msg('read playlist/desc failed：{}'.format(str(e)))
+        else:
+            self.meta_widget.desc = desc
+
+        # show playlist cover
         if playlist.cover:
-            loop.create_task(self.show_cover(playlist.cover))
+            loop.create_task(self.show_cover(playlist.cover, get_url(playlist) + '/cover'))
 
         def remove_song(song):
             model = self.songs_table.model()
@@ -188,7 +202,7 @@ class AlbumDelegate(Delegate):
         self.meta_widget.desc = desc
         cover = await async_run(lambda: album.cover)
         if cover:
-            loop.create_task(self.show_cover(cover))
+            loop.create_task(self.show_cover(cover, get_url(album) + '/cover'))
 
 
 class CollectionDelegate(Delegate):
@@ -299,7 +313,7 @@ class TableContainer(QFrame):
                 songs = task.result()
             except asyncio.CancelledError:
                 pass
-            except ReadFailed as e:
+            except ProviderIOError as e:
                 self._app.show_msg('[play-all] read songs failed: {}'.format(str(e)))
             else:
                 self._app.player.play_songs(songs=songs)

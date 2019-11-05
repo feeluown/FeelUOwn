@@ -22,7 +22,7 @@ class ImgManager(object):
         self.cache = _ImgCache(self._app)
 
     async def get(self, img_url, img_name):
-        if not img_url and img_name.split('//')[1].startswith('local'):
+        if not img_url.startswith('http'):
             return self.get_from_files(img_url, img_name)
         fpath = self.cache.get(img_name)
         if fpath is not None:
@@ -45,24 +45,14 @@ class ImgManager(object):
         return res.content
 
     def get_from_files(self, img_url, img_name):
-         # TODO: 专辑页面的封面显示(应该在插件中给cover赋值 fpath的逻辑不应该在这里实现)
-         # TODO: Unknown类型的专辑应该加载默认封面 而不是在专辑或封面不存在的情况下依然读取错误的封面
-        for provider in list(self._app.library._providers):
-            if provider.identifier == 'local':
-                parser = img_name.split('//')[1].split('/')
-                model = getattr(provider.library, '_{}'.format(parser[1]))[parser[2]]
-                fpath = model.songs[0].url if model.songs else ''
-                if not fpath:
-                    return
-                break
-        logger.info('read image:%s from file', img_url)
-        if fpath.endswith('mp3') or fpath.endswith('ogg') or fpath.endswith('wma'):
+        logger.info('extract image from {}'.format(img_url))
+        if img_url.endswith('mp3') or img_url.endswith('ogg') or img_url.endswith('wma'):
             from mutagen.mp3 import EasyMP3
-            metadata = EasyMP3(fpath)
+            metadata = EasyMP3(img_url)
             content = metadata.tags._EasyID3__id3._DictProxy__dict['APIC:'].data
-        elif fpath.endswith('m4a'):
+        elif img_url.endswith('m4a'):
             from mutagen.easymp4 import EasyMP4
-            metadata = EasyMP4(fpath)
+            metadata = EasyMP4(img_url)
             content = metadata.tags._EasyMP4Tags__mp4._DictProxy__dict['covr'][0]
         return content
 
