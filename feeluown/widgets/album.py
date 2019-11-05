@@ -112,9 +112,10 @@ class AlbumListModel(QAbstractListModel):
         # this may block the UI
         for album in albums:
             cover = album.cover
-            self.fetch_image(cover,
-                             self._fetch_image_callback(album),
-                             uid=get_url(album) + '/cover')
+            if cover:  # check if cover url is valid
+                self.fetch_image(cover,
+                                 self._fetch_image_callback(album),
+                                 uid=get_url(album) + '/cover')
 
     def _fetch_image_callback(self, album):
         def cb(future):
