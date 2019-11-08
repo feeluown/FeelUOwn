@@ -1,6 +1,6 @@
 import asyncio
-import time
 from unittest import mock
+from threading import Thread
 
 import pytest
 
@@ -42,3 +42,33 @@ async def test_preemptive_task_spec_bind_coro():
     await asyncio.sleep(0.1)  # let fetch_song run
     await task_spec.bind_coro(fetch_song())
     assert mock_cancelled_cb.called is True
+
+
+@pytest.mark.asyncio
+async def test_preemptive_task_spec_bind_coro_in_otherthread():
+    """
+    when there exists some RuntimeWarning(coroutine is never waited),
+    we should should regard this testcase as failed.
+    """
+    mgr = mock.MagicMock()
+    loop = asyncio.get_event_loop()
+    mgr.loop = loop
+    task_spec = PreemptiveTaskSpec(mgr, 'fetch-song-standby')
+    task_spec.bind_coro(asyncio.sleep(0.1))
+    t = Thread(target=task_spec.bind_coro, args=(asyncio.sleep(0.1), ))
+    t.start()
+    t.join()
+    await asyncio.sleep(0.1)
+
+
+@pytest.mark.asyncio
+async def test_preemptive_task_spec_bind_blocking_io_in_otherthread():
+    mgr = mock.MagicMock()
+    loop = asyncio.get_event_loop()
+    mgr.loop = loop
+    task_spec = PreemptiveTaskSpec(mgr, 'fetch-song-standby')
+    task_spec.bind_blocking_io(lambda: 0)
+    t = Thread(target=task_spec.bind_blocking_io, args=(lambda: 0, ))
+    t.start()
+    t.join()
+    await asyncio.sleep(0.1)

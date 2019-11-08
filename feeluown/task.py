@@ -1,7 +1,14 @@
+import asyncio
 import logging
+import threading
 from enum import Enum
 
 logger = logging.getLogger(__name__)
+
+
+def is_in_loop_thread():
+    """check if current thread has event loop"""
+    return threading.current_thread() is threading.main_thread()
 
 
 class TaskKind(Enum):
@@ -10,7 +17,7 @@ class TaskKind(Enum):
 
 
 class PreemptiveTaskSpec:
-    """Preemptive task specification"""
+    """Preemptive task specification (threadsafe)"""
 
     def __init__(self, mgr, name):
         """
@@ -28,7 +35,10 @@ class PreemptiveTaskSpec:
             return
         if not self._task.done():
             logger.info('preemptive-task(%s): try to cancel previous', self.name)
-        self._task.cancel()
+        if is_in_loop_thread():
+            self._task.cancel()
+        else:
+            self._mgr.loop.call_soon_threadsafe(self._task.cancel)
         self._task = None
 
     def bind_coro(self, coro):
@@ -39,7 +49,10 @@ class PreemptiveTaskSpec:
         :return: :class:`asyncio.Task`
         """
         self._before_bind()
-        self._task = self._mgr.loop.create_task(coro)
+        if is_in_loop_thread():
+            self._task = asyncio.create_task(coro)
+        else:
+            self._task = asyncio.run_coroutine_threadsafe(coro, loop=self._mgr.loop)
         return self._task
 
     def bind_blocking_io(self, func, *args):
