@@ -3,6 +3,8 @@ import logging
 import threading
 from enum import Enum
 
+from fuocore import aio
+
 logger = logging.getLogger(__name__)
 
 
@@ -50,7 +52,7 @@ class PreemptiveTaskSpec:
         """
         self._before_bind()
         if is_in_loop_thread():
-            self._task = asyncio.create_task(coro)
+            self._task = aio.create_task(coro)
         else:
             self._task = asyncio.run_coroutine_threadsafe(coro, loop=self._mgr.loop)
         return self._task
