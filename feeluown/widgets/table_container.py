@@ -6,8 +6,9 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from fuocore import ModelType
 from fuocore import aio
+from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
-from fuocore.models import GeneratorProxy
+from fuocore.models import GeneratorProxy, reverse
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
@@ -44,10 +45,10 @@ class Delegate:
     #
     # utils function for delegate
     #
-    async def show_cover(self, cover):
+    async def show_cover(self, cover, cover_uid):
+        cover = Media(cover, MediaType.image)
+        cover = cover.url
         app = self._app
-        # FIXME: cover_hash may not work properly someday
-        cover_uid = cover.split('/', -1)[-1]
         content = await app.img_mgr.get(cover, cover_uid)
         img = QImage()
         img.loadFromData(content)
@@ -125,7 +126,7 @@ class ArtistDelegate(Delegate):
 
         # render cover
         if cover:
-            aio.create_task(self.show_cover(cover))
+            aio.create_task(self.show_cover(cover, reverse(artist, '/cover')))
 
     async def tearDown(self):
         pass
@@ -165,7 +166,8 @@ class PlaylistDelegate(Delegate):
 
         # show playlist cover
         if playlist.cover:
-            loop.create_task(self.show_cover(playlist.cover))
+            loop.create_task(
+                self.show_cover(playlist.cover, reverse(playlist, '/cover')))
 
         def remove_song(song):
             model = self.songs_table.model()
@@ -195,7 +197,7 @@ class AlbumDelegate(Delegate):
         self.meta_widget.desc = desc
         cover = await async_run(lambda: album.cover)
         if cover:
-            loop.create_task(self.show_cover(cover))
+            loop.create_task(self.show_cover(cover, reverse(album, '/cover')))
 
 
 class CollectionDelegate(Delegate):

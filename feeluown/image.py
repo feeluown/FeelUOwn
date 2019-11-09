@@ -5,6 +5,7 @@ import os
 import time
 from hashlib import md5
 
+from fuocore.models import resolve
 from .consts import CACHE_DIR
 
 
@@ -22,6 +23,8 @@ class ImgManager(object):
         self.cache = _ImgCache(self._app)
 
     async def get(self, img_url, img_name):
+        if img_url.startswith('fuo://'):
+            return resolve(img_url)
         fpath = self.cache.get(img_name)
         if fpath is not None:
             logger.info('read image:%s from cache', img_name)

@@ -6,6 +6,7 @@ from contextlib import contextmanager
 
 from fuocore import LiveLyric, Library
 from fuocore.dispatch import Signal
+from fuocore.models import Resolver
 from fuocore.pubsub import run as run_pubsub, create as create_pubsub
 
 from .consts import APP_ICON
@@ -165,8 +166,10 @@ def create_app(config):
         FApp = App
 
     Signal.setup_aio_support()
+    Resolver.setup_aio_support()
     app = FApp(config)
     attach_attrs(app)
+    Resolver.library = app.library
     return app
 
 

@@ -113,6 +113,9 @@ class AlbumListModel(QAbstractListModel):
         for album in albums:
             cover = album.cover
             if cover:  # check if cover url is valid
+                # FIXME: check if cover is a media object
+                if not isinstance(cover, str):
+                    cover = cover.url
                 self.fetch_image(cover,
                                  self._fetch_image_callback(album),
                                  uid=get_url(album) + '/cover')
