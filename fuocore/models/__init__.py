@@ -6,6 +6,11 @@ from enum import IntEnum, Enum
 from fuocore.media import MultiQualityMixin, Quality
 from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
 
+__all__ = (
+    'resolve',
+    'reverse',
+    'Resolver',
+)
 
 logger = logging.getLogger(__name__)
 
@@ -120,6 +125,7 @@ class ModelMetadata(object):
                  fields=None,
                  fields_display=None,
                  fields_no_get=None,
+                 paths=None,
                  allow_get=False,
                  allow_batch=False,
                  **kwargs):
@@ -133,6 +139,7 @@ class ModelMetadata(object):
         self.fields = fields or []
         self.fields_display = fields_display or []
         self.fields_no_get = fields_no_get or []
+        self.paths = paths or []
         self.allow_get = allow_get
         self.allow_batch = allow_batch
         for key, value in kwargs.items():
@@ -171,7 +178,8 @@ class ModelMeta(type):
 
         kind_fields_map = {'fields': [],
                            'fields_display': [],
-                           'fields_no_get': []}
+                           'fields_no_get': [],
+                           'paths': []}
         meta_kv = {}  # 实例化 ModelMetadata 的 kv 对
         for _meta in _metas:
             for kind, fields in kind_fields_map.items():
@@ -196,6 +204,7 @@ class ModelMeta(type):
         fields_all = list(set(kind_fields_map['fields']))
         fields_display = list(set(kind_fields_map['fields_display']))
         fields_no_get = list(set(kind_fields_map['fields_no_get']))
+        paths = list(set(kind_fields_map['paths']))
 
         for field in fields_display:
             setattr(klass, field + '_display', display_property(field))
@@ -207,6 +216,7 @@ class ModelMeta(type):
                                     fields=fields_all,
                                     fields_display=fields_display,
                                     fields_no_get=fields_no_get,
+                                    paths=paths,
                                     **meta_kv)
         klass.source = provider.identifier if provider is not None else None
         # use meta attribute instead of _meta
@@ -577,3 +587,10 @@ class UserModel(BaseModel):
 
     def remove_from_fav_artists(self, artist_id):
         pass
+
+
+from .uri import (
+    resolve,
+    reverse,
+    Resolver,
+)  # noqa
