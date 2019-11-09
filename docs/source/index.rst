@@ -30,6 +30,7 @@ FeelUOwn 是一个用户友好、可玩性强的播放器
    dev_quickstart
    arch
    api
+   media_assets_management
    protocol
    glossary
    research
