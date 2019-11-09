@@ -192,8 +192,15 @@ class AudioMeta:
         )
 
 
+class ImageMeta:
+    def __init__(self, size=None, format=None):
+        self.size = size
+        self.format = format
+
+
 TYPE_METACLS_MAP = {
     MediaType.audio: AudioMeta,
+    MediaType.image: ImageMeta,
 }
 
 
