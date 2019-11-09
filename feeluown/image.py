@@ -45,6 +45,18 @@ class ImgManager(object):
         self.save(fpath, res.content)
         return res.content
 
+    def get_from_files(self, img_url, img_name):
+        logger.info('extract image from {}'.format(img_url))
+        if img_url.endswith('mp3') or img_url.endswith('ogg') or img_url.endswith('wma'):
+            from mutagen.mp3 import EasyMP3
+            metadata = EasyMP3(img_url)
+            content = metadata.tags._EasyID3__id3._DictProxy__dict['APIC:'].data
+        elif img_url.endswith('m4a'):
+            from mutagen.easymp4 import EasyMP4
+            metadata = EasyMP4(img_url)
+            content = metadata.tags._EasyMP4Tags__mp4._DictProxy__dict['covr'][0]
+        return content
+
     def save(self, fpath, content):
         try:
             with open(fpath, 'wb') as f:
