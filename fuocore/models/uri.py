@@ -1,5 +1,5 @@
 """
-model data resolver
+model/uri transform
 
 TODO: move fuocore.protocol.model_parser to fuocore.models.parser
 
@@ -7,6 +7,13 @@ TODO: move fuocore.protocol.model_parser to fuocore.models.parser
 
    currently, the design of uri module is under investigation,
    we should only use only it in local provider.
+
+experience:
+
+1. Models should explicitly tell user what they support.
+For exmaple: if a artist model support '/albums?type=eq',
+the model should desclare they support type filter.
+Currently, there is not way to achieve this.
 """
 
 import asyncio

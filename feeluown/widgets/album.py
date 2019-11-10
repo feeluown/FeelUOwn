@@ -19,6 +19,7 @@ from PyQt5.QtCore import (
     QAbstractListModel,
     QModelIndex,
     QRectF,
+    QSortFilterProxyModel,
     QSize,
     Qt,
 )
@@ -35,7 +36,7 @@ from PyQt5.QtWidgets import (
     QListView,
 )
 
-from fuocore.models import GeneratorProxy
+from fuocore.models import GeneratorProxy, AlbumType
 from fuocore.protocol import get_url
 
 
@@ -53,6 +54,7 @@ COLORS = {
 CoverMinWidth = 130
 CoverSpacing = 15
 TextHeight = 30
+
 
 def calc_cover_width(width):
     """calculate propert cover width by width width
@@ -151,6 +153,38 @@ class AlbumListModel(QAbstractListModel):
         elif role == Qt.UserRole:
             return album
         return None
+
+
+class AlbumFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None, types=None):
+        super().__init__(parent)
+
+        self.types = types
+
+    def filter_all(self):
+        self.types = None
+        self.invalidateFilter()
+
+    def filter_live(self):
+        self.types = [AlbumType.live]
+        self.invalidateFilter()
+
+    def filter_mini(self):
+        self.types = [AlbumType.ep, AlbumType.single]
+        self.invalidateFilter()
+
+    def filter_contributed(self):
+        self.types = [AlbumType.compilation, AlbumType.retrospective]
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        if not self.types:
+            return super().filterAcceptsRow(source_row, source_parent)
+
+        source_model = self.sourceModel()
+        index = source_model.index(source_row, parent=source_parent)
+        album = index.data(Qt.UserRole)
+        return AlbumType(album.type) in self.types
 
 
 class AlbumListDelegate(QAbstractItemDelegate):

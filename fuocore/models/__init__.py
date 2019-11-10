@@ -403,7 +403,29 @@ class AlbumType(Enum):
     compilation = 'compilation'
     retrospective = 'retrospective'
 
-    unknown = 'unknown'
+    @classmethod
+    def guess_by_name(cls, name):
+        """guess album type by its name"""
+
+        # album name which contains following string are `Single`
+        #   1. ' - Single'  6+3=9
+        #   2. '(single)'   6+2=8
+        #   3. '（single）'  6+2=8
+        if 'single' in name[-9:].lower():
+            return cls.single
+
+        # ' - EP'
+        if 'ep' in name[-5:].lower():
+            return cls.ep
+
+        if 'live' in name or '演唱会' in name:
+            return cls.live
+
+        # '精选集', '精选'
+        if '精选' in name[-3:]:
+            return cls.retrospective
+
+        return cls.standard
 
 
 class AlbumModel(BaseModel):
@@ -419,7 +441,11 @@ class AlbumModel(BaseModel):
         super().__init__(*args, **kwargs)
 
         if kwargs.get('type') is None:
-            self.type = AlbumType.unknown
+            name = kwargs.get('name')
+            if name:
+                self.type = AlbumType.guess_by_name(name)
+            else:
+                self.type = AlbumType.standard
 
     def __str__(self):
         return 'fuo://{}/albums/{}'.format(self.source, self.identifier)

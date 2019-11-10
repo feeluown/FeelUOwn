@@ -49,7 +49,8 @@ class MpvOpenGLWidget(QOpenGLWidget):
         if self._mpv_gl_inited:
             self.makeCurrent()
             if self.mpv_gl:
-                _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_fake_c, None)
+                _mpv_opengl_cb_set_update_callback(
+                    self.mpv_gl, self.on_update_fake_c, None)
             _mpv_opengl_cb_uninit_gl(self.mpv_gl)
 
     def initializeGL(self):

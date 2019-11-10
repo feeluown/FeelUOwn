@@ -10,7 +10,7 @@ from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
 from feeluown.helpers import async_run
-from feeluown.widgets.album import AlbumListModel, AlbumListView
+from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
 from feeluown.widgets.table_meta import TableMetaWidget
 
@@ -62,11 +62,14 @@ class Delegate:
     def show_albums(self, albums_g):
         self.songs_table.hide()
         self.albums_table.show()
+        filter_model = AlbumFilterProxyModel(self.albums_table)
         model = AlbumListModel(albums_g,
                                fetch_image_wrapper(self._app.img_mgr),
                                parent=self.albums_table)
-        self.albums_table.setModel(model)
+        filter_model.setSourceModel(model)
+        self.albums_table.setModel(filter_model)
         self.albums_table.scrollToTop()
+        self.meta_widget.toolbar.albums_mode()
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
         if show_count:
@@ -89,6 +92,19 @@ class Delegate:
             parent=songs_table))
         songs_table.scrollToTop()
         songs_table.show()
+        self.meta_widget.toolbar.songs_mode()
+
+    def filter_albums_all(self):
+        self.albums_table.model().filter_all()
+
+    def filter_albums_live(self):
+        self.albums_table.model().filter_live()
+
+    def filter_albums_mini(self):
+        self.albums_table.model().filter_mini()
+
+    def filter_albums_contributed(self):
+        self.albums_table.model().filter_contributed()
 
 
 class ArtistDelegate(Delegate):
@@ -103,24 +119,27 @@ class ArtistDelegate(Delegate):
         # bind signal first
         # we only show album that implements create_albums_g
         if artist.meta.allow_create_albums_g:
+            # show album detail
+            self.albums_table.show_album_needed.connect(self.show_model)
+
+            # show album list
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
-            self.albums_table.show_album_needed.connect(self.show_model)
-        # if hasattr(self.artist, 'albums'):
-        #     self.meta_widget.toolbar.show_mini_albums_albums_needed.connect(
-        #         lambda: self.show_albums(self.artist.create_mini_albums_g()))
-        #     self.albums_table.show_album_needed.connect(self.show_model)
-        if hasattr(self.artist, 'contributed_albums'):
-            self.meta_widget.toolbar.show_contributed_albums_needed.connect(
-                lambda: self.show_albums(self.artist.create_contributed_albums_g()))
-            self.albums_table.show_album_needed.connect(self.show_model)
+            # album list fitlers
+            self.meta_widget.toolbar.filter_albums_contributed_needed.connect(
+                self.filter_albums_contributed)
+            self.meta_widget.toolbar.filter_albums_mini_needed.connect(
+                self.filter_albums_mini)
+            self.meta_widget.toolbar.filter_albums_all_needed.connect(
+                self.filter_albums_all)
+            self.meta_widget.toolbar.filter_albums_live_needed.connect(
+                self.filter_albums_live)
 
         # fetch and render metadata
         desc = await async_run(lambda: artist.desc)
         self.meta_widget.title = artist.name
         self.meta_widget.desc = desc
         cover = await async_run(lambda: artist.cover)
-        self.meta_widget.toolbar.artist_mode()
 
         # fetch and render songs
         songs = songs_g = None
@@ -135,6 +154,8 @@ class ArtistDelegate(Delegate):
         # render cover
         if cover:
             aio.create_task(self.show_cover(cover, reverse(artist, '/cover')))
+
+        self.meta_widget.toolbar.artist_mode()
 
     async def tearDown(self):
         pass
@@ -188,6 +209,7 @@ class PlaylistDelegate(Delegate):
                 else:
                     action.failed()
         self.songs_table.song_deleted.connect(lambda song: remove_song(song))
+        self.meta_widget.toolbar.pure_songs_mode()
 
 
 class AlbumDelegate(Delegate):
@@ -221,6 +243,8 @@ class CollectionDelegate(Delegate):
         self.show_songs(collection.models)
         self.songs_table.song_deleted.connect(collection.remove)
 
+        self.meta_widget.toolbar.pure_songs_mode()
+
 
 class PlayerPlaylistDelegate(Delegate):
 
@@ -231,6 +255,8 @@ class PlayerPlaylistDelegate(Delegate):
         self.show_songs(songs=playlist.list())
         self.songs_table.song_deleted.connect(
             lambda song: self._app.playlist.remove(song))
+
+        self.meta_widget.toolbar.pure_songs_mode()
 
 
 class TableContainer(QFrame):
