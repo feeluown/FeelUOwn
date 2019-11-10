@@ -2,7 +2,7 @@
 
 [![Documentation Status](https://readthedocs.org/projects/feeluown/badge/?version=latest)](http://feeluown.readthedocs.org)
 [![Build Status](https://travis-ci.com/feeluown/FeelUOwn.svg?branch=master)](https://travis-ci.com/feeluown/FeelUOwn)
-[![Coverage Status](https://coveralls.io/repos/github/cosven/FeelUOwn/badge.svg?branch=master&service=github)](https://coveralls.io/github/cosven/FeelUOwn?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/feeluown/FeelUOwn/badge.svg)](https://coveralls.io/github/feeluown/FeelUOwn)
 [![PyPI](https://img.shields.io/pypi/v/feeluown.svg)](https://pypi.python.org/pypi/feeluown)
 [![python](https://img.shields.io/pypi/pyversions/fuocore.svg)](https://pypi.python.org/pypi/feeluown)
 
