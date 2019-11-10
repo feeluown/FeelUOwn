@@ -1,7 +1,3 @@
-LINT_FILES = fuocore/
-LINT_FILES += feeluown/
-LINT_FILES += tests/test_*_model.py
-
 .PHONY: docs
 
 all: unittest
@@ -10,7 +6,7 @@ docs:
 	cd docs && make html
 
 lint:
-	flake8 $(LINT_FILES)
+	flake8 fuocore/ feeluown/ tests/
 
 unittest: pytest
 

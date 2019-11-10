@@ -1,5 +1,5 @@
 from collections import namedtuple
-from unittest import TestCase, mock
+from unittest import TestCase
 
 from fuocore.models import Model, BaseModel, display_property
 

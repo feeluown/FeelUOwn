@@ -8,7 +8,7 @@ class TestRandomReader(TestCase):
 
     def setUp(self):
         count = 105
-        read_func = lambda start, end: list(range(start, end))
+        read_func = lambda start, end: list(range(start, end))  # noqa
         self.p = RandomReader(count, read_func=read_func, max_per_read=10)
         ranges = [(0, 20), (30, 45), (50, 60), (70, 95)]
         self.p._objects = [None] * count

@@ -22,6 +22,7 @@ class Meta:
 class FakeValidSongModel:
     meta = Meta
     url = MP3_URL
+
     def select_media(self, _):
         return MP3_URL, _
 
