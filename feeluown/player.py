@@ -5,7 +5,6 @@ import logging
 import threading
 from functools import partial
 
-from fuocore import aio
 from fuocore.media import Media
 from fuocore.player import MpvPlayer, Playlist as _Playlist
 
@@ -89,7 +88,6 @@ class Playlist(_Playlist):
         future.add_done_callback(validate_song_cb)
 
 
-
 class Player(MpvPlayer):
 
     def __init__(self, app, *args, **kwargs):
@@ -102,7 +100,7 @@ class Player(MpvPlayer):
         def callback(future):
             try:
                 media, quality = future.result()
-            except Exception as e:
+            except Exception:  # noqa
                 logger.exception('prepare media data failed')
             else:
                 media = Media(media) if media else None
@@ -111,7 +109,7 @@ class Player(MpvPlayer):
         if song.meta.support_multi_quality:
             fetch = partial(song.select_media, self._app.config.AUDIO_SELECT_POLICY)
         else:
-            fetch = lambda: (song.url, None)
+            fetch = lambda: (song.url, None)  # noqa
 
         def fetch_in_bg():
             future = self._loop.run_in_executor(None, fetch)

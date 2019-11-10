@@ -48,17 +48,17 @@ def setup_cli_argparse(parser):
         formatter_class=argparse.RawTextHelpFormatter
     )
 
-    pause_parser = subparsers.add_parser('pause')
-    resume_parser = subparsers.add_parser('resume')
-    toggle_parser = subparsers.add_parser('toggle')
-    stop_parser = subparsers.add_parser('stop')
-    next_parser = subparsers.add_parser('next')
-    previous_parser = subparsers.add_parser('previous')
-    list_parser = subparsers.add_parser('list')
-    clear_parser = subparsers.add_parser('clear')
+    subparsers.add_parser('pause')
+    subparsers.add_parser('resume')
+    subparsers.add_parser('toggle')
+    subparsers.add_parser('stop')
+    subparsers.add_parser('next')
+    subparsers.add_parser('previous')
+    subparsers.add_parser('list')
+    subparsers.add_parser('clear')
+    subparsers.add_parser('status')
     remove_parser = subparsers.add_parser('remove')
     add_parser = subparsers.add_parser('add')
-    status_parser = subparsers.add_parser('status')
     exec_parser = subparsers.add_parser('exec')
 
     play_parser.add_argument('uri', help='歌曲 uri')
@@ -343,7 +343,6 @@ def climain(args):
     """dispatch request"""
     with connect() as cli:
         dispatch(args, cli)
-
 
 
 def oncemain(app, args):

@@ -32,7 +32,8 @@ class Config:
         if name in self._fields:
             field = self._fields[name]
             if field.warn is not None:
-                warnings.warn('Config field({}): {}'.format(name, field.warn), stacklevel=2)
+                warnings.warn('Config field({}): {}'.format(name, field.warn),
+                              stacklevel=2)
             # TODO: 校验值类型
             object.__setattr__(self, name, value)
         else:

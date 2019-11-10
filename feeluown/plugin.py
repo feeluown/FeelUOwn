@@ -51,7 +51,7 @@ class Plugin:
             # alias, desc, version 为必需字段
             alias = module.__alias__
             desc = module.__desc__
-            version = module.__version__
+            version = module.__version__  # noqa
 
             author = getattr(module, '__author__', '')
             homepage = getattr(module, '__homepage__', '')
@@ -131,7 +131,7 @@ class PluginsManager:
         for module_name in module_name_list:
             try:
                 module = importlib.import_module(module_name)
-            except Exception as e:
+            except Exception:  # noqa
                 logger.exception('Failed to import module %s', module_name)
             else:
                 self.load_module(module)

@@ -89,7 +89,7 @@ class SignalsSlotsManager:
                     func = fuoexec_F(slot) if isinstance(slot, str) else slot
                     try:
                         func(*args, **kwargs)
-                    except:  # pylint: disable=bare-except
+                    except:  # noqa, pylint: disable=bare-except
                         logger.exception('error during calling slot:%s')
             return signal_proxy
 

@@ -27,7 +27,7 @@ mac_plist_str = """<?xml version="1.0" encoding="UTF-8"?>
     <string>com.fuo.feeluown</string>
 </dict>
 </plist>
-"""
+"""  # noqa: E501
 
 win_linux_icon = """#!/usr/bin/env xdg-open
 [Desktop Entry]

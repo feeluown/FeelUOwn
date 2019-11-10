@@ -54,4 +54,5 @@ class ThemeManager:
         # 测试发现，在 macOS dark 模式下，alternate 行的背景色是灰色，
         # 正确的颜色应该类似透明的黑色。我们这里手动给 SongsTableView 处理这种情况。
         # 复现代码见：https://gist.github.com/cosven/0d1f06cb78c79171da51bee9376f71fd
-        self._app.ui.songs_table.setStyleSheet("alternate-background-color: rgba(50,50,50,0.2)")
+        self._app.ui.songs_table.setStyleSheet(
+            "alternate-background-color: rgba(50,50,50,0.2)")

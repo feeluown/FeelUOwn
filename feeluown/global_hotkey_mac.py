@@ -33,7 +33,7 @@ def keyboard_tap_callback(proxy, type_, event, refcon):
         # Python pid(11)/euid(11) is calling TIS/TSM in non-main thread environment.
         # ERROR : This is NOT allowed.
         key_event = NSEvent.eventWithCGEvent_(event)
-    except:
+    except:  # noqa
         logger.info("mac event cast error")
         return event
     if key_event.subtype() == 8:
@@ -58,6 +58,7 @@ def keyboard_tap_callback(proxy, type_, event, refcon):
 def run_event_loop():
     logger.info('try to load mac hotkey event loop')
     # Set up a tap, with type of tap, location, options and event mask
+
     def create_tap():
         return Quartz.CGEventTapCreate(
             Quartz.kCGSessionEventTap,  # Session level is enough for our needs
@@ -81,7 +82,7 @@ def run_event_loop():
                                  [('AXIsProcessTrustedWithOptions', b'Z@')])
         objc.loadBundleVariables(AS, globals(),
                                  [('kAXTrustedCheckOptionPrompt', b'@')])
-        trusted = AXIsProcessTrustedWithOptions({kAXTrustedCheckOptionPrompt: True})
+        trusted = AXIsProcessTrustedWithOptions({kAXTrustedCheckOptionPrompt: True})  # noqa
         if not trusted:
             logger.info('Have popuped a prompt dialog to ask for accessibility.'
                         'You can restart feeluown after you grant access to it.')
