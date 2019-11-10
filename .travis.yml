@@ -15,7 +15,7 @@ install:
     - pip install PyQt5
     - pip install coveralls
     - pip install sphinx_rtd_theme
-    - pip install pytest flake8 pytest-cov pytest-asyncio pytest-qt
+    - pip install pytest flake8 pytest-cov pytest-asyncio pytest-qt pytest-mock
     - pip install -e .
 
 script:
