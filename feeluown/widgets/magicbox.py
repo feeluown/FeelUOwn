@@ -76,7 +76,7 @@ class MagicBox(QLineEdit):
     def _search_library(self, q):
         songs = []
         for result in self._app.library.search(q):
-            songs.extend(result.songs)
+            songs.extend(result.songs or [])
         self._app.ui.songs_table_container.show_songs(songs)
 
     def _exec_code(self, code):
