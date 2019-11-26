@@ -1,4 +1,5 @@
 import asyncio
+import logging
 
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, QSize
 from PyQt5.QtGui import QFontMetrics
@@ -13,11 +14,14 @@ from PyQt5.QtWidgets import (
     QSlider,
 )
 
+from fuocore.excs import ProviderIOError
 from fuocore.media import MediaType
 from fuocore.utils import parse_ms
 from fuocore.player import PlaybackMode, State
 from feeluown.helpers import async_run
 from .volume_button import VolumeButton
+
+logger = logging.getLogger(__name__)
 
 
 class ProgressSlider(QSlider):
@@ -268,12 +272,17 @@ class PlayerControlPanel(QFrame):
                     '{} - {}'.format(text, bitrate_text))
 
     async def update_mv_btn_status(self, song):
-        mv = await async_run(lambda: song.mv)
-        if mv:
-            self.mv_btn.setToolTip(mv.name)
-            self.mv_btn.setEnabled(True)
-        else:
+        try:
+            mv = await async_run(lambda: song.mv)
+        except ProviderIOError:
+            logger.exception('fetch song mv info failed')
             self.mv_btn.setEnabled(False)
+        else:
+            if mv:
+                self.mv_btn.setToolTip(mv.name)
+                self.mv_btn.setEnabled(True)
+            else:
+                self.mv_btn.setEnabled(False)
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
