@@ -12,7 +12,7 @@ TODO: 让代码长得更好看
 
 from itertools import chain
 
-from fuocore.protocol import get_url
+from fuocore.models.uri import reverse
 
 
 def _fit_text(text, length, filling=True):
@@ -66,7 +66,7 @@ def show_song(song, uri_length=None, brief=False, fetch=False):
     title = _fit_text(song.title if fetch else song.title_display, 18, filling=False)
     album_name = song.album_name if fetch else song.album_name_display
 
-    song_uri = get_url(song)
+    song_uri = reverse(song)
     if uri_length is not None:
         song_uri = _fit_text(song_uri, uri_length)
 
@@ -79,8 +79,8 @@ def show_song(song, uri_length=None, brief=False, fetch=False):
         return s
 
     # XXX: 这个操作可能会产生网络请求
-    album_uri = get_url(song.album)
-    artists_uri = ','.join(get_url(artist) for artist in song.artists)
+    album_uri = reverse(song.album)
+    artists_uri = ','.join(reverse(artist) for artist in song.artists)
     msgs = (
         'provider:     {}'.format(song.source),
         '     uri:     {}'.format(song_uri),
@@ -94,7 +94,7 @@ def show_song(song, uri_length=None, brief=False, fetch=False):
 
 
 def show_songs(songs):
-    uri_length = max((len(get_url(song)) for song in songs)) if songs else None
+    uri_length = max((len(reverse(song)) for song in songs)) if songs else None
     return '\n'.join([show_song(song, uri_length=uri_length, brief=True)
                       for song in songs])
 
@@ -102,7 +102,7 @@ def show_songs(songs):
 def show_artist(artist, brief=False):
     if brief:
         return '{uri}\t# {name}'.format(
-            uri=get_url(artist),
+            uri=reverse(artist),
             name=artist.name)
     msgs = [
         'provider:      {}'.format(artist.source),
@@ -120,7 +120,7 @@ def show_artist(artist, brief=False):
 def show_album(album, brief=False):
     if brief:
         return '{uri}\t# {name} - {artists_name}'.format(
-            uri=get_url(album),
+            uri=reverse(album),
             name=album.name,
             artists_name=album.artists_name
         )

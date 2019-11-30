@@ -218,6 +218,9 @@ class ModelMeta(type):
                                     fields_no_get=fields_no_get,
                                     paths=paths,
                                     **meta_kv)
+        # FIXME: theoretically, different provider can share same model,
+        # so source field should be a instance attribute instead of class attribute.
+        # however, we don't have enough time to fix this whole design.
         klass.source = provider.identifier if provider is not None else None
         # use meta attribute instead of _meta
         klass.meta = klass._meta
@@ -240,11 +243,15 @@ class Model(metaclass=ModelMeta):
     """
 
     def __init__(self, obj=None, **kwargs):
-        for field in self._meta.fields:
+        for field in self.meta.fields:
             setattr(self, field, getattr(obj, field, None))
 
+        # source should be a instance attribute although it is not temporarily
+        if obj is not None:
+            self.source = obj.source
+
         for k, v in kwargs.items():
-            if k in self._meta.fields:
+            if k in self.meta.fields:
                 setattr(self, k, v)
 
 

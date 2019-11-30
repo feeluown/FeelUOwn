@@ -82,3 +82,17 @@ class AbstractProvider(ABC):
     def auth(self, user):
         """use provider as a specific user"""
         self._user = user
+
+
+class DummyProvider(AbstractProvider):
+
+    @property
+    def identifier(self):
+        return 'dummy'
+
+    @property
+    def name(self):
+        return 'dummy'
+
+
+dummy_provider = DummyProvider()

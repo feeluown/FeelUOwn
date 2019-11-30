@@ -4,7 +4,7 @@ from collections import deque
 from urllib.parse import urlencode
 
 from fuocore.router import Router, NotFound
-from fuocore.protocol import ModelParser, get_url
+from fuocore.models.uri import resolve, reverse, ResolveFailed
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,6 @@ class Browser:
         # 保存后退、前进历史的两个栈
         self._back_stack = deque(maxlen=10)
         self._forward_stack = deque(maxlen=10)
-        self._model_parser = ModelParser(self._app.library)
         self.router = Router()  # alpha
 
         self._last_uri = None
@@ -72,9 +71,12 @@ class Browser:
     def _goto(self, model=None, uri=None):
         """真正的跳转逻辑"""
         if model is None:
-            model = self._to_model(uri)
+            try:
+                model = resolve(uri)
+            except ResolveFailed:
+                model = None
         else:
-            uri = self._to_uri(model)
+            uri = reverse(model)
         if not uri.startswith('fuo://'):
             uri = 'fuo://' + uri
         with self._app.create_action('-> {}'.format(uri)) as action:
@@ -88,7 +90,7 @@ class Browser:
                     return
         self._last_uri = self.current_uri
         if model is not None:
-            self.current_uri = self._to_uri(model)
+            self.current_uri = reverse(model)
         else:
             self.current_uri = uri
 
@@ -99,13 +101,6 @@ class Browser:
     @property
     def can_forward(self):
         return len(self._forward_stack) > 0
-
-    def _to_model(self, uri):
-        """从 uri 获取 model"""
-        return self._model_parser.parse_line(uri)
-
-    def _to_uri(self, model):
-        return get_url(model)
 
     # --------------
     # UI Controllers

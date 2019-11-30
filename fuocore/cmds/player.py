@@ -1,6 +1,7 @@
 from collections import defaultdict
 from difflib import SequenceMatcher
 
+from fuocore.models.uri import resolve
 from .base import AbstractHandler
 from .helpers import show_song
 
@@ -46,7 +47,7 @@ class PlayerHandler(AbstractHandler):
 
     def play(self, s):
         if s.startswith('fuo://'):
-            song = self.model_parser.parse_line(s)
+            song = resolve(s)
             if song is not None:
                 self.player.play_song(song)
             return

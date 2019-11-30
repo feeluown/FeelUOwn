@@ -1,5 +1,5 @@
-from fuocore.protocol import get_url
 from fuocore.models import ModelType
+from fuocore.models.uri import resolve, reverse
 from .helpers import show_songs
 from .base import AbstractHandler
 
@@ -25,7 +25,7 @@ class PlaylistHandler(AbstractHandler):
         playlist = self.playlist
         for furi in furi_list:
             furi = furi.strip()
-            obj = self.model_parser.parse_line(furi)
+            obj = resolve(furi)
             if obj is not None:
                 obj_type = type(obj).meta.model_type
                 if obj_type == ModelType.song:
@@ -37,7 +37,7 @@ class PlaylistHandler(AbstractHandler):
     def remove(self, song_uri):
         # FIXME: a little bit tricky
         for song in self.playlist.list():
-            if get_url(song) == song_uri:
+            if reverse(song) == song_uri:
                 self.playlist.remove(song)
                 break
 

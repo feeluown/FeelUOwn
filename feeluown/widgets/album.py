@@ -37,7 +37,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore.models import GeneratorProxy, AlbumType
-from fuocore.protocol import get_url
+from fuocore.models.uri import reverse
 
 
 COLORS = {
@@ -120,7 +120,7 @@ class AlbumListModel(QAbstractListModel):
                     cover = cover.url
                 self.fetch_image(cover,
                                  self._fetch_image_callback(album),
-                                 uid=get_url(album) + '/cover')
+                                 uid=reverse(album) + '/cover')
 
     def _fetch_image_callback(self, album):
         def cb(future):
@@ -130,7 +130,7 @@ class AlbumListModel(QAbstractListModel):
             img = QImage()
             img.loadFromData(content)
             pixmap = QPixmap(img)
-            uri = get_url(album)
+            uri = reverse(album)
             self.pixmaps[uri] = pixmap
         return cb
 
@@ -140,7 +140,7 @@ class AlbumListModel(QAbstractListModel):
             return None
         album = self.albums[offset]
         if role == Qt.DecorationRole:
-            uri = get_url(album)
+            uri = reverse(album)
             pixmap = self.pixmaps.get(uri)
             if pixmap is not None:
                 return pixmap

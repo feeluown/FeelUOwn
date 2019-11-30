@@ -3,7 +3,7 @@ import logging
 import random
 
 from fuocore.models import ModelType
-from fuocore.protocol import ModelParser, get_url
+from fuocore.models.uri import resolve, reverse, ResolverNotFound, ResolveFailed
 from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
@@ -11,11 +11,10 @@ logger = logging.getLogger(__name__)
 
 class Collection:
 
-    def __init__(self, fpath, parser):
+    def __init__(self, fpath):
         # TODO: 以后考虑添加 identifier 字段，identifier
         # 字段应该尽量设计成可以跨电脑使用
         self.fpath = fpath
-        self._parser = parser
 
         self.name = ''
         self.models = []
@@ -32,14 +31,21 @@ class Collection:
         self.name = name
         with open(filepath, encoding='utf-8') as f:
             for line in f:
-                model = self._parser.parse_line(line)
+                try:
+                    model = resolve(line)
+                except ResolverNotFound:
+                    logger.warn('resolver not found for line:%s', line)
+                    model = None
+                except ResolveFailed:
+                    logger.warn('invalid line: %s', line)
+                    model = None
                 if model is not None and \
                    model.meta.model_type == ModelType.song:
                     self.models.append(model)
 
     def add(self, song):
         if song not in self.models:
-            line = self._parser.gen_line(song)
+            line = reverse(song, line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 content = f.read()
                 f.seek(0, 0)
@@ -49,7 +55,7 @@ class Collection:
 
     def remove(self, song):
         if song in self.models:
-            url = get_url(song)
+            url = reverse(song)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 lines = []
                 for line in f:
@@ -71,8 +77,6 @@ class CollectionManager:
         self._app = app
         self._library = app.library
 
-        self.model_parser = ModelParser(self._library)
-
     def scan(self):
         has_coll = False
         directorys = [COLLECTIONS_DIR]
@@ -90,7 +94,7 @@ class CollectionManager:
                 if not filename.endswith('.fuo'):
                     continue
                 filepath = os.path.join(directory, filename)
-                coll = Collection(filepath, self.model_parser)
+                coll = Collection(filepath)
                 # TODO: 可以调整为并行
                 coll.load()
                 has_coll = True
@@ -98,7 +102,7 @@ class CollectionManager:
 
         if not has_coll:
             fpath = self.gen_defualt_fuo()
-            coll = Collection(fpath, self.model_parser)
+            coll = Collection(fpath)
             coll.load()
             yield coll
 
