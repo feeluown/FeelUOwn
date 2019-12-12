@@ -66,7 +66,7 @@ class Collection:
                 f.write(''.join(lines))
                 f.truncate()
                 # 确保最后写入一个换行符，让文件更加美观
-                if not lines[-1].endswith('\n'):
+                if lines and not lines[-1].endswith('\n'):
                     f.write('\n')
             self.models.remove(song)
         return True
