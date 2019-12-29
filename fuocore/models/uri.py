@@ -101,7 +101,7 @@ def parse_line(line):
     """parse text line and return a model instance
 
     >>> line = 'fuo://xxx/songs/1  # 没有人知道 - 李宗盛'
-    >>> model = parse_line(line)
+    >>> model, _ = parse_line(line)
     >>> model.source, model.title_display
     ('xxx', '没有人知道')
     """
