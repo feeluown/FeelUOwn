@@ -15,27 +15,18 @@ import itertools
 import random
 
 from PyQt5.QtCore import (
-    pyqtSignal,
-    QAbstractListModel,
-    QModelIndex,
-    QRectF,
-    QSortFilterProxyModel,
-    QSize,
-    Qt,
+    pyqtSignal, QAbstractListModel, QModelIndex, QRectF,
+    QRect, QSortFilterProxyModel, QSize, Qt,
 )
 from PyQt5.QtGui import (
-    QBrush,
-    QColor,
-    QImage,
-    QPainter,
-    QPixmap,
-    QTextOption,
+    QBrush, QColor, QImage, QPainter, QPixmap, QTextOption,
+    QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate,
-    QListView,
+    QAbstractItemDelegate, QListView,
 )
 
+from fuocore import aio
 from fuocore.models import GeneratorProxy, AlbumType
 from fuocore.models.uri import reverse
 
@@ -51,8 +42,8 @@ COLORS = {
     'green':     '#859900',
 }
 
-CoverMinWidth = 130
-CoverSpacing = 15
+CoverMinWidth = 150
+CoverSpacing = 20
 TextHeight = 30
 
 
@@ -110,17 +101,11 @@ class AlbumListModel(QAbstractListModel):
         self.colors.extend(colors)
         self.endInsertRows()
 
-        # FIXME: since album.cover may trigger web request,
-        # this may block the UI
         for album in albums:
-            cover = album.cover
-            if cover:  # check if cover url is valid
-                # FIXME: check if cover is a media object
-                if not isinstance(cover, str):
-                    cover = cover.url
-                self.fetch_image(cover,
-                                 self._fetch_image_callback(album),
-                                 uid=reverse(album) + '/cover')
+            aio.create_task(self.fetch_image(
+                album,
+                self._fetch_image_callback(album),
+                uid=reverse(album) + '/cover'))
 
     def _fetch_image_callback(self, album):
         def cb(future):
@@ -132,6 +117,10 @@ class AlbumListModel(QAbstractListModel):
             pixmap = QPixmap(img)
             uri = reverse(album)
             self.pixmaps[uri] = pixmap
+            row = self.albums.index(album)
+            top_left = self.createIndex(row, 0)
+            bottom_right = self.createIndex(row, 0)
+            self.dataChanged.emit(top_left, bottom_right)
         return cb
 
     def data(self, index, role):
@@ -149,7 +138,7 @@ class AlbumListModel(QAbstractListModel):
             color.setAlphaF(0.8)
             return color
         elif role == Qt.DisplayRole:
-            return album.name
+            return album.name_display
         elif role == Qt.UserRole:
             return album
         return None
@@ -161,20 +150,11 @@ class AlbumFilterProxyModel(QSortFilterProxyModel):
 
         self.types = types
 
-    def filter_all(self):
-        self.types = None
-        self.invalidateFilter()
-
-    def filter_live(self):
-        self.types = [AlbumType.live]
-        self.invalidateFilter()
-
-    def filter_mini(self):
-        self.types = [AlbumType.ep, AlbumType.single]
-        self.invalidateFilter()
-
-    def filter_contributed(self):
-        self.types = [AlbumType.compilation, AlbumType.retrospective]
+    def filter_by_types(self, types):
+        # if tyeps is a empty list or None, we show all albums
+        if not types:
+            types = None
+        self.types = types
         self.invalidateFilter()
 
     def filterAcceptsRow(self, source_row, source_parent):
@@ -195,30 +175,47 @@ class AlbumListDelegate(QAbstractItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
         rect = option.rect
-        text_rect_height = 30
+        text_rect_height = TextHeight
         cover_spacing = 0
         text_y = rect.y() + rect.height() - text_rect_height
         cover_height = rect.height() - text_rect_height
         cover_width = rect.width() - cover_spacing
         cover_x = rect.x() + cover_spacing // 2
         cover_y = rect.y()
-        text_rect = QRectF(rect.x(), text_y + 5, rect.width(), text_rect_height)
+        text_rect = QRectF(rect.x(), text_y, rect.width(), text_rect_height)
         obj = index.data(Qt.DecorationRole)
         if obj is None:
             painter.restore()
             return
-        elif isinstance(obj, QColor):
+
+        text_color = option.palette.color(QPalette.Text)
+        if text_color.lightness() > 150:
+            non_text_color = text_color.darker(140)
+        else:
+            non_text_color = text_color.lighter(150)
+        non_text_color.setAlpha(100)
+        painter.save()
+        pen = painter.pen()
+        pen.setColor(non_text_color)
+        painter.setPen(pen)
+        painter.translate(cover_x, cover_y)
+        cover_rect = QRect(0, 0, cover_width, cover_height)
+        if isinstance(obj, QColor):
             color = obj
             brush = QBrush(color)
             painter.setBrush(brush)
-            painter.drawRect(cover_x, cover_y, cover_width, cover_height)
         else:
             pixmap = obj.scaledToWidth(cover_width, Qt.SmoothTransformation)
-            painter.drawPixmap(cover_x, cover_y, pixmap)
+            brush = QBrush(pixmap)
+            painter.setBrush(brush)
+        painter.drawRoundedRect(cover_rect, 3, 3)
+        painter.restore()
         option = QTextOption()
-        option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         album_name = index.data(Qt.DisplayRole)
-        painter.drawText(text_rect, album_name, option)
+        fm = QFontMetrics(painter.font())
+        elided_album_name = fm.elidedText(album_name, Qt.ElideRight, text_rect.width())
+        painter.drawText(text_rect, elided_album_name, option)
         painter.restore()
 
     def sizeHint(self, option, index):

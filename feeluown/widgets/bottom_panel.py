@@ -26,15 +26,15 @@ class BottomPanel(QFrame):
 
         self._layout.addWidget(self.back_btn)
         self._layout.addWidget(self.forward_btn)
+        self._layout.addSpacing(100)
         self._layout.addWidget(self.magicbox)
+        self._layout.addSpacing(100)
         self._layout.addWidget(self.status_line)
 
         height = self.magicbox.height()
-        self.setFixedHeight(height)
-        self.back_btn.setFixedWidth(height)
-        self.forward_btn.setFixedWidth(height)
+        self.setFixedHeight(height + 16)
 
-        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setContentsMargins(0, 5, 0, 5)
         self._layout.setSpacing(0)
 
         self.back_btn.setEnabled(False)

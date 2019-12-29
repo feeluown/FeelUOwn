@@ -1,10 +1,7 @@
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (
-    QHBoxLayout,
-    QPushButton,
-    QRadioButton,
-    QWidget,
-)
+from PyQt5.QtWidgets import (QHBoxLayout, QPushButton, QWidget, QComboBox)
+
+from fuocore.models import AlbumType
 
 
 class SongsTableToolbar(QWidget):
@@ -16,11 +13,7 @@ class SongsTableToolbar(QWidget):
     show_albums_needed = pyqtSignal()
     # show_videos_needed = pyqtSignal()
 
-    # album filters
-    filter_albums_mini_needed = pyqtSignal()
-    filter_albums_contributed_needed = pyqtSignal()
-    filter_albums_live_needed = pyqtSignal()
-    filter_albums_all_needed = pyqtSignal()
+    filter_albums_needed = pyqtSignal([list])
 
     toggle_desc_needed = pyqtSignal()
 
@@ -39,32 +32,21 @@ class SongsTableToolbar(QWidget):
         self.desc_btn.clicked.connect(self.on_desc_btn_toggled)
 
         # album filters
-        self.filter_albums_all_btn = QRadioButton('所有', parent=self)
-        self.filter_albums_mini_btn = QRadioButton('单曲与EP', parent=self)
-        self.filter_albums_contributed_btn = QRadioButton('参与作品', parent=self)
-        self.filter_albums_live_btn = QRadioButton('现场', parent=self)
-
-        self.filter_albums_all_btn.clicked.connect(self.filter_albums_all_needed.emit)
-        self.filter_albums_mini_btn.clicked.connect(self.filter_albums_mini_needed.emit)
-        self.filter_albums_contributed_btn.clicked.connect(
-            self.filter_albums_contributed_needed.emit)
-        self.filter_albums_live_btn.clicked.connect(self.filter_albums_live_needed.emit)
-
+        self.filter_albums_combobox = QComboBox(self)
+        self.filter_albums_combobox.addItems(['所有专辑', '标准', '单曲与EP', '现场', '合辑'])
+        self.filter_albums_combobox.currentIndexChanged.connect(
+            self.on_albums_filter_changed)
+        # 8 works on macOS, don't know if it works on various Linux DEs
+        self.filter_albums_combobox.setMinimumContentsLength(8)
         self.show_songs_btn.hide()
         self.show_albums_btn.hide()
         self.desc_btn.hide()
-        self.filter_albums_mini_btn.hide()
-        self.filter_albums_contributed_btn.hide()
-        self.filter_albums_all_btn.hide()
-        self.filter_albums_live_btn.hide()
+        self.filter_albums_combobox.hide()
         self._setup_ui()
 
     def before_change_mode(self):
         """filter all filter buttons"""
-        self.filter_albums_mini_btn.hide()
-        self.filter_albums_contributed_btn.hide()
-        self.filter_albums_all_btn.hide()
-        self.filter_albums_live_btn.hide()
+        self.filter_albums_combobox.hide()
 
     def artist_mode(self):
         self.before_change_mode()
@@ -75,11 +57,8 @@ class SongsTableToolbar(QWidget):
     def albums_mode(self):
         self.before_change_mode()
         self.play_all_btn.hide()
-        self.show_albums_btn.show()
-        self.filter_albums_mini_btn.show()
-        self.filter_albums_contributed_btn.show()
-        self.filter_albums_all_btn.show()
-        self.filter_albums_live_btn.show()
+        # self.show_albums_btn.show()
+        self.filter_albums_combobox.show()
 
     def songs_mode(self):
         self.before_change_mode()
@@ -117,10 +96,7 @@ class SongsTableToolbar(QWidget):
 
         self._layout.addStretch(1)
 
-        self._layout.addWidget(self.filter_albums_all_btn)
-        self._layout.addWidget(self.filter_albums_mini_btn)
-        self._layout.addWidget(self.filter_albums_live_btn)
-        self._layout.addWidget(self.filter_albums_contributed_btn)
+        self._layout.addWidget(self.filter_albums_combobox)
 
         self._layout.addStretch(1)
 
@@ -135,3 +111,17 @@ class SongsTableToolbar(QWidget):
             self.play_all_btn.show()
             self.desc_btn.setText(self._desc_btn_unchecked_text)
         self.toggle_desc_needed.emit()
+
+    def on_albums_filter_changed(self, index):
+        # ['所有', '专辑', '单曲与EP', '现场', '合辑']
+        if index == 0:
+            types = []
+        elif index == 1:
+            types = [AlbumType.standard]
+        elif index == 2:
+            types = [AlbumType.single, AlbumType.ep]
+        elif index == 3:
+            types = [AlbumType.live]
+        else:
+            types = [AlbumType.compilation, AlbumType.retrospective]
+        self.filter_albums_needed.emit(types)

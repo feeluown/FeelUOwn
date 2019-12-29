@@ -3,7 +3,7 @@ import time
 import pytest
 
 from tests.helpers import is_travis_env
-from feeluown.widgets.table_meta import TableMetaWidget
+from feeluown.widgets.meta import TableMetaWidget
 
 
 # TODO: use xvfb in travis env

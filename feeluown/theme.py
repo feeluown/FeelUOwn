@@ -28,6 +28,7 @@ class ThemeManager:
     """
     def __init__(self, app):
         self._app = app
+        self.theme = None
 
     def autoload(self):
         theme = 'light'
@@ -40,6 +41,7 @@ class ThemeManager:
             self.load_dark()
         else:
             self.load_light()
+        self.theme = theme
 
     def load_light(self):
         common = read_qss('common.qss')

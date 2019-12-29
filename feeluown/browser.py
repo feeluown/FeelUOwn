@@ -1,4 +1,3 @@
-import asyncio
 import logging
 from collections import deque
 from urllib.parse import urlencode
@@ -108,11 +107,11 @@ class Browser:
 
     def _render_model(self, model):
         """渲染 model 页面"""
-        asyncio.ensure_future(self.ui.songs_table_container.show_model(model))
+        self._app.ui.right_panel.show_model(model)
 
     def _render_coll(self, _, identifier):
         coll = self._app.coll_uimgr.get(int(identifier))
-        self._app.ui.songs_table_container.show_collection(coll)
+        self._app.ui.right_panel.show_collection(coll)
 
     def on_history_changed(self):
         self.ui.back_btn.setEnabled(self.can_back)

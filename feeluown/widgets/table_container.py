@@ -1,8 +1,10 @@
 import asyncio
 import logging
+import random
 
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
+from requests.exceptions import RequestException
 
 from fuocore import ModelType
 from fuocore import aio
@@ -12,16 +14,30 @@ from fuocore.models import GeneratorProxy, reverse
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
-from feeluown.widgets.table_meta import TableMetaWidget
+from feeluown.widgets.meta import TableMetaWidget
+from feeluown.widgets.table_toolbar import SongsTableToolbar
 
 logger = logging.getLogger(__name__)
 
 
-def fetch_image_wrapper(img_mgr):
-    def fetch_image(url, cb, uid):
-        task = aio.create_task(img_mgr.get(url, uid))
-        task.add_done_callback(cb)
-    return fetch_image
+def fetch_album_cover_wrapper(img_mgr):
+    async def fetch_album_cover(album, cb, uid):
+        # FIXME: sleep random second to avoid send too many request to provider
+        await asyncio.sleep(random.randrange(100) / 100)
+        try:
+            cover = await async_run(lambda: album.cover)
+        except (ProviderIOError, RequestException) as e:
+            logger.exception('fetch album cover failed: %s', str(e))
+        else:
+            if cover:  # check if cover url is valid
+                # FIXME: we should check if cover is a media object
+                if not isinstance(cover, str):
+                    cover = cover.url
+            url = cover
+            # FIXME: use await instead of callback
+            task = aio.create_task(img_mgr.get(url, uid))
+            task.add_done_callback(cb)
+    return fetch_album_cover
 
 
 class Delegate:
@@ -47,9 +63,9 @@ class Delegate:
     #
     async def show_cover(self, cover, cover_uid):
         cover = Media(cover, MediaType.image)
-        cover = cover.url
+        url = cover.url
         app = self._app
-        content = await app.img_mgr.get(cover, cover_uid)
+        content = await app.img_mgr.get(url, cover_uid)
         img = QImage()
         img.loadFromData(content)
         pixmap = QPixmap(img)
@@ -64,12 +80,17 @@ class Delegate:
         self.albums_table.show()
         filter_model = AlbumFilterProxyModel(self.albums_table)
         model = AlbumListModel(albums_g,
-                               fetch_image_wrapper(self._app.img_mgr),
+                               fetch_album_cover_wrapper(self._app.img_mgr),
                                parent=self.albums_table)
         filter_model.setSourceModel(model)
         self.albums_table.setModel(filter_model)
+        self.albums_table.show_album_needed.connect(self.show_model)
         self.albums_table.scrollToTop()
         self.meta_widget.toolbar.albums_mode()
+
+        # album list fitlers
+        self.meta_widget.toolbar.filter_albums_needed.connect(
+            self.albums_table.model().filter_by_types)
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
         if show_count:
@@ -94,18 +115,6 @@ class Delegate:
         songs_table.show()
         self.meta_widget.toolbar.songs_mode()
 
-    def filter_albums_all(self):
-        self.albums_table.model().filter_all()
-
-    def filter_albums_live(self):
-        self.albums_table.model().filter_live()
-
-    def filter_albums_mini(self):
-        self.albums_table.model().filter_mini()
-
-    def filter_albums_contributed(self):
-        self.albums_table.model().filter_contributed()
-
 
 class ArtistDelegate(Delegate):
     def __init__(self, artist):
@@ -125,15 +134,6 @@ class ArtistDelegate(Delegate):
             # show album list
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
-            # album list fitlers
-            self.meta_widget.toolbar.filter_albums_contributed_needed.connect(
-                self.filter_albums_contributed)
-            self.meta_widget.toolbar.filter_albums_mini_needed.connect(
-                self.filter_albums_mini)
-            self.meta_widget.toolbar.filter_albums_all_needed.connect(
-                self.filter_albums_all)
-            self.meta_widget.toolbar.filter_albums_live_needed.connect(
-                self.filter_albums_live)
 
         # fetch and render metadata
         desc = await async_run(lambda: artist.desc)
@@ -240,7 +240,8 @@ class CollectionDelegate(Delegate):
         self.meta_widget.title = collection.name
         self.meta_widget.updated_at = collection.updated_at
         self.meta_widget.created_at = collection.created_at
-        self.show_songs(collection.models)
+        self.show_songs([model for model in collection.models
+                         if model.meta.model_type == ModelType.song])
         self.songs_table.song_deleted.connect(collection.remove)
 
         self.meta_widget.toolbar.pure_songs_mode()
@@ -264,7 +265,8 @@ class TableContainer(QFrame):
         super().__init__(parent)
         self._app = app
 
-        self.meta_widget = TableMetaWidget(parent=self)
+        self.toolbar = SongsTableToolbar()
+        self.meta_widget = TableMetaWidget(self.toolbar, parent=self)
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
 
@@ -381,6 +383,11 @@ class TableContainer(QFrame):
         task = aio.create_task(self.set_delegate(delegate))
         task.add_done_callback(
             lambda _: delegate.show_songs(songs=songs, songs_g=songs_g))
+
+    def show_albums(self, albums_g):
+        delegate = Delegate()
+        task = aio.create_task(self.set_delegate(delegate))
+        task.add_done_callback(lambda _: delegate.show_albums(albums_g))
 
     def show_player_playlist(self):
         aio.create_task(self.set_delegate(PlayerPlaylistDelegate()))

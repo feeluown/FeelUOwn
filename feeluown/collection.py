@@ -1,12 +1,16 @@
-import os
 import logging
-import random
+import os
 
-from fuocore.models import ModelType
 from fuocore.models.uri import resolve, reverse, ResolverNotFound, ResolveFailed
 from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
+
+DEFAULT_COLL_SONGS = 'Songs'
+DEFAULT_COLL_ALBUMS = 'Albums'
+# for backward compat, we should never change these filenames
+SONGS_FILENAME = 'Songs.fuo'
+ALBUMS_FILENAME = 'Albums.fuo'
 
 
 class Collection:
@@ -39,8 +43,7 @@ class Collection:
                 except ResolveFailed:
                     logger.warn('invalid line: %s', line)
                     model = None
-                if model is not None and \
-                   model.meta.model_type == ModelType.song:
+                if model is not None:
                     self.models.append(model)
 
     def add(self, song):
@@ -78,7 +81,8 @@ class CollectionManager:
         self._library = app.library
 
     def scan(self):
-        has_coll = False
+        has_default_songs = False
+        has_default_albums = False
         directorys = [COLLECTIONS_DIR]
         if self._app.config.COLLECTIONS_DIR:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
@@ -93,34 +97,32 @@ class CollectionManager:
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):
                     continue
+                if filename == SONGS_FILENAME:
+                    has_default_songs = True
+                elif filename == ALBUMS_FILENAME:
+                    has_default_albums = True
                 filepath = os.path.join(directory, filename)
                 coll = Collection(filepath)
                 # TODO: 可以调整为并行
                 coll.load()
-                has_coll = True
                 yield coll
 
-        if not has_coll:
-            fpath = self.gen_defualt_fuo()
+        default_fpaths = []
+        if not has_default_songs:
+            default_fpaths.append(self.gen_default_songs_fuo())
+        if not has_default_albums:
+            default_fpaths.append(self.gen_default_albums_fuo())
+        for fpath in default_fpaths:
             coll = Collection(fpath)
             coll.load()
             yield coll
 
     @classmethod
-    def gen_defualt_fuo(cls):
-        logger.info('正在生成本地默认歌单')
-        filenames = [
-            '你真棒.fuo',
-            '萌萌哒.fuo',
-            '一起来 Hack.fuo',
-            '今天也要元气满满喔.fuo',
-            '正经.fuo',
-            '有故事的歌曲.fuo',
-        ]
-        filename = random.choice(filenames)
-        fpath = os.path.join(COLLECTIONS_DIR, filename)
-        if not os.path.exists(fpath):
-            with open(fpath, 'w', encoding='utf-8') as f:
+    def gen_default_songs_fuo(cls):
+        logger.info('正在生成默认的本地收藏集 - Songs')
+        default_fpath = os.path.join(COLLECTIONS_DIR, SONGS_FILENAME)
+        if not os.path.exists(default_fpath):
+            with open(default_fpath, 'w', encoding='utf-8') as f:
                 lines = [
                     'fuo://netease/songs/16841667  # No Matter What - Boyzone',
                     'fuo://netease/songs/65800     # 最佳损友 - 陈奕迅',
@@ -131,4 +133,18 @@ class CollectionManager:
                     'fuo://xiami/songs/1769834090  # Flower Dance - DJ OKAWARI',
                 ]
                 f.write('\n'.join(lines))
-        return fpath
+        return default_fpath
+
+    @classmethod
+    def gen_default_albums_fuo(cls):
+        logger.info('正在生成默认的本地收藏集 - Albums')
+        albums_fpath = os.path.join(COLLECTIONS_DIR, ALBUMS_FILENAME)
+        if not os.path.exists(albums_fpath):
+            with open(albums_fpath, 'w', encoding='utf-8') as f:
+                lines = [
+                    'fuo://xiami/albums/1194678626     # 脱掉高跟鞋 世界巡回演唱会',
+                    'fuo://xiami/albums/32623          # 理性与感性 作品音乐会',
+                    'fuo://netease/albums/18878        # OK - 张震岳',
+                ]
+                f.write('\n'.join(lines))
+        return albums_fpath

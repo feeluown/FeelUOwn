@@ -10,7 +10,7 @@ from PyQt5.QtCore import (
     QVariant,
 )
 from PyQt5.QtGui import QPainter, QFontMetrics
-from PyQt5.QtWidgets import QListView
+from PyQt5.QtWidgets import QListView, QStyledItemDelegate
 
 
 logger = logging.getLogger(__name__)
@@ -75,10 +75,27 @@ class TextlistModel(QAbstractListModel):
         return QVariant()
 
 
+class TextlistDelegate(QStyledItemDelegate):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+    def paint(self, painter, option, index):
+        return super().paint(painter, option, index)
+
+    def sizeHint(self, option, index):
+        size = super().sizeHint(option, index)
+        if index.isValid():
+            return QSize(size.width(), 25)
+        return size
+
+
 class TextlistView(QListView):
 
     def __init__(self, parent):
         super().__init__(parent)
+
+        self.delegate = TextlistDelegate(self)
+        self.setItemDelegate(self.delegate)
 
         self._result_timer = QTimer(self)
         self._result_timer.timeout.connect(self.__on_timeout)

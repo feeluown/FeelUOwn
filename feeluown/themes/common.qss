@@ -23,6 +23,10 @@ DescriptionContainer, DescriptionContainer QLabel {
     background-color: transparent;
 }
 
+MagicBox {
+    border-radius: 2px;
+}
+
 /*
  * buttons
  */
@@ -84,7 +88,11 @@ SongsTableToolbar QPushButton:pressed {
 }
 
 #back_btn, #forward_btn {
-    border: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    font-size: 15px;
+    border: 0px;
 }
 
 #back_btn:hover, #forward_btn:hover {

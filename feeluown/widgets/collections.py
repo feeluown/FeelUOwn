@@ -2,6 +2,7 @@ import logging
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QAbstractItemView
 
+from feeluown.collection import DEFAULT_COLL_ALBUMS, DEFAULT_COLL_SONGS
 from .textlist import TextlistModel, TextlistView
 
 
@@ -19,7 +20,12 @@ class CollectionsModel(TextlistModel):
         row = index.row()
         item = self._items[row]
         if role == Qt.DisplayRole:
-            return '◎  ' + item.name
+            icon = '◎  '
+            if item.name == DEFAULT_COLL_SONGS:
+                icon = '♫  '
+            elif item.name == DEFAULT_COLL_ALBUMS:
+                icon = '◉  '
+            return icon + item.name
         if role == Qt.ToolTipRole:
             return item.fpath
         return super().data(index, role)

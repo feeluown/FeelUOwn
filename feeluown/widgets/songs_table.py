@@ -237,7 +237,8 @@ class SongsTableDelegate(QStyledItemDelegate):
         widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
         width = self.parent().width()
         w = int(width * widths[index.column()])
-        return QSize(w, option.rect.height())
+        h = option.rect.height()
+        return QSize(w, h)
 
     def editorEvent(self, event, model, option, index):
         super().editorEvent(event, model, option, index)
@@ -268,9 +269,12 @@ class SongsTableView(QTableView):
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
+        # self.verticalHeader().setDefaultSectionSize(40)
         self.setWordWrap(False)
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)

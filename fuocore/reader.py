@@ -265,3 +265,15 @@ class RandomSequentialReader(RandomReader):
         obj = self.read(self.offset)
         self.offset += 1
         return obj
+
+    @classmethod
+    def from_list(cls, l):
+        """
+        :param list l: list of objects
+        """
+        count = len(l)
+
+        def read_func(start, end):
+            return l[start: end]
+
+        return cls(count, read_func, max_per_read=count)

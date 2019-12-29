@@ -106,17 +106,19 @@ def parse_line(line):
     ('xxx', '没有人知道')
     """
     line = line.strip()
+    parts = line.split('#')
+    if len(parts) == 2:
+        uri, model_str = parts
+    else:
+        uri, model_str = parts[0], ''
     ns_list = list(TYPE_NS_MAP.values())
     p = re.compile(r'^fuo://(\w+)/({})/(\w+)'.format('|'.join(ns_list)))
-    m = p.match(line)
+    uri = uri.strip()
+    m = p.match(uri)
     if not m:
         raise ResolveFailed('invalid line: {}'.format(line))
     source, ns, identifier = m.groups()
-    parts = line.split('#')
-    if len(parts) == 2:
-        _, model_str = parts
-    else:
-        _, model_str = parts[0], ''
+    path = uri[m.end():]
     Model = dummy_provider.get_model_cls(NS_TYPE_MAP[ns])
     if ns == 'songs':
         parse_func = parse_song_str
@@ -129,12 +131,16 @@ def parse_line(line):
     data = parse_func(model_str.strip())
     model = Model.create_by_display(identifier=identifier, **data)
     model.source = source
-    return model
+    return model, path
 
 
 def resolve(line, model=None):
+    """
+
+    for example, line can be 'fuo://local/songs/1/cover/data'
+    """
     if model is None:
-        model = parse_line(line)
+        model, path = parse_line(line)
         library = Resolver.library
         provider = library.get(model.source)
         if provider is None:
@@ -144,7 +150,6 @@ def resolve(line, model=None):
             data[field] = getattr(model, field + '_display', '')
         model_cls = provider.get_model_cls(model.meta.model_type)
         model = model_cls.create_by_display(identifier=model.identifier, **data)
-        path = ''
     else:
         path = line
     if path:
