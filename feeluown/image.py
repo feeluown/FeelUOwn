@@ -22,6 +22,15 @@ class ImgManager(object):
         self._app = app
         self.cache = _ImgCache(self._app)
 
+    def get_from_cache(self, img_name):
+        fpath = self.cache.get(img_name)
+        if fpath is not None:
+            with open(fpath, 'rb') as f:
+                content = f.read()
+            self.cache.update(img_name)
+            return content
+        return None
+
     async def get(self, img_url, img_name):
         if img_url.startswith('fuo://'):
             return resolve(img_url)

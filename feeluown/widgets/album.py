@@ -108,10 +108,7 @@ class AlbumListModel(QAbstractListModel):
                 uid=reverse(album) + '/cover'))
 
     def _fetch_image_callback(self, album):
-        def cb(future):
-            if not future.done():
-                return
-            content = future.result()
+        def cb(content):
             img = QImage()
             img.loadFromData(content)
             pixmap = QPixmap(img)

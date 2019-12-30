@@ -22,6 +22,10 @@ logger = logging.getLogger(__name__)
 
 def fetch_album_cover_wrapper(img_mgr):
     async def fetch_album_cover(album, cb, uid):
+        # try get from cache first
+        content = img_mgr.get_from_cache(uid)
+        if content is not None:
+            return cb(content)
         # FIXME: sleep random second to avoid send too many request to provider
         await asyncio.sleep(random.randrange(100) / 100)
         try:
@@ -34,9 +38,8 @@ def fetch_album_cover_wrapper(img_mgr):
                 if not isinstance(cover, str):
                     cover = cover.url
             url = cover
-            # FIXME: use await instead of callback
-            task = aio.create_task(img_mgr.get(url, uid))
-            task.add_done_callback(cb)
+            content = await img_mgr.get(url, uid)
+            cb(content)
     return fetch_album_cover
 
 
