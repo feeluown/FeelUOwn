@@ -13,7 +13,7 @@ from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
-from feeluown.widgets.songs_table import SongsTableModel, SongsTableView
+from feeluown.widgets.songs import SongsTableModel, SongsTableView
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
 

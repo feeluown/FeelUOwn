@@ -7,9 +7,9 @@ from fuocore.media import Media, MediaType
 from fuocore.models.uri import reverse
 from feeluown.helpers import async_run
 
-from feeluown.widgets.collection_toc import CollectionTOCView, CollectionTOCModel
-from feeluown.widgets.collection_body import CollectionBody
-from feeluown.widgets.song_list import SongListModel
+from feeluown.widgets.collection import CollectionTOCView, CollectionTOCModel, \
+    CollectionBody
+from feeluown.widgets.songs import SongListModel
 
 
 class CollectionContainer(QFrame):
