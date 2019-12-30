@@ -8,10 +8,10 @@ from PyQt5.QtWidgets import (
 
 from feeluown.widgets.separator import Separator
 from feeluown.widgets.mpv_widget import MpvOpenGLWidget
-from feeluown.widgets.bottom_panel import BottomPanel
-from feeluown.widgets.left_panel import LeftPanel
-from feeluown.widgets.right_panel import RightPanel
-from feeluown.widgets.top_panel import TopPanel
+from feeluown.containers.bottom_panel import BottomPanel
+from feeluown.containers.left_panel import LeftPanel
+from feeluown.containers.right_panel import RightPanel
+from feeluown.containers.top_panel import TopPanel
 
 logger = logging.getLogger(__name__)
 

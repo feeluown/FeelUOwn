@@ -5,8 +5,8 @@ from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
 from feeluown.collection import DEFAULT_COLL_ALBUMS
-from feeluown.widgets.table_container import TableContainer
-from feeluown.widgets.collection_container import CollectionContainer
+from feeluown.containers.table import TableContainer
+from feeluown.containers.collection import CollectionContainer
 
 from fuocore import aio
 

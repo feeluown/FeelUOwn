@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import QFrame, QHBoxLayout
-from feeluown.widgets.player_control_panel import PlayerControlPanel
+from feeluown.containers.player_control_panel import PlayerControlPanel
 
 
 class TopPanel(QFrame):

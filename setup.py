@@ -15,6 +15,7 @@ setup(
         'feeluown',
         'feeluown.entry_points',
         'feeluown.widgets',
+        'feeluown.containers',
         'feeluown.widgets.statusline_items',
         'feeluown.uimodels',
         'fuocore',

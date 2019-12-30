@@ -19,7 +19,7 @@ from fuocore.media import MediaType
 from fuocore.utils import parse_ms
 from fuocore.player import PlaybackMode, State
 from feeluown.helpers import async_run
-from .volume_button import VolumeButton
+from feeluown.widgets.volume_button import VolumeButton
 
 logger = logging.getLogger(__name__)
 
