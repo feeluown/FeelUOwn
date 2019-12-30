@@ -27,7 +27,6 @@ class ImgManager(object):
         if fpath is not None:
             with open(fpath, 'rb') as f:
                 content = f.read()
-            self.cache.update(img_name)
             return content
         return None
 
