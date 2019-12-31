@@ -138,6 +138,11 @@ class ArtistDelegate(Delegate):
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
 
+        if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
+            # show contributed_album list
+            self.meta_widget.toolbar.show_contributed_albums_needed.connect(
+                lambda: self.show_albums(self.artist.create_contributed_albums_g()))
+
         # fetch and render metadata
         desc = await async_run(lambda: artist.desc)
         self.meta_widget.title = artist.name
