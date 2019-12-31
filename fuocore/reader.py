@@ -276,4 +276,4 @@ class RandomSequentialReader(RandomReader):
         def read_func(start, end):
             return l[start: end]
 
-        return cls(count, read_func, max_per_read=count)
+        return cls(count, read_func, max_per_read=max(count, 1))
