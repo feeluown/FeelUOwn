@@ -323,6 +323,7 @@ class TableContainer(QFrame):
         # disconnect songs_table signal
         signals = (
             self.songs_table.song_deleted,
+            self.meta_widget.toolbar.show_contributed_albums_needed,
             self.meta_widget.toolbar.show_albums_needed,
             self.meta_widget.toolbar.show_songs_needed,
             self.albums_table.show_album_needed,
