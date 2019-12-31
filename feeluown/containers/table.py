@@ -38,8 +38,9 @@ def fetch_album_cover_wrapper(img_mgr):
                 if not isinstance(cover, str):
                     cover = cover.url
             url = cover
-            content = await img_mgr.get(url, uid)
-            cb(content)
+            if url:
+                content = await img_mgr.get(url, uid)
+                cb(content)
     return fetch_album_cover
 
 
