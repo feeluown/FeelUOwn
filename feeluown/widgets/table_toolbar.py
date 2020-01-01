@@ -30,7 +30,8 @@ class SongsTableToolbar(QWidget):
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
         self.show_songs_btn.clicked.connect(self.show_songs_needed.emit)
         self.show_albums_btn.clicked.connect(self.show_albums_needed.emit)
-        self.show_contributed_albums_btn.clicked.connect(self.show_contributed_albums_needed.emit)
+        self.show_contributed_albums_btn.clicked.connect(
+            self.show_contributed_albums_needed.emit)
         # self.show_videos_btn.clicked.connect(self.show_videos_needed.emit)
         self.desc_btn.clicked.connect(self.on_desc_btn_toggled)
 
