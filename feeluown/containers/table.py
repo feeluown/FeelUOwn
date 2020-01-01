@@ -38,8 +38,9 @@ def fetch_album_cover_wrapper(img_mgr):
                 if not isinstance(cover, str):
                     cover = cover.url
             url = cover
-            content = await img_mgr.get(url, uid)
-            cb(content)
+            if url:
+                content = await img_mgr.get(url, uid)
+                cb(content)
     return fetch_album_cover
 
 
@@ -137,6 +138,11 @@ class ArtistDelegate(Delegate):
             # show album list
             self.meta_widget.toolbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
+
+        if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
+            # show contributed_album list
+            self.meta_widget.toolbar.show_contributed_albums_needed.connect(
+                lambda: self.show_albums(self.artist.create_contributed_albums_g()))
 
         # fetch and render metadata
         desc = await async_run(lambda: artist.desc)
@@ -317,6 +323,7 @@ class TableContainer(QFrame):
         # disconnect songs_table signal
         signals = (
             self.songs_table.song_deleted,
+            self.meta_widget.toolbar.show_contributed_albums_needed,
             self.meta_widget.toolbar.show_albums_needed,
             self.meta_widget.toolbar.show_songs_needed,
             self.albums_table.show_album_needed,

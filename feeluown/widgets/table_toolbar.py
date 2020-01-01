@@ -11,6 +11,7 @@ class SongsTableToolbar(QWidget):
     play_all_needed = pyqtSignal()
     show_songs_needed = pyqtSignal()
     show_albums_needed = pyqtSignal()
+    show_contributed_albums_needed = pyqtSignal()
     # show_videos_needed = pyqtSignal()
 
     filter_albums_needed = pyqtSignal([list])
@@ -23,11 +24,14 @@ class SongsTableToolbar(QWidget):
         self.play_all_btn = QPushButton('播放全部', self)
         self.show_songs_btn = QPushButton('歌曲', parent=self)
         self.show_albums_btn = QPushButton('专辑', parent=self)
+        self.show_contributed_albums_btn = QPushButton('参与作品', parent=self)
         # self.show_videos_btn = QPushButton(parent=self)
         self.desc_btn = QPushButton(self._desc_btn_unchecked_text, self)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
         self.show_songs_btn.clicked.connect(self.show_songs_needed.emit)
         self.show_albums_btn.clicked.connect(self.show_albums_needed.emit)
+        self.show_contributed_albums_btn.clicked.connect(
+            self.show_contributed_albums_needed.emit)
         # self.show_videos_btn.clicked.connect(self.show_videos_needed.emit)
         self.desc_btn.clicked.connect(self.on_desc_btn_toggled)
 
@@ -40,6 +44,7 @@ class SongsTableToolbar(QWidget):
         self.filter_albums_combobox.setMinimumContentsLength(8)
         self.show_songs_btn.hide()
         self.show_albums_btn.hide()
+        self.show_contributed_albums_btn.hide()
         self.desc_btn.hide()
         self.filter_albums_combobox.hide()
         self._setup_ui()
@@ -53,6 +58,7 @@ class SongsTableToolbar(QWidget):
         self.play_all_btn.show()
         self.show_songs_btn.show()
         self.show_albums_btn.show()
+        self.show_contributed_albums_btn.show()
 
     def albums_mode(self):
         self.before_change_mode()
@@ -67,6 +73,7 @@ class SongsTableToolbar(QWidget):
     def pure_songs_mode(self):
         """playlist/collections mode"""
         self.before_change_mode()
+        self.show_contributed_albums_btn.hide()
         self.show_albums_btn.hide()
         self.show_songs_btn.hide()
         self.play_all_btn.show()
@@ -93,6 +100,8 @@ class SongsTableToolbar(QWidget):
         self._layout.addWidget(self.show_songs_btn)
         self._layout.addSpacing(5)
         self._layout.addWidget(self.show_albums_btn)
+        self._layout.addSpacing(5)
+        self._layout.addWidget(self.show_contributed_albums_btn)
 
         self._layout.addStretch(1)
 
