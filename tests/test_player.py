@@ -3,11 +3,11 @@ import time
 from unittest import TestCase, skipIf, mock
 
 from fuocore.player import MpvPlayer, Playlist, PlaybackMode, State
-from .helpers import is_travis_env
+from .helpers import cannot_play_audio
 
 
 MP3_URL = os.path.join(os.path.dirname(__file__),
-                       '../data/sample.mp3')
+                       '../data/test.m4a')
 MPV_SLEEP_SECOND = 0.1  # 留给 MPV 反应的时间
 
 
@@ -38,25 +38,25 @@ class TestPlayer(TestCase):
         self.player.stop()
         self.player.shutdown()
 
-    @skipIf(is_travis_env, '')
+    @skipIf(cannot_play_audio, '')
     def test_play(self):
         self.player.play(MP3_URL)
         self.player.stop()
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(cannot_play_audio, '')
     def test_duration(self):
         # This may failed?
         self.player.play(MP3_URL)
         time.sleep(MPV_SLEEP_SECOND)
         self.assertIsNotNone(self.player.duration)
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(cannot_play_audio, '')
     def test_seek(self):
         self.player.play(MP3_URL)
         time.sleep(MPV_SLEEP_SECOND)
         self.player.position = 100
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(cannot_play_audio, '')
     def test_replay(self):
         song = FakeValidSongModel()
         self.player.play_song(song)
@@ -66,7 +66,7 @@ class TestPlayer(TestCase):
         time.sleep(MPV_SLEEP_SECOND)
         self.assertTrue(self.player.position < 10)
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(cannot_play_audio, '')
     def test_play_pause_toggle_resume_stop(self):
         self.player.play(MP3_URL)
         time.sleep(MPV_SLEEP_SECOND)
@@ -79,7 +79,7 @@ class TestPlayer(TestCase):
         self.player.stop()
         self.assertEqual(self.player.state, State.stopped)
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(cannot_play_audio, '')
     def test_set_volume(self):
         self.player.volume = 30
         self.assertEqual(self.player.volume, 30)
@@ -191,7 +191,7 @@ class TestPlayerAndPlaylist(TestCase):
         self.player.play_previous()
         self.assertTrue(playlist.current_song, s1)
 
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
+    @skipIf(cannot_play_audio, '')
     @mock.patch.object(MpvPlayer, 'play')
     def test_remove_current_song_2(self, mock_play):
         """当播放列表只有一首歌时，移除它"""
