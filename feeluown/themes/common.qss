@@ -23,7 +23,7 @@ DescriptionContainer, DescriptionContainer QLabel {
     background-color: transparent;
 }
 
-MagicBox {
+QLineEdit {
     border-radius: 2px;
 }
 

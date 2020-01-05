@@ -98,8 +98,6 @@ class MagicBox(QLineEdit):
         text = self.text()
         if self._mode == 'cmd':
             self._cmd_text = text
-        if not text.startswith('>'):
-            self._app.ui.songs_table_container.search(text)
 
     def __on_return_pressed(self):
         text = self.text()

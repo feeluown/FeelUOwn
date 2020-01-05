@@ -16,6 +16,7 @@ from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterPro
 from feeluown.widgets.songs import SongsTableModel, SongsTableView
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
+from feeluown.widgets.tabbar import TableTabBar
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +49,8 @@ class Delegate:
     async def setUp(self, container):
         # pylint: disable=attribute-defined-outside-init
         self.meta_widget = container.meta_widget
-        self.toolbar = container.meta_widget.toolbar
+        self.toolbar = container.toolbar
+        self.tabbar = container.tabbar
         self.songs_table = container.songs_table
         self.albums_table = container.albums_table
         # pylint: disable=protected-access
@@ -80,23 +82,30 @@ class Delegate:
         aio.create_task(self.real_show_model(model))
 
     def show_albums(self, albums_g):
+        # always bind signal first
+        # album list filters
+        # show the layout
         self.songs_table.hide()
         self.albums_table.show()
+        self.toolbar.show()
+        self.toolbar.albums_mode()
+
+        # fill the data
         filter_model = AlbumFilterProxyModel(self.albums_table)
         model = AlbumListModel(albums_g,
                                fetch_album_cover_wrapper(self._app.img_mgr),
                                parent=self.albums_table)
         filter_model.setSourceModel(model)
         self.albums_table.setModel(filter_model)
-        self.albums_table.show_album_needed.connect(self.show_model)
         self.albums_table.scrollToTop()
-        self.meta_widget.toolbar.albums_mode()
-
-        # album list fitlers
-        self.meta_widget.toolbar.filter_albums_needed.connect(
-            self.albums_table.model().filter_by_types)
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
+        # when is artist mode, we should hide albums_table first
+        self.albums_table.hide()
+        self.songs_table.show()
+        self.toolbar.show()
+        self.toolbar.songs_mode()
+
         if show_count:
             if songs is not None:
                 self.meta_widget.songs_count = len(songs)
@@ -104,20 +113,15 @@ class Delegate:
                 count = songs_g.count
                 self.meta_widget.songs_count = -1 if count is None else count
 
-        self.albums_table.hide()
-        songs_table = self.songs_table
-
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        songs_table.setModel(SongsTableModel(
+        self.songs_table.setModel(SongsTableModel(
             source_name_map=source_name_map,
             songs_g=songs_g,
             songs=songs,
-            parent=songs_table))
-        songs_table.scrollToTop()
-        songs_table.show()
-        self.meta_widget.toolbar.songs_mode()
+            parent=self.songs_table))
+        self.songs_table.scrollToTop()
 
 
 class ArtistDelegate(Delegate):
@@ -127,28 +131,24 @@ class ArtistDelegate(Delegate):
     async def render(self):
         artist = self.artist
 
-        self.songs_table.show()
-
         # bind signal first
         # we only show album that implements create_albums_g
         if artist.meta.allow_create_albums_g:
-            # show album detail
-            self.albums_table.show_album_needed.connect(self.show_model)
-
-            # show album list
-            self.meta_widget.toolbar.show_albums_needed.connect(
+            self.toolbar.filter_albums_needed.connect(
+                lambda types: self.albums_table.model().filter_by_types(types))
+            self.tabbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
-
+            self.albums_table.show_album_needed.connect(self.show_model)
         if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
             # show contributed_album list
-            self.meta_widget.toolbar.show_contributed_albums_needed.connect(
+            self.tabbar.show_contributed_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_contributed_albums_g()))
 
-        # fetch and render metadata
-        desc = await async_run(lambda: artist.desc)
+        # fetch and render basic metadata
         self.meta_widget.title = artist.name
-        self.meta_widget.desc = desc
-        cover = await async_run(lambda: artist.cover)
+        self.meta_widget.show()
+        self.tabbar.show()
+        self.tabbar.artist_mode()
 
         # fetch and render songs
         songs = songs_g = None
@@ -157,14 +157,14 @@ class ArtistDelegate(Delegate):
         else:
             songs = await async_run(lambda: artist.songs)
         self.show_songs(songs_g=songs_g, songs=songs, show_count=True)
-        self.meta_widget.toolbar.show_songs_needed.connect(
+        self.tabbar.show_songs_needed.connect(
             lambda: self.show_songs(songs_g=songs_g, songs=songs, show_count=True))
 
-        # render cover
+        # finally, we render cover and description
+        cover = await async_run(lambda: artist.cover)
         if cover:
             aio.create_task(self.show_cover(cover, reverse(artist, '/cover')))
-
-        self.meta_widget.toolbar.artist_mode()
+        self.meta_widget.desc = await async_run(lambda: artist.desc)
 
     async def tearDown(self):
         pass
@@ -178,10 +178,11 @@ class PlaylistDelegate(Delegate):
         playlist = self.playlist
 
         # show playlist title
+        self.meta_widget.show()
         self.meta_widget.title = playlist.name
 
         # show playlist song list
-        loop = asyncio.get_event_loop()
+        aio = asyncio.get_event_loop()
         songs = songs_g = None
         try:
             if playlist.meta.allow_create_songs_g:
@@ -204,7 +205,7 @@ class PlaylistDelegate(Delegate):
 
         # show playlist cover
         if playlist.cover:
-            loop.create_task(
+            aio.create_task(
                 self.show_cover(playlist.cover, reverse(playlist, '/cover')))
 
         def remove_song(song):
@@ -218,7 +219,6 @@ class PlaylistDelegate(Delegate):
                 else:
                     action.failed()
         self.songs_table.song_deleted.connect(lambda song: remove_song(song))
-        self.meta_widget.toolbar.pure_songs_mode()
 
 
 class AlbumDelegate(Delegate):
@@ -228,24 +228,26 @@ class AlbumDelegate(Delegate):
     async def render(self):
         album = self.album
 
-        loop = asyncio.get_event_loop()
         songs = await async_run(lambda: album.songs)
         self.show_songs(songs)
-        desc = await async_run(lambda: album.desc)
+
         self.meta_widget.title = album.name
-        self.meta_widget.desc = desc
+        self.meta_widget.show()
+
+        # fetch cover and description
         cover = await async_run(lambda: album.cover)
         if cover:
-            loop.create_task(self.show_cover(cover, reverse(album, '/cover')))
+            aio.create_task(self.show_cover(cover, reverse(album, '/cover')))
+        self.meta_widget.desc = await async_run(lambda: album.desc)
 
 
-class CollectionDelegate(Delegate):
+class SongsCollectionDelegate(Delegate):
     def __init__(self, collection):
         self.collection = collection
 
     async def render(self):
         collection = self.collection
-
+        self.meta_widget.show()
         self.meta_widget.title = collection.name
         self.meta_widget.updated_at = collection.updated_at
         self.meta_widget.created_at = collection.created_at
@@ -253,7 +255,18 @@ class CollectionDelegate(Delegate):
                          if model.meta.model_type == ModelType.song])
         self.songs_table.song_deleted.connect(collection.remove)
 
-        self.meta_widget.toolbar.pure_songs_mode()
+
+class AlbumsCollectionDelegate(Delegate):
+    def __init__(self, reader):
+        self.reader = reader
+
+    async def render(self):
+        # always bind signals first
+        self.toolbar.filter_albums_needed.connect(
+            lambda types: self.albums_table.model().filter_by_types(types))
+        self.albums_table.show_album_needed.connect(self.show_model)
+
+        self.show_albums(self.reader)
 
 
 class PlayerPlaylistDelegate(Delegate):
@@ -266,8 +279,6 @@ class PlayerPlaylistDelegate(Delegate):
         self.songs_table.song_deleted.connect(
             lambda song: self._app.playlist.remove(song))
 
-        self.meta_widget.toolbar.pure_songs_mode()
-
 
 class TableContainer(QFrame):
     def __init__(self, app, parent=None):
@@ -275,7 +286,8 @@ class TableContainer(QFrame):
         self._app = app
 
         self.toolbar = SongsTableToolbar()
-        self.meta_widget = TableMetaWidget(self.toolbar, parent=self)
+        self.tabbar = TableTabBar()
+        self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
 
@@ -286,7 +298,7 @@ class TableContainer(QFrame):
         self.songs_table.show_album_needed.connect(
             lambda album: self._app.browser.goto(model=album))
 
-        self.meta_widget.toolbar.play_all_needed.connect(self.play_all)
+        self.toolbar.play_all_needed.connect(self.play_all)
         self.meta_widget.toggle_full_window_needed.connect(self.toggle_meta_full_window)
 
         self.hide()
@@ -295,10 +307,12 @@ class TableContainer(QFrame):
         self._delegate = None
 
     def _setup_ui(self):
+        self.meta_widget.add_tabbar(self.tabbar)
         self.setAutoFillBackground(False)
 
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
+        self._layout.addWidget(self.toolbar)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -317,15 +331,18 @@ class TableContainer(QFrame):
         # tear down last delegate
         if self._delegate is not None:
             await self._delegate.tearDown()
+        self.meta_widget.hide()
         self.meta_widget.clear()
+        self.tabbar.hide()
+        self.toolbar.hide()
         self.songs_table.hide()
         self.albums_table.hide()
         # disconnect songs_table signal
         signals = (
             self.songs_table.song_deleted,
-            self.meta_widget.toolbar.show_contributed_albums_needed,
-            self.meta_widget.toolbar.show_albums_needed,
-            self.meta_widget.toolbar.show_songs_needed,
+            self.tabbar.show_contributed_albums_needed,
+            self.tabbar.show_albums_needed,
+            self.tabbar.show_songs_needed,
             self.albums_table.show_album_needed,
         )
         for signal in signals:
@@ -359,13 +376,13 @@ class TableContainer(QFrame):
             else:
                 self._app.player.play_songs(songs=songs)
             finally:
-                self.meta_widget.toolbar.enter_state_playall_end()
+                self.toolbar.enter_state_playall_end()
 
         model = self.songs_table.model()
         songs_g = model.songs_g
         if songs_g is not None and songs_g.allow_random_read:
             task = task_spec.bind_blocking_io(songs_g.readall)
-            self.meta_widget.toolbar.enter_state_playall_start()
+            self.toolbar.enter_state_playall_start()
             task.add_done_callback(songs_g_readall_cb)
             return
         songs = model.songs
@@ -384,7 +401,7 @@ class TableContainer(QFrame):
         await self.set_delegate(delegate)
 
     def show_collection(self, coll):
-        delegate = CollectionDelegate(coll)
+        delegate = SongsCollectionDelegate(coll)
         aio.create_task(self.set_delegate(delegate))
 
     def show_songs(self, songs=None, songs_g=None):
@@ -394,10 +411,8 @@ class TableContainer(QFrame):
         task.add_done_callback(
             lambda _: delegate.show_songs(songs=songs, songs_g=songs_g))
 
-    def show_albums(self, albums_g):
-        delegate = Delegate()
-        task = aio.create_task(self.set_delegate(delegate))
-        task.add_done_callback(lambda _: delegate.show_albums(albums_g))
+    def show_albums_coll(self, albums_g):
+        aio.create_task(self.set_delegate(AlbumsCollectionDelegate(albums_g)))
 
     def show_player_playlist(self):
         aio.create_task(self.set_delegate(PlayerPlaylistDelegate()))

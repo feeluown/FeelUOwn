@@ -6,54 +6,7 @@ from datetime import datetime
 
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
-    QSpacerItem, QScrollArea, QFrame, QTabBar
-
-
-class TabBar(QTabBar):
-    song = '歌曲'
-    artist = '歌手'
-    album = '专辑'
-    contributed_works = '参与作品'
-
-    show_songs_needed = pyqtSignal()
-    show_artists_needed = pyqtSignal()
-    show_albums_needed = pyqtSignal()
-    show_contributed_works_needed = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-        self.tabBarClicked.connect(self.on_index_changed)
-
-    def use(self, *tabs):
-        i = self.count() - 1
-        while i >= 0:
-            self.removeTab(i)
-            i = i - 1
-        for tab in tabs:
-            self.addTab(tab)
-
-    def artist_mode(self):
-        self.use(TabBar.song,
-                 TabBar.album,
-                 TabBar.contributed_works)
-
-    def library_mode(self):
-        self.use(TabBar.song,
-                 TabBar.artist,
-                 TabBar.album,
-                 TabBar.contributed_works)
-
-    def on_index_changed(self, index):
-        text = self.tabText(index)
-        if text == self.song:
-            self.show_songs_needed.emit()
-        elif text == self.artist:
-            self.show_artists_needed.emit()
-        elif text == self.album:
-            self.show_albums_needed.emit()
-        else:
-            self.show_contributed_works_needed.emit()
+    QSpacerItem, QScrollArea, QFrame
 
 
 class DescriptionContainer(QScrollArea):
@@ -115,7 +68,7 @@ class getset_property:
         instance.on_property_updated(self.name)
 
 
-class MetaWidget(QWidget):
+class MetaWidget(QFrame):
 
     def clear(self):
         self.title = None
@@ -125,7 +78,6 @@ class MetaWidget(QWidget):
         self.created_at = None
         self.updated_at = None
         self.creator = None
-        self.is_artist = False
         self.songs_count = None
 
     def on_property_updated(self, name):
@@ -140,21 +92,19 @@ class MetaWidget(QWidget):
     updated_at = getset_property('updated_at')
     songs_count = getset_property('songs_count')
     creator = getset_property('creator')
-    is_artist = getset_property('is_artist')
 
 
 class TableMetaWidget(MetaWidget):
 
     toggle_full_window_needed = pyqtSignal([bool])
 
-    def __init__(self, toolbar, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
 
         self.title_label = QLabel(self)
         self.cover_label = QLabel(self)
         self.meta_label = QLabel(self)
         self.desc_container = DescriptionContainer(parent=self)
-        self.toolbar = toolbar
 
         self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)
@@ -178,8 +128,6 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._right_layout.addWidget(self.desc_container)
-        self._right_layout.addWidget(self.toolbar)
-        self._right_layout.setAlignment(self.toolbar, Qt.AlignBottom)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)
@@ -194,13 +142,15 @@ class TableMetaWidget(MetaWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
 
+    def add_tabbar(self, tabbar):
+        self._right_layout.addWidget(tabbar)
+        self._right_layout.setAlignment(self.parent().tabbar, Qt.AlignLeft)
+
     def on_property_updated(self, name):
         if name in ('created_at', 'updated_at', 'songs_count', 'creator'):
             self._refresh_meta_label()
         elif name in ('title', 'subtitle'):
             self._refresh_title()
-        elif name == 'is_artist':
-            self._refresh_toolbar()
         elif name == 'desc':
             self._refresh_desc()
         elif name == 'cover':
@@ -244,12 +194,6 @@ class TableMetaWidget(MetaWidget):
     def _refresh_cover(self):
         if not self.cover:
             self.cover_label.hide()
-
-    def _refresh_toolbar(self):
-        if self.is_artist:
-            self.toolbar.artist_mode()
-        else:
-            self.toolbar.songs_mode()
 
     def _refresh_title(self):
         if self.title:

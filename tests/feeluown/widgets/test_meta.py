@@ -1,19 +1,19 @@
+import time
+
 import pytest
 
-from tests.helpers import cannot_run_qt_test
-from feeluown.widgets.meta import TabBar
+from tests.helpers import is_travis_env
+from feeluown.widgets.meta import TableMetaWidget
 
 
 # TODO: use xvfb in travis env
 # example: https://github.com/pytest-dev/pytest-qt/blob/master/.travis.yml
-@pytest.mark.skipif(cannot_run_qt_test, reason='this is a qt testcase')
-def test_tabbar(qtbot):
-    tabbar = TabBar()
-    qtbot.addWidget(tabbar)
-    tabbar.artist_mode()
-    with qtbot.waitSignal(tabbar.show_albums_needed):
-        tabbar.tabBarClicked.emit(1)
-
-    tabbar.library_mode()
-    with qtbot.waitSignal(tabbar.show_artists_needed):
-        tabbar.tabBarClicked.emit(1)
+@pytest.mark.skipif(is_travis_env, reason="travis env has no display")
+def test_table_meta(qtbot):
+    widget = TableMetaWidget()
+    qtbot.addWidget(widget)
+    widget.title = '我喜欢的音乐'
+    widget.subtitle = '嘿嘿'
+    widget.creator = 'cosven'
+    widget.updated_at = time.time()
+    widget.desc = "<pre><code>print('hello world')</code><pre>"

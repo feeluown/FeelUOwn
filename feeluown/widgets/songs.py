@@ -4,7 +4,7 @@ from functools import partial
 from PyQt5.QtCore import (
     pyqtSignal, Qt, QVariant, QEvent,
     QAbstractTableModel, QAbstractListModel, QModelIndex,
-    QSize, QRect, QPoint,
+    QSize, QRect, QPoint, QSortFilterProxyModel,
 )
 from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent
 from PyQt5.QtWidgets import (
@@ -285,6 +285,30 @@ class SongsTableModel(QAbstractTableModel):
             return ModelMimeData(song)
 
 
+class SongFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None, text=''):
+        super().__init__(parent)
+
+        self.text = text
+
+    def filter_by_text(self, text):
+        # if text is an empty string or None, we show all songs
+        self.text = text or ''
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        if not self.text:
+            return super().filterAcceptsRow(source_row, source_parent)
+
+        source_model = self.sourceModel()
+        index = source_model.index(source_row, Column.song, parent=source_parent)
+        song = index.data(Qt.UserRole)
+        text = self.text
+        return text.lower() in song.title_display.lower() \
+                or text in song.album_name_display.lower() \
+                or text in song.artists_name_display.lower()
+
+
 class ArtistsModel(QAbstractListModel):
     def __init__(self, artists):
         super().__init__()
@@ -403,6 +427,7 @@ class SongsTableView(QTableView):
         # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().hide()
         self.verticalHeader().hide()
         # self.verticalHeader().setDefaultSectionSize(40)
         self.setWordWrap(False)
@@ -446,23 +471,6 @@ class SongsTableView(QTableView):
     def show_all_rows(self):
         for i in range(self.model().rowCount()):
             self.setRowHidden(i, False)
-
-    def filter_row(self, text):
-        # TODO: improve search algorithm
-        if not text:
-            self.show_all_rows()
-            return
-        if not self.model():
-            return
-
-        songs = self.model().songs
-        for i, song in enumerate(songs):
-            if text.lower() not in song.title_display.lower()\
-                    and text not in song.album_name_display.lower()\
-                    and text not in song.artists_name_display.lower():
-                self.setRowHidden(i, True)
-            else:
-                self.setRowHidden(i, False)
 
     def contextMenuEvent(self, event):
         menu = QMenu()

@@ -50,7 +50,7 @@ class RightPanel(QFrame):
         if coll.name == DEFAULT_COLL_ALBUMS:
             self.collection_container.hide()
             reader = RandomSequentialReader.from_list(coll.models)
-            self.table_container.show_albums(reader)
+            self.table_container.show_albums_coll(reader)
             return
 
         if pure_songs:
