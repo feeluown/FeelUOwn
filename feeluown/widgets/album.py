@@ -145,6 +145,7 @@ class AlbumFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None, types=None):
         super().__init__(parent)
 
+        self.text = ''
         self.types = types
 
     def filter_by_types(self, types):
@@ -154,14 +155,20 @@ class AlbumFilterProxyModel(QSortFilterProxyModel):
         self.types = types
         self.invalidateFilter()
 
-    def filterAcceptsRow(self, source_row, source_parent):
-        if not self.types:
-            return super().filterAcceptsRow(source_row, source_parent)
+    def filter_by_text(self, text):
+        self.text = text
+        self.invalidateFilter()
 
-        source_model = self.sourceModel()
-        index = source_model.index(source_row, parent=source_parent)
-        album = index.data(Qt.UserRole)
-        return AlbumType(album.type) in self.types
+    def filterAcceptsRow(self, source_row, source_parent):
+        accepted = True
+        if accepted and self.types:
+            source_model = self.sourceModel()
+            index = source_model.index(source_row, parent=source_parent)
+            album = index.data(Qt.UserRole)
+            accepted = AlbumType(album.type) in self.types
+        if accepted and self.text:
+            accepted = self.text.lower() in album.name_display.lower()
+        return accepted
 
 
 class AlbumListDelegate(QAbstractItemDelegate):

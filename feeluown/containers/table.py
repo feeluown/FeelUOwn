@@ -13,7 +13,7 @@ from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
 from feeluown.helpers import async_run
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
-from feeluown.widgets.songs import SongsTableModel, SongsTableView
+from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
 from feeluown.widgets.tabbar import TableTabBar
@@ -98,6 +98,11 @@ class Delegate:
         filter_model.setSourceModel(model)
         self.albums_table.setModel(filter_model)
         self.albums_table.scrollToTop()
+        try:
+            self.toolbar.filter_text_changed.disconnect()
+        except TypeError:
+            pass
+        self.toolbar.filter_text_changed.connect(filter_model.filter_by_text)
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
         # when is artist mode, we should hide albums_table first
@@ -116,12 +121,20 @@ class Delegate:
         songs = songs or []
         logger.debug('Show songs in table, total: %d', len(songs))
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        self.songs_table.setModel(SongsTableModel(
+        model = SongsTableModel(
             source_name_map=source_name_map,
             songs_g=songs_g,
             songs=songs,
-            parent=self.songs_table))
+            parent=self.songs_table)
+        filter_model = SongFilterProxyModel(self.songs_table)
+        filter_model.setSourceModel(model)
+        self.songs_table.setModel(filter_model)
         self.songs_table.scrollToTop()
+        try:
+            self.toolbar.filter_text_changed.disconnect()
+        except TypeError:
+            pass
+        self.toolbar.filter_text_changed.connect(filter_model.filter_by_text)
 
 
 class ArtistDelegate(Delegate):
@@ -210,7 +223,8 @@ class PlaylistDelegate(Delegate):
 
         def remove_song(song):
             model = self.songs_table.model()
-            row = model.songs.index(song)
+            # FIXME: think about a more elegant way
+            row = model.sourceModel().songs.index(song)
             msg = 'remove {} from {}'.format(song, playlist)
             with self._app.create_action(msg) as action:
                 rv = playlist.remove(song.identifier)
@@ -218,6 +232,7 @@ class PlaylistDelegate(Delegate):
                     model.removeRow(row)
                 else:
                     action.failed()
+        # TODO: remove_song by row may be more elegant
         self.songs_table.song_deleted.connect(lambda song: remove_song(song))
 
 
@@ -275,9 +290,18 @@ class PlayerPlaylistDelegate(Delegate):
         player = self._app.player
         playlist = player.playlist
 
-        self.show_songs(songs=playlist.list())
+        songs = playlist.list()
+        self.show_songs(songs=songs)
         self.songs_table.song_deleted.connect(
             lambda song: self._app.playlist.remove(song))
+
+        # scroll to current song
+        current_song = self._app.playlist.current_song
+        if current_song is not None:
+            row = songs.index(current_song)
+            model_index = self.songs_table.model().index(row, 0)
+            self.songs_table.scrollTo(model_index)
+            self.songs_table.selectRow(row)
 
 
 class TableContainer(QFrame):
@@ -379,13 +403,14 @@ class TableContainer(QFrame):
                 self.toolbar.enter_state_playall_end()
 
         model = self.songs_table.model()
-        songs_g = model.songs_g
+        # FIXME: think about a more elegant way
+        songs_g = model.sourceModel().songs_g
         if songs_g is not None and songs_g.allow_random_read:
             task = task_spec.bind_blocking_io(songs_g.readall)
             self.toolbar.enter_state_playall_start()
             task.add_done_callback(songs_g_readall_cb)
             return
-        songs = model.songs
+        songs = model.sourceModel().songs
         self._app.player.play_songs(songs=songs)
 
     async def show_model(self, model):
