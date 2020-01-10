@@ -176,9 +176,11 @@ class MpvPlayer(AbstractPlayer):
 
     @position.setter
     def position(self, position):
-        if self.current_song:
+        if self._current_media:
             self._mpv.seek(position, reference='absolute')
             self._position = position
+        else:
+            logger.warn("can't set position when current media is empty")
 
     @AbstractPlayer.volume.setter
     def volume(self, value):
