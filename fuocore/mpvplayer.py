@@ -176,8 +176,9 @@ class MpvPlayer(AbstractPlayer):
 
     @position.setter
     def position(self, position):
-        self._mpv.seek(position, reference='absolute')
-        self._position = position
+        if self.current_song:
+            self._mpv.seek(position, reference='absolute')
+            self._position = position
 
     @AbstractPlayer.volume.setter
     def volume(self, value):
@@ -186,7 +187,7 @@ class MpvPlayer(AbstractPlayer):
 
     @property
     def video_format(self):
-        self._video_format
+        return self._video_format
 
     @video_format.setter
     def video_format(self, vformat):
