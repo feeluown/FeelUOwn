@@ -1,11 +1,11 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (QHBoxLayout, QPushButton, QWidget, QComboBox,
-                             QLineEdit)
+                             QLineEdit, QFrame)
 
 from fuocore.models import AlbumType
 
 
-class SongsTableToolbar(QWidget):
+class SongsTableToolbar(QFrame):
     play_all_needed = pyqtSignal()
     filter_albums_needed = pyqtSignal([list])
     filter_text_changed = pyqtSignal([str])
@@ -13,10 +13,10 @@ class SongsTableToolbar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.play_all_btn = QPushButton('播放全部', self)
+        self.play_all_btn = QPushButton('Play All', self)
         self.filter_box = QLineEdit(parent=self)
         self.filter_box.setPlaceholderText('输入关键词进行过滤')
-        self.filter_box.setMinimumHeight(25)
+        self.filter_box.setMinimumHeight(30)
         self.filter_box.textChanged.connect(self.filter_text_changed)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
 
@@ -57,7 +57,7 @@ class SongsTableToolbar(QWidget):
 
     def _setup_ui(self):
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(10, 10, 10, 10)
+        self._layout.setContentsMargins(10, 8, 10, 8)
         self._layout.setSpacing(0)
         self._layout.addWidget(self.play_all_btn)
         self._layout.addStretch(0)

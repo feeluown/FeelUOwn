@@ -3,24 +3,20 @@ TopPanel {
 }
 
 TableMetaWidget {
-    background-color: #1e1e1e;
+    /* background-color: #1e1e1e; */
 }
 
 Separator {
-    background-color: #555;
+    background-color: #444;
 }
 
-#pms_btn, #mv_btn, #toggle_video_btn, SongsTableToolbar QPushButton {
+#pms_btn, #mv_btn, #toggle_video_btn {
     border-radius: 3px;
     border: 1px solid #444;
 }
 
 #mv_btn:pressed, #pms_btn:pressed {
     background-color: #1e1e1e;
-}
-
-SongsTableToolbar QPushButton:pressed {
-    background-color: #444;
 }
 
 #pp_btn {

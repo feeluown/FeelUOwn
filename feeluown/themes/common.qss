@@ -15,7 +15,7 @@ LeftPanel QListView {
     margin-left: 5px;
 }
 
-LeftPanel QListView, BottomPanel, QSplitter::handle, SongsTableView {
+LeftPanel QListView, BottomPanel, QSplitter::handle {
     background-color: transparent;
 }
 
@@ -24,7 +24,8 @@ DescriptionContainer, DescriptionContainer QLabel {
 }
 
 QLineEdit {
-    border-radius: 2px;
+    border-radius: 3px;
+    padding-left: 5px;
 }
 
 /*
@@ -70,17 +71,12 @@ PlayerControlPanel QPushButton:focus {
 #toggle_video_btn {
     padding: 0px 3px;
 }
-SongsTableToolbar QPushButton {
-    padding: 2px 8px;
-}
-#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover, SongsTableToolbar QPushButton:hover {
+
+#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover {
     border: 1px solid #777;
 }
 #mv_btn:pressed, #pms_btn:pressed {
     background-color: #BCBCBC;
-}
-SongsTableToolbar QPushButton:pressed {
-    background-color: #EAEAEA;
 }
 
 #back_btn, #forward_btn {

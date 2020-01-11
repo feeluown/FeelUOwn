@@ -2,6 +2,7 @@ import asyncio
 import logging
 import random
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
 from requests.exceptions import RequestException
@@ -247,6 +248,7 @@ class AlbumDelegate(Delegate):
         self.show_songs(songs)
 
         self.meta_widget.title = album.name
+        self.meta_widget.soungs_count = len(songs)
         self.meta_widget.show()
 
         # fetch cover and description
@@ -336,7 +338,9 @@ class TableContainer(QFrame):
 
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
+        # self._layout.addWidget(self.tabbar)
         self._layout.addWidget(self.toolbar)
+        # self._layout.setAlignment(self.tabbar, Qt.AlignRight)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
