@@ -57,10 +57,6 @@ PlayerControlPanel QPushButton:hover {
 PlayerControlPanel QPushButton:focus {
     outline: none;
 }
-#pms_btn, #mv_btn, #toggle_video_btn, SongsTableToolbar QPushButton {
-    border-radius: 3px;
-    border: 1px solid #AAA;
-}
 #pms_btn {
     height: 18px;
     background-color: transparent;

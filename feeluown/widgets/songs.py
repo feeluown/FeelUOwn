@@ -6,7 +6,7 @@ from PyQt5.QtCore import (
     QAbstractTableModel, QAbstractListModel, QModelIndex,
     QSize, QRect, QPoint, QSortFilterProxyModel,
 )
-from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent
+from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent, QColor
 from PyQt5.QtWidgets import (
     QAction, QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
     QApplication, QPushButton, QTableView, QWidget, QMenu, QListView,
@@ -381,6 +381,22 @@ class SongsTableDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
 
+        text_color = option.palette.color(QPalette.Text)
+        if text_color.lightness() > 150:
+            non_text_color = text_color.darker(140)
+        else:
+            non_text_color = text_color.lighter(150)
+        non_text_color.setAlpha(30)
+        pen = QPen(non_text_color)
+        painter.setPen(pen)
+        bottom_left = option.rect.bottomLeft()
+        bottom_right = option.rect.bottomRight()
+        if index.model().columnCount() - 1 == index.column():
+            bottom_right = QPoint(bottom_right.x() - 10, bottom_right.y())
+        if index.column() == 0:
+            bottom_left = QPoint(bottom_left.x() + 10, bottom_right.y())
+        painter.drawLine(bottom_left, bottom_right)
+
     def sizeHint(self, option, index):
         """set proper width for each column
 
@@ -388,11 +404,13 @@ class SongsTableDelegate(QStyledItemDelegate):
         can be uncertain. I don't know why this would happen,
         since we have set width for the header.
         """
-        widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
-        width = self.parent().width()
-        w = int(width * widths[index.column()])
-        h = option.rect.height()
-        return QSize(w, h)
+        if index.isValid():
+            widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
+            width = self.parent().width()
+            w = int(width * widths[index.column()])
+            h = option.rect.height()
+            return QSize(w, h)
+        return super().sizeHint(option, index)
 
     def editorEvent(self, event, model, option, index):
         super().editorEvent(event, model, option, index)
@@ -429,13 +447,13 @@ class SongsTableView(QTableView):
         self.horizontalHeader().setStretchLastSection(True)
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
-        # self.verticalHeader().setDefaultSectionSize(40)
+        self.verticalHeader().setDefaultSectionSize(40)
         self.setWordWrap(False)
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.setAlternatingRowColors(True)
+        # self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
