@@ -4,9 +4,10 @@ all metadata related widgets, for example: description, cover, and so on.
 
 from datetime import datetime
 
-from PyQt5.QtCore import Qt, pyqtSignal, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize
+from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
-    QSpacerItem, QScrollArea, QFrame
+    QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
 
 class CoverLabel(QLabel):
@@ -14,25 +15,51 @@ class CoverLabel(QLabel):
         super().__init__(parent=parent)
 
         self._pixmap = pixmap
-
-        self._refresh_timer = QTimer(self)
-        self._refresh_timer.timeout.connect(self._refresh_pixmap)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
 
     def show_pixmap(self, pixmap):
         self._pixmap = pixmap
+        self.updateGeometry()
 
-    def _refresh_pixmap(self):
-        self._refresh_timer.stop()
-        if self._pixmap is not None:
-            scaled_pixmap = self._pixmap.scaledToWidth(
-                self.width(),
-                mode=Qt.SmoothTransformation
-            )
-            self.setPixmap(scaled_pixmap)
+    def paintEvent(self, e):
+        """
+        draw pixmap with border radius
+
+        We found two way to draw pixmap with border radius,
+        one is as follow, the other way is using bitmap mask,
+        but in our practice, the mask way has poor render effects
+        """
+        radius = 3
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        scaled_pixmap = self._pixmap.scaledToWidth(
+            self.width(),
+            mode=Qt.SmoothTransformation
+        )
+        size = scaled_pixmap.size()
+        brush = QBrush(scaled_pixmap)
+        painter.setBrush(brush)
+        y = (size.height() - self.height()) // 2
+        painter.save()
+        painter.translate(0, -y)
+        rect = QRect(0, y, self.width(), self.height())
+        painter.drawRoundedRect(rect, radius, radius)
+        painter.restore()
+        painter.end()
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
-        self._refresh_timer.start(500)
+        self.updateGeometry()
+
+    def sizeHint(self):
+        super_size = super().sizeHint()
+        if self._pixmap is None:
+            return super_size
+        h = (self.width() * self._pixmap.height()) // self._pixmap.width()
+        # cover label height hint can be as large as possible, since the
+        # parent width has been set maximumHeight
+        return QSize(super_size.width(), h)
 
 
 class DescriptionContainer(QScrollArea):
