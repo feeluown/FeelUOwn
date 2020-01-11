@@ -201,7 +201,7 @@ class PlaylistDelegate(Delegate):
             if playlist.meta.allow_create_songs_g:
                 songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
             else:
-                songs = await async_run(lambda: playlist.songs, loop=loop)
+                songs = await async_run(lambda: playlist.songs)
         except ProviderIOError as e:
             self._app.show_msg('read playlist/songs failed：{}'.format(str(e)))
             logger.exception('read playlist/songs failed')
@@ -449,5 +449,13 @@ class TableContainer(QFrame):
     def toggle_meta_full_window(self, fullwindow_needed):
         if fullwindow_needed:
             self.songs_table.hide()
+            self.toolbar.hide()
+            self.meta_widget.setMaximumHeight(4000)
         else:
+            self.meta_widget.setMaximumHeight(self.height()*2//5)
+            self.toolbar.show()
             self.songs_table.show()
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self.meta_widget.setMaximumHeight(self.height()*2//5)

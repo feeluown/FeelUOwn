@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
 )
 
 from fuocore import aio
+from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, AlbumType
 from fuocore.models.uri import reverse
 
@@ -89,7 +90,11 @@ class AlbumListModel(QAbstractListModel):
 
     def fetchMore(self, _=QModelIndex()):
         expect_len = 10
-        albums = list(itertools.islice(self.albums_g, expect_len))
+        try:
+            albums = list(itertools.islice(self.albums_g, expect_len))
+        except ProviderIOError:
+            return
+
         acture_len = len(albums)
         colors = [random.choice(list(COLORS.values()))
                   for _ in range(0, acture_len)]

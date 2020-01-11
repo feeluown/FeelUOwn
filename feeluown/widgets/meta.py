@@ -4,9 +4,35 @@ all metadata related widgets, for example: description, cover, and so on.
 
 from datetime import datetime
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QTimer
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QScrollArea, QFrame
+
+
+class CoverLabel(QLabel):
+    def __init__(self, parent=None, pixmap=None):
+        super().__init__(parent=parent)
+
+        self._pixmap = pixmap
+
+        self._refresh_timer = QTimer(self)
+        self._refresh_timer.timeout.connect(self._refresh_pixmap)
+
+    def show_pixmap(self, pixmap):
+        self._pixmap = pixmap
+
+    def _refresh_pixmap(self):
+        self._refresh_timer.stop()
+        if self._pixmap is not None:
+            scaled_pixmap = self._pixmap.scaledToWidth(
+                self.width(),
+                mode=Qt.SmoothTransformation
+            )
+            self.setPixmap(scaled_pixmap)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self._refresh_timer.start(500)
 
 
 class DescriptionContainer(QScrollArea):
@@ -102,7 +128,7 @@ class TableMetaWidget(MetaWidget):
         super().__init__(parent=parent)
 
         self.title_label = QLabel(self)
-        self.cover_label = QLabel(self)
+        self.cover_label = CoverLabel(self)
         self.meta_label = QLabel(self)
         self.desc_container = DescriptionContainer(parent=self)
 
@@ -118,7 +144,6 @@ class TableMetaWidget(MetaWidget):
 
     def _setup_ui(self):
         self.cover_label.setMinimumWidth(200)
-        self.setMaximumHeight(180)
         self.title_label.setAlignment(Qt.AlignTop)
         self.meta_label.setAlignment(Qt.AlignTop)
 
@@ -131,6 +156,8 @@ class TableMetaWidget(MetaWidget):
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)
+        self._h_layout.setStretchFactor(self._right_layout, 2)
+        self._h_layout.setStretchFactor(self.cover_label, 1)
         self._v_layout.addLayout(self._h_layout)
 
         self._h_layout.setContentsMargins(10, 10, 10, 10)
@@ -210,18 +237,14 @@ class TableMetaWidget(MetaWidget):
 
     def set_cover_pixmap(self, pixmap):
         self.cover_label.show()
-        self.cover_label.setPixmap(
-            pixmap.scaledToWidth(self.cover_label.width(),
-                                 mode=Qt.SmoothTransformation))
+        self.cover_label.show_pixmap(pixmap)
 
     def toggle_full_window(self):
         if self._is_fullwindow:
             self.toggle_full_window_needed.emit(False)
-            self.setMaximumHeight(180)
         else:
             # generally, display height will be less than 4000px
             self.toggle_full_window_needed.emit(True)
-            self.setMaximumHeight(4000)
         self._is_fullwindow = not self._is_fullwindow
 
 

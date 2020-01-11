@@ -303,10 +303,10 @@ class SongFilterProxyModel(QSortFilterProxyModel):
         source_model = self.sourceModel()
         index = source_model.index(source_row, Column.song, parent=source_parent)
         song = index.data(Qt.UserRole)
-        text = self.text
-        return text.lower() in song.title_display.lower() \
-                or text in song.album_name_display.lower() \
-                or text in song.artists_name_display.lower()
+        text = self.text.lower()
+        return text in song.title_display.lower() \
+            or text in song.album_name_display.lower() \
+            or text in song.artists_name_display.lower()
 
 
 class ArtistsModel(QAbstractListModel):
