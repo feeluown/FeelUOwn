@@ -22,16 +22,15 @@ class Ui:
         self._app = app
         self._layout = QVBoxLayout(app)
         self._top_separator = Separator(parent=app)
-        self._bottom_separator = Separator(parent=app)
         self._splitter = QSplitter(app)
 
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
-        self.bottom_panel = BottomPanel(app, app)
         self._left_panel_con = LeftPanel(self._app,)
         self.left_panel = self._left_panel_con.p
         self.right_panel = RightPanel(self._app, self._splitter)
+        self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.mpv_widget.hide()
 
@@ -69,8 +68,7 @@ class Ui:
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self._left_panel_con.setMinimumWidth(200)
 
-        self._layout.addWidget(self.bottom_panel)
-        self._layout.addWidget(self._bottom_separator)
+        # self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.mpv_widget)
         self._layout.addWidget(self._top_separator)
@@ -112,12 +110,10 @@ class Ui:
         self.mpv_widget.hide()
         self._splitter.show()
         self.bottom_panel.show()
-        self._bottom_separator.show()
         self.pc_panel.toggle_video_btn.setText('△')
 
     def show_video_widget(self):
         self.bottom_panel.hide()
-        self._bottom_separator.hide()
         self._splitter.hide()
         self.mpv_widget.show()
         self.pc_panel.toggle_video_btn.setText('▽')

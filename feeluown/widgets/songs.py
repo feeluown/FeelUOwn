@@ -1,3 +1,4 @@
+import logging
 from enum import IntEnum
 from functools import partial
 
@@ -13,8 +14,12 @@ from PyQt5.QtWidgets import (
     QStyle, QSizePolicy, QStyleOptionButton, QStyledItemDelegate,
 )
 
+from fuocore.excs import ProviderIOError
 from fuocore.models import ModelExistence
 from feeluown.mimedata import ModelMimeData
+
+
+logger = logging.getLogger(__name__)
 
 
 class Column(IntEnum):
@@ -460,21 +465,27 @@ class SongsTableView(QTableView):
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
-        if index.column() == Column.song:
-            song = index.data(Qt.UserRole)
-            self.play_song_needed.emit(song)
-        elif index.column() == Column.artist:
-            song = index.data(Qt.UserRole)
-            artists = song.artists
-            if artists is not None:
-                if len(artists) > 1:
-                    self.edit(index)
-                else:
-                    self.show_artist_needed.emit(artists[0])
-        elif index.column() == Column.album:
-            song = index.data(Qt.UserRole)
-            if song.album:
-                self.show_album_needed.emit(song.album)
+        try:
+            if index.column() == Column.song:
+                song = index.data(Qt.UserRole)
+                self.play_song_needed.emit(song)
+            elif index.column() == Column.artist:
+                song = index.data(Qt.UserRole)
+                artists = song.artists
+                if artists is not None:
+                    if len(artists) > 1:
+                        self.edit(index)
+                    else:
+                        self.show_artist_needed.emit(artists[0])
+            elif index.column() == Column.album:
+                song = index.data(Qt.UserRole)
+                album = song.album
+                self.show_album_needed.emit(album)
+        except (ProviderIOError, Exception):
+            # FIXME: we should only catch ProviderIOError here,
+            # but currently, some plugins such fuo-qqmusic may raise
+            # requests.RequestException
+            logger.exception('fetch song.album failed')
         # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
         # 测试 dataChanged 似乎不能按照预期工作
         model = self.model()

@@ -68,7 +68,7 @@ class Delegate:
     #
     # utils function for delegate
     #
-    async def show_cover(self, cover, cover_uid):
+    async def show_cover(self, cover, cover_uid, background=False):
         cover = Media(cover, MediaType.image)
         url = cover.url
         app = self._app
@@ -77,7 +77,12 @@ class Delegate:
         img.loadFromData(content)
         pixmap = QPixmap(img)
         if not pixmap.isNull():
-            self.meta_widget.set_cover_pixmap(pixmap)
+            if background:
+                self.meta_widget.set_cover_pixmap(None)
+                self._app.ui.right_panel.show_background_image(pixmap)
+            else:
+                self._app.ui.right_panel.show_background_image(None)
+                self.meta_widget.set_cover_pixmap(pixmap)
 
     def show_model(self, model):
         aio.create_task(self.real_show_model(model))
@@ -88,7 +93,6 @@ class Delegate:
         # show the layout
         self.songs_table.hide()
         self.albums_table.show()
-        self.toolbar.show()
         self.toolbar.albums_mode()
 
         # fill the data
@@ -109,7 +113,6 @@ class Delegate:
         # when is artist mode, we should hide albums_table first
         self.albums_table.hide()
         self.songs_table.show()
-        self.toolbar.show()
         self.toolbar.songs_mode()
 
         if show_count:
@@ -177,7 +180,8 @@ class ArtistDelegate(Delegate):
         # finally, we render cover and description
         cover = await async_run(lambda: artist.cover)
         if cover:
-            aio.create_task(self.show_cover(cover, reverse(artist, '/cover')))
+            aio.create_task(
+                self.show_cover(cover, reverse(artist, '/cover'), background=True))
         self.meta_widget.desc = await async_run(lambda: artist.desc)
 
     async def tearDown(self):
@@ -247,8 +251,9 @@ class AlbumDelegate(Delegate):
         songs = await async_run(lambda: album.songs)
         self.show_songs(songs)
 
-        self.meta_widget.title = album.name
-        self.meta_widget.soungs_count = len(songs)
+        self.meta_widget.title = album.name_display
+        self.meta_widget.songs_count = len(songs)
+        self.meta_widget.creator = album.artists_name_display
         self.meta_widget.show()
 
         # fetch cover and description
@@ -326,13 +331,12 @@ class TableContainer(QFrame):
 
         self.toolbar.play_all_needed.connect(self.play_all)
         self.meta_widget.toggle_full_window_needed.connect(self.toggle_meta_full_window)
-
-        self.hide()
         self._setup_ui()
 
         self._delegate = None
 
     def _setup_ui(self):
+        self.toolbar.hide()
         self.meta_widget.add_tabbar(self.tabbar)
         self.setAutoFillBackground(False)
 
@@ -386,6 +390,8 @@ class TableContainer(QFrame):
         await delegate.setUp(self)
         self._delegate = delegate
         await self._delegate.render()
+
+        self._app.ui.bottom_panel.update()
 
     async def play_song(self, song):
         self._app.player.play_song(song)
@@ -453,13 +459,12 @@ class TableContainer(QFrame):
     def toggle_meta_full_window(self, fullwindow_needed):
         if fullwindow_needed:
             self.songs_table.hide()
-            self.toolbar.hide()
             self.meta_widget.setMaximumHeight(4000)
         else:
-            self.meta_widget.setMaximumHeight(self.height()*2//5)
-            self.toolbar.show()
+            self.meta_widget.setMinimumHeight(self.height()*5//9)
             self.songs_table.show()
+        self._app.ui.bottom_panel.update()
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
-        self.meta_widget.setMaximumHeight(self.height()*2//5)
+        self.meta_widget.setMinimumHeight(self.height()*5//9)

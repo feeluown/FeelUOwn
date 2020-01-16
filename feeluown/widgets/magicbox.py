@@ -24,7 +24,7 @@ class MagicBox(QLineEdit):
                         '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.setFixedHeight(28)
+        self.setFixedHeight(32)
         self.setFrame(False)
         self.setAttribute(Qt.WA_MacShowFocusRect, 0)
 

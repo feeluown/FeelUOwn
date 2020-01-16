@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFrame, QHBoxLayout, QPushButton
+from PyQt5.QtWidgets import QFrame, QHBoxLayout, QPushButton, QWidget
 from feeluown.widgets.magicbox import MagicBox
 from feeluown.widgets.statusline import StatusLine, StatusLineItem
 from feeluown.widgets.statusline_items import PluginStatus
@@ -10,7 +10,6 @@ class BottomPanel(QFrame):
         self._app = app
 
         self._layout = QHBoxLayout(self)
-
         self.back_btn = QPushButton('⇦', self)
         self.forward_btn = QPushButton('⇨', self)
         self.magicbox = MagicBox(self._app)
@@ -32,7 +31,7 @@ class BottomPanel(QFrame):
         self._layout.addWidget(self.status_line)
 
         height = self.magicbox.height()
-        self.setFixedHeight(height + 16)
+        self.setFixedHeight(height + 30)
 
         self._layout.setContentsMargins(0, 5, 0, 5)
         self._layout.setSpacing(0)

@@ -5,7 +5,7 @@ all metadata related widgets, for example: description, cover, and so on.
 from datetime import datetime
 
 from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize
-from PyQt5.QtGui import QPainter, QBrush, QColor
+from PyQt5.QtGui import QPainter, QBrush, QColor, QPen
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
@@ -29,6 +29,8 @@ class CoverLabel(QLabel):
         one is as follow, the other way is using bitmap mask,
         but in our practice, the mask way has poor render effects
         """
+        if self._pixmap is None:
+            return
         radius = 3
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -40,6 +42,7 @@ class CoverLabel(QLabel):
         size = scaled_pixmap.size()
         brush = QBrush(scaled_pixmap)
         painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
         y = (size.height() - self.height()) // 2
         painter.save()
         painter.translate(0, -y)
@@ -170,16 +173,15 @@ class TableMetaWidget(MetaWidget):
         self.desc_container.space_pressed.connect(self.toggle_full_window)
 
     def _setup_ui(self):
-        self.cover_label.setMinimumWidth(200)
-        self.title_label.setAlignment(Qt.AlignTop)
-        self.meta_label.setAlignment(Qt.AlignTop)
-
+        self.cover_label.setMaximumWidth(200)
         self._v_layout = QVBoxLayout(self)
         self._h_layout = QHBoxLayout()
         self._right_layout = QVBoxLayout()
+        self._right_layout.addStretch(0)
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._right_layout.addWidget(self.desc_container)
+        self._right_layout.addStretch(0)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)
@@ -187,8 +189,8 @@ class TableMetaWidget(MetaWidget):
         self._h_layout.setStretchFactor(self.cover_label, 1)
         self._v_layout.addLayout(self._h_layout)
 
-        self._h_layout.setContentsMargins(10, 10, 10, 10)
-        self._h_layout.setSpacing(20)
+        self._h_layout.setContentsMargins(30, 30, 30, 30)
+        self._h_layout.setSpacing(30)
 
         self._right_layout.setContentsMargins(0, 0, 0, 0)
         self._right_layout.setSpacing(5)
@@ -212,8 +214,8 @@ class TableMetaWidget(MetaWidget):
 
     def _refresh_meta_label(self):
         creator = self.creator
-        creator_part = '👤 <a href="fuo://local/users/{}">{}</a>'\
-            .format(creator, creator) if creator else ''
+        # icon: 👤
+        creator_part = creator if creator else ''
         created_part = updated_part = songs_count_part = ''
         if self.updated_at:
             updated_at = datetime.fromtimestamp(self.updated_at)
@@ -225,12 +227,12 @@ class TableMetaWidget(MetaWidget):
                 .format(created_at.strftime('%Y-%m-%d'))
         if self.songs_count is not None:
             text = self.songs_count if self.songs_count != -1 else '未知'
-            songs_count_part = '歌曲数 <code style="font-size: small">{}</code>'\
+            songs_count_part = '<code style="font-size: small">{}</code> 首歌曲'\
                 .format(text)
         if creator_part or updated_part or created_part or songs_count_part:
             parts = [creator_part, created_part, updated_part, songs_count_part]
             valid_parts = [p for p in parts if p]
-            content = ' | '.join(valid_parts)
+            content = ' • '.join(valid_parts)
             text = '<span style="color: grey">{}</span>'.format(content)
             # TODO: add linkActivated callback for meta_label
             self.meta_label.setText(text)
@@ -263,7 +265,8 @@ class TableMetaWidget(MetaWidget):
         self._refresh_cover()
 
     def set_cover_pixmap(self, pixmap):
-        self.cover_label.show()
+        if pixmap is not None:
+            self.cover_label.show()
         self.cover_label.show_pixmap(pixmap)
 
     def toggle_full_window(self):

@@ -15,8 +15,12 @@ LeftPanel QListView {
     margin-left: 5px;
 }
 
-LeftPanel QListView, BottomPanel, QSplitter::handle {
+LeftPanel QListView, QSplitter::handle {
     background-color: transparent;
+}
+
+ScrollArea, TableContainer, TableMetaWidget {
+    background: transparent;
 }
 
 DescriptionContainer, DescriptionContainer QLabel {
