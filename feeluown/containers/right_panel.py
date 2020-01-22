@@ -2,15 +2,15 @@ from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
+from fuocore import aio
 from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
+from feeluown.helpers import palette_bg_transparent
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer
 from feeluown.containers.collection import CollectionContainer
-
-from fuocore import aio
 
 
 class ScrollArea(QScrollArea):
@@ -23,6 +23,7 @@ class ScrollArea(QScrollArea):
 
         self.t = TableContainer(app, self)
         self.setWidget(self.t)
+        palette_bg_transparent(self)
 
 
 class RightPanel(QFrame):

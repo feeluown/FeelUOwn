@@ -10,6 +10,13 @@ import time
 import logging
 from functools import wraps
 
+try:
+    # helper module should work in no-window mode
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtGui import QPalette
+except ImportError:
+    pass
+
 logger = logging.getLogger(__name__)
 
 
@@ -51,3 +58,31 @@ def measure_time(func):
                     % (func.__name__, elapsed_time))
         return result
     return wrapper
+
+
+def palette_bg_transparent(widget):
+    """(alpha)
+
+    HELP: think about a proper name for this function
+    """
+    palette = widget.palette()
+    palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
+    palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
+    widget.setPalette(palette)
+
+
+def palette_fg_light(widget):
+    """(alpha)
+
+    HELP: think about a proper name for this function
+    """
+    palette = widget.palette()
+    palette.setColor(QPalette.Active, QPalette.WindowText, Qt.white)
+    palette.setColor(QPalette.Inactive, QPalette.WindowText, Qt.white)
+    palette.setColor(QPalette.Active, QPalette.Text, Qt.white)
+    widget.setPalette(palette)
+
+
+def palette_standard(widget):
+    """(alpha)"""
+    widget.setPalette(widget.style().standardPalette())

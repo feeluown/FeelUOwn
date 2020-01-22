@@ -19,10 +19,6 @@ LeftPanel QListView, QSplitter::handle {
     background-color: transparent;
 }
 
-ScrollArea, TableContainer, TableMetaWidget {
-    background: transparent;
-}
-
 DescriptionContainer, DescriptionContainer QLabel {
     background-color: transparent;
 }
@@ -35,7 +31,6 @@ QLineEdit {
 /*
  * buttons
  */
-
 PlayerControlPanel IconButton, VolumeButton {
     width: 30px;
     height: 30px;
@@ -75,7 +70,6 @@ PlayerControlPanel QPushButton:focus {
 #toggle_video_btn {
     padding: 0px 3px;
 }
-
 #mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover {
     border: 1px solid #777;
 }

@@ -9,6 +9,8 @@ from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
+from feeluown.helpers import palette_bg_transparent
+
 
 class CoverLabel(QLabel):
     def __init__(self, parent=None, pixmap=None):
@@ -176,6 +178,7 @@ class TableMetaWidget(MetaWidget):
         self._refresh()
 
         self.desc_container.space_pressed.connect(self.toggle_full_window)
+        palette_bg_transparent(self)
 
     def _setup_ui(self):
         self.cover_label.setMaximumWidth(200)
@@ -186,6 +189,7 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._right_layout.addWidget(self.desc_container)
+        self._right_layout.setStretchFactor(self.desc_container, 1)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)

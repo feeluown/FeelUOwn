@@ -18,7 +18,6 @@ Separator {
 #mv_btn:pressed, #pms_btn:pressed {
     background-color: #1e1e1e;
 }
-
 #pp_btn {
     border-image: url(icons/play_dark.png);
 }

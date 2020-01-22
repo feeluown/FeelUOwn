@@ -11,12 +11,13 @@ from fuocore import aio
 from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
-from feeluown.helpers import async_run
+
+from feeluown.helpers import async_run, palette_bg_transparent
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
-from feeluown.widgets.tabbar import TableTabBar
+from feeluown.widgets.tabbar import TableTabBarV2
 
 logger = logging.getLogger(__name__)
 
@@ -76,7 +77,10 @@ class Delegate:
         img.loadFromData(content)
         pixmap = QPixmap(img)
         if not pixmap.isNull():
-            if background:
+            # TODO: currently, background image is shown with dark
+            # overlay. When we are using light theme, the text is also
+            # in dark color, so we only show background image in dark theme
+            if background and self._app.theme_mgr.theme == 'dark':
                 self.meta_widget.set_cover_pixmap(None)
                 self._app.ui.right_panel.show_background_image(pixmap)
             else:
@@ -171,11 +175,17 @@ class ArtistDelegate(Delegate):
         songs = songs_g = None
         if artist.meta.allow_create_songs_g:
             songs_g = artist.create_songs_g()
+            self.tabbar.show_songs_needed.connect(
+                lambda: self.show_songs(songs_g=artist.create_songs_g(),
+                                        songs=songs,
+                                        show_count=True))
         else:
             songs = await async_run(lambda: artist.songs)
+            self.tabbar.show_songs_needed.connect(
+                lambda: self.show_songs(songs_g=None,
+                                        songs=songs,
+                                        show_count=True))
         self.show_songs(songs_g=songs_g, songs=songs, show_count=True)
-        self.tabbar.show_songs_needed.connect(
-            lambda: self.show_songs(songs_g=songs_g, songs=songs, show_count=True))
 
         # finally, we render cover and description
         cover = await async_run(lambda: artist.cover)
@@ -317,7 +327,7 @@ class TableContainer(QFrame):
         self._app = app
 
         self.toolbar = SongsTableToolbar()
-        self.tabbar = TableTabBar()
+        self.tabbar = TableTabBarV2()
         self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
@@ -334,9 +344,13 @@ class TableContainer(QFrame):
         self._setup_ui()
 
         self._delegate = None
+        palette_bg_transparent(self)
 
     def _setup_ui(self):
         self.toolbar.hide()
+        self.tabbar.hide()
+        self.songs_table.hide()
+        self.albums_table.hide()
         self.meta_widget.add_tabbar(self.tabbar)
 
         self._layout = QVBoxLayout(self)

@@ -1,5 +1,43 @@
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QTabBar
+from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout
+
+
+class TableTabBarV2(QWidget):
+    """
+    We tried to use QTabBar as the base class, we found that QTabBar's UI
+    is hard to customize.
+    """
+
+    show_songs_needed = pyqtSignal()
+    show_artists_needed = pyqtSignal()
+    show_albums_needed = pyqtSignal()
+    show_contributed_albums_needed = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.songs_btn = QRadioButton('歌曲', self)
+        self.albums_btn = QRadioButton('专辑', self)
+        self.contributed_btn = QRadioButton('参与作品', self)
+        self._layout = QHBoxLayout(self)
+
+        self.songs_btn.clicked.connect(self.show_songs_needed.emit)
+        self.albums_btn.clicked.connect(self.show_albums_needed.emit)
+        self.contributed_btn.clicked.connect(self.show_contributed_albums_needed.emit)
+
+        # TODO: let caller to decide which btn is checked by default
+        self.songs_btn.setChecked(True)
+        self._setup_ui()
+
+    def artist_mode(self):
+        pass
+
+    def _setup_ui(self):
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self.songs_btn)
+        self._layout.addWidget(self.albums_btn)
+        self._layout.addWidget(self.contributed_btn)
 
 
 class TableTabBar(QTabBar):
@@ -18,7 +56,7 @@ class TableTabBar(QTabBar):
 
         self.tabBarClicked.connect(self.on_index_changed)
         self.setExpanding(False)
-        self.setDrawBase(False)
+        # self.setDrawBase(False)
         self.setShape(QTabBar.TriangularNorth)
 
     def use(self, *tabs):
