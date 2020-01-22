@@ -1,7 +1,7 @@
 import io
 import sys
 
-from PyQt5.QtCore import Qt, QTimer
+from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
@@ -13,6 +13,9 @@ class MagicBox(QLineEdit):
 
     ref: https://wiki.qt.io/Technical_FAQ #How can I create a one-line QTextEdit?
     """
+
+    # this filter signal is designed for table (songs_table & albums_table)
+    filter_text_changed = pyqtSignal(str)
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -97,6 +100,8 @@ class MagicBox(QLineEdit):
         text = self.text()
         if self._mode == 'cmd':
             self._cmd_text = text
+        if not text.startswith('>'):
+            self.filter_text_changed.emit(text)
 
     def __on_return_pressed(self):
         text = self.text()

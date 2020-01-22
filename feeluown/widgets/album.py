@@ -166,10 +166,10 @@ class AlbumFilterProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row, source_parent):
         accepted = True
+        source_model = self.sourceModel()
+        index = source_model.index(source_row, parent=source_parent)
+        album = index.data(Qt.UserRole)
         if accepted and self.types:
-            source_model = self.sourceModel()
-            index = source_model.index(source_row, parent=source_parent)
-            album = index.data(Qt.UserRole)
             accepted = AlbumType(album.type) in self.types
         if accepted and self.text:
             accepted = self.text.lower() in album.name_display.lower()

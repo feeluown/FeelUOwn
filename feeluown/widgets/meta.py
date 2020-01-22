@@ -5,7 +5,7 @@ all metadata related widgets, for example: description, cover, and so on.
 from datetime import datetime
 
 from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize
-from PyQt5.QtGui import QPainter, QBrush, QColor, QPen
+from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
@@ -15,7 +15,7 @@ class CoverLabel(QLabel):
         super().__init__(parent=parent)
 
         self._pixmap = pixmap
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
 
     def show_pixmap(self, pixmap):
         self._pixmap = pixmap
@@ -61,8 +61,9 @@ class CoverLabel(QLabel):
             return super_size
         h = (self.width() * self._pixmap.height()) // self._pixmap.width()
         # cover label height hint can be as large as possible, since the
-        # parent width has been set maximumHeight
-        return QSize(super_size.width(), h)
+        # parent width has been set maximumHeigh
+        w = self.width()
+        return QSize(w, min(w, h))
 
 
 class DescriptionContainer(QScrollArea):
@@ -157,10 +158,14 @@ class TableMetaWidget(MetaWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.title_label = QLabel(self)
         self.cover_label = CoverLabel(self)
+        # these three widgets are in right layout
+        self.title_label = QLabel(self)
         self.meta_label = QLabel(self)
         self.desc_container = DescriptionContainer(parent=self)
+        # this spacer item is used as a stretch in right layout,
+        # it's  width and height is not so important, we set them to 0
+        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)
@@ -181,7 +186,6 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._right_layout.addWidget(self.desc_container)
-        self._right_layout.addStretch(0)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)
@@ -201,6 +205,21 @@ class TableMetaWidget(MetaWidget):
     def add_tabbar(self, tabbar):
         self._right_layout.addWidget(tabbar)
         self._right_layout.setAlignment(self.parent().tabbar, Qt.AlignLeft)
+
+    def set_cover_pixmap(self, pixmap):
+        if pixmap is not None:
+            self.cover_label.show()
+            self._right_layout.addItem(self.text_spacer)
+        self.cover_label.show_pixmap(pixmap)
+        self.updateGeometry()
+
+    def toggle_full_window(self):
+        if self._is_fullwindow:
+            self.toggle_full_window_needed.emit(False)
+        else:
+            # generally, display height will be less than 4000px
+            self.toggle_full_window_needed.emit(True)
+        self._is_fullwindow = not self._is_fullwindow
 
     def on_property_updated(self, name):
         if name in ('created_at', 'updated_at', 'songs_count', 'creator'):
@@ -250,6 +269,9 @@ class TableMetaWidget(MetaWidget):
     def _refresh_cover(self):
         if not self.cover:
             self.cover_label.hide()
+            self._right_layout.removeItem(self.text_spacer)
+        else:
+            self._right_layout.addItem(self.text_spacer)
 
     def _refresh_title(self):
         if self.title:
@@ -264,18 +286,12 @@ class TableMetaWidget(MetaWidget):
         self._refresh_desc()
         self._refresh_cover()
 
-    def set_cover_pixmap(self, pixmap):
-        if pixmap is not None:
-            self.cover_label.show()
-        self.cover_label.show_pixmap(pixmap)
-
-    def toggle_full_window(self):
-        if self._is_fullwindow:
-            self.toggle_full_window_needed.emit(False)
-        else:
-            # generally, display height will be less than 4000px
-            self.toggle_full_window_needed.emit(True)
-        self._is_fullwindow = not self._is_fullwindow
+    def sizeHint(self):
+        super_size = super().sizeHint()
+        if self.cover_label.isVisible():
+            height = self.cover_label.sizeHint().height() + 60
+            return QSize(super_size.width(), height)
+        return super_size
 
 
 class CollectionToolbar(QWidget):
@@ -367,8 +383,3 @@ class CollMetaWidget(MetaWidget):
         self._cover_label.setPixmap(
             pixmap.scaledToWidth(self._cover_label.width(),
                                  mode=Qt.SmoothTransformation))
-
-    # def resizeEvent(self, e):
-    #     super().resizeEvent(e)
-    #     width = e.size().width()
-    #     self._cover_label.setMinimumWidth(width//3)

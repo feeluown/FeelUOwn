@@ -1,5 +1,5 @@
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (QHBoxLayout, QPushButton, QWidget, QComboBox,
+from PyQt5.QtWidgets import (QHBoxLayout, QPushButton, QComboBox,
                              QLineEdit, QFrame)
 
 from fuocore.models import AlbumType

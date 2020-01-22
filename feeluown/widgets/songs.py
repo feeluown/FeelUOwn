@@ -7,7 +7,7 @@ from PyQt5.QtCore import (
     QAbstractTableModel, QAbstractListModel, QModelIndex,
     QSize, QRect, QPoint, QSortFilterProxyModel,
 )
-from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent, QColor
+from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent
 from PyQt5.QtWidgets import (
     QAction, QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
     QApplication, QPushButton, QTableView, QWidget, QMenu, QListView,
@@ -495,11 +495,24 @@ class SongsTableView(QTableView):
 
     def setModel(self, model):
         super().setModel(model)
-        self.show_all_rows()
 
-    def show_all_rows(self):
-        for i in range(self.model().rowCount()):
-            self.setRowHidden(i, False)
+        model.rowsInserted.connect(self.on_rows_changed)
+        model.rowsRemoved.connect(self.on_rows_changed)
+        self.on_rows_changed()
+
+    def wheelEvent(self, e):
+        e.ignore()
+
+    def on_rows_changed(self, *args):
+        self.setFixedHeight(self.sizeHint().height())
+        self.updateGeometry()
+
+    def sizeHint(self):
+        count = 0
+        if self.model() is not None:
+            count = self.model().rowCount()
+        height = 40 * max(count, 5)
+        return QSize(self.width(), height)
 
     def contextMenuEvent(self, event):
         menu = QMenu()

@@ -8,7 +8,6 @@ from PyQt5.QtWidgets import (
 
 from feeluown.widgets.separator import Separator
 from feeluown.widgets.mpv import MpvOpenGLWidget
-from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.left_panel import LeftPanel
 from feeluown.containers.right_panel import RightPanel
 from feeluown.containers.top_panel import TopPanel

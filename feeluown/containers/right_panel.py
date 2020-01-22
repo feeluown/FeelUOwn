@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize
-from PyQt5.QtGui import QPainter, QBrush, QColor, QPen, QPalette
-from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QScrollArea
+from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtGui import QPainter, QBrush, QColor
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
 from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
@@ -87,17 +87,20 @@ class RightPanel(QFrame):
     # draw background cover
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
+        if pixmap is None:
+            self.table_container.meta_widget.setMinimumHeight(0)
+        else:
+            height = (self._app.height() - self.bottom_panel.height()) // 2
+            self.table_container.meta_widget.setMinimumHeight(height)
         self.update()
 
     def paintEvent(self, e):
         if self._pixmap is None:
             return
 
-        body_height = 0
-        if self.table_container.songs_table.isVisible():
-            body_height += self.table_container.songs_table.height()
-        if self.table_container.albums_table.isVisible():
-            body_height += self.table_container.albums_table.height()
+        draw_height = self.bottom_panel.height()
+        if self.table_container.meta_widget.isVisible():
+            draw_height += self.table_container.meta_widget.height()
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -110,7 +113,6 @@ class RightPanel(QFrame):
         painter.save()
         brush = QBrush(scaled_pixmap)
         painter.setBrush(brush)
-        draw_height = self.height() - body_height
         y = (pixmap_size.height() - draw_height) // 2
         painter.translate(0, -y)
         rect = QRect(0, y, self.width(), draw_height)

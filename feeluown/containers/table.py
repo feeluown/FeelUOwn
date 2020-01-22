@@ -2,7 +2,6 @@ import asyncio
 import logging
 import random
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
 from requests.exceptions import RequestException
@@ -83,6 +82,7 @@ class Delegate:
             else:
                 self._app.ui.right_panel.show_background_image(None)
                 self.meta_widget.set_cover_pixmap(pixmap)
+            self._app.ui.table_container.updateGeometry()
 
     def show_model(self, model):
         aio.create_task(self.real_show_model(model))
@@ -104,10 +104,10 @@ class Delegate:
         self.albums_table.setModel(filter_model)
         self.albums_table.scrollToTop()
         try:
-            self.toolbar.filter_text_changed.disconnect()
+            self._app.ui.magicbox.filter_text_changed.disconnect()
         except TypeError:
             pass
-        self.toolbar.filter_text_changed.connect(filter_model.filter_by_text)
+        self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
         # when is artist mode, we should hide albums_table first
@@ -135,10 +135,10 @@ class Delegate:
         self.songs_table.setModel(filter_model)
         self.songs_table.scrollToTop()
         try:
-            self.toolbar.filter_text_changed.disconnect()
+            self._app.ui.magicbox.filter_text_changed.disconnect()
         except TypeError:
             pass
-        self.toolbar.filter_text_changed.connect(filter_model.filter_by_text)
+        self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
 
 class ArtistDelegate(Delegate):
@@ -338,7 +338,6 @@ class TableContainer(QFrame):
     def _setup_ui(self):
         self.toolbar.hide()
         self.meta_widget.add_tabbar(self.tabbar)
-        self.setAutoFillBackground(False)
 
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
@@ -369,6 +368,8 @@ class TableContainer(QFrame):
         self.toolbar.hide()
         self.songs_table.hide()
         self.albums_table.hide()
+        # clean right_panel background image
+        self._app.ui.right_panel.show_background_image(None)
         # disconnect songs_table signal
         signals = (
             self.songs_table.song_deleted,
@@ -459,12 +460,6 @@ class TableContainer(QFrame):
     def toggle_meta_full_window(self, fullwindow_needed):
         if fullwindow_needed:
             self.songs_table.hide()
-            self.meta_widget.setMaximumHeight(4000)
         else:
-            self.meta_widget.setMinimumHeight(self.height()*5//9)
             self.songs_table.show()
         self._app.ui.bottom_panel.update()
-
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
-        self.meta_widget.setMinimumHeight(self.height()*5//9)
