@@ -51,12 +51,12 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover {
     border: 1px solid #999;
     font-size: 12px;
 }
-PlayerControlPanel QPushButton:hover {
+PlayerControlPanel QPushButton:hover,
+PlayerControlPanel QPushButton:focus
+{
     outline: none;
 }
-PlayerControlPanel QPushButton:focus {
-    outline: none;
-}
+
 #pms_btn {
     height: 18px;
     background-color: transparent;
@@ -70,10 +70,15 @@ PlayerControlPanel QPushButton:focus {
 #toggle_video_btn {
     padding: 0px 3px;
 }
-#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover {
+#mv_btn:hover,
+#pms_btn:hover,
+#toggle_video_btn:hover
+{
     border: 1px solid #777;
 }
-#mv_btn:pressed, #pms_btn:pressed {
+#mv_btn:pressed,
+#pms_btn:pressed
+{
     background-color: #BCBCBC;
 }
 

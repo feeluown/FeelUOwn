@@ -23,7 +23,7 @@ from PyQt5.QtGui import (
     QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate, QListView,
+    QAbstractItemDelegate, QListView, QFrame,
 )
 
 from fuocore import aio
@@ -246,6 +246,7 @@ class AlbumListView(QListView):
         self.setViewMode(QListView.IconMode)
         self.setResizeMode(QListView.Adjust)
         self.setWrapping(True)
+        self.setFrameShape(QFrame.NoFrame)
 
         delegate = AlbumListDelegate(self)
         self.setItemDelegate(delegate)

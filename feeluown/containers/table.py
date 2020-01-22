@@ -117,6 +117,7 @@ class Delegate:
         # when is artist mode, we should hide albums_table first
         self.albums_table.hide()
         self.songs_table.show()
+        self.toolbar.show()
         self.toolbar.songs_mode()
 
         if show_count:
