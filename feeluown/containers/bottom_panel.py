@@ -14,23 +14,22 @@ class BottomPanel(QFrame):
         self.forward_btn = QPushButton('⇨', self)
         self.magicbox = MagicBox(self._app)
         self.status_line = StatusLine(self._app)
-        self.back_btn.setObjectName('back_btn')
-        self.forward_btn.setObjectName('forward_btn')
-        self.setObjectName('bottom_panel')
 
-        self.plugin_status_line_item = StatusLineItem(
-            'plugin',
-            PluginStatus(self._app))
-        self.status_line.add_item(self.plugin_status_line_item)
-
+        # initialize widgets
+        self.status_line.add_item(StatusLineItem('plugin', PluginStatus(self._app)))
         self.back_btn.setEnabled(False)
         self.forward_btn.setEnabled(False)
+
         self.back_btn.clicked.connect(self._app.browser.back)
         self.forward_btn.clicked.connect(self._app.browser.forward)
 
-        self.setup_ui()
+        self._setup_ui()
 
-    def setup_ui(self):
+    def _setup_ui(self):
+        self.setObjectName('bottom_panel')
+        self.back_btn.setObjectName('back_btn')
+        self.forward_btn.setObjectName('forward_btn')
+
         self._layout.addWidget(self.back_btn)
         self._layout.addWidget(self.forward_btn)
         self._layout.addSpacing(100)
@@ -38,8 +37,10 @@ class BottomPanel(QFrame):
         self._layout.addSpacing(100)
         self._layout.addWidget(self.status_line)
 
+        # assume the magicbox height is about 30
+        h_margin, v_margin = 5, 15
         height = self.magicbox.height()
-        self.setFixedHeight(height + 30)
 
-        self._layout.setContentsMargins(0, 5, 0, 5)
+        self.setFixedHeight(height + v_margin * 2)
+        self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
         self._layout.setSpacing(0)
