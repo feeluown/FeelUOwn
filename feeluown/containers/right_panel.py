@@ -35,21 +35,19 @@ class RightPanel(QFrame):
         self._layout = QVBoxLayout(self)
         self.scrollarea = ScrollArea(self._app, self)
         self.table_container = self.scrollarea.t
+        # TODO: collection container will be removed
         self.collection_container = CollectionContainer(self._app, self)
         self.bottom_panel = BottomPanel(app, self)
-        self.setup_ui()
 
-    def setup_ui(self):
+        self._setup_ui()
+
+    def _setup_ui(self):
         self.scrollarea.setMinimumHeight(100)
         self.collection_container.hide()
         self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self.scrollarea)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-
-    def sizeHint(self):
-        size = super().sizeHint()
-        return QSize(760, size.height())
 
     def show_model(self, model):
         self.scrollarea.show()
@@ -84,7 +82,6 @@ class RightPanel(QFrame):
             self.collection_container.show()
             self.collection_container.show_collection(coll)
 
-    # draw background cover
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
         if pixmap is None:
@@ -95,21 +92,30 @@ class RightPanel(QFrame):
         self.update()
 
     def paintEvent(self, e):
+        """
+        draw pixmap as a the background with a dark overlay
+        """
         if self._pixmap is None:
             return
-
-        draw_height = self.bottom_panel.height()
-        if self.table_container.meta_widget.isVisible():
-            draw_height += self.table_container.meta_widget.height()
 
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
+
+        # calculate available height
+        draw_height = self.bottom_panel.height()
+        if self.table_container.meta_widget.isVisible():
+            draw_height += self.table_container.meta_widget.height()
+        if self.table_container.toolbar.isVisible():
+            draw_height += self.table_container.toolbar.height()
+
+        # scale pixmap
         scaled_pixmap = self._pixmap.scaledToWidth(
             self.width(),
-            mode=Qt.SmoothTransformation
-        )
+            mode=Qt.SmoothTransformation)
         pixmap_size = scaled_pixmap.size()
+
+        # draw the center part of the pixmap on available rect
         painter.save()
         brush = QBrush(scaled_pixmap)
         painter.setBrush(brush)
@@ -119,10 +125,15 @@ class RightPanel(QFrame):
         painter.drawRect(rect)
         painter.restore()
 
-        painter.save()
         # draw overlay
+        painter.save()
         painter.setPen(Qt.NoPen)
         painter.setBrush(QColor(0, 0, 0, 200))
         painter.drawRect(self.rect())
         painter.restore()
+
         painter.end()
+
+    def sizeHint(self):
+        size = super().sizeHint()
+        return QSize(760, size.height())
