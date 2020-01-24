@@ -12,7 +12,7 @@ from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
 
-from feeluown.helpers import async_run, palette_bg_transparent
+from feeluown.helpers import async_run, BgTransparentMixin
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
 from feeluown.widgets.meta import TableMetaWidget
@@ -322,7 +322,7 @@ class PlayerPlaylistDelegate(Delegate):
             self.songs_table.selectRow(row)
 
 
-class TableContainer(QFrame):
+class TableContainer(QFrame, BgTransparentMixin):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
@@ -345,7 +345,6 @@ class TableContainer(QFrame):
         self._setup_ui()
 
         self._delegate = None
-        palette_bg_transparent(self)
 
     def _setup_ui(self):
         self.toolbar.hide()

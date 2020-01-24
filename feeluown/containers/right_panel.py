@@ -6,14 +6,14 @@ from fuocore import aio
 from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
-from feeluown.helpers import palette_bg_transparent
+from feeluown.helpers import BgTransparentMixin
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer
 from feeluown.containers.collection import CollectionContainer
 
 
-class ScrollArea(QScrollArea):
+class ScrollArea(QScrollArea, BgTransparentMixin):
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app
@@ -23,7 +23,6 @@ class ScrollArea(QScrollArea):
 
         self.t = TableContainer(app, self)
         self.setWidget(self.t)
-        palette_bg_transparent(self)
 
 
 class RightPanel(QFrame):

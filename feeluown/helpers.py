@@ -60,29 +60,13 @@ def measure_time(func):
     return wrapper
 
 
-def palette_bg_transparent(widget):
-    """(alpha)
-
-    HELP: think about a proper name for this function
-    """
-    palette = widget.palette()
-    palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
-    palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
-    widget.setPalette(palette)
-
-
-def palette_fg_light(widget):
-    """(alpha)
-
-    HELP: think about a proper name for this function
-    """
-    palette = widget.palette()
-    palette.setColor(QPalette.Active, QPalette.WindowText, Qt.white)
-    palette.setColor(QPalette.Inactive, QPalette.WindowText, Qt.white)
-    palette.setColor(QPalette.Active, QPalette.Text, Qt.white)
-    widget.setPalette(palette)
-
-
-def palette_standard(widget):
-    """(alpha)"""
-    widget.setPalette(widget.style().standardPalette())
+class BgTransparentMixin:
+    def __init__(self, *args, **kwargs):
+        palette = self.palette()
+        # KDE use the QPalette.Base as background color
+        palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
+        palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
+        # macOS use the QPalette.Window as background color
+        palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)
+        palette.setColor(QPalette.Inactive, QPalette.Window, Qt.transparent)
+        self.setPalette(palette)

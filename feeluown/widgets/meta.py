@@ -9,7 +9,7 @@ from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
-from feeluown.helpers import palette_bg_transparent
+from feeluown.helpers import BgTransparentMixin
 
 
 class CoverLabel(QLabel):
@@ -153,7 +153,7 @@ class MetaWidget(QFrame):
     creator = getset_property('creator')
 
 
-class TableMetaWidget(MetaWidget):
+class TableMetaWidget(MetaWidget, BgTransparentMixin):
 
     toggle_full_window_needed = pyqtSignal([bool])
 
@@ -178,7 +178,6 @@ class TableMetaWidget(MetaWidget):
         self._refresh()
 
         self.desc_container.space_pressed.connect(self.toggle_full_window)
-        palette_bg_transparent(self)
 
     def _setup_ui(self):
         self.cover_label.setMaximumWidth(200)
