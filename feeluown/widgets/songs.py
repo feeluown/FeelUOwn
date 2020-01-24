@@ -202,6 +202,8 @@ class SongsTableModel(QAbstractTableModel):
             except StopIteration:
                 self._can_fetch_more = False
                 break
+            except ProviderIOError:
+                break
             else:
                 songs.append(song)
         begin = len(self.songs)

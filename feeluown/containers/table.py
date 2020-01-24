@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import random
+from contextlib import suppress
 
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
@@ -30,11 +31,8 @@ def fetch_album_cover_wrapper(img_mgr):
             return cb(content)
         # FIXME: sleep random second to avoid send too many request to provider
         await asyncio.sleep(random.randrange(100) / 100)
-        try:
+        with suppress(ProviderIOError, RequestException):
             cover = await async_run(lambda: album.cover)
-        except (ProviderIOError, RequestException) as e:
-            logger.exception('fetch album cover failed: %s', str(e))
-        else:
             if cover:  # check if cover url is valid
                 # FIXME: we should check if cover is a media object
                 if not isinstance(cover, str):
@@ -80,7 +78,7 @@ class Delegate:
             # TODO: currently, background image is shown with dark
             # overlay. When we are using light theme, the text is also
             # in dark color, so we only show background image in dark theme
-            if background and self._app.theme_mgr.theme == 'dark':
+            if as_background and self._app.theme_mgr.theme == 'dark':
                 self.meta_widget.set_cover_pixmap(None)
                 self._app.ui.right_panel.show_background_image(pixmap)
             else:
@@ -205,25 +203,17 @@ class PlaylistDelegate(Delegate):
         self.meta_widget.title = playlist.name
 
         # show playlist song list
-        aio = asyncio.get_event_loop()
         songs = songs_g = None
-        try:
+        with suppress(ProviderIOError):
             if playlist.meta.allow_create_songs_g:
                 songs_g = GeneratorProxy.wrap(playlist.create_songs_g())
             else:
                 songs = await async_run(lambda: playlist.songs)
-        except ProviderIOError as e:
-            self._app.show_msg('read playlist/songs failed：{}'.format(str(e)))
-            logger.exception('read playlist/songs failed')
-        else:
             self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
 
         # show playlist description
-        try:
+        with suppress(ProviderIOError):
             desc = await async_run(lambda: playlist.desc)
-        except ProviderIOError as e:
-            self._app.show_msg('read playlist/desc failed：{}'.format(str(e)))
-        else:
             self.meta_widget.desc = desc
 
         # show playlist cover
@@ -407,16 +397,10 @@ class TableContainer(QFrame, BgTransparentMixin):
         task_spec = self._app.task_mgr.get_or_create(task_name)
 
         def songs_g_readall_cb(task):
-            try:
+            with suppress(ProviderIOError, asyncio.CancelledError):
                 songs = task.result()
-            except asyncio.CancelledError:
-                pass
-            except ProviderIOError as e:
-                self._app.show_msg('[play-all] read songs failed: {}'.format(str(e)))
-            else:
                 self._app.player.play_songs(songs=songs)
-            finally:
-                self.toolbar.enter_state_playall_end()
+            self.toolbar.enter_state_playall_end()
 
         model = self.songs_table.model()
         # FIXME: think about a more elegant way

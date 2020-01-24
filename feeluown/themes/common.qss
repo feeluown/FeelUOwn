@@ -23,9 +23,13 @@ DescriptionContainer, DescriptionContainer QLabel {
     background-color: transparent;
 }
 
-QLineEdit {
-    border-radius: 3px;
-    padding-left: 5px;
+MagicBox {
+    background: transparent;
+    border-bottom: 1px dashed #777;
+}
+MagicBox:focus {
+    border-bottom: 1px solid #777;
+    outline: none;
 }
 
 /*
