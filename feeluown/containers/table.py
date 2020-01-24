@@ -12,7 +12,7 @@ from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
 
-from feeluown.helpers import async_run, BgTransparentMixin
+from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
 from feeluown.widgets.meta import TableMetaWidget
@@ -68,7 +68,7 @@ class Delegate:
     #
     # utils function for delegate
     #
-    async def show_cover(self, cover, cover_uid, background=False):
+    async def show_cover(self, cover, cover_uid, as_background=False):
         cover = Media(cover, MediaType.image)
         url = cover.url
         app = self._app
@@ -107,10 +107,7 @@ class Delegate:
         filter_model.setSourceModel(model)
         self.albums_table.setModel(filter_model)
         self.albums_table.scrollToTop()
-        try:
-            self._app.ui.magicbox.filter_text_changed.disconnect()
-        except TypeError:
-            pass
+        disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
@@ -139,10 +136,7 @@ class Delegate:
         filter_model.setSourceModel(model)
         self.songs_table.setModel(filter_model)
         self.songs_table.scrollToTop()
-        try:
-            self._app.ui.magicbox.filter_text_changed.disconnect()
-        except TypeError:
-            pass
+        disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
 
@@ -192,7 +186,7 @@ class ArtistDelegate(Delegate):
         cover = await async_run(lambda: artist.cover)
         if cover:
             aio.create_task(
-                self.show_cover(cover, reverse(artist, '/cover'), background=True))
+                self.show_cover(cover, reverse(artist, '/cover'), as_background=True))
         self.meta_widget.desc = await async_run(lambda: artist.desc)
 
     async def tearDown(self):
@@ -393,10 +387,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.albums_table.show_album_needed,
         )
         for signal in signals:
-            try:
-                signal.disconnect()
-            except TypeError:
-                pass
+            disconnect_slots_if_has(signal)
 
         # secondly, prepare environment
         self.show()

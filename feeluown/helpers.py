@@ -60,6 +60,13 @@ def measure_time(func):
     return wrapper
 
 
+def disconnect_slots_if_has(signal):
+    try:
+        signal.disconnect()
+    except TypeError:  # signal has no slots
+        pass
+
+
 class BgTransparentMixin:
     def __init__(self, *args, **kwargs):
         palette = self.palette()
