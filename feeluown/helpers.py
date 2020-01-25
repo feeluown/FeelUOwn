@@ -70,10 +70,12 @@ def disconnect_slots_if_has(signal):
 class BgTransparentMixin:
     def __init__(self, *args, **kwargs):
         palette = self.palette()
-        # KDE use the QPalette.Base as background color
-        palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
-        palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
-        # macOS use the QPalette.Window as background color
-        palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)
-        palette.setColor(QPalette.Inactive, QPalette.Window, Qt.transparent)
+        if sys.platform == 'linux':
+            # KDE use the QPalette.Base as background color
+            palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
+            palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
+        else:
+            # macOS use the QPalette.Window as background color
+            palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)
+            palette.setColor(QPalette.Inactive, QPalette.Window, Qt.transparent)
         self.setPalette(palette)

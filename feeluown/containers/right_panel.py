@@ -1,4 +1,4 @@
-from PyQt5.QtCore import Qt, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
 from PyQt5.QtGui import QPainter, QBrush, QColor
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
@@ -23,6 +23,19 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
 
         self.t = TableContainer(app, self)
         self.setWidget(self.t)
+
+        self.verticalScrollBar().valueChanged.connect(self.on_v_scrollbar_value_changed)
+
+    def on_v_scrollbar_value_changed(self, value):
+        maximum = self.verticalScrollBar().maximum()
+        if maximum == value:
+            table_container = self.t
+            table = table_container.songs_table
+            if not table.isVisible():
+                return
+            model = table.model()
+            if model is not None and model.canFetchMore(QModelIndex()):
+                model.fetchMore(QModelIndex())
 
 
 class RightPanel(QFrame):

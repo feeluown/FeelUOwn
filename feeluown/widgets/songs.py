@@ -441,20 +441,20 @@ class SongsTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self._row_height = 40
+
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # FIXME: PyQt5 seg fault
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
         self.horizontalHeader().hide()
-        self.verticalHeader().setDefaultSectionSize(40)
+        self.verticalHeader().setDefaultSectionSize(self._row_height)
         self.setWordWrap(False)
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)
@@ -506,14 +506,24 @@ class SongsTableView(QTableView):
         e.ignore()
 
     def on_rows_changed(self, *args):
-        self.setFixedHeight(self.sizeHint().height())
+        if self.model().canFetchMore(QModelIndex()):
+            # according to QAbstractItemView source code,
+            # qt will trigger fetchMore when the last row is
+            # inside the viewport, so we always hide the last
+            # two row to ensure fetch-more will not be
+            # triggered automatically
+            remain = self._row_height * 2
+            self.setFixedHeight(self.sizeHint().height() - remain)
+        else:
+            self.setFixedHeight(self.sizeHint().height())
         self.updateGeometry()
 
     def sizeHint(self):
         count = 0
+        min_count = 5
         if self.model() is not None:
             count = self.model().rowCount()
-        height = 40 * max(count, 5)
+        height = self._row_height * max(count, min_count)
         return QSize(self.width(), height)
 
     def contextMenuEvent(self, event):
