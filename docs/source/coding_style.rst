@@ -40,6 +40,7 @@
 - 信号的 slot 方法应该设为 protected 方法
 - 类的 public 方法放在类的前面，protected 和 private 方法放在类的最后面，
   ``_setup_ui`` 函数除外
+- QWidget 子类最好不要有 async 方法，因为目前无法很好的为它编写相关单元测试
 
 
 
