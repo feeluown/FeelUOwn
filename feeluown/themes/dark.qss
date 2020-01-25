@@ -2,10 +2,6 @@ TopPanel {
     background-color: transparent;
 }
 
-TableMetaWidget {
-    /* background-color: #1e1e1e; */
-}
-
 Separator {
     background-color: #444;
 }

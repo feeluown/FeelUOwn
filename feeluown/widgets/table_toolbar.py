@@ -53,6 +53,8 @@ class SongsTableToolbar(QFrame):
 
     def _setup_ui(self):
         self._layout = QHBoxLayout(self)
+        # left margin of meta widget is 30, we align with it
+        # bottom margin of meta widget is 15, we should be larger than that
         self._layout.setContentsMargins(30, 0, 10, 20)
         self._layout.addWidget(self.play_all_btn)
         self._layout.addStretch(0)

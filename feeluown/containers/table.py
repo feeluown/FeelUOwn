@@ -339,9 +339,7 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
-        # self._layout.addWidget(self.tabbar)
         self._layout.addWidget(self.toolbar)
-        # self._layout.setAlignment(self.tabbar, Qt.AlignRight)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -387,6 +385,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._delegate = delegate
         await self._delegate.render()
 
+        # update bottom_panel to refresh right_panel background image
         self._app.ui.bottom_panel.update()
 
     async def play_song(self, song):

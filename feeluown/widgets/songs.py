@@ -1,4 +1,5 @@
 import logging
+
 from enum import IntEnum
 from functools import partial
 
@@ -388,6 +389,7 @@ class SongsTableDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
 
+        # draw a line under each row
         text_color = option.palette.color(QPalette.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
