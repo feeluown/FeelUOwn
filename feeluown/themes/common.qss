@@ -15,7 +15,7 @@ LeftPanel QListView {
     margin-left: 5px;
 }
 
-LeftPanel QListView, BottomPanel, QSplitter::handle, SongsTableView {
+LeftPanel QListView, QSplitter::handle {
     background-color: transparent;
 }
 
@@ -24,13 +24,18 @@ DescriptionContainer, DescriptionContainer QLabel {
 }
 
 MagicBox {
-    border-radius: 2px;
+    background: transparent;
+    border-bottom: 1px dashed #777;
+}
+MagicBox:focus {
+    border-bottom: 1px solid #777;
+    background: palette(window);
+    outline: none;
 }
 
 /*
  * buttons
  */
-
 PlayerControlPanel IconButton, VolumeButton {
     width: 30px;
     height: 30px;
@@ -51,16 +56,12 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover {
     border: 1px solid #999;
     font-size: 12px;
 }
-PlayerControlPanel QPushButton:hover {
+PlayerControlPanel QPushButton:hover,
+PlayerControlPanel QPushButton:focus
+{
     outline: none;
 }
-PlayerControlPanel QPushButton:focus {
-    outline: none;
-}
-#pms_btn, #mv_btn, #toggle_video_btn, SongsTableToolbar QPushButton {
-    border-radius: 3px;
-    border: 1px solid #AAA;
-}
+
 #pms_btn {
     height: 18px;
     background-color: transparent;
@@ -74,17 +75,16 @@ PlayerControlPanel QPushButton:focus {
 #toggle_video_btn {
     padding: 0px 3px;
 }
-SongsTableToolbar QPushButton {
-    padding: 2px 8px;
-}
-#mv_btn:hover, #pms_btn:hover, #toggle_video_btn:hover, SongsTableToolbar QPushButton:hover {
+#mv_btn:hover,
+#pms_btn:hover,
+#toggle_video_btn:hover
+{
     border: 1px solid #777;
 }
-#mv_btn:pressed, #pms_btn:pressed {
+#mv_btn:pressed,
+#pms_btn:pressed
+{
     background-color: #BCBCBC;
-}
-SongsTableToolbar QPushButton:pressed {
-    background-color: #EAEAEA;
 }
 
 #back_btn, #forward_btn {

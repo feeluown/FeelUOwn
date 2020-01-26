@@ -7,7 +7,7 @@ For feeluown, we want a unified API, so we create the Reader class.
 """
 import logging
 
-from fuocore.excs import ReadFailed
+from fuocore.excs import ReadFailed, ProviderIOError
 
 logger = logging.getLogger(__name__)
 
@@ -112,11 +112,16 @@ class SequentialReader(Reader):
         return self
 
     def __next__(self):
-        if self.count is None:
-            return next(self._g)
-        if self.offset < self.count:
-            self.offset += 1
-            return next(self._g)
+        try:
+            if self.count is None:
+                return next(self._g)
+            if self.offset < self.count:
+                self.offset += 1
+                return next(self._g)
+        except ProviderIOError:
+            raise
+        except Exception as e:
+            raise ProviderIOError(e)
         raise StopIteration
 
 

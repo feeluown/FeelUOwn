@@ -23,12 +23,15 @@ from PyQt5.QtGui import (
     QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate, QListView,
+    QAbstractItemDelegate, QListView, QFrame,
 )
 
 from fuocore import aio
+from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, AlbumType
 from fuocore.models.uri import reverse
+
+from feeluown.helpers import ItemViewNoScrollMixin
 
 
 COLORS = {
@@ -89,7 +92,11 @@ class AlbumListModel(QAbstractListModel):
 
     def fetchMore(self, _=QModelIndex()):
         expect_len = 10
-        albums = list(itertools.islice(self.albums_g, expect_len))
+        try:
+            albums = list(itertools.islice(self.albums_g, expect_len))
+        except ProviderIOError:
+            return
+
         acture_len = len(albums)
         colors = [random.choice(list(COLORS.values()))
                   for _ in range(0, acture_len)]
@@ -145,6 +152,7 @@ class AlbumFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None, types=None):
         super().__init__(parent)
 
+        self.text = ''
         self.types = types
 
     def filter_by_types(self, types):
@@ -154,14 +162,20 @@ class AlbumFilterProxyModel(QSortFilterProxyModel):
         self.types = types
         self.invalidateFilter()
 
-    def filterAcceptsRow(self, source_row, source_parent):
-        if not self.types:
-            return super().filterAcceptsRow(source_row, source_parent)
+    def filter_by_text(self, text):
+        self.text = text
+        self.invalidateFilter()
 
+    def filterAcceptsRow(self, source_row, source_parent):
+        accepted = True
         source_model = self.sourceModel()
         index = source_model.index(source_row, parent=source_parent)
         album = index.data(Qt.UserRole)
-        return AlbumType(album.type) in self.types
+        if accepted and self.types:
+            accepted = AlbumType(album.type) in self.types
+        if accepted and self.text:
+            accepted = self.text.lower() in album.name_display.lower()
+        return accepted
 
 
 class AlbumListDelegate(QAbstractItemDelegate):
@@ -224,16 +238,22 @@ class AlbumListDelegate(QAbstractItemDelegate):
         return super().sizeHint(option, index)
 
 
-class AlbumListView(QListView):
+class AlbumListView(ItemViewNoScrollMixin, QListView):
 
     show_album_needed = pyqtSignal([object])
 
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__()
+        QListView.__init__(self, parent=parent)
+
+        # override ItemViewNoScrollMixin variables
+        self._lease_row_count = 1
+        self._row_height = CoverMinWidth + TextHeight
 
         self.setViewMode(QListView.IconMode)
         self.setResizeMode(QListView.Adjust)
         self.setWrapping(True)
+        self.setFrameShape(QFrame.NoFrame)
 
         delegate = AlbumListDelegate(self)
         self.setItemDelegate(delegate)
@@ -244,3 +264,9 @@ class AlbumListView(QListView):
     def _on_activated(self, index):
         album = index.data(Qt.UserRole)
         self.show_album_needed.emit(album)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+
+        cover_height = calc_cover_width(self.width())
+        self._row_height = cover_height + TextHeight

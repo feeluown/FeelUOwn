@@ -4,56 +4,66 @@ all metadata related widgets, for example: description, cover, and so on.
 
 from datetime import datetime
 
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize
+from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
-    QSpacerItem, QScrollArea, QFrame, QTabBar
+    QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
 
-class TabBar(QTabBar):
-    song = '歌曲'
-    artist = '歌手'
-    album = '专辑'
-    contributed_works = '参与作品'
-
-    show_songs_needed = pyqtSignal()
-    show_artists_needed = pyqtSignal()
-    show_albums_needed = pyqtSignal()
-    show_contributed_works_needed = pyqtSignal()
-
-    def __init__(self, parent=None):
+class CoverLabel(QLabel):
+    def __init__(self, parent=None, pixmap=None):
         super().__init__(parent=parent)
 
-        self.tabBarClicked.connect(self.on_index_changed)
+        self._pixmap = pixmap
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
 
-    def use(self, *tabs):
-        i = self.count() - 1
-        while i >= 0:
-            self.removeTab(i)
-            i = i - 1
-        for tab in tabs:
-            self.addTab(tab)
+    def show_pixmap(self, pixmap):
+        self._pixmap = pixmap
+        self.updateGeometry()
 
-    def artist_mode(self):
-        self.use(TabBar.song,
-                 TabBar.album,
-                 TabBar.contributed_works)
+    def paintEvent(self, e):
+        """
+        draw pixmap with border radius
 
-    def library_mode(self):
-        self.use(TabBar.song,
-                 TabBar.artist,
-                 TabBar.album,
-                 TabBar.contributed_works)
+        We found two way to draw pixmap with border radius,
+        one is as follow, the other way is using bitmap mask,
+        but in our practice, the mask way has poor render effects
+        """
+        if self._pixmap is None:
+            return
+        radius = 3
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        scaled_pixmap = self._pixmap.scaledToWidth(
+            self.width(),
+            mode=Qt.SmoothTransformation
+        )
+        size = scaled_pixmap.size()
+        brush = QBrush(scaled_pixmap)
+        painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
+        y = (size.height() - self.height()) // 2
+        painter.save()
+        painter.translate(0, -y)
+        rect = QRect(0, y, self.width(), self.height())
+        painter.drawRoundedRect(rect, radius, radius)
+        painter.restore()
+        painter.end()
 
-    def on_index_changed(self, index):
-        text = self.tabText(index)
-        if text == self.song:
-            self.show_songs_needed.emit()
-        elif text == self.artist:
-            self.show_artists_needed.emit()
-        elif text == self.album:
-            self.show_albums_needed.emit()
-        else:
-            self.show_contributed_works_needed.emit()
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self.updateGeometry()
+
+    def sizeHint(self):
+        super_size = super().sizeHint()
+        if self._pixmap is None:
+            return super_size
+        h = (self.width() * self._pixmap.height()) // self._pixmap.width()
+        # cover label height hint can be as large as possible, since the
+        # parent width has been set maximumHeigh
+        w = self.width()
+        return QSize(w, min(w, h))
 
 
 class DescriptionContainer(QScrollArea):
@@ -115,7 +125,7 @@ class getset_property:
         instance.on_property_updated(self.name)
 
 
-class MetaWidget(QWidget):
+class MetaWidget(QFrame):
 
     def clear(self):
         self.title = None
@@ -125,7 +135,6 @@ class MetaWidget(QWidget):
         self.created_at = None
         self.updated_at = None
         self.creator = None
-        self.is_artist = False
         self.songs_count = None
 
     def on_property_updated(self, name):
@@ -140,21 +149,23 @@ class MetaWidget(QWidget):
     updated_at = getset_property('updated_at')
     songs_count = getset_property('songs_count')
     creator = getset_property('creator')
-    is_artist = getset_property('is_artist')
 
 
 class TableMetaWidget(MetaWidget):
 
     toggle_full_window_needed = pyqtSignal([bool])
 
-    def __init__(self, toolbar, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent=parent)
 
+        self.cover_label = CoverLabel(self)
+        # these three widgets are in right layout
         self.title_label = QLabel(self)
-        self.cover_label = QLabel(self)
         self.meta_label = QLabel(self)
         self.desc_container = DescriptionContainer(parent=self)
-        self.toolbar = toolbar
+        # this spacer item is used as a stretch in right layout,
+        # it's  width and height is not so important, we set them to 0
+        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
         self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)
@@ -167,40 +178,56 @@ class TableMetaWidget(MetaWidget):
         self.desc_container.space_pressed.connect(self.toggle_full_window)
 
     def _setup_ui(self):
-        self.cover_label.setMinimumWidth(200)
-        self.setMaximumHeight(180)
-        self.title_label.setAlignment(Qt.AlignTop)
-        self.meta_label.setAlignment(Qt.AlignTop)
-
+        self.cover_label.setMaximumWidth(200)
         self._v_layout = QVBoxLayout(self)
         self._h_layout = QHBoxLayout()
         self._right_layout = QVBoxLayout()
+        self._right_layout.addStretch(0)
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._right_layout.addWidget(self.desc_container)
-        self._right_layout.addWidget(self.toolbar)
-        self._right_layout.setAlignment(self.toolbar, Qt.AlignBottom)
+        self._right_layout.setStretchFactor(self.desc_container, 1)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)
+        self._h_layout.setStretchFactor(self._right_layout, 2)
+        self._h_layout.setStretchFactor(self.cover_label, 1)
         self._v_layout.addLayout(self._h_layout)
 
-        self._h_layout.setContentsMargins(10, 10, 10, 10)
-        self._h_layout.setSpacing(20)
+        self._h_layout.setContentsMargins(0, 30, 0, 10)
+        self._h_layout.setSpacing(30)
 
         self._right_layout.setContentsMargins(0, 0, 0, 0)
         self._right_layout.setSpacing(5)
 
-        self.layout().setContentsMargins(0, 0, 0, 0)
+        # left margin is same as toolbar left margin
+        self.layout().setContentsMargins(30, 0, 30, 0)
         self.layout().setSpacing(0)
+
+    def add_tabbar(self, tabbar):
+        self._right_layout.addWidget(tabbar)
+        self._right_layout.setAlignment(self.parent().tabbar, Qt.AlignLeft)
+
+    def set_cover_pixmap(self, pixmap):
+        if pixmap is not None:
+            self.cover_label.show()
+            self._right_layout.addItem(self.text_spacer)
+        self.cover_label.show_pixmap(pixmap)
+        self.updateGeometry()
+
+    def toggle_full_window(self):
+        if self._is_fullwindow:
+            self.toggle_full_window_needed.emit(False)
+        else:
+            # generally, display height will be less than 4000px
+            self.toggle_full_window_needed.emit(True)
+        self._is_fullwindow = not self._is_fullwindow
 
     def on_property_updated(self, name):
         if name in ('created_at', 'updated_at', 'songs_count', 'creator'):
             self._refresh_meta_label()
         elif name in ('title', 'subtitle'):
             self._refresh_title()
-        elif name == 'is_artist':
-            self._refresh_toolbar()
         elif name == 'desc':
             self._refresh_desc()
         elif name == 'cover':
@@ -208,8 +235,8 @@ class TableMetaWidget(MetaWidget):
 
     def _refresh_meta_label(self):
         creator = self.creator
-        creator_part = '👤 <a href="fuo://local/users/{}">{}</a>'\
-            .format(creator, creator) if creator else ''
+        # icon: 👤
+        creator_part = creator if creator else ''
         created_part = updated_part = songs_count_part = ''
         if self.updated_at:
             updated_at = datetime.fromtimestamp(self.updated_at)
@@ -221,13 +248,13 @@ class TableMetaWidget(MetaWidget):
                 .format(created_at.strftime('%Y-%m-%d'))
         if self.songs_count is not None:
             text = self.songs_count if self.songs_count != -1 else '未知'
-            songs_count_part = '歌曲数 <code style="font-size: small">{}</code>'\
+            songs_count_part = '<code style="font-size: small">{}</code> 首歌曲'\
                 .format(text)
         if creator_part or updated_part or created_part or songs_count_part:
             parts = [creator_part, created_part, updated_part, songs_count_part]
             valid_parts = [p for p in parts if p]
-            content = ' | '.join(valid_parts)
-            text = '<span style="color: grey">{}</span>'.format(content)
+            content = ' • '.join(valid_parts)
+            text = '<span>{}</span>'.format(content)
             # TODO: add linkActivated callback for meta_label
             self.meta_label.setText(text)
             self.meta_label.show()
@@ -236,7 +263,6 @@ class TableMetaWidget(MetaWidget):
 
     def _refresh_desc(self):
         if self.desc:
-            self.desc_container.show()
             self.desc_container.label.setText(self.desc)
         else:
             self.desc_container.hide()
@@ -244,12 +270,10 @@ class TableMetaWidget(MetaWidget):
     def _refresh_cover(self):
         if not self.cover:
             self.cover_label.hide()
-
-    def _refresh_toolbar(self):
-        if self.is_artist:
-            self.toolbar.artist_mode()
+            self._right_layout.removeItem(self.text_spacer)
         else:
-            self.toolbar.songs_mode()
+            self._right_layout.addItem(self.text_spacer)
+        self.updateGeometry()
 
     def _refresh_title(self):
         if self.title:
@@ -264,21 +288,24 @@ class TableMetaWidget(MetaWidget):
         self._refresh_desc()
         self._refresh_cover()
 
-    def set_cover_pixmap(self, pixmap):
-        self.cover_label.show()
-        self.cover_label.setPixmap(
-            pixmap.scaledToWidth(self.cover_label.width(),
-                                 mode=Qt.SmoothTransformation))
+    def sizeHint(self):
+        super_size = super().sizeHint()
+        if self.cover_label.isVisible():
+            margins = self.layout().contentsMargins()
+            v_margin = margins.top() + margins.bottom()
+            height = self.cover_label.sizeHint().height() + v_margin
+            return QSize(super_size.width(), height)
+        return super_size
 
-    def toggle_full_window(self):
-        if self._is_fullwindow:
-            self.toggle_full_window_needed.emit(False)
-            self.setMaximumHeight(180)
-        else:
-            # generally, display height will be less than 4000px
-            self.toggle_full_window_needed.emit(True)
-            self.setMaximumHeight(4000)
-        self._is_fullwindow = not self._is_fullwindow
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        # HELP: think about a more elegant way
+        # Currently, right panel draw background image on meta widget
+        # and bottom panel, when meta widget is resized, the background
+        # image will also be scaled, so we need to repaint on bottom panel
+        # and meta widget. However, by default, qt will only repaint
+        # meta widget in this case, so we trigger bottom panel update manually
+        self.parent()._app.ui.bottom_panel.update()
 
 
 class CollectionToolbar(QWidget):
@@ -370,8 +397,3 @@ class CollMetaWidget(MetaWidget):
         self._cover_label.setPixmap(
             pixmap.scaledToWidth(self._cover_label.width(),
                                  mode=Qt.SmoothTransformation))
-
-    # def resizeEvent(self, e):
-    #     super().resizeEvent(e)
-    #     width = e.size().width()
-    #     self._cover_label.setMinimumWidth(width//3)

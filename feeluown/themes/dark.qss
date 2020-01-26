@@ -1,22 +1,19 @@
-TableContainer {
-    background-color: #1e1e1e;
-}
-
 TopPanel {
     background-color: transparent;
 }
 
 Separator {
-    background-color: #555;
-}
-
-#mv_btn:pressed, #pms_btn:pressed {
-    background-color: #777;
-}
-TableToolbar QPushButton:pressed {
     background-color: #444;
 }
 
+#pms_btn, #mv_btn, #toggle_video_btn {
+    border-radius: 3px;
+    border: 1px solid #444;
+}
+
+#mv_btn:pressed, #pms_btn:pressed {
+    background-color: #1e1e1e;
+}
 #pp_btn {
     border-image: url(icons/play_dark.png);
 }

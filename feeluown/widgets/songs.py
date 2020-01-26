@@ -1,10 +1,12 @@
+import logging
+
 from enum import IntEnum
 from functools import partial
 
 from PyQt5.QtCore import (
     pyqtSignal, Qt, QVariant, QEvent,
     QAbstractTableModel, QAbstractListModel, QModelIndex,
-    QSize, QRect, QPoint,
+    QSize, QRect, QPoint, QSortFilterProxyModel,
 )
 from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent
 from PyQt5.QtWidgets import (
@@ -13,8 +15,14 @@ from PyQt5.QtWidgets import (
     QStyle, QSizePolicy, QStyleOptionButton, QStyledItemDelegate,
 )
 
+from fuocore.excs import ProviderIOError
 from fuocore.models import ModelExistence
+
 from feeluown.mimedata import ModelMimeData
+from feeluown.helpers import ItemViewNoScrollMixin
+
+
+logger = logging.getLogger(__name__)
 
 
 class Column(IntEnum):
@@ -197,6 +205,8 @@ class SongsTableModel(QAbstractTableModel):
             except StopIteration:
                 self._can_fetch_more = False
                 break
+            except ProviderIOError:
+                break
             else:
                 songs.append(song)
         begin = len(self.songs)
@@ -285,6 +295,30 @@ class SongsTableModel(QAbstractTableModel):
             return ModelMimeData(song)
 
 
+class SongFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None, text=''):
+        super().__init__(parent)
+
+        self.text = text
+
+    def filter_by_text(self, text):
+        # if text is an empty string or None, we show all songs
+        self.text = text or ''
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        if not self.text:
+            return super().filterAcceptsRow(source_row, source_parent)
+
+        source_model = self.sourceModel()
+        index = source_model.index(source_row, Column.song, parent=source_parent)
+        song = index.data(Qt.UserRole)
+        text = self.text.lower()
+        return text in song.title_display.lower() \
+            or text in song.album_name_display.lower() \
+            or text in song.artists_name_display.lower()
+
+
 class ArtistsModel(QAbstractListModel):
     def __init__(self, artists):
         super().__init__()
@@ -357,6 +391,23 @@ class SongsTableDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
 
+        # draw a line under each row
+        text_color = option.palette.color(QPalette.Text)
+        if text_color.lightness() > 150:
+            non_text_color = text_color.darker(140)
+        else:
+            non_text_color = text_color.lighter(150)
+        non_text_color.setAlpha(30)
+        pen = QPen(non_text_color)
+        painter.setPen(pen)
+        bottom_left = option.rect.bottomLeft()
+        bottom_right = option.rect.bottomRight()
+        if index.model().columnCount() - 1 == index.column():
+            bottom_right = QPoint(bottom_right.x() - 10, bottom_right.y())
+        if index.column() == 0:
+            bottom_left = QPoint(bottom_left.x() + 10, bottom_right.y())
+        painter.drawLine(bottom_left, bottom_right)
+
     def sizeHint(self, option, index):
         """set proper width for each column
 
@@ -364,11 +415,13 @@ class SongsTableDelegate(QStyledItemDelegate):
         can be uncertain. I don't know why this would happen,
         since we have set width for the header.
         """
-        widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
-        width = self.parent().width()
-        w = int(width * widths[index.column()])
-        h = option.rect.height()
-        return QSize(w, h)
+        if index.isValid():
+            widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
+            width = self.parent().width()
+            w = int(width * widths[index.column()])
+            h = option.rect.height()
+            return QSize(w, h)
+        return super().sizeHint(option, index)
 
     def editorEvent(self, event, model, option, index):
         super().editorEvent(event, model, option, index)
@@ -379,7 +432,7 @@ class SongsTableDelegate(QStyledItemDelegate):
             super().updateEditorGeometry(editor, option, index)
 
 
-class SongsTableView(QTableView):
+class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
     show_artist_needed = pyqtSignal([object])
     show_album_needed = pyqtSignal([object])
@@ -391,78 +444,63 @@ class SongsTableView(QTableView):
 
     def __init__(self, parent=None):
         super().__init__(parent)
+        QTableView.__init__(self, parent)
+
+        # override ItemViewNoScrollMixin variables
+        self._least_row_count = 6
+        self._row_height = 40
 
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # FIXME: PyQt5 seg fault
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        # self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        # self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
         self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
-        # self.verticalHeader().setDefaultSectionSize(40)
+        self.horizontalHeader().hide()
+        self.verticalHeader().setDefaultSectionSize(self._row_height)
         self.setWordWrap(False)
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.setAlternatingRowColors(True)
+        # self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
-        if index.column() == Column.song:
-            song = index.data(Qt.UserRole)
-            self.play_song_needed.emit(song)
-        elif index.column() == Column.artist:
-            song = index.data(Qt.UserRole)
-            artists = song.artists
-            if artists is not None:
-                if len(artists) > 1:
-                    self.edit(index)
-                else:
-                    self.show_artist_needed.emit(artists[0])
-        elif index.column() == Column.album:
-            song = index.data(Qt.UserRole)
-            if song.album:
-                self.show_album_needed.emit(song.album)
+        try:
+            if index.column() == Column.song:
+                song = index.data(Qt.UserRole)
+                self.play_song_needed.emit(song)
+            elif index.column() == Column.artist:
+                song = index.data(Qt.UserRole)
+                artists = song.artists
+                if artists is not None:
+                    if len(artists) > 1:
+                        self.edit(index)
+                    else:
+                        self.show_artist_needed.emit(artists[0])
+            elif index.column() == Column.album:
+                song = index.data(Qt.UserRole)
+                album = song.album
+                self.show_album_needed.emit(album)
+        except (ProviderIOError, Exception):
+            # FIXME: we should only catch ProviderIOError here,
+            # but currently, some plugins such fuo-qqmusic may raise
+            # requests.RequestException
+            logger.exception('fetch song.album failed')
         # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
         # 测试 dataChanged 似乎不能按照预期工作
         model = self.model()
-        topleft = model.createIndex(index.row(), 0)
-        bottomright = model.createIndex(index.row(), 4)
+        topleft = model.index(index.row(), 0)
+        bottomright = model.index(index.row(), 4)
         model.dataChanged.emit(topleft, bottomright, [])
-
-    def setModel(self, model):
-        super().setModel(model)
-        self.show_all_rows()
-
-    def show_all_rows(self):
-        for i in range(self.model().rowCount()):
-            self.setRowHidden(i, False)
-
-    def filter_row(self, text):
-        # TODO: improve search algorithm
-        if not text:
-            self.show_all_rows()
-            return
-        if not self.model():
-            return
-
-        songs = self.model().songs
-        for i, song in enumerate(songs):
-            if text.lower() not in song.title_display.lower()\
-                    and text not in song.album_name_display.lower()\
-                    and text not in song.artists_name_display.lower():
-                self.setRowHidden(i, True)
-            else:
-                self.setRowHidden(i, False)
 
     def contextMenuEvent(self, event):
         menu = QMenu()
