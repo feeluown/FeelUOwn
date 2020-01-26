@@ -31,6 +31,8 @@ from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, AlbumType
 from fuocore.models.uri import reverse
 
+from feeluown.helpers import ItemViewNoScrollMixin
+
 
 COLORS = {
     'yellow':    '#b58900',
@@ -236,12 +238,17 @@ class AlbumListDelegate(QAbstractItemDelegate):
         return super().sizeHint(option, index)
 
 
-class AlbumListView(QListView):
+class AlbumListView(ItemViewNoScrollMixin, QListView):
 
     show_album_needed = pyqtSignal([object])
 
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__()
+        QListView.__init__(self, parent=parent)
+
+        # override ItemViewNoScrollMixin variables
+        self._lease_row_count = 1
+        self._row_height = CoverMinWidth + TextHeight
 
         self.setViewMode(QListView.IconMode)
         self.setResizeMode(QListView.Adjust)
@@ -257,3 +264,9 @@ class AlbumListView(QListView):
     def _on_activated(self, index):
         album = index.data(Qt.UserRole)
         self.show_album_needed.emit(album)
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+
+        cover_height = calc_cover_width(self.width())
+        self._row_height = cover_height + TextHeight
