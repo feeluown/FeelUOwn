@@ -44,7 +44,7 @@ def fetch_album_cover_wrapper(img_mgr):
     return fetch_album_cover
 
 
-class Delegate:
+class Renderer:
     async def setUp(self, container):
         # pylint: disable=attribute-defined-outside-init
         self.meta_widget = container.meta_widget
@@ -58,7 +58,14 @@ class Delegate:
         self.real_show_model = container.show_model
 
     async def render(self):
-        pass
+        """render contents in table container
+
+        please follow the following rendering order:
+
+        1. show meta widget and basic metadata, bind signal if needed
+        2. fetch data and show content in table, bind signal if needed
+        3. fetch description and show, bind signal if needed
+        """
 
     async def tearDown(self):
         pass
@@ -138,7 +145,7 @@ class Delegate:
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
 
-class ArtistDelegate(Delegate):
+class ArtistRenderer(Renderer):
     def __init__(self, artist):
         self.artist = artist
 
@@ -191,7 +198,7 @@ class ArtistDelegate(Delegate):
         pass
 
 
-class PlaylistDelegate(Delegate):
+class PlaylistRenderer(Renderer):
     def __init__(self, playlist):
         self.playlist = playlist
 
@@ -236,7 +243,7 @@ class PlaylistDelegate(Delegate):
         self.songs_table.song_deleted.connect(lambda song: remove_song(song))
 
 
-class AlbumDelegate(Delegate):
+class AlbumRenderer(Renderer):
     def __init__(self, album):
         self.album = album
 
@@ -258,7 +265,7 @@ class AlbumDelegate(Delegate):
         self.meta_widget.desc = await async_run(lambda: album.desc)
 
 
-class SongsCollectionDelegate(Delegate):
+class SongsCollectionRenderer(Renderer):
     def __init__(self, collection):
         self.collection = collection
 
@@ -273,7 +280,7 @@ class SongsCollectionDelegate(Delegate):
         self.songs_table.song_deleted.connect(collection.remove)
 
 
-class AlbumsCollectionDelegate(Delegate):
+class AlbumsCollectionRenderer(Renderer):
     def __init__(self, reader):
         self.reader = reader
 
@@ -286,7 +293,7 @@ class AlbumsCollectionDelegate(Delegate):
         self.show_albums(self.reader)
 
 
-class PlayerPlaylistDelegate(Delegate):
+class PlayerPlaylistRenderer(Renderer):
 
     async def render(self):
         player = self._app.player
@@ -415,31 +422,31 @@ class TableContainer(QFrame, BgTransparentMixin):
     async def show_model(self, model):
         model_type = ModelType(model.meta.model_type)
         if model_type == ModelType.album:
-            delegate = AlbumDelegate(model)
+            delegate = AlbumRenderer(model)
         elif model_type == ModelType.artist:
-            delegate = ArtistDelegate(model)
+            delegate = ArtistRenderer(model)
         elif model_type == ModelType.playlist:
-            delegate = PlaylistDelegate(model)
+            delegate = PlaylistRenderer(model)
         else:
             delegate = None
         await self.set_delegate(delegate)
 
     def show_collection(self, coll):
-        delegate = SongsCollectionDelegate(coll)
+        delegate = SongsCollectionRenderer(coll)
         aio.create_task(self.set_delegate(delegate))
 
     def show_songs(self, songs=None, songs_g=None):
         """(DEPRECATED) provided only for backward compatibility"""
-        delegate = Delegate()
+        delegate = Renderer()
         task = aio.create_task(self.set_delegate(delegate))
         task.add_done_callback(
             lambda _: delegate.show_songs(songs=songs, songs_g=songs_g))
 
     def show_albums_coll(self, albums_g):
-        aio.create_task(self.set_delegate(AlbumsCollectionDelegate(albums_g)))
+        aio.create_task(self.set_delegate(AlbumsCollectionRenderer(albums_g)))
 
     def show_player_playlist(self):
-        aio.create_task(self.set_delegate(PlayerPlaylistDelegate()))
+        aio.create_task(self.set_delegate(PlayerPlaylistRenderer()))
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:

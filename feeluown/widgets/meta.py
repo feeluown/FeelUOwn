@@ -196,13 +196,14 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
         self._h_layout.setStretchFactor(self.cover_label, 1)
         self._v_layout.addLayout(self._h_layout)
 
-        self._h_layout.setContentsMargins(30, 30, 30, 15)
+        self._h_layout.setContentsMargins(0, 30, 0, 15)
         self._h_layout.setSpacing(30)
 
         self._right_layout.setContentsMargins(0, 0, 0, 0)
         self._right_layout.setSpacing(5)
 
-        self.layout().setContentsMargins(0, 0, 0, 0)
+        # left margin is same as toolbar left margin
+        self.layout().setContentsMargins(30, 0, 30, 0)
         self.layout().setSpacing(0)
 
     def add_tabbar(self, tabbar):
@@ -292,7 +293,9 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
     def sizeHint(self):
         super_size = super().sizeHint()
         if self.cover_label.isVisible():
-            height = self.cover_label.sizeHint().height() + 60
+            margins = self.layout().contentsMargins()
+            v_margin = margins.top() + margins.bottom()
+            height = self.cover_label.sizeHint().height() + v_margin
             return QSize(super_size.width(), height)
         return super_size
 
