@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import QFrame, QPushButton, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout
+
 from feeluown.widgets.magicbox import MagicBox
 from feeluown.widgets.statusline import StatusLine, StatusLineItem
 from feeluown.widgets.statusline_items import PluginStatus
 
 
-class BottomPanel(QFrame):
+class BottomPanel(QWidget):
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app

@@ -392,9 +392,6 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._delegate = delegate
         await self._delegate.render()
 
-        # update bottom_panel to refresh right_panel background image
-        self._app.ui.bottom_panel.update()
-
     async def play_song(self, song):
         self._app.player.play_song(song)
 
@@ -457,4 +454,3 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.songs_table.hide()
         else:
             self.songs_table.show()
-        self._app.ui.bottom_panel.update()

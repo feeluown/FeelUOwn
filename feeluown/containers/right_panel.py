@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
-from PyQt5.QtGui import QPainter, QBrush, QColor
+from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
 from fuocore import aio
@@ -100,18 +100,22 @@ class RightPanel(QFrame):
         if pixmap is None:
             self.table_container.meta_widget.setMinimumHeight(0)
         else:
-            height = (self._app.height() - self.bottom_panel.height()) // 2
+            height = (self._app.height() - self.bottom_panel.height() -
+                      self.table_container.toolbar.height()) // 2
             self.table_container.meta_widget.setMinimumHeight(height)
         self.update()
 
     def paintEvent(self, e):
         """
         draw pixmap as a the background with a dark overlay
+
+        HELP: currently, this cost much CPU
         """
         if self._pixmap is None:
             return
 
         painter = QPainter(self)
+        painter.setPen(Qt.NoPen)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
@@ -140,9 +144,13 @@ class RightPanel(QFrame):
 
         # draw overlay
         painter.save()
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(QColor(0, 0, 0, 200))
-        painter.drawRect(self.rect())
+        rect = QRect(0, 0, self.width(), draw_height)
+        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        gradient.setColorAt(0, QColor(0, 0, 0, 50))
+        gradient.setColorAt(0.5, QColor(0, 0, 0, 50))
+        gradient.setColorAt(1, QColor(0, 0, 0, 180))
+        painter.setBrush(gradient)
+        painter.drawRect(rect)
         painter.restore()
 
         painter.end()

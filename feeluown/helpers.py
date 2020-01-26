@@ -109,14 +109,15 @@ class ItemViewNoScrollMixin:
     def setModel(self, model):
         super().setModel(model)
 
-        model.rowsInserted.connect(self.on_rows_changed)
-        model.rowsRemoved.connect(self.on_rows_changed)
+        model.sourceModel().rowsInserted.connect(self.on_rows_changed)
+        model.sourceModel().rowsRemoved.connect(self.on_rows_changed)
         self.on_rows_changed()
 
     def wheelEvent(self, e):
         e.ignore()
 
     def sizeHint(self):
+        height = min_height = self._row_height * self._least_row_count + self._reserved
         if self.model() is not None:
             row_count = self.model().rowCount()
             column_count = self.model().columnCount()
@@ -124,6 +125,5 @@ class ItemViewNoScrollMixin:
             index = self.model().index(row_count - 1, column_count - 1)
             rect = self.visualRect(index)
             height = rect.y() + rect.height() + self._reserved
-        else:
-            height = self._row_height * self._least_row_count
+            height = max(min_height, height)
         return QSize(self.width(), height)

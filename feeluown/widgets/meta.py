@@ -9,8 +9,6 @@ from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QScrollArea, QFrame, QSizePolicy
 
-from feeluown.helpers import BgTransparentMixin
-
 
 class CoverLabel(QLabel):
     def __init__(self, parent=None, pixmap=None):
@@ -153,7 +151,7 @@ class MetaWidget(QFrame):
     creator = getset_property('creator')
 
 
-class TableMetaWidget(MetaWidget, BgTransparentMixin):
+class TableMetaWidget(MetaWidget):
 
     toggle_full_window_needed = pyqtSignal([bool])
 
@@ -196,7 +194,7 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
         self._h_layout.setStretchFactor(self.cover_label, 1)
         self._v_layout.addLayout(self._h_layout)
 
-        self._h_layout.setContentsMargins(0, 30, 0, 15)
+        self._h_layout.setContentsMargins(0, 30, 0, 10)
         self._h_layout.setSpacing(30)
 
         self._right_layout.setContentsMargins(0, 0, 0, 0)
@@ -256,7 +254,7 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
             parts = [creator_part, created_part, updated_part, songs_count_part]
             valid_parts = [p for p in parts if p]
             content = ' • '.join(valid_parts)
-            text = '<span style="color: grey">{}</span>'.format(content)
+            text = '<span>{}</span>'.format(content)
             # TODO: add linkActivated callback for meta_label
             self.meta_label.setText(text)
             self.meta_label.show()
@@ -265,7 +263,6 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
 
     def _refresh_desc(self):
         if self.desc:
-            self.desc_container.show()
             self.desc_container.label.setText(self.desc)
         else:
             self.desc_container.hide()
@@ -276,6 +273,7 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
             self._right_layout.removeItem(self.text_spacer)
         else:
             self._right_layout.addItem(self.text_spacer)
+        self.updateGeometry()
 
     def _refresh_title(self):
         if self.title:
@@ -298,6 +296,16 @@ class TableMetaWidget(MetaWidget, BgTransparentMixin):
             height = self.cover_label.sizeHint().height() + v_margin
             return QSize(super_size.width(), height)
         return super_size
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        # HELP: think about a more elegant way
+        # Currently, right panel draw background image on meta widget
+        # and bottom panel, when meta widget is resized, the background
+        # image will also be scaled, so we need to repaint on bottom panel
+        # and meta widget. However, by default, qt will only repaint
+        # meta widget in this case, so we trigger bottom panel update manually
+        self.parent()._app.ui.bottom_panel.update()
 
 
 class CollectionToolbar(QWidget):

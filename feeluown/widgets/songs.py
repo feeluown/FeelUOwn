@@ -447,7 +447,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         QTableView.__init__(self, parent)
 
         # override ItemViewNoScrollMixin variables
-        self._lease_row_count = 5
+        self._least_row_count = 6
         self._row_height = 40
 
         self.delegate = SongsTableDelegate(self)

@@ -1,11 +1,10 @@
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import (QHBoxLayout, QPushButton, QComboBox,
-                             QFrame)
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QComboBox, QWidget
 
 from fuocore.models import AlbumType
 
 
-class SongsTableToolbar(QFrame):
+class SongsTableToolbar(QWidget):
     play_all_needed = pyqtSignal()
     filter_albums_needed = pyqtSignal([list])
     filter_text_changed = pyqtSignal([str])
@@ -55,7 +54,7 @@ class SongsTableToolbar(QFrame):
         self._layout = QHBoxLayout(self)
         # left margin of meta widget is 30, we align with it
         # bottom margin of meta widget is 15, we should be larger than that
-        self._layout.setContentsMargins(30, 0, 10, 20)
+        self._layout.setContentsMargins(30, 0, 30, 20)
         self._layout.addWidget(self.play_all_btn)
         self._layout.addStretch(0)
         self._layout.addWidget(self.filter_albums_combobox)

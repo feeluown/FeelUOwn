@@ -29,6 +29,7 @@ MagicBox {
 }
 MagicBox:focus {
     border-bottom: 1px solid #777;
+    background: palette(window);
     outline: none;
 }
 
