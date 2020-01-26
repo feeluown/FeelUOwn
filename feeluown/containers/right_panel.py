@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
-from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient
+from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
 from fuocore import aio
@@ -11,6 +11,12 @@ from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer
 from feeluown.containers.collection import CollectionContainer
+
+
+def add_alpha(color, alpha):
+    new_color = QColor(color)
+    new_color.setAlpha(alpha)
+    return new_color
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
@@ -36,6 +42,10 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
             model = table.model()
             if model is not None and model.canFetchMore(QModelIndex()):
                 model.fetchMore(QModelIndex())
+
+    def wheelEvent(self, e):
+        super().wheelEvent(e)
+        self._app.ui.bottom_panel.update()
 
 
 class RightPanel(QFrame):
@@ -127,6 +137,15 @@ class RightPanel(QFrame):
         if self.table_container.toolbar.isVisible():
             draw_height += self.table_container.toolbar.height()
 
+        scrolled = self.scrollarea.verticalScrollBar().value()
+        max_scroll_height = draw_height - self.bottom_panel.height()
+        if scrolled >= max_scroll_height:
+            painter.save()
+            painter.setBrush(self.palette().brush(QPalette.Window))
+            painter.drawRect(self.rect())
+            painter.restore()
+            return
+
         # scale pixmap
         scaled_pixmap = self._pixmap.scaledToWidth(
             self.width(),
@@ -138,18 +157,22 @@ class RightPanel(QFrame):
         brush = QBrush(scaled_pixmap)
         painter.setBrush(brush)
         y = (pixmap_size.height() - draw_height) // 2
-        painter.translate(0, -y)
+        painter.translate(0, - y - scrolled)
         rect = QRect(0, y, self.width(), draw_height)
         painter.drawRect(rect)
-        painter.restore()
 
         # draw overlay
-        painter.save()
-        rect = QRect(0, 0, self.width(), draw_height)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        gradient.setColorAt(0, QColor(0, 0, 0, 50))
-        gradient.setColorAt(0.5, QColor(0, 0, 0, 50))
-        gradient.setColorAt(1, QColor(0, 0, 0, 180))
+        color = self.palette().color(QPalette.Base)
+        if draw_height == self.height():
+            gradient.setColorAt(0, add_alpha(color, 180))
+            gradient.setColorAt(1, add_alpha(color, 230))
+        else:
+            gradient.setColorAt(0, add_alpha(color, 50))
+            gradient.setColorAt(0.6, add_alpha(color, 100))
+            gradient.setColorAt(0.8, add_alpha(color, 200))
+            gradient.setColorAt(0.9, add_alpha(color, 240))
+            gradient.setColorAt(1, color)
         painter.setBrush(gradient)
         painter.drawRect(rect)
         painter.restore()
