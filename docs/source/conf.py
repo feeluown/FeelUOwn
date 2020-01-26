@@ -31,13 +31,13 @@ sys.path.insert(0, os.path.abspath('../..'))
 # -- Project information -----------------------------------------------------
 
 project = 'feeluown'
-copyright = '2019, cosven'
+copyright = '2020, cosven'
 author = 'cosven'
 
 # The short X.Y version
-version = '3.2a0'
+version = '3.3'
 # The full version, including alpha/beta/rc tags
-release = '3.2a0'
+release = '3.3'
 
 
 # -- General configuration ---------------------------------------------------

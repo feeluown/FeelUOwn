@@ -1,5 +1,17 @@
 Changelog
 ---------
+
+3.3 (2020-01-26)
+"""""""""""""""""""""
+- bugfix; 修复多个导致 app crash 的 bug
+- feat: 新的歌手详情页界面
+- enhance: 改善专辑列表展示
+- refactor: 将 widgets 包拆分成 containers 和 widgets
+
+3.2a0 (2019-11-26)
+"""""""""""""""""""""
+
+
 3.1.1 (2019-10-28)
 """""""""""""""""""""
 - bugfix: 正确处理 song 为 None 的情况
