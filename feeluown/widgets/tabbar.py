@@ -11,6 +11,7 @@ class TableTabBarV2(QWidget):
     show_songs_needed = pyqtSignal()
     show_artists_needed = pyqtSignal()
     show_albums_needed = pyqtSignal()
+    show_desc_needed = pyqtSignal()
     show_contributed_albums_needed = pyqtSignal()
 
     def __init__(self, parent=None):
@@ -18,11 +19,13 @@ class TableTabBarV2(QWidget):
 
         self.songs_btn = QRadioButton('歌曲', self)
         self.albums_btn = QRadioButton('专辑', self)
+        self.desc_btn = QRadioButton('简介', self)
         self.contributed_btn = QRadioButton('参与作品', self)
         self._layout = QHBoxLayout(self)
 
         self.songs_btn.clicked.connect(self.show_songs_needed.emit)
         self.albums_btn.clicked.connect(self.show_albums_needed.emit)
+        self.desc_btn.clicked.connect(self.show_desc_needed.emit)
         self.contributed_btn.clicked.connect(self.show_contributed_albums_needed.emit)
 
         # TODO: let caller to decide which btn is checked by default
@@ -35,6 +38,7 @@ class TableTabBarV2(QWidget):
     def _setup_ui(self):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self.desc_btn)
         self._layout.addWidget(self.songs_btn)
         self._layout.addWidget(self.albums_btn)
         self._layout.addWidget(self.contributed_btn)

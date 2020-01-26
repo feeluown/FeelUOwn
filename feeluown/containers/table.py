@@ -52,6 +52,7 @@ class Renderer:
         self.tabbar = container.tabbar
         self.songs_table = container.songs_table
         self.albums_table = container.albums_table
+        self.desc_container = self.meta_widget.desc_container
         # pylint: disable=protected-access
         self._app = container._app
 
@@ -100,6 +101,7 @@ class Renderer:
         # always bind signal first
         # album list filters
         # show the layout
+        self.desc_container.hide()
         self.songs_table.hide()
         self.albums_table.show()
         self.toolbar.albums_mode()
@@ -117,6 +119,7 @@ class Renderer:
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
         # when is artist mode, we should hide albums_table first
+        self.desc_container.hide()
         self.albums_table.hide()
         self.songs_table.show()
         self.toolbar.show()
@@ -143,6 +146,12 @@ class Renderer:
         self.songs_table.scrollToTop()
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
+
+    def show_desc(self):
+        self.songs_table.hide()
+        self.albums_table.hide()
+        self.toolbar.hide()
+        self.desc_container.show()
 
 
 class ArtistRenderer(Renderer):
@@ -193,6 +202,7 @@ class ArtistRenderer(Renderer):
             aio.create_task(
                 self.show_cover(cover, reverse(artist, '/cover'), as_background=True))
         self.meta_widget.desc = await async_run(lambda: artist.desc)
+        self.tabbar.show_desc_needed.connect(self.show_desc)
 
     async def tearDown(self):
         pass
@@ -379,6 +389,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.tabbar.show_contributed_albums_needed,
             self.tabbar.show_albums_needed,
             self.tabbar.show_songs_needed,
+            self.tabbar.show_desc_needed,
             self.albums_table.show_album_needed,
         )
         for signal in signals:
@@ -452,5 +463,7 @@ class TableContainer(QFrame, BgTransparentMixin):
     def toggle_meta_full_window(self, fullwindow_needed):
         if fullwindow_needed:
             self.songs_table.hide()
+            self.toolbar.hide()
         else:
             self.songs_table.show()
+            self.toolbar.show()
