@@ -59,6 +59,7 @@ class RightPanel(QFrame):
         self.collection_container.hide()
         self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self.scrollarea)
+        self._layout.addWidget(self.collection_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
