@@ -239,18 +239,9 @@ class PlaylistRenderer(Renderer):
                 self.show_cover(playlist.cover, reverse(playlist, '/cover')))
 
         def remove_song(song):
-            model = self.songs_table.model()
-            # FIXME: think about a more elegant way
-            row = model.sourceModel().songs.index(song)
-            msg = 'remove {} from {}'.format(song, playlist)
-            with self._app.create_action(msg) as action:
-                rv = playlist.remove(song.identifier)
-                if rv:
-                    model.removeRow(row)
-                else:
-                    action.failed()
-        # TODO: remove_song by row may be more elegant
-        self.songs_table.song_deleted.connect(lambda song: remove_song(song))
+            playlist.remove(song.identifier)
+
+        self.songs_table.remove_song_func = remove_song
 
 
 class AlbumRenderer(Renderer):
@@ -287,7 +278,7 @@ class SongsCollectionRenderer(Renderer):
         self.meta_widget.created_at = collection.created_at
         self.show_songs([model for model in collection.models
                          if model.meta.model_type == ModelType.song])
-        self.songs_table.song_deleted.connect(collection.remove)
+        self.songs_table.remove_song_func = collection.remove
 
 
 class AlbumsCollectionRenderer(Renderer):
@@ -394,6 +385,9 @@ class TableContainer(QFrame, BgTransparentMixin):
         )
         for signal in signals:
             disconnect_slots_if_has(signal)
+
+        # unbind some callback function
+        self.songs_table.remove_song_func = None
 
         # secondly, prepare environment
         self.show()

@@ -194,6 +194,14 @@ class SongsTableModel(QAbstractTableModel):
         for song in self.songs:
             self._source_set.add(song.source)
 
+    def removeRows(self, row, count, parent=QModelIndex()):
+        self.beginRemoveRows(parent, row, row + count - 1)
+        while count > 0:
+            self.songs.pop(row)
+            count -= 1
+        self.endRemoveRows()
+        return True
+
     def canFetchMore(self, _):
         return self._can_fetch_more
 
@@ -450,8 +458,16 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self._least_row_count = 6
         self._row_height = 40
 
+        # slot functions
+        self.remove_song_func = None
+
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
+        self.activated.connect(self._on_activated)
+
+        self._setup_ui()
+
+    def _setup_ui(self):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
         # FIXME: PyQt5 seg fault
         # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
@@ -467,11 +483,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        # self.setAlternatingRowColors(True)
         self.setShowGrid(False)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
-        self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
         try:
@@ -503,11 +517,23 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         model.dataChanged.emit(topleft, bottomright, [])
 
     def contextMenuEvent(self, event):
+        if self.remove_song_func is None:
+            return
+
+        indexes = self.selectionModel().selectedIndexes()
+        if len(indexes) <= 0:
+            return
+
         menu = QMenu()
-        index = self.indexAt(event.pos())
-        self.selectRow(index.row())
-        song = self.model().data(index, Qt.UserRole)
         remove_song_action = QAction('移除歌曲', menu)
-        remove_song_action.triggered.connect(partial(self.song_deleted.emit, song))
+        remove_song_action.triggered.connect(lambda: self._remove_by_indexes(indexes))
         menu.addAction(remove_song_action)
         menu.exec(event.globalPos())
+
+    def _remove_by_indexes(self, indexes):
+        model = self.model()
+        source_model = model.sourceModel()
+        for index in indexes:
+            song = model.data(index, Qt.UserRole)
+            self.remove_song_func(song)
+        source_model.removeRows(indexes[0].row(), len(indexes))
