@@ -3,8 +3,9 @@ import logging
 import random
 from contextlib import suppress
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QFrame, QVBoxLayout
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel
 from requests.exceptions import RequestException
 
 from fuocore import ModelType
@@ -49,11 +50,11 @@ class Renderer:
         # pylint: disable=attribute-defined-outside-init
         self.container = container
         self.meta_widget = container.meta_widget
+        self.desc_widget = container.desc_widget
         self.toolbar = container.toolbar
         self.tabbar = container.tabbar
         self.songs_table = container.songs_table
         self.albums_table = container.albums_table
-        self.desc_container = self.meta_widget.desc_container
         # pylint: disable=protected-access
         self._app = container._app
 
@@ -102,7 +103,6 @@ class Renderer:
         # always bind signal first
         # album list filters
         # show the layout
-        self.desc_container.hide()
         self.container.current_table = self.albums_table
 
         # fill the data
@@ -117,8 +117,6 @@ class Renderer:
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
     def show_songs(self, songs=None, songs_g=None, show_count=False):
-        # when is artist mode, we should hide albums_table first
-        self.desc_container.hide()
         self.container.current_table = self.songs_table
         self.toolbar.show()
 
@@ -144,9 +142,10 @@ class Renderer:
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
-    def show_desc(self):
+    def show_desc(self, desc):
         self.container.current_table = None
-        self.desc_container.show()
+        self.desc_widget.setText(desc)
+        self.desc_widget.show()
 
 
 class ArtistRenderer(Renderer):
@@ -196,11 +195,13 @@ class ArtistRenderer(Renderer):
         if cover:
             aio.create_task(
                 self.show_cover(cover, reverse(artist, '/cover'), as_background=True))
-        self.meta_widget.desc = await async_run(lambda: artist.desc)
-        self.tabbar.show_desc_needed.connect(self.show_desc)
 
-    async def tearDown(self):
-        pass
+        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
+
+    async def _show_desc(self):
+        with suppress(ProviderIOError, RequestException):
+            desc = await async_run(lambda: self.artist.desc)
+            self.show_desc(desc)
 
 
 class PlaylistRenderer(Renderer):
@@ -223,11 +224,6 @@ class PlaylistRenderer(Renderer):
                 songs = await async_run(lambda: playlist.songs)
             self.show_songs(songs=songs, songs_g=songs_g, show_count=True)
 
-        # show playlist description
-        with suppress(ProviderIOError):
-            desc = await async_run(lambda: playlist.desc)
-            self.meta_widget.desc = desc
-
         # show playlist cover
         if playlist.cover:
             aio.create_task(
@@ -237,6 +233,12 @@ class PlaylistRenderer(Renderer):
             playlist.remove(song.identifier)
 
         self.songs_table.remove_song_func = remove_song
+        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
+
+    async def _show_desc(self):
+        with suppress(ProviderIOError):
+            desc = await async_run(lambda: self.playlist.desc)
+            self.show_desc(desc)
 
 
 class AlbumRenderer(Renderer):
@@ -258,7 +260,13 @@ class AlbumRenderer(Renderer):
         cover = await async_run(lambda: album.cover)
         if cover:
             aio.create_task(self.show_cover(cover, reverse(album, '/cover')))
-        self.meta_widget.desc = await async_run(lambda: album.desc)
+
+        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
+
+    async def _show_desc(self):
+        with suppress(ProviderIOError):
+            desc = await async_run(lambda: self.album.desc)
+            self.show_desc(desc)
 
 
 class SongsCollectionRenderer(Renderer):
@@ -309,6 +317,16 @@ class PlayerPlaylistRenderer(Renderer):
             self.songs_table.selectRow(row)
 
 
+class DescLabel(QLabel):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.setMargin(30)
+        self.setWordWrap(True)
+        self.setTextFormat(Qt.RichText)
+        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+
 class TableContainer(QFrame, BgTransparentMixin):
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -323,6 +341,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
+        self.desc_widget = DescLabel(parent=self)
 
         self._tables.append(self.songs_table)
         self._tables.append(self.albums_table)
@@ -342,10 +361,12 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.current_table = None
         self.tabbar.hide()
         self.meta_widget.add_tabbar(self.tabbar)
+        self.desc_widget.hide()
 
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
         self._layout.addWidget(self.toolbar)
+        self._layout.addWidget(self.desc_widget)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -369,6 +390,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         if table is None:
             self.toolbar.hide()
         else:
+            self.desc_widget.hide()
             table.show()
             if table is self.albums_table:
                 self.toolbar.albums_mode()

@@ -19,8 +19,8 @@ LeftPanel QListView, QSplitter::handle {
     background-color: transparent;
 }
 
-DescriptionContainer, DescriptionContainer QLabel {
-    background-color: transparent;
+DescLabel {
+    background-color: palette(base);
 }
 
 MagicBox {

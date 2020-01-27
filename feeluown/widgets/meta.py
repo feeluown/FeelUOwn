@@ -1,13 +1,13 @@
 """
-all metadata related widgets, for example: description, cover, and so on.
+all metadata related widgets, for example: cover, and so on.
 """
 
 from datetime import datetime
 
-from PyQt5.QtCore import Qt, pyqtSignal, QRect, QSize
+from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
-    QSpacerItem, QScrollArea, QFrame, QSizePolicy
+    QSpacerItem, QFrame, QSizePolicy
 
 
 class CoverLabel(QLabel):
@@ -66,50 +66,6 @@ class CoverLabel(QLabel):
         return QSize(w, min(w, h))
 
 
-class DescriptionContainer(QScrollArea):
-
-    space_pressed = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.label = QLabel(self)
-        self.label.setWordWrap(True)
-        self.label.setTextFormat(Qt.RichText)
-        self.label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.setWidget(self.label)
-        self.setToolTip('按空格可以窗口全屏')
-
-        self._setup_ui()
-
-    def _setup_ui(self):
-        self.label.setAlignment(Qt.AlignTop)
-        self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
-    def keyPressEvent(self, event):
-        key_code = event.key()
-        if key_code == Qt.Key_J:
-            value = self.verticalScrollBar().value()
-            self.verticalScrollBar().setValue(value + 20)
-        elif key_code == Qt.Key_K:
-            value = self.verticalScrollBar().value()
-            self.verticalScrollBar().setValue(value - 20)
-        elif key_code == Qt.Key_Space:
-            self.space_pressed.emit()
-            event.accept()
-        else:
-            super().keyPressEvent(event)
-
-    def set_body(self, text):
-        self.label.setText(text)
-
-
 class getset_property:
     def __init__(self, name):
         self.name = name
@@ -130,7 +86,6 @@ class MetaWidget(QFrame):
     def clear(self):
         self.title = None
         self.subtitle = None
-        self.desc = None
         self.cover = None
         self.created_at = None
         self.updated_at = None
@@ -143,7 +98,6 @@ class MetaWidget(QFrame):
     # TODO: use metaclass
     title = getset_property('title')
     subtitle = getset_property('subtitle')
-    desc = getset_property('desc')
     cover = getset_property('cover')
     created_at = getset_property('created_at')
     updated_at = getset_property('updated_at')
@@ -160,7 +114,6 @@ class TableMetaWidget(MetaWidget):
         # these three widgets are in right layout
         self.title_label = QLabel(self)
         self.meta_label = QLabel(self)
-        self.desc_container = DescriptionContainer(parent=self)
         # this spacer item is used as a stretch in right layout,
         # it's  width and height is not so important, we set them to 0
         self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
@@ -179,8 +132,6 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addStretch(0)
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
-        self._right_layout.addWidget(self.desc_container)
-        self._right_layout.setStretchFactor(self.desc_container, 1)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
         self._h_layout.addLayout(self._right_layout)
@@ -214,8 +165,6 @@ class TableMetaWidget(MetaWidget):
             self._refresh_meta_label()
         elif name in ('title', 'subtitle'):
             self._refresh_title()
-        elif name == 'desc':
-            self._refresh_desc()
         elif name == 'cover':
             self._refresh_cover()
 
@@ -247,12 +196,6 @@ class TableMetaWidget(MetaWidget):
         else:
             self.meta_label.hide()
 
-    def _refresh_desc(self):
-        if self.desc:
-            self.desc_container.label.setText(self.desc)
-        else:
-            self.desc_container.hide()
-
     def _refresh_cover(self):
         if not self.cover:
             self.cover_label.hide()
@@ -271,7 +214,6 @@ class TableMetaWidget(MetaWidget):
     def _refresh(self):
         self._refresh_title()
         self._refresh_meta_label()
-        self._refresh_desc()
         self._refresh_cover()
 
     def sizeHint(self):
