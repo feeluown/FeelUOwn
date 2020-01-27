@@ -47,6 +47,7 @@ def fetch_album_cover_wrapper(img_mgr):
 class Renderer:
     async def setUp(self, container):
         # pylint: disable=attribute-defined-outside-init
+        self.container = container
         self.meta_widget = container.meta_widget
         self.toolbar = container.toolbar
         self.tabbar = container.tabbar
@@ -102,9 +103,7 @@ class Renderer:
         # album list filters
         # show the layout
         self.desc_container.hide()
-        self.songs_table.hide()
-        self.albums_table.show()
-        self.toolbar.albums_mode()
+        self.container.current_table = self.albums_table
 
         # fill the data
         filter_model = AlbumFilterProxyModel(self.albums_table)
@@ -120,10 +119,8 @@ class Renderer:
     def show_songs(self, songs=None, songs_g=None, show_count=False):
         # when is artist mode, we should hide albums_table first
         self.desc_container.hide()
-        self.albums_table.hide()
-        self.songs_table.show()
+        self.container.current_table = self.songs_table
         self.toolbar.show()
-        self.toolbar.songs_mode()
 
         if show_count:
             if songs is not None:
@@ -148,9 +145,7 @@ class Renderer:
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
     def show_desc(self):
-        self.songs_table.hide()
-        self.albums_table.hide()
-        self.toolbar.hide()
+        self.container.current_table = None
         self.desc_container.show()
 
 
@@ -317,13 +312,20 @@ class PlayerPlaylistRenderer(Renderer):
 class TableContainer(QFrame, BgTransparentMixin):
     def __init__(self, app, parent=None):
         super().__init__(parent)
+
         self._app = app
+        self._delegate = None
+        self._table = None  # current visible table
+        self._tables = []
 
         self.toolbar = SongsTableToolbar()
         self.tabbar = TableTabBarV2()
         self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
+
+        self._tables.append(self.songs_table)
+        self._tables.append(self.albums_table)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
@@ -333,16 +335,12 @@ class TableContainer(QFrame, BgTransparentMixin):
             lambda album: self._app.browser.goto(model=album))
 
         self.toolbar.play_all_needed.connect(self.play_all)
-        self.meta_widget.toggle_full_window_needed.connect(self.toggle_meta_full_window)
+
         self._setup_ui()
 
-        self._delegate = None
-
     def _setup_ui(self):
-        self.toolbar.hide()
+        self.current_table = None
         self.tabbar.hide()
-        self.songs_table.hide()
-        self.albums_table.hide()
         self.meta_widget.add_tabbar(self.tabbar)
 
         self._layout = QVBoxLayout(self)
@@ -352,6 +350,31 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout.addWidget(self.albums_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
+
+    @property
+    def current_table(self):
+        """current visible table, if no table is visible, return None"""
+        return self._table
+
+    @current_table.setter
+    def current_table(self, table):
+        """set table as current visible table
+
+        show table and hide other tables, if table is None,
+        hide all tables.
+        """
+        for t in self._tables:
+            if t != table:
+                t.hide()
+        if table is None:
+            self.toolbar.hide()
+        else:
+            table.show()
+            if table is self.albums_table:
+                self.toolbar.albums_mode()
+            if table is self.songs_table:
+                self.toolbar.songs_mode()
+        self._table = table
 
     async def set_delegate(self, delegate):
         """set ui delegate
@@ -369,9 +392,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.meta_widget.hide()
         self.meta_widget.clear()
         self.tabbar.hide()
-        self.toolbar.hide()
-        self.songs_table.hide()
-        self.albums_table.hide()
+        self.current_table = None
         # clean right_panel background image
         self._app.ui.right_panel.show_background_image(None)
         # disconnect songs_table signal
@@ -453,11 +474,3 @@ class TableContainer(QFrame, BgTransparentMixin):
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
-
-    def toggle_meta_full_window(self, fullwindow_needed):
-        if fullwindow_needed:
-            self.songs_table.hide()
-            self.toolbar.hide()
-        else:
-            self.songs_table.show()
-            self.toolbar.show()

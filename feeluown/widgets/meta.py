@@ -153,8 +153,6 @@ class MetaWidget(QFrame):
 
 class TableMetaWidget(MetaWidget):
 
-    toggle_full_window_needed = pyqtSignal([bool])
-
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -170,12 +168,8 @@ class TableMetaWidget(MetaWidget):
         self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)
 
-        self._is_fullwindow = False
-
         self._setup_ui()
         self._refresh()
-
-        self.desc_container.space_pressed.connect(self.toggle_full_window)
 
     def _setup_ui(self):
         self.cover_label.setMaximumWidth(200)
@@ -214,14 +208,6 @@ class TableMetaWidget(MetaWidget):
             self._right_layout.addItem(self.text_spacer)
         self.cover_label.show_pixmap(pixmap)
         self.updateGeometry()
-
-    def toggle_full_window(self):
-        if self._is_fullwindow:
-            self.toggle_full_window_needed.emit(False)
-        else:
-            # generally, display height will be less than 4000px
-            self.toggle_full_window_needed.emit(True)
-        self._is_fullwindow = not self._is_fullwindow
 
     def on_property_updated(self, name):
         if name in ('created_at', 'updated_at', 'songs_count', 'creator'):

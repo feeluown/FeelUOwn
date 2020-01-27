@@ -35,9 +35,8 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
     def on_v_scrollbar_value_changed(self, value):
         maximum = self.verticalScrollBar().maximum()
         if maximum == value:
-            table_container = self.t
-            table = table_container.songs_table
-            if not table.isVisible():
+            table = self.t.current_table
+            if table is None:
                 return
             model = table.model()
             if model is not None and model.canFetchMore(QModelIndex()):
