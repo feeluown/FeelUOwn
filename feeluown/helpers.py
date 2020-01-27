@@ -89,7 +89,10 @@ class ItemViewNoScrollMixin:
         self._row_height = 0
         self._reserved = 30
 
-    def on_rows_changed(self, *args):
+    def adjust_height(self):
+        if self.model() is None:
+            return
+
         if self.model().canFetchMore(QModelIndex()):
             # according to QAbstractItemView source code,
             # qt will trigger fetchMore when the last row is
@@ -105,6 +108,9 @@ class ItemViewNoScrollMixin:
         else:
             self.setFixedHeight(self.sizeHint().height())
         self.updateGeometry()
+
+    def on_rows_changed(self, *args):
+        self.adjust_height()
 
     def setModel(self, model):
         super().setModel(model)

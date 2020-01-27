@@ -270,3 +270,4 @@ class AlbumListView(ItemViewNoScrollMixin, QListView):
 
         cover_height = calc_cover_width(self.width())
         self._row_height = cover_height + TextHeight
+        self.adjust_height()
