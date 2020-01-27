@@ -321,7 +321,7 @@ class DescLabel(QLabel):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.setMargin(30)
+        self.setContentsMargins(30, 15, 30, 10)
         self.setWordWrap(True)
         self.setTextFormat(Qt.RichText)
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
