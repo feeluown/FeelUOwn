@@ -1,5 +1,4 @@
 import logging
-from PyQt5.QtGui import QKeySequence
 from PyQt5.QtWidgets import (
     QSizePolicy,
     QSplitter,
@@ -49,11 +48,6 @@ class Ui:
         self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
         self._app.player.video_format_changed.connect(
             self.on_video_format_changed, aioqueue=True)
-
-        self._app.hotkey_mgr.registe(
-            [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
-            self.magicbox.setFocus
-        )
 
         self._setup_ui()
 

@@ -2,7 +2,7 @@ import io
 import sys
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QFontDatabase
+from PyQt5.QtGui import QFontDatabase, QKeySequence
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.fuoexec import fuoexec
@@ -40,6 +40,11 @@ class MagicBox(QLineEdit):
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
         self._app.browser.route('/search')(self.__handle_search)
+
+        self._app.hotkey_mgr.register(
+            [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
+            self.setFocus
+        )
 
     def show_msg(self, text, timeout=2000):
         if not text:

@@ -7,7 +7,7 @@ class HotkeyManager(object):
     def __init__(self, app):
         self._app = app
 
-    def registe(self, key_sequences, callback):
+    def register(self, key_sequences, callback):
         if isinstance(key_sequences, list):
             key_sequences = key_sequences
         else:

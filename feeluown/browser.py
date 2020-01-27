@@ -2,6 +2,8 @@ import logging
 from collections import deque
 from urllib.parse import urlencode
 
+from PyQt5.QtGui import QKeySequence
+
 from fuocore.router import Router, NotFound
 from fuocore.models.uri import resolve, reverse, ResolveFailed
 
@@ -24,6 +26,9 @@ class Browser:
 
         self._last_uri = None
         self.current_uri = None
+
+        self._app.hotkey_mgr.register([QKeySequence.Back], self.back)
+        self._app.hotkey_mgr.register([QKeySequence.Forward], self.forward)
 
     @property
     def ui(self):
