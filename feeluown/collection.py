@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 
 from fuocore.models.uri import resolve, reverse, ResolverNotFound, ResolveFailed
 from feeluown.consts import COLLECTIONS_DIR
@@ -27,21 +28,20 @@ class Collection:
 
     def load(self):
         """解析文件，初始化自己"""
-        filepath = self.fpath
-        filename = filepath.rsplit('/')[-1]
-        name, _ = filename.split('.')
-        stat_result = os.stat(filepath)
+        filepath = Path(self.fpath)
+        name = filepath.stem
+        stat_result = filepath.stat()
         self.updated_at = stat_result.st_mtime
         self.name = name
-        with open(filepath, encoding='utf-8') as f:
+        with filepath.open(encoding='utf-8') as f:
             for line in f:
                 try:
                     model = resolve(line)
                 except ResolverNotFound:
-                    logger.warn('resolver not found for line:%s', line)
+                    logger.warning('resolver not found for line:%s', line)
                     model = None
                 except ResolveFailed:
-                    logger.warn('invalid line: %s', line)
+                    logger.warning('invalid line: %s', line)
                     model = None
                 if model is not None:
                     self.models.append(model)
