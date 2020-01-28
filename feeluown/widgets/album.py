@@ -66,6 +66,12 @@ def calc_cover_width(width):
     return cover_width
 
 
+def calc_album_size(view_width):
+    width = cover_height = calc_cover_width(view_width)
+    height = cover_height + TextHeight
+    return width, height
+
+
 class AlbumListModel(QAbstractListModel):
     def __init__(self, albums_g, fetch_image, parent=None):
         """
@@ -247,8 +253,8 @@ class AlbumListView(ItemViewNoScrollMixin, QListView):
         QListView.__init__(self, parent=parent)
 
         # override ItemViewNoScrollMixin variables
-        self._lease_row_count = 1
-        self._row_height = CoverMinWidth + TextHeight
+        self._least_row_count = 1
+        self._row_height = CoverMinWidth + CoverSpacing + TextHeight
 
         self.setViewMode(QListView.IconMode)
         self.setResizeMode(QListView.Adjust)
@@ -268,6 +274,5 @@ class AlbumListView(ItemViewNoScrollMixin, QListView):
     def resizeEvent(self, e):
         super().resizeEvent(e)
 
-        cover_height = calc_cover_width(self.width())
-        self._row_height = cover_height + TextHeight
+        self._row_height = calc_album_size(self.width())[1] + CoverSpacing
         self.adjust_height()

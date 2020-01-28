@@ -99,12 +99,10 @@ class ItemViewNoScrollMixin:
             # inside the viewport, so we always hide the last
             # two row to ensure fetch-more will not be
             # triggered automatically
-            row_count = self.model().rowCount()
-            column_count = self.model().columnCount()
-            index = self.model().index(row_count - 1, column_count - 1)
+            index = self._last_index()
             rect = self.visualRect(index)
             height = self.sizeHint().height() - int(rect.height() * 1.5) - self._reserved
-            self.setFixedHeight(height)
+            self.setFixedHeight(max(height, self._min_height()))
         else:
             self.setFixedHeight(self.sizeHint().height())
         self.updateGeometry()
@@ -123,13 +121,20 @@ class ItemViewNoScrollMixin:
         e.ignore()
 
     def sizeHint(self):
-        height = min_height = self._row_height * self._least_row_count + self._reserved
+        height = min_height = self._min_height()
         if self.model() is not None:
-            row_count = self.model().rowCount()
-            column_count = self.model().columnCount()
-            # can't use createIndex here, why?
-            index = self.model().index(row_count - 1, column_count - 1)
+            index = self._last_index()
             rect = self.visualRect(index)
             height = rect.y() + rect.height() + self._reserved
             height = max(min_height, height)
         return QSize(self.width(), height)
+
+    def _last_index(self):
+        source_model = self.model()
+        row_count = source_model.rowCount()
+        column_count = source_model.columnCount()
+        # can't use createIndex here, why?
+        return source_model.index(row_count - 1, column_count - 1)
+
+    def _min_height(self):
+        return self._row_height * self._least_row_count + self._reserved

@@ -12,7 +12,7 @@ class SongsTableToolbar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.play_all_btn = QPushButton('播放全部', self)
+        self.play_all_btn = QPushButton('Play All', self)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
 
         # album filters

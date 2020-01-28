@@ -130,7 +130,6 @@ def create_app(config):
     if mode & App.GuiMode:
 
         from quamash import QEventLoop
-        from PyQt5.QtCore import QSize
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
@@ -153,9 +152,6 @@ def create_app(config):
                 self.ui.mpv_widget.close()
                 event_loop = asyncio.get_event_loop()
                 event_loop.stop()
-
-            def sizeHint(self):  # pylint: disable=no-self-use
-                return QSize(1000, 618)
 
         class FApp(App, GuiApp):
             def __init__(self, config):

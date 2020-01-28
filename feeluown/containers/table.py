@@ -264,6 +264,7 @@ class AlbumRenderer(Renderer):
         self.tabbar.show()
         self.tabbar.album_mode()
         self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
+        self.tabbar.show_songs_needed.connect(lambda: self.show_songs(songs))
 
     async def _show_desc(self):
         with suppress(ProviderIOError):

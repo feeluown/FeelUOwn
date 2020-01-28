@@ -93,7 +93,7 @@ class _LeftPanel(QFrame):
 
     def sizeHint(self):
         size = super().sizeHint()
-        return QSize(200, size.height())
+        return QSize(230, size.height())
 
     def show_coll(self, coll):
         coll_id = self._app.coll_uimgr.get_coll_id(coll)

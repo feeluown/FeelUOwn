@@ -129,7 +129,8 @@ class RightPanel(QFrame):
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
 
-        # calculate available height
+        # calculate available size
+        draw_width = self.width()
         draw_height = self.bottom_panel.height()
         if self.table_container.meta_widget.isVisible():
             draw_height += self.table_container.meta_widget.height()
@@ -147,7 +148,7 @@ class RightPanel(QFrame):
 
         # scale pixmap
         scaled_pixmap = self._pixmap.scaledToWidth(
-            self.width(),
+            draw_width,
             mode=Qt.SmoothTransformation)
         pixmap_size = scaled_pixmap.size()
 
@@ -157,7 +158,7 @@ class RightPanel(QFrame):
         painter.setBrush(brush)
         y = (pixmap_size.height() - draw_height) // 2
         painter.translate(0, - y - scrolled)
-        rect = QRect(0, y, self.width(), draw_height)
+        rect = QRect(0, y, draw_width, draw_height)
         painter.drawRect(rect)
 
         # draw overlay

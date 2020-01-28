@@ -59,7 +59,6 @@ class Ui:
         self._splitter.addWidget(self.right_panel)
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self._left_panel_con.setMinimumWidth(200)
 
         # self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._splitter)
@@ -71,6 +70,8 @@ class Ui:
         self._layout.setContentsMargins(0, 0, 0, 0)
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
+
+        self._app.resize(880, 600)
 
     def _play_mv(self):
         song = self._app.player.current_song
