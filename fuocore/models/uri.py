@@ -188,7 +188,7 @@ def reverse(model, path='', as_line=False):
                 album.artists_name_display
             )
 
-        elif model.meta.model_typ == ModelType.artist:
+        elif model.meta.model_type == ModelType.artist:
             artist = model
             model_str = '{}'.format(artist.name_display)
         else:
