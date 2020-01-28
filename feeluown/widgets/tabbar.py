@@ -28,12 +28,23 @@ class TableTabBarV2(QWidget):
         self.desc_btn.clicked.connect(self.show_desc_needed.emit)
         self.contributed_btn.clicked.connect(self.show_contributed_albums_needed.emit)
 
-        # TODO: let caller to decide which btn is checked by default
-        self.songs_btn.setChecked(True)
+        self.check_default()
         self._setup_ui()
 
+    def check_default(self):
+        self.songs_btn.setChecked(True)
+
     def artist_mode(self):
-        pass
+        self.songs_btn.show()
+        self.albums_btn.show()
+        self.desc_btn.show()
+        self.contributed_btn.show()
+
+    def album_mode(self):
+        self.albums_btn.hide()
+        self.contributed_btn.hide()
+        self.songs_btn.show()
+        self.desc_btn.show()
 
     def _setup_ui(self):
         self._layout.setSpacing(0)

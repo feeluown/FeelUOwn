@@ -74,7 +74,7 @@ class Renderer:
         pass
 
     #
-    # utils function for delegate
+    # utils function for renderer
     #
     async def show_cover(self, cover, cover_uid, as_background=False):
         cover = Media(cover, MediaType.image)
@@ -261,6 +261,8 @@ class AlbumRenderer(Renderer):
         if cover:
             aio.create_task(self.show_cover(cover, reverse(album, '/cover')))
 
+        self.tabbar.show()
+        self.tabbar.album_mode()
         self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
 
     async def _show_desc(self):
@@ -332,7 +334,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         super().__init__(parent)
 
         self._app = app
-        self._delegate = None
+        self._renderer = None
         self._table = None  # current visible table
         self._tables = []
 
@@ -398,22 +400,23 @@ class TableContainer(QFrame, BgTransparentMixin):
                 self.toolbar.songs_mode()
         self._table = table
 
-    async def set_delegate(self, delegate):
-        """set ui delegate
+    async def set_renderer(self, renderer):
+        """set ui renderer
 
-        TODO: add lock for set_delegate
+        TODO: add lock for set_renderer
         """
 
-        if delegate is None:
+        if renderer is None:
             return
 
         # firstly, tear down everything
-        # tear down last delegate
-        if self._delegate is not None:
-            await self._delegate.tearDown()
+        # tear down last renderer
+        if self._renderer is not None:
+            await self._renderer.tearDown()
         self.meta_widget.hide()
         self.meta_widget.clear()
         self.tabbar.hide()
+        self.tabbar.check_default()
         self.current_table = None
         # clean right_panel background image
         self._app.ui.right_panel.show_background_image(None)
@@ -435,10 +438,10 @@ class TableContainer(QFrame, BgTransparentMixin):
         # secondly, prepare environment
         self.show()
 
-        # thirdly, setup new delegate
-        await delegate.setUp(self)
-        self._delegate = delegate
-        await self._delegate.render()
+        # thirdly, setup new renderer
+        await renderer.setUp(self)
+        self._renderer = renderer
+        await self._renderer.render()
 
     async def play_song(self, song):
         self._app.player.play_song(song)
@@ -467,31 +470,31 @@ class TableContainer(QFrame, BgTransparentMixin):
     async def show_model(self, model):
         model_type = ModelType(model.meta.model_type)
         if model_type == ModelType.album:
-            delegate = AlbumRenderer(model)
+            renderer = AlbumRenderer(model)
         elif model_type == ModelType.artist:
-            delegate = ArtistRenderer(model)
+            renderer = ArtistRenderer(model)
         elif model_type == ModelType.playlist:
-            delegate = PlaylistRenderer(model)
+            renderer = PlaylistRenderer(model)
         else:
-            delegate = None
-        await self.set_delegate(delegate)
+            renderer = None
+        await self.set_renderer(renderer)
 
     def show_collection(self, coll):
-        delegate = SongsCollectionRenderer(coll)
-        aio.create_task(self.set_delegate(delegate))
+        renderer = SongsCollectionRenderer(coll)
+        aio.create_task(self.set_renderer(renderer))
 
     def show_songs(self, songs=None, songs_g=None):
         """(DEPRECATED) provided only for backward compatibility"""
-        delegate = Renderer()
-        task = aio.create_task(self.set_delegate(delegate))
+        renderer = Renderer()
+        task = aio.create_task(self.set_renderer(renderer))
         task.add_done_callback(
-            lambda _: delegate.show_songs(songs=songs, songs_g=songs_g))
+            lambda _: renderer.show_songs(songs=songs, songs_g=songs_g))
 
     def show_albums_coll(self, albums_g):
-        aio.create_task(self.set_delegate(AlbumsCollectionRenderer(albums_g)))
+        aio.create_task(self.set_renderer(AlbumsCollectionRenderer(albums_g)))
 
     def show_player_playlist(self):
-        aio.create_task(self.set_delegate(PlayerPlaylistRenderer()))
+        aio.create_task(self.set_renderer(PlayerPlaylistRenderer()))
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
