@@ -156,7 +156,11 @@ class RightPanel(QFrame):
         painter.save()
         brush = QBrush(scaled_pixmap)
         painter.setBrush(brush)
-        y = (pixmap_size.height() - draw_height) // 2
+        # note: in practice, most of the time, we can't show the
+        # whole artist pixmap, as a result, the artist head will be cut,
+        # which causes bad visual effect. So we render the top-center part
+        # of the pixmap here.
+        y = (pixmap_size.height() - draw_height) // 3
         painter.translate(0, - y - scrolled)
         rect = QRect(0, y, draw_width, draw_height)
         painter.drawRect(rect)
