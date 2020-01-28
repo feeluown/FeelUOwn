@@ -6,7 +6,7 @@ import base64
 
 from fuocore.utils import elfhash
 from feeluown.widgets.collections import CollectionsModel
-from feeluown.collection import DEFAULT_COLL_SONGS, DEFAULT_COLL_ALBUMS
+from feeluown.collection import CollectionType
 
 
 class CollectionUiManager:
@@ -44,10 +44,10 @@ class CollectionUiManager:
         colls = []
         for coll in self._app.coll_mgr.scan():
             colls.append(coll)
-            # put default collections on the top
-            if coll.name == DEFAULT_COLL_SONGS:
+            # put predefined collections on the top
+            if coll.type == CollectionType.sys_song:
                 colls[0], colls[-1] = colls[-1], colls[0]
-            if coll.name == DEFAULT_COLL_ALBUMS:
+            if coll.type == CollectionType.sys_album:
                 colls[1], colls[-1] = colls[-1], colls[1]
         for coll in colls:
             self.add(coll)

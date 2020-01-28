@@ -1,8 +1,10 @@
 import logging
 import os
+from enum import Enum
 from pathlib import Path
 
 from fuocore.models.uri import resolve, reverse, ResolverNotFound, ResolveFailed
+from fuocore.models import ModelType
 from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
@@ -14,6 +16,15 @@ SONGS_FILENAME = 'Songs.fuo'
 ALBUMS_FILENAME = 'Albums.fuo'
 
 
+class CollectionType(Enum):
+    # predefined collections
+    sys_song = 1
+    sys_album = 2
+    sys_artist = 4
+
+    mixed = 8
+
+
 class Collection:
 
     def __init__(self, fpath):
@@ -21,7 +32,9 @@ class Collection:
         # 字段应该尽量设计成可以跨电脑使用
         self.fpath = fpath
 
-        self.name = ''
+        # these variables should be inited during loading
+        self.type = None
+        self.name = None
         self.models = []
         self.updated_at = None
         self.created_at = None
@@ -33,6 +46,12 @@ class Collection:
         stat_result = filepath.stat()
         self.updated_at = stat_result.st_mtime
         self.name = name
+        if name == DEFAULT_COLL_SONGS:
+            self.type = CollectionType.sys_song
+        elif name == DEFAULT_COLL_ALBUMS:
+            self.type = CollectionType.sys_album
+        else:
+            self.type = CollectionType.mixed
         with filepath.open(encoding='utf-8') as f:
             for line in f:
                 try:
@@ -47,6 +66,17 @@ class Collection:
                     self.models.append(model)
 
     def add(self, model):
+        """add model to collection
+
+        :param model: :class:`fuocore.models.BaseModel`
+        :return: True means succeed, False means failed
+        """
+        if (self.type == CollectionType.sys_song and
+            model.meta.model_type != ModelType.song) or \
+            (self.type == CollectionType.sys_album and
+             model.meta.model_type != ModelType.album):
+            return False
+
         if model not in self.models:
             line = reverse(model, as_line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
@@ -56,9 +86,9 @@ class Collection:
             self.models.insert(0, model)
         return True
 
-    def remove(self, song):
-        if song in self.models:
-            url = reverse(song)
+    def remove(self, model):
+        if model in self.models:
+            url = reverse(model)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 lines = []
                 for line in f:
@@ -71,7 +101,7 @@ class Collection:
                 # 确保最后写入一个换行符，让文件更加美观
                 if lines and not lines[-1].endswith('\n'):
                     f.write('\n')
-            self.models.remove(song)
+            self.models.remove(model)
         return True
 
 

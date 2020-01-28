@@ -56,3 +56,11 @@ def test_collection_add(album, artist, song, tmp_path):
     expected = ('fuo://fake/songs/0\t#hello world'
                 ' - mary - blue and green - 10:00\n') + expected
     assert text == expected
+
+
+def test_collection_add_song_to_sys_album(song, tmp_path):
+    f = tmp_path / 'Albums.fuo'
+    f.touch()
+    coll = Collection(str(f))
+    coll.load()
+    assert coll.add(song) is False
