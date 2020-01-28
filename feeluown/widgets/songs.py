@@ -228,7 +228,7 @@ class SongsTableModel(QAbstractTableModel):
         if song and song.exists == ModelExistence.no or \
            index.column() in (Column.source, Column.index, Column.duration):
             return Qt.ItemIsSelectable
-        if index.column() == Column.song:
+        if index.column() in (Column.song, Column.album):
             return flags | Qt.ItemIsDragEnabled
         return flags
 
@@ -299,8 +299,13 @@ class SongsTableModel(QAbstractTableModel):
     def mimeData(self, indexes):
         if len(indexes) == 1:
             index = indexes[0]
-            song = index.data(Qt.UserRole)
-            return ModelMimeData(song)
+            model = song = index.data(Qt.UserRole)
+            if index.column() == Column.album:
+                try:
+                    model = song.album
+                except (ProviderIOError, Exception):
+                    model = None
+            return ModelMimeData(model)
 
 
 class SongFilterProxyModel(QSortFilterProxyModel):

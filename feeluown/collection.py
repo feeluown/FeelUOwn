@@ -46,14 +46,14 @@ class Collection:
                 if model is not None:
                     self.models.append(model)
 
-    def add(self, song):
-        if song not in self.models:
-            line = reverse(song, as_line=True)
+    def add(self, model):
+        if model not in self.models:
+            line = reverse(model, as_line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 content = f.read()
                 f.seek(0, 0)
                 f.write(line + '\n' + content)
-            self.models.insert(0, song)
+            self.models.insert(0, model)
         return True
 
     def remove(self, song):
