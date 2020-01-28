@@ -33,9 +33,9 @@ class BottomPanel(QWidget):
 
         self._layout.addWidget(self.back_btn)
         self._layout.addWidget(self.forward_btn)
-        self._layout.addSpacing(100)
+        self._layout.addSpacing(80)
         self._layout.addWidget(self.magicbox)
-        self._layout.addSpacing(100)
+        self._layout.addSpacing(80)
         self._layout.addWidget(self.status_line)
 
         # assume the magicbox height is about 30

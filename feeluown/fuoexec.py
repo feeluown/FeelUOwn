@@ -34,6 +34,7 @@ def fuoexec_load_rcfile(config):
 
 def fuoexec_init(app):
     signals_slots_mgr.initialize(app)
+    _exec_globals['app'] = app
 
 
 # add fuoexec_before_app_initialized if needed
