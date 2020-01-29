@@ -308,8 +308,7 @@ class PlayerPlaylistRenderer(Renderer):
 
         songs = playlist.list()
         self.show_songs(songs=songs)
-        self.songs_table.song_deleted.connect(
-            lambda song: self._app.playlist.remove(song))
+        self.songs_table.remove_song_func = playlist.remove
 
         # scroll to current song
         current_song = self._app.playlist.current_song
@@ -357,6 +356,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             lambda album: self._app.browser.goto(model=album))
 
         self.toolbar.play_all_needed.connect(self.play_all)
+        self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
 
         self._setup_ui()
 
@@ -423,7 +423,6 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._app.ui.right_panel.show_background_image(None)
         # disconnect songs_table signal
         signals = (
-            self.songs_table.song_deleted,
             self.tabbar.show_contributed_albums_needed,
             self.tabbar.show_albums_needed,
             self.tabbar.show_songs_needed,
@@ -500,3 +499,7 @@ class TableContainer(QFrame, BgTransparentMixin):
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:
             self.songs_table.filter_row(text)
+
+    def _add_songs_to_playlist(self, songs):
+        for song in songs:
+            self._app.playlist.add(song)

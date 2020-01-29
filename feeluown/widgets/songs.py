@@ -451,9 +451,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
     show_album_needed = pyqtSignal([object])
     play_song_needed = pyqtSignal([object])
 
-    # 之后或许可以改成 row_deleted，row_deleted 更抽象，
-    # 而 song_deleted 更具体，方便以后修改设计。
-    song_deleted = pyqtSignal([object])
+    add_to_playlist_needed = pyqtSignal(list)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -531,9 +529,21 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
         menu = QMenu()
         remove_song_action = QAction('移除歌曲', menu)
+        add_to_playlist_action = QAction('添加到播放队列', menu)
         remove_song_action.triggered.connect(lambda: self._remove_by_indexes(indexes))
+        add_to_playlist_action.triggered.connect(lambda: self._add_to_playlist(indexes))
+        menu.addAction(add_to_playlist_action)
+        menu.addSeparator()
         menu.addAction(remove_song_action)
         menu.exec(event.globalPos())
+
+    def _add_to_playlist(self, indexes):
+        model = self.model()
+        songs = []
+        for index in indexes:
+            song = model.data(index, Qt.UserRole)
+            songs.append(song)
+        self.add_to_playlist_needed.emit(songs)
 
     def _remove_by_indexes(self, indexes):
         model = self.model()

@@ -26,8 +26,8 @@ class _LeftPanel(QFrame):
         super().__init__(parent)
         self._app = app
 
-        self.library_header = QLabel('音乐库', self)
-        self.collections_header = QLabel('本地收藏 (Beta)', self)
+        self.library_header = QLabel('音乐提供方', self)
+        self.collections_header = QLabel('本地收藏', self)
         self.collections_header.setToolTip(
             '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
             '每个收藏集都以一个独立 .fuo 文件的存在，'
