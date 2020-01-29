@@ -44,7 +44,8 @@ class CollectionUiManager:
         colls = []
         for coll in self._app.coll_mgr.scan():
             colls.append(coll)
-            # put predefined collections on the top
+        # put predefined collections on the top
+        for coll in colls:
             if coll.type == CollectionType.sys_song:
                 colls[0], colls[-1] = colls[-1], colls[0]
             if coll.type == CollectionType.sys_album:
