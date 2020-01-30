@@ -42,13 +42,17 @@ class CollectionUiManager:
 
     def _scan(self):
         colls = []
+        song_coll = None
+        album_coll = None
         for coll in self._app.coll_mgr.scan():
-            colls.append(coll)
-        # put predefined collections on the top
-        for coll in colls:
             if coll.type == CollectionType.sys_song:
-                colls[0], colls[-1] = colls[-1], colls[0]
+                song_coll = coll
+                continue
             if coll.type == CollectionType.sys_album:
-                colls[1], colls[-1] = colls[-1], colls[1]
+                album_coll = coll
+                continue
+            colls.append(coll)
+        colls.insert(0, album_coll)
+        colls.insert(0, song_coll)
         for coll in colls:
             self.add(coll)
