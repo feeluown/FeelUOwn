@@ -19,6 +19,9 @@ def run():
     # we are trying to run some commands
     if args.cmd is not None:
 
+        if args.cmd == 'genicon':
+            return run_cli(args)
+
         # if daemon is started, we send commands to daemon directly
         # we simple think the daemon is started as long as
         # the port 23333 or 23334 is used
