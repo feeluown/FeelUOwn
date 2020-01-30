@@ -25,7 +25,13 @@ setup(
         ],
     py_modules=['mpv'],
     package_data={
-        '': ['*.qss', '*.png', '../icons/*.png', 'themes/*.qss', '../icons/*.icns']
+        '': ['*.qss',
+             '*.png',
+             '../icons/*.png',
+             '../icons/*.ico',
+             '../icons/*.icns',
+             'themes/*.qss',
+             ]
         },
     url='https://github.com/cosven/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
