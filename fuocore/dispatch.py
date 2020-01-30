@@ -23,6 +23,7 @@ class Signal:
     """
     aioqueue = None
     has_aio_support = False
+    worker_task = None
 
     def __init__(self, name='', *sig):
         self.sig = sig
@@ -40,8 +41,14 @@ class Signal:
             import asyncio
             loop = asyncio.get_event_loop()
         cls.aioqueue = janus.Queue()
-        loop.create_task(Signal.worker())
+        cls.worker_task = loop.create_task(Signal.worker())
         cls.has_aio_support = True
+
+    @classmethod
+    def teardown_aio_support(cls):
+        cls.worker_task.cancel()
+        cls.aioqueue = None
+        cls.has_aio_support = False
 
     @classmethod
     async def worker(cls):

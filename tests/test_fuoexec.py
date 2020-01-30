@@ -39,6 +39,7 @@ async def test_signals_slots_mgr(app_mock, signal):
     await asyncio.sleep(0.1)
     assert func_lator.call_count == 1
     assert func.call_count == 3
+    Signal.teardown_aio_support()
 
 
 @pytest.mark.asyncio
@@ -61,3 +62,4 @@ async def test_signals_slots_mgr_add_slot_symbol(app_mock, signal, mocker):
     await asyncio.sleep(0.1)
     mock_F.assert_called_once_with('fake_func')
     assert func.called is True
+    Signal.teardown_aio_support()
