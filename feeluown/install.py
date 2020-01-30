@@ -94,7 +94,20 @@ def gen_for_win_linux():
 def gen_for_win32():
     from pyshortcuts import make_shortcut
 
-    pyexe = os.path.join(sys.prefix, 'pythonw.exe')
+    # NOTE: do not use the pythonw.exe under sys.prefix, if Python is installed
+    # through window app store, the Python will have 'abnormal' behaviour::
+    #
+    #   the normal python.exe we run in cmd is located in directory like following:
+    #   C:\Users\user\AppData\Local\Microsoft\WindowsApps\
+    #     PythonSoftwareFoundation.Python.3.8_qbz5n2kfra8p0\pythonw.exe
+    #
+    #   but the python sys.prefix is like:
+    #   C:\Program Files\WindowsApps\
+    #     PythonSoftwareFoundation.Python.3.8_3.8.496.0_x64__qbz5n2kfra8p0
+    #
+    #   user can't directly run the python.exe under sys.prefix, windows
+    #   will tell user it has no priviledge to run this program
+    pyexe = os.path.join(os.path.dirname(sys.executable), 'pythonw')
     command = '{} -m feeluown'.format(pyexe)
     ico = HERE.parent.parent / 'icons' / 'feeluown.ico'
     name = 'FeelUOwn'
