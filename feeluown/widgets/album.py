@@ -12,6 +12,7 @@ resized, the cover width and the margin should make a few adjustment.
 """
 # pylint: disable=unused-argument
 import itertools
+import logging
 import random
 
 from PyQt5.QtCore import (
@@ -32,6 +33,8 @@ from fuocore.models import GeneratorProxy, AlbumType
 from fuocore.models.uri import reverse
 
 from feeluown.helpers import ItemViewNoScrollMixin
+
+logger = logging.getLogger(__name__)
 
 
 COLORS = {
@@ -101,6 +104,7 @@ class AlbumListModel(QAbstractListModel):
         try:
             albums = list(itertools.islice(self.albums_g, expect_len))
         except ProviderIOError:
+            logger.exception('fetch more albums failed')
             return
 
         acture_len = len(albums)

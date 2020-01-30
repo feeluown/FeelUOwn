@@ -118,8 +118,9 @@ class SequentialReader(Reader):
             if self.offset < self.count:
                 self.offset += 1
                 return next(self._g)
-        except ProviderIOError:
+        except (StopIteration, ProviderIOError):
             raise
+        # TODO: caller should not crash when reader raise other exception
         except Exception as e:
             raise ProviderIOError(e)
         raise StopIteration
