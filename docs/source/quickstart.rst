@@ -61,7 +61,7 @@ Windows
 2. 下载 `mpv-1.dll <https://github.com/cosven/FeelUOwn/releases/download/v3.0.1/mpv-1.dll>`_ ，
    将 mpv-1.dll 放入 ``C:\Windows\System32`` 目录。
 3. 安装 PyQt5，在 cmd 中运行 ``pip3 install PyQt5 -i https://pypi.douban.com/simple``
-4. 安装 feeluown，在 cmd 中运行 ``pip3 install feeluown[battery,windows]``
+4. 安装 feeluown，在 cmd 中运行 ``pip3 install feeluown[battery,win32]``
 5. 在 cmd 中运行 ``feeluown-genicon`` 命令，可以桌面桌面图标
 
 基本使用
