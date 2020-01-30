@@ -49,7 +49,8 @@ setup(
                     'fuo-xiami>=0.1.2',
                     'fuo-netease>=0.2',
                     'fuo-qqmusic>=0.1.2'],
-        'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz']
+        'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
+        'win32': ['pyshortcuts'],
     },
     tests_require=['pytest-runner',
                    'pytest',

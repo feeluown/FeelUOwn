@@ -91,10 +91,22 @@ def gen_for_win_linux():
     os.system('chmod +x {}'.format(desktop_file))
 
 
+def gen_for_win32():
+    from pyshortcuts import make_shortcut
+
+    pyexe = os.path.join(sys.prefix, 'pythonw.exe')
+    command = '{} -m feeluown'.format(pyexe)
+    ico = HERE.parent.parent / 'icons' / 'feeluown.ico'
+    name = 'FeelUOwn'
+    make_shortcut(command, name=name, icon=ico, terminal=False)
+
+
 def generate_icon():
     print('Generate icon, then you can see app in apps list.')
     if sys.platform.lower() == 'darwin':
         gen_for_mac()
+    elif sys.platform == 'win32':
+        gen_for_win32()
     else:
         gen_for_win_linux()
     print('Generate success.')
