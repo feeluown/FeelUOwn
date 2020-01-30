@@ -102,7 +102,7 @@ def gen_for_win32():
 
 
 def generate_icon():
-    print('Generate icon, then you can see app in apps list.')
+    print('Generate icon, then you can see app on desktop.')
     if sys.platform.lower() == 'darwin':
         gen_for_mac()
     elif sys.platform == 'win32':

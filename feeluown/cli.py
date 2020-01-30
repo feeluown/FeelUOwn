@@ -24,6 +24,10 @@ def print_error(*args, **kwargs):
 def setup_cli_argparse(parser):
     subparsers = parser.add_subparsers(dest='cmd')
 
+    # generate icon
+    subparsers.add_parser('genicon',
+                          description='generate desktop icon')
+
     play_parser = subparsers.add_parser(
         'play',
         description=textwrap.dedent('''\
@@ -341,6 +345,13 @@ def dispatch(args, client):
 
 def climain(args):
     """dispatch request"""
+
+    # FIXME: move this code to somewhere else
+    if args.cmd == 'genicon':
+        from feeluown.install import generate_icon
+        generate_icon()
+        return
+
     with connect() as cli:
         dispatch(args, cli)
 
