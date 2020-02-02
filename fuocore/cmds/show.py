@@ -16,7 +16,7 @@ from fuocore.router import Router
 from .base import AbstractHandler
 from .helpers import (
     show_song, show_artist, show_album, show_user,
-    show_playlist
+    show_playlist, show_songs,
 )
 
 logger = logging.getLogger(__name__)
@@ -91,3 +91,19 @@ def playlist_detail(req, provider, pid):
     provider = req.ctx['library'].get(provider)
     playlist = provider.Playlist.get(pid)
     return show_playlist(playlist)
+
+
+@route('/<provider>/playlists/<pid>/songs')
+def playlist_songs(req, provider, pid):
+    provider = req.ctx['library'].get(provider)
+    playlist = provider.Playlist.get(pid)
+    if playlist.meta.allow_create_songs_g:
+        reader = playlist.create_songs_g()
+        if reader.allow_random_read:
+            songs = reader.readall()
+        else:
+            assert reader.allow_sequential_read is True
+            songs = list(reader)
+    else:
+        songs = playlist.songs
+    return show_songs(songs or [])
