@@ -107,9 +107,9 @@ def setup_config(args, config):
             config.MODE |= App.DaemonMode
 
 
-def setup_logger(args, config):
+def setup_logger(config):
     if config.DEBUG:
         verbose = 3
     else:
-        verbose = args.verbose or config.VERBOSE
+        verbose = config.verbose
     logger_config(verbose=verbose, to_file=config.LOG_TO_FILE)

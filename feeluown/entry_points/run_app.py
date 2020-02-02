@@ -18,9 +18,6 @@ from .base import (
 
 
 def run_forever(args, config):
-    # setup logger as soon as program starts
-    setup_logger(args, config)
-
     # ensure requiresments, raise SystemExit if failed
     os.chdir(os.path.join(os.path.dirname(__file__), '../..'))
     if not args.no_server:
@@ -34,6 +31,8 @@ def run_forever(args, config):
     # Extract config items from args and setup config object,
     # since then, no more `args` object, only `config`.
     setup_config(args, config)
+
+    setup_logger(config)
 
     # create app instance with config
     #

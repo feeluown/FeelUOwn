@@ -25,7 +25,7 @@ def run():
         # if daemon is started, we send commands to daemon directly
         # we simple think the daemon is started as long as
         # the port 23333 or 23334 is used
-        if is_port_used(23333) or is_port_used(2334):
+        if is_port_used(23333) or is_port_used(23334):
             return run_cli(args)
 
         # If daemon is not started, (some) commands can be meaningless,
