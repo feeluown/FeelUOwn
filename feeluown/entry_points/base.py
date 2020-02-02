@@ -90,6 +90,7 @@ def setup_argparse():
 
 def setup_config(args, config):
     config.DEBUG = args.debug or config.DEBUG
+    config.VERBOSE = args.verbose or config.VERBOSE
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device or config.MPV_AUDIO_DEVICE
     config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE)
 
@@ -111,5 +112,5 @@ def setup_logger(config):
     if config.DEBUG:
         verbose = 3
     else:
-        verbose = config.verbose
+        verbose = config.VERBOSE
     logger_config(verbose=verbose, to_file=config.LOG_TO_FILE)
