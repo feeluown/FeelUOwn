@@ -174,6 +174,10 @@ def init_app(app):
     app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
     if app.mode & app.DaemonMode:
         app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
+    if app.mode & app.GuiMode:
+        from PyQt5.QtWidgets import QApplication
+        instance = QApplication.instance()
+        instance.paletteChanged.connect(lambda: app.theme_mgr.autoload())
 
     app.plugin_mgr.scan()
     if app.mode & App.GuiMode:

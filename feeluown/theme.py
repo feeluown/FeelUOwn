@@ -3,10 +3,15 @@
 import logging
 import os
 
+from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QApplication
 from fuocore.utils import is_osx, get_osx_theme
 
 logger = logging.getLogger(__name__)
+
+
+DARK = 'dark'
+LIGHT = 'light'
 
 
 def read_qss(filename):
@@ -31,17 +36,30 @@ class ThemeManager:
         self.theme = None
 
     def autoload(self):
-        theme = 'light'
         if self._app.config.THEME == 'auto':
-            if is_osx() and get_osx_theme() == 1:
-                theme = 'dark'
-        else:
+            if is_osx():
+                if get_osx_theme() == 1:
+                    theme = DARK
+                else:
+                    theme = LIGHT
+            else:
+                theme = self.guess_system_theme()
+        else:  # user settings have highest priority
             theme = self._app.config.THEME
-        if theme == 'dark':
+
+        if theme == DARK:
             self.load_dark()
         else:
             self.load_light()
+
         self.theme = theme
+
+    def guess_system_theme(self):
+        palette = self.app.palette()
+        bg_color = palette.color(QPalette.Window)
+        if bg_color.lightness() > 150:
+            return LIGHT
+        return DARK
 
     def load_light(self):
         common = read_qss('common.qss')
