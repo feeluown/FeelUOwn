@@ -1,6 +1,19 @@
 Changelog
 ---------
 
+3.3.7 (2020-02-03)
+""""""""""""""""""""
+**feature**
+
+- fuo 协议支持解析 `show fuo://<provider>/playlists/<pid>/songs`
+- 系统主题切换时，自动切换 feeluown 主题
+
+**bugfix**
+
+- debug 命令行选项不生效
+- 修复 album 列表显示不完整的 bug
+- 界面上先显示 Songs/Albums 这两个收藏集
+
 3.3.6 (2020-01-30)
 """"""""""""""""""""
 - feat: 支持 genicon 子命令
