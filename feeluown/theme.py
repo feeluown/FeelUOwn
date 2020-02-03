@@ -55,7 +55,7 @@ class ThemeManager:
         self.theme = theme
 
     def guess_system_theme(self):
-        palette = self.app.palette()
+        palette = self._app.palette()
         bg_color = palette.color(QPalette.Window)
         if bg_color.lightness() > 150:
             return LIGHT
