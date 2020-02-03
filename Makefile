@@ -13,6 +13,9 @@ unittest: pytest
 pytest:
 	TEST_ENV=travis pytest
 
+integration_test:
+	./integration-tests/run.py
+
 test: lint unittest
 
 clean:
