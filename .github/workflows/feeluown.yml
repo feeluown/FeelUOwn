@@ -49,8 +49,10 @@ jobs:
           make test
 
       - name: Coveralls
+        if: matrix.os == 'ubuntu-latest' && matrix.python == '3.8'
         env:
           COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COVERALLS_FLAG_NAME: format('{0} {1} {2}', GITHUB_WORKFLOW, 'the', 'Octocat')
         run: |
           pip install coveralls
           coveralls --service=github
