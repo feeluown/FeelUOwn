@@ -15,6 +15,7 @@ env:
 
 install:
     - sudo apt-get install libmpv1 -y --force-yes
+    - sudo apt-get install xcb  # for running PyQt5 on travis
     - pip install pyqt5==5.14.0
     - pip install coveralls
     - pip install sphinx_rtd_theme
