@@ -1,4 +1,6 @@
 dist: xenial
+services:
+  - xvfb
 sudo: required
 
 language: python
@@ -21,6 +23,7 @@ install:
 
 script:
     - make test
+    - make integration_test
 
 after_success:
   - coveralls
