@@ -1,0 +1,44 @@
+name: Feeluown
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    env:
+      TEST_ENV: travis
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python: [3.5, 3.6, 3.7, 3.8]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install Ubuntu OS dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get -y install libmpv1 python3-pyqt5 python3-pyqt5.qtopengl
+      - name: Install macOS dependencies
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          brew install pyqt
+          brew install mpv
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyqt5==5.14.0
+          pip install coveralls
+          pip install sphinx_rtd_theme
+          pip install pytest flake8 pytest-cov pytest-asyncio pytest-qt pytest-mock
+          pip install -e .
+      - name: Test if no syntax error
+        run: feeluown -h
+      - name: Test with pytest
+        run: |
+          make test
