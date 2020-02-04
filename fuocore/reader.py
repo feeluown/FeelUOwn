@@ -75,6 +75,8 @@ class SequentialReader(Reader):
     .. versionadded:: 3.1
     """
 
+    allow_sequential_read = True
+
     def __init__(self, g, count, offset=0):
         """init
 
