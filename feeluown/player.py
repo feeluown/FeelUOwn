@@ -50,39 +50,18 @@ class Playlist(_Playlist):
 
     def add(self, song):
         """往播放列表末尾添加一首歌曲"""
-        if self._mode is PlaylistMode.normal:
-            super().add(song)
-        elif self._mode is PlaylistMode.fm:
+        if self._mode is PlaylistMode.fm:
             self.playlist_mode = PlaylistMode.normal
-            super().add(song)
-            logger.warning("when FM,feeluown.Player.Playlist.add is a bug")
+        super().add(song)
 
     def insert(self, song):
         """在当前歌曲后插入一首歌曲"""
-        if self._mode is PlaylistMode.normal:
-            super().insert(song)
-        elif self._mode is PlaylistMode.fm:
+        if self._mode is PlaylistMode.fm:
             self.playlist_mode = PlaylistMode.normal
-            super().insert(song)
-            logger.warning("when FM,feeluown.Player.Playlist.insert is a bug")
+        super().insert(song)
 
     def fm_add(self, song):
         super().add(song)
-
-    # 不需要 重载remove了
-    # def remove(self, song):
-    #     if self._mode is PlaylistMode.normal:
-    #         super().remove(song)
-    #     elif self._mode is PlaylistMode.fm:
-    #         """还需要设计FMlist 这里需要重写 这里可能会触发eof信号"""
-    #         if self._current_song is None:
-    #             current_index = 0
-    #         else:
-    #             current_index = self._songs.index(self.current_song)
-    #         if(len(self._songs) - current_index < 3):
-    #             self.eof_reached.emit()
-    #         super().remove(song)
-    #         logger.warning("when FM,feeluown.Player.Playlist.remove is a bug")
 
     @_Playlist.current_song.setter
     def current_song(self, song):
@@ -169,9 +148,14 @@ class Playlist(_Playlist):
                 current_index = 0
             else:
                 current_index = self._songs.index(self.current_song)
-            if(len(self._songs) - current_index < 3):
+            if(current_index != len(self._songs)):
+                """没歌了,发送eof信号 等待FMPlaylist调用next"""
                 self.eof_reached.emit()
-        super().next()
+            else:
+                """还有歌,直接调用"""
+                super().next()
+        else:
+            super().next()
 
 
 class Player(MpvPlayer):
