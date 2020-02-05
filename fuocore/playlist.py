@@ -229,3 +229,11 @@ class Playlist:
             current_index = self._songs.index(self.current_song)
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
         return previous_song
+
+    def next(self):
+        """advance to the next song in playlist"""
+        self.current_song = self.next_song
+
+    def previous(self):
+        """return to the previous song in playlist"""
+        self.current_song = self.previous_song
