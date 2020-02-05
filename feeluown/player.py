@@ -25,7 +25,7 @@ class PlaylistMode(IntEnum):
     Playlist  mode.
     """
     normal = 0  #: Normal
-    personalFM = 1  #: FM mode
+    fm = 1  #: FM mode
 
 
 class Playlist(_Playlist):
@@ -42,43 +42,47 @@ class Playlist(_Playlist):
         self._task = None
 
         #: init playlist mode normal
-        self._playlist_mode = PlaylistMode.normal
+        self._mode = PlaylistMode.normal
 
         #: playlist eof signal
         # playlist have no enough songs
-        self.playlist_eof = Signal()
+        self.eof_reached = Signal()
 
     def add(self, song):
         """往播放列表末尾添加一首歌曲"""
-        if self._playlist_mode is PlaylistMode.normal:
+        if self._mode is PlaylistMode.normal:
             super().add(song)
-        elif self._playlist_mode is PlaylistMode.personalFM:
+        elif self._mode is PlaylistMode.fm:
             self.playlist_mode = PlaylistMode.normal
             super().add(song)
-            logger.warning("when personalFM,feeluown.Player.Playlist.add is a bug")
+            logger.warning("when FM,feeluown.Player.Playlist.add is a bug")
 
     def insert(self, song):
         """在当前歌曲后插入一首歌曲"""
-        if self._playlist_mode is PlaylistMode.normal:
+        if self._mode is PlaylistMode.normal:
             super().insert(song)
-        elif self._playlist_mode is PlaylistMode.personalFM:
+        elif self._mode is PlaylistMode.fm:
             self.playlist_mode = PlaylistMode.normal
             super().insert(song)
-            logger.warning("when personalFM,feeluown.Player.Playlist.insert is a bug")
+            logger.warning("when FM,feeluown.Player.Playlist.insert is a bug")
 
-    def remove(self, song):
-        if self._playlist_mode is PlaylistMode.normal:
-            super().remove(song)
-        elif self._playlist_mode is PlaylistMode.personalFM:
-            """还需要设计FMlist 这里需要重写 这里可能会触发eof信号"""
-            if self._current_song is None:
-                current_index = 0
-            else:
-                current_index = self._songs.index(self.current_song)
-            if(len(self._songs) - current_index < 3):
-                self.playlist_eof.emit()
-            super().remove(song)
-            logger.warning("when personalFM,feeluown.Player.Playlist.remove is a bug")
+    def fm_add(self, song):
+        super().add(song)
+
+    # 不需要 重载remove了
+    # def remove(self, song):
+    #     if self._mode is PlaylistMode.normal:
+    #         super().remove(song)
+    #     elif self._mode is PlaylistMode.fm:
+    #         """还需要设计FMlist 这里需要重写 这里可能会触发eof信号"""
+    #         if self._current_song is None:
+    #             current_index = 0
+    #         else:
+    #             current_index = self._songs.index(self.current_song)
+    #         if(len(self._songs) - current_index < 3):
+    #             self.eof_reached.emit()
+    #         super().remove(song)
+    #         logger.warning("when FM,feeluown.Player.Playlist.remove is a bug")
 
     @_Playlist.current_song.setter
     def current_song(self, song):
@@ -127,10 +131,8 @@ class Playlist(_Playlist):
             task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
             task.add_done_callback(find_song_standby_cb)
 
-        if self._playlist_mode is PlaylistMode.personalFM:
-            if song in self._songs:
-                pass
-            else:
+        if self._mode is PlaylistMode.fm:
+            if song not in self._songs:
                 self.playlist_mode = PlaylistMode.normal
 
         if song is None:
@@ -143,22 +145,33 @@ class Playlist(_Playlist):
 
     @_Playlist.playback_mode.setter
     def playback_mode(self, playback_mode):
-        if self._playlist_mode is PlaylistMode.normal:
+        if self._mode is PlaylistMode.normal:
             _Playlist.playback_mode.fset(self, playback_mode)
-        elif self._playlist_mode is PlaylistMode.personalFM:
-            """需要确保此时playback_mode为 Sequential"""
-            pass
+        # elif self._mode is PlaylistMode.fm:
+        #     """需要确保此时playback_mode为 Sequential"""
+        #     pass
 
     @property
     def playlist_mode(self):
-        return self._playlist_mode
+        return self._mode
 
     @playlist_mode.setter
     def playlist_mode(self, playlist_mode):
         """切换mode成功需要清空playlist"""
-        if self._playlist_mode is not playlist_mode:
-            self._playlist_mode = playlist_mode
+        if self._mode is not playlist_mode:
+            self._mode = playlist_mode
             self.clear()
+
+    def next(self):
+        """advance to the next song in playlist"""
+        if self._mode is PlaylistMode.fm:
+            if self._current_song is None:
+                current_index = 0
+            else:
+                current_index = self._songs.index(self.current_song)
+            if(len(self._songs) - current_index < 3):
+                self.eof_reached.emit()
+        super().next()
 
 
 class Player(MpvPlayer):
@@ -182,7 +195,7 @@ class Player(MpvPlayer):
         if song.meta.support_multi_quality:
             fetch = partial(song.select_media, self._app.config.AUDIO_SELECT_POLICY)
         else:
-            fetch = lambda: (song.url, None)  # noqa
+            def fetch(): return (song.url, None)  # noqa
 
         def fetch_in_bg():
             future = self._loop.run_in_executor(None, fetch)
