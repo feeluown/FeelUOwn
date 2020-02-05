@@ -395,7 +395,6 @@ class ArtistModel(BaseModel):
         return value
 
 
-
 class AlbumType(Enum):
     """Album type enumeration
 
