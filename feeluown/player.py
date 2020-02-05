@@ -148,7 +148,7 @@ class Playlist(_Playlist):
                 current_index = 0
             else:
                 current_index = self._songs.index(self.current_song)
-            if(current_index != len(self._songs)):
+            if(current_index == len(self._songs)-1):
                 """没歌了,发送eof信号 等待FMPlaylist调用next"""
                 self.eof_reached.emit()
             else:
