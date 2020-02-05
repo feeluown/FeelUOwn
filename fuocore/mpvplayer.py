@@ -1,5 +1,6 @@
 import locale
 import logging
+import warnings
 
 from mpv import (
     MPV,
@@ -140,10 +141,12 @@ class MpvPlayer(AbstractPlayer):
             这里不能使用 ``play_song(playlist.next_song)`` 方法来切换歌曲，
             ``play_song`` 和 ``playlist.current_song = song`` 是有区别的。
         """
-        self.playlist.current_song = self.playlist.next_song
+        warnings.warn('use playlist.next instead, this will be removed on 3.4')
+        self.playlist.next()
 
     def play_previous(self):
-        self.playlist.current_song = self.playlist.previous_song
+        warnings.warn('use playlist.previous instead, this will be removed on 3.4')
+        self.playlist.previous()
 
     def replay(self):
         self.playlist.current_song = self.current_song
