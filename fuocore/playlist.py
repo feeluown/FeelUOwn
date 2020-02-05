@@ -113,8 +113,8 @@ class Playlist:
 
     def clear(self):
         """remove all songs from playlists"""
-
-        self.current_song = None
+        if self.current_song is not None:
+            self.current_song = None
         self._songs.clear()
         self._bad_songs.clear()
 

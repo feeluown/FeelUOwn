@@ -8,6 +8,7 @@ from functools import partial
 
 from fuocore.media import Media
 from fuocore.player import MpvPlayer, Playlist as _Playlist
+from fuocore.playlist import PlaybackMode
 from fuocore.dispatch import Signal
 
 logger = logging.getLogger(__name__)
@@ -21,8 +22,33 @@ def call_soon(func, loop):
 
 
 class PlaylistMode(IntEnum):
-    """
-    Playlist  mode.
+    """playlist mode
+
+    **What is FM mode?**
+
+    In FM mode, playlist's playback_mode is unchangable, it will
+    always be sequential. When playlist has no more song,
+    the playlist hopes someone(we call it ``FMPlaylist`` here) will:
+    1. catch the ``eof_reached`` signal
+    2. add news songs to playlist by using ``fm_add`` method
+    3. call ``next`` method to resume the player
+
+    **How to enter FM mode?**
+
+    Only FMPlaylist can(should) make playlist enter FM mode, it should
+    do following things:
+    1. clear the playlist
+    2. change playlist mode to FM
+    3. add several songs to playlist
+    4. resume the player with the first song
+
+    **When will playlist exit FM mode?**
+
+    If user manually play a song, playlist will exit FM mode, at the
+    same time, playlist will:
+    1. clear itself
+    2. change to normal mode
+    3. set current song to the song
     """
     normal = 0  #: Normal
     fm = 1  #: FM mode
@@ -49,15 +75,20 @@ class Playlist(_Playlist):
         self.eof_reached = Signal()
 
     def add(self, song):
-        """往播放列表末尾添加一首歌曲"""
+        """add song to playlist
+
+        Theoretically, when playlist is in FM mode, we should not
+        change songs list manually(without ``fm_add`` method). However,
+        when it happens, we exit FM mode.
+        """
         if self._mode is PlaylistMode.fm:
-            self.playlist_mode = PlaylistMode.normal
+            self.mode = PlaylistMode.normal
         super().add(song)
 
     def insert(self, song):
-        """在当前歌曲后插入一首歌曲"""
+        """insert song into playlist"""
         if self._mode is PlaylistMode.fm:
-            self.playlist_mode = PlaylistMode.normal
+            self.mode = PlaylistMode.normal
         super().insert(song)
 
     def fm_add(self, song):
@@ -110,9 +141,27 @@ class Playlist(_Playlist):
             task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
             task.add_done_callback(find_song_standby_cb)
 
-        if self._mode is PlaylistMode.fm:
+        def is_user_manually_set(song):
+            """check if this song was set manually by user
+
+            This function mainly designed for FM mode, in
+            FM mode, when user manually play a song, we should
+            exit FM mode.
+            """
             if song not in self._songs:
-                self.playlist_mode = PlaylistMode.normal
+                return True
+            if self.current_song is None:
+                if self._songs.index(song) != 0:
+                    return True
+            else:
+                current_song_index = self._songs.index(self.current_song)
+                song_index = self._songs.index(song)
+                if song_index != current_song_index + 1:
+                    return True
+            return False
+
+        if self.mode is PlaylistMode.fm and is_user_manually_set(song):
+            self.mode = PlaylistMode.normal
 
         if song is None:
             _Playlist.current_song.fset(self, song)
@@ -124,36 +173,30 @@ class Playlist(_Playlist):
 
     @_Playlist.playback_mode.setter
     def playback_mode(self, playback_mode):
-        if self._mode is PlaylistMode.normal:
+        if self._mode is PlaylistMode.fm:
+            if playback_mode is not PlaybackMode.sequential:
+                logger.warning("can't set playback mode to others in fm mode")
+            else:
+                _Playlist.playback_mode.fset(self, PlaybackMode.sequential)
+        else:
             _Playlist.playback_mode.fset(self, playback_mode)
-        # elif self._mode is PlaylistMode.fm:
-        #     """需要确保此时playback_mode为 Sequential"""
-        #     pass
 
     @property
-    def playlist_mode(self):
+    def mode(self):
         return self._mode
 
-    @playlist_mode.setter
-    def playlist_mode(self, playlist_mode):
-        """切换mode成功需要清空playlist"""
-        if self._mode is not playlist_mode:
-            self._mode = playlist_mode
+    @mode.setter
+    def mode(self, mode):
+        """set playlist mode"""
+        if self._mode is not mode:
+            self._mode = mode
+            if mode is PlaylistMode.fm:
+                self.playback_mode = PlaybackMode.sequential
             self.clear()
 
     def next(self):
-        """advance to the next song in playlist"""
-        if self._mode is PlaylistMode.fm:
-            if self._current_song is None:
-                current_index = 0
-            else:
-                current_index = self._songs.index(self.current_song)
-            if(current_index == len(self._songs)-1):
-                """没歌了,发送eof信号 等待FMPlaylist调用next"""
-                self.eof_reached.emit()
-            else:
-                """还有歌,直接调用"""
-                super().next()
+        if self.next_song is None:
+            self.eof_reached.emit()
         else:
             super().next()
 
