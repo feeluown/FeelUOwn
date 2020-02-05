@@ -52,24 +52,25 @@ async def test_playlist_exit_fm_mode(app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
-async def test_playlist_exit_fm_mode_by_manually_set(app_mock, song, song1, mocker):
+async def test_playlist_fm_mode_play_next(app_mock, song, song1, mocker):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
     pl.fm_add(song)
-    pl.current_song = song
-    assert pl.mode is PlaylistMode.normal
+    pl._current_song = song1
+    pl.current_song = song   # should not exit fm mode
+    assert pl.mode is PlaylistMode.fm
 
 
 @pytest.mark.asyncio
-async def test_playlist_exit_fm_mode_by_manually_set_2(app_mock, song, song1, mocker):
+async def test_playlist_fm_mode_play_previous(app_mock, song, song1, mocker):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
     pl.fm_add(song)
     pl._current_song = song
-    pl.current_song = song1
-    assert pl.mode is PlaylistMode.normal
+    pl.current_song = song1  # should not exit fm mode
+    assert pl.mode is PlaylistMode.fm
 
 
 @pytest.mark.asyncio

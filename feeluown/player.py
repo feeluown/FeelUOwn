@@ -141,26 +141,7 @@ class Playlist(_Playlist):
             task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
             task.add_done_callback(find_song_standby_cb)
 
-        def is_user_manually_set(song):
-            """check if this song was set manually by user
-
-            This function mainly designed for FM mode, in
-            FM mode, when user manually play a song, we should
-            exit FM mode.
-            """
-            if song not in self._songs:
-                return True
-            if self.current_song is None:
-                if self._songs.index(song) != 0:
-                    return True
-            else:
-                current_song_index = self._songs.index(self.current_song)
-                song_index = self._songs.index(song)
-                if song_index != current_song_index + 1:
-                    return True
-            return False
-
-        if self.mode is PlaylistMode.fm and is_user_manually_set(song):
+        if self.mode is PlaylistMode.fm and song not in self._songs:
             self.mode = PlaylistMode.normal
 
         if song is None:
