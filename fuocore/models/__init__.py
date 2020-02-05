@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+import warnings
 from enum import IntEnum, Enum
 
 from fuocore.media import MultiQualityMixin, Quality
@@ -387,6 +388,13 @@ class ArtistModel(BaseModel):
     def create_albums_g(self):
         pass
 
+    def __getattribute__(self, name):
+        value = super().__getattribute__(name)
+        if name == 'songs':
+            warnings.warn('please use/implement .create_songs_g')
+        return value
+
+
 
 class AlbumType(Enum):
     """Album type enumeration
@@ -533,6 +541,12 @@ class PlaylistModel(BaseModel):
 
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
+
+    def __getattribute__(self, name):
+        value = super().__getattribute__(name)
+        if name == 'songs':
+            warnings.warn('please use/implement .create_songs_g')
+        return value
 
     def add(self, song_id):
         """add song to playlist, return true if succeed.
