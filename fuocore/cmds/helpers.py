@@ -63,7 +63,8 @@ def show_song(song, uri_length=None, brief=False, fetch=False):
     :param fetch: 是否在线请求未初始化的属性
     """
     artists_name = song.artists_name if fetch else song.artists_name_display
-    title = _fit_text(song.title if fetch else song.title_display, 18, filling=False)
+    song_title = song.title if fetch else song.title_display
+    title = _fit_text(song_title or '', 18, filling=False)
     album_name = song.album_name if fetch else song.album_name_display
 
     song_uri = reverse(song)
