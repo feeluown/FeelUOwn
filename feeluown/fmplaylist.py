@@ -25,7 +25,7 @@ class FMPlaylist:
         if self._cache_songs.qsize() == 0:
             if self.fetch_songs_func is None:
                 logger.warning("fetch_songs_func isn't initialized properly")
-                return 
+                return
             else:
                 self.fetch_songs_func()
         if self._playlist is not None:
