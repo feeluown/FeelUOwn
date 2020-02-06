@@ -23,7 +23,7 @@ class FMPlaylist:
     def _append_song_to_playlist(self):
         """向playlist中添加一首歌 然后调用next"""
         if self._cache_songs.qsize() == 0:
-            if self.fetch_songs_func == None:
+            if self.fetch_songs_func is None:
                 logger.warning("fetch_songs_func isn't initialized properly")
                 return 
             else:
@@ -31,7 +31,8 @@ class FMPlaylist:
         if self._playlist is not None:
             """必须保证_cache_songs中有数据"""
             self._playlist.fm_add(self.cache_songs)
-        self._playlist.next()
+        if self._cache_songs.qsize() == 0:
+            self._playlist.next()
 
     @property
     def cache_songs(self):
