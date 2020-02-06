@@ -101,3 +101,10 @@ def get_osx_theme():
     with os.popen('defaults read -g AppleInterfaceStyle') as pipe:
         theme = pipe.read().strip()
     return 1 if theme == 'Dark' else -1
+
+
+def reader_to_list(reader):
+    if reader.allow_random_read:
+        return reader.readall()
+    assert reader.allow_sequential_read is True
+    return list(reader)

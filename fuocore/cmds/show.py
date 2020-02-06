@@ -12,6 +12,7 @@ import logging
 from urllib.parse import urlparse
 
 from fuocore.router import Router
+from fuocore.utils import reader_to_list
 
 from .base import AbstractHandler
 from .helpers import (
@@ -99,11 +100,7 @@ def playlist_songs(req, provider, pid):
     playlist = provider.Playlist.get(pid)
     if playlist.meta.allow_create_songs_g:
         reader = playlist.create_songs_g()
-        if reader.allow_random_read:
-            songs = reader.readall()
-        else:
-            assert reader.allow_sequential_read is True
-            songs = list(reader)
+        songs = reader_to_list(reader)
     else:
         songs = playlist.songs
     return show_songs(songs or [])
