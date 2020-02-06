@@ -36,7 +36,16 @@ import re
 import traceback
 
 if os.name == 'nt':
-    backend = CDLL('mpv-1.dll')
+    if "MPV_DYLIB_PATH" in os.environ:
+        backend = CDLL(os.environ["MPV_DYLIB_PATH"])
+    else:
+        try:
+            backend = CDLL('mpv-1.dll')
+        except FileNotFoundError:
+            if ctypes.util.find_library('mpv-1.dll') is not None:
+                backend = CDLL(ctypes.util.find_library('mpv-1.dll'))
+            else:
+                raise FileNotFoundError("Could not find module 'mpv-1.dll'.")
     fs_enc = 'utf-8'
 else:
     import locale
@@ -45,13 +54,16 @@ else:
     # still better than segfaulting, we are setting LC_NUMERIC to "C".
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
-    sofile = ctypes.util.find_library('mpv')
-    if sofile is None:
-        raise OSError("Cannot find libmpv in the usual places. Depending on your distro, you may try installing an "
-                "mpv-devel or mpv-libs package. If you have libmpv around but this script can't find it, maybe consult "
-                "the documentation for ctypes.util.find_library which this script uses to look up the library "
-                "filename.")
-    backend = CDLL(sofile)
+    if "MPV_DYLIB_PATH" in os.environ:
+        backend = CDLL(os.environ["MPV_DYLIB_PATH"])
+    else:
+        sofile = ctypes.util.find_library('mpv')
+        if sofile is None:
+            raise OSError("Cannot find libmpv in the usual places. Depending on your distro, you may try installing an "
+                    "mpv-devel or mpv-libs package. If you have libmpv around but this script can't find it, maybe consult "
+                    "the documentation for ctypes.util.find_library which this script uses to look up the library "
+                    "filename.")
+        backend = CDLL(sofile)
     fs_enc = sys.getfilesystemencoding()
 
 
