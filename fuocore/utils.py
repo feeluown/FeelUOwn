@@ -7,7 +7,7 @@ import socket
 import time
 from functools import wraps
 
-from fuocore.reader import RandomSequentialReader, SequentialReader
+from fuocore.reader import Reader, RandomSequentialReader, SequentialReader
 
 
 logger = logging.getLogger(__name__)
@@ -106,11 +106,11 @@ def get_osx_theme():
 
 
 def reader_to_list(reader):
+    if not isinstance(reader, Reader):
+        raise TypeError
     if reader.allow_random_read:
         return reader.readall()
-    if reader.allow_sequential_read:
-        return list(reader)
-    return None
+    return list(reader)
 
 
 def to_reader(model, field):
