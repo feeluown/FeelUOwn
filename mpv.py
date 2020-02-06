@@ -35,10 +35,12 @@ import collections
 import re
 import traceback
 
+backend = None
+if "MPV_DYLIB_PATH" in os.environ:
+    backend = CDLL(os.environ["MPV_DYLIB_PATH"])
+
 if os.name == 'nt':
-    if "MPV_DYLIB_PATH" in os.environ:
-        backend = CDLL(os.environ["MPV_DYLIB_PATH"])
-    else:
+    if backend is None:
         try:
             backend = CDLL('mpv-1.dll')
         except FileNotFoundError:
@@ -54,9 +56,7 @@ else:
     # still better than segfaulting, we are setting LC_NUMERIC to "C".
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
-    if "MPV_DYLIB_PATH" in os.environ:
-        backend = CDLL(os.environ["MPV_DYLIB_PATH"])
-    else:
+    if backend is None:
         sofile = ctypes.util.find_library('mpv')
         if sofile is None:
             raise OSError("Cannot find libmpv in the usual places. Depending on your distro, you may try installing an "
