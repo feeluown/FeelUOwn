@@ -7,6 +7,8 @@ import socket
 import time
 from functools import wraps
 
+from fuocore.reader import Reader, RandomSequentialReader, SequentialReader
+
 
 logger = logging.getLogger(__name__)
 
@@ -101,3 +103,28 @@ def get_osx_theme():
     with os.popen('defaults read -g AppleInterfaceStyle') as pipe:
         theme = pipe.read().strip()
     return 1 if theme == 'Dark' else -1
+
+
+def reader_to_list(reader):
+    if not isinstance(reader, Reader):
+        raise TypeError
+    if reader.allow_random_read:
+        return reader.readall()
+    return list(reader)
+
+
+def to_reader(model, field):
+    flag_attr = 'allow_create_{}_g'.format(field)
+    method_attr = 'create_{}_g'.format(field)
+
+    flag_g = getattr(model.meta, flag_attr)
+
+    if flag_g:
+        return SequentialReader.wrap(getattr(model, method_attr)())
+
+    value = getattr(model, field, None)
+    if value is None:
+        return RandomSequentialReader.from_list([])
+    if isinstance(value, (list, tuple)):
+        return RandomSequentialReader.from_list(value)
+    return SequentialReader.wrap(iter(value))  # TypeError if not iterable
