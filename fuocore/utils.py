@@ -7,7 +7,7 @@ import socket
 import time
 from functools import wraps
 
-from fuocore.reader import RandomSequentialReader
+from fuocore.reader import RandomSequentialReader, SequentialReader
 
 
 logger = logging.getLogger(__name__)
@@ -120,10 +120,11 @@ def to_reader(model, field):
     flag_g = getattr(model.meta, flag_attr)
 
     if flag_g:
-        return getattr(model, method_attr)()
+        return SequentialReader.wrap(getattr(model, method_attr)())
 
-    model_field = getattr(model, field, None)
-    if isinstance(model_field, list):
-        return RandomSequentialReader.from_list(model)
-
-    return None
+    value = getattr(model, field, None)
+    if value is None:
+        return RandomSequentialReader.from_list([])
+    if isinstance(value, (list, tuple)):
+        return RandomSequentialReader.from_list(value)
+    return SequentialReader.wrap(iter(value))  # TypeError if not iterable
