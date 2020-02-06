@@ -516,6 +516,8 @@ class SongModel(BaseModel, MultiQualityMixin):
         if self.duration is not None:
             seconds = self.duration / 1000
             m, s = seconds / 60, seconds % 60
+        else:
+            m, s = 0, 0
         return '{:02}:{:02}'.format(int(m), int(s))
 
     @property
