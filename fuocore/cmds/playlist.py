@@ -31,7 +31,16 @@ class PlaylistHandler(AbstractHandler):
                 if obj_type == ModelType.song:
                     playlist.add(obj)
                 elif obj_type == ModelType.playlist:
-                    for song in obj.songs:
+                    if obj.meta.allow_create_songs_g:
+                        reader = obj.create_songs_g()
+                        if reader.allow_random_read:
+                            songs = reader.readall()
+                        else:
+                            assert reader.allow_sequential_read is True
+                            songs = list(reader)
+                    else:
+                        songs = obj.songs
+                    for song in songs:
                         playlist.add(song)
 
     def remove(self, song_uri):
