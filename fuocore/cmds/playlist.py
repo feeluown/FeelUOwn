@@ -1,6 +1,6 @@
 from fuocore.models import ModelType
 from fuocore.models.uri import resolve, reverse
-from fuocore.utils import reader_to_list
+from fuocore.utils import reader_to_list, to_reader
 from .helpers import show_songs
 from .base import AbstractHandler
 
@@ -32,11 +32,7 @@ class PlaylistHandler(AbstractHandler):
                 if obj_type == ModelType.song:
                     playlist.add(obj)
                 elif obj_type == ModelType.playlist:
-                    if obj.meta.allow_create_songs_g:
-                        reader = obj.create_songs_g()
-                        songs = reader_to_list(reader)
-                    else:
-                        songs = obj.songs
+                    songs = reader_to_list(to_reader(obj, "songs"))
                     for song in songs:
                         playlist.add(song)
 
