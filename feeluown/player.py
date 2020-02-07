@@ -74,6 +74,9 @@ class Playlist(_Playlist):
         # playlist have no enough songs
         self.eof_reached = Signal()
 
+        #: playlist mode changed signal
+        self.mode_changed = Signal()
+
     def add(self, song):
         """add song to playlist
 
@@ -174,6 +177,7 @@ class Playlist(_Playlist):
             if mode is PlaylistMode.fm:
                 self.playback_mode = PlaybackMode.sequential
             self.clear()
+            self.mode_changed.emit(mode)
 
     def next(self):
         if self.next_song is None:

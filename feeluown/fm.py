@@ -10,6 +10,17 @@ logger = logging.getLogger(__name__)
 
 class FM:
     """FM
+
+    We can activate/deactivate playlist fm mode throught this FM manager.
+    We also listen to playlist mode changed signal, when playlist exit
+    fm mode, we will do some cleaning so that fm is completely deactivated.
+
+    .. note::
+
+        In fact, FM and playlist are a whole. Seperating them brings
+        more clear API, which also cause some problems. For example,
+        others can deactivate fm mode through playlist or FM, which
+        maybe a bit confusing.
     """
 
     def __init__(self, app):
@@ -25,6 +36,8 @@ class FM:
         self._fetch_songs_task_name = 'fm-fetch-songs'
         self._fetch_songs_func = None
         self._minimum_per_fetch = 3
+
+        self._app.playlist.mode_changed.connect(self._on_playlist_mode_changed)
 
     def activate(self, fetch_songs_func):
         """activate fm mode
@@ -43,18 +56,11 @@ class FM:
         self._app.playlist.mode = PlaylistMode.fm
         self._activated = True
         self._app.playlist.next()
+        logger.info('fm mode actiavted')
 
     def deactivate(self):
         """deactivate fm mode"""
-        if not self._activated:
-            return
-        try:
-            self._app.playlist.eof_reached.connect(self._on_playlist_eof_reached)
-        except TypeError:
-            pass
-        self._fetch_songs_func = None
         self._app.playlist.mode = PlaylistMode.normal
-        self._activated = False
 
     def _on_playlist_eof_reached(self):
         if self._queue:
@@ -69,6 +75,18 @@ class FM:
         task = task_spec.bind_blocking_io(
             self._fetch_songs_func, self._minimum_per_fetch)
         task.add_done_callback(self._on_songs_fetched)
+
+    def _on_playlist_mode_changed(self, mode):
+        if mode is PlaylistMode.fm or not self._activated:
+            return
+        self._on_playlist_fm_mode_exited()
+
+    def _on_playlist_fm_mode_exited(self):
+        """when playlist fm mode exited, """
+        self._app.playlist.eof_reached.disconnect(self._on_playlist_eof_reached)
+        self._fetch_songs_func = None
+        self._activated = False
+        logger.info('fm mode deactivated')
 
     def _feed_playlist(self):
         song = self._queue.popleft()
