@@ -1,6 +1,6 @@
 import logging
 
-from queue import Queue
+from queue import deque
 from feeluown.player import Playlist
 
 logger = logging.getLogger(__name__)
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 class FMPlaylist:
     def __init__(self, playlist: Playlist):
         """无限大小的缓存队列"""
-        self._cache_songs = Queue()
+        self._songs_cache = deque
 
         self._playlist = playlist
 
@@ -17,35 +17,37 @@ class FMPlaylist:
 
         self.fetch_songs_func = None
 
-        """每次fetch 至少有 3首歌被加入 cache_songs"""
-        self.fetch_songs_min_num = 3
-
     def _append_song_to_playlist(self):
         """向playlist中添加一首歌 然后调用next"""
-        if self._cache_songs.qsize() == 0:
+        if self._songs_cache.qsize() == 0:
             if self.fetch_songs_func is None:
                 logger.warning("fetch_songs_func isn't initialized properly")
                 return
             else:
-                self.fetch_songs_func()
+                songs = self.fetch_songs_func(min_num=3)
+                for song in songs:
+                    self.songs_cache = song
         if self._playlist is not None:
-            """必须保证_cache_songs中有数据"""
-            self._playlist.fm_add(self.cache_songs)
-        if self._cache_songs.qsize() == 0:
+            """必须保证_songs_cache中有数据"""
+            self._playlist.fm_add(self.pop_song_from_cache())
+        else:
+            logger.warning("self._playlist isn't initialized properly")
+            return
+        if self._songs_cache.qsize() != 0:
             self._playlist.next()
 
     @property
-    def cache_songs(self):
-        return self._cache_songs
+    def songs_cache(self):
+        return self._songs_cache
 
-    @cache_songs.setter
-    def cache_songs(self, song):
+    @songs_cache.setter
+    def songs_cache(self, song):
         if song is not None:
-            self._cache_songs.put(song)
+            self._songs_cache.put(song)
 
-    @cache_songs.getter
-    def cache_songs(self):
-        if self._cache_songs.qsize() == 0:
+    def pop_song_from_cache(self):
+        """从队列里弹出一首歌"""
+        if self._songs_cache.qsize() == 0:
             return None
         else:
-            return self._cache_songs.get(block=False)
+            return self._songs_cache.get(block=False)
