@@ -16,13 +16,15 @@
 # <http://www.gnu.org/licenses/>.
 #
 #
-# changes in feeluown:
+# ------------------------------------------------
+#
+# based on v0.3.9, changes in feeluown:
 #
 # 1. read MPV_DYLIB_PATH from environ
 #    https://github.com/feeluown/FeelUOwn/pull/325
 #
+# 2. https://github.com/jaseg/python-mpv/issues/84
 #
-
 
 from ctypes import *
 import ctypes.util
@@ -73,9 +75,6 @@ else:
 class MpvHandle(c_void_p):
     pass
 
-class MpvRenderCtxHandle(c_void_p):
-    pass
-
 class MpvOpenGLCbContext(c_void_p):
     pass
 
@@ -98,14 +97,6 @@ class ErrorCode(object):
     PROPERTY_UNAVAILABLE    = -10
     PROPERTY_ERROR          = -11
     COMMAND                 = -12
-    LOADING_FAILED          = -13
-    AO_INIT_FAILED          = -14
-    VO_INIT_FAILED          = -15
-    NOTHING_TO_PLAY         = -16
-    UNKNOWN_FORMAT          = -17
-    UNSUPPORTED             = -18
-    NOT_IMPLEMENTED         = -19
-    GENERIC                 = -20
 
     EXCEPTION_DICT = {
              0:     None,
@@ -122,17 +113,7 @@ class ErrorCode(object):
             -9:     lambda *a: TypeError('Tried to get/set mpv property using wrong format, or passed invalid value', *a),
             -10:    lambda *a: PropertyUnavailableError('mpv property is not available', *a),
             -11:    lambda *a: RuntimeError('Generic error getting or setting mpv property', *a),
-            -12:    lambda *a: SystemError('Error running mpv command', *a),
-            -14:    lambda *a: RuntimeError('Initializing the audio output failed', *a),
-            -15:    lambda *a: RuntimeError('Initializing the video output failed'),
-            -16:    lambda *a: RuntimeError('There was no audio or video data to play. This also happens if the file '
-                                            'was recognized, but did not contain any audio or video streams, or no '
-                                            'streams were selected.'),
-            -17:    lambda *a: RuntimeError('When trying to load the file, the file format could not be determined, '
-                                            'or the file was too broken to open it'),
-            -18:    lambda *a: ValueError('Generic error for signaling that certain system requirements are not fulfilled'),
-            -19:    lambda *a: NotImplementedError('The API function which was called is a stub only'),
-            -20:    lambda *a: RuntimeError('Unspecified error') }
+            -12:    lambda *a: SystemError('Error running mpv command', *a) }
 
     @staticmethod
     def default_error_handler(ec, *args):
@@ -145,106 +126,6 @@ class ErrorCode(object):
         if ex:
             raise ex(ec, *args)
 
-MpvGlGetProcAddressFn = CFUNCTYPE(c_void_p, c_void_p, c_char_p)
-class MpvOpenGLInitParams(Structure):
-    _fields_ = [('get_proc_address', MpvGlGetProcAddressFn),
-            ('get_proc_address_ctx', c_void_p),
-            ('extra_exts', c_void_p)]
-
-    def __init__(self, get_proc_address):
-        self.get_proc_address = get_proc_address
-        self.get_proc_address_ctx = None
-        self.extra_exts = None
-
-class MpvOpenGLFBO(Structure):
-    _fields_ = [('fbo', c_int),
-            ('w', c_int),
-            ('h', c_int),
-            ('internal_format', c_int)]
-
-    def __init__(self, w, h, fbo=0, internal_format=0):
-        self.w, self.h = w, h
-        self.fbo = fbo
-        self.internal_format = internal_format
-
-class MpvRenderFrameInfo(Structure):
-    _fields_ = [('flags', c_int64),
-            ('target_time', c_int64)]
-
-    def as_dict(self):
-        return {'flags': self.flags,
-                'target_time': self.target_time}
-
-class MpvOpenGLDRMParams(Structure):
-    _fields_ = [('fd', c_int),
-        ('crtc_id', c_int),
-        ('connector_id', c_int),
-        ('atomic_request_ptr', c_void_p),
-        ('render_fd', c_int)]
-
-class MpvOpenGLDRMDrawSurfaceSize(Structure):
-    _fields_ = [('width', c_int), ('height', c_int)]
-
-class MpvOpenGLDRMParamsV2(Structure):
-    _fields_ = [('fd', c_int),
-        ('crtc_id', c_int),
-        ('connector_id', c_int),
-        ('atomic_request_ptr', c_void_p),
-        ('render_fd', c_int)]
-
-    def __init__(self, crtc_id, connector_id, atomic_request_ptr, fd=-1, render_fd=-1):
-        self.crtc_id, self.connector_id = crtc_id, connector_id
-        self.atomic_request_ptr = atomic_request_ptr
-        self.fd, self.render_fd = fd, render_fd
-
-
-class MpvRenderParam(Structure):
-    _fields_ = [('type_id', c_int),
-                ('data', c_void_p)]
-
-    # maps human-readable type name to (type_id, argtype) tuple.
-    # The type IDs come from libmpv/render.h
-    TYPES = {"invalid"                 :(0, None),
-            "api_type"                 :(1, str),
-            "opengl_init_params"       :(2, MpvOpenGLInitParams),
-            "opengl_fbo"               :(3, MpvOpenGLFBO),
-            "flip_y"                   :(4, bool),
-            "depth"                    :(5, int),
-            "icc_profile"              :(6, bytes),
-            "ambient_light"            :(7, int),
-            "x11_display"              :(8, c_void_p),
-            "wl_display"               :(9, c_void_p),
-            "advanced_control"         :(10, bool),
-            "next_frame_info"          :(11, MpvRenderFrameInfo),
-            "block_for_target_time"    :(12, bool),
-            "skip_rendering"           :(13, bool),
-            "drm_display"              :(14, MpvOpenGLDRMParams),
-            "drm_draw_surface_size"    :(15, MpvOpenGLDRMDrawSurfaceSize),
-            "drm_display_v2"           :(16, MpvOpenGLDRMParamsV2)}
-
-    def __init__(self, name, value=None):
-        if name not in self.TYPES:
-            raise ValueError('unknown render param type "{}"'.format(name))
-        self.type_id, cons = self.TYPES[name]
-        if cons is None:
-            self.value = None
-            self.data = c_void_p()
-        elif cons is str:
-            self.value = value
-            self.data = cast(c_char_p(value.encode('utf-8')), c_void_p)
-        elif cons is bytes:
-            self.value = MpvByteArray(value)
-            self.data = cast(pointer(self.value), c_void_p)
-        elif cons is bool:
-            self.value = c_int(int(bool(value)))
-            self.data = cast(pointer(self.value), c_void_p)
-        else:
-            self.value = cons(**value)
-            self.data = cast(pointer(self.value), c_void_p)
-
-def kwargs_to_render_param_array(kwargs):
-    t = MpvRenderParam * (len(kwargs)+1)
-    return t(*kwargs.items(), ('invalid', None))
 
 class MpvFormat(c_int):
     NONE        = 0
@@ -330,11 +211,6 @@ class MpvNodeList(Structure):
 class MpvByteArray(Structure):
     _fields_ = [('data', c_void_p),
                 ('size', c_size_t)]
-
-    def __init__(self, value):
-        self._value = value
-        self.data = cast(c_char_p(value), c_void_p)
-        self.size = len(value)
 
     def bytes_value(self):
         return cast(self.data, POINTER(c_char))[:self.size]
@@ -431,24 +307,14 @@ class MpvEventLogMessage(Structure):
                  'level':  self.level.decode('utf-8'),
                  'text':   decoder(self.text).rstrip() }
 
-class MpvEventEndFile(Structure):
-    _fields_ = [('reason', c_int),
-                ('error', c_int)]
-
-    EOF                 = 0
+class MpvEventEndFile(c_int):
+    EOF_OR_INIT_FAILURE = 0
     RESTARTED           = 1
     ABORTED             = 2
     QUIT                = 3
-    ERROR               = 4
-    REDIRECT            = 5
-
-    # For backwards-compatibility
-    @property
-    def value(self):
-        return self.reason
 
     def as_dict(self, decoder=identity_decoder):
-        return {'reason': self.reason, 'error': self.error}
+        return {'reason': self.value}
 
 class MpvEventScriptInputDispatch(Structure):
     _fields_ = [('arg0', c_int),
@@ -464,48 +330,19 @@ class MpvEventClientMessage(Structure):
     def as_dict(self, decoder=identity_decoder):
         return { 'args': [ self.args[i].decode('utf-8') for i in range(self.num_args) ] }
 
-StreamReadFn = CFUNCTYPE(c_int64, c_void_p, POINTER(c_char), c_uint64)
-StreamSeekFn = CFUNCTYPE(c_int64, c_void_p, c_int64)
-StreamSizeFn = CFUNCTYPE(c_int64, c_void_p)
-StreamCloseFn = CFUNCTYPE(None, c_void_p)
-StreamCancelFn = CFUNCTYPE(None, c_void_p)
-
-class StreamCallbackInfo(Structure):
-    _fields_ = [('cookie', c_void_p),
-                ('read', StreamReadFn),
-                ('seek', StreamSeekFn),
-                ('size', StreamSizeFn),
-                ('close', StreamCloseFn), ]
-#                ('cancel', StreamCancelFn)]
-
-StreamOpenFn = CFUNCTYPE(c_int, c_void_p, c_char_p, POINTER(StreamCallbackInfo))
-
 WakeupCallback = CFUNCTYPE(None, c_void_p)
-
-RenderUpdateFn = CFUNCTYPE(None, c_void_p)
 
 OpenGlCbUpdateFn = CFUNCTYPE(None, c_void_p)
 OpenGlCbGetProcAddrFn = CFUNCTYPE(c_void_p, c_void_p, c_char_p)
 
-def _handle_func(name, args, restype, errcheck, ctx=MpvHandle, deprecated=False):
+def _handle_func(name, args, restype, errcheck, ctx=MpvHandle):
     func = getattr(backend, name)
     func.argtypes = [ctx] + args if ctx else args
     if restype is not None:
         func.restype = restype
     if errcheck is not None:
         func.errcheck = errcheck
-    if deprecated:
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not wrapper.warned: # Only warn on first invocation to prevent spamming
-                warn("Backend C api has been deprecated: " + name, DeprecationWarning, stacklevel=2)
-                wrapper.warned = True
-            return func(*args, **kwargs)
-        wrapper.warned = False
-
-        globals()['_'+name] = wrapper
-    else:
-        globals()['_'+name] = func
+    globals()['_'+name] = func
 
 def bytes_free_errcheck(res, func, *args):
     notnull_errcheck(res, func, *args)
@@ -521,8 +358,8 @@ def notnull_errcheck(res, func, *args):
 
 ec_errcheck = ErrorCode.raise_for_ec
 
-def _handle_gl_func(name, args=[], restype=None, deprecated=False):
-    _handle_func(name, args, restype, errcheck=None, ctx=MpvOpenGLCbContext, deprecated=deprecated)
+def _handle_gl_func(name, args=[], restype=None):
+    _handle_func(name, args, restype, errcheck=None, ctx=MpvOpenGLCbContext)
 
 backend.mpv_client_api_version.restype = c_ulong
 def _mpv_client_api_version():
@@ -575,28 +412,14 @@ _handle_func('mpv_wakeup',                  [],                                 
 _handle_func('mpv_set_wakeup_callback',     [WakeupCallback, c_void_p],                 None, errcheck=None)
 _handle_func('mpv_get_wakeup_pipe',         [],                                         c_int, errcheck=None)
 
-_handle_func('mpv_stream_cb_add_ro',        [c_char_p, c_void_p, StreamOpenFn],         c_int, ec_errcheck)
+_handle_func('mpv_get_sub_api',             [MpvSubApi],                                c_void_p, notnull_errcheck)
 
-_handle_func('mpv_render_context_create',               [MpvRenderCtxHandle, MpvHandle, POINTER(MpvRenderParam)],   c_int, ec_errcheck,     ctx=None)
-_handle_func('mpv_render_context_set_parameter',        [MpvRenderParam],                                           c_int, ec_errcheck,     ctx=MpvRenderCtxHandle)
-_handle_func('mpv_render_context_get_info',             [MpvRenderParam],                                           c_int, ec_errcheck,     ctx=MpvRenderCtxHandle)
-_handle_func('mpv_render_context_set_update_callback',  [RenderUpdateFn, c_void_p],                                 None, errcheck=None,    ctx=MpvRenderCtxHandle)
-_handle_func('mpv_render_context_update',               [],                                                         c_int64, errcheck=None, ctx=MpvRenderCtxHandle)
-_handle_func('mpv_render_context_render',               [POINTER(MpvRenderParam)],                                  c_int, ec_errcheck,     ctx=MpvRenderCtxHandle)
-_handle_func('mpv_render_context_report_swap',          [],                                                         None, errcheck=None,    ctx=MpvRenderCtxHandle)
-_handle_func('mpv_render_context_free',                 [],                                                         None, errcheck=None,    ctx=MpvRenderCtxHandle)
-
-
-# Deprecated in v0.29.0 and may disappear eventually
-if hasattr(backend, 'mpv_get_sub_api'):
-    _handle_func('mpv_get_sub_api',             [MpvSubApi],                                c_void_p, notnull_errcheck, deprecated=True)
-
-    _handle_gl_func('mpv_opengl_cb_set_update_callback',    [OpenGlCbUpdateFn, c_void_p], deprecated=True)
-    _handle_gl_func('mpv_opengl_cb_init_gl',                [c_char_p, OpenGlCbGetProcAddrFn, c_void_p],    c_int, deprecated=True)
-    _handle_gl_func('mpv_opengl_cb_draw',                   [c_int, c_int, c_int],                          c_int, deprecated=True)
-    _handle_gl_func('mpv_opengl_cb_render',                 [c_int, c_int],                                 c_int, deprecated=True)
-    _handle_gl_func('mpv_opengl_cb_report_flip',            [c_ulonglong],                                  c_int, deprecated=True)
-    _handle_gl_func('mpv_opengl_cb_uninit_gl',              [],                                             c_int, deprecated=True)
+_handle_gl_func('mpv_opengl_cb_set_update_callback',    [OpenGlCbUpdateFn, c_void_p])
+_handle_gl_func('mpv_opengl_cb_init_gl',                [c_char_p, OpenGlCbGetProcAddrFn, c_void_p],    c_int)
+_handle_gl_func('mpv_opengl_cb_draw',                   [c_int, c_int, c_int],                          c_int)
+_handle_gl_func('mpv_opengl_cb_render',                 [c_int, c_int],                                 c_int)
+_handle_gl_func('mpv_opengl_cb_report_flip',            [c_ulonglong],                                  c_int)
+_handle_gl_func('mpv_opengl_cb_uninit_gl',              [],                                             c_int)
 
 
 def _mpv_coax_proptype(value, proptype=str):
@@ -719,40 +542,6 @@ class _DecoderPropertyProxy(_PropertyProxy):
     def __setattr__(self, name, value):
         setattr(self.mpv, _py_to_mpv(name), value)
 
-class GeneratorStream:
-    """Transform a python generator into an mpv-compatible stream object. This only supports size() and read(), and
-    does not support seek(), close() or cancel().
-    """
-
-    def __init__(self, generator_fun, size=None):
-        self._generator_fun = generator_fun
-        self.size = size
-
-    def seek(self, offset):
-        self._read_iter = iter(self._generator_fun())
-        self._read_chunk = b''
-        return 0 # We only support seeking to the first byte atm
-        # implementation in case seeking to arbitrary offsets would be necessary
-        # while offset > 0:
-        #     offset -= len(self.read(offset))
-        # return offset
-
-    def read(self, size):
-        if not self._read_chunk:
-            try:
-                self._read_chunk += next(self._read_iter)
-            except StopIteration:
-                return b''
-        rv, self._read_chunk = self._read_chunk[:size], self._read_chunk[size:]
-        return rv
-
-    def close(self):
-        self._read_iter = iter([]) # make next read() call return EOF
-
-    def cancel(self):
-        self._read_iter = iter([]) # make next read() call return EOF
-        # TODO?
-
 class MPV(object):
     """See man mpv(1) for the details of the implemented commands. All mpv properties can be accessed as
     ``my_mpv.some_property`` and all mpv options can be accessed as ``my_mpv['some-option']``.
@@ -801,11 +590,6 @@ class MPV(object):
         self._event_handle = _mpv_create_client(self.handle, b'py_event_handler')
         self._loop = partial(_event_loop, self._event_handle, self._playback_cond, self._event_callbacks,
                 self._message_handlers, self._property_handlers, log_handler)
-        self._stream_protocol_cbs = {}
-        self._stream_protocol_frontends = collections.defaultdict(lambda: {})
-        self.register_stream_protocol('python', self._python_stream_open)
-        self._python_streams = {}
-        self._python_stream_catchall = None
         if loglevel is not None or log_handler is not None:
             self.set_loglevel(loglevel or 'terminal-default')
         if start_event_thread:
@@ -924,7 +708,7 @@ class MPV(object):
         if res['format'] != 'bgr0':
             raise ValueError('Screenshot in unknown format "{}". Currently, only bgr0 is supported.'
                     .format(res['format']))
-        img = Image.frombytes('RGBA', (res['stride']//4, res['h']), res['data'])
+        img = Image.frombytes('RGBA', (res['w'], res['h']), res['data'])
         b,g,r,a = img.split()
         return Image.merge('RGB', (r,g,b))
 
@@ -1191,7 +975,7 @@ class MPV(object):
         def register(fun):
             @self.key_binding(keydef, mode)
             @wraps(fun)
-            def wrapper(state='p-', name=None, char=None):
+            def wrapper(state='p-', name=None):
                 if state[0] in ('d', 'p'):
                     fun()
             return wrapper
@@ -1210,7 +994,7 @@ class MPV(object):
 
             player = mpv.MPV()
             @player.key_binding('Q')
-            def binding(state, name, char):
+            def binding(state, name):
                 print('blep')
 
             binding.unregister_mpv_key_bindings()
@@ -1256,8 +1040,8 @@ class MPV(object):
             raise TypeError('register_key_binding expects either an str with an mpv command or a python callable.')
         self.command('enable-section', binding_name, 'allow-hide-cursor+allow-vo-dragging')
 
-    def _handle_key_binding_message(self, binding_name, key_state, key_name=None, key_char=None):
-        self._key_binding_handlers[binding_name](key_state, key_name, key_char)
+    def _handle_key_binding_message(self, binding_name, key_state, key_name=None):
+        self._key_binding_handlers[binding_name](key_state, key_name)
 
     def unregister_key_binding(self, keydef):
         """Unregister a key binding by keydef."""
@@ -1268,87 +1052,6 @@ class MPV(object):
             del self._key_binding_handlers[binding_name]
             if not self._key_binding_handlers:
                 self.unregister_message_handler('key-binding')
-
-    def register_stream_protocol(self, proto, open_fn=None):
-        """ Register a custom stream protocol as documented in libmpv/stream_cb.h:
-            https://github.com/mpv-player/mpv/blob/master/libmpv/stream_cb.h
-
-            proto is the protocol scheme, e.g. "foo" for "foo://" urls.
-
-            This function can either be used with two parameters or it can be used as a decorator on the target
-            function.
-
-            open_fn is a function taking an URI string and returning an mpv stream object.
-            open_fn may raise a ValueError to signal libmpv the URI could not be opened.
-
-            The mpv stream protocol is as follows:
-            class Stream:
-                @property
-                def size(self):
-                    return None # unknown size
-                    return size # int with size in bytes
-
-                def read(self, size):
-                    ...
-                    return read # non-empty bytes object with input
-                    return b'' # empty byte object signals permanent EOF
-
-                def seek(self, pos):
-                    return new_offset # integer with new byte offset. The new offset may be before the requested offset
-                    in case an exact seek is inconvenient.
-
-                def close(self):
-                    ...
-
-                # def cancel(self): (future API versions only)
-                #     Abort a running read() or seek() operation
-                #     ...
-
-        """
-
-        def decorator(open_fn):
-            @StreamOpenFn
-            def open_backend(_userdata, uri, cb_info):
-                try:
-                    frontend = open_fn(uri.decode('utf-8'))
-                except ValueError:
-                    return ErrorCode.LOADING_FAILED
-
-                def read_backend(_userdata, buf, bufsize):
-                    data = frontend.read(bufsize)
-                    for i in range(len(data)):
-                        buf[i] = data[i]
-                    return len(data)
-
-                cb_info.contents.cookie = None
-                read = cb_info.contents.read = StreamReadFn(read_backend)
-                close = cb_info.contents.close = StreamCloseFn(lambda _userdata: frontend.close())
-
-                seek, size, cancel = None, None, None
-                if hasattr(frontend, 'seek'):
-                    seek = cb_info.contents.seek = StreamSeekFn(lambda _userdata, offx: frontend.seek(offx))
-                if hasattr(frontend, 'size') and frontend.size is not None:
-                    size = cb_info.contents.size = StreamSizeFn(lambda _userdata: frontend.size)
-
-                # Future API versions only
-                # if hasattr(frontend, 'cancel'):
-                #     cb_info.contents.cancel = StreamCancelFn(lambda _userdata: frontend.cancel())
-
-                # keep frontend and callbacks in memory forever (TODO)
-                frontend._registered_callbacks = [read, close, seek, size, cancel]
-                self._stream_protocol_frontends[proto][uri] = frontend
-                return 0
-
-            if proto in self._stream_protocol_cbs:
-                raise KeyError('Stream protocol already registered')
-            self._stream_protocol_cbs[proto] = [open_backend]
-            _mpv_stream_cb_add_ro(self.handle, proto.encode('utf-8'), c_void_p(), open_backend)
-
-            return open_fn
-
-        if open_fn is not None:
-            decorator(open_fn)
-        return decorator
 
     # Convenience functions
     def play(self, filename):
@@ -1364,97 +1067,6 @@ class MPV(object):
         """Append a path or URL to the playlist. This does not start playing the file automatically. To do that, use
         ``MPV.loadfile(filename, 'append-play')``."""
         self.loadfile(filename, 'append', **options)
-
-    # "Python stream" logic. This is some porcelain for directly playing data from python generators.
-
-    def _python_stream_open(self, uri):
-        """Internal handler for python:// protocol streams registered through @python_stream(...) and
-        @python_stream_catchall
-        """
-        name, = re.fullmatch('python://(.*)', uri).groups()
-
-        if name in self._python_streams:
-            generator_fun, size = self._python_streams[name]
-        else:
-            if self._python_stream_catchall is not None:
-                generator_fun, size = self._python_stream_catchall(name)
-            else:
-                raise ValueError('Python stream name not found and no catch-all defined')
-
-        return GeneratorStream(generator_fun, size)
-
-    def python_stream(self, name=None, size=None):
-        """Register a generator for the python stream with the given name.
-
-        name is the name, i.e. the part after the "python://" in the URI, that this generator is registered as.
-        size is the total number of bytes in the stream (if known).
-
-        Any given name can only be registered once. The catch-all can also only be registered once. To unregister a
-        stream, call the .unregister function set on the callback.
-
-        The generator signals EOF by returning, manually raising StopIteration or by yielding b'', an empty bytes
-        object.
-
-        The generator may be called multiple times if libmpv seeks or loops.
-
-        See also: @mpv.python_stream_catchall
-
-        @mpv.python_stream('foobar')
-        def reader():
-            for chunk in chunks:
-                yield chunk
-        mpv.play('python://foobar')
-        mpv.wait_for_playback()
-        reader.unregister()
-        """
-        def register(cb):
-            if name in self._python_streams:
-                raise KeyError('Python stream name "{}" is already registered'.format(name))
-            self._python_streams[name] = (cb, size)
-            def unregister():
-                if name not in self._python_streams or\
-                        self._python_streams[name][0] is not cb: # This is just a basic sanity check
-                    raise RuntimeError('Python stream has already been unregistered')
-                del self._python_streams[name]
-            cb.unregister = unregister
-            return cb
-        return register
-
-    def python_stream_catchall(self, cb):
-        """ Register a catch-all python stream to be called when no name matches can be found. Use this decorator on a
-        function that takes a name argument and returns a (generator, size) tuple (with size being None if unknown).
-
-        An invalid URI can be signalled to libmpv by raising a ValueError inside the callback.
-
-        See also: @mpv.python_stream(name, size)
-
-        @mpv.python_stream_catchall
-        def catchall(name):
-            if not name.startswith('foo'):
-                raise ValueError('Unknown Name')
-
-            def foo_reader():
-                with open(name, 'rb') as f:
-                    while True:
-                        chunk = f.read(1024)
-                        if not chunk:
-                            break
-                        yield chunk
-            return foo_reader, None
-        mpv.play('python://foo23')
-        mpv.wait_for_playback()
-        catchall.unregister()
-        """
-        if self._python_stream_catchall is not None:
-            raise KeyError('A catch-all python stream is already registered')
-
-        self._python_stream_catchall = cb
-        def unregister():
-            if self._python_stream_catchall is not cb:
-                    raise RuntimeError('This catch-all python stream has already been unregistered')
-            self._python_stream_catchall = None
-        cb.unregister = unregister
-        return cb
 
     # Property accessors
     def _get_property(self, name, decoder=strict_decoder, fmt=MpvFormat.NODE):
@@ -1521,53 +1133,3 @@ class MPV(object):
             return self._get_property('option-info/'+name)
         except AttributeError:
             return None
-
-class MpvRenderContext:
-    def __init__(self, mpv, api_type, **kwargs):
-        self._mpv = mpv
-        kwargs['api_type'] = api_type
-
-        buf = cast(create_string_buffer(sizeof(MpvRenderCtxHandle)), POINTER(MpvRenderCtxHandle))
-        _mpv_render_context_create(buf, mpv.handle, kwargs_to_render_param_array(kwargs))
-        self._handle = buf.contents
-
-    def free(self):
-        _mpv_render_context_free(self._handle)
-
-    def __setattr__(self, name, value):
-        if name.startswith('_'):
-            super().__setattr__(name, value)
-
-        elif name == 'update_cb':
-            func = value if value else (lambda: None)
-            self._update_cb = value
-            self._update_fn_wrapper = RenderUpdateFn(lambda _userdata: func())
-            _mpv_render_context_set_update_callback(self._handle, self._update_fn_wrapper, None)
-
-        else:
-            param = MpvRenderParam(name, value)
-            _mpv_render_context_set_parameter(self._handle, param)
-
-    def __getattr__(self, name):
-        if name == 'update_cb':
-            return self._update_cb
-
-        elif name == 'handle':
-            return self._handle
-
-        param = MpvRenderParam(name)
-        data_type = type(param.data.contents)
-        buf = cast(create_string_buffer(sizeof(data_type)), POINTER(data_type))
-        param.data = buf
-        _mpv_render_context_get_info(self._handle, param)
-        return buf.contents.as_dict()
-
-    def update(self):
-        """ Calls mpv_render_context_update and returns the MPV_RENDER_UPDATE_FRAME flag (see render.h) """
-        return bool(_mpv_render_context_update(self._handle) & 1)
-
-    def render(self, **kwargs):
-        _mpv_render_context_render(self._handle, kwargs_to_render_param_array(kwargs))
-
-    def report_swap(self):
-        _mpv_render_context_report_swap(self._handle)
