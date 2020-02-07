@@ -1,17 +1,20 @@
 import logging
 
 from queue import deque
-from feeluown.player import Playlist
 
 logger = logging.getLogger(__name__)
 
 
 class FMPlaylist:
-    def __init__(self, playlist: Playlist):
+    def __init__(self, app):
         """无限大小的缓存队列"""
         self._songs_cache = deque
+        """
+        :type app: feeluown.app.App
+        """
+        self._app = app
 
-        self._playlist = playlist
+        self._playlist = self._app.playlist
 
         self._playlist.eof_reached.connect(self._append_song_to_playlist)
 
