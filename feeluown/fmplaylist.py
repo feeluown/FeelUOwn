@@ -31,21 +31,15 @@ class FMPlaylist:
             :type songs: list
             """
             songs = self.fetch_songs_func(min_num=3)
-            if songs is not None:
+            if songs:
                 for song in songs:
                     self._songs_cache.append(song)
+            else:
+                logger.warning("fetch songs failed")
+                return
         if self._playlist is not None:
             """必须保证_songs_cache中有数据"""
-            self._playlist.fm_add(self.pop_song_from_cache())
+            self._playlist.fm_add(self._songs_cache.pop())
+            self._playlist.next()
         else:
             logger.warning("self._playlist isn't initialized properly")
-            return
-        if self._songs_cache:
-            self._playlist.next()
-
-    def pop_song_from_cache(self):
-        """从队列里弹出一首歌"""
-        if self._songs_cache:
-            return None
-        else:
-            return self._songs_cache.pop()
