@@ -10,6 +10,7 @@ from fuocore.models import Resolver
 from fuocore.pubsub import run as run_pubsub, create as create_pubsub
 
 from .consts import APP_ICON
+from .fm import FM
 from .player import Player
 from .plugin import PluginsManager
 from .server import FuoServer
@@ -83,6 +84,7 @@ def attach_attrs(app):
     app.plugin_mgr = PluginsManager(app)
     app.request = Request()
     app.task_mgr = TaskManager(app, loop)
+    app.fm = FM(app)
 
     if app.mode & (app.DaemonMode | app.GuiMode):
         app.version_mgr = VersionManager(app)
