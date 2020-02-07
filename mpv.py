@@ -15,6 +15,14 @@
 # You should have received a copy of the GNU Affero General Public License along with this program.  If not, see
 # <http://www.gnu.org/licenses/>.
 #
+#
+# changes in feeluown:
+#
+# 1. read MPV_DYLIB_PATH from environ
+#    https://github.com/feeluown/FeelUOwn/pull/325
+#
+#
+
 
 from ctypes import *
 import ctypes.util
@@ -27,14 +35,19 @@ import collections
 import re
 import traceback
 
+_env_name = "MPV_DYLIB_PATH"
+_nt_err_msg = ('Cannot find mpv-1.dll in your system %PATH%. One way to deal with this is to ship mpv-1.dll '
+               'with your script and put the directory your script is in into %PATH% before "import mpv": '
+               'os.environ["PATH"] = os.path.dirname(__file__) + os.pathsep + os.environ["PATH"] '
+               'If mpv-1.dll is located elsewhere, you can add that path to os.environ["PATH"].')
+_nix_err_msg = ("Cannot find libmpv in the usual places. Depending on your distro, you may try installing an "
+                "mpv-devel or mpv-libs package. If you have libmpv around but this script can't find it, consult "
+                "the documentation for ctypes.util.find_library which this script uses to look up the library "
+                "filename.")
+
 if os.name == 'nt':
-    dll = ctypes.util.find_library('mpv-1.dll')
-    if dll is None:
-        raise OSError('Cannot find mpv-1.dll in your system %PATH%. One way to deal with this is to ship mpv-1.dll '
-                      'with your script and put the directory your script is in into %PATH% before "import mpv": '
-                      'os.environ["PATH"] = os.path.dirname(__file__) + os.pathsep + os.environ["PATH"] '
-                      'If mpv-1.dll is located elsewhere, you can add that path to os.environ["PATH"].')
-    backend = CDLL(dll)
+    _default_mpv_dylib = 'mpv-1.dll'
+    _err_msg = _nt_err_msg
     fs_enc = 'utf-8'
 else:
     import locale
@@ -43,14 +56,18 @@ else:
     # still better than segfaulting, we are setting LC_NUMERIC to "C".
     locale.setlocale(locale.LC_NUMERIC, 'C')
 
-    sofile = ctypes.util.find_library('mpv')
-    if sofile is None:
-        raise OSError("Cannot find libmpv in the usual places. Depending on your distro, you may try installing an "
-                "mpv-devel or mpv-libs package. If you have libmpv around but this script can't find it, consult "
-                "the documentation for ctypes.util.find_library which this script uses to look up the library "
-                "filename.")
-    backend = CDLL(sofile)
+    _default_mpv_dylib = 'mpv'
+    _err_msg = _nix_err_msg
     fs_enc = sys.getfilesystemencoding()
+
+_user_mpv_dylib = os.environ.get(_env_name, None)
+if _user_mpv_dylib is not None:
+    backend = CDLL(_user_mpv_dylib)
+else:
+    _dll = ctypes.util.find_library(_default_mpv_dylib)
+    if _dll is None:
+        raise OSError(_err_msg)
+    backend = CDLL(_dll)
 
 
 class MpvHandle(c_void_p):
