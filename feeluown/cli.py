@@ -28,6 +28,10 @@ def setup_cli_argparse(parser):
     subparsers.add_parser('genicon',
                           description='generate desktop icon')
 
+    fmt_parser = argparse.ArgumentParser(add_help=False)
+    fmt_parser.add_argument('--format',
+                            help="change command output format (default: plain)")
+
     play_parser = subparsers.add_parser(
         'play',
         description=textwrap.dedent('''\
@@ -36,9 +40,10 @@ def setup_cli_argparse(parser):
             - fuo play "in the end"
             - fuo play 稻香-周杰伦
         '''),
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
+        parents=[fmt_parser]
     )
-    show_parser = subparsers.add_parser('show')
+    show_parser = subparsers.add_parser('show', parents=[fmt_parser])
     search_parser = subparsers.add_parser(
         'search',
         description=textwrap.dedent('''\
@@ -49,21 +54,22 @@ def setup_cli_argparse(parser):
             - fuo search lizongsheng "source='xiami,qq',type=artist"
             - fuo search 李宗盛 "[source='xiami,qq',type=artist]"
         '''),
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
+        parents=[fmt_parser]
     )
 
-    subparsers.add_parser('pause')
-    subparsers.add_parser('resume')
-    subparsers.add_parser('toggle')
-    subparsers.add_parser('stop')
-    subparsers.add_parser('next')
-    subparsers.add_parser('previous')
-    subparsers.add_parser('list')
-    subparsers.add_parser('clear')
-    subparsers.add_parser('status')
-    remove_parser = subparsers.add_parser('remove')
-    add_parser = subparsers.add_parser('add')
-    exec_parser = subparsers.add_parser('exec')
+    subparsers.add_parser('pause', parents=[fmt_parser])
+    subparsers.add_parser('resume', parents=[fmt_parser])
+    subparsers.add_parser('toggle', parents=[fmt_parser])
+    subparsers.add_parser('stop', parents=[fmt_parser])
+    subparsers.add_parser('next', parents=[fmt_parser])
+    subparsers.add_parser('previous', parents=[fmt_parser])
+    subparsers.add_parser('list', parents=[fmt_parser])
+    subparsers.add_parser('clear', parents=[fmt_parser])
+    subparsers.add_parser('status', parents=[fmt_parser])
+    remove_parser = subparsers.add_parser('remove', parents=[fmt_parser])
+    add_parser = subparsers.add_parser('add', parents=[fmt_parser])
+    exec_parser = subparsers.add_parser('exec', parents=[fmt_parser])
 
     play_parser.add_argument('uri', help='歌曲 uri')
     show_parser.add_argument('uri', help='显示资源详细信息')
@@ -91,7 +97,7 @@ cmd_handler_mapping = {}
 
 
 class Request:
-    def __init__(self, cmd, *args, options_str=None, heredoc=None):
+    def __init__(self, cmd, *args, options=None, options_str=None, heredoc=None):
         """cli request object
 
         :param string cmd: cmd name (e.g. search)
@@ -109,6 +115,7 @@ class Request:
         """
         self.cmd = cmd
         self.args = args
+        self.options = options if options else {}
         self.options_str = options_str
         self.heredoc = heredoc
 
@@ -215,7 +222,11 @@ class BaseHandler(metaclass=HandlerMeta):
     def __init__(self, args):
         self.args = args
 
-        self._req = Request(args.cmd)
+        options_list = ["format"]
+        args_dict = vars(args)
+        req_options = {option: args_dict.get(option) for option in options_list
+                       if args_dict.get(option, None)}
+        self._req = Request(args.cmd, options=req_options)
 
     def before_request(self):
         """before request hook"""
@@ -326,7 +337,7 @@ class OnceClient:
                                 live_lyric=app.live_lyric)
         code = 'OK' if success else 'Oops'
 
-        output_format = "plain"     # TODO support more format types
+        output_format = req.options.get("format", "plain")
         if not isinstance(msg, str):
             msg = get_dumper(output_format)(msg).dump()
 
