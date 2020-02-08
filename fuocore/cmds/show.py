@@ -13,6 +13,7 @@ from urllib.parse import urlparse
 
 from fuocore.router import Router
 from fuocore.utils import reader_to_list, to_reader
+from fuocore.cmds.helpers import RenderNode
 
 from .base import AbstractHandler
 from .helpers import (
@@ -44,9 +45,28 @@ class ShowHandler(AbstractHandler):
 
 @route('/')
 def list_providers(req):
-    provider_names = (provider.name for provider in
-                      req.ctx['library'].list())
-    return '\n'.join(('fuo://' + name for name in provider_names))
+    class ProviderDisplay:
+        def __init__(self, provider):
+            self.name = provider.name
+            self.identifier = provider.identifier
+
+        def to_dict(self, **_):
+            return {"uri": str(self),
+                    "name": self.name}
+
+        def to_str(self, **_):
+            return self.name
+
+        def __str__(self):
+            return "fuo://" + self.identifier
+
+    # noinspection PyTypeChecker
+    return [RenderNode(ProviderDisplay(provider))
+            for provider in req.ctx["library"].list()]
+
+    # provider_names = (provider.name for provider in
+    #                   req.ctx['library'].list())
+    # return '\n'.join(('fuo://' + name for name in provider_names))
 
 
 @route('/<provider>/songs/<sid>')
@@ -87,14 +107,16 @@ def album_detail(req, provider, bid):
 def user_detail(req, provider, uid):
     provider = req.ctx['library'].get(provider)
     user = provider.User.get(uid)
-    return show_user(user)
+    # return show_user(user)
+    return user
 
 
 @route('/<provider>/playlists/<pid>')
 def playlist_detail(req, provider, pid):
     provider = req.ctx['library'].get(provider)
     playlist = provider.Playlist.get(pid)
-    return show_playlist(playlist)
+    # return show_playlist(playlist)
+    return playlist
 
 
 @route('/<provider>/playlists/<pid>/songs')

@@ -438,6 +438,8 @@ class ArtistModel(BaseModel):
         model_type = ModelType.artist.value
         fields = ['name', 'cover', 'songs', 'desc', 'albums']
         fields_display = ['name']
+        fields_export = ["provider", "identifier", "name", "songs"]
+        format_string = "{name:_40}"
         allow_create_songs_g = False
         allow_create_albums_g = False
 
@@ -516,6 +518,8 @@ class AlbumModel(BaseModel):
         # 像虾米音乐中，它即提供了专辑制作人信息，也提供了 singer 信息
         fields = ['name', 'cover', 'songs', 'artists', 'desc', 'type']
         fields_display = ['name', 'artists_name']
+        fields_export = ["provider", "identifier", "name", "artists", "songs"]
+        format_string = "{name:_40}"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -604,6 +608,9 @@ class PlaylistModel(BaseModel):
     class Meta:
         model_type = ModelType.playlist.value
         fields = ['name', 'cover', 'songs', 'desc']
+        fields_display = ['name']
+        fields_export = ["name"]
+        format_string = "{name:_40}"
         allow_create_songs_g = False
 
     def __str__(self):
@@ -674,6 +681,8 @@ class UserModel(BaseModel):
         fields = ['name', 'playlists', 'fav_playlists', 'fav_songs',
                   'fav_albums', 'fav_artists']
         fields_display = ['name']
+        fields_export = ['name', 'playlists']
+        format_string = "{name:_40}"
 
     def add_to_fav_songs(self, song_id):
         """add song to favorite songs, return True if success
@@ -704,6 +713,9 @@ class UserModel(BaseModel):
 
     def remove_from_fav_artists(self, artist_id):
         pass
+
+    def __str__(self):
+        return 'fuo://{}/users/{}'.format(self.source, self.identifier)
 
 
 from .uri import (
