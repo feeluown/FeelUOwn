@@ -6,6 +6,7 @@ from enum import IntEnum, Enum
 
 from fuocore.media import MultiQualityMixin, Quality
 from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
+from fuocore.utils import WideFormatter
 
 __all__ = (
     'resolve',
@@ -289,8 +290,8 @@ class BaseModel(Model):
         #: fields exported by to_*(brief=False)
         fields_export = ['provider']
 
-        #: export format by to_plain(brief=True)
-        format_string = "{uri:{uri_length}.{uri_length}} # detail"
+        #: export format by to_str(brief=True)
+        format_string = "detail"    # '{title:_18} - {artists_name}'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -322,7 +323,6 @@ class BaseModel(Model):
         cls_name = cls.__name__
 
         if name in cls.meta.fields_alias:
-            print("getattr_alias")
             return object.__getattribute__(self, cls.meta.fields_alias[name])
 
         value = object.__getattribute__(self, name)
@@ -409,10 +409,9 @@ class BaseModel(Model):
         rtn.update(fields)
         return rtn
 
-    def to_str(self, *, fetch=None, uri_length=None):
-        uri_length = uri_length if uri_length else 40
+    def to_str(self, *, fetch=None):
         model_dict = self.to_dict(brief=True, fetch=fetch)
-        return self.meta.format_string.format(**model_dict, uri_length=uri_length)
+        return WideFormatter().format(self.meta.format_string, **model_dict)
 
 
 class ArtistModel(BaseModel):
@@ -549,8 +548,7 @@ class SongModel(BaseModel, MultiQualityMixin):
         fields_display = ['title', 'artists_name', 'album_name', 'duration_ms',
                           'duration']
         fields_export = ['provider', 'title', 'duration', 'url', 'artists', 'album']
-        format_string = "{uri:{uri_length}.{uri_length}} " \
-                        "# {title} - {artists_name} - {album_name}"
+        format_string = "{title:_18} - {artists_name:_20}"
 
         support_multi_quality = False
 

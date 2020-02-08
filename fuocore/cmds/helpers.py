@@ -10,49 +10,183 @@ fuocore.cmds.helper
 TODO: 让代码长得更好看
 """
 
+import json
 from itertools import chain
+from typing import Optional, Generator, Union, Type
 
+from fuocore.models import BaseModel
 from fuocore.models.uri import reverse
+from fuocore.utils import _fit_text, WideFormatter
 
 
-def _fit_text(text, length, filling=True):
-    """裁剪或者填补字符串，控制其显示的长度
+class RenderNode:
+    model: BaseModel
+    options: dict
+    def __init__(self, model: BaseModel, **options):
+        self.model = model
+        self.options = options
 
-    >>> _fit_text('12345', 6)
-    '12345 '
-    >>> _fit_text('哈哈哈哈哈s', 6)  # doctest: -ELLIPSIS
-    '哈哈 …'
-    >>> _fit_text('哈s哈哈哈哈s', 6)  # doctest: -ELLIPSIS
-    '哈s哈…'
-    >>> _fit_text('sssss', 5)
-    'sssss'
 
-    FIXME: 这样可能会截断一些英文词汇
-    """
-    assert 80 >= length >= 5
-
-    text_len = 0
-    len_index_map = {}
-    for i, c in enumerate(text):
-        # FIXME: 根据目前少量观察，在大部分字体下，
-        # \u4e00 后面的字符宽度是英文字符两倍
-        if ord(c) < 19968:  # ord(u'\u4e00')
-            text_len += 1
-            len_index_map[text_len] = i
-        else:
-            text_len += 2
-            len_index_map[text_len] = i
-
-    if text_len <= length:
-        if filling:
-            return text + (length - text_len) * ' '
-        return text
-
-    remain = length - 1
-    if remain in len_index_map:
-        return text[:(len_index_map[remain] + 1)] + '…'
+def dict_walker(indict: dict, path: Optional[list] = None) -> Generator:
+    path = path[:] if path else []
+    if isinstance(indict, dict):
+        for key, value in indict.items():
+            if isinstance(value, dict):
+                for d in dict_walker(value, path + [key]):
+                    yield d
+            elif isinstance(value, list) or isinstance(value, tuple):
+                for i, v in enumerate(value):
+                    for d in dict_walker(v, path + [key] + [i]):
+                        yield d
+            else:
+                yield path + [key], value
     else:
-        return text[:(len_index_map[remain - 1] + 1)] + ' …'
+        yield path, indict
+
+
+def set_item_by_path(indict: dict, path: list, value):
+    for key in path[:-1]:
+        indict = indict.setdefault(key, {})
+    indict[path[-1]] = value
+
+
+class Serializer:
+    _data: Union[RenderNode, BaseModel, dict]
+    @classmethod
+    def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
+        raise NotImplementedError
+
+    @classmethod
+    def _serialize(cls, obj) -> dict:
+        is_complete = False
+        while not is_complete:
+            is_complete = True
+            for elem in dict_walker(obj):
+                path, value = elem
+
+                rendered = None
+                if isinstance(value, RenderNode):
+                    rendered = cls._render(value.model, **value.options)
+                elif isinstance(value, BaseModel):
+                    rendered = cls._render(value)
+
+                if rendered:
+                    set_item_by_path(obj, path, rendered)
+                    is_complete = False
+                    break
+        return obj
+
+    def __init__(self, data: Union[RenderNode, BaseModel, dict]):
+        self._data = data
+
+    def serialize(self) -> dict:
+        return self._serialize(self._data)
+
+
+class PlainSerializer(Serializer):
+    def __init__(self, data: Union[RenderNode, BaseModel, dict]):
+        self._data = {"root": data}
+
+    @classmethod
+    def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
+        if options.get("brief", True):
+            return {"uri": str(obj), "info": obj.to_str(**options)}
+        return obj.to_dict(**options)
+
+    def serialize(self) -> dict:
+        return self._serialize(self._data)["root"]
+
+
+class JsonSerializer(Serializer):
+    @classmethod
+    def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
+        return obj.to_dict(**options)
+
+
+class Emitter:
+    data: dict
+    def __init__(self, data: dict):
+        self._data = data
+
+    def emit(self) -> str:
+        raise NotImplementedError
+
+
+class JsonEmitter(Emitter):
+    def emit(self) -> str:
+        return json.dumps(self._data, indent=4)
+
+
+class PlainEmitter(Emitter):
+    formatter = WideFormatter()
+
+
+    @classmethod
+    def _list_g(cls, obj, indent='') -> Generator:
+        uri_length = max(map(
+            lambda x: len(x["uri"]) if isinstance(x, dict) else 0
+            , obj))
+        for item in obj:
+            if isinstance(item, (str, int, float)):
+                yield "\t{item}"
+            elif isinstance(item, dict):
+                yield cls.formatter.format(
+                    "{indent}{uri:+{uri_length}}\t# {info}",
+                    **item, uri_length=uri_length, indent=indent)
+
+    def _emit(self) -> Generator:
+        if isinstance(self._data, dict):
+            key_length = max(map(len, self._data.keys())) + 10
+            for k, v in self._data.items():
+                if isinstance(v, (str, int, float)):
+                    yield "{k:{key_length}} {v}".format(k=k+":", v=v,
+                                                        key_length=key_length)
+                elif isinstance(v, dict):
+                    yield "{uri}\t# {info}".format(**v)
+            for k, v in self._data.items():
+                if isinstance(v, list):
+                    yield "{}::".format(k)
+                    yield from self._list_g(v, indent="\t")
+        elif isinstance(self._data, list):
+            yield from self._list_g(self._data)
+
+    def emit(self) -> str:
+        return "\n".join(self._emit())
+
+
+class Dumper:
+    _serializer: Type[Serializer] = None
+    _emitter: Type[Emitter] = None
+    _data: Union[BaseModel, RenderNode, list]
+
+    def __init__(self, data: Union[BaseModel, RenderNode, list]):
+        if isinstance(data, BaseModel):
+            self._data = RenderNode(data, brief=False)
+        else:
+            self._data = data
+
+    def dump(self):
+        serialized = self._serializer(self._data).serialize()
+        return self._emitter(serialized).emit()
+
+
+class JsonDumper(Dumper):
+    _serializer = JsonSerializer
+    _emitter = JsonEmitter
+
+
+class PlainDumper(Dumper):
+    _serializer = PlainSerializer
+    _emitter = PlainEmitter
+
+
+def get_dumper(dumper_type: str) -> Type[Dumper]:
+    if dumper_type == "json":
+        return JsonDumper
+    elif dumper_type == "plain":
+        return PlainDumper
+    else:
+        raise ValueError
 
 
 def show_song(song, uri_length=None, brief=False, fetch=False):
