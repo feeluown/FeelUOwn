@@ -83,6 +83,9 @@ class AbstractProvider(ABC):
         """use provider as a specific user"""
         self._user = user
 
+    def search(self, *args, **kwargs):
+        pass
+
 
 class DummyProvider(AbstractProvider):
 
