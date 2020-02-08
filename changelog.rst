@@ -1,5 +1,22 @@
 Changelog
 ---------
+
+3.3.9 (2020-02-08)
+""""""""""""""""""""
+**feature**
+
+- 提供 FM 模式支持
+- 支持从环境变量 `MPV_DYLIB_PATH` 中读取 libmpv 地址
+
+**bugfix**
+
+- 修复 `fuo add playlist` 有时不生效的问题
+- 修复 `fuo status` 命令有时失败的问题
+
+**other**
+
+- 添加简单的集成测试
+
 3.3.8 (2020-02-03)
 """"""""""""""""""""
 - bugfix: app crash on non-macos
