@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from fuocore.cmds import exec_cmd, Cmd
-from fuocore.cmds.helpers import show_song
+from fuocore.cmds.helpers import show_song, get_dumper
 from fuocore.protocol import Parser
 from feeluown.consts import CACHE_DIR
 
@@ -325,6 +325,11 @@ class OnceClient:
                                 playlist=app.playlist,
                                 live_lyric=app.live_lyric)
         code = 'OK' if success else 'Oops'
+
+        output_format = "plain"     # TODO support more format types
+        if not isinstance(msg, str):
+            msg = get_dumper(output_format)(msg).dump()
+
         return Response(code=code, content=msg)
 
 

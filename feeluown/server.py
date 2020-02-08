@@ -3,6 +3,7 @@ import logging
 
 from fuocore.protocol import FuoServerProtocol, Response
 from fuocore.cmds import exec_cmd, Cmd
+from fuocore.cmds.helpers import get_dumper
 
 logger = logging.getLogger(__name__)
 
@@ -31,4 +32,7 @@ class FuoServer:
             playlist=self._app.playlist,
             live_lyric=self._app.live_lyric)
         code = 'ok' if success else 'oops'
+        if not isinstance(msg, str):
+            format = req.options.get("format", "plain")
+            msg = get_dumper(format)(msg).dump()
         return Response(code=code, msg=msg, req=req)

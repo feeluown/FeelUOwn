@@ -67,4 +67,5 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
     else:
         if rv is None:
             rv = ''
-        return True, str(rv)
+        # return True, str(rv)
+        return True, rv
