@@ -402,7 +402,9 @@ class BaseModel(Model):
         if brief:
             fields = {field: _getattr(field) for field in self.meta.fields_display}
         else:
-            fields = {field: _getattr(field) for field in self.meta.fields_export if field}
+            fields = {field: _getattr(field)
+                      for field in self.meta.fields_export
+                      if field}
 
         rtn.update(fields)
         return rtn
@@ -546,9 +548,11 @@ class SongModel(BaseModel, MultiQualityMixin):
         model_type = ModelType.song.value
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration', 'mv', 'media']
-        fields_display = ['title', 'artists_name', 'album_name', 'duration_ms', 'duration']
+        fields_display = ['title', 'artists_name', 'album_name', 'duration_ms',
+                          'duration']
         fields_export = ['provider', 'title', 'duration', 'url', 'artists', 'album']
-        format_string = "{uri:{uri_length}.{uri_length}} # {title} - {artists_name} - {album_name}"
+        format_string = "{uri:{uri_length}.{uri_length}} " \
+                        "# {title} - {artists_name} - {album_name}"
 
         support_multi_quality = False
 
