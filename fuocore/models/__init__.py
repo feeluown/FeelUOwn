@@ -124,8 +124,11 @@ class ModelMetadata(object):
                  model_type=ModelType.dummy.value,
                  provider=None,
                  fields=None,
+                 fields_alias=None,
                  fields_display=None,
                  fields_no_get=None,
+                 fields_export=None,
+                 format_string=None,
                  paths=None,
                  allow_get=False,
                  allow_batch=False,
@@ -138,8 +141,11 @@ class ModelMetadata(object):
         self.model_type = model_type
         self.provider = provider
         self.fields = fields or []
+        self.fields_alias = fields_alias or {}
         self.fields_display = fields_display or []
         self.fields_no_get = fields_no_get or []
+        self.fields_export = fields_export or []
+        self.format_string = format_string or ""
         self.paths = paths or []
         self.allow_get = allow_get
         self.allow_batch = allow_batch
@@ -269,11 +275,22 @@ class BaseModel(Model):
         #: declare model fields, each model must have an identifier field
         fields = ['identifier']
 
+        #: for compatibility reason
+        fields_alias = {
+            'provider': "source"
+        }
+
         #: Model 用来展示的字段
         fields_display = []
 
         #: 不触发 get 的 Model 字段，这些字段往往 get 是获取不到的
         fields_no_get = ['identifier']
+
+        #: fields exported by to_*(brief=False)
+        fields_export = ['provider']
+
+        #: export format by to_plain(brief=True)
+        format_string = "{uri:{uri_length}.{uri_length}} # detail"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -303,6 +320,11 @@ class BaseModel(Model):
         """
         cls = type(self)
         cls_name = cls.__name__
+
+        if name in cls.meta.fields_alias:
+            print("getattr_alias")
+            return object.__getattribute__(self, cls.meta.fields_alias[name])
+
         value = object.__getattribute__(self, name)
 
         if name in ('identifier', 'meta', '_meta', 'stage', 'exists'):
@@ -366,6 +388,31 @@ class BaseModel(Model):
     @classmethod
     def list(cls, identifier_list):
         """Model batch get method"""
+
+    def to_dict(self, brief=True, fetch=None):
+        if fetch is None:
+            fetch = not brief
+
+        def _getattr(field):
+            field_name = field if fetch else field + "_display"
+            return getattr(self, field_name, None)
+
+        rtn = {"uri": str(self)}
+
+        if brief:
+            fields = {field: _getattr(field) for field in self.meta.fields_display}
+        else:
+            fields = {field: _getattr(field) for field in self.meta.fields_export if field}
+
+        rtn.update(fields)
+        return rtn
+
+    def to_plain(self, brief=True, fetch=None, uri_length=None):
+        uri_length = uri_length if uri_length else 40
+        model_dict = self.to_dict(brief, fetch)
+        if not brief:
+            return model_dict
+        return self.meta.format_string.format(**model_dict, uri_length=uri_length)
 
 
 class ArtistModel(BaseModel):
@@ -499,7 +546,9 @@ class SongModel(BaseModel, MultiQualityMixin):
         model_type = ModelType.song.value
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration', 'mv', 'media']
-        fields_display = ['title', 'artists_name', 'album_name', 'duration_ms']
+        fields_display = ['title', 'artists_name', 'album_name', 'duration_ms', 'duration']
+        fields_export = ['provider', 'title', 'duration', 'url', 'artists', 'album']
+        format_string = "{uri:{uri_length}.{uri_length}} # {title} - {artists_name} - {album_name}"
 
         support_multi_quality = False
 
