@@ -21,6 +21,13 @@ def _get_artists_name(artists):
     return ','.join((artist.name for artist in artists))
 
 
+class UnsetType:
+    pass
+
+
+UNSET = UnsetType()
+
+
 class ModelType(IntEnum):
     dummy = 0
 
@@ -129,7 +136,6 @@ class ModelMetadata(object):
                  fields_display=None,
                  fields_no_get=None,
                  fields_export=None,
-                 format_string=None,
                  paths=None,
                  allow_get=False,
                  allow_batch=False,
@@ -146,7 +152,6 @@ class ModelMetadata(object):
         self.fields_display = fields_display or []
         self.fields_no_get = fields_no_get or []
         self.fields_export = fields_export or []
-        self.format_string = format_string or ""
         self.paths = paths or []
         self.allow_get = allow_get
         self.allow_batch = allow_batch
@@ -187,13 +192,20 @@ class ModelMeta(type):
         kind_fields_map = {'fields': [],
                            'fields_display': [],
                            'fields_no_get': [],
+                           'fields_export': [],
+                           'fields_alias': {},
                            'paths': []}
         meta_kv = {}  # 实例化 ModelMetadata 的 kv 对
         for _meta in _metas:
             for kind, fields in kind_fields_map.items():
-                fields.extend(getattr(_meta, kind, []))
+                if isinstance(fields, list):
+                    fields.extend(getattr(_meta, kind, []))
+                elif isinstance(fields, dict):
+                    fields.update(getattr(_meta, kind, {}))
             for k, v in _meta.__dict__.items():
                 if k.startswith('_') or k in kind_fields_map:
+                    continue
+                if v == UNSET:
                     continue
                 if k == 'model_type':
                     if ModelType(v) != ModelType.dummy:
@@ -211,7 +223,9 @@ class ModelMeta(type):
 
         fields_all = list(set(kind_fields_map['fields']))
         fields_display = list(set(kind_fields_map['fields_display']))
+        fields_export = list(set(kind_fields_map['fields_export']))
         fields_no_get = list(set(kind_fields_map['fields_no_get']))
+        fields_alias = kind_fields_map['fields_alias']
         paths = list(set(kind_fields_map['paths']))
 
         for field in fields_display:
@@ -223,7 +237,9 @@ class ModelMeta(type):
                                     provider=provider,
                                     fields=fields_all,
                                     fields_display=fields_display,
+                                    fields_export=fields_export,
                                     fields_no_get=fields_no_get,
+                                    fields_alias=fields_alias,
                                     paths=paths,
                                     **meta_kv)
         # FIXME: theoretically, different provider can share same model,
@@ -288,10 +304,11 @@ class BaseModel(Model):
         fields_no_get = ['identifier']
 
         #: fields exported by to_*(brief=False)
+        #: Beware that all non-display fields will be ignored if fetch=False
         fields_export = ['provider']
 
         #: export format by to_str(brief=True)
-        format_string = "detail"    # '{title:_18} - {artists_name}'
+        format_string = UNSET    # '{title:_18} - {artists_name}'
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
