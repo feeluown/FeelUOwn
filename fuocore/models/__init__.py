@@ -389,7 +389,7 @@ class BaseModel(Model):
     def list(cls, identifier_list):
         """Model batch get method"""
 
-    def to_dict(self, brief=True, fetch=None):
+    def to_dict(self, *, brief=True, fetch=None):
         if fetch is None:
             fetch = not brief
 
@@ -409,11 +409,9 @@ class BaseModel(Model):
         rtn.update(fields)
         return rtn
 
-    def to_plain(self, brief=True, fetch=None, uri_length=None):
+    def to_str(self, *, fetch=None, uri_length=None):
         uri_length = uri_length if uri_length else 40
-        model_dict = self.to_dict(brief, fetch)
-        if not brief:
-            return model_dict
+        model_dict = self.to_dict(brief=True, fetch=fetch)
         return self.meta.format_string.format(**model_dict, uri_length=uri_length)
 
 
