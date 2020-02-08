@@ -77,24 +77,18 @@ class Serializer:
         return obj
 
     def __init__(self, data: Union[RenderNode, BaseModel, dict]):
-        self._data = data
+        self._data = {"root": data}
 
     def serialize(self) -> dict:
-        return self._serialize(self._data)
+        return self._serialize(self._data)["root"]
 
 
 class PlainSerializer(Serializer):
-    def __init__(self, data: Union[RenderNode, BaseModel, dict]):
-        self._data = {"root": data}
-
     @classmethod
     def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
         if options.get("brief", True):
             return {"uri": str(obj), "info": obj.to_str(**options)}
         return obj.to_dict(**options)
-
-    def serialize(self) -> dict:
-        return self._serialize(self._data)["root"]
 
 
 class JsonSerializer(Serializer):
@@ -114,7 +108,7 @@ class Emitter:
 
 class JsonEmitter(Emitter):
     def emit(self) -> str:
-        return json.dumps(self._data, indent=4)
+        return json.dumps(self._data, indent=4, ensure_ascii=False)
 
 
 class PlainEmitter(Emitter):
@@ -128,7 +122,7 @@ class PlainEmitter(Emitter):
             , obj))
         for item in obj:
             if isinstance(item, (str, int, float)):
-                yield "\t{item}"
+                yield "\t{}".format(item)
             elif isinstance(item, dict):
                 yield cls.formatter.format(
                     "{indent}{uri:+{uri_length}}\t# {info}",
@@ -138,11 +132,14 @@ class PlainEmitter(Emitter):
         if isinstance(self._data, dict):
             key_length = max(map(len, self._data.keys())) + 10
             for k, v in self._data.items():
+                value = None
                 if isinstance(v, (str, int, float)):
-                    yield "{k:{key_length}} {v}".format(k=k+":", v=v,
-                                                        key_length=key_length)
+                    value = v
                 elif isinstance(v, dict):
-                    yield "{uri}\t# {info}".format(**v)
+                    value = "{uri}\t# {info}".format(**v)
+                if value:
+                    yield "{k:{key_length}} {value}".format(k=k + ":", value=value,
+                                                            key_length=key_length)
             for k, v in self._data.items():
                 if isinstance(v, list):
                     yield "{}::".format(k)
