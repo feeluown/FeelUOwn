@@ -130,7 +130,7 @@ class PlainEmitter(Emitter):
 
     def _emit(self) -> Generator:
         if isinstance(self._data, dict):
-            key_length = max(map(len, self._data.keys())) + 10
+            key_length = max(map(len, self._data.keys())) + 1
             for k, v in self._data.items():
                 value = None
                 if isinstance(v, (str, int, float)):
@@ -138,7 +138,7 @@ class PlainEmitter(Emitter):
                 elif isinstance(v, dict):
                     value = "{uri}\t# {info}".format(**v)
                 if value:
-                    yield "{k:{key_length}} {value}".format(k=k + ":", value=value,
+                    yield "{k:{key_length}}\t{value}".format(k=k + ":", value=value,
                                                             key_length=key_length)
             for k, v in self._data.items():
                 if isinstance(v, list):
