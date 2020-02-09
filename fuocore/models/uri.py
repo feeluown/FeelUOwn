@@ -194,6 +194,6 @@ def reverse(model, path='', as_line=False):
         else:
             model_str = ''
         if model_str:
-            text += '\t#'
+            text += '\t# '
             text += model_str
     return text

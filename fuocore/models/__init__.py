@@ -17,7 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 def _get_artists_name(artists):
-    return ','.join((artist.name for artist in artists))
+    # [a, b, c] -> 'a, b & c'
+    artists_name = ', '.join((artist.name for artist in artists))
+    return ' & '.join(artists_name.rsplit(', ', 1))
 
 
 class ModelType(IntEnum):
@@ -606,7 +608,7 @@ class UserModel(BaseModel):
 
         model_type = ModelType.user.value
         fields = ['name', 'playlists', 'fav_playlists', 'fav_songs',
-                  'fav_albums', 'fav_artists']
+                  'fav_albums', 'fav_artists', 'rec_songs', 'rec_playlists']
         fields_display = ['name']
 
     def add_to_fav_songs(self, song_id):
