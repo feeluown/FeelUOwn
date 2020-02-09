@@ -48,19 +48,27 @@ class FM:
             If exception occured in fetch_songs_func, it should raise
             :class:`fuocore.excs.ProviderIOError`.
         """
-        if self._activated is True:
+        if self.is_active:
             logger.warning('fm already actiavted')
             return
         self._fetch_songs_func = fetch_songs_func
         self._app.playlist.eof_reached.connect(self._on_playlist_eof_reached)
         self._app.playlist.mode = PlaylistMode.fm
-        self._activated = True
         self._app.playlist.next()
         logger.info('fm mode actiavted')
 
     def deactivate(self):
         """deactivate fm mode"""
         self._app.playlist.mode = PlaylistMode.normal
+
+    @property
+    def is_active(self):
+        """if fm mode is still active
+
+        We can only activate fm mode by using `activate` method, but we can
+        deactivate it through `deactivate` method or `playlist.mode.setter`.
+        """
+        return self._app.playlist.mode is PlaylistMode.fm
 
     def _on_playlist_eof_reached(self):
         if self._queue:
@@ -77,7 +85,7 @@ class FM:
         task.add_done_callback(self._on_songs_fetched)
 
     def _on_playlist_mode_changed(self, mode):
-        if mode is PlaylistMode.fm or not self._activated:
+        if mode is PlaylistMode.fm:
             return
         self._on_playlist_fm_mode_exited()
 
@@ -85,7 +93,6 @@ class FM:
         """when playlist fm mode exited, """
         self._app.playlist.eof_reached.disconnect(self._on_playlist_eof_reached)
         self._fetch_songs_func = None
-        self._activated = False
         logger.info('fm mode deactivated')
 
     def _feed_playlist(self):

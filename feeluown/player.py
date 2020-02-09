@@ -144,12 +144,12 @@ class Playlist(_Playlist):
             task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
             task.add_done_callback(find_song_standby_cb)
 
-        if self.mode is PlaylistMode.fm and song not in self._songs:
-            self.mode = PlaylistMode.normal
-
         if song is None:
             _Playlist.current_song.fset(self, song)
             return
+
+        if self.mode is PlaylistMode.fm and song not in self._songs:
+            self.mode = PlaylistMode.normal
 
         task_spec = self._app.task_mgr.get_or_create('validate-song')
         future = task_spec.bind_blocking_io(validate_song, song)
@@ -173,11 +173,13 @@ class Playlist(_Playlist):
     def mode(self, mode):
         """set playlist mode"""
         if self._mode is not mode:
-            self._mode = mode
             if mode is PlaylistMode.fm:
                 self.playback_mode = PlaybackMode.sequential
             self.clear()
+            # we should change _mode at the very end
+            self._mode = mode
             self.mode_changed.emit(mode)
+            logger.info('playlist mode changed to %s', mode)
 
     def next(self):
         if self.next_song is None:
@@ -193,6 +195,11 @@ class Player(MpvPlayer):
         self._app = app
         self._loop = asyncio.get_event_loop()
         self.initialize()
+
+    def play(self, url, video=True):
+        if not (self._app.mode & self._app.GuiMode):
+            video = False
+        super().play(url, video)
 
     def prepare_media(self, song, done_cb=None):
         def callback(future):

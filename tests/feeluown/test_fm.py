@@ -72,3 +72,31 @@ async def test_multiple_eof_reached_signal(event_loop, app_mock, song, mocker):
     # called exactly once
     mock_fetch.assert_called_once_with(3)
     assert mock_fm_add.called
+
+
+@pytest.mark.asyncio
+async def test_reactivate_fm_mode_after_playing_other_songs(
+        event_loop, app_mock, song, song1, mocker):
+    def f(*args, **kwargs): return [song1]
+
+    def is_active(fm): return fm.is_active
+
+    playlist = Playlist(app_mock)
+    app_mock.playlist = playlist
+    app_mock.task_mgr = TaskManager(app_mock, event_loop)
+    fm = FM(app_mock)
+    fm.activate(f)
+    assert playlist.mode is PlaylistMode.fm
+    await asyncio.sleep(0.1)  # wait for fm-fetch-song task finished
+
+    # user trigger play_next
+    app_mock.playlist.current_song = song
+    assert playlist.mode is PlaylistMode.normal
+    assert is_active(fm) is False
+
+    await asyncio.sleep(0.1)  # wait for validate-song task finished
+    assert playlist.list() == [song]
+
+    fm.activate(f)
+    assert is_active(fm) is True
+    assert playlist.mode is PlaylistMode.fm
