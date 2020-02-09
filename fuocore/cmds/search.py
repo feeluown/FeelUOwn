@@ -1,6 +1,6 @@
 import logging
 from .base import AbstractHandler
-from .helpers import show_search
+# from .helpers import show_search
 from collections import defaultdict
 
 logger = logging.getLogger(__name__)

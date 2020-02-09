@@ -35,6 +35,8 @@ def dict_walker(indict: dict, path: Optional[list] = None) -> Generator:
                 for d in dict_walker(value, path + [key]):
                     yield d
             elif isinstance(value, list) or isinstance(value, tuple):
+                if not value:
+                    yield path + [key] + [0], None
                 for i, v in enumerate(value):
                     for d in dict_walker(v, path + [key] + [i]):
                         yield d
@@ -44,10 +46,20 @@ def dict_walker(indict: dict, path: Optional[list] = None) -> Generator:
         yield path, indict
 
 
-def set_item_by_path(indict: dict, path: list, value):
-    for key in path[:-1]:
-        indict = indict.setdefault(key, {})
-    indict[path[-1]] = value
+def set_item_by_path(obj: dict, path: list, value):
+    for key, son in zip([None] + path, path + [None]):
+        if key is None or son is None:
+            continue
+        if isinstance(obj, dict):
+            obj = obj.setdefault(key, [] if isinstance(son, int) else {})
+        elif isinstance(obj, list):
+            obj.extend([[] if isinstance(son, int) else {}
+                        for _ in range(key - len(obj) + 1)])
+            obj = obj[key]
+
+    if isinstance(path[-1], int):
+        obj.extend([set() for _ in range(path[-1] - len(obj) + 1)])
+    obj[path[-1]] = value
 
 
 class Serializer:
@@ -59,7 +71,9 @@ class Serializer:
     @classmethod
     def _serialize(cls, indict) -> dict:
         is_complete = False
-        obj = deepcopy(indict)
+
+        output = {}
+        obj = indict
         while not is_complete:
             is_complete = True
             for elem in dict_walker(obj):
@@ -72,9 +86,12 @@ class Serializer:
                     rendered = cls._render(value)
 
                 if rendered:
-                    set_item_by_path(obj, path, rendered)
+                    set_item_by_path(output, path, rendered)
                     is_complete = False
-                    break
+                else:
+                    set_item_by_path(output, path, value)
+            obj = output
+
         return obj
 
     def __init__(self, data: Union[RenderNode, BaseModel, dict]):
@@ -137,9 +154,9 @@ class PlainEmitter(Emitter):
                     value = v
                 elif isinstance(v, dict):
                     value = "{uri}\t# {info}".format(**v)
-                if value:
+                if value is not None:
                     yield "{k:{key_length}}\t{value}".format(k=k + ":", value=value,
-                                                            key_length=key_length)
+                                                             key_length=key_length)
             for k, v in self._data.items():
                 if isinstance(v, list):
                     yield "{}::".format(k)
@@ -227,6 +244,7 @@ def show_song(song, uri_length=None, brief=False, fetch=False):
     return '\n'.join(msgs)
 
 
+'''
 def show_songs(songs):
     uri_length = max((len(reverse(song)) for song in songs)) if songs else None
     return '\n'.join([show_song(song, uri_length=uri_length, brief=True)
@@ -318,3 +336,4 @@ def show_search(search):
     al_part = map(lambda al: show_album(al, brief=True),
                   search.albums or [])
     return '\n'.join(chain(song_part, ar_part, al_part, pl_part))
+'''

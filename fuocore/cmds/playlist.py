@@ -1,7 +1,7 @@
 from fuocore.models import ModelType
 from fuocore.models.uri import resolve, reverse
 from fuocore.utils import reader_to_list, to_reader
-from .helpers import show_songs
+# from .helpers import show_songs
 from .base import AbstractHandler
 
 
