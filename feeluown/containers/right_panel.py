@@ -84,37 +84,42 @@ class RightPanel(QFrame):
         self.table_container.show_songs(songs)
 
     def show_collection(self, coll):
-        pure_songs = True
-        for model in coll.models:
-            if model.meta.model_type != ModelType.song:
-                pure_songs = False
-                break
 
-        if coll.name == DEFAULT_COLL_ALBUMS:
+        def _show_pure_albums_coll(coll):
             self.collection_container.hide()
             reader = RandomSequentialReader.from_list(coll.models)
             self.table_container.show_albums_coll(reader)
-            return
 
-        if pure_songs:
+        def _show_pure_songs_coll(coll):
             self.collection_container.hide()
             self.scrollarea.show()
             self.table_container.show_collection(coll)
-        else:
-            pure_albums = True
-            for model in coll.models:
-                if model.meta.model_type != ModelType.album:
-                    pure_albums = False
-                    break
 
-            if pure_albums:
-                self.collection_container.hide()
-                reader = RandomSequentialReader.from_list(coll.models)
-                self.table_container.show_albums_coll(reader)
+        def _show_mixed_coll(coll):
+            self.scrollarea.hide()
+            self.collection_container.show()
+            self.collection_container.show_collection(coll)
+
+        if coll.name == DEFAULT_COLL_ALBUMS:
+            _show_pure_albums_coll(coll)
+            return
+
+        types = set()
+        for model in coll.models:
+            types.add(model.meta.model_type)
+            if len(types) >= 2:
+                break
+
+        if len(types) == 1:
+            type_ = types.pop()
+            if type_ == ModelType.song:
+                _show_pure_songs_coll(coll)
+            elif type_ == ModelType.album:
+                _show_pure_albums_coll(coll)
             else:
-                self.scrollarea.hide()
-                self.collection_container.show()
-                self.collection_container.show_collection(coll)
+                _show_mixed_coll(coll)
+        else:
+            _show_mixed_coll(coll)
 
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
