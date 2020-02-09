@@ -6,11 +6,13 @@ from enum import IntEnum, Enum
 
 from fuocore.media import MultiQualityMixin, Quality
 from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
+from .base import cached_property
 
 __all__ = (
     'resolve',
     'reverse',
     'Resolver',
+    'cached_property',
 )
 
 logger = logging.getLogger(__name__)
