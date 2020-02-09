@@ -101,9 +101,20 @@ class RightPanel(QFrame):
             self.scrollarea.show()
             self.table_container.show_collection(coll)
         else:
-            self.scrollarea.hide()
-            self.collection_container.show()
-            self.collection_container.show_collection(coll)
+            pure_albums = True
+            for model in coll.models:
+                if model.meta.model_type != ModelType.album:
+                    pure_albums = False
+                    break
+
+            if pure_albums:
+                self.collection_container.hide()
+                reader = RandomSequentialReader.from_list(coll.models)
+                self.table_container.show_albums_coll(reader)
+            else:
+                self.scrollarea.hide()
+                self.collection_container.show()
+                self.collection_container.show_collection(coll)
 
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
