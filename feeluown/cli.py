@@ -137,10 +137,12 @@ class Request:
             return value
 
         options_str = self.options_str
-        raw = '{cmd} {args_str} {options_str}'.format(
+        raw = '{cmd} {args_str} {options_str} #: {req_options_str}'.format(
             cmd=self.cmd,
             args_str=' '.join((escape(arg) for arg in self.args)),
-            options_str=(options_str if options_str else '')
+            options_str=(options_str if options_str else ''),
+            req_options_str=", ".join("{}={}".format(*item)
+                                              for item in self.options.items())
         )
         if self.heredoc is not None:
             raw += ' <<EOF\n{}\nEOF\n\n'.format(self.heredoc)
