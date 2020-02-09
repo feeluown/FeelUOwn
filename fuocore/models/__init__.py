@@ -307,7 +307,7 @@ class BaseModel(Model):
         #: Beware that all non-display fields will be ignored if fetch=False
         fields_export = ['provider']
 
-        #: export format by to_str(brief=True)
+        #: export format by to_str()
         format_string = UNSET    # '{title:_18} - {artists_name}'
 
     def __init__(self, *args, **kwargs):
@@ -426,7 +426,7 @@ class BaseModel(Model):
         rtn.update(fields)
         return rtn
 
-    def to_str(self, *, fetch=None):
+    def to_str(self, fetch=None, **_):
         model_dict = self.to_dict(brief=True, fetch=fetch)
         return WideFormatter().format(self.meta.format_string, **model_dict)
 
