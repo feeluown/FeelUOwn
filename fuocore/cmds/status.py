@@ -32,7 +32,7 @@ class StatusHandler(AbstractHandler):
            player.current_song is not None:
             msgs.update({
                 "duration": player.duration,
-                "position": player.position,
+                "position": player.position if player.position else 0,
                 "song": RenderNode(player.current_song, brief=True, fetch=True),
                 "lyric-s": live_lyric.current_sentence
             })
