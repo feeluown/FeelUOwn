@@ -3,6 +3,7 @@
 import logging
 import warnings
 from enum import IntEnum, Enum
+from collections import OrderedDict
 
 from fuocore.media import MultiQualityMixin, Quality
 from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
@@ -221,12 +222,12 @@ class ModelMeta(type):
         if provider and ModelType(model_type) != ModelType.dummy:
             provider.set_model_cls(model_type, klass)
 
-        fields_all = list(set(kind_fields_map['fields']))
-        fields_display = list(set(kind_fields_map['fields_display']))
-        fields_export = list(set(kind_fields_map['fields_export']))
-        fields_no_get = list(set(kind_fields_map['fields_no_get']))
+        fields_all = list(OrderedDict.fromkeys(kind_fields_map["fields"]))
+        fields_display = list(OrderedDict.fromkeys(kind_fields_map["fields_display"]))
+        fields_export = list(OrderedDict.fromkeys(kind_fields_map["fields_export"]))
+        fields_no_get = list(OrderedDict.fromkeys(kind_fields_map["fields_no_get"]))
         fields_alias = kind_fields_map['fields_alias']
-        paths = list(set(kind_fields_map['paths']))
+        paths = list(OrderedDict.fromkeys(kind_fields_map["paths"]))
 
         for field in fields_display:
             setattr(klass, field + '_display', display_property(field))
