@@ -272,13 +272,18 @@ class HandlerWithWriteListCache(BaseHandler):
         if resp.code != 'OK' or not resp.content:
             super().process_resp(resp)
             return
-        lines = resp.content.split('\n')
+        # lines = resp.content.split('\n')
         with open(OUTPUT_CACHE_FILEPATH, 'w') as f:
+            # FIXME This changes 'fuo list' behaviour and breaks existing external tools
+            print(resp.content)
+            f.write(resp.content)
+            '''
             padding_width = len(str(len(lines)))
             tpl = '{:%dd} {}' % padding_width
             for index, line in enumerate(lines):
                 print(tpl.format(index, line))
                 f.write('{}\n'.format(line))
+            '''
 
 
 class HandlerWithReadListCache(BaseHandler):
