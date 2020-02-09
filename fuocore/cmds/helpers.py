@@ -11,8 +11,8 @@ TODO: 让代码长得更好看
 """
 
 import json
-from itertools import chain
 from typing import Optional, Generator, Union, Type
+from copy import deepcopy
 
 from fuocore.models import BaseModel
 from fuocore.models.uri import reverse
@@ -57,8 +57,9 @@ class Serializer:
         raise NotImplementedError
 
     @classmethod
-    def _serialize(cls, obj) -> dict:
+    def _serialize(cls, indict) -> dict:
         is_complete = False
+        obj = deepcopy(indict)
         while not is_complete:
             is_complete = True
             for elem in dict_walker(obj):
