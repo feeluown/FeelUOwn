@@ -1,6 +1,7 @@
 import logging
 from .base import AbstractHandler
 from .helpers import show_search
+from collections import defaultdict
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +44,20 @@ class SearchHandler(AbstractHandler):
                 params['source_in'] = source_in.split(',')
             if options:
                 logger.warning('Unknown cmd options: %s', options)
-        output = ''
         # TODO: limit output lines
+        output = defaultdict(list)
+        results = (result.to_dict(brief=False)
+                   for result in self.library.search(keyword, **params))
+        for result in results:
+            result.pop("uri")
+            result.pop("provider")
+            for k, v in result.items():
+                if v:
+                    output[k].extend(v)
+        '''
         for result in self.library.search(keyword, **params):
             if output:
                 output += '\n'
             output += show_search(result)
+        '''
         return output
