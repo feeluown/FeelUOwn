@@ -17,8 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 def _get_artists_name(artists):
+    # [a, b, c] -> 'a, b & c'
     artists_name = ', '.join((artist.name for artist in artists))
-    return artists_name[::-1].replace(',', '& ', 1)[::-1]
+    return ' & '.join(artists_name.rsplit(', ', 1))
 
 
 class ModelType(IntEnum):
