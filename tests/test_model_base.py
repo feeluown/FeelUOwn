@@ -1,4 +1,5 @@
 from fuocore.models import Model as Struct
+from fuocore.models import dynamic_property
 
 
 def test_basic_usage():
@@ -113,3 +114,21 @@ def test_init_with_part_kwargs():
 
     u = User(name='ysw')
     assert u.age is None
+
+
+def test_request_property():
+    class User:
+        def get_playlists(self):
+            return [1, 2]
+
+        playlists = dynamic_property(get_playlists)
+
+    user = User()
+    user.playlists = None
+    assert user.playlists == [1, 2]
+
+    user.playlists = [1]
+    assert user.playlists == [1]
+
+    user.playlists = None
+    assert user.playlists == [1, 2]
