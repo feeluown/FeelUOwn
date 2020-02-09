@@ -117,16 +117,15 @@ class PlainEmitter(Emitter):
 
     @classmethod
     def _list_g(cls, obj, indent='') -> Generator:
-        uri_length = max(map(
-            lambda x: len(x["uri"]) if isinstance(x, dict) else 0
-            , obj))
+        uri_len = max(map(lambda x: len(x["uri"]) if isinstance(x, dict) else 0, obj)) \
+            if obj else 0
         for item in obj:
             if isinstance(item, (str, int, float)):
                 yield "\t{}".format(item)
             elif isinstance(item, dict):
                 yield cls.formatter.format(
                     "{indent}{uri:+{uri_length}}\t# {info}",
-                    **item, uri_length=uri_length, indent=indent)
+                    **item, uri_length=uri_len, indent=indent)
 
     def _emit(self) -> Generator:
         if isinstance(self._data, dict):
