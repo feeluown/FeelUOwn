@@ -66,13 +66,17 @@ class PlayerHandler(AbstractHandler):
         if songs:
             songs = sorted(songs, key=lambda song: score(s, repr_song(song)),
                            reverse=True)
-            msg = 'select:\t{}\n'.format(show_song(songs[0], brief=True))
+            msg = {"select": songs[0]}
+            # msg = 'select:\t{}\n'.format(show_song(songs[0], brief=True))
             self.player.play_song(songs[0])
+            msg["options"] = songs[1:]
+            '''
             lines = []
             for song in songs[1:]:
                 lines.append('\t' + show_song(song, brief=True))
             if lines:
                 msg += 'options::\n' + '\n'.join(lines)
+            '''
             return msg
         else:
             return 'No song has been found.'
