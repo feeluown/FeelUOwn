@@ -154,15 +154,17 @@ class PlainEmitter(Emitter):
 class Dumper:
     _serializer: Type[Serializer] = None
     _emitter: Type[Emitter] = None
-    _data: Union[BaseModel, RenderNode, list]
+    _data: Union[BaseModel, RenderNode, list, str, dict]
 
-    def __init__(self, data: Union[BaseModel, RenderNode, list]):
+    def __init__(self, data: Union[BaseModel, RenderNode, list, str, dict]):
         if isinstance(data, BaseModel):
             self._data = RenderNode(data, brief=False)
         else:
             self._data = data
 
     def dump(self):
+        if isinstance(self._data, str):
+            return self._data
         serialized = self._serializer(self._data).serialize()
         return self._emitter(serialized).emit()
 

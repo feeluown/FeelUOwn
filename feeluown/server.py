@@ -32,7 +32,6 @@ class FuoServer:
             playlist=self._app.playlist,
             live_lyric=self._app.live_lyric)
         code = 'ok' if success else 'oops'
-        if not isinstance(msg, str):
-            format = req.options.get("format", "plain")
-            msg = get_dumper(format)(msg).dump()
+        output_format = req.options.get("format", "plain")
+        msg = get_dumper(output_format)(msg).dump()
         return Response(code=code, msg=msg, req=req)
