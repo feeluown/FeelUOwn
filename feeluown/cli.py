@@ -345,7 +345,7 @@ class OnceClient:
         code = 'OK' if success else 'Oops'
 
         output_format = req.options.get("format", "plain")
-        msg = get_dumper(output_format)(msg).dump()
+        msg = get_dumper(output_format).dump(msg)
 
         return Response(code=code, content=msg)
 

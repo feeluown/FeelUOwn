@@ -12,7 +12,6 @@ TODO: 让代码长得更好看
 
 import json
 from typing import Optional, Generator, Union, Type
-from copy import deepcopy
 
 from fuocore.models import BaseModel
 from fuocore.models.uri import reverse
@@ -64,8 +63,9 @@ def set_item_by_path(obj: dict, path: list, value):
 
 class Serializer:
     _data: Union[RenderNode, BaseModel, dict]
-    @classmethod
-    def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
+
+    @staticmethod
+    def _render(obj: BaseModel, **options) -> Union[str, dict]:
         raise NotImplementedError
 
     @classmethod
@@ -94,44 +94,38 @@ class Serializer:
 
         return obj
 
-    def __init__(self, data: Union[RenderNode, BaseModel, dict]):
-        self._data = {"root": data}
-
-    def serialize(self) -> dict:
-        return self._serialize(self._data)["root"]
+    def serialize(self, data: Union[RenderNode, BaseModel, dict]) -> dict:
+        return self._serialize({"root": data})["root"]
 
 
 class PlainSerializer(Serializer):
-    @classmethod
-    def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
+    @staticmethod
+    def _render(obj: BaseModel, **options) -> Union[str, dict]:
         if options.get("brief", True):
             return {"uri": str(obj), "info": obj.to_str(**options)}
         return obj.to_dict(**options)
 
 
 class JsonSerializer(Serializer):
-    @classmethod
-    def _render(cls, obj: BaseModel, **options) -> Union[str, dict]:
+    @staticmethod
+    def _render(obj: BaseModel, **options) -> Union[str, dict]:
         return obj.to_dict(**options)
 
 
 class Emitter:
     data: dict
-    def __init__(self, data: dict):
-        self._data = data
 
-    def emit(self) -> str:
+    def emit(self, data: dict) -> str:
         raise NotImplementedError
 
 
 class JsonEmitter(Emitter):
-    def emit(self) -> str:
-        return json.dumps(self._data, indent=4, ensure_ascii=False)
+    def emit(self, data: dict) -> str:
+        return json.dumps(data, indent=4, ensure_ascii=False)
 
 
 class PlainEmitter(Emitter):
     formatter = WideFormatter()
-
 
     @classmethod
     def _list_g(cls, obj, indent='') -> Generator:
@@ -145,10 +139,10 @@ class PlainEmitter(Emitter):
                     "{indent}{uri:+{uri_length}}\t# {info}",
                     **item, uri_length=uri_len, indent=indent)
 
-    def _emit(self) -> Generator:
-        if isinstance(self._data, dict):
-            key_length = max(map(len, self._data.keys())) + 1
-            for k, v in self._data.items():
+    def _emit(self, data: dict) -> Generator:
+        if isinstance(data, dict):
+            key_length = max(map(len, data.keys())) + 1
+            for k, v in data.items():
                 value = None
                 if isinstance(v, (str, int, float)):
                     value = v
@@ -157,15 +151,15 @@ class PlainEmitter(Emitter):
                 if value is not None:
                     yield "{k:{key_length}}\t{value}".format(k=k + ":", value=value,
                                                              key_length=key_length)
-            for k, v in self._data.items():
+            for k, v in data.items():
                 if isinstance(v, list):
                     yield "{}::".format(k)
                     yield from self._list_g(v, indent="\t")
-        elif isinstance(self._data, list):
-            yield from self._list_g(self._data)
+        elif isinstance(data, list):
+            yield from self._list_g(data)
 
-    def emit(self) -> str:
-        return "\n".join(self._emit())
+    def emit(self, data: dict) -> str:
+        return "\n".join(self._emit(data))
 
 
 class Dumper:
@@ -173,17 +167,17 @@ class Dumper:
     _emitter: Type[Emitter] = None
     _data: Union[BaseModel, RenderNode, list, str, dict]
 
-    def __init__(self, data: Union[BaseModel, RenderNode, list, str, dict]):
-        if isinstance(data, BaseModel):
-            self._data = RenderNode(data, brief=False)
-        else:
-            self._data = data
+    def __init__(self):
+        self._serializer_instance = self._serializer()
+        self._emitter_instance = self._emitter()
 
-    def dump(self):
-        if isinstance(self._data, str):
-            return self._data
-        serialized = self._serializer(self._data).serialize()
-        return self._emitter(serialized).emit()
+    def dump(self, data: Union[BaseModel, RenderNode, list, str, dict]):
+        if isinstance(data, str):
+            return data
+        if isinstance(data, BaseModel):
+            data = RenderNode(data, brief=False)
+        serialized = self._serializer_instance.serialize(data)
+        return self._emitter().emit(serialized)
 
 
 class JsonDumper(Dumper):
@@ -196,11 +190,15 @@ class PlainDumper(Dumper):
     _emitter = PlainEmitter
 
 
+json_dumper = JsonDumper()
+plain_dumper = PlainDumper()
+
+
 def get_dumper(dumper_type: str) -> Type[Dumper]:
     if dumper_type == "json":
-        return JsonDumper
+        return json_dumper
     elif dumper_type == "plain":
-        return PlainDumper
+        return plain_dumper
     else:
         raise ValueError
 

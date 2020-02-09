@@ -5,7 +5,7 @@ import os
 import platform
 import socket
 import time
-from functools import wraps
+from functools import wraps, lru_cache
 from string import Formatter
 
 from fuocore.reader import Reader, RandomSequentialReader, SequentialReader
@@ -142,11 +142,13 @@ def to_reader(model, field):
     return SequentialReader.wrap(iter(value))  # TypeError if not iterable
 
 
+@lru_cache(maxsize=1024)
 def char_len(c):
-    if ord(c) == 0xe or ord(c) == 0xf:
+    ord_code = ord(c)
+    if ord_code == 0xe or ord_code == 0xf:
         return 0
     for num, wid in widths:
-        if ord(c) <= num:
+        if ord_code <= num:
             return wid
     return 1
 
@@ -191,6 +193,11 @@ class WideFormatter(Formatter):
     '_': _fit_text(*, filling=False)
     '+': _fit_text(*, filling=True)
     """
+    @lru_cache(maxsize=1024)
+    def format(self, format_string, *args, **kwargs):
+        return super().vformat(format_string, args, kwargs)
+
+    @lru_cache(maxsize=1024)
     def format_field(self, value, format_spec):
         fmt_type = format_spec[0] if format_spec else None
         if fmt_type == "_":

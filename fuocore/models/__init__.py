@@ -4,6 +4,7 @@ import logging
 import warnings
 from enum import IntEnum, Enum
 from collections import OrderedDict
+from functools import lru_cache
 
 from fuocore.media import MultiQualityMixin, Quality
 from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
@@ -282,7 +283,7 @@ class Model(metaclass=ModelMeta):
 
 class BaseModel(Model):
     """Base model for music resource"""
-
+    _wide_formatter = WideFormatter()
     class Meta:
         """Model metadata"""
 
@@ -312,6 +313,9 @@ class BaseModel(Model):
         format_string = UNSET    # '{title:_18} - {artists_name}'
 
     def __init__(self, *args, **kwargs):
+        self.to_dict = lru_cache(maxsize=5)(self.to_dict)
+        self.to_str = lru_cache(maxsize=5)(self.to_str)
+
         super().__init__(*args, **kwargs)
 
         #: model 所处阶段。目前，通过构造函数初始化的 model
@@ -388,6 +392,12 @@ class BaseModel(Model):
             value = object.__getattribute__(self, name)
         return value
 
+    def __setattr__(self, key, value):
+        if key != "to_dict" and key != "to_str":
+            self.to_dict.cache_clear()
+            self.to_str.cache_clear()
+        return super().__setattr__(key, value)
+
     @classmethod
     def create_by_display(cls, identifier, **kwargs):
         """create model instance with identifier and display fields"""
@@ -429,7 +439,7 @@ class BaseModel(Model):
 
     def to_str(self, fetch=None, **_):
         model_dict = self.to_dict(brief=True, fetch=fetch)
-        return WideFormatter().format(self.meta.format_string, **model_dict)
+        return self._wide_formatter.format(self.meta.format_string, **model_dict)
 
 
 class ArtistModel(BaseModel):
