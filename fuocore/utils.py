@@ -4,7 +4,10 @@ import logging
 import os
 import platform
 import socket
+import sys
 import time
+from collections import OrderedDict
+from copy import copy, deepcopy
 from functools import wraps
 
 from fuocore.reader import Reader, RandomSequentialReader, SequentialReader
@@ -128,3 +131,85 @@ def to_reader(model, field):
     if isinstance(value, (list, tuple)):
         return RandomSequentialReader.from_list(value)
     return SequentialReader.wrap(iter(value))  # TypeError if not iterable
+
+
+class DedupList(list):
+    def __init__(self, seq=(), dedup=True):
+        # print("init")
+        if dedup:
+            dic = {} if sys.version_info[1] > 5 else OrderedDict()
+            seq = list(dic.fromkeys(seq))
+        self._dedup_set = set(seq)
+        super().__init__(seq)
+
+    def __getitem__(self, item):
+        result = super().__getitem__(item)
+        if isinstance(item, slice):
+            return DedupList(result, dedup=False)
+        else:
+            return result
+
+    def __add__(self, other):
+        if isinstance(other, list):
+            result = copy(self)
+            result.extend(other)
+            return result
+        raise TypeError("can only concatenate list to DedupList")
+
+    def __radd__(self, other):
+        if isinstance(other, list):
+            result = copy(self)
+            result.extend(other)
+            return result
+        raise TypeError("invalid concat")
+
+    def __setitem__(self, key, value):
+        # print(f"setitem - {key} - {value}")
+        self._dedup_set.remove(self[key])
+        # if value not in self._dedup_set:  # this breaks item swap
+        self._dedup_set.add(value)
+        super().__setitem__(key, value)
+
+    def __contains__(self, item):
+        return item in self._dedup_set
+
+    def __copy__(self):
+        inter_list = list(self)
+        result = self.__class__(inter_list, dedup=False)
+        return result
+
+    def __deepcopy__(self, memo):
+        inter_list = [deepcopy(item) for item in self]
+        result = self.__class__(inter_list, dedup=False)
+        memo[id(self)] = result
+        return result
+
+    def append(self, obj):
+        # print(f"append - {obj}")
+        if obj not in self._dedup_set:
+            self._dedup_set.add(obj)
+            super().append(obj)
+
+    def extend(self, iterable):
+        # print(f"extend - {iterable}")
+        for object in iterable:
+            if object not in self._dedup_set:
+                self._dedup_set.add(object)
+                super().append(object)
+
+    def insert(self, index: int, obj):
+        # print(f"insert - {index} - {obj}")
+        if obj not in self._dedup_set:
+            self._dedup_set.add(obj)
+            super().insert(index, obj)
+
+    def pop(self, index: int = None):
+        # print(f"pop - {index}")
+        index = index if index else -1
+        item = super().pop(index)
+        self._dedup_set.remove(item)
+        return item
+
+    def clear(self):
+        self._dedup_set.clear()
+        super().clear()
