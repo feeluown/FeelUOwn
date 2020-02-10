@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from fuocore.cmds import exec_cmd, Cmd
-from fuocore.cmds.helpers import show_song, get_dumper
+from fuocore.cmds.helpers import RenderNode, get_dumper
 from fuocore.protocol import Parser
 from feeluown.consts import CACHE_DIR
 
@@ -142,7 +142,7 @@ class Request:
             args_str=' '.join((escape(arg) for arg in self.args)),
             options_str=(options_str if options_str else ''),
             req_options_str=", ".join("{}={}".format(*item)
-                                              for item in self.options.items())
+                                      for item in self.options.items())
         )
         if self.heredoc is not None:
             raw += ' <<EOF\n{}\nEOF\n\n'.format(self.heredoc)
@@ -385,7 +385,8 @@ def oncemain(app, args):
     if args.cmd == 'play':
         song = app.player.current_song
         if song is not None:
-            print('Playing: {}'.format(show_song(song, brief=True)))
+            msg = get_dumper("plain").dump(RenderNode(song, brief=True, fetch=True))
+            print('Playing: {}'.format(msg))
         else:
             print('Playing: {}'.format(app.player.current_media))
         loop = asyncio.get_event_loop()

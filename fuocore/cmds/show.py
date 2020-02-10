@@ -16,12 +16,6 @@ from fuocore.utils import reader_to_list, to_reader
 from fuocore.cmds.helpers import RenderNode
 
 from .base import AbstractHandler
-'''
-from .helpers import (
-    show_song, show_artist, show_album, show_user,
-    show_playlist, show_songs,
-)
-'''
 
 logger = logging.getLogger(__name__)
 

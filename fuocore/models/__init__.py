@@ -284,6 +284,7 @@ class Model(metaclass=ModelMeta):
 class BaseModel(Model):
     """Base model for music resource"""
     _wide_formatter = WideFormatter()
+
     class Meta:
         """Model metadata"""
 

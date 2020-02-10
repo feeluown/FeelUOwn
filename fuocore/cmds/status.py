@@ -1,7 +1,7 @@
 from fuocore.player import PlaybackMode, State
 
 from .base import AbstractHandler
-from .helpers import show_song, RenderNode
+from .helpers import RenderNode
 
 
 class StatusHandler(AbstractHandler):
