@@ -385,8 +385,8 @@ def oncemain(app, args):
     if args.cmd == 'play':
         song = app.player.current_song
         if song is not None:
-            msg = get_dumper("plain").dump(RenderNode(song, brief=True, fetch=True))
-            print('Playing: {}'.format(msg))
+            print(get_dumper("plain").dump(
+                {"Playing": RenderNode(song, brief=True, fetch=True)}))
         else:
             print('Playing: {}'.format(app.player.current_media))
         loop = asyncio.get_event_loop()
