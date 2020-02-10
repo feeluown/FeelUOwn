@@ -53,10 +53,4 @@ class SearchHandler(AbstractHandler):
             for k, v in result.items():
                 if v:
                     output[k].extend(v)
-        '''
-        for result in self.library.search(keyword, **params):
-            if output:
-                output += '\n'
-            output += show_search(result)
-        '''
         return output

@@ -45,7 +45,6 @@ class PlaylistHandler(AbstractHandler):
     def list(self):
         songs = self.playlist.list()
         return songs
-        # return show_songs(songs)
 
     def clear(self):
         self.playlist.clear()

@@ -272,7 +272,6 @@ class HandlerWithWriteListCache(BaseHandler):
         if resp.code != 'OK' or not resp.content:
             super().process_resp(resp)
             return
-        # lines = resp.content.split('\n')
         with open(OUTPUT_CACHE_FILEPATH, 'w') as f:
             # FIXME This changes 'fuo list' behaviour and breaks existing external tools
             print(resp.content)
