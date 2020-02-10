@@ -94,7 +94,8 @@ class Library(object):
                 except Exception:  # pylint: disable=broad-except
                     logger.exception('Search %s in %s failed.', keyword, provider)
                 else:
-                    yield result
+                    if result is not None:
+                        yield result
 
     async def a_search(self, keyword, source_in=None, timeout=None, **kwargs):
         """async version of search
