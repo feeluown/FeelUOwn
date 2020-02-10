@@ -46,9 +46,13 @@ class Signal:
 
     @classmethod
     def teardown_aio_support(cls):
+        """
+        HELP: maybe add a wait_aio_support_teardown method?
+        """
+        cls.aioqueue.close()
         cls.worker_task.cancel()
-        cls.aioqueue = None
         cls.has_aio_support = False
+        cls.aioqueue = None
 
     @classmethod
     async def worker(cls):

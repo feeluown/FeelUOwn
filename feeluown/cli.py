@@ -361,11 +361,14 @@ def oncemain(app, args):
     dispatch(args, client)
 
     if args.cmd == 'play':
-        song = app.player.current_song
-        if song is not None:
-            print('Playing: {}'.format(show_song(song, brief=True)))
-        else:
-            print('Playing: {}'.format(app.player.current_media))
+        def on_media_changed(media):
+            song = app.player.current_song
+            if song is not None:
+                print('Playing: {}'.format(show_song(song, brief=True)))
+            else:
+                print('Playing: {}'.format(app.player.current_media))
+
+        app.player.media_changed.connect(on_media_changed, weak=False)
         loop = asyncio.get_event_loop()
         # mpv wait_for_playback will wait until one song is finished,
         # if we have multiple song to play, this will not work well.

@@ -216,8 +216,8 @@ def run_app(app):
         # NOTE: gracefully shutdown?
         pass
     finally:
-        loop.stop()
         _shutdown_app(app)
+        loop.stop()
         loop.close()
 
 
@@ -229,8 +229,8 @@ def run_app_once(app, future):
     except KeyboardInterrupt:
         pass
     finally:
-        loop.stop()
         _shutdown_app(app)
+        loop.stop()
         loop.close()
 
 
@@ -239,3 +239,4 @@ def _shutdown_app(app):
         app.pubsub_server.close()
     app.player.stop()
     app.player.shutdown()
+    Signal.teardown_aio_support()
