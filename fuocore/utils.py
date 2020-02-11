@@ -240,7 +240,7 @@ class DedupList(list):
             super().insert(index, obj)
 
     def pop(self, index: int = None):
-        index = index if index else -1
+        index = index if index is not None else -1
         item = super().pop(index)
         # list.pop() returns an index, so no need to calculate manually like 'insert'
         index = self._map.pop(item)
