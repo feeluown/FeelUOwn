@@ -6,6 +6,7 @@ from enum import IntEnum, Enum
 
 from fuocore.media import MultiQualityMixin, Quality
 from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
+from fuocore.utils import elfhash
 from .base import cached_field
 
 __all__ = (
@@ -532,7 +533,11 @@ class SongModel(BaseModel, MultiQualityMixin):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
 
     def __hash__(self):
-        return int(self.identifier) * 1000 + id(type(self)) % 1000
+        try:
+            id_hash = int(self.identifier)
+        except ValueError:
+            id_hash = elfhash(self.identifier.encode())
+        return id_hash * 1000 + id(type(self)) % 1000
 
     def __eq__(self, other):
         if not isinstance(other, SongModel):
