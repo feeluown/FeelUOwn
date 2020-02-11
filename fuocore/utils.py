@@ -187,8 +187,9 @@ class DedupList(list):
         raise TypeError("invalid concat")
 
     def __setitem__(self, key, value):
+        if value in self._map:
+            raise ValueError("item already exists in DedupList")
         self._map.pop(self[key])
-        # if value not in self._dedup_set:  # this breaks item swap
         self._map[value] = key
         super().__setitem__(key, value)
 
@@ -204,6 +205,18 @@ class DedupList(list):
         result = DedupList(inter_list, dedup=False)
         memo[id(self)] = result
         return result
+
+    def swap(self, idx_1, idx_2):
+        item_1 = self[idx_1]
+        item_2 = self[idx_2]
+        self._map[item_1] = idx_2
+        self._map[item_2] = idx_1
+        super().__setitem__(idx_1, item_2)
+        super().__setitem__(idx_2, item_1)
+
+    def sort(self, *args, **kwargs):
+        super().sort(*args, **kwargs)
+        self._map = dict(zip(self, range(len(self))))
 
     def append(self, obj):
         if obj not in self._map:
