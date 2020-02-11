@@ -110,7 +110,7 @@ class Playlist:
         self.clear()
         # since we will call songs.clear method during playlist clearing,
         # we need to deepcopy songs object here.
-        self._songs = copy.deepcopy(songs)
+        self._songs = DedupList(copy.deepcopy(songs))
 
     def clear(self):
         """remove all songs from playlists"""
