@@ -334,15 +334,13 @@ class BaseModel(Model):
             obj = cls.get(self.identifier)
             if obj is not None:
                 for field in cls.meta.fields:
-                    if field in ('identifier', ):
+                    # 类似 @property/@cached_field 等字段，都应该加入到
+                    # fields_no_get 列表中
+                    if field in cls.meta.fields_no_get:
                         continue
                     # 这里不能使用 getattr，否则有可能会无限 get
                     fv = object.__getattribute__(obj, field)
-                    # 如果字段属于 fields_no_get 且值为 None，则不覆盖
-                    # 比如 UserModel 的 cookies 的字段，cookies
-                    # 这类需要权限认证的信息往往不能在 get 时获取，
-                    # 而需要在特定上下文单独设置
-                    if not (fv is None and field in cls.meta.fields_no_get):
+                    if fv is not None:
                         setattr(self, field, fv)
                 self.stage = ModelStage.gotten
                 self.exists = ModelExistence.yes
