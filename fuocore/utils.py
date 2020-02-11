@@ -9,6 +9,7 @@ import time
 from collections import OrderedDict
 from copy import copy, deepcopy
 from functools import wraps
+from itertools import filterfalse
 
 from fuocore.reader import Reader, RandomSequentialReader, SequentialReader
 
@@ -134,12 +135,23 @@ def to_reader(model, field):
 
 
 class DedupList(list):
+    def _get_index(self, index):
+        if index <= -len(self):
+            return 0
+        if index < 0:
+            return index + len(self)
+        if index >= len(self):
+            return len(self)
+        return index
+
+    @staticmethod
+    def dic():
+        return {} if sys.version_info[1] > 5 else OrderedDict()
+
     def __init__(self, seq=(), dedup=True):
-        # print("init")
         if dedup:
-            dic = {} if sys.version_info[1] > 5 else OrderedDict()
-            seq = list(dic.fromkeys(seq))
-        self._dedup_set = set(seq)
+            seq = self.dic().fromkeys(seq)
+        self._map = dict(zip(seq, range(len(seq))))
         super().__init__(seq)
 
     def __getitem__(self, item):
@@ -158,24 +170,25 @@ class DedupList(list):
 
     def __radd__(self, other):
         if isinstance(other, list):
-            result = copy(self)
-            result.extend(other)
+            if isinstance(other, DedupList):
+                result = copy(other)
+            else:
+                result = DedupList(other)
+            result.extend(self)
             return result
         raise TypeError("invalid concat")
 
     def __setitem__(self, key, value):
-        # print(f"setitem - {key} - {value}")
-        self._dedup_set.remove(self[key])
+        self._map.pop(self[key])
         # if value not in self._dedup_set:  # this breaks item swap
-        self._dedup_set.add(value)
+        self._map[value] = key
         super().__setitem__(key, value)
 
     def __contains__(self, item):
-        return item in self._dedup_set
+        return item in self._map
 
     def __copy__(self):
-        inter_list = list(self)
-        result = self.__class__(inter_list, dedup=False)
+        result = self.__class__(self, dedup=False)
         return result
 
     def __deepcopy__(self, memo):
@@ -185,31 +198,45 @@ class DedupList(list):
         return result
 
     def append(self, obj):
-        # print(f"append - {obj}")
-        if obj not in self._dedup_set:
-            self._dedup_set.add(obj)
+        if obj not in self._map:
+            self._map[obj] = len(self)
             super().append(obj)
 
     def extend(self, iterable):
-        # print(f"extend - {iterable}")
-        for object in iterable:
-            if object not in self._dedup_set:
-                self._dedup_set.add(object)
-                super().append(object)
+        length = len(self)
+        append_list = list(filterfalse(self._map.__contains__, iterable))
+        self._map.update(zip(append_list, range(length, length + len(append_list))))
+        super().extend(append_list)
+
+    def index(self, object, start: int = None, stop: int = None):
+        if object not in self._map:
+            raise ValueError("not in list")
+        idx = self._map[object]
+        if start:
+            if not stop:
+                stop = len(self)
+            if idx not in range(start, stop):
+                raise ValueError("not in list")
+        return idx
 
     def insert(self, index: int, obj):
-        # print(f"insert - {index} - {obj}")
-        if obj not in self._dedup_set:
-            self._dedup_set.add(obj)
+        if obj not in self._map:
+            index = self._get_index(index)
+            for key, idx in self._map.items():
+                if idx >= index:
+                    self._map[key] = idx + 1
+            self._map[obj] = index
             super().insert(index, obj)
 
     def pop(self, index: int = None):
-        # print(f"pop - {index}")
         index = index if index else -1
         item = super().pop(index)
-        self._dedup_set.remove(item)
+        index = self._map.pop(item)
+        for obj, idx in self._map.items():
+            if idx > index:
+                self._map[obj] = idx - 1
         return item
 
     def clear(self):
-        self._dedup_set.clear()
+        self._map.clear()
         super().clear()
