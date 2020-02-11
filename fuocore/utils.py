@@ -135,7 +135,10 @@ def to_reader(model, field):
 
 
 class DedupList(list):
+    """ List that doesn't contain duplicate items """
+
     def _get_index(self, index):
+        """ project idx into range(len) """
         if index <= -len(self):
             return 0
         if index < 0:
@@ -146,17 +149,21 @@ class DedupList(list):
 
     @staticmethod
     def dic():
+        """ return a dict that remembers insertion order """
         return {} if sys.version_info[1] > 5 else OrderedDict()
 
     def __init__(self, seq=(), dedup=True):
         if dedup:
             seq = self.dic().fromkeys(seq)
+        # keep idx in a dict for dedup and index
         self._map = dict(zip(seq, range(len(seq))))
         super().__init__(seq)
 
     def __getitem__(self, item):
         result = super().__getitem__(item)
         if isinstance(item, slice):
+            # Always return a DedupList when slicing to avoid accidentally
+            # convert a DedupList to normal list.
             return DedupList(result, dedup=False)
         else:
             return result
@@ -173,6 +180,7 @@ class DedupList(list):
             if isinstance(other, DedupList):
                 result = copy(other)
             else:
+                # To avoid accidentally convert a DedupList to normal list.
                 result = DedupList(other)
             result.extend(self)
             return result
@@ -188,12 +196,12 @@ class DedupList(list):
         return item in self._map
 
     def __copy__(self):
-        result = self.__class__(self, dedup=False)
+        result = DedupList(self, dedup=False)
         return result
 
     def __deepcopy__(self, memo):
         inter_list = [deepcopy(item) for item in self]
-        result = self.__class__(inter_list, dedup=False)
+        result = DedupList(inter_list, dedup=False)
         memo[id(self)] = result
         return result
 
@@ -204,13 +212,14 @@ class DedupList(list):
 
     def extend(self, iterable):
         length = len(self)
-        append_list = list(filterfalse(self._map.__contains__, iterable))
+        append_list = list(filterfalse(self._map.__contains__, iterable))   # dedup
         self._map.update(zip(append_list, range(length, length + len(append_list))))
         super().extend(append_list)
 
     def index(self, object, start: int = None, stop: int = None):
         if object not in self._map:
             raise ValueError("not in list")
+        # get idx from _map directly
         idx = self._map[object]
         if start:
             if not stop:
@@ -221,7 +230,9 @@ class DedupList(list):
 
     def insert(self, index: int, obj):
         if obj not in self._map:
+            # insert accepts out-of-range indices, but we don't want them in our _map
             index = self._get_index(index)
+            # all idx in _map after 'index' should be changed
             for key, idx in self._map.items():
                 if idx >= index:
                     self._map[key] = idx + 1
@@ -231,7 +242,9 @@ class DedupList(list):
     def pop(self, index: int = None):
         index = index if index else -1
         item = super().pop(index)
+        # list.pop() returns an index, so no need to calculate manually like 'insert'
         index = self._map.pop(item)
+        # all idx in _map after 'index' should be changed
         for obj, idx in self._map.items():
             if idx > index:
                 self._map[obj] = idx - 1
