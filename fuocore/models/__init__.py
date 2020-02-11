@@ -532,7 +532,7 @@ class SongModel(BaseModel, MultiQualityMixin):
         return 'fuo://{}/songs/{}'.format(self.source, self.identifier)  # noqa
 
     def __hash__(self):
-        return int(self.identifier) * 1000 + id(self) % 1000
+        return int(self.identifier) * 1000 + id(type(self)) % 1000
 
     def __eq__(self, other):
         if not isinstance(other, SongModel):
