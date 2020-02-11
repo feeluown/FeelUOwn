@@ -108,15 +108,18 @@ class Library(object):
                 None,
                 partial(provider.search, keyword, type_=SearchType.so))
             fs.append(future)
-        result = []
 
+        results = []
         # TODO: use async generator when we only support Python 3.6 or above
         for future in aio.as_completed(fs, timeout=timeout):
             try:
-                result.append(await future)
+                result = await future
             except Exception as e:
                 logger.exception(str(e))
-        return result
+            else:
+                if result is not None:
+                    results.append(result)
+        return results
 
     @log_exectime
     def list_song_standby(self, song, onlyone=True):
