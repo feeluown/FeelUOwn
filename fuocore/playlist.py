@@ -4,6 +4,7 @@ import random
 from enum import IntEnum
 
 from fuocore.dispatch import Signal
+from fuocore.utils import DedupList
 
 logger = logging.getLogger(__name__)
 
@@ -31,10 +32,10 @@ class Playlist:
         self._current_song = None
 
         #: songs whose url is invalid
-        self._bad_songs = []
+        self._bad_songs = DedupList()
 
         #: store value for ``songs`` property
-        self._songs = songs or []
+        self._songs = DedupList(songs or [])
 
         #: store value for ``playback_mode`` property
         self._playback_mode = playback_mode
@@ -109,7 +110,7 @@ class Playlist:
         self.clear()
         # since we will call songs.clear method during playlist clearing,
         # we need to deepcopy songs object here.
-        self._songs = copy.deepcopy(songs)
+        self._songs = DedupList(copy.deepcopy(songs))
 
     def clear(self):
         """remove all songs from playlists"""
