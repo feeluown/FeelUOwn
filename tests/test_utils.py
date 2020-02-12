@@ -69,6 +69,8 @@ def test_dedup_list():
     assert dlist == [15, 12, 14, 8, 2, 3, 7, 4, 5, 6, 9, 1, 10, 13, 11]
     assert dlist.pop(-2) == 13
     assert dlist == [15, 12, 14, 8, 2, 3, 7, 4, 5, 6, 9, 1, 10, 11]
+    with pytest.raises(IndexError):
+        dlist.pop(20)
 
     # copy
     dlist_orig = [Obj(i) for i in range(5)]
@@ -105,6 +107,15 @@ def test_dedup_list():
     assert dlist == [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15]
     for idx, item in zip(range(len(dlist)), dlist):
         assert dlist.index(item) == idx
+
+    # remove
+    dlist.remove(3)
+    assert dlist == [1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15]
+    with pytest.raises(ValueError):
+        dlist.remove(16)
+    # index should be correct after item is removed
+    assert dlist.index(1) == 0
+    assert dlist.index(4) == 2
 
     # clear
     dlist.clear()

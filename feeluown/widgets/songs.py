@@ -548,7 +548,11 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
     def _remove_by_indexes(self, indexes):
         model = self.model()
         source_model = model.sourceModel()
+        distinct_rows = set()
         for index in indexes:
-            song = model.data(index, Qt.UserRole)
-            self.remove_song_func(song)
-        source_model.removeRows(indexes[0].row(), len(indexes))
+            row = index.row()
+            if row not in distinct_rows:
+                song = model.data(index, Qt.UserRole)
+                self.remove_song_func(song)
+                distinct_rows.add(row)
+        source_model.removeRows(indexes[0].row(), len(distinct_rows))

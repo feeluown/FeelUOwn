@@ -307,7 +307,7 @@ class PlayerPlaylistRenderer(Renderer):
         playlist = player.playlist
 
         songs = playlist.list()
-        self.show_songs(songs=songs)
+        self.show_songs(songs=songs.copy())
         self.songs_table.remove_song_func = playlist.remove
 
         # scroll to current song

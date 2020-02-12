@@ -263,6 +263,13 @@ class DedupList(list):
                 self._map[obj] = idx - 1
         return item
 
+    def remove(self, item):
+        if item not in self._map:
+            # raise same exception as list
+            raise ValueError("list.remove(x): x not in list")
+        idx = self._map[item]
+        self.pop(idx)
+
     def clear(self):
         self._map.clear()
         super().clear()
