@@ -30,7 +30,6 @@ class Ui:
         self.right_panel = RightPanel(self._app, self._splitter)
         self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
-        self.mpv_widget.hide()
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -45,10 +44,12 @@ class Ui:
 
         self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
         self.pc_panel.mv_btn.clicked.connect(self._play_mv)
-        self.toggle_video_btn.clicked.connect(self._toggle_video_widget)
+        self.toggle_video_btn.clicked.connect(self._toggle_video)
         self._app.player.video_format_changed.connect(
             self.on_video_format_changed, aioqueue=True)
 
+        self.show_video_widget()
+        self._app.initialized.connect(lambda app: self.hide_video_widget(), weak=False)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -81,20 +82,22 @@ class Ui:
                 media, _ = mv.select_media()
             else:
                 media = mv.media
-            self._app.player.play(media)
+            self.toggle_video_btn.show()
             self.show_video_widget()
+            self._app.player.play(media)
 
     def show_player_playlist(self):
         self.table_container.show_player_playlist()
 
     def on_video_format_changed(self, vformat):
+        """when video is available, show toggle_video_btn"""
         if vformat is None:
             self.hide_video_widget()
             self.toggle_video_btn.hide()
         else:
             self.toggle_video_btn.show()
 
-    def _toggle_video_widget(self):
+    def _toggle_video(self):
         if self.mpv_widget.isVisible():
             self.hide_video_widget()
         else:

@@ -23,7 +23,7 @@ class MpvPlayer(AbstractPlayer):
     player will always play playlist current song. player will listening to
     playlist ``song_changed`` signal and change the current playback.
 
-    TODO: make me singleton
+    todo: make me singleton
     """
     def __init__(self, audio_device=b'auto', winid=None, *args, **kwargs):
         super(MpvPlayer, self).__init__(*args, **kwargs)
@@ -36,13 +36,15 @@ class MpvPlayer(AbstractPlayer):
         # set log_handler if you want to debug
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'
-        self._mpv = MPV(ytdl=True,
+        self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True,
                         **mpvkwargs)
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
+        _mpv_set_property_string(self._mpv.handle, b'user-agent',
+                                 b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
 
-        # TODO: 之后可以考虑将这个属性加入到 AbstractPlayer 中
+        #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()
 
     def initialize(self):
@@ -68,28 +70,12 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.terminate()
 
     def play(self, media, video=True):
-        # NOTE - API DESGIN: we should return None, see
-        # QMediaPlayer API reference for more details.
-
         logger.debug("Player will play: '%s'", media)
-
-        if video:
-            # FIXME: for some property, we need to set via setattr, however,
-            #  some need to be set via _mpv_set_property_string
-            self._mpv.handle.vid = b'auto'
-            # it seems that ytdl will auto choose the default format
-            #  if we set ytdl-format to ''
-            _mpv_set_property_string(self._mpv.handle, b'ytdl-format', b'')
-        else:
-            # set vid to no and ytdl-format to bestaudio/best
-            # see https://mpv.io/manual/stable/#options-vid for more details
-            self._mpv.handle.vid = b'no'
-            _mpv_set_property_string(self._mpv.handle, b'ytdl-format', b'bestaudio/best')
-
         if isinstance(media, Media):
             media = media
         else:  # media is a url
             media = Media(media)
+        self._set_http_headers(media.http_headers)
         url = media.url
 
         # Clear playlist before play next song,
@@ -241,6 +227,20 @@ class MpvPlayer(AbstractPlayer):
             self.replay()
         else:
             self.play_next()
+
+    def _set_http_headers(self, http_headers):
+        if http_headers:
+            headers = []
+            for key, value in http_headers.items():
+                headers.append("{}: {}".format(key, value))
+            headers_text = ','.join(headers)
+            headers_bytes = bytes(headers_text, 'utf-8')
+            logger.info('play media with headers: %s', headers_text)
+            _mpv_set_property_string(self._mpv.handle, b'http-header-fields',
+                                     headers_bytes)
+        else:
+            _mpv_set_property_string(self._mpv.handle, b'http-header-fields',
+                                     b'')
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))
