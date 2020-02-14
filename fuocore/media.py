@@ -206,19 +206,24 @@ TYPE_METACLS_MAP = {
 
 class Media:
 
-    def __init__(self, url, type_=MediaType.audio, **kwargs):
+    def __init__(self, url, type_=MediaType.audio, http_headers=None,
+                 **kwargs):
         if isinstance(url, Media):
             self._copy(url)
-        else:
-            self.url = url
-            self.type_ = type_
+            return
+        self.url = url
+        self.type_ = type_
 
-            metacls = TYPE_METACLS_MAP[type_]
-            self._metadata = metacls(**kwargs)
+        metacls = TYPE_METACLS_MAP[type_]
+        self._metadata = metacls(**kwargs)
+
+        # network options
+        self.http_headers = http_headers or {}
 
     @classmethod
     def _copy(self, media):
         self.url = media.url
+        self.http_headers = media.http_headers
         self.type_ = media.type_
         self._metadata = media._metadata
 
