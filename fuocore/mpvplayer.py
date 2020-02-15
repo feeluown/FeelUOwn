@@ -44,6 +44,8 @@ class MpvPlayer(AbstractPlayer):
                         input_vo_keyboard=True,
                         **mpvkwargs)
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
+        # old version libmpv(for example: (1, 20)) should set option by using
+        # _mpv_set_option_string, while newer version can use _mpv_set_property_string
         _mpv_set_option_string(self._mpv.handle, b'user-agent',
                                b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
 
@@ -239,11 +241,11 @@ class MpvPlayer(AbstractPlayer):
             headers_text = ','.join(headers)
             headers_bytes = bytes(headers_text, 'utf-8')
             logger.info('play media with headers: %s', headers_text)
-            _mpv_set_property_string(self._mpv.handle, b'http-header-fields',
-                                     headers_bytes)
+            _mpv_set_option_string(self._mpv.handle, b'http-header-fields',
+                                   headers_bytes)
         else:
-            _mpv_set_property_string(self._mpv.handle, b'http-header-fields',
-                                     b'')
+            _mpv_set_option_string(self._mpv.handle, b'http-header-fields',
+                                   b'')
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))
