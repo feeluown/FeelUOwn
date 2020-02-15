@@ -7,6 +7,8 @@ from mpv import (
     MpvEventID,
     MpvEventEndFile,
     _mpv_set_property_string,
+    _mpv_set_option_string,
+    _mpv_client_api_version,
 )
 
 from fuocore.dispatch import Signal
@@ -36,13 +38,14 @@ class MpvPlayer(AbstractPlayer):
         # set log_handler if you want to debug
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'
+        logger.info('libmpv version %s', _mpv_client_api_version())
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True,
                         **mpvkwargs)
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
-        _mpv_set_property_string(self._mpv.handle, b'user-agent',
-                                 b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
+        _mpv_set_option_string(self._mpv.handle, b'user-agent',
+                               b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
 
         #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()
@@ -64,7 +67,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv._event_callbacks.append(self._on_event)
         self._playlist.song_changed.connect(self._on_song_changed)
         self.song_finished.connect(self._on_song_finished)
-        logger.info('Player initialize finished.')
+        logger.debug('Player initialize finished.')
 
     def shutdown(self):
         self._mpv.terminate()
