@@ -12,7 +12,7 @@ class FuoServer:
         self._app = app
         self._loop = None
 
-    async def run(self, host='0.0.0.0', port=23333):
+    async def run(self, host, port=23333):
         loop = asyncio.get_event_loop()
         self._loop = loop
         await loop.create_server(self.protocol_factory, host, port)

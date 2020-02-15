@@ -188,7 +188,7 @@ class Client(object):
 @contextmanager
 def connect():
     sock = socket(AF_INET, SOCK_STREAM)
-    sock.connect(('0.0.0.0', 23333))
+    sock.connect(('127.0.0.1', 23333))
     client = Client(sock)
     try:
         yield client

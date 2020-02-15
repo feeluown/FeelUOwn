@@ -39,6 +39,9 @@ class App:
         # pylint: disable=no-self-use, unused-argument
         logger.info(msg)
 
+    def get_listen_addr(self):
+        return '0.0.0.0' if self.config.ALLOW_LAN_CONNECT else '127.0.0.1'
+
     @contextmanager
     def create_action(self, s):  # pylint: disable=no-self-use
         """根据操作描述生成 Action (alpha)
@@ -91,7 +94,7 @@ def attach_attrs(app):
 
     if app.mode & app.DaemonMode:
         app.server = FuoServer(app)
-        app.pubsub_gateway, app.pubsub_server = create_pubsub()
+        app.pubsub_gateway, app.pubsub_server = create_pubsub(app.get_listen_addr())
         app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
 
     if app.mode & app.GuiMode:
@@ -205,7 +208,7 @@ def run_app(app):
             else:
                 mac_global_hotkey_mgr = MacGlobalHotkeyManager()
                 mac_global_hotkey_mgr.start()
-        loop.create_task(app.server.run())
+        loop.create_task(app.server.run(app.get_listen_addr()))
         run_pubsub(app.pubsub_gateway, app.pubsub_server)
 
     try:

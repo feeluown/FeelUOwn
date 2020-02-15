@@ -35,7 +35,7 @@ def is_osx():
     return False
 
 
-def is_port_used(port, host='0.0.0.0'):
+def is_port_used(port, host='127.0.0.1'):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     rv = sock.connect_ex((host, port))
     return rv == 0
