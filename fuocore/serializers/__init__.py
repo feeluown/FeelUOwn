@@ -6,6 +6,8 @@
 #    Provider: ProviderSerializer,
 # }
 #
+import json
+
 _MAPPING = {}
 
 
@@ -24,7 +26,7 @@ def get_serializer(format):
     return _MAPPING.get(format)
 
 
-def serialize(format, obj, **options):
+def serialize(format, obj, dump=False, **options):
     """
 
     Usage::
@@ -59,8 +61,11 @@ def serialize(format, obj, **options):
     - format related options: `as_line`
     """
     serializer = get_serializer(format)(**options)
-    return serializer.serialize(obj)
+    result = serializer.serialize(obj)
+    if dump and format == 'json':
+        return json.dumps(result, indent=4)
+    return result
 
 
-from .plain import PlainSerializer
-from .json import JsonSerializer
+from .plain import PlainSerializer  # noqa
+from .json_ import JsonSerializer  # noqa

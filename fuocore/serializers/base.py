@@ -1,3 +1,11 @@
+class InvalidOptionsCombination(Exception):
+    pass
+
+
+class SerializerError(Exception):
+    pass
+
+
 class Serializer:
     def __init__(self, **options):
         self.options = options
@@ -14,7 +22,7 @@ class Serializer:
         for model_cls, serialize_cls in cls._mapping.items():
             if isinstance(model, model_cls):
                 return serialize_cls
-        # TODO: raise error here.
+        raise SerializerError("no serializer for {}".format(model))
 
 
 class SerializerMeta(type):

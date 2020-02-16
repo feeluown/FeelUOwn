@@ -1,6 +1,4 @@
-import json
-
-from .base import Serializer, SerializerMeta
+from .base import Serializer, SerializerMeta, InvalidOptionsCombination
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
     UserSerializerMixin
@@ -10,22 +8,23 @@ class JsonSerializer(Serializer):
     _mapping = {}
 
 
-class ModelSerializer(ModelSerializerMixin, JsonSerializer):
+class ModelSerializer(JsonSerializer, ModelSerializerMixin):
 
     def __init__(self, **options):
+        if options.get('brief') is False and options.get('fetch') is False:
+            raise InvalidOptionsCombination(
+                "fetch can't be False when brief is False")
         super().__init__(**options)
+        if self.options['brief'] is False:
+            self.options['fetch'] = True
 
-    def setup(self, model, fields):
-        self._json = {}
-
-    def handle_field(self, field, value):
-        self._json[field] = value
-
-    def get_result(self):
-        return self._json
-
-    def teardown(self):
-        del self._json
+    def serialize(self, model):
+        json_ = {}
+        for field, value in self._get_items(model):
+            serializer_cls = self.get_serializer_cls(value)
+            value_json = serializer_cls(brief=True, fetch=False).serialize(value)
+            json_[field] = value_json
+        return json_
 
 
 class ListSerializer(JsonSerializer, metaclass=SerializerMeta):
