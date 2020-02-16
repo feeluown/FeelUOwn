@@ -1,7 +1,9 @@
+from bisect import bisect
 from string import Formatter
 
 
 widths = [
+    (0, 1),
     (126, 1), (159, 0), (687, 1), (710, 0), (711, 1),
     (727, 0), (733, 1), (879, 0), (1154, 1), (1161, 0),
     (4347, 1), (4447, 2), (7467, 1), (7521, 0), (8369, 1),
@@ -11,16 +13,15 @@ widths = [
     (65131, 2), (65279, 1), (65376, 2), (65500, 1), (65510, 2),
     (120831, 1), (262141, 2), (1114109, 1),
 ]
+points = [w[0] for w in widths]
 
 
 def char_len(c):
     ord_code = ord(c)
     if ord_code == 0xe or ord_code == 0xf:
         return 0
-    for num, wid in widths:
-        if ord_code <= num:
-            return wid
-    return 1
+    i = bisect(points, ord_code)
+    return widths[i][1]
 
 
 def _fit_text(text, length, filling=True):
@@ -51,13 +52,10 @@ class WideFormatter(Formatter):
     '+': _fit_text(*, filling=True)
     """
 
-    def format(self, format_string, *args, **kwargs):
-        return super().vformat(format_string, args, kwargs)
-
     def format_field(self, value, format_spec):
         fmt_type = format_spec[0] if format_spec else None
         if fmt_type == "_":
             return _fit_text(value, int(format_spec[1:]), filling=False)
-        if fmt_type == "+":
+        elif fmt_type == "+":
             return _fit_text(value, int(format_spec[1:]), filling=True)
-        return format(value, format_spec)
+        return super().format_field(value, format_spec)

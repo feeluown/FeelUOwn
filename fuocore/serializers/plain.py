@@ -9,7 +9,7 @@ Usage::
 """
 
 from .base import Serializer, SerializerMeta
-from .model_helpers import serialize_model, SongSerializerMixin, \
+from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
     UserSerializerMixin
 from ._plain_formatter import WideFormatter
@@ -22,7 +22,7 @@ class PlainSerializer(Serializer):
     _mapping = {}
 
 
-class ModelSerializer(PlainSerializer):
+class ModelSerializer(ModelSerializerMixin, PlainSerializer):
 
     def __init__(self, **options):
         super().__init__(**options)
@@ -31,20 +31,10 @@ class ModelSerializer(PlainSerializer):
         self._as_line = options.get('as_line', True)
         self._uri_length = options.get('uri_length', '')
 
-    def serialize(self, model):
-        return serialize_model(model, self)
-
-    def setup(self):
+    def setup(self, model, fields):
         if self._as_line:
             self._store = {}
         else:
-            self._key_length = None
-            self._text_list = []
-            self._normal_field_tpl = None
-            self._list_field_tpl = None
-
-    def before_handle_field(self, model, fields):
-        if not self._as_line:
             key_length = max(len(key) for key in fields) + 1
             self._key_length = key_length
             self._normal_field_tpl = '{key:>%d}:  {value}' % key_length
@@ -66,9 +56,6 @@ class ModelSerializer(PlainSerializer):
             else:
                 text = fmt(self._normal_field_tpl, key=field, value=value)
                 self._text_list.append(text)
-
-    def after_handle_field(self, model, fields):
-        pass
 
     def get_result(self):
         if self._as_line:

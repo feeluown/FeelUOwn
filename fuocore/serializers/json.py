@@ -1,7 +1,7 @@
 import json
 
 from .base import Serializer, SerializerMeta
-from .model_helpers import serialize_model, SongSerializerMixin, \
+from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
     UserSerializerMixin
 
@@ -10,27 +10,16 @@ class JsonSerializer(Serializer):
     _mapping = {}
 
 
-class ModelSerializer(JsonSerializer):
+class ModelSerializer(ModelSerializerMixin, JsonSerializer):
 
     def __init__(self, **options):
         super().__init__(**options)
 
-    def serialize(self, model):
-        # maybe we should add format option: `indent`,
-        # currently, use 4 as default should be good enough?
-        return serialize_model(model, self)
-
-    def setup(self):
+    def setup(self, model, fields):
         self._json = {}
-
-    def before_handle_field(self, model, fields):
-        pass
 
     def handle_field(self, field, value):
         self._json[field] = value
-
-    def after_handle_field(self, model, fields):
-        pass
 
     def get_result(self):
         return self._json

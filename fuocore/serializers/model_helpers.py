@@ -1,63 +1,60 @@
-from fuocore.models import BaseModel, SongModel, ArtistModel, \
+from fuocore.models import SongModel, ArtistModel, \
     AlbumModel, PlaylistModel, UserModel
 
 
-def serialize_model(model, root_serializer):
-    #
-    # setup root_serializer
-    #
-    root_serializer.setup()
+simple_fields = set({'title', 'duration', 'url',
+                     'name', 'artists_name', 'album_name'})
 
-    # initialize fields that need to be serialized
-    # if as_line option is set, we always use fields_display
-    if root_serializer.options['as_line'] or root_serializer.options['brief']:
-        fields = model.meta.fields_display
-    else:
-        fields = root_serializer._declared_fields
 
-    # keep the fields order
-    common_fields = ['provider', 'identifier', 'uri']
-    all_fields = common_fields + list(fields)
+class ModelSerializerMixin:
+    def serialize(self, model):
+        # initialize fields that need to be serialized
+        # if as_line option is set, we always use fields_display
+        if self.options['as_line'] or self.options['brief']:
+            fields = model.meta.fields_display
+            are_display_fields = True
+        else:
+            fields = self._declared_fields
+            are_display_fields = False
 
-    #
-    # before handle each field
-    #
-    root_serializer.before_handle_field(model, all_fields)
+        # keep the fields order
+        common_fields = ['provider', 'identifier', 'uri']
+        all_fields = common_fields + list(fields)
 
-    #
-    # handle each field
-    #
-    store = {"provider": model.source,
-             "identifier": model.identifier,
-             "uri": str(model)}
-    for field in fields:
-        obj = getattr(
-            model,
-            field if root_serializer.options['fetch'] else field + "_display"
-        )
-        store[field] = obj
-    for field, value in store.items():
-        serializer_cls = root_serializer.get_serializer_cls(value)
-        serializer = serializer_cls(brief=True,
-                                    fetch=False,
-                                    as_line=True)
-        value = serializer.serialize(value)
-        root_serializer.handle_field(field, value)
+        #
+        # setup self
+        #
+        self.setup(model, all_fields)
 
-    #
-    # after handle each field
-    #
-    root_serializer.after_handle_field(model, all_fields)
+        #
+        # handle each field
+        #
+        # perf: since we know these fields will not change after serialization,
+        # so we handle them directly
+        self.handle_field("provider", model.source)
+        self.handle_field("identifier", model.identifier)
+        self.handle_field("uri", str(model))
+        for field in fields:
+            if are_display_fields is True:
+                value = getattr(model, field + "_display")
+                # perf: display field's value is a string, handle them directly
+                self.handle_field(field, value)
+            else:
+                value = getattr(model, field)
+                serializer_cls = self.get_serializer_cls(value)
+                serializer = serializer_cls(brief=True, fetch=False, as_line=True)
+                value = serializer.serialize(value)
+                self.handle_field(field, value)
 
-    # TODO: use streaming if root_serializer support
-    # Theoretically, yaml and plain root_serializer support streaming
-    result = root_serializer.get_result()
+        # TODO: use streaming if self support
+        # Theoretically, yaml and plain self support streaming
+        result = self.get_result()
 
-    #
-    # do some cleanup
-    #
-    root_serializer.teardown()
-    return result
+        #
+        # do some cleanup
+        #
+        self.teardown()
+        return result
 
 
 class SongSerializerMixin:
