@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 def send_cmd(cmd):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.connect(('0.0.0.0', 23333))
+    sock.connect(('127.0.0.1', 23333))
     sock.recv(1024)
     sock.sendall(bytes(cmd, 'utf-8') + b'\n')
     sock.close()

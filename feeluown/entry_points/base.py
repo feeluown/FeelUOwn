@@ -46,6 +46,7 @@ def create_config():
     config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
     config.deffield('AUDIO_SELECT_POLICY', default='hq<>')
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
+    config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     return config
 
 

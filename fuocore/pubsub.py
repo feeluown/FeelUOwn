@@ -101,7 +101,7 @@ def handle(conn, addr, gateway, *args, **kwargs):
         break
 
 
-def create(host='0.0.0.0', port=23334):
+def create(host, port=23334):
     gateway = Gateway()
     server = TcpServer(handle_func=handle, host=host, port=port)
     return gateway, server
