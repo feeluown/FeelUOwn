@@ -27,31 +27,17 @@ def get_serializer(format):
 
 
 def serialize(format, obj, **options):
-    """
+    """serialize python object defined in fuocore package
+
+    :raises SerializerError:
 
     Usage::
 
-        # serialize song
-        # real use case: fuo show fuo://local/songs/1
-        serialize('plain', song)
-
-        # serialize song to a single line
-        # real use case: fuo play fuo://local/songs/1
+        serialize('plain', song, as_line=True)
         serialize('plain', song, as_line=True, fetch=True)
-
-        # serialize songs
-        # real use case: fuo show fuo://local/playlist/1/songs
-        #   currently, this should never fetch each song detail,
-        #   even we set fetch to True.
-        serialize('plain', songs)
-
-        # serialize list of provider
+        serialize('json', songs, indent=4)
+        serialize('json', songs, indent=4, fetch=True)
         serialize('json', providers)
-
-    **Options**
-
-    - fields related options: `brief`, `fetch`
-    - format related options: `as_line`
     """
     serializer = get_serializer(format)(**options)
     return serializer.serialize(obj)
