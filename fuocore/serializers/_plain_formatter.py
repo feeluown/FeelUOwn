@@ -52,7 +52,12 @@ class WideFormatter(Formatter):
     '+': _fit_text(*, filling=True)
     """
 
+    def format(self, format_string, *args, **kwargs):
+        return super().vformat(format_string, args, kwargs)
+
     def format_field(self, value, format_spec):
+        if value is None:
+            value = 'null'
         fmt_type = format_spec[0] if format_spec else None
         if fmt_type == "_":
             return _fit_text(value, int(format_spec[1:]), filling=False)

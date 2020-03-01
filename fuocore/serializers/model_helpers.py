@@ -11,14 +11,14 @@ class ModelSerializerMixin:
     def _get_items(self, model):
         # initialize fields that need to be serialized
         # if as_line option is set, we always use fields_display
-        if self.options['as_line'] or self.options['brief']:
+        if self.options.get('as_line') or self.options.get('brief'):
             fields = model.meta.fields_display
         else:
             fields = self._declared_fields
         items = [("provider", model.source),
                  ("identifier", model.identifier),
                  ("uri", str(model))]
-        if self.options['fetch']:
+        if self.options.get('fetch'):
             for field in fields:
                 items.append((field, getattr(model, field)))
         else:

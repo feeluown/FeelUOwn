@@ -1,17 +1,53 @@
-class InvalidOptionsCombination(Exception):
-    pass
-
-
 class SerializerError(Exception):
+    """
+    this error will be raised when
+
+    * Serializer initialization faield
+    * Serializer not found
+    * Serializer serialization failed
+    """
     pass
 
 
 class Serializer:
+    """Serializer abstract base class
+
+    The subclass MUST has an class attribute `_mapping` if we want to
+    get_serializer_cls method, it should store the mapping relation
+    between Object-Class and Serializer-Class.
+    For example::
+
+        {
+            int: IntSerializer,
+            SongModel: ModelSerializer,
+        }
+
+    the subclass also should implement `serialize` method.
+
+    See JsonSerializer for more details.
+    """
+
     def __init__(self, **options):
+        """
+        Subclass should validate and parse options by themselves, here,
+        we list three commonly used options.
+
+        as_line is a *format* option:
+
+        - as_line: line format of a object (mainly designed for PlainSerializer)
+
+        brief and fetch are *representation* options:
+
+        - brief: a minimum human readable representation of the object.
+          we hope that people can *identify which object it is* through
+          this representation.
+          For example, if an object has ten attributes, this representation
+          may only contain three attributes.
+
+        - fetch: if this option is specified, the attribute value
+          should be authoritative.
+        """
         self.options = options
-        self.options['as_line'] = options.get('as_line', True)
-        self.options['brief'] = options.get('brief', True)
-        self.options['fetch'] = options.get('fetch', False)
 
     def serialize(self, obj):
         serializer_cls = self.get_serializer_cls(obj)
