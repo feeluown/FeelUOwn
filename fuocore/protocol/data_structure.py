@@ -45,10 +45,13 @@ class Request:
         # TODO: allow heredoc and args appear at the same time
         args_str = '' if self.has_heredoc else \
             ' '.join((escape(arg) for arg in self.cmd_args))
+        options_str = options_to_str(self.cmd_options)
+        if options_str:
+            options_str = '[{}]'.format(options_str)
         raw = '{cmd} {args_str} {options_str} #: {req_options_str}'.format(
             cmd=self.cmd,
             args_str=args_str,
-            options_str=options_to_str(self.cmd_options),
+            options_str=options_str,
             req_options_str=options_to_str(self.options),
         )
         if self.has_heredoc:

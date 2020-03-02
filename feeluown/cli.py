@@ -184,7 +184,10 @@ class HandlerWithWriteListCache(BaseHandler):
         if cmd == 'search':
             self._req.cmd_args = (self.args.keyword, )
             options_str = self.args.options or ''
-            option_kv_list = options_str.split(',')
+            if options_str:
+                option_kv_list = options_str.split(',')
+            else:
+                option_kv_list = []
             for option_kv in option_kv_list:
                 k, v = option_kv.split('=')
                 self._req.cmd_options[k] = v

@@ -50,6 +50,10 @@ def test_show_providers_with_json_format():
             assert False, 'dummy provider should be found'
 
 
+def test_cmd_options():
+    subprocess.run(['fuo', 'search', 'xx', 'type=album,source=xx'])
+
+
 def run():
     popen = subprocess.Popen(['fuo'])
     time.sleep(5)  # wait for fuo starting
