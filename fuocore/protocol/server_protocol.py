@@ -79,7 +79,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
 
     async def write_response(self, resp):
         # TODO: 区分客户端和服务端错误（比如客户端错误后面加 ! 标记）
-        msg_bytes = bytes(resp.msg, 'utf-8')
+        msg_bytes = bytes(resp.text, 'utf-8')
         response_line = ('ACK {} {}\r\n'
                          .format(resp.code, len(msg_bytes)))
         self._writer.write(bytes(response_line, 'utf-8'))
@@ -99,7 +99,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                     req = await self.read_request()
                 except RequestError as e:
                     msg = 'bad reqeust!\r\n' + str(e)
-                    bad_request_resp = Response('oops', msg)
+                    bad_request_resp = Response(ok=False, text=msg)
                     await self.write_response(bad_request_resp)
                 else:
                     if req is None:  # client close the connection

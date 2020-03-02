@@ -8,6 +8,22 @@ from fuocore.serializers import serialize
 logger = logging.getLogger(__name__)
 
 
+def handle_request(req, app, ctx=None):
+    """
+    :type req: fuocore.protocol.Request
+    """
+    cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
+    ok, body = exec_cmd(
+        cmd,
+        library=app.library,
+        player=app.player,
+        playlist=app.playlist,
+        live_lyric=app.live_lyric)
+    format = req.options.get('format', 'plain')
+    msg = serialize(format, body, brief=False)
+    return Response(ok=ok, text=msg, req=req)
+
+
 class FuoServer:
     def __init__(self, app):
         self._app = app
@@ -24,17 +40,4 @@ class FuoServer:
                                  loop=self._loop)
 
     def handle_req(self, req, session=None):
-        """
-        :type req: fuocore.protocol.Request
-        """
-        cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
-        success, body = exec_cmd(
-            cmd,
-            library=self._app.library,
-            player=self._app.player,
-            playlist=self._app.playlist,
-            live_lyric=self._app.live_lyric)
-        code = 'ok' if success else 'oops'
-        format = req.options.get('format', 'plain')
-        msg = serialize(format, body, brief=False)
-        return Response(code=code, msg=msg, req=req)
+        return handle_request(req, self._app, ctx=session)

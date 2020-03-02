@@ -23,7 +23,8 @@ def create_client():
 
 
 def register_dummy_provider():
-    req = Request('exec', heredoc='''
+    req = Request('exec', has_heredoc=True, heredoc_word='EOF')
+    req.set_heredoc_body('''
 from fuocore.provider import dummy_provider
 app.library.register(dummy_provider)
 ''')
@@ -40,9 +41,8 @@ def collect():
 
 def test_show_providers_with_json_format():
     with create_client() as client:
-        resp = client.send(Request('show', 'fuo://',
-                                   options={'format': 'json'}))
-        providers = json.loads(resp.content)
+        resp = client.send(Request('show', ['fuo://'], options={'format': 'json'}))
+        providers = json.loads(resp.text)
         for provider in providers:
             if provider['identifier'] == 'dummy':
                 break
