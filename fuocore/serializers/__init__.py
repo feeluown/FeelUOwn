@@ -43,5 +43,7 @@ def serialize(format, obj, **options):
     return serializer.serialize(obj)
 
 
+from .base import SerializerMeta, SimpleSerializerMixin  # noqa
 from .plain import PlainSerializer  # noqa
 from .json_ import JsonSerializer  # noqa
+from .python import PythonSerializer  # noqa

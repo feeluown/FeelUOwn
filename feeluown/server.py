@@ -6,19 +6,27 @@ from fuocore.protocol import FuoServerProtocol, Response
 from fuocore.serializers import serialize
 
 logger = logging.getLogger(__name__)
+_REGISTERED = False
+
+
+def register_feeluown_serializers():
+    from feeluown.serializers import (  # noqa
+        AppPythonSerializer,
+        AppPlainSerializer
+    )
+    global _REGISTERED
+    _REGISTERED = True
 
 
 def handle_request(req, app, ctx=None):
     """
     :type req: fuocore.protocol.Request
     """
+    if not _REGISTERED:
+        register_feeluown_serializers()
+
     cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
-    ok, body = exec_cmd(
-        cmd,
-        library=app.library,
-        player=app.player,
-        playlist=app.playlist,
-        live_lyric=app.live_lyric)
+    ok, body = exec_cmd(cmd, app=app)
     format = req.options.get('format', 'plain')
     msg = serialize(format, body, brief=False)
     return Response(ok=ok, text=msg, req=req)

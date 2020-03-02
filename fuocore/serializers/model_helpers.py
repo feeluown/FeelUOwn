@@ -1,3 +1,4 @@
+from fuocore.provider import AbstractProvider
 from fuocore.models import SongModel, ArtistModel, \
     AlbumModel, PlaylistModel, UserModel, SearchModel
 
@@ -84,3 +85,18 @@ class SearchSerializerMixin:
             if value:  # only append if it is not empty
                 items.append((field, value))
         return items
+
+
+class ProviderSerializerMixin:
+    class Meta:
+        types = (AbstractProvider, )
+
+    def _get_items(self, provider):
+        """
+        :type provider: AbstractProvider
+        """
+        return [
+            ('identifier', provider.identifier),
+            ('uri', 'fuo://{}'.format(provider.identifier)),
+            ('name', provider.name),
+        ]

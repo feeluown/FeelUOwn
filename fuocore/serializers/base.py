@@ -90,3 +90,14 @@ class SerializerMeta(type):
             if line_fmt is not None:
                 klass._line_fmt = line_fmt
         return klass
+
+
+class SimpleSerializerMixin(Serializer):
+
+    def serialize(self, obj):
+        """
+        please ensure you have implemented `_get_items` and
+        `serialize_items` method
+        """
+        items = self._get_items(obj)
+        return self.serialize_items(items)

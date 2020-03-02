@@ -548,6 +548,7 @@ class PlaylistModel(BaseModel):
     class Meta:
         model_type = ModelType.playlist.value
         fields = ['name', 'cover', 'songs', 'desc']
+        fields_display = ['name']
         allow_create_songs_g = False
 
     def __str__(self):

@@ -1,8 +1,8 @@
-from fuocore.provider import AbstractProvider
-from .base import Serializer, SerializerMeta, SerializerError
+from .base import Serializer, SerializerMeta, SerializerError, \
+    SimpleSerializerMixin
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin
+    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
 
 
 class PythonSerializer(Serializer):
@@ -11,6 +11,14 @@ class PythonSerializer(Serializer):
     def __init__(self, **options):
         super().__init__(**options)
         self.opt_level = options.get('level', 0)
+
+    def serialize_items(self, items):
+        json_ = {}
+        for key, value in items:
+            serializer_cls = PythonSerializer.get_serializer_cls(value)
+            serializer = serializer_cls(brief=True, level=self.opt_level + 1)
+            json_[key] = serializer.serialize(value)
+        return json_
 
 
 class ModelSerializer(PythonSerializer, ModelSerializerMixin):
@@ -107,20 +115,11 @@ class SimpleTypeSerializer(PythonSerializer, metaclass=SerializerMeta):
         return object
 
 
-class ProviderSerializer(PythonSerializer, metaclass=SerializerMeta):
-    class Meta:
-        types = (AbstractProvider, )
-
-    def serialize(self, provider):
-        """
-        :type provider: AbstractProvider
-        """
-        return {
-            'identifier': provider.identifier,
-            'uri': 'fuo://{}'.format(provider.identifier),
-            'name': provider.name,
-            # TODO: add auth/user info
-        }
+class ProviderSerializer(PythonSerializer,
+                         SimpleSerializerMixin,
+                         ProviderSerializerMixin,
+                         metaclass=SerializerMeta):
+    pass
 
 
 class SearchSerializer(PythonSerializer, SearchSerializerMixin,

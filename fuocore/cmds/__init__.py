@@ -39,7 +39,7 @@ class CmdResolver:
 cmd_resolver = CmdResolver(cmd_handler_mapping)
 
 
-def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
+def exec_cmd(cmd, *args, app):
     """执行命令
 
     .. note::
@@ -48,6 +48,10 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
         所以目前这里没有将 app 设计为参数。
         但在实践中，这个设计似乎会让代码可读性变差，是值得探讨的。
     """
+    library = app.library
+    player = app.player
+    playlist = app.playlist
+    live_lyric = app.live_lyric
 
     logger.debug('EXEC_CMD: ' + str(cmd))
 
@@ -56,7 +60,8 @@ def exec_cmd(cmd, *args, library, player, playlist, live_lyric):
         return False, 'cmd not found!'
 
     try:
-        handler = handler_cls(library=library,
+        handler = handler_cls(app=app,
+                              library=library,
                               player=player,
                               playlist=playlist,
                               live_lyric=live_lyric)

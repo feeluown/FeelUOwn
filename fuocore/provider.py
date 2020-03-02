@@ -147,7 +147,7 @@ class DummySongModel(SongModel, DummyBaseModel):
                 title=Dummy,
                 duration=0,
                 artists=[DummyArtistModel.get(Dummy)],
-                album=[DummyAlbumModel.get(Dummy)],
+                album=DummyAlbumModel.get(Dummy),
                 url=Dummy,
             )
         return None

@@ -1,10 +1,9 @@
 from textwrap import indent
 
-from fuocore.provider import AbstractProvider
 from .base import Serializer, SerializerMeta, SerializerError
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin
+    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
 from ._plain_formatter import WideFormatter
 
 formatter = WideFormatter()
@@ -18,6 +17,32 @@ class PlainSerializer(Serializer):
     def __init__(self, **options):
         super().__init__(**options)
         self.opt_level = options.get('level', 0)
+
+    def serialize_items(self, items):
+        key_length = max(len(key) for key, _ in items)
+        normal_field_tpl = '{key:>%d}:  {value}' % (key_length + 1)
+        list_field_tpl = '{key:>%d}::' % (key_length)
+        text_list = []
+        level = self.opt_level + 1
+        for field, value in items:
+            if isinstance(value, list):
+                # append key
+                text = fmt(list_field_tpl, key=field)
+                text_list.append(text)
+                # append value with indent
+                if value:
+                    serialize_cls = self.get_serializer_cls(value)
+                    serializer = serialize_cls(fetch=False, level=level)
+                    value_text = serializer.serialize(value)
+                    text_list.append(indent(value_text, ' ' * (key_length + 4)))
+            else:
+                serialize_cls = self.get_serializer_cls(value)
+                # field value should be formatted as one line
+                serializer = serialize_cls(fetch=False, level=level)
+                value_text = serializer.serialize(value)
+                text = fmt(normal_field_tpl, key=field, value=value_text)
+                text_list.append(text)
+        return '\n'.join(text_list)
 
 
 class ModelSerializer(PlainSerializer, ModelSerializerMixin):
@@ -44,37 +69,12 @@ class ModelSerializer(PlainSerializer, ModelSerializerMixin):
 
     def serialize(self, model):
         """serialize a model"""
-
         items = self._get_items(model)
         # if level > 0, we think this should be formatted as one line,
         # subclass can override this behavious by overriding serialize method
         if self.opt_as_line or self.opt_level > 0:
             return fmt(self._line_fmt, uri_length=self.opt_uri_length, **dict(items))
-
-        key_length = max(len(key) for key, _ in items)
-        normal_field_tpl = '{key:>%d}:  {value}' % (key_length + 1)
-        list_field_tpl = '{key:>%d}::' % (key_length)
-        text_list = []
-        level = self.opt_level + 1
-        for field, value in items:
-            if isinstance(value, list):
-                # append key
-                text = fmt(list_field_tpl, key=field)
-                text_list.append(text)
-                # append value with indent
-                if value:
-                    serialize_cls = self.get_serializer_cls(value)
-                    serializer = serialize_cls(fetch=False, level=level)
-                    value_text = serializer.serialize(value)
-                    text_list.append(indent(value_text, ' ' * (key_length + 4)))
-            else:
-                serialize_cls = self.get_serializer_cls(value)
-                # field value should be formatted as one line
-                serializer = serialize_cls(fetch=False, level=level)
-                value_text = serializer.serialize(value)
-                text = fmt(normal_field_tpl, key=field, value=value_text)
-                text_list.append(text)
-        return '\n'.join(text_list)
+        return self.serialize_items(items)
 
 
 class ListSerializer(PlainSerializer, metaclass=SerializerMeta):
@@ -153,17 +153,20 @@ class UserSerializer(ModelSerializer, UserSerializerMixin,
 
 class SimpleTypeSerializer(PlainSerializer, metaclass=SerializerMeta):
     class Meta:
-        types = (str, int, float, type(None))
+        types = (str, int, float, type(None), bool)
 
     def serialize(self, object):
         if object is None:
             return 'null'
+        elif object is True:
+            return 'true'
+        elif object is False:
+            return 'false'
         return str(object)
 
 
-class ProviderSerializer(PlainSerializer, metaclass=SerializerMeta):
-    class Meta:
-        types = (AbstractProvider, )
+class ProviderSerializer(PlainSerializer, ProviderSerializerMixin,
+                         metaclass=SerializerMeta):
 
     def __init__(self, **options):
         super().__init__(**options)
@@ -174,19 +177,17 @@ class ProviderSerializer(PlainSerializer, metaclass=SerializerMeta):
         """
         :type provider: AbstractProvider
         """
-        uri = 'fuo://{}'.format(provider.identifier)
-        name = provider.name
+        items = self._get_items(provider)
+        dict_ = dict(items)
+        uri = dict_['uri']
+        name = dict_['name']
         if self.opt_as_line or self.opt_level > 0:
             return '{uri:{uri_length}}\t# {name}'.format(
                 uri=uri,
                 name=name,
                 uri_length=self.opt_uri_length
             )
-        return (
-            'identifier:   {}'
-            '       uri:   {}'
-            '      name:   {}'
-        ).format(provider.identifier, uri, name)
+        return self.serialize_items(items)
 
 
 class SearchSerializer(PlainSerializer, SearchSerializerMixin,
