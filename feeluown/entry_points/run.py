@@ -1,6 +1,6 @@
-from feeluown.patch import patch_quamash_qeventloop
+from feeluown.patch import patch_qeventloop
 
-patch_quamash_qeventloop()
+patch_qeventloop()
 
 # pylint: disable=wrong-import-position
 from fuocore.utils import is_port_used  # noqa: E402

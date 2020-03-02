@@ -134,9 +134,10 @@ def create_app(config):
 
     if mode & App.GuiMode:
 
-        from quamash import QEventLoop
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
+
+        from feeluown.compat import QEventLoop
 
         q_app = QApplication(sys.argv)
         q_app.setQuitOnLastWindowClosed(True)

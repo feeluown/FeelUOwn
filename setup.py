@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from setuptools import setup
 from os import path
 
@@ -59,11 +60,10 @@ setup(
     ],
     # FIXME depends on PyQt5
     install_requires=[
-        # 'quamash>=0.5.5',
         'janus',
         'requests',
         'pyopengl',
-    ],
+    ] + (['qasync'] if sys.version_info > (3, 5) else ['quamash>=0.5.5']),
     extras_require={
         'battery': ['fuo-local>=0.1.1',
                     'fuo-xiami>=0.1.2',
