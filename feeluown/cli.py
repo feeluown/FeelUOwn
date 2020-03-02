@@ -9,6 +9,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from fuocore.cmds import exec_cmd, Cmd
 from fuocore.cmds.helpers import show_song
 from fuocore.protocol import Parser
+from fuocore.serializers import serialize
 from feeluown.consts import CACHE_DIR
 
 
@@ -28,6 +29,12 @@ def setup_cli_argparse(parser):
     subparsers.add_parser('genicon',
                           description='generate desktop icon')
 
+    fmt_parser = argparse.ArgumentParser(add_help=False)
+    fmt_parser.add_argument(
+        '--format',
+        help="change command output format (default: plain)"
+    )
+
     play_parser = subparsers.add_parser(
         'play',
         description=textwrap.dedent('''\
@@ -38,7 +45,7 @@ def setup_cli_argparse(parser):
         '''),
         formatter_class=argparse.RawTextHelpFormatter
     )
-    show_parser = subparsers.add_parser('show')
+    show_parser = subparsers.add_parser('show', parents=[fmt_parser])
     search_parser = subparsers.add_parser(
         'search',
         description=textwrap.dedent('''\
@@ -49,7 +56,8 @@ def setup_cli_argparse(parser):
             - fuo search lizongsheng "source='xiami,qq',type=artist"
             - fuo search 李宗盛 "[source='xiami,qq',type=artist]"
         '''),
-        formatter_class=argparse.RawTextHelpFormatter
+        formatter_class=argparse.RawTextHelpFormatter,
+        parents=[fmt_parser],
     )
 
     subparsers.add_parser('pause')
@@ -58,9 +66,9 @@ def setup_cli_argparse(parser):
     subparsers.add_parser('stop')
     subparsers.add_parser('next')
     subparsers.add_parser('previous')
-    subparsers.add_parser('list')
+    subparsers.add_parser('list', parents=[fmt_parser])
     subparsers.add_parser('clear')
-    subparsers.add_parser('status')
+    subparsers.add_parser('status', parents=[fmt_parser])
     remove_parser = subparsers.add_parser('remove')
     add_parser = subparsers.add_parser('add')
     exec_parser = subparsers.add_parser('exec')
@@ -91,7 +99,7 @@ cmd_handler_mapping = {}
 
 
 class Request:
-    def __init__(self, cmd, *args, options_str=None, heredoc=None):
+    def __init__(self, cmd, *args, options=None, options_str=None, heredoc=None):
         """cli request object
 
         :param string cmd: cmd name (e.g. search)
@@ -109,6 +117,7 @@ class Request:
         """
         self.cmd = cmd
         self.args = args
+        self.options = options if options else {}
         self.options_str = options_str
         self.heredoc = heredoc
 
@@ -130,10 +139,12 @@ class Request:
             return value
 
         options_str = self.options_str
-        raw = '{cmd} {args_str} {options_str}'.format(
+        raw = '{cmd} {args_str} {options_str} #: {req_options_str}'.format(
             cmd=self.cmd,
             args_str=' '.join((escape(arg) for arg in self.args)),
-            options_str=(options_str if options_str else '')
+            options_str=(options_str if options_str else ''),
+            req_options_str=", ".join("{}={}".format(k, v)
+                                      for k, v in self.options.items())
         )
         if self.heredoc is not None:
             raw += ' <<EOF\n{}\nEOF\n\n'.format(self.heredoc)
@@ -216,6 +227,11 @@ class BaseHandler(metaclass=HandlerMeta):
         self.args = args
 
         self._req = Request(args.cmd)
+        options_list = ["format"]
+        args_dict = vars(args)
+        req_options = {option: args_dict.get(option) for option in options_list
+                       if args_dict.get(option, None)}
+        self._req = Request(args.cmd, options=req_options)
 
     def before_request(self):
         """before request hook"""
@@ -258,6 +274,10 @@ class HandlerWithWriteListCache(BaseHandler):
     def process_resp(self, resp):
         if resp.code != 'OK' or not resp.content:
             super().process_resp(resp)
+            return
+        format = self._req.options.get('format', 'plain')
+        if format != 'plain':
+            print(resp.content)
             return
         lines = resp.content.split('\n')
         with open(OUTPUT_CACHE_FILEPATH, 'w') as f:
@@ -319,11 +339,12 @@ class OnceClient:
 
     def send(self, req):
         app = self._app
-        success, msg = exec_cmd(req.to_cmd(),
-                                library=app.library,
-                                player=app.player,
-                                playlist=app.playlist,
-                                live_lyric=app.live_lyric)
+        success, body = exec_cmd(req.to_cmd(),
+                                 library=app.library,
+                                 player=app.player,
+                                 playlist=app.playlist,
+                                 live_lyric=app.live_lyric)
+        msg = serialize(req.options.get('format', 'plain'), body, brief=False)
         code = 'OK' if success else 'Oops'
         return Response(code=code, content=msg)
 

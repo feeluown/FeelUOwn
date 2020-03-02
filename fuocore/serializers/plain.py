@@ -39,7 +39,7 @@ class ModelSerializer(PlainSerializer, ModelSerializerMixin):
         super().__init__(**options)
         self.opt_as_line = options.get('as_line', False)
         self.opt_brief = options.get('brief', True)
-        self.opt_fetch = options.get('fetch', False)
+        self.opt_fetch = options.get('fetch', not self.opt_brief)
         self.opt_uri_length = options.get('uri_length', '')
 
     def serialize(self, model):
@@ -164,6 +164,11 @@ class SimpleTypeSerializer(PlainSerializer, metaclass=SerializerMeta):
 class ProviderSerializer(PlainSerializer, metaclass=SerializerMeta):
     class Meta:
         types = (AbstractProvider, )
+
+    def __init__(self, **options):
+        super().__init__(**options)
+        self.opt_as_line = options.get('as_line', False)
+        self.opt_uri_length = options.get('uri_length', '')
 
     def serialize(self, provider):
         """
