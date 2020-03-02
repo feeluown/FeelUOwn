@@ -63,7 +63,7 @@ setup(
         'janus',
         'requests',
         'pyopengl',
-    ] + (['qasync'] if sys.version_info > (3, 5) else ['quamash>=0.5.5']),
+    ] + (['qasync'] if sys.version_info >= (3, 6) else ['quamash>=0.5.5']),
     extras_require={
         'battery': ['fuo-local>=0.1.1',
                     'fuo-xiami>=0.1.2',
