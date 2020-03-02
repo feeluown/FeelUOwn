@@ -6,11 +6,10 @@ import sys
 from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
-from fuocore.cmds import exec_cmd, Cmd
 from fuocore.cmds.helpers import show_song
-from fuocore.protocol import Parser
-from fuocore.serializers import serialize
+from fuocore.protocol import Request, Response
 from feeluown.consts import CACHE_DIR
+from feeluown.server import handle_request
 
 
 OUTPUT_CACHE_FILEPATH = os.path.join(CACHE_DIR, 'cli.out')
@@ -98,81 +97,6 @@ def setup_cli_argparse(parser):
 cmd_handler_mapping = {}
 
 
-class Request:
-    def __init__(self, cmd, *args, options=None, options_str=None, heredoc=None):
-        """cli request object
-
-        :param string cmd: cmd name (e.g. search)
-        :param list args: cmd arguments
-        :param string options_str: cmd options
-        :param string heredoc:
-
-        >>> req = Request('search',
-        ...               'linkin park',
-        ...               options_str='[type=pl,source=xiami]',)
-        >>> req.raw
-        'search "linkin park" [type=pl,source=xiami]'
-        >>> req.to_cmd().options
-        '{"type": "pl", "source": "xiami"}'
-        """
-        self.cmd = cmd
-        self.args = args
-        self.options = options if options else {}
-        self.options_str = options_str
-        self.heredoc = heredoc
-
-    @property
-    def raw(self):
-        """generate syntactically correct request"""
-
-        def escape(value):
-            # if value is not furi/float/integer, than we surround the value
-            # with double quotes
-            from fuocore.protocol.lexer import furi_re, integer_re, float_re
-
-            regex_list = (furi_re, float_re, integer_re)
-            for regex in regex_list:
-                if regex.match(value):
-                    break
-            else:
-                value = '"{}"'.format(value)
-            return value
-
-        options_str = self.options_str
-        raw = '{cmd} {args_str} {options_str} #: {req_options_str}'.format(
-            cmd=self.cmd,
-            args_str=' '.join((escape(arg) for arg in self.args)),
-            options_str=(options_str if options_str else ''),
-            req_options_str=", ".join("{}={}".format(k, v)
-                                      for k, v in self.options.items())
-        )
-        if self.heredoc is not None:
-            raw += ' <<EOF\n{}\nEOF\n\n'.format(self.heredoc)
-        return raw
-
-    def to_cmd(self):
-        if self.options_str:
-            options = Parser(self.options_str).parse_cmd_options()
-        else:
-            options = {}
-        return Cmd(self.cmd, *self.args, options=options)
-
-    def __str__(self):
-        return '{} {}'.format(self.cmd, self.args)
-
-
-class Response:
-    def __init__(self, code, content):
-        self.code = code
-        self.content = content
-
-    @classmethod
-    def from_text(cls, text):
-        if text.endswith('OK\n'):
-            return Response(code='OK', content='\n'.join(text.split('\n')[1:-2]))
-        return Response('Oops', content='An error occured in server.')
-
-
 class Client(object):
     def __init__(self, sock):
         self.sock = sock
@@ -187,10 +111,7 @@ class Client(object):
         while len(buf) < int(length) + 2:
             buf.extend(rfile.readline())
         text = bytes(buf[:-2]).decode('utf-8')
-        if code.lower() == 'ok':
-            return Response(code='OK', content=text)
-        else:
-            return Response(code='Oops', content=text)
+        return Response(ok=code.lower() == 'ok', text=text)
 
     def close(self):
         self.sock.close()
@@ -226,7 +147,6 @@ class BaseHandler(metaclass=HandlerMeta):
     def __init__(self, args):
         self.args = args
 
-        self._req = Request(args.cmd)
         options_list = ["format"]
         args_dict = vars(args)
         req_options = {option: args_dict.get(option) for option in options_list
@@ -241,10 +161,10 @@ class BaseHandler(metaclass=HandlerMeta):
 
     def process_resp(self, resp):
         if resp.code == 'OK':
-            if resp.content:
-                print(resp.content)
+            if resp.text:
+                print(resp.text)
         else:
-            print_error(resp.content)
+            print_error(resp.text)
 
 
 class SimpleHandler(BaseHandler):
@@ -262,24 +182,22 @@ class HandlerWithWriteListCache(BaseHandler):
     def before_request(self):
         cmd = self.args.cmd
         if cmd == 'search':
-            self._req.args = (self.args.keyword, )
-            options_str = self.args.options
-            if not options_str:
-                return
-            if options_str.startswith('[') and options_str.endswith(']'):
-                self._req.options_str = options_str
-            else:
-                self._req.options_str = '[{}]'.format(options_str)
+            self._req.cmd_args = (self.args.keyword, )
+            options_str = self.args.options or ''
+            option_kv_list = options_str.split(',')
+            for option_kv in option_kv_list:
+                k, v = option_kv.split('=')
+                self._req.cmd_options[k] = v
 
     def process_resp(self, resp):
-        if resp.code != 'OK' or not resp.content:
+        if resp.code != 'OK' or not resp.text:
             super().process_resp(resp)
             return
         format = self._req.options.get('format', 'plain')
         if format != 'plain':
-            print(resp.content)
+            print(resp.text)
             return
-        lines = resp.content.split('\n')
+        lines = resp.text.split('\n')
         with open(OUTPUT_CACHE_FILEPATH, 'w') as f:
             padding_width = len(str(len(lines)))
             tpl = '{:%dd} {}' % padding_width
@@ -305,7 +223,7 @@ class HandlerWithReadListCache(BaseHandler):
                         uri = line.split('#')[0].strip()
                         break
                     i += 1
-        self._req.args = (uri, )
+        self._req.cmd_args = (uri, )
 
 
 class AddHandler(BaseHandler):
@@ -318,7 +236,7 @@ class AddHandler(BaseHandler):
                 furi_list.append(line.strip())
         else:
             furi_list = [self.args.uri]
-        self._req.args = (' '.join(furi_list), )
+        self._req.cmd_args = (' '.join(furi_list), )
 
 
 class ExecHandler(BaseHandler):
@@ -327,10 +245,10 @@ class ExecHandler(BaseHandler):
     def before_request(self):
         code = self.args.code
         if code is None:
-            code = sys.stdin.read()
-            self._req.heredoc = code
+            body = sys.stdin.read()
+            self._req.set_heredoc_body(body)
         else:
-            self._req.args = (code, )
+            self._req.cmd_args = (code, )
 
 
 class OnceClient:
@@ -339,14 +257,7 @@ class OnceClient:
 
     def send(self, req):
         app = self._app
-        success, body = exec_cmd(req.to_cmd(),
-                                 library=app.library,
-                                 player=app.player,
-                                 playlist=app.playlist,
-                                 live_lyric=app.live_lyric)
-        msg = serialize(req.options.get('format', 'plain'), body, brief=False)
-        code = 'OK' if success else 'Oops'
-        return Response(code=code, content=msg)
+        return handle_request(req, app)
 
 
 def dispatch(args, client):
