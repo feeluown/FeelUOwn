@@ -1,7 +1,7 @@
 # flake8: noqa
 
 import asyncio
-from quamash import QEventLoop, QThreadExecutor, _QEventLoop
+from feeluown.compat import QEventLoop, QThreadExecutor
 
 
 def run_in_executor(self, executor, callback, *args):
@@ -45,7 +45,7 @@ def set_default_executor_v2(self, executor):
     self.set_default_executor(executor)
 
 
-def patch_quamash_qeventloop():
+def patch_qeventloop():
     # patch note::
     #
     # asyncio.wrap_future should set loop to self, otherwise, we can not call run_in_executor

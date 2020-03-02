@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import sys
 from setuptools import setup
 from os import path
 
@@ -57,13 +58,15 @@ setup(
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
     ],
-    # FIXME depends on PyQt5
+    # FIXME: depends on PyQt5
+    #
+    # The feeluown.compat module will choose the right package
+    # for different python version
     install_requires=[
-        # 'quamash>=0.5.5',
         'janus',
         'requests',
         'pyopengl',
-    ],
+    ] + (['qasync'] if sys.version_info >= (3, 6) else ['quamash>=0.5.5']),
     extras_require={
         'battery': ['fuo-local>=0.1.1',
                     'fuo-xiami>=0.1.2',
