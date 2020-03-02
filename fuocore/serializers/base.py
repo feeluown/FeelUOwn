@@ -1,3 +1,6 @@
+import copy
+
+
 class SerializerError(Exception):
     """
     this error will be raised when
@@ -47,7 +50,7 @@ class Serializer:
         - fetch: if this option is specified, the attribute value
           should be authoritative.
         """
-        self.options = options
+        self.options = copy.deepcopy(options)
 
     def serialize(self, obj):
         serializer_cls = self.get_serializer_cls(obj)

@@ -1,11 +1,16 @@
+from fuocore.provider import AbstractProvider
 from .base import Serializer, SerializerMeta, SerializerError
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin
+    UserSerializerMixin, SearchSerializerMixin
 
 
 class PythonSerializer(Serializer):
     _mapping = {}
+
+    def __init__(self, **options):
+        super().__init__(**options)
+        self.opt_level = options.get('level', 0)
 
 
 class ModelSerializer(PythonSerializer, ModelSerializerMixin):
@@ -16,12 +21,12 @@ class ModelSerializer(PythonSerializer, ModelSerializerMixin):
                 "fetch can't be False when brief is False")
 
         super().__init__(**options)
-        self.options['as_line'] = options.get('as_line', False)
-        self.options['brief'] = options.get('brief', True)
-        self.options['fetch'] = options.get('fetch', False)
+        self.opt_as_line = options.get('as_line', False)
+        self.opt_brief = options.get('brief', True)
+        self.opt_fetch = options.get('fetch', False)
 
-        if self.options['brief'] is False:
-            self.options['fetch'] = True
+        if self.opt_brief is False:
+            self.opt_fetch = True
 
     def serialize(self, model):
         dict_ = {}
@@ -30,6 +35,11 @@ class ModelSerializer(PythonSerializer, ModelSerializerMixin):
             value_dict = serializer_cls(brief=True, fetch=False).serialize(value)
             dict_[field] = value_dict
         return dict_
+
+
+#######################
+# container serializers
+#######################
 
 
 class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
@@ -41,19 +51,22 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
             return []
         item0 = list_[0]
         serializer_cls = PythonSerializer.get_serializer_cls(item0)
+        if issubclass(serializer_cls, SearchSerializer):
+            return self.serialize_search_result_list(list_)
         serializer = serializer_cls(brief=True, fetch=False)
         result = []
         for item in list_:
             result.append(serializer.serialize(item))
         return result
 
+    def serialize_search_result_list(self, list_):
+        serializer = SearchSerializer()
+        return [serializer.serialize(model) for model in list_]
 
-class SimpleTypePlainSerializer(PythonSerializer, metaclass=SerializerMeta):
-    class Meta:
-        types = (str, int, float, type(None))
 
-    def serialize(self, object):
-        return object
+###################
+# model serializers
+###################
 
 
 class SongSerializer(ModelSerializer, SongSerializerMixin,
@@ -79,3 +92,43 @@ class PlaylistSerializer(ModelSerializer, PlaylistSerializerMixin,
 class UserSerializer(ModelSerializer, UserSerializerMixin,
                      metaclass=SerializerMeta):
     pass
+
+
+####################
+# object serializers
+####################
+
+
+class SimpleTypeSerializer(PythonSerializer, metaclass=SerializerMeta):
+    class Meta:
+        types = (str, int, float, type(None))
+
+    def serialize(self, object):
+        return object
+
+
+class ProviderSerializer(PythonSerializer, metaclass=SerializerMeta):
+    class Meta:
+        types = (AbstractProvider, )
+
+    def serialize(self, provider):
+        """
+        :type provider: AbstractProvider
+        """
+        return {
+            'identifier': provider.identifier,
+            'uri': 'fuo://{}'.format(provider.identifier),
+            'name': provider.name,
+            # TODO: add auth/user info
+        }
+
+
+class SearchSerializer(PythonSerializer, SearchSerializerMixin,
+                       metaclass=SerializerMeta):
+
+    def serialize(self, result):
+        list_serializer = ListSerializer()
+        json_ = {}
+        for field, value in self._get_items(result):
+            json_[field] = list_serializer.serialize(value)
+        return json_
