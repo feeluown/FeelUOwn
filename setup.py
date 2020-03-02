@@ -58,7 +58,10 @@ setup(
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
     ],
-    # FIXME depends on PyQt5
+    # FIXME: depends on PyQt5
+    #
+    # The feeluown.compat module will choose the right package
+    # for different python version
     install_requires=[
         'janus',
         'requests',

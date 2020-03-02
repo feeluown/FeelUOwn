@@ -4,7 +4,7 @@ import sys
 # Choose proper qt-asyncio bridge(qumash/qasync/asyncqt) for
 # different python version.
 # https://github.com/feeluown/FeelUOwn/issues/346
-if sys.version_info > (3, 5):
+if sys.version_info >= (3, 6):
     try:
         from qasync import QEventLoop, QThreadExecutor
     except ImportError:
