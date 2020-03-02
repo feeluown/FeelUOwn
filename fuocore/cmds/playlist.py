@@ -1,7 +1,6 @@
 from fuocore.models import ModelType
 from fuocore.models.uri import resolve, reverse
 from fuocore.utils import reader_to_list, to_reader
-from .helpers import show_songs
 from .base import AbstractHandler
 
 
@@ -45,7 +44,7 @@ class PlaylistHandler(AbstractHandler):
 
     def list(self):
         songs = self.playlist.list()
-        return show_songs(songs)
+        return songs
 
     def clear(self):
         self.playlist.clear()

@@ -1,6 +1,5 @@
 import logging
 from .base import AbstractHandler
-from .helpers import show_search
 
 logger = logging.getLogger(__name__)
 
@@ -43,10 +42,5 @@ class SearchHandler(AbstractHandler):
                 params['source_in'] = source_in.split(',')
             if options:
                 logger.warning('Unknown cmd options: %s', options)
-        output = ''
         # TODO: limit output lines
-        for result in self.library.search(keyword, **params):
-            if output:
-                output += '\n'
-            output += show_search(result)
-        return output
+        return list(self.library.search(keyword, **params))

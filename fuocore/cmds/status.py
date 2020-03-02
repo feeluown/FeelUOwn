@@ -28,4 +28,6 @@ class StatusHandler(AbstractHandler):
                 'song:      {}'.format(show_song(player.current_song, brief=True, fetch=True)),  # noqa
                 'lyric-s:   {}'.format(live_lyric.current_sentence),
             ]
+        # TODO: maybe we can define a Status type in fuocore,
+        #  and return a Status instance here?
         return '\n'.join(msgs)
