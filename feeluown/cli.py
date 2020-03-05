@@ -249,6 +249,8 @@ class ExecHandler(BaseHandler):
         code = self.args.code
         if code is None:
             body = sys.stdin.read()
+            self._req.has_heredoc = True
+            self._req.heredoc_word = 'EOF'
             self._req.set_heredoc_body(body)
         else:
             self._req.cmd_args = (code, )
