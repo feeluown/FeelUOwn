@@ -209,6 +209,10 @@ def run_app(app):
             else:
                 mac_global_hotkey_mgr = MacGlobalHotkeyManager()
                 mac_global_hotkey_mgr.start()
+        if sys.platform.lower() == 'linux':
+            from feeluown.linux import run_mpris2_server
+            run_mpris2_server(app)
+
         loop.create_task(app.server.run(app.get_listen_addr()))
         run_pubsub(app.pubsub_gateway, app.pubsub_server)
 
