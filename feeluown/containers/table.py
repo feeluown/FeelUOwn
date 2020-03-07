@@ -10,9 +10,11 @@ from requests.exceptions import RequestException
 
 from fuocore import ModelType
 from fuocore import aio
+from fuocore.reader import wrap
 from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
+from fuocore.utils import reader_to_list
 
 from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
@@ -177,9 +179,9 @@ class ArtistRenderer(Renderer):
         # fetch and render songs
         songs = songs_g = None
         if artist.meta.allow_create_songs_g:
-            songs_g = artist.create_songs_g()
+            songs_g = wrap(artist.create_songs_g())
             self.tabbar.show_songs_needed.connect(
-                lambda: self.show_songs(songs_g=artist.create_songs_g(),
+                lambda: self.show_songs(songs_g=wrap(artist.create_songs_g()),
                                         songs=songs,
                                         show_count=True))
         else:
@@ -193,6 +195,7 @@ class ArtistRenderer(Renderer):
         # finally, we render cover and description
         cover = await async_run(lambda: artist.cover)
         if cover:
+
             aio.create_task(
                 self.show_cover(cover, reverse(artist, '/cover'), as_background=True))
 
@@ -459,11 +462,12 @@ class TableContainer(QFrame, BgTransparentMixin):
         model = self.songs_table.model()
         # FIXME: think about a more elegant way
         songs_g = model.sourceModel().songs_g
-        if songs_g is not None and songs_g.allow_random_read:
-            task = task_spec.bind_blocking_io(songs_g.readall)
-            self.toolbar.enter_state_playall_start()
-            task.add_done_callback(songs_g_readall_cb)
-            return
+        if songs_g is not None:
+            if songs_g.count is not None:
+                task = task_spec.bind_blocking_io(reader_to_list, songs_g)
+                self.toolbar.enter_state_playall_start()
+                task.add_done_callback(songs_g_readall_cb)
+                return
         songs = model.sourceModel().songs
         self._app.player.play_songs(songs=songs)
 

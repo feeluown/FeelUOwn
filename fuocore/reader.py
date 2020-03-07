@@ -6,6 +6,8 @@ Moreover, different provider has different pagination API.
 For feeluown, we want a unified API, so we create the Reader class.
 """
 import logging
+import warnings
+from collections.abc import Iterable, Sequence
 
 from fuocore.excs import ReadFailed, ProviderIOError
 
@@ -75,6 +77,7 @@ class SequentialReader(Reader):
     .. versionadded:: 3.1
     """
 
+    # FIXME: use isinstance(reader, SequentialReader) to check
     allow_sequential_read = True
 
     def __init__(self, g, count, offset=0):
@@ -83,7 +86,8 @@ class SequentialReader(Reader):
         :param g: Python generator
         :param offset: current offset
         :param count: total count. count can be None, which means the
-                      total count is unknown
+                      total count is unknown. When it is unknown, be
+                      CAREFUL to use list(reader).
         """
         self._g = g
         self.count = count
@@ -91,21 +95,7 @@ class SequentialReader(Reader):
 
     @classmethod
     def wrap(cls, g):
-        """wrap a ordinary generator
-
-        When we can't determine if the generator is SequentialReader or not,
-        we can use the wrap method. So that we will not need to write
-        code like this::
-
-            if not isinstance(songs_g, SequentialReader):
-                songs_g = SequentialReader(songs_g, count=None)
-            else:
-                songs_g = songs_g
-
-        just type::
-
-            songs_g = SequentialReader.wrap(songs_g)
-        """
+        warnings.warn("use wrap function instead, this will be removed on 3.5")
         if isinstance(g, Reader):
             return g
         return cls(g, count=None)
@@ -279,9 +269,32 @@ class RandomSequentialReader(RandomReader):
         """
         :param list l: list of objects
         """
-        count = len(l)
+        warnings.warn("use wrap function instead, this will be removed on 3.5")
+        return wrap(l)
 
-        def read_func(start, end):
-            return l[start: end]
 
-        return cls(count, read_func, max_per_read=max(count, 1))
+def wrap(iterable):
+    """create a reader from an iterable
+
+    >>> isinstance(wrap([]), RandomSequentialReader)
+    True
+    >>> isinstance(wrap(iter([])), SequentialReader)
+    True
+    >>> wrap(None)
+    Traceback (most recent call last):
+        ...
+    TypeError: must be a Iterable, got <class 'NoneType'>
+
+    .. versionadded:: 3.4
+    """
+    if not isinstance(iterable, Iterable):
+        raise TypeError("must be a Iterable, got {}".format(type(iterable)))
+    if isinstance(iterable, Reader):
+        return iterable
+    if isinstance(iterable, Sequence):
+        count = len(iterable)
+        return RandomSequentialReader(count,
+                                      lambda start, end: iterable[start, end],
+                                      max_per_read=max(count, 1))
+    # maybe a generator/iterator
+    return SequentialReader(iterable, count=None)

@@ -214,6 +214,7 @@ class SongsTableModel(QAbstractTableModel):
                 self._can_fetch_more = False
                 break
             except ProviderIOError:
+                logger.exception("fetch more failed")
                 break
             else:
                 songs.append(song)
