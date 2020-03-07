@@ -29,6 +29,7 @@ setup(
         'feeluown.uimodels',
         'feeluown.linux',
         'fuocore',
+        'fuocore.serializers',
         'fuocore.cmds',
         'fuocore.models',
         'fuocore.protocol',
