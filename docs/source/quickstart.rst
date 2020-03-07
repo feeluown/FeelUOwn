@@ -25,6 +25,10 @@ Ubuntu
     sudo apt-get install python3-pyqt5
     sudo apt-get install python3-pyqt5.qtopengl
 
+    # 安装 dbus-python
+    sudo apt-get install python3-dbus
+    sudo apt-get install python3-dbus.mainloop.pyqt5
+
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
     pip3 install 'feeluown>=3.0[battery]' --upgrade --user

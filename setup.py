@@ -27,6 +27,7 @@ setup(
         'feeluown.containers',
         'feeluown.widgets.statusline_items',
         'feeluown.uimodels',
+        'feeluown.linux',
         'fuocore',
         'fuocore.cmds',
         'fuocore.models',
@@ -35,6 +36,7 @@ setup(
     py_modules=['mpv'],
     package_data={
         '': ['*.qss',
+             '*.xml',
              '*.png',
              '../icons/*.png',
              '../icons/*.ico',
