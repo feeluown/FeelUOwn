@@ -87,10 +87,7 @@ class Renderer:
         img.loadFromData(content)
         pixmap = QPixmap(img)
         if not pixmap.isNull():
-            # TODO: currently, background image is shown with dark
-            # overlay. When we are using light theme, the text is also
-            # in dark color, so we only show background image in dark theme
-            if as_background and self._app.theme_mgr.theme == 'dark':
+            if as_background:
                 self.meta_widget.set_cover_pixmap(None)
                 self._app.ui.right_panel.show_background_image(pixmap)
             else:

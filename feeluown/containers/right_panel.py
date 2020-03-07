@@ -6,6 +6,7 @@ from fuocore import aio
 from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
+from feeluown.theme import DARK
 from feeluown.helpers import BgTransparentMixin
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
@@ -188,11 +189,20 @@ class RightPanel(QFrame):
             gradient.setColorAt(0, add_alpha(color, 180))
             gradient.setColorAt(1, add_alpha(color, 230))
         else:
-            gradient.setColorAt(0, add_alpha(color, 50))
-            gradient.setColorAt(0.6, add_alpha(color, 100))
-            gradient.setColorAt(0.8, add_alpha(color, 200))
-            gradient.setColorAt(0.9, add_alpha(color, 240))
-            gradient.setColorAt(1, color)
+            if self._app.theme_mgr.theme == DARK:
+                gradient.setColorAt(0, add_alpha(color, 50))
+                gradient.setColorAt(0.6, add_alpha(color, 100))
+                gradient.setColorAt(0.8, add_alpha(color, 200))
+                gradient.setColorAt(0.9, add_alpha(color, 240))
+                gradient.setColorAt(1, color)
+            else:
+                gradient.setColorAt(0, add_alpha(color, 220))
+                gradient.setColorAt(0.1, add_alpha(color, 180))
+                gradient.setColorAt(0.2, add_alpha(color, 140))
+                gradient.setColorAt(0.6, add_alpha(color, 140))
+                gradient.setColorAt(0.8, add_alpha(color, 200))
+                gradient.setColorAt(0.9, add_alpha(color, 240))
+                gradient.setColorAt(1, color)
         painter.setBrush(gradient)
         painter.drawRect(rect)
         painter.restore()
