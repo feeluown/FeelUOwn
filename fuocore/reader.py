@@ -276,8 +276,11 @@ class RandomSequentialReader(RandomReader):
 def wrap(iterable):
     """create a reader from an iterable
 
-    >>> isinstance(wrap([]), RandomSequentialReader)
+    >>> reader = wrap([1, 2])
+    >>> isinstance(reader, RandomSequentialReader)
     True
+    >>> reader.readall()
+    [1, 2]
     >>> isinstance(wrap(iter([])), SequentialReader)
     True
     >>> wrap(None)
@@ -294,7 +297,7 @@ def wrap(iterable):
     if isinstance(iterable, Sequence):
         count = len(iterable)
         return RandomSequentialReader(count,
-                                      lambda start, end: iterable[start, end],
+                                      lambda start, end: iterable[start:end],
                                       max_per_read=max(count, 1))
     # maybe a generator/iterator
     return SequentialReader(iterable, count=None)
