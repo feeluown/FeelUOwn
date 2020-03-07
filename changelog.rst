@@ -1,5 +1,18 @@
 Changelog
 ---------
+3.4a0 (2020-03-07)
+""""""""""""""""""""""
+
+**feature**
+
+- 支持 ALLOW_LAN_CONNECT 配置
+- 更好的支持视频播放
+- 添加 fuocore.serializers 包
+- 内置 mpris2 支持
+
+**bugfix**
+
+- 使用 qasync 包替换 quamash 以支持 Python 3.8
 
 3.3.10 (2020-02-12)
 """"""""""""""""""""""
