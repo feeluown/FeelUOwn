@@ -75,6 +75,9 @@ class BgTransparentMixin:
             # KDE use the QPalette.Base as background color
             palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
             palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
+            # GNOME use the QPalette.Window as background color
+            palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)
+            palette.setColor(QPalette.Inactive, QPalette.Window, Qt.transparent)
         else:
             # macOS use the QPalette.Window as background color
             palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)

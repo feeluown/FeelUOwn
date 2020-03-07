@@ -1,3 +1,5 @@
+import sys
+
 from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
 from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
@@ -32,6 +34,11 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
         self.setWidget(self.t)
 
         self.verticalScrollBar().valueChanged.connect(self.on_v_scrollbar_value_changed)
+        # As far as I know, KDE and GNOME can't auto hide the scrollbar,
+        # and they show an old-fation vertical scrollbar.
+        # HELP: implement an auto-hide scrollbar for Linux
+        if sys.platform.lower() == 'linux':
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def on_v_scrollbar_value_changed(self, value):
         maximum = self.verticalScrollBar().maximum()

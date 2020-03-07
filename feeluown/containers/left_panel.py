@@ -1,4 +1,6 @@
-from PyQt5.QtCore import QSize
+import sys
+
+from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea
 
 from feeluown.helpers import use_mac_theme
@@ -18,6 +20,9 @@ class LeftPanel(QScrollArea):
 
         self.p = _LeftPanel(app, self)
         self.setWidget(self.p)
+
+        if sys.platform.lower() == 'linux':
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 
 class _LeftPanel(QFrame):
