@@ -3,18 +3,18 @@
 import logging
 import json
 import os
-import sys
 from collections import defaultdict
 
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
 from PyQt5.QtWidgets import QApplication
-from fuocore.utils import is_osx, get_osx_theme
+from fuocore.utils import is_osx, is_linux, get_osx_theme
 
 logger = logging.getLogger(__name__)
 
 
-DARK = 'dark'
-LIGHT = 'light'
+Dark = DARK = 'dark'
+Light = LIGHT = 'light'
+MacOSDark = 'macos_dark'  # for Linux/Windows Users
 
 Roles = ['AlternateBase', 'Background', 'Base', 'BrightText',
          'Button', 'ButtonText', 'Dark', 'Foreground', 'Highlight',
@@ -51,7 +51,7 @@ class ThemeManager:
         # to make it work well on Linux(GNOME)
         self.autoload()
         self._app.initialized.connect(lambda app: self.autoload(), weak=False)
-        QApplication.instance().paletteChanged.connect(self.autoload)
+        QApplication.instance().paletteChanged.connect(lambda p: self.autoload())
 
     def autoload(self):
         if self._app.config.THEME == 'auto':
@@ -62,14 +62,17 @@ class ThemeManager:
                     theme = LIGHT
             else:
                 theme = self.guess_system_theme()
+                if is_linux() and theme == Dark:
+                    theme = MacOSDark
         else:  # user settings have highest priority
             theme = self._app.config.THEME
 
         if theme == DARK:
             self.load_dark()
+        elif theme == MacOSDark:
+            self.load_macos_dark()
         else:
             self.load_light()
-
         self.theme = theme
 
     def guess_system_theme(self):
@@ -89,21 +92,24 @@ class ThemeManager:
         dark = read_resource('dark.qss')
         QApplication.instance().setStyleSheet(common + dark)
 
-        if sys.platform.lower() == 'linux':
-            # So many DEs on Linux! Hard to compat! We give them macOS
-            # dark theme colors!
-            #
-            # Users can also design a theme colors by themselves,
-            # we provider dump_colors/load_colors function for conviniece.
-            content = read_resource('macos_dark.colors')
-            colors = json.loads(content)
-            try:
-                QApplication.instance().paletteChanged.disconnect(self.autoload)
-            except TypeError:
-                pass
-            palette = load_colors(colors)
-            self._app.setPalette(palette)
-            QApplication.instance().paletteChanged.connect(self.autoload)
+    def load_macos_dark(self):
+        """
+        So many DEs on Linux! Hard to compat! We give them macOS
+        dark theme colors!
+
+        Users can also design a theme colors by themselves,
+        we provider dump_colors/load_colors function for conviniece.
+        """
+        self.load_dark()
+        content = read_resource('macos_dark.colors')
+        colors = json.loads(content)
+        try:
+            QApplication.instance().paletteChanged.disconnect(self.autoload)
+        except TypeError:
+            pass
+        palette = load_colors(colors)
+        self._app.setPalette(palette)
+        QApplication.instance().paletteChanged.connect(self.autoload)
 
 
 def dump_colors():
