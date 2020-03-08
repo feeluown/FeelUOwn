@@ -66,8 +66,7 @@ def to_track_id(model):
 
 
 class Mpris2Service(dbus.service.Object):
-    def __init__(self, app):
-        bus = dbus.service.BusName(BusName, bus=dbus.SessionBus())
+    def __init__(self, app, bus):
         super().__init__(bus, ObjectPath)
         self._app = app
         self._metadata = dbus.Dictionary({}, signature='sv', variant_level=1)
