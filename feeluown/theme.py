@@ -62,7 +62,7 @@ class ThemeManager:
                     theme = LIGHT
             else:
                 theme = self.guess_system_theme()
-                if is_linux() and theme == Dark:
+                if theme == Dark:
                     theme = MacOSDark
         else:  # user settings have highest priority
             theme = self._app.config.THEME
