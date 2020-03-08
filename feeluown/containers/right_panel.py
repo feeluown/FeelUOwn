@@ -37,7 +37,7 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
         # As far as I know, KDE and GNOME can't auto hide the scrollbar,
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
-        if sys.platform.lower() == 'linux':
+        if sys.platform.lower() != 'darwin':
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def on_v_scrollbar_value_changed(self, value):

@@ -3,11 +3,12 @@
 import logging
 import json
 import os
+import sys
 from collections import defaultdict
 
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
 from PyQt5.QtWidgets import QApplication
-from fuocore.utils import is_osx, is_linux, get_osx_theme
+from fuocore.utils import get_osx_theme
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +56,7 @@ class ThemeManager:
 
     def autoload(self):
         if self._app.config.THEME == 'auto':
-            if is_osx():
+            if sys.platform == 'darwin':
                 if get_osx_theme() == 1:
                     theme = DARK
                 else:

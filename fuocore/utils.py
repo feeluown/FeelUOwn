@@ -2,7 +2,6 @@
 
 import logging
 import os
-import platform
 import socket
 import sys
 import time
@@ -21,18 +20,6 @@ def parse_ms(ms):
     minute = int(ms / 60000)
     second = int((ms % 60000) / 1000)
     return minute, second
-
-
-def is_linux():
-    if platform.system() == 'Linux':
-        return True
-    return False
-
-
-def is_osx():
-    if platform.system() == 'Darwin':
-        return True
-    return False
 
 
 def is_port_used(port, host='127.0.0.1'):

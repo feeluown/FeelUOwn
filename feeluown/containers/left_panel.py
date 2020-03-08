@@ -21,7 +21,7 @@ class LeftPanel(QScrollArea):
         self.p = _LeftPanel(app, self)
         self.setWidget(self.p)
 
-        if sys.platform.lower() == 'linux':
+        if sys.platform.lower() != 'darwin':
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 
