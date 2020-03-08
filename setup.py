@@ -38,11 +38,13 @@ setup(
     package_data={
         '': ['*.qss',
              '*.xml',
+             '*.colors',
              '*.png',
              '../icons/*.png',
              '../icons/*.ico',
              '../icons/*.icns',
              'themes/*.qss',
+             'themes/*.colors',
              ]
     },
     python_requires=">=3.5",
