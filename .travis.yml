@@ -17,7 +17,11 @@ install:
     - sudo apt-get install libmpv1 -y --force-yes
     # https://github.com/pytest-dev/pytest-qt/issues/266
     - sudo apt-get install -y libdbus-1-3 libxkbcommon-x11-0
-    - sudo apt-get install python3-dbus python3-dbus.mainloop.pyqt5 -y
+    # travis will auto create a virtualenv, as a result,
+    # we can't import from system site-package
+    # - sudo apt-get install python3-dbus python3-dbus.mainloop.pyqt5 -y
+    #
+    # TODO: think about a way to test mpris2 in travis environment
     - pip install pyqt5==5.14.0
     - pip install coveralls
     - pip install sphinx_rtd_theme
