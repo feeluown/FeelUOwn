@@ -12,25 +12,17 @@ def run_mpris2_server(app):
         logger.error("can't run mpris2 server: %s",  str(e))
     else:
         from .mpris2 import Mpris2Service, BusName
-        session_bus = dbus.SessionBus()
-        msg = ("mpris2 service already enabled? "
-               "maybe you should remove feeluown-mpris2-plugin")
-        try:
-            # HACK: check if enabled since this will be conflict
-            # with feeluown-mpris2-plugin
-            bus_names = session_bus._bus_names
-        except:  # noqa
-            logger.exception("check if mpris2 already enabled failed")
-        else:
-            if BusName in bus_names:
-                logger.warn(msg)
-                return
 
-        bus = dbus.service.BusName(BusName, session_bus)
+        # check if a mainloop was already set
+        mainloop = dbus.get_default_main_loop()
+        if mainloop is not None:
+            logger.warn("mpris2 service already enabled? "
+                        "maybe you should remove feeluown-mpris2-plugin")
+            return
+
+        # set the mainloop before any dbus operation
         dbus.mainloop.pyqt5.DBusQtMainLoop(set_as_default=True)
-        try:
-            service = Mpris2Service(app, bus)
-        except KeyError:
-            logger.error(msg)
-        else:
-            service.enable()
+        session_bus = dbus.SessionBus()
+        bus = dbus.service.BusName(BusName, session_bus)
+        service = Mpris2Service(app, bus)
+        service.enable()
