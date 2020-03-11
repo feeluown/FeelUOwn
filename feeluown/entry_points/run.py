@@ -1,6 +1,11 @@
-from feeluown.patch import patch_qeventloop
-
-patch_qeventloop()
+try:
+    from feeluown.patch import patch_qeventloop
+except ImportError:
+    # when qasync/quamash is not installed
+    # FIXME: should not catch the error at here
+    pass
+else:
+    patch_qeventloop()
 
 # pylint: disable=wrong-import-position
 from fuocore.utils import is_port_used  # noqa: E402
