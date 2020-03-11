@@ -65,6 +65,22 @@ Windows
 4. 安装 feeluown，在 cmd 中运行 ``pip3 install feeluown[battery,win32]``
 5. 在 cmd 中运行 ``python -m feeluown genicon`` 命令，可以生成桌面图标
 
+Arch Linux
+~~~~~~~~~~
+
+https://aur.archlinux.org/packages/feeluown/
+
+Gentoo
+~~~~~~
+
+https://github.com/microcai/gentoo-zh/tree/master/media-sound/feeluown
+
+Debian
+~~~~~~
+
+https://github.com/coslyk/debianopt-repo
+
+
 基本使用
 --------
 
