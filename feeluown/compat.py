@@ -8,13 +8,13 @@ if sys.version_info >= (3, 6):
     try:
         from qasync import QEventLoop, QThreadExecutor
     except ImportError:
-        raise RuntimeError("Please install python package 'qasync'")
+        raise ImportError("Please install python package 'qasync'") from None
 else:
     # we use quamash instead of asyncqt since we have more experience in quamash
     try:
         from quamash import QEventLoop, QThreadExecutor
     except ImportError:
-        raise RuntimeError("Please install python package 'quamash'.")
+        raise ImportError("Please install python package 'quamash'") from None
 
 
 __all__ = (
