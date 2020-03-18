@@ -139,10 +139,16 @@ class Playlist(_Playlist):
                 _Playlist.current_song.fset(self, song)
                 return
             self.mark_as_bad(song)
-            self._app.show_msg('{} is invalid, try to find standby'.format(str(song)))
-            task_spec = self._app.task_mgr.get_or_create('find-song-standby')
-            task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
-            task.add_done_callback(find_song_standby_cb)
+
+            # if mode is fm mode, do not find standby song,
+            # just skip the song
+            if self.mode is not PlaylistMode.fm:
+                self._app.show_msg('{} is invalid, try to find standby'.format(str(song)))
+                task_spec = self._app.task_mgr.get_or_create('find-song-standby')
+                task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
+                task.add_done_callback(find_song_standby_cb)
+            else:
+                self.next()
 
         if song is None:
             _Playlist.current_song.fset(self, song)
