@@ -81,8 +81,6 @@ class PlayerControlPanel(QFrame):
         #: playback mode switch button
         self.pms_btn = QPushButton(self)
         self.volume_btn = VolumeButton(self)
-        self.volume_btn.change_volume_needed.connect(
-            lambda volume: setattr(self._app.player, 'volume', volume))
         self.playlist_btn = IconButton(parent=self)
         #: mark song as favorite button
         self.like_btn = QPushButton(self)
@@ -128,6 +126,8 @@ class PlayerControlPanel(QFrame):
         self.previous_btn.clicked.connect(self._app.player.play_previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
+        self.volume_btn.change_volume_needed.connect(
+            lambda volume: setattr(self._app.player, 'volume', volume))
 
         player = self._app.player
 
@@ -140,6 +140,7 @@ class PlayerControlPanel(QFrame):
             self.on_player_song_changed, aioqueue=True)
         player.media_changed.connect(
             self.on_player_media_changed, aioqueue=True)
+        player.volume_changed.connect(self.volume_btn.on_volume_changed)
         self.progress_slider.resume_player_needed.connect(player.resume)
         self.progress_slider.pause_player_needed.connect(player.pause)
         self.progress_slider.change_position_needed.connect(

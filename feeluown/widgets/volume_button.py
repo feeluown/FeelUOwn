@@ -27,8 +27,9 @@ class _Slider(QWidget):
         self._layout.setSpacing(0)
         # self._layout.setContentsMargins(0, 0, 0, 0)
 
-        # map slider signal to widget
-        self.valueChanged = self._slider.valueChanged
+        # map some slider signals and methods to widget
+        self.sliderMoved = self._slider.sliderMoved
+        self.setValue = self._slider.setValue
 
         self._slider.setMinimum(0)
         self._slider.setMaximum(100)
@@ -80,10 +81,17 @@ class VolumeButton(QPushButton):
         self.setMaximumWidth(40)
 
         self.slider.about_to_hide.connect(lambda: self.setChecked(False))
-        self.slider.valueChanged.connect(self.on_slider_value_changed)
+        self.slider.sliderMoved.connect(self.on_slider_moved)
         self.clicked.connect(self.slider.show)
 
-    def on_slider_value_changed(self, value):
+    def on_volume_changed(self, value):
+        """(alpha)
+
+        .. versionadd:: 3.4
+        """
+        self.slider.setValue(value)
+
+    def on_slider_moved(self, value):
         self.change_volume_needed.emit(value)
 
         # update button icon
