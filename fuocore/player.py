@@ -52,6 +52,9 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: media changed signal
         self.media_changed = Signal()
 
+        #: volume changed signal: (int)
+        self.volume_changed = Signal()
+
     @property
     def state(self):
         """Player state
@@ -105,6 +108,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         value = 0 if value < 0 else value
         value = 100 if value > 100 else value
         self._volume = value
+        self.volume_changed.emit(value)
 
     @property
     def duration(self):
