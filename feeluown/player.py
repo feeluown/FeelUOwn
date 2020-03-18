@@ -128,7 +128,7 @@ class Playlist(_Playlist):
                     logger.info('find song standby success: %s', final_song)
                 else:
                     logger.info('find song standby failed: not found')
-                _Playlist.current_song.fset(self, final_song)
+                _Playlist.current_song.__set__(self, final_song)
 
         def validate_song_cb(future):
             try:
@@ -136,16 +136,23 @@ class Playlist(_Playlist):
             except:  # noqa
                 valid = False
             if valid:
-                _Playlist.current_song.fset(self, song)
+                _Playlist.current_song.__set__(self, song)
                 return
             self.mark_as_bad(song)
-            self._app.show_msg('{} is invalid, try to find standby'.format(str(song)))
-            task_spec = self._app.task_mgr.get_or_create('find-song-standby')
-            task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
-            task.add_done_callback(find_song_standby_cb)
+
+            # if mode is fm mode, do not find standby song,
+            # just skip the song
+            if self.mode is not PlaylistMode.fm:
+                self._app.show_msg('{} is invalid, try to find standby'
+                                   .format(str(song)))
+                task_spec = self._app.task_mgr.get_or_create('find-song-standby')
+                task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
+                task.add_done_callback(find_song_standby_cb)
+            else:
+                self.next()
 
         if song is None:
-            _Playlist.current_song.fset(self, song)
+            _Playlist.current_song.__set__(self, song)
             return
 
         if self.mode is PlaylistMode.fm and song not in self._songs:
@@ -161,9 +168,9 @@ class Playlist(_Playlist):
             if playback_mode is not PlaybackMode.sequential:
                 logger.warning("can't set playback mode to others in fm mode")
             else:
-                _Playlist.playback_mode.fset(self, PlaybackMode.sequential)
+                _Playlist.playback_mode.__set__(self, PlaybackMode.sequential)
         else:
-            _Playlist.playback_mode.fset(self, playback_mode)
+            _Playlist.playback_mode.__set__(self, playback_mode)
 
     @property
     def mode(self):
