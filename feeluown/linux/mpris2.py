@@ -156,11 +156,11 @@ class Mpris2Service(dbus.service.Object):
 
     @dbus.service.method(PlayerInterface, in_signature='', out_signature='')
     def Next(self):
-        self._app.player.play_next()
+        self._app.playlist.next()
 
     @dbus.service.method(PlayerInterface, in_signature='', out_signature='')
     def Previous(self):
-        self._app.player.play_previous()
+        self._app.playlist.previous()
 
     @dbus.service.method(PlayerInterface, in_signature='s', out_signature='')
     def OpenUri(self, Uri):

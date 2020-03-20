@@ -196,10 +196,10 @@ class TestPlayerAndPlaylist(TestCase):
         playlist.add(s2)
 
         self.player.play_song(s1)
-        self.player.play_next()
+        playlist.next()
         self.assertTrue(playlist.current_song, s2)
 
-        self.player.play_previous()
+        self.playlist.previous()
         self.assertTrue(playlist.current_song, s1)
 
     @skipIf(cannot_play_audio, '')

@@ -122,8 +122,8 @@ class PlayerControlPanel(QFrame):
 
         self.song_source_label.setObjectName('song_source_label')
 
-        self.next_btn.clicked.connect(self._app.player.play_next)
-        self.previous_btn.clicked.connect(self._app.player.play_previous)
+        self.next_btn.clicked.connect(self._app.playlist.next)
+        self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
         self.volume_btn.change_volume_needed.connect(
