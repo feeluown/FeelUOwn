@@ -104,6 +104,7 @@ class MagicBox(QLineEdit):
         if self._mode == 'cmd':
             self._cmd_text = text
         # filter browser content if prefix starts with `#`
+        # TODO: cancel unneeded filter
         if text.startswith('#'):
             self.filter_text_changed.emit(text[1:].strip())
         else:

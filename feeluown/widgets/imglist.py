@@ -48,7 +48,7 @@ COLORS = {
 
 CoverMinWidth = 150
 CoverSpacing = 20
-TextHeight = 30
+TextHeight = 40
 
 
 def calc_cover_width(width):
@@ -74,7 +74,7 @@ def calc_cover_size(view_width):
 
 
 class ImgListModel(QAbstractListModel):
-    def __init__(self, reader, fetch_image, parent=None):
+    def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
         :param reader: objects in reader should have `name` property
@@ -83,6 +83,7 @@ class ImgListModel(QAbstractListModel):
         """
         super().__init__(parent)
 
+        self.source_name_map = source_name_map or {}
         self.reader = wrap(reader)
         self.fetch_image = fetch_image
         # false: no more, true: maybe more
@@ -156,6 +157,8 @@ class ImgListModel(QAbstractListModel):
             return item.name_display
         elif role == Qt.UserRole:
             return item
+        elif role == Qt.WhatsThisRole:
+            return self.source_name_map[item.source]
         return None
 
 
@@ -169,14 +172,17 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
         rect = option.rect
-        text_rect_height = TextHeight
+        text_rect_height = 30
+        source_rect_height = TextHeight - text_rect_height
         cover_spacing = 0
-        text_y = rect.y() + rect.height() - text_rect_height
-        cover_height = rect.height() - text_rect_height
+        text_y = rect.y() + rect.height() - TextHeight
+        cover_height = rect.height() - TextHeight
         cover_width = rect.width() - cover_spacing
         cover_x = rect.x() + cover_spacing // 2
         cover_y = rect.y()
         text_rect = QRectF(rect.x(), text_y, rect.width(), text_rect_height)
+        source_rect = QRectF(rect.x(), text_y + text_rect_height - 5,
+                             rect.width(), source_rect_height + 5)
         obj = index.data(Qt.DecorationRole)
         if obj is None:
             painter.restore()
@@ -211,14 +217,27 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
         painter.restore()
         option = QTextOption()
+        source_option = QTextOption()
         if self.as_circle:
             option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
         else:
             option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            source_option.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         name = index.data(Qt.DisplayRole)
         fm = QFontMetrics(painter.font())
         elided_name = fm.elidedText(name, Qt.ElideRight, text_rect.width())
+        source = index.data(Qt.WhatsThisRole)
         painter.drawText(text_rect, elided_name, option)
+        painter.restore()
+        painter.save()
+        pen = painter.pen()
+        font = painter.font()
+        font.setPixelSize(font.pixelSize() - 2)
+        painter.setFont(font)
+        pen.setColor(non_text_color)
+        painter.setPen(non_text_color)
+        painter.drawText(source_rect, source, source_option)
         painter.restore()
 
     def sizeHint(self, option, index):
@@ -237,6 +256,8 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
         self.text = ''
 
     def filter_by_text(self, text):
+        if text == self.text:
+            return
         self.text = text
         self.invalidateFilter()
 
@@ -245,7 +266,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
         source_model = self.sourceModel()
         index = source_model.index(source_row, parent=source_parent)
         artist = index.data(Qt.UserRole)
-        if accepted and self.text:
+        if self.text:
             accepted = self.text.lower() in artist.name_display.lower()
         return accepted
 

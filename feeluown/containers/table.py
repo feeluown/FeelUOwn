@@ -127,9 +127,11 @@ class Renderer:
     def _show_model_with_cover(self, reader, table, model_cls, filter_model_cls):
         self.container.current_table = table
         filter_model = filter_model_cls(self.albums_table)
+        source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = model_cls(reader,
                           fetch_cover_wrapper(self._app.img_mgr),
-                          parent=self.artists_table)
+                          parent=self.artists_table,
+                          source_name_map=source_name_map)
         filter_model.setSourceModel(model)
         table.setModel(filter_model)
         table.scrollToTop()
