@@ -1,5 +1,5 @@
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QWidget, QRadioButton, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout
 
 from fuocore.reader import wrap
 from fuocore.models import SearchType
@@ -102,7 +102,7 @@ class SearchResultRenderer(Renderer):
         return cb
 
 
-class _ProviderRadioButton(QRadioButton):
+class _ProviderCheckBox(QCheckBox):
     def set_identifier(self, identifier):
         self.identifier = identifier
 
@@ -118,14 +118,15 @@ class SearchProvidersFilter(QWidget):
         self._layout = QHBoxLayout(self)
 
         for provider in self.providers:
-            btn = _ProviderRadioButton(provider.name, self)
+            btn = _ProviderCheckBox(provider.name, self)
             btn.set_identifier(provider.identifier)
-            btn.setAutoExclusive(False)
             btn.clicked.connect(self.on_btn_clicked)
             self._layout.addWidget(btn)
             self._btns.append(btn)
 
-        self._layout.setSpacing(0)
+        # HELP: we add spacing between checkboxes because they
+        # will overlay each other on macOS by default. Why?
+        self._layout.setSpacing(10)
         self._layout.setContentsMargins(30, 0, 30, 0)
         self._layout.addStretch(0)
 
