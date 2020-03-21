@@ -53,6 +53,7 @@ class TableTabBarV2(QWidget):
 
         self.songs_btn.clicked.connect(self.show_songs_needed.emit)
         self.albums_btn.clicked.connect(self.show_albums_needed.emit)
+        self.artists_btn.clicked.connect(self.show_artists_needed.emit)
         self.desc_btn.clicked.connect(self.show_desc_needed.emit)
         self.contributed_btn.clicked.connect(self.show_contributed_albums_needed.emit)
         self.playlists_btn.clicked.connect(self.show_playlists_needed.emit)

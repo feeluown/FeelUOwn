@@ -55,7 +55,7 @@ class SearchResultRenderer(Renderer):
         mapping = {
             SearchType.so: ('songs', self.show_songs),
             SearchType.al: ('albums', self.show_albums),
-            # SearchType.ar: ('artists', self.show_artists),
+            SearchType.ar: ('artists', self.show_artists),
             # SearchType.pl: ('playlists', self.show_playlists),
         }
 
@@ -69,6 +69,7 @@ class SearchResultRenderer(Renderer):
     def _bind_signals(self):
         self.tabbar.show_songs_needed.connect(self._show(SearchType.so))
         self.tabbar.show_albums_needed.connect(self._show(SearchType.al))
+        self.tabbar.show_artists_needed.connect(self._show(SearchType.ar))
 
     def _show(self, type_):
         def cb():

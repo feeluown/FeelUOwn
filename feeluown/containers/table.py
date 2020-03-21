@@ -18,6 +18,8 @@ from fuocore.utils import reader_to_list
 
 from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
+from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
+    ArtistFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
@@ -26,8 +28,8 @@ from feeluown.widgets.tabbar import TableTabBarV2
 logger = logging.getLogger(__name__)
 
 
-def fetch_album_cover_wrapper(img_mgr):
-    async def fetch_album_cover(album, cb, uid):
+def fetch_cover_wrapper(img_mgr):
+    async def fetch_model_cover(model, cb, uid):
         # try get from cache first
         content = img_mgr.get_from_cache(uid)
         if content is not None:
@@ -35,7 +37,7 @@ def fetch_album_cover_wrapper(img_mgr):
         # FIXME: sleep random second to avoid send too many request to provider
         await asyncio.sleep(random.randrange(100) / 100)
         with suppress(ProviderIOError, RequestException):
-            cover = await async_run(lambda: album.cover)
+            cover = await async_run(lambda: model.cover)
             if cover:  # check if cover url is valid
                 # FIXME: we should check if cover is a media object
                 if not isinstance(cover, str):
@@ -44,7 +46,7 @@ def fetch_album_cover_wrapper(img_mgr):
             if url:
                 content = await img_mgr.get(url, uid)
                 cb(content)
-    return fetch_album_cover
+    return fetch_model_cover
 
 
 class Renderer:
@@ -57,6 +59,7 @@ class Renderer:
         self.tabbar = container.tabbar
         self.songs_table = container.songs_table
         self.albums_table = container.albums_table
+        self.artists_table = container.artists_table
         # pylint: disable=protected-access
         self._app = container._app
 
@@ -107,11 +110,24 @@ class Renderer:
         # fill the data
         filter_model = AlbumFilterProxyModel(self.albums_table)
         model = AlbumListModel(albums_g,
-                               fetch_album_cover_wrapper(self._app.img_mgr),
+                               fetch_cover_wrapper(self._app.img_mgr),
                                parent=self.albums_table)
         filter_model.setSourceModel(model)
         self.albums_table.setModel(filter_model)
         self.albums_table.scrollToTop()
+        disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
+        self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
+
+    def show_artists(self, artists_reader):
+        table = self.artists_table
+        self.container.current_table = table
+        filter_model = ArtistFilterProxyModel(self.albums_table)
+        model = ArtistListModel(artists_reader,
+                                fetch_cover_wrapper(self._app.img_mgr),
+                                parent=self.artists_table)
+        filter_model.setSourceModel(model)
+        table.setModel(filter_model)
+        table.scrollToTop()
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
@@ -341,19 +357,22 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
+        self.artists_table = ArtistListView(parent=self)
         self.desc_widget = DescLabel(parent=self)
 
         self._tables.append(self.songs_table)
         self._tables.append(self.albums_table)
+        self._tables.append(self.artists_table)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
-        self.songs_table.show_artist_needed.connect(
-            lambda artist: self._app.browser.goto(model=artist))
-        self.songs_table.show_album_needed.connect(
-            lambda album: self._app.browser.goto(model=album))
-        self.albums_table.show_album_needed.connect(
-            lambda album: self._app.browser.goto(model=album))
+
+        def goto_model(model): self._app.browser.goto(model=model)
+        for signal in [self.songs_table.show_artist_needed,
+                       self.songs_table.show_album_needed,
+                       self.albums_table.show_album_needed,
+                       self.artists_table.show_artist_needed]:
+            signal.connect(goto_model)
 
         self.toolbar.play_all_needed.connect(self.play_all)
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
@@ -372,6 +391,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout.addWidget(self.desc_widget)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
+        self._layout.addWidget(self.artists_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
