@@ -22,12 +22,20 @@ setup(
     author_email='yinshaowen241@gmail.com',
     packages=[
         'feeluown',
+
+        # feeluown common
         'feeluown.entry_points',
+        'feeluown.linux',
+
+        # feeluown gui
+        'feeluown.gui',
+        'feeluown.gui.pages',
         'feeluown.widgets',
-        'feeluown.containers',
         'feeluown.widgets.statusline_items',
         'feeluown.uimodels',
-        'feeluown.linux',
+        'feeluown.containers',
+
+        # fuocore
         'fuocore',
         'fuocore.serializers',
         'fuocore.cmds',
