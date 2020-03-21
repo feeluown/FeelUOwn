@@ -97,17 +97,22 @@ class Library(object):
                     if result is not None:
                         yield result
 
-    async def a_search(self, keyword, source_in=None, timeout=None, **kwargs):
+    async def a_search(self, keyword, source_in=None, timeout=None,
+                       type_in=None,
+                       **kwargs):
         """async version of search
 
         TODO: add Happy Eyeballs requesting strategy if needed
         """
+        type_in = SearchType.batch_parse(type_in) if type_in else [SearchType.so]
+
         fs = []  # future list
         for provider in self._filter(identifier_in=source_in):
-            future = aio.run_in_executor(
-                None,
-                partial(provider.search, keyword, type_=SearchType.so))
-            fs.append(future)
+            for type_ in type_in:
+                future = aio.run_in_executor(
+                    None,
+                    partial(provider.search, keyword, type_=type_))
+                fs.append(future)
 
         results = []
         # TODO: use async generator when we only support Python 3.6 or above

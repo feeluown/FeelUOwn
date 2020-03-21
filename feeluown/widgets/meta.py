@@ -137,7 +137,7 @@ class TableMetaWidget(MetaWidget):
         self._h_layout.addLayout(self._right_layout)
         self._h_layout.setStretchFactor(self._right_layout, 2)
         self._h_layout.setStretchFactor(self.cover_label, 1)
-        self._h_layout.setContentsMargins(0, 30, 0, 15)
+        self._h_layout.setContentsMargins(0, 30, 0, 0)
         self._h_layout.setSpacing(30)
         self._v_layout.addLayout(self._h_layout)
 

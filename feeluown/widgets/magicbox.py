@@ -7,6 +7,10 @@ from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.fuoexec import fuoexec
 
+_KeyPrefix = 'search_'  # local storage key prefix
+KeySourceIn = _KeyPrefix + 'source_in'
+KeyType = _KeyPrefix + 'type'
+
 
 class MagicBox(QLineEdit):
     """读取用户输入，解析执行
@@ -24,6 +28,7 @@ class MagicBox(QLineEdit):
         self.setPlaceholderText('搜索歌曲、歌手、专辑、用户')
         self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
                         '输入 >>> 前缀之后，可以执行 Python 代码\n'
+                        '输入 # 前缀之后，可以过滤表格内容\n'
                         '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
         self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
@@ -40,14 +45,17 @@ class MagicBox(QLineEdit):
         self.textChanged.connect(self.__on_text_edited)
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
-        self._app.browser.route('/search')(self.__handle_search)
 
         self._app.hotkey_mgr.register(
             [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
             self.setFocus
         )
 
-    def show_msg(self, text, timeout=2000):
+    def show_msg(self, text, timeout=2000, force=False):
+        # do not show message if we has focus, since it will
+        # break the user input
+        if not force and self.hasFocus():
+            return
         if not text:
             return
         self._set_mode('msg')
@@ -76,17 +84,6 @@ class MagicBox(QLineEdit):
                 self._cmd_text = self.text()
                 self._mode = mode
 
-    def __handle_search(self, req):
-        q = req.query.get('q', '')
-        if q:
-            self._search_library(q)
-
-    def _search_library(self, q):
-        songs = []
-        for result in self._app.library.search(q):
-            songs.extend(result.songs or [])
-        self._app.ui.right_panel.show_songs(songs)
-
     def _exec_code(self, code):
         """执行代码并重定向代码的 stdout/stderr"""
         output = io.StringIO()
@@ -100,21 +97,33 @@ class MagicBox(QLineEdit):
         finally:
             sys.stderr = sys.__stderr__
             sys.stdout = sys.__stdout__
-        self.show_msg(output.getvalue() or 'No output.')
+        self.show_msg(output.getvalue() or 'No output.', force=True)
 
     def __on_text_edited(self):
         text = self.text()
         if self._mode == 'cmd':
             self._cmd_text = text
-        if not text.startswith('>'):
-            self.filter_text_changed.emit(text)
+        # filter browser content if prefix starts with `#`
+        if text.startswith('#'):
+            self.filter_text_changed.emit(text[1:].strip())
+        else:
+            self.filter_text_changed.emit('')
 
     def __on_return_pressed(self):
         text = self.text()
         if text.startswith('>>> '):
             self._exec_code(text[4:])
         else:
-            self._app.browser.goto(uri='/search', query={'q': text})
+            local_storage = self._app.browser.local_storage
+            path = '/search'
+            type_ = local_storage.get(KeyType)
+            source_in = local_storage.get(KeySourceIn)
+            query = {'q': text}
+            if type_ is not None:
+                query['type'] = type_
+            if source_in is not None:
+                query['source_in'] = source_in
+            self._app.browser.goto(path=path, query=query)
 
     def __on_timeout(self):
         self._set_mode('cmd')

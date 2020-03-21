@@ -115,9 +115,8 @@ class ItemViewNoScrollMixin:
 
     def setModel(self, model):
         super().setModel(model)
-
-        model.sourceModel().rowsInserted.connect(self.on_rows_changed)
-        model.sourceModel().rowsRemoved.connect(self.on_rows_changed)
+        model.rowsInserted.connect(self.on_rows_changed)
+        model.rowsRemoved.connect(self.on_rows_changed)
         self.on_rows_changed()
 
     def wheelEvent(self, e):
