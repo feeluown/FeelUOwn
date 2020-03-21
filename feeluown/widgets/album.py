@@ -29,7 +29,8 @@ from PyQt5.QtWidgets import (
 
 from fuocore import aio
 from fuocore.excs import ProviderIOError
-from fuocore.models import GeneratorProxy, AlbumType
+from fuocore.reader import wrap
+from fuocore.models import AlbumType
 from fuocore.models.uri import reverse
 
 from feeluown.helpers import ItemViewNoScrollMixin
@@ -82,7 +83,7 @@ class AlbumListModel(QAbstractListModel):
         """
         super().__init__(parent)
 
-        self.albums_g = GeneratorProxy.wrap(albums_g)
+        self.reader = wrap(albums_g)
         self.fetch_image = fetch_image
         # false: no more, true: maybe more
         self._maybe_has_more = True
@@ -94,7 +95,7 @@ class AlbumListModel(QAbstractListModel):
         return len(self.albums)
 
     def canFetchMore(self, _=QModelIndex()):
-        count, offset = self.albums_g.count, self.albums_g.offset
+        count, offset = self.reader.count, self.reader.offset
         if count is not None:
             return count > offset
         return self._maybe_has_more
@@ -102,7 +103,7 @@ class AlbumListModel(QAbstractListModel):
     def fetchMore(self, _=QModelIndex()):
         expect_len = 10
         try:
-            albums = list(itertools.islice(self.albums_g, expect_len))
+            albums = list(itertools.islice(self.reader, expect_len))
         except ProviderIOError:
             logger.exception('fetch more albums failed')
             return

@@ -161,7 +161,6 @@ class ArtistRenderer(Renderer):
                 lambda types: self.albums_table.model().filter_by_types(types))
             self.tabbar.show_albums_needed.connect(
                 lambda: self.show_albums(self.artist.create_albums_g()))
-            self.albums_table.show_album_needed.connect(self.show_model)
         if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
             # show contributed_album list
             self.tabbar.show_contributed_albums_needed.connect(
@@ -295,7 +294,6 @@ class AlbumsCollectionRenderer(Renderer):
         # always bind signals first
         self.toolbar.filter_albums_needed.connect(
             lambda types: self.albums_table.model().filter_by_types(types))
-        self.albums_table.show_album_needed.connect(self.show_model)
 
         self.show_albums(self.reader)
 
@@ -353,6 +351,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.songs_table.show_artist_needed.connect(
             lambda artist: self._app.browser.goto(model=artist))
         self.songs_table.show_album_needed.connect(
+            lambda album: self._app.browser.goto(model=album))
+        self.albums_table.show_album_needed.connect(
             lambda album: self._app.browser.goto(model=album))
 
         self.toolbar.play_all_needed.connect(self.play_all)
@@ -427,7 +427,6 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.tabbar.show_albums_needed,
             self.tabbar.show_songs_needed,
             self.tabbar.show_desc_needed,
-            self.albums_table.show_album_needed,
         )
         for signal in signals:
             disconnect_slots_if_has(signal)

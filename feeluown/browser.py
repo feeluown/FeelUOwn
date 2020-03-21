@@ -1,9 +1,12 @@
 import logging
+import inspect
+import warnings
 from collections import deque
 from urllib.parse import urlencode
 
 from PyQt5.QtGui import QKeySequence
 
+from fuocore import aio
 from fuocore.router import Router, NotFound
 from fuocore.models.uri import resolve, reverse, ResolveFailed
 
@@ -34,14 +37,16 @@ class Browser:
     def ui(self):
         return self._app.ui
 
-    def goto(self, model=None, uri=None, query=None):
+    def goto(self, model=None, path=None, uri=None, query=None):
         """跳转到 model 页面或者具体的地址
 
         必须提供 model 或者 uri 其中一个参数，都提供时，以 model 为准。
         """
+        if uri is not None:
+            warnings.warn('please use path instead of uri')
         if query:
             qs = urlencode(query)
-            uri = uri + '?' + qs
+            uri = (path or uri) + '?' + qs
         self._goto(model, uri)
         if self._last_uri is not None and self._last_uri != self.current_uri:
             self._back_stack.append(self._last_uri)
@@ -88,7 +93,9 @@ class Browser:
                 self._render_model(model)
             else:
                 try:
-                    self.router.dispatch(uri, {'app': self._app})
+                    x = self.router.dispatch(uri, {'app': self._app})
+                    if inspect.iscoroutine(x):
+                        aio.create_task(x)
                 except NotFound:
                     action.failed('not found.'.format(uri))
                     return
@@ -131,8 +138,12 @@ class Browser:
 
         1. bind routes with handler
         """
+
+        from feeluown.gui.pages.search import render as render_search
+
         urlpatterns = [
             ('/colls/<identifier>', self._render_coll),
+            ('/search', render_search),
         ]
         for url, handler in urlpatterns:
             self.route(url)(handler)
