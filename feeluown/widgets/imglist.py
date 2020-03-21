@@ -193,18 +193,21 @@ class ImgListDelegate(QAbstractItemDelegate):
         pen.setColor(non_text_color)
         painter.setPen(pen)
         painter.translate(cover_x, cover_y)
-        cover_rect = QRect(0, 0, cover_width, cover_height)
         if isinstance(obj, QColor):
             color = obj
             brush = QBrush(color)
             painter.setBrush(brush)
         else:
-            pixmap = obj.scaledToWidth(cover_width, Qt.SmoothTransformation)
+            if obj.height() < obj.width():
+                pixmap = obj.scaledToHeight(cover_height, Qt.SmoothTransformation)
+            else:
+                pixmap = obj.scaledToWidth(cover_width, Qt.SmoothTransformation)
             brush = QBrush(pixmap)
             painter.setBrush(brush)
         border_radius = 3
         if self.as_circle:
             border_radius = cover_width // 2
+        cover_rect = QRect(0, 0, cover_width, cover_height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
         painter.restore()
         option = QTextOption()

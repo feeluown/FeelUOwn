@@ -1,12 +1,15 @@
 import io
 import sys
-from urllib.parse import urlparse, parse_qsl
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtGui import QFontDatabase, QKeySequence
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.fuoexec import fuoexec
+
+_KeyPrefix = 'search_'  # local storage key prefix
+KeySourceIn = _KeyPrefix + 'source_in'
+KeyType = _KeyPrefix + 'type'
 
 
 class MagicBox(QLineEdit):
@@ -111,18 +114,15 @@ class MagicBox(QLineEdit):
         if text.startswith('>>> '):
             self._exec_code(text[4:])
         else:
+            local_storage = self._app.browser.local_storage
             path = '/search'
-            current_uri = self._app.browser.current_uri
+            type_ = local_storage.get(KeyType)
+            source_in = local_storage.get(KeySourceIn)
             query = {'q': text}
-
-            # reuse part of current query
-            if current_uri is not None:
-                result = urlparse(current_uri)
-                if result.path == path:
-                    old_query = dict(parse_qsl(result.query))
-                    old_type_ = old_query.get('type', None)
-                    if old_type_:
-                        query['type'] = old_type_
+            if type_ is not None:
+                query['type'] = type_
+            if source_in is not None:
+                query['source_in'] = source_in
             self._app.browser.goto(path=path, query=query)
 
     def __on_timeout(self):

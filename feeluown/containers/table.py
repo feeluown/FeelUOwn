@@ -84,6 +84,9 @@ class Renderer:
     #
     # utils function for renderer
     #
+    def set_extra(self, extra):
+        self.container.current_extra = extra
+
     async def show_cover(self, cover, cover_uid, as_background=False):
         cover = Media(cover, MediaType.image)
         url = cover.url
@@ -355,6 +358,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._table = None  # current visible table
         self._tables = []
 
+        self._extra = None
         self.toolbar = SongsTableToolbar()
         self.tabbar = TableTabBarV2()
         self.meta_widget = TableMetaWidget(parent=self)
@@ -394,6 +398,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.meta_widget)
         self._layout.addWidget(self.toolbar)
+        self._layout.addSpacing(10)
         self._layout.addWidget(self.desc_widget)
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
@@ -401,6 +406,21 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout.addWidget(self.playlists_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
+
+    @property
+    def current_extra(self):
+        return self._extra
+
+    @current_extra.setter
+    def current_extra(self, extra):
+        """(alpha)"""
+        if self._extra is not None:
+            self._layout.removeWidget(self._extra)
+            self._extra.deleteLater()
+            del self._extra
+        self._extra = extra
+        if self._extra is not None:
+            self._layout.insertWidget(1, self._extra)
 
     @property
     def current_table(self):
@@ -446,6 +466,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.tabbar.hide()
         self.tabbar.check_default()
         self.current_table = None
+        self.current_extra = None
         # clean right_panel background image
         self._app.ui.right_panel.show_background_image(None)
         # disconnect songs_table signal

@@ -30,6 +30,10 @@ class Browser:
         self._last_uri = None
         self.current_uri = None
 
+        #: the value in local_storage must be string,
+        # please follow the convention
+        self.local_storage = {}
+
         self._app.hotkey_mgr.register([QKeySequence.Back], self.back)
         self._app.hotkey_mgr.register([QKeySequence.Forward], self.forward)
 

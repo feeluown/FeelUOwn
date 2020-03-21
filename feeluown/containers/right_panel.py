@@ -155,7 +155,8 @@ class RightPanel(QFrame):
 
         # calculate available size
         draw_width = self.width()
-        draw_height = self.bottom_panel.height()
+        draw_height = 10  # spacing defined in table container
+        draw_height += self.bottom_panel.height()
         if self.table_container.meta_widget.isVisible():
             draw_height += self.table_container.meta_widget.height()
         if self.table_container.toolbar.isVisible():
