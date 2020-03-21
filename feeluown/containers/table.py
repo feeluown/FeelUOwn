@@ -474,6 +474,8 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.tabbar.show_contributed_albums_needed,
             self.tabbar.show_albums_needed,
             self.tabbar.show_songs_needed,
+            self.tabbar.show_artists_needed,
+            self.tabbar.show_playlists_needed,
             self.tabbar.show_desc_needed,
         )
         for signal in signals:
