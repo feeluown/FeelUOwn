@@ -43,6 +43,20 @@ class SearchResultRenderer(Renderer):
         self.reader = reader
 
     async def render(self):
+        mapping = {
+            SearchType.so: ('songs', self.show_songs,
+                            self.tabbar.show_songs_needed),
+            SearchType.al: ('albums', self.show_albums,
+                            self.tabbar.show_albums_needed),
+            SearchType.ar: ('artists', self.show_artists,
+                            self.tabbar.show_artists_needed),
+            SearchType.pl: ('playlists', self.show_playlists,
+                            self.tabbar.show_playlists_needed),
+        }
+        # bind signals
+        for search_type, (_, _, signal) in mapping.items():
+            signal.connect(self._show(search_type))
+
         self.tabbar.show()
         self.tabbar.library_mode()
         self.tabbar.check(TypeTabMapping[self.type_])
@@ -50,26 +64,11 @@ class SearchResultRenderer(Renderer):
         self.meta_widget.show()
         self.meta_widget.title = '搜索 “{}”'.format(self.q)
 
-        self._bind_signals()
-
-        mapping = {
-            SearchType.so: ('songs', self.show_songs),
-            SearchType.al: ('albums', self.show_albums),
-            SearchType.ar: ('artists', self.show_artists),
-            # SearchType.pl: ('playlists', self.show_playlists),
-        }
-
-        attr, show_handler = mapping[self.type_]
-
+        attr, show_handler, signal = mapping[self.type_]
         objects = []
         for result in self.reader:
             objects.extend(getattr(result, attr) or [])
         show_handler(objects)
-
-    def _bind_signals(self):
-        self.tabbar.show_songs_needed.connect(self._show(SearchType.so))
-        self.tabbar.show_albums_needed.connect(self._show(SearchType.al))
-        self.tabbar.show_artists_needed.connect(self._show(SearchType.ar))
 
     def _show(self, type_):
         def cb():

@@ -20,6 +20,8 @@ from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel
+from feeluown.widgets.playlist import PlaylistListModel, PlaylistListView, \
+    PlaylistFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
@@ -60,6 +62,7 @@ class Renderer:
         self.songs_table = container.songs_table
         self.albums_table = container.albums_table
         self.artists_table = container.artists_table
+        self.playlists_table = container.playlists_table
         # pylint: disable=protected-access
         self._app = container._app
 
@@ -102,29 +105,29 @@ class Renderer:
         aio.create_task(self.real_show_model(model))
 
     def show_albums(self, albums_g):
-        # always bind signal first
-        # album list filters
-        # show the layout
-        self.container.current_table = self.albums_table
+        self._show_model_with_cover(albums_g,
+                                    self.albums_table,
+                                    AlbumListModel,
+                                    AlbumFilterProxyModel)
 
-        # fill the data
-        filter_model = AlbumFilterProxyModel(self.albums_table)
-        model = AlbumListModel(albums_g,
-                               fetch_cover_wrapper(self._app.img_mgr),
-                               parent=self.albums_table)
-        filter_model.setSourceModel(model)
-        self.albums_table.setModel(filter_model)
-        self.albums_table.scrollToTop()
-        disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
-        self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
+    def show_artists(self, reader):
+        self._show_model_with_cover(reader,
+                                    self.artists_table,
+                                    ArtistListModel,
+                                    ArtistFilterProxyModel)
 
-    def show_artists(self, artists_reader):
-        table = self.artists_table
+    def show_playlists(self, reader):
+        self._show_model_with_cover(reader,
+                                    self.playlists_table,
+                                    PlaylistListModel,
+                                    PlaylistFilterProxyModel)
+
+    def _show_model_with_cover(self, reader, table, model_cls, filter_model_cls):
         self.container.current_table = table
-        filter_model = ArtistFilterProxyModel(self.albums_table)
-        model = ArtistListModel(artists_reader,
-                                fetch_cover_wrapper(self._app.img_mgr),
-                                parent=self.artists_table)
+        filter_model = filter_model_cls(self.albums_table)
+        model = model_cls(reader,
+                          fetch_cover_wrapper(self._app.img_mgr),
+                          parent=self.artists_table)
         filter_model.setSourceModel(model)
         table.setModel(filter_model)
         table.scrollToTop()
@@ -358,11 +361,13 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
         self.artists_table = ArtistListView(parent=self)
+        self.playlists_table = PlaylistListView(parent=self)
         self.desc_widget = DescLabel(parent=self)
 
         self._tables.append(self.songs_table)
         self._tables.append(self.albums_table)
         self._tables.append(self.artists_table)
+        self._tables.append(self.playlists_table)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
@@ -371,7 +376,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         for signal in [self.songs_table.show_artist_needed,
                        self.songs_table.show_album_needed,
                        self.albums_table.show_album_needed,
-                       self.artists_table.show_artist_needed]:
+                       self.artists_table.show_artist_needed,
+                       self.playlists_table.show_playlist_needed]:
             signal.connect(goto_model)
 
         self.toolbar.play_all_needed.connect(self.play_all)
@@ -392,6 +398,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout.addWidget(self.songs_table)
         self._layout.addWidget(self.albums_table)
         self._layout.addWidget(self.artists_table)
+        self._layout.addWidget(self.playlists_table)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
