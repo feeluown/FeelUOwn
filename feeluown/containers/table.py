@@ -14,7 +14,6 @@ from fuocore.reader import wrap
 from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
-from fuocore.utils import reader_to_list
 
 from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
@@ -499,7 +498,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         task_name = 'play-all'
         task_spec = self._app.task_mgr.get_or_create(task_name)
 
-        def songs_g_readall_cb(task):
+        def reader_readall_cb(task):
             with suppress(ProviderIOError, asyncio.CancelledError):
                 songs = task.result()
                 self._app.player.play_songs(songs=songs)
@@ -507,12 +506,12 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         model = self.songs_table.model()
         # FIXME: think about a more elegant way
-        songs_g = model.sourceModel().songs_g
-        if songs_g is not None:
-            if songs_g.count is not None:
-                task = task_spec.bind_blocking_io(reader_to_list, songs_g)
+        reader = model.sourceModel().songs_g
+        if reader is not None:
+            if reader.count is not None:
+                task = task_spec.bind_blocking_io(reader.readall)
                 self.toolbar.enter_state_playall_start()
-                task.add_done_callback(songs_g_readall_cb)
+                task.add_done_callback(reader_readall_cb)
                 return
         songs = model.sourceModel().songs
         self._app.player.play_songs(songs=songs)

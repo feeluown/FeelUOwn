@@ -92,6 +92,7 @@ class SequentialReader(Reader):
         self._g = g
         self.count = count
         self.offset = offset
+        self._objects = []
 
     @classmethod
     def wrap(cls, g):
@@ -100,22 +101,29 @@ class SequentialReader(Reader):
             return g
         return cls(g, count=None)
 
+    def readall(self):
+        if self.count is None:
+            raise ReadFailed("can't readall when count is unknown")
+        list(self)
+        return self._objects
+
     def __iter__(self):
         return self
 
     def __next__(self):
         try:
-            if self.count is None:
-                return next(self._g)
-            if self.offset < self.count:
-                self.offset += 1
-                return next(self._g)
+            if self.count is None or self.offset < self.count:
+                obj = next(self._g)
+            else:
+                raise StopIteration
+            self.offset += 1
+            self._objects.append(obj)
+            return obj
         except (StopIteration, ProviderIOError):
             raise
         # TODO: caller should not crash when reader raise other exception
         except Exception as e:
             raise ProviderIOError(e)
-        raise StopIteration
 
 
 class RandomReader(Reader):

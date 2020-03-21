@@ -184,15 +184,9 @@ class SongsTableModel(QAbstractTableModel):
         """
         super().__init__(parent)
         self.songs_g = songs_g
-        self.songs = (songs or []) if songs_g is None else []
-        self._source_set = set()
+        self.songs = (songs or []) if self.songs_g is None else []
         self._can_fetch_more = self.songs_g is not None
         self._source_name_map = source_name_map or {}
-        self._initialize()
-
-    def _initialize(self):
-        for song in self.songs:
-            self._source_set.add(song.source)
 
     def removeRows(self, row, count, parent=QModelIndex()):
         self.beginRemoveRows(parent, row, row + count - 1)
@@ -207,19 +201,24 @@ class SongsTableModel(QAbstractTableModel):
 
     def fetchMore(self, _):
         songs = []
-        for _ in range(len(self.songs), len(self.songs) + 30):
-            try:
-                song = next(self.songs_g)
-            except StopIteration:
-                self._can_fetch_more = False
-                break
-            except ProviderIOError:
-                logger.exception("fetch more failed")
-                break
-            else:
-                songs.append(song)
-        begin = len(self.songs)
-        self.beginInsertRows(QModelIndex(), begin, begin + len(songs) - 1)
+        current = len(self.songs)
+        fetched = self.songs_g.offset
+        if current < fetched:
+            # FIXME: maybe SequentialReader should support seek
+            songs = self.songs_g._objects[current:fetched]
+        else:
+            for _ in range(current, len(self.songs) + 30):
+                try:
+                    song = next(self.songs_g)
+                except StopIteration:
+                    self._can_fetch_more = False
+                    break
+                except ProviderIOError:
+                    logger.exception("fetch more failed")
+                    break
+                else:
+                    songs.append(song)
+        self.beginInsertRows(QModelIndex(), current, current + len(songs) - 1)
         self.songs.extend(songs)
         self.endInsertRows()
 
