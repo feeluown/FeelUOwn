@@ -4,7 +4,7 @@
 
 
 class LiveLyricPublisher(object):
-    topic = 'topic.live_lyric'
+    topic = 'live_lyric'
 
     def __init__(self, gateway):
         self.gateway = gateway

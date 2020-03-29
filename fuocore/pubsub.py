@@ -99,18 +99,25 @@ class HandlerV1:
                 logger.debug('Client close the connection.')
                 break
 
+            if line == b'':  # connection closed
+                writer.close()
+                break
+
             # handle `sub <topic>` command
             err = 'Oops {reason}'
             reason = None
             try:
-                cmd, topic = line.split(' ')
+                cmd, topic = line.decode('utf-8').strip().split(' ')
             except ValueError:
                 reason = 'invalid request'
             else:
                 if cmd.lower() != 'sub':
                     reason = 'unknown command'
-                elif topic not in gateway.topics:
-                    reason = 'unknown topic'
+                else:
+                    if topic.startswith('topic.'):
+                        topic = topic[6:]
+                    if topic not in gateway.topics:
+                        reason = "unknown topic '{}'".format(topic)
             if reason is not None:
                 msg = err.format(reason=reason)
                 writer.write(bytes(msg, 'utf-8'))
@@ -118,7 +125,7 @@ class HandlerV1:
                 continue
             else:
                 writer.write(b'OK\r\n')
-                sock = writer.get_extra_info('socket')
-                subscriber = Subscriber(sock.peername, writer)
+                peername = writer.get_extra_info('peername')
+                subscriber = Subscriber(peername, writer)
                 gateway.link(topic, subscriber)
                 break

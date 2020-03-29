@@ -54,6 +54,19 @@ def test_cmd_options():
     subprocess.run(['fuo', 'search', 'xx', 'type=album,source=xx'])
 
 
+def test_sub_live_lyric():
+    for topic in ('topic.live_lyric', 'live_lyric'):
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect(('127.0.0.1', 23334))
+        sock.settimeout(1)
+        welcome = sock.recv(100)
+        assert 'pubsub' in welcome.decode('utf-8')
+        sock.send(bytes('sub {}\r\n'.format(topic), 'utf-8'))
+        response = sock.recv(100)
+        assert 'OK' in response.decode('utf-8')
+        sock.close()
+
+
 def run():
     popen = subprocess.Popen(['fuo'])
     time.sleep(5)  # wait for fuo starting
