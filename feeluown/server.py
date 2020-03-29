@@ -40,7 +40,10 @@ class FuoServer:
     async def run(self, host, port=23333):
         loop = asyncio.get_event_loop()
         self._loop = loop
-        await loop.create_server(self.protocol_factory, host, port)
+        try:
+            await loop.create_server(self.protocol_factory, host, port)
+        except OSError as e:
+            raise SystemExit(str(e)) from None
         logger.info('Fuo daemon run at {}:{}'.format(host, port))
 
     def protocol_factory(self):

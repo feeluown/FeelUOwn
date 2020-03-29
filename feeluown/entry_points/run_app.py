@@ -11,7 +11,6 @@ from feeluown.cli import oncemain
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
 from .base import (
     ensure_dirs,
-    ensure_daemon_not_started,
     setup_config,
     setup_logger,
 )
@@ -20,8 +19,6 @@ from .base import (
 def run_forever(args, config):
     # ensure requiresments, raise SystemExit if failed
     os.chdir(os.path.join(os.path.dirname(__file__), '../..'))
-    if not args.no_server:
-        ensure_daemon_not_started()
     ensure_dirs()
 
     # In an ideal world, users are capable to do anything in rcfile,

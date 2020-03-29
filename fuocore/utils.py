@@ -2,7 +2,6 @@
 
 import logging
 import os
-import socket
 import sys
 import time
 from collections import OrderedDict
@@ -20,12 +19,6 @@ def parse_ms(ms):
     minute = int(ms / 60000)
     second = int((ms % 60000) / 1000)
     return minute, second
-
-
-def is_port_used(port, host='127.0.0.1'):
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    rv = sock.connect_ex((host, port))
-    return rv == 0
 
 
 def log_exectime(func):

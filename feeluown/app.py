@@ -7,7 +7,10 @@ from contextlib import contextmanager
 from fuocore import LiveLyric, Library
 from fuocore.dispatch import Signal
 from fuocore.models import Resolver
-from fuocore.pubsub import run as run_pubsub, create as create_pubsub
+from fuocore.pubsub import (
+    Gateway as PubsubGateway,
+    HandlerV1 as PubsubHandlerV1,
+)
 
 from .consts import APP_ICON
 from .fm import FM
@@ -94,7 +97,7 @@ def attach_attrs(app):
 
     if app.mode & app.DaemonMode:
         app.server = FuoServer(app)
-        app.pubsub_gateway, app.pubsub_server = create_pubsub(app.get_listen_addr())
+        app.pubsub_gateway = PubsubGateway()
         app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
 
     if app.mode & app.GuiMode:
@@ -210,8 +213,12 @@ def run_app(app):
             run_mpris2_server(app)
 
         loop.create_task(app.server.run(app.get_listen_addr()))
-        run_pubsub(app.pubsub_gateway, app.pubsub_server)
-
+        client_connected_cb = PubsubHandlerV1(app.pubsub_gateway).handle
+        loop.create_task(asyncio.start_server(
+            client_connected_cb,
+            host=app.get_listen_addr(),
+            port=23334,
+            loop=loop))
     try:
         if not (app.config.MODE & (App.GuiMode | App.DaemonMode)):
             logger.warning('Fuo running with no daemon and no window')
@@ -239,8 +246,6 @@ def run_app_once(app, future):
 
 
 def _shutdown_app(app):
-    if app.mode & App.DaemonMode:
-        app.pubsub_server.close()
     app.player.stop()
     app.player.shutdown()
     Signal.teardown_aio_support()

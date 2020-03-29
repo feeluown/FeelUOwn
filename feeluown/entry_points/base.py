@@ -3,7 +3,6 @@ import logging
 import os
 import textwrap
 
-from fuocore.utils import is_port_used
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.app import App
 from feeluown.cli import setup_cli_argparse
@@ -26,11 +25,6 @@ def ensure_dirs():
               COLLECTIONS_DIR):
         if not os.path.exists(d):
             os.mkdir(d)
-
-
-def ensure_daemon_not_started():
-    if is_port_used(23333) or is_port_used(23334):
-        raise SystemExit("Fuo daemon has already started.")
 
 
 def create_config():

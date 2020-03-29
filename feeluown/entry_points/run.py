@@ -7,8 +7,9 @@ except ImportError:
 else:
     patch_qeventloop()
 
+import socket
+
 # pylint: disable=wrong-import-position
-from fuocore.utils import is_port_used  # noqa: E402
 from .base import create_config, setup_argparse  # noqa: E402
 
 from .run_cli import run_cli  # noqa: E402
@@ -29,8 +30,12 @@ def run():
 
         # if daemon is started, we send commands to daemon directly
         # we simple think the daemon is started as long as
-        # the port 23333 or 23334 is used
-        if is_port_used(23333) or is_port_used(23334):
+        # the port 23333 is in use
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # TODO: this may block for 2 second if port is not used on Windows
+        rv = sock.connect_ex(('127.0.0.1', 23333))
+        if rv == 0:  # port is in use
+            sock.close()
             return run_cli(args)
 
         # If daemon is not started, (some) commands can be meaningless,
