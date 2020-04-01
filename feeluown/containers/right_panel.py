@@ -8,7 +8,7 @@ from fuocore import aio
 from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
-from feeluown.theme import DARK
+from feeluown.theme import Light
 from feeluown.helpers import BgTransparentMixin
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
@@ -145,9 +145,6 @@ class RightPanel(QFrame):
 
         HELP: currently, this cost much CPU
         """
-        if self._pixmap is None:
-            return
-
         painter = QPainter(self)
         painter.setPen(Qt.NoPen)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -159,18 +156,75 @@ class RightPanel(QFrame):
         draw_height += self.bottom_panel.height()
         if self.table_container.meta_widget.isVisible():
             draw_height += self.table_container.meta_widget.height()
+        extra = self.table_container.current_extra
+        if extra is not None and extra.isVisible():
+            draw_height += extra.height()
         if self.table_container.toolbar.isVisible():
             draw_height += self.table_container.toolbar.height()
 
         scrolled = self.scrollarea.verticalScrollBar().value()
         max_scroll_height = draw_height - self.bottom_panel.height()
+
         if scrolled >= max_scroll_height:
             painter.save()
             painter.setBrush(self.palette().brush(QPalette.Window))
-            painter.drawRect(self.rect())
+            painter.drawRect(self.bottom_panel.rect())
             painter.restore()
             return
 
+        if self._pixmap is not None:
+            self._draw_pixmap(painter, draw_width, draw_height, scrolled)
+            self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
+        else:
+            self._draw_overlay(painter, draw_width, draw_height, scrolled)
+            if scrolled >= 30:
+                painter.save()
+                painter.setBrush(self.palette().brush(QPalette.Window))
+                painter.drawRect(self.bottom_panel.rect())
+                painter.restore()
+                return
+        painter.end()
+
+    def _draw_pixmap_overlay(self, painter, draw_width, draw_height, scrolled):
+        painter.save()
+        rect = QRect(0, 0, draw_width, draw_height)
+        painter.translate(0, -scrolled)
+        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        color = self.palette().color(QPalette.Base)
+        if draw_height == self.height():
+            gradient.setColorAt(0, add_alpha(color, 180))
+            gradient.setColorAt(1, add_alpha(color, 230))
+        else:
+            if self._app.theme_mgr.theme == Light:
+                gradient.setColorAt(0, add_alpha(color, 220))
+                gradient.setColorAt(0.1, add_alpha(color, 180))
+                gradient.setColorAt(0.2, add_alpha(color, 140))
+                gradient.setColorAt(0.6, add_alpha(color, 140))
+                gradient.setColorAt(0.8, add_alpha(color, 200))
+                gradient.setColorAt(0.9, add_alpha(color, 240))
+                gradient.setColorAt(1, color)
+            else:
+                gradient.setColorAt(0, add_alpha(color, 50))
+                gradient.setColorAt(0.6, add_alpha(color, 100))
+                gradient.setColorAt(0.8, add_alpha(color, 200))
+                gradient.setColorAt(0.9, add_alpha(color, 240))
+                gradient.setColorAt(1, color)
+        painter.setBrush(gradient)
+        painter.drawRect(rect)
+        painter.restore()
+
+    def _draw_overlay(self, painter, draw_width, draw_height, scrolled):
+        painter.save()
+        rect = QRect(0, 0, draw_width, draw_height)
+        painter.translate(0, -scrolled)
+        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        gradient.setColorAt(0, self.palette().color(QPalette.Window))
+        gradient.setColorAt(1, self.palette().color(QPalette.Base))
+        painter.setBrush(gradient)
+        painter.drawRect(rect)
+        painter.restore()
+
+    def _draw_pixmap(self, painter, draw_width, draw_height, scrolled):
         # scale pixmap
         scaled_pixmap = self._pixmap.scaledToWidth(
             draw_width,
@@ -189,33 +243,7 @@ class RightPanel(QFrame):
         painter.translate(0, - y - scrolled)
         rect = QRect(0, y, draw_width, draw_height)
         painter.drawRect(rect)
-
-        # draw overlay
-        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        color = self.palette().color(QPalette.Base)
-        if draw_height == self.height():
-            gradient.setColorAt(0, add_alpha(color, 180))
-            gradient.setColorAt(1, add_alpha(color, 230))
-        else:
-            if self._app.theme_mgr.theme == DARK:
-                gradient.setColorAt(0, add_alpha(color, 50))
-                gradient.setColorAt(0.6, add_alpha(color, 100))
-                gradient.setColorAt(0.8, add_alpha(color, 200))
-                gradient.setColorAt(0.9, add_alpha(color, 240))
-                gradient.setColorAt(1, color)
-            else:
-                gradient.setColorAt(0, add_alpha(color, 220))
-                gradient.setColorAt(0.1, add_alpha(color, 180))
-                gradient.setColorAt(0.2, add_alpha(color, 140))
-                gradient.setColorAt(0.6, add_alpha(color, 140))
-                gradient.setColorAt(0.8, add_alpha(color, 200))
-                gradient.setColorAt(0.9, add_alpha(color, 240))
-                gradient.setColorAt(1, color)
-        painter.setBrush(gradient)
-        painter.drawRect(rect)
         painter.restore()
-
-        painter.end()
 
     def sizeHint(self):
         size = super().sizeHint()
