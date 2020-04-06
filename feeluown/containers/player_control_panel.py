@@ -19,6 +19,7 @@ from fuocore.media import MediaType
 from fuocore.utils import parse_ms
 from fuocore.player import PlaybackMode, State
 from feeluown.helpers import async_run
+from feeluown.widgets import TextButton
 from feeluown.widgets.volume_button import VolumeButton
 
 logger = logging.getLogger(__name__)
@@ -79,14 +80,14 @@ class PlayerControlPanel(QFrame):
         self.next_btn = IconButton(self)
 
         #: playback mode switch button
-        self.pms_btn = QPushButton(self)
+        self.pms_btn = TextButton(self)
         self.volume_btn = VolumeButton(self)
         self.playlist_btn = IconButton(parent=self)
         #: mark song as favorite button
         self.like_btn = QPushButton(self)
-        self.mv_btn = QPushButton('MV', self)
+        self.mv_btn = TextButton('MV', self)
         self.download_btn = QPushButton(self)
-        self.toggle_video_btn = QPushButton('△', self)
+        self.toggle_video_btn = TextButton('△', self)
 
         self.previous_btn.setObjectName('previous_btn')
         self.pp_btn.setObjectName('pp_btn')

@@ -62,29 +62,21 @@ PlayerControlPanel QPushButton:focus
     outline: none;
 }
 
-#pms_btn {
+TextButton {
     height: 18px;
     background-color: transparent;
     padding: 2px 8px;
+    border-radius: 3px;
 }
 #mv_btn {
     font-size: 9px;
     padding: 0px 3px;
-    border: 1px solid #AAA;
 }
 #toggle_video_btn {
     padding: 0px 3px;
 }
-#mv_btn:hover,
-#pms_btn:hover,
-#toggle_video_btn:hover
-{
+TextButton:hover {
     border: 1px solid #777;
-}
-#mv_btn:pressed,
-#pms_btn:pressed
-{
-    background-color: #BCBCBC;
 }
 
 #back_btn, #forward_btn {

@@ -1,7 +1,8 @@
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QComboBox, QWidget
+from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QWidget
 
 from fuocore.models import AlbumType
+from feeluown.widgets import TextButton
 
 
 class SongsTableToolbar(QWidget):
@@ -12,8 +13,10 @@ class SongsTableToolbar(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.play_all_btn = QPushButton('Play All', self)
+        self.play_all_btn = TextButton('Play All', self)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
+
+        self.play_all_btn.setObjectName('play_all')
 
         # album filters
         self.filter_albums_combobox = QComboBox(self)

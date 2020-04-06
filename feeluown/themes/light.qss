@@ -5,13 +5,12 @@ TopPanel {
     );
 }
 
-#pms_btn, #mv_btn, #toggle_video_btn {
-    border-radius: 3px;
+TextButton {
     border: 1px solid #AAA;
 }
 
-#mv_btn:pressed, #pms_btn:pressed {
-    background-color: #BCBCBC;
+TextButton:pressed {
+    background-color: #DDD;
 }
 
 #pp_btn {
