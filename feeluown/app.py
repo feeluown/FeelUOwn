@@ -1,18 +1,21 @@
 import asyncio
 import logging
+import json
 import sys
 from functools import partial
 from contextlib import contextmanager
 
 from fuocore import LiveLyric, Library
 from fuocore.dispatch import Signal
-from fuocore.models import Resolver
+from fuocore.models import Resolver, reverse, resolve, \
+    ResolverNotFound
+from fuocore.playlist import PlaybackMode
 from fuocore.pubsub import (
     Gateway as PubsubGateway,
     HandlerV1 as PubsubHandlerV1,
 )
 
-from .consts import APP_ICON
+from .consts import APP_ICON, STATE_FILE
 from .fm import FM
 from .player import Player
 from .plugin import PluginsManager
@@ -36,6 +39,10 @@ class App:
         self.mode = config.MODE  # DEPRECATED: use app.config.MODE instead
         self.config = config
         self.initialized = Signal()
+        self.about_to_shutdown = Signal()
+
+        self.initialized.connect(lambda _: self.load_state(), weak=False)
+        self.about_to_shutdown.connect(lambda _: self.dump_state(), weak=False)
 
     def show_msg(self, msg, *args, **kwargs):
         """在程序中显示消息，一般是用来显示程序当前状态"""
@@ -44,6 +51,50 @@ class App:
 
     def get_listen_addr(self):
         return '0.0.0.0' if self.config.ALLOW_LAN_CONNECT else '127.0.0.1'
+
+    def load_state(self):
+        playlist = self.playlist
+        player = self.player
+
+        try:
+            with open(STATE_FILE, 'r') as f:
+                state = json.load(f)
+        except FileNotFoundError:
+            pass
+        except json.decoder.JSONDecodeError:
+            logger.exception('invalid state file')
+        else:
+            player.volume = state['volume']
+            playlist.playback_mode = PlaybackMode(state['playback_mode'])
+            songs = []
+            for song in state['playlist']:
+                try:
+                    song = resolve(song)
+                except ResolverNotFound:
+                    pass
+                else:
+                    songs.append(song)
+            playlist.init_from(songs)
+            # TODO: load song
+
+    def dump_state(self):
+        playlist = self.playlist
+        player = self.player
+
+        song = self.player.current_song
+        if song is not None:
+            song = reverse(song, as_line=True)
+        # TODO: dump player.media
+        state = {
+            'playback_mode': playlist.playback_mode.value,
+            'volume': player.volume,
+            'state': player.state.value,
+            'song': song,
+            'position': player.position,
+            'playlist': [reverse(song, as_line=True) for song in playlist.list()],
+        }
+        with open(STATE_FILE, 'w') as f:
+            json.dump(state, f)
 
     @contextmanager
     def create_action(self, s):  # pylint: disable=no-self-use
@@ -246,6 +297,7 @@ def run_app_once(app, future):
 
 
 def _shutdown_app(app):
+    app.about_to_shutdown.emit(app)
     app.player.stop()
     app.player.shutdown()
     Signal.teardown_aio_support()
