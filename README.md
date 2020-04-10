@@ -32,3 +32,4 @@ FeelUOwn 是一个符合 Unix 哲学的跨平台的音乐播放器～
 | ------- | ------ | -------- |
 | [Discord RPC Rich Precense 服务](https://github.com/BruceZhang1993/feeluown-discordrpc-plugin) | [@BruceZhang1993](https://github.com/BruceZhang1993) | 可用 |
 | [桌面通知](https://github.com/Rapiz1/feeluown-notification-plugin)|[@Rapiz1](https://github.com/rapiz1)| 可用 |
+| [YouTube/bilibili](https://github.com/cosven/rcfiles/blob/master/youtube_provider.py)|[@cosven](https://github.com/cosven) | 能用，但需要折腾 |
