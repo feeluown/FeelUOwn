@@ -13,7 +13,10 @@ MPV_SLEEP_SECOND = 0.1  # 留给 MPV 反应的时间
 
 
 class FakeSongModel:  # pylint: disable=all
-    pass
+    class meta:
+        support_multi_quality = False
+
+    url = ''
 
 
 class Meta:
