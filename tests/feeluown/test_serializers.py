@@ -10,7 +10,6 @@ def test_serialize_app(mocker):
     app.live_lyric = mocker.Mock()
     app.live_lyric.current_sentence = ''
     player = MpvPlayer()
-    player.initialize()
     app.player = player
     app.playlist = player.playlist
     for format in ('plain', 'json'):

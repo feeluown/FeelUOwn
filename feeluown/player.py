@@ -100,7 +100,7 @@ class Playlist(_Playlist):
         """if song has not valid media, we find a replacement in other providers"""
 
         if song is None:
-            self.set_current_song(None, None)
+            self._set_current_song(None, None)
             return
 
         if self.mode is PlaylistMode.fm and song not in self._songs:
@@ -117,7 +117,7 @@ class Playlist(_Playlist):
         except:  # noqa
             media = None
         if media is not None:
-            self.set_current_song(song, media)
+            self._set_current_song(song, media)
             return
         self.mark_as_bad(song)
 
@@ -134,7 +134,7 @@ class Playlist(_Playlist):
             else:
                 logger.info('find song standby failed: not found')
                 final_song = song
-            self.set_current_song(final_song, final_song.url)
+            self._set_current_song(final_song, final_song.url)
         else:
             self.next()
 

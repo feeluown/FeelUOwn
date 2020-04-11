@@ -150,9 +150,9 @@ class Playlist:
         media = None
         if song is not None:
             media = self.prepare_media(song)
-        self.set_current_song(song, media)
+        self._set_current_song(song, media)
 
-    def set_current_song(self, song, media):
+    def _set_current_song(self, song, media):
         if song is None:
             self._current_song = None
         else:

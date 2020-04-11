@@ -36,7 +36,6 @@ class TestPlayer(TestCase):
     def setUp(self):
         self.player = MpvPlayer()
         self.player.volume = 0
-        self.player.initialize()
 
     def tearDown(self):
         self.player.stop()
@@ -182,7 +181,6 @@ class TestPlayerAndPlaylist(TestCase):
 
     def setUp(self):
         self.player = MpvPlayer()
-        self.player.initialize()
 
     def tearDown(self):
         self.player.stop()

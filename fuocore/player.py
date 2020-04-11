@@ -62,7 +62,7 @@ class AbstractPlayer(metaclass=ABCMeta):
     def state(self):
         """Player state
 
-        :return: :class:`.State`
+        :rtype: State
         """
         return self._state
 
