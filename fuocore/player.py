@@ -43,8 +43,8 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: player state changed signal
         self.state_changed = Signal()
 
-        #: current song finished signal
-        self.song_finished = Signal()
+        #: current media finished signal
+        self.media_finished = Signal()
 
         #: duration changed signal
         self.duration_changed = Signal()
@@ -55,11 +55,14 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: volume changed signal: (int)
         self.volume_changed = Signal()
 
+        self._playlist.song_changed_v2.connect(self._on_song_changed)
+        self.media_finished.connect(self._on_media_finished)
+
     @property
     def state(self):
         """Player state
 
-        :return: :class:`.State`
+        :rtype: State
         """
         return self._state
 
@@ -130,25 +133,21 @@ class AbstractPlayer(metaclass=ABCMeta):
         :param video: show video or not
         """
 
-    @abstractmethod
-    def prepare_media(self, song, done_cb=None):
-        """prepare media data
-
-        In practice, we usually need to perform some web requests to extract
-        media data from song object, which may block the whole thread.
-        We can override this method to make the request action non-blocking,
-        when the action finishes, invoke done callback.
-
-        :param song: SongModel instance
-        :param done_cb: prepare done callback
-        """
-
-    @abstractmethod
     def play_song(self, song):
-        """play media by song model
+        """播放指定歌曲
 
-        :param song: :class:`fuocore.models.SongModel`
+        如果目标歌曲与当前歌曲不相同，则修改播放列表当前歌曲，
+        播放列表会发出 song_changed 信号，player 监听到信号后调用 play 方法，
+        到那时才会真正的播放新的歌曲。如果和当前播放歌曲相同，则忽略。
+
+        .. note::
+
+            调用方不应该直接调用 playlist.current_song = song 来切换歌曲
         """
+        if song is not None and song == self.current_song:
+            logger.warning('The song is already under playing.')
+        else:
+            self._playlist.current_song = song
 
     @abstractmethod
     def resume(self):
@@ -167,12 +166,29 @@ class AbstractPlayer(metaclass=ABCMeta):
         """stop player"""
 
     @abstractmethod
-    def initialize(self):
-        """"initialize player"""
-
-    @abstractmethod
     def shutdown(self):
         """shutdown player, do some clean up here"""
+
+    def _on_song_changed(self, song, media):
+        """播放列表 current_song 发生变化后的回调
+
+        判断变化后的歌曲是否有效的，有效则播放，否则将它标记为无效歌曲。
+        如果变化后的歌曲是 None，则停止播放。
+        """
+        if song is not None:
+            if media is None:
+                self._playlist.mark_as_bad(song)
+                self._playlist.next()
+            else:
+                self.play(media)
+        else:
+            self.stop()
+
+    def _on_media_finished(self):
+        if self._playlist.playback_mode == PlaybackMode.one_loop:
+            self.playlist.current_song = self.playlist.current_song
+        else:
+            self._playlist.next()
 
 
 # FIXME: remove this when no one import MpvPlayer from here

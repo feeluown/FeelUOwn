@@ -13,7 +13,10 @@ MPV_SLEEP_SECOND = 0.1  # 留给 MPV 反应的时间
 
 
 class FakeSongModel:  # pylint: disable=all
-    pass
+    class meta:
+        support_multi_quality = False
+
+    url = ''
 
 
 class Meta:
@@ -33,7 +36,6 @@ class TestPlayer(TestCase):
     def setUp(self):
         self.player = MpvPlayer()
         self.player.volume = 0
-        self.player.initialize()
 
     def tearDown(self):
         self.player.stop()
@@ -179,7 +181,6 @@ class TestPlayerAndPlaylist(TestCase):
 
     def setUp(self):
         self.player = MpvPlayer()
-        self.player.initialize()
 
     def tearDown(self):
         self.player.stop()

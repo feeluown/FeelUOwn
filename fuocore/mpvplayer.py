@@ -12,7 +12,7 @@ from mpv import (
 
 from fuocore.dispatch import Signal
 from fuocore.media import Media
-from fuocore.player import AbstractPlayer, State, PlaybackMode
+from fuocore.player import AbstractPlayer, State
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,6 @@ class MpvPlayer(AbstractPlayer):
         #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()
 
-    def initialize(self):
         self._mpv.observe_property(
             'time-pos',
             lambda name, position: self._on_position_changed(position)
@@ -66,8 +65,6 @@ class MpvPlayer(AbstractPlayer):
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv._event_callbacks.append(self._on_event)
-        self._playlist.song_changed.connect(self._on_song_changed)
-        self.song_finished.connect(self._on_song_finished)
         logger.debug('Player initialize finished.')
 
     def shutdown(self):
@@ -92,39 +89,10 @@ class MpvPlayer(AbstractPlayer):
         # TODO: we will emit a media object
         self.media_changed.emit(media)
 
-    def prepare_media(self, song, done_cb=None):
-        if song.meta.support_multi_quality:
-            media, quality = song.select_media('hq<>')
-        else:
-            media = song.url
-        media = Media(media) if media else None
-        if done_cb is not None:
-            done_cb(media)
-        return media
-
-    def play_song(self, song):
-        """播放指定歌曲
-
-        如果目标歌曲与当前歌曲不相同，则修改播放列表当前歌曲，
-        播放列表会发出 song_changed 信号，player 监听到信号后调用 play 方法，
-        到那时才会真正的播放新的歌曲。如果和当前播放歌曲相同，则忽略。
-
-        .. note::
-
-            调用方不应该直接调用 playlist.current_song = song 来切换歌曲
-        """
-        if song is not None and song == self.current_song:
-            logger.warning('The song is already under playing.')
-        else:
-            self._playlist.current_song = song
-
     def play_songs(self, songs):
         """(alpha) play list of songs"""
         self.playlist.init_from(songs)
         self.playlist.next()
-
-    def replay(self):
-        self.playlist.current_song = self.current_song
 
     def resume(self):
         self._mpv.pause = False
@@ -186,36 +154,12 @@ class MpvPlayer(AbstractPlayer):
     def _on_video_format_changed(self, vformat):
         self.video_format = vformat
 
-    def _on_song_changed(self, song):
-        """播放列表 current_song 发生变化后的回调
-
-        判断变化后的歌曲是否有效的，有效则播放，否则将它标记为无效歌曲。
-        如果变化后的歌曲是 None，则停止播放。
-        """
-        def prepare_callback(media):
-            if media is not None:
-                self.play(media)
-            else:
-                self._playlist.mark_as_bad(song)
-                self._playlist.next()
-
-        if song is not None:
-            self.prepare_media(song, done_cb=prepare_callback)
-        else:
-            self.stop()
-
     def _on_event(self, event):
         if event['event_id'] == MpvEventID.END_FILE:
             reason = event['event']['reason']
             logger.debug('Current song finished. reason: %d' % reason)
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
-                self.song_finished.emit()
-
-    def _on_song_finished(self):
-        if self._playlist.playback_mode == PlaybackMode.one_loop:
-            self.replay()
-        else:
-            self._playlist.next()
+                self.media_finished.emit()
 
     def _set_http_headers(self, http_headers):
         if http_headers:

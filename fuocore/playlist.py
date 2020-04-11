@@ -4,6 +4,7 @@ import random
 from enum import IntEnum
 
 from fuocore.dispatch import Signal
+from fuocore.media import Media
 from fuocore.utils import DedupList
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,8 @@ class Playlist:
     """player playlist provide a list of song model to play
     """
 
-    def __init__(self, songs=None, playback_mode=PlaybackMode.loop):
+    def __init__(self, songs=None, playback_mode=PlaybackMode.loop,
+                 audio_select_policy='hq<>'):
         """
         :param songs: list of :class:`fuocore.models.SongModel`
         :param playback_mode: :class:`fuocore.player.PlaybackMode`
@@ -37,6 +39,8 @@ class Playlist:
         #: store value for ``songs`` property
         self._songs = DedupList(songs or [])
 
+        self.audio_select_policy = audio_select_policy
+
         #: store value for ``playback_mode`` property
         self._playback_mode = playback_mode
 
@@ -47,6 +51,11 @@ class Playlist:
 
         The player will play the song after it receive the signal,
         when song is None, the player will stop playback.
+        """
+        self.song_changed_v2 = Signal()
+        """current song chagned signal, v2
+
+        emit(song, media)
         """
 
     def __len__(self):
@@ -138,16 +147,32 @@ class Playlist:
 
             该方法理论上只应该被 Player 对象调用。
         """
-        self._last_song = self.current_song
+        media = None
+        if song is not None:
+            media = self.prepare_media(song)
+        self._set_current_song(song, media)
+
+    def _set_current_song(self, song, media):
         if song is None:
             self._current_song = None
-        # add it to playlist if song not in playlist
-        elif song in self._songs:
-            self._current_song = song
         else:
-            self.insert(song)
-            self._current_song = song
+            # add it to playlist if song not in playlist
+            if song in self._songs:
+                self._current_song = song
+            else:
+                self.insert(song)
+                self._current_song = song
         self.song_changed.emit(song)
+        self.song_changed_v2.emit(song, media)
+
+    def prepare_media(self, song):
+        """prepare media data
+        """
+        if song.meta.support_multi_quality:
+            media, quality = song.select_media(self.audio_select_policy)
+        else:
+            media = song.url  # maybe a empty string
+        return Media(media) if media else None
 
     @property
     def playback_mode(self):

@@ -4,9 +4,7 @@ import asyncio
 import logging
 import threading
 from enum import IntEnum
-from functools import partial
 
-from fuocore.media import Media
 from fuocore.player import MpvPlayer, Playlist as _Playlist
 from fuocore.playlist import PlaybackMode
 from fuocore.dispatch import Signal
@@ -99,68 +97,46 @@ class Playlist(_Playlist):
 
     @_Playlist.current_song.setter
     def current_song(self, song):
-        """if song has not valid medai, we find a replacement in other providers"""
-
-        def validate_song(song):
-            # TODO: except specific exception
-            valid_quality_list = []
-            if song.meta.support_multi_quality:
-                try:
-                    valid_quality_list = song.list_quality()
-                except:  # noqa
-                    logger.exception('[playlist] check song quality list failed')
-            try:
-                url = song.url
-            except:  # noqa
-                logger.exception('[playlist] get song url failed')
-                url = ''
-            return bool(valid_quality_list or url)
-
-        def find_song_standby_cb(task):
-            final_song = song
-            try:
-                songs = task.result()
-            except asyncio.CancelledError:
-                logger.debug('badsong-autoreplace task is cancelled')
-            else:
-                if songs:
-                    final_song = songs[0]
-                    logger.info('find song standby success: %s', final_song)
-                else:
-                    logger.info('find song standby failed: not found')
-                _Playlist.current_song.__set__(self, final_song)
-
-        def validate_song_cb(future):
-            try:
-                valid = future.result()
-            except:  # noqa
-                valid = False
-            if valid:
-                _Playlist.current_song.__set__(self, song)
-                return
-            self.mark_as_bad(song)
-
-            # if mode is fm mode, do not find standby song,
-            # just skip the song
-            if self.mode is not PlaylistMode.fm:
-                self._app.show_msg('{} is invalid, try to find standby'
-                                   .format(str(song)))
-                task_spec = self._app.task_mgr.get_or_create('find-song-standby')
-                task = task_spec.bind_coro(self._app.library.a_list_song_standby(song))
-                task.add_done_callback(find_song_standby_cb)
-            else:
-                self.next()
+        """if song has not valid media, we find a replacement in other providers"""
 
         if song is None:
-            _Playlist.current_song.__set__(self, song)
+            self._set_current_song(None, None)
             return
 
         if self.mode is PlaylistMode.fm and song not in self._songs:
             self.mode = PlaylistMode.normal
 
-        task_spec = self._app.task_mgr.get_or_create('validate-song')
-        future = task_spec.bind_blocking_io(validate_song, song)
-        future.add_done_callback(validate_song_cb)
+        task_spec = self._app.task_mgr.get_or_create('set-current-song')
+        task_spec.bind_coro(self.a_set_current_song(song))
+
+    async def a_set_current_song(self, song):
+        task_spec = self._app.task_mgr.get_or_create('prepare-media')
+        future = task_spec.bind_blocking_io(self.prepare_media, song)
+        try:
+            media = await future
+        except:  # noqa
+            media = None
+        if media is not None:
+            self._set_current_song(song, media)
+            return
+        self.mark_as_bad(song)
+
+        # if mode is fm mode, do not find standby song,
+        # just skip the song
+        if self.mode is not PlaylistMode.fm:
+            self._app.show_msg('{} is invalid, try to find standby'
+                               .format(str(song)))
+
+            songs = await self._app.library.a_list_song_standby(song)
+            if songs:
+                final_song = songs[0]
+                logger.info('find song standby success: %s', final_song)
+            else:
+                logger.info('find song standby failed: not found')
+                final_song = song
+            self._set_current_song(final_song, final_song.url)
+        else:
+            self.next()
 
     @_Playlist.playback_mode.setter
     def playback_mode(self, playback_mode):
@@ -200,31 +176,8 @@ class Player(MpvPlayer):
     def __init__(self, app, *args, **kwargs):
         super().__init__(playlist=Playlist(app), *args, **kwargs)
         self._app = app
-        self._loop = asyncio.get_event_loop()
-        self.initialize()
 
     def play(self, url, video=True):
         if not (self._app.mode & self._app.GuiMode):
             video = False
         super().play(url, video)
-
-    def prepare_media(self, song, done_cb=None):
-        def callback(future):
-            try:
-                media, quality = future.result()
-            except Exception:  # noqa
-                logger.exception('prepare media data failed')
-            else:
-                media = Media(media) if media else None
-                done_cb(media)
-
-        if song.meta.support_multi_quality:
-            fetch = partial(song.select_media, self._app.config.AUDIO_SELECT_POLICY)
-        else:
-            def fetch(): return (song.url, None)  # noqa
-
-        def fetch_in_bg():
-            future = self._loop.run_in_executor(None, fetch)
-            future.add_done_callback(callback)
-
-        call_soon(fetch_in_bg, self._loop)

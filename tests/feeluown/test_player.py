@@ -122,11 +122,9 @@ async def test_prepare_media(app_mock, song):
 @pytest.mark.filterwarnings('ignore:coroutine')
 @pytest.mark.asyncio
 async def test_prepare_media_in_non_mainthread(app_mock, song):
-    player = Player(app_mock)
+    pl = Playlist(app_mock)
     loop = asyncio.get_event_loop()
-    mock_func = mock.MagicMock()
     try:
-        await loop.run_in_executor(
-            None, player.prepare_media, song, mock_func)
+        await loop.run_in_executor(None, pl.prepare_media, song)
     except RuntimeError:
         pytest.fail('Prepare media in non mainthread should work')
