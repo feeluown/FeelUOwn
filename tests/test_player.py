@@ -60,16 +60,6 @@ class TestPlayer(TestCase):
         self.player.position = 100
 
     @skipIf(cannot_play_audio, '')
-    def test_replay(self):
-        song = FakeValidSongModel()
-        self.player.play_song(song)
-        time.sleep(MPV_SLEEP_SECOND)
-        self.player.position = 100
-        self.player.replay()
-        time.sleep(MPV_SLEEP_SECOND)
-        self.assertTrue(self.player.position < 10)
-
-    @skipIf(cannot_play_audio, '')
     def test_play_pause_toggle_resume_stop(self):
         self.player.play(MP3_URL)
         time.sleep(MPV_SLEEP_SECOND)
@@ -200,7 +190,7 @@ class TestPlayerAndPlaylist(TestCase):
         playlist.next()
         self.assertTrue(playlist.current_song, s2)
 
-        self.playlist.previous()
+        playlist.previous()
         self.assertTrue(playlist.current_song, s1)
 
     @skipIf(cannot_play_audio, '')

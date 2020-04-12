@@ -177,7 +177,7 @@ class Player(MpvPlayer):
         super().__init__(playlist=Playlist(app), *args, **kwargs)
         self._app = app
 
-    def play(self, url, video=True):
+    def play(self, url, video=True, **kwargs):
         if not (self._app.mode & self._app.GuiMode):
             video = False
-        super().play(url, video)
+        super().play(url, video, **kwargs)

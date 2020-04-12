@@ -324,6 +324,8 @@ class AlbumsCollectionRenderer(Renderer):
 class PlayerPlaylistRenderer(Renderer):
 
     async def render(self):
+        self.meta_widget.title = '当前播放列表'
+        self.meta_widget.show()
         player = self._app.player
         playlist = player.playlist
 

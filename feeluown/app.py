@@ -75,7 +75,28 @@ class App:
                 else:
                     songs.append(song)
             playlist.init_from(songs)
-            # TODO: load song
+            if songs and self.mode & App.GuiMode:
+                self.ui.table_container.show_player_playlist()
+
+            song = state['song']
+
+            def before_media_change(old_media, media):
+                if old_media is not None or playlist.current_song != song:
+                    player.media_about_to_changed.disconnect(before_media_change)
+                    player.set_play_range()
+                    player.resume()
+
+            if song is not None:
+                try:
+                    song = resolve(state['song'])
+                except ResolverNotFound:
+                    pass
+                else:
+                    player.media_about_to_changed.connect(before_media_change,
+                                                          weak=False)
+                    player.pause()
+                    player.set_play_range(start=state['position'])
+                    player.load_song(song)
 
     def dump_state(self):
         playlist = self.playlist

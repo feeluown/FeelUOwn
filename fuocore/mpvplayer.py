@@ -81,18 +81,17 @@ class MpvPlayer(AbstractPlayer):
 
         # Clear playlist before play next song,
         # otherwise, mpv will seek to the last position and play.
+        self.media_about_to_changed.emit(self._current_media, media)
         self._mpv.playlist_clear()
         self._mpv.play(url)
-        self._mpv.pause = False
-        self.state = State.playing
         self._current_media = media
-        # TODO: we will emit a media object
         self.media_changed.emit(media)
 
-    def play_songs(self, songs):
-        """(alpha) play list of songs"""
-        self.playlist.init_from(songs)
-        self.playlist.next()
+    def set_play_range(self, start=None, end=None):
+        start = str(start) if start is not None else 'none'
+        end = str(end) if end is not None else 'none'
+        _mpv_set_option_string(self._mpv.handle, b'start', bytes(start, 'utf-8'))
+        _mpv_set_option_string(self._mpv.handle, b'end', bytes(end, 'utf-8'))
 
     def resume(self):
         self._mpv.pause = False
