@@ -49,6 +49,8 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: duration changed signal
         self.duration_changed = Signal()
 
+        #: media about to change: (old_media, media)
+        self.media_about_to_changed = Signal()
         #: media changed signal
         self.media_changed = Signal()
 
@@ -133,8 +135,12 @@ class AbstractPlayer(metaclass=ABCMeta):
         :param video: show video or not
         """
 
-    def play_song(self, song):
-        """播放指定歌曲
+    @abstractmethod
+    def set_play_range(self, start=None, end=None):
+        pass
+
+    def load_song(self, song):
+        """加载歌曲
 
         如果目标歌曲与当前歌曲不相同，则修改播放列表当前歌曲，
         播放列表会发出 song_changed 信号，player 监听到信号后调用 play 方法，
@@ -144,10 +150,19 @@ class AbstractPlayer(metaclass=ABCMeta):
 
             调用方不应该直接调用 playlist.current_song = song 来切换歌曲
         """
-        if song is not None and song == self.current_song:
-            logger.warning('The song is already under playing.')
-        else:
+        if song is not None and song != self.current_song:
             self._playlist.current_song = song
+
+    def play_song(self, song):
+        """加载并播放指定歌曲"""
+        self.load_song(song)
+        self.resume()
+
+    def play_songs(self, songs):
+        """(alpha) play list of songs"""
+        self.playlist.init_from(songs)
+        self.playlist.next()
+        self.resume()
 
     @abstractmethod
     def resume(self):

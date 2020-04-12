@@ -12,6 +12,8 @@ from .base import cached_field
 __all__ = (
     'resolve',
     'reverse',
+    'ResolveFailed',
+    'ResolverNotFound',
     'Resolver',
     'cached_field',
 )
@@ -655,4 +657,6 @@ from .uri import (
     resolve,
     reverse,
     Resolver,
+    ResolveFailed,
+    ResolverNotFound,
 )  # noqa

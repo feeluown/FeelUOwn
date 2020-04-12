@@ -14,4 +14,5 @@ SONG_DIR = HOME_DIR + '/songs'
 COLLECTIONS_DIR = HOME_DIR + '/collections'
 
 LOG_FILE = HOME_DIR + '/stdout.log'
+STATE_FILE = os.path.join(DATA_DIR, 'state.json')
 DEFAULT_RCFILE_PATH = os.path.expanduser('~/.fuorc')

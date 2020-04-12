@@ -5,8 +5,7 @@ import pytest
 
 from fuocore.playlist import PlaybackMode
 from fuocore.dispatch import Signal
-from feeluown.player import Playlist, Player, PlaylistMode
-from tests.helpers import is_travis_env
+from feeluown.player import Playlist, PlaylistMode
 
 
 @pytest.mark.filterwarnings('ignore:coroutine')
@@ -105,18 +104,6 @@ async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker):
     pl.mode = PlaylistMode.fm
     pl.next()
     mock_set.assert_has_calls([mock.call(pl, song)])
-
-
-@pytest.mark.skipif(is_travis_env, reason="this may fail")
-@pytest.mark.filterwarnings('ignore:coroutine')
-@pytest.mark.asyncio
-async def test_prepare_media(app_mock, song):
-    player = Player(app_mock)
-    mock_func = mock.MagicMock()
-    player.prepare_media(song, mock_func)
-    # this may fail, since we should probably wait a little bit longer
-    await asyncio.sleep(0.1)
-    assert mock_func.called is True
 
 
 @pytest.mark.filterwarnings('ignore:coroutine')

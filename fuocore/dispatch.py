@@ -62,7 +62,8 @@ class Signal:
             cls.aioqueue.async_q.task_done()
 
     def emit(self, *args):
-        for receiver in self.receivers:
+        # allow remove receiver during emitting
+        for receiver in self.receivers.copy():
             try:
                 if self._is_alive(receiver):
                     if isinstance(receiver, weakref.ReferenceType):
