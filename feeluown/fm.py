@@ -55,6 +55,7 @@ class FM:
         self._app.playlist.eof_reached.connect(self._on_playlist_eof_reached)
         self._app.playlist.mode = PlaylistMode.fm
         self._app.playlist.next()
+        self._app.player.resume()
         logger.info('fm mode actiavted')
 
     def deactivate(self):
