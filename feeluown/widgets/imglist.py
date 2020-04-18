@@ -30,7 +30,7 @@ from fuocore import aio
 from fuocore.reader import wrap
 from fuocore.excs import ProviderIOError
 from fuocore.models.uri import reverse
-from feeluown.helpers import ItemViewNoScrollMixin
+from feeluown.helpers import ItemViewNoScrollMixin, resize_font
 
 logger = logging.getLogger(__name__)
 
@@ -233,7 +233,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.save()
         pen = painter.pen()
         font = painter.font()
-        font.setPixelSize(font.pixelSize() - 2)
+        resize_font(font, -2)
         painter.setFont(font)
         pen.setColor(non_text_color)
         painter.setPen(non_text_color)
@@ -292,3 +292,9 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
 
         self._row_height = calc_cover_size(self.width())[1] + CoverSpacing
         self.adjust_height()
+
+    def mouseReleaseEvent(self, e):
+        if e.button() in (Qt.BackButton, Qt.ForwardButton):
+            e.ignore()
+        else:
+            super().mouseReleaseEvent(e)

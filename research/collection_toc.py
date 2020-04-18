@@ -55,7 +55,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
         flags = Qt.AlignCenter
         circle_rect = QRect(x, y, 2*r, 2*r)
         font = painter.font()
-        font.setPixelSize(r//2)
+        font.setPointSize(r//2)
         painter.setFont(font)
 
         # draw icon

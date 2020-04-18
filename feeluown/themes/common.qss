@@ -1,5 +1,5 @@
 QWidget {
-    font-size: 13px;
+    /* font-size: 13px; */
     /* tips: you can turn on border for debugging */
     /* border: 1px solid red; */
 }
@@ -68,9 +68,14 @@ TextButton {
     padding: 2px 8px;
     border-radius: 3px;
 }
-#mv_btn {
+#mv_btn, #lyric_btn {
     font-size: 9px;
+}
+#mv_btn {
     padding: 0px 3px;
+}
+#lyric_btn {
+    padding: 0px 5px;
 }
 #toggle_video_btn {
     padding: 0px 3px;

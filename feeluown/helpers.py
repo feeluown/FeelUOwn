@@ -68,6 +68,13 @@ def disconnect_slots_if_has(signal):
         pass
 
 
+def resize_font(font, delta):
+    if font.pixelSize() > 0:
+        font.setPixelSize(max(1, font.pixelSize() + delta))
+    else:
+        font.setPointSize(max(1, font.pointSize() + delta))
+
+
 class BgTransparentMixin:
     def __init__(self, *args, **kwargs):
         palette = self.palette()
