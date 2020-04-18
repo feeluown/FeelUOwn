@@ -209,6 +209,7 @@ def create_app(config):
 
     if mode & App.GuiMode:
 
+        from PyQt5.QtCore import Qt
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
@@ -233,6 +234,14 @@ def create_app(config):
                 self.ui.mpv_widget.close()
                 event_loop = asyncio.get_event_loop()
                 event_loop.stop()
+
+            def mouseReleaseEvent(self, e):
+                if not self.rect().contains(e.pos()):
+                    return
+                if e.button() == Qt.BackButton:
+                    self.browser.back()
+                elif e.button() == Qt.ForwardButton:
+                    self.browser.forward()
 
         class FApp(App, GuiApp):
             def __init__(self, config):

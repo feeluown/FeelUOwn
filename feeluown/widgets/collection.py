@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (QListView, QStyledItemDelegate, QStyle,
                              QSizePolicy, QFrame, QVBoxLayout)
 
 from fuocore.models import ModelType
+from feeluown.helpers import resize_font
 from feeluown.widgets.meta import CollMetaWidget
 from feeluown.widgets.songs import SongListView
 
@@ -143,7 +144,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
 
             # draw bonus text
             font = painter.font()
-            font.setPixelSize(font.pixelSize() - 2)
+            resize_font(font, - 2)
             painter.setFont(font)
             pen = painter.pen()
             pen.setColor(bonus_text_color)
@@ -157,7 +158,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
             pen.setColor(text_color)
             painter.setPen(pen)
             font = painter.font()
-            font.setPixelSize(30)
+            font.setPointSize(30)
             painter.setFont(font)
             painter.drawText(
                 QRect(QPoint(icon_x, icon_y),

@@ -20,6 +20,7 @@ from fuocore.utils import parse_ms
 from fuocore.player import PlaybackMode, State
 from feeluown.helpers import async_run
 from feeluown.widgets import TextButton
+from feeluown.widgets.lyric import Window as LyricWindow
 from feeluown.widgets.volume_button import VolumeButton
 
 logger = logging.getLogger(__name__)
@@ -86,8 +87,12 @@ class PlayerControlPanel(QFrame):
         #: mark song as favorite button
         self.like_btn = QPushButton(self)
         self.mv_btn = TextButton('MV', self)
+        self.lyric_btn = TextButton('词', self)
         self.download_btn = QPushButton(self)
         self.toggle_video_btn = TextButton('△', self)
+
+        self.lyric_window = LyricWindow()
+        self.lyric_window.hide()
 
         self.previous_btn.setObjectName('previous_btn')
         self.pp_btn.setObjectName('pp_btn')
@@ -98,6 +103,7 @@ class PlayerControlPanel(QFrame):
         self.download_btn.setObjectName('download_btn')
         self.like_btn.setObjectName('like_btn')
         self.mv_btn.setObjectName('mv_btn')
+        self.lyric_btn.setObjectName('lyric_btn')
         self.toggle_video_btn.setObjectName('toggle_video_btn')
 
         self.progress_slider = ProgressSlider(self)
@@ -127,6 +133,7 @@ class PlayerControlPanel(QFrame):
         self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
+        self.lyric_btn.clicked.connect(self._toggle_lyric_window)
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
 
@@ -146,6 +153,9 @@ class PlayerControlPanel(QFrame):
         self.progress_slider.pause_player_needed.connect(player.pause)
         self.progress_slider.change_position_needed.connect(
             lambda value: setattr(player, 'position', value))
+        self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
+        self.lyric_window.play_previous_needed.connect(player.playlist.previous)
+        self.lyric_window.play_next_needed.connect(player.playlist.next)
 
         self._update_pms_btn_text()
         self._setup_ui()
@@ -161,6 +171,7 @@ class PlayerControlPanel(QFrame):
         self.like_btn.setFixedSize(15, 15)
         self.download_btn.setFixedSize(15, 15)
         self.mv_btn.setFixedHeight(16)
+        self.lyric_btn.setFixedHeight(16)
 
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self._sub_layout = QVBoxLayout()
@@ -176,6 +187,8 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addWidget(self.like_btn)
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.mv_btn)
+        self._sub_top_layout.addSpacing(8)
+        self._sub_top_layout.addWidget(self.lyric_btn)
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.download_btn)
         self._sub_top_layout.addSpacing(3)
@@ -288,3 +301,9 @@ class PlayerControlPanel(QFrame):
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
+
+    def _toggle_lyric_window(self):
+        if self.lyric_window.isVisible():
+            self.lyric_window.hide()
+        else:
+            self.lyric_window.show()
