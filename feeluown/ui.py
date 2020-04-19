@@ -42,7 +42,8 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.pc_panel.playlist_btn.clicked.connect(self.show_player_playlist)
+        self.pc_panel.playlist_btn.clicked.connect(
+            lambda: self._app.browser.goto(uri='/player_playlist'))
         self.pc_panel.mv_btn.clicked.connect(self._play_mv)
         self.toggle_video_btn.clicked.connect(self._toggle_video)
         self._app.player.video_format_changed.connect(
@@ -85,9 +86,6 @@ class Ui:
             self.toggle_video_btn.show()
             self.show_video_widget()
             self._app.player.play(media)
-
-    def show_player_playlist(self):
-        self.table_container.show_player_playlist()
 
     def on_video_format_changed(self, vformat):
         """when video is available, show toggle_video_btn"""

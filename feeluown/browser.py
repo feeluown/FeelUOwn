@@ -142,12 +142,15 @@ class Browser:
 
         1. bind routes with handler
         """
-
-        from feeluown.gui.pages.search import render as render_search
+        from feeluown.gui.pages import (
+            render_search,
+            render_player_playlist,
+        )
 
         urlpatterns = [
             ('/colls/<identifier>', self._render_coll),
             ('/search', render_search),
+            ('/player_playlist', render_player_playlist),
         ]
         for url, handler in urlpatterns:
             self.route(url)(handler)

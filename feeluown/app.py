@@ -76,7 +76,7 @@ class App:
                     songs.append(song)
             playlist.init_from(songs)
             if songs and self.mode & App.GuiMode:
-                self.ui.table_container.show_player_playlist()
+                self.browser.goto(uri='/player_playlist')
 
             song = state['song']
 
