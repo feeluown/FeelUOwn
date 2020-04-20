@@ -183,12 +183,13 @@ class Playlist:
         self._playback_mode = playback_mode
         self.playback_mode_changed.emit(playback_mode)
 
-    def _get_good_song(self, base=0, random_=False, direction=1):
+    def _get_good_song(self, base=0, random_=False, direction=1, loop=True):
         """从播放列表中获取一首可以播放的歌曲
 
         :param base: base index
         :param random: random strategy or not
         :param direction: forward if > 0 else backword
+        :param loop: regard the song list as a loop
 
         >>> pl = Playlist([1, 2, 3])
         >>> pl._get_good_song()
@@ -209,12 +210,20 @@ class Playlist:
 
         good_songs = []
         if direction > 0:
-            song_list = self._songs[base:] + self._songs[0:base]
+            if loop is True:
+                song_list = self._songs[base:] + self._songs[0:base]
+            else:
+                song_list = self._songs[base:]
         else:
-            song_list = self._songs[base::-1] + self._songs[:base:-1]
+            if loop is True:
+                song_list = self._songs[base::-1] + self._songs[:base:-1]
+            else:
+                song_list = self._songs[base::-1]
         for song in song_list:
             if song not in self._bad_songs:
                 good_songs.append(song)
+        if not good_songs:
+            return None
         if random_:
             return random.choice(good_songs)
         else:
@@ -237,7 +246,7 @@ class Playlist:
                 elif self.playback_mode == PlaybackMode.sequential:
                     next_song = None
             else:
-                next_song = self._get_good_song(base=current_index+1)
+                next_song = self._get_good_song(base=current_index+1, loop=False)
         return next_song
 
     @property
