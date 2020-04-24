@@ -45,7 +45,10 @@ class Window(QWidget):
         self._old_pos = e.globalPos()
 
     def mouseMoveEvent(self, e):
-        if self._old_pos is not None and e.button() == Qt.LeftButton:
+        # NOTE: e.button() == Qt.LeftButton don't work on Windows
+        # on Windows, even I drag with LeftButton, the e.button() return 0,
+        # which means no button
+        if self._old_pos is not None:
             delta = e.globalPos() - self._old_pos
             self.move(self.x() + delta.x(), self.y() + delta.y())
             self._old_pos = e.globalPos()
