@@ -3,7 +3,8 @@ from textwrap import indent
 from .base import Serializer, SerializerMeta, SerializerError
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
+    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin, \
+    VideoSerializerMixin
 from ._plain_formatter import WideFormatter
 
 formatter = WideFormatter()
@@ -143,6 +144,11 @@ class PlaylistSerializer(ModelSerializer, PlaylistSerializerMixin,
 
 class UserSerializer(ModelSerializer, UserSerializerMixin,
                      metaclass=SerializerMeta):
+    pass
+
+
+class VideoSerializer(ModelSerializer, VideoSerializerMixin,
+                      metaclass=SerializerMeta):
     pass
 
 
