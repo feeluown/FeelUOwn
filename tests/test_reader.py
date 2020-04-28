@@ -1,6 +1,6 @@
 from unittest import mock, TestCase
 
-from fuocore.reader import RandomReader, RandomSequentialReader, SequentialReader
+from fuocore.reader import RandomReader, RandomSequentialReader, wrap
 
 
 def test_sequential_reader():
@@ -10,7 +10,7 @@ def test_sequential_reader():
             yield i
 
     g = g_func()
-    reader = SequentialReader.wrap(g)
+    reader = wrap(g)
     assert len(list(reader)) == 5
 
 

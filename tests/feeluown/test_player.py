@@ -8,25 +8,6 @@ from fuocore.dispatch import Signal
 from feeluown.player import Playlist, PlaylistMode
 
 
-@pytest.mark.filterwarnings('ignore:coroutine')
-@pytest.mark.asyncio
-async def test_set_cursong_in_non_mainthread(app_mock, song):
-    pl = Playlist(app_mock)
-
-    def set_in_non_mainthread():
-        pl.current_song = song
-
-    loop = asyncio.get_event_loop()
-    try:
-        # make song url invalid
-        song.url = ''
-        # playlist should create a asyncio task to fetch a standby
-        # set current song in non mainthread
-        await loop.run_in_executor(None, set_in_non_mainthread)
-    except RuntimeError:
-        pytest.fail('Set current song in non mainthread should work')
-
-
 @pytest.mark.asyncio
 async def test_playlist_change_mode(app_mock, mocker):
     mock_clear = mocker.patch.object(Playlist, 'clear')
@@ -43,6 +24,7 @@ async def test_playlist_change_mode(app_mock, mocker):
 
 @pytest.mark.asyncio
 async def test_playlist_exit_fm_mode(app_mock, song, mocker):
+    mocker.patch.object(Playlist, 'a_set_current_song')
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.current_song = song
@@ -52,6 +34,7 @@ async def test_playlist_exit_fm_mode(app_mock, song, mocker):
 
 @pytest.mark.asyncio
 async def test_playlist_fm_mode_play_next(app_mock, song, song1, mocker):
+    mocker.patch.object(Playlist, 'a_set_current_song')
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
@@ -63,6 +46,7 @@ async def test_playlist_fm_mode_play_next(app_mock, song, song1, mocker):
 
 @pytest.mark.asyncio
 async def test_playlist_fm_mode_play_previous(app_mock, song, song1, mocker):
+    mocker.patch.object(Playlist, 'a_set_current_song')
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
@@ -74,6 +58,7 @@ async def test_playlist_fm_mode_play_previous(app_mock, song, song1, mocker):
 
 @pytest.mark.asyncio
 async def test_playlist_eof_reached(app_mock, song, mocker):
+    mocker.patch.object(Playlist, 'a_set_current_song')
     mock_emit = mocker.patch.object(Signal, 'emit')
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
@@ -90,6 +75,7 @@ async def test_playlist_eof_reached(app_mock, song, mocker):
 
 @pytest.mark.asyncio
 async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker):
+    mocker.patch.object(Playlist, 'a_set_current_song')
     mock_current_song = mocker.patch.object(Playlist, 'current_song')
     mock_set = mocker.MagicMock()
     mock_current_song.__get__ = mocker.MagicMock(return_value=None)
