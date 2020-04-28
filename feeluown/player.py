@@ -115,10 +115,13 @@ class Playlist(_Playlist):
         try:
             media = await future
         except:  # noqa
-            media = None
+            logger.exception('prepare media failed')
+            self.next()
+            return
         if media is not None:
             self._set_current_song(song, media)
             return
+        logger.info('song:{} media is None, mark as bad')
         self.mark_as_bad(song)
 
         # if mode is fm mode, do not find standby song,
