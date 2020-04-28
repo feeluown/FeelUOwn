@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-import sys
 from setuptools import setup
 from os import path
 
@@ -59,7 +58,6 @@ setup(
     url='https://github.com/feeluown/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
     classifiers=[
-        'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
@@ -79,7 +77,8 @@ setup(
         'janus',
         'requests',
         'pyopengl',
-    ] + (['qasync'] if sys.version_info >= (3, 6) else ['quamash>=0.5.5']),
+        'qasync',
+    ],
     extras_require={
         'battery': ['fuo-local>=0.1.1',
                     'fuo-xiami>=0.1.2',
