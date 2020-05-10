@@ -65,7 +65,7 @@ async def test_playlist_eof_reached(app_mock, song, mocker):
     pl.next()  # first emit
     pl.fm_add(song)
     # assume current_song is song
-    pl._current_song = song
+    pl._current_item = song
     pl.next()  # second emit
     mock_emit.assert_has_calls([
         mock.call(),

@@ -132,10 +132,10 @@ class TestPlaylist(TestCase):
     def test_remove_4(self):
         """移除一首被标记为无效的歌曲"""
         self.playlist.mark_as_bad(self.s2)
-        self.assertEqual(len(self.playlist._bad_songs), 1)
+        self.assertEqual(len(self.playlist._bad_items), 1)
         self.playlist.remove(self.s2)
         self.assertEqual(len(self.playlist), 1)
-        self.assertEqual(len(self.playlist._bad_songs), 0)
+        self.assertEqual(len(self.playlist._bad_items), 0)
 
     def test_getitem(self):
         self.assertEqual(self.playlist[1], self.s2)
