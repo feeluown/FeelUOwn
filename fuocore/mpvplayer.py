@@ -37,7 +37,8 @@ class MpvPlayer(AbstractPlayer):
         # set log_handler if you want to debug
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'
-        logger.info('libmpv version %s', _mpv_client_api_version())
+        # the default version of libmpv on Ubuntu 18.04 is (1, 25)
+        self._version = _mpv_client_api_version()
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True,
@@ -88,8 +89,12 @@ class MpvPlayer(AbstractPlayer):
         self.media_changed.emit(media)
 
     def set_play_range(self, start=None, end=None):
-        start = str(start) if start is not None else 'none'
-        end = str(end) if end is not None else 'none'
+        if self._version >= (1, 28):
+            start_default, end_default = 'none', 'none'
+        else:
+            start_default, end_default = '0%', '100%'
+        start = str(start) if start is not None else start_default
+        end = str(end) if end is not None else end_default
         _mpv_set_option_string(self._mpv.handle, b'start', bytes(start, 'utf-8'))
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end, 'utf-8'))
 
