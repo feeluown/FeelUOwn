@@ -53,7 +53,7 @@ def elfhash(s):
     return (hash & 0x7FFFFFFF)
 
 
-def find_previous(element, l):
+def find_previous(element, list_):
     """
     find previous element in a sorted list
 
@@ -67,8 +67,8 @@ def find_previous(element, l):
     >>> find_previous(3, [1, 2])
     2
     """
-    length = len(l)
-    for index, current in enumerate(l):
+    length = len(list_)
+    for index, current in enumerate(list_):
         # current is the last element
         if length - 1 == index:
             return current
@@ -78,7 +78,7 @@ def find_previous(element, l):
             if element < current:
                 return None
 
-        if current <= element < l[index+1]:
+        if current <= element < list_[index+1]:
             return current
 
 

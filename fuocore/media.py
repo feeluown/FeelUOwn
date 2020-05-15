@@ -47,7 +47,7 @@ class Quality:
         )
 
         @classmethod
-        def apply(cls, source, l):
+        def apply(cls, source, l):  # noqa: E741
             """sort the list L using the policy parsed from SOURCE
 
             :param source: policy source string
@@ -106,7 +106,7 @@ class Quality:
             return l
 
         @staticmethod
-        def _get_index(q, l):
+        def _get_index(q, l):  # noqa: E741
             try:
                 q_idx = l.index(q)
             except ValueError:

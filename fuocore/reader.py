@@ -273,12 +273,12 @@ class RandomSequentialReader(RandomReader):
         return obj
 
     @classmethod
-    def from_list(cls, l):
+    def from_list(cls, list_):
         """
-        :param list l: list of objects
+        :param list list_: list of objects
         """
         warnings.warn("use wrap function instead, this will be removed on 3.5")
-        return wrap(l)
+        return wrap(list_)
 
 
 def wrap(iterable):

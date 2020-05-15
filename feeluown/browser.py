@@ -101,7 +101,7 @@ class Browser:
                     if inspect.iscoroutine(x):
                         aio.create_task(x)
                 except NotFound:
-                    action.failed('not found.'.format(uri))
+                    action.failed(f'{uri} not found.')
                     return
         self._last_uri = self.current_uri
         if model is not None:

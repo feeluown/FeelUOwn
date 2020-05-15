@@ -207,4 +207,4 @@ class AbstractPlayer(metaclass=ABCMeta):
 
 
 # FIXME: remove this when no one import MpvPlayer from here
-from fuocore.mpvplayer import MpvPlayer  # noqa: F841, F401
+from fuocore.mpvplayer import MpvPlayer  # noqa: F841, F401, E402
