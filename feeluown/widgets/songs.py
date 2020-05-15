@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QStyle, QSizePolicy, QStyleOptionButton, QStyledItemDelegate,
 )
 
+from fuocore.dispatch import Signal
 from fuocore.excs import ProviderIOError
 from fuocore.models import ModelExistence
 
@@ -468,6 +469,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
         self.activated.connect(self._on_activated)
+        self.about_to_show_menu = Signal()
 
         self._setup_ui()
 
@@ -521,21 +523,34 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         model.dataChanged.emit(topleft, bottomright, [])
 
     def contextMenuEvent(self, event):
-        if self.remove_song_func is None:
-            return
-
         indexes = self.selectionModel().selectedIndexes()
         if len(indexes) <= 0:
             return
 
         menu = QMenu()
-        remove_song_action = QAction('移除歌曲', menu)
+
+        # add to playlist action
         add_to_playlist_action = QAction('添加到播放队列', menu)
-        remove_song_action.triggered.connect(lambda: self._remove_by_indexes(indexes))
         add_to_playlist_action.triggered.connect(lambda: self._add_to_playlist(indexes))
         menu.addAction(add_to_playlist_action)
-        menu.addSeparator()
-        menu.addAction(remove_song_action)
+
+        # remove song action
+        if self.remove_song_func is not None:
+            remove_song_action = QAction('移除歌曲', menu)
+            remove_song_action.triggered.connect(
+                lambda: self._remove_by_indexes(indexes))
+            menu.addSeparator()
+            menu.addAction(remove_song_action)
+
+        def add_action(text, callback):
+            action = QAction(text, menu)
+            menu.addSeparator()
+            menu.addAction(action)
+            model = self.model()
+            action.triggered.connect(
+                lambda: callback([model.data(index, Qt.UserRole) for index in indexes]))
+
+        self.about_to_show_menu.emit({'add_action': add_action})
         menu.exec(event.globalPos())
 
     def _add_to_playlist(self, indexes):
