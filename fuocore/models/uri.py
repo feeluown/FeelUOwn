@@ -42,7 +42,6 @@ TYPE_NS_MAP = {
     ModelType.playlist: 'playlists',
     ModelType.user: 'users',
     ModelType.lyric: 'lyrics',
-    ModelType.video: 'videos',
 }
 NS_TYPE_MAP = {
     value: key

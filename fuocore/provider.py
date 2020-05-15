@@ -14,7 +14,6 @@ from fuocore.models import (
     AlbumModel,
     PlaylistModel,
     LyricModel,
-    VideoModel,
 
     UserModel,
 
@@ -31,7 +30,6 @@ _TYPE_NAME_MAP = {
     ModelType.playlist: 'Playlist',
     ModelType.lyric: 'Lyric',
     ModelType.user: 'User',
-    ModelType.video: 'Video',
 }
 
 
@@ -46,7 +44,6 @@ class AbstractProvider(ABC):
     Playlist = PlaylistModel
     Lyric = LyricModel
     User = UserModel
-    Video = VideoModel
 
     def __init__(self):
         self._user = None
@@ -152,18 +149,6 @@ class DummySongModel(SongModel, DummyBaseModel):
                 artists=[DummyArtistModel.get(Dummy)],
                 album=DummyAlbumModel.get(Dummy),
                 url=Dummy,
-            )
-        return None
-
-
-class DummyVideoModel(VideoModel, DummyBaseModel):
-    @classmethod
-    def get(cls, identifier):
-        if identifier == Dummy:
-            return cls(
-                identifier=Dummy,
-                title=Dummy,
-                media=Dummy,
             )
         return None
 

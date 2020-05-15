@@ -1,7 +1,6 @@
 from fuocore.provider import AbstractProvider
 from fuocore.models import SongModel, ArtistModel, \
-    AlbumModel, PlaylistModel, UserModel, SearchModel, \
-    VideoModel
+    AlbumModel, PlaylistModel, UserModel, SearchModel
 
 
 simple_fields = set({'title', 'duration', 'url',
@@ -35,13 +34,6 @@ class SongSerializerMixin:
         # since url can be too long, we put it at last
         fields = ('title', 'duration', 'album', 'artists', 'url')
         line_fmt = '{uri:{uri_length}}\t# {title:_18} - {artists_name:_20}'
-
-
-class VideoSerializerMixin:
-    class Meta:
-        types = (VideoModel, )
-        fields = ('title', 'media')
-        line_fmt = '{uri:{uri_length}}\t# {title:_38}'
 
 
 class ArtistSerializerMixin:

@@ -2,8 +2,7 @@ from .base import Serializer, SerializerMeta, SerializerError, \
     SimpleSerializerMixin
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin, \
-    VideoSerializerMixin
+    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
 
 
 class PythonSerializer(Serializer):
@@ -80,11 +79,6 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
 
 class SongSerializer(ModelSerializer, SongSerializerMixin,
                      metaclass=SerializerMeta):
-    pass
-
-
-class VideoSerializer(ModelSerializer, VideoSerializerMixin,
-                      metaclass=SerializerMeta):
     pass
 
 
