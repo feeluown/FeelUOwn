@@ -111,6 +111,10 @@ class CollectionManager:
         self._library = app.library
 
     def scan(self):
+        """
+        scan collections directories for valid fuo files, yield
+        Collection instance for each file.
+        """
         has_default_songs = False
         has_default_albums = False
         directorys = [COLLECTIONS_DIR]

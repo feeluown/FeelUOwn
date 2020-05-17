@@ -2,10 +2,20 @@ import logging
 from functools import partial
 
 from fuocore import aio
+from fuocore.dispatch import Signal
 from fuocore.models import SearchType
+from fuocore.provider import AbstractProvider
 from fuocore.utils import log_exectime
 
 logger = logging.getLogger(__name__)
+
+
+class ProviderAlreadyExists(Exception):
+    pass
+
+
+class ProviderNotFound(Exception):
+    pass
 
 
 def _sort_song_standby(song, standby_list):
@@ -46,18 +56,44 @@ def _extract_and_sort_song_standby_list(song, result_g):
     return sorted_standby_list
 
 
-class Library(object):
+class Library:
     """音乐库，管理资源提供方以及资源"""
     def __init__(self):
         self._providers = set()
 
+        self.provider_added = Signal()  # emit(AbstractProvider)
+        self.provider_removed = Signal()  # emit(AbstractProvider)
+
     def register(self, provider):
-        """注册资源提供方"""
+        """register provider
+
+        :raises ProviderAlreadyExists:
+        :raises ValueError:
+
+        >>> from fuocore.provider import dummy_provider
+        >>> library = Library()
+        >>> library.register(dummy_provider)
+        >>> library.register(dummy_provider)
+        Traceback (most recent call last):
+            ...
+        fuocore.library.ProviderAlreadyExists
+        """
+        if not isinstance(provider, AbstractProvider):
+            raise ValueError('invalid provider instance')
+        for _provider in self._providers:
+            if _provider.identifier == provider.identifier:
+                raise ProviderAlreadyExists
         self._providers.add(provider)
+        self.provider_added.emit(provider)
 
     def deregister(self, provider):
-        """反注册资源提供方"""
-        self._providers.remove(provider)
+        """deregister provider"""
+        try:
+            self._providers.remove(provider)
+        except ValueError:
+            raise ProviderNotFound from None
+        else:
+            self.provider_removed.emit(provider)
 
     def get(self, identifier):
         """通过资源提供方唯一标识获取提供方实例"""
