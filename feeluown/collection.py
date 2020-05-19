@@ -3,7 +3,8 @@ import os
 from enum import Enum
 from pathlib import Path
 
-from fuocore.models.uri import resolve, reverse, ResolverNotFound, ResolveFailed
+from fuocore.models.uri import resolve, reverse, ResolverNotFound, \
+    ResolveFailed, ModelExistence
 from fuocore.models import ModelType
 from feeluown.consts import COLLECTIONS_DIR
 
@@ -38,9 +39,11 @@ class Collection:
         self.models = []
         self.updated_at = None
         self.created_at = None
+        self._has_nonexistent_models = False
 
     def load(self):
         """解析文件，初始化自己"""
+        self.models = []
         filepath = Path(self.fpath)
         name = filepath.stem
         stat_result = filepath.stat()
@@ -63,6 +66,8 @@ class Collection:
                     logger.warning('invalid line: %s', line)
                     model = None
                 if model is not None:
+                    if model.exists is ModelExistence.no:
+                        self._has_nonexistent_models = True
                     self.models.append(model)
 
     def add(self, model):
@@ -104,6 +109,23 @@ class Collection:
             self.models.remove(model)
         return True
 
+    def on_provider_added(self, provider):
+        if not self._has_nonexistent_models:
+            return
+        for i, model in enumerate(self.models.copy()):
+            if model.exists is ModelExistence.no and model.source == provider.identifier:
+                model_cls = provider.get_model_cls(model.meta.model_type)
+                new_model = model_cls(model)
+                new_model.exists = ModelExistence.unknown
+                # TODO: emit data changed signal
+                self.models[i] = new_model
+
+    def on_provider_removed(self, provider):
+        for model in self.models:
+            if model.source == provider.identifier:
+                model.exists = ModelExistence.no
+                self._has_nonexistent_models = True
+
 
 class CollectionManager:
     def __init__(self, app):
@@ -139,6 +161,8 @@ class CollectionManager:
                 coll = Collection(filepath)
                 # TODO: 可以调整为并行
                 coll.load()
+                self._app.library.provider_added.connect(coll.on_provider_added)
+                self._app.library.provider_removed.connect(coll.on_provider_removed)
                 yield coll
 
         default_fpaths = []
@@ -149,6 +173,8 @@ class CollectionManager:
         for fpath in default_fpaths:
             coll = Collection(fpath)
             coll.load()
+            self._app.library.provider_added.connect(coll.on_provider_added)
+            self._app.library.provider_removed.connect(coll.on_provider_removed)
             yield coll
 
     @classmethod

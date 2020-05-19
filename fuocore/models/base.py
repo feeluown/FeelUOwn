@@ -1,9 +1,10 @@
+import logging
 import time
 from threading import RLock
 
 from enum import IntEnum, Enum
 
-
+logger = logging.getLogger(__name__)
 _NOT_FOUND = object()
 
 
@@ -169,6 +170,8 @@ class ModelExistence(IntEnum):
 
     在许多音乐平台，当一个歌手、专辑不存在时，它们的接口可能构造一个
     id 为 0, name 为 None 的字典。这类 model.exists 应该被置为 no。
+
+    这个字段不应该被缓存。
     """
     no = -1
     unknown = 0
@@ -212,6 +215,8 @@ class display_property:
         self.store_pname = '_display_store_' + name
 
     def __get__(self, instance, _=None):
+        if instance is None:
+            return self
         if instance.stage >= ModelStage.inited:
             return getattr(instance, self.name_real)
         return getattr(instance, self.store_pname, '')
@@ -349,13 +354,97 @@ class Model(metaclass=ModelMeta):
     """
 
     def __init__(self, obj=None, **kwargs):
+        # ensure all field are initialized to None
         for field in self.meta.fields:
-            setattr(self, field, getattr(obj, field, None))
+            setattr(self, field, None)
 
-        # source should be a instance attribute although it is not temporarily
+        # copy fields from obj as many as possible
         if obj is not None:
+            for field in obj.meta.fields:
+                value = object.__getattribute__(obj, field)
+                setattr(self, field, value)
+            for field in obj.meta.fields_display:
+                field_name = f'{field}_display'
+                field_display_prop = getattr(type(self), field_name)
+                field_display_prop.__set__(self, getattr(obj, field_name))
+            # source should be a instance attribute although it is not temporarily
             self.source = obj.source
+            self.stage = obj.stage
+            self.exists = obj.exists
+        else:
+            for field in self.meta.fields:
+                setattr(self, field, None)
+            #: model 所处阶段。目前，通过构造函数初始化的 model
+            # 所处阶段为 inited，通过 get 得到的 model，所处阶段为 gotten，
+            # 通过 display 属性构造的 model，所处阶段为 display。
+            # 目前，此属性仅为 models 模块使用，不推荐外部依赖。
+            self.stage = kwargs.get('stage', ModelStage.inited)
+            #: 歌曲是否存在。如果 Model allow_get，但 get 却不能获取到 model，
+            # 则该 model 不存在。
+            self.exists = kwargs.get('stage', ModelExistence.unknown)
 
         for k, v in kwargs.items():
             if k in self.meta.fields:
                 setattr(self, k, v)
+
+    def __getattribute__(self, name):
+        """
+        获取 model 某一属性时，如果该属性值为 None 且该属性是 field
+        且该属性允许触发 get 方法，这时，我们尝试通过获取 model
+        详情来初始化这个字段，于此同时，还会重新给部分 fields 重新赋值。
+        """
+        cls = type(self)
+        cls_name = cls.__name__
+        value = object.__getattribute__(self, name)
+
+        if name in ('identifier', 'meta', '_meta', 'stage', 'exists'):
+            return value
+
+        if name in cls.meta.fields \
+           and name not in cls.meta.fields_no_get \
+           and value is None \
+           and cls.meta.allow_get \
+           and self.stage < ModelStage.gotten \
+           and self.exists != ModelExistence.no:
+
+            # debug snippet: show info of the caller that trigger the model.get call
+            #
+            # import inspect
+            # frame = inspect.currentframe()
+            # caller = frame.f_back
+            # logger.info(
+            #     '%s %d %s',
+            #     caller.f_code.co_filename, caller.f_lineno, caller.f_code.co_name
+            # )
+
+            logger.debug("Model {} {}'s value is None, try to get detail."
+                         .format(repr(self), name))
+            obj = cls.get(self.identifier)
+            if obj is not None:
+                for field in cls.meta.fields:
+                    # 类似 @property/@cached_field 等字段，都应该加入到
+                    # fields_no_get 列表中
+                    if field in cls.meta.fields_no_get:
+                        continue
+                    # 这里不能使用 getattr，否则有可能会无限 get
+                    fv = object.__getattribute__(obj, field)
+                    if fv is not None:
+                        setattr(self, field, fv)
+                self.stage = ModelStage.gotten
+                self.exists = ModelExistence.yes
+            else:
+                self.exists = ModelExistence.no
+                logger.warning('Model {} get return None'.format(cls_name))
+            value = object.__getattribute__(self, name)
+        return value
+
+    @classmethod
+    def create_by_display(cls, identifier, **kwargs):
+        """create model instance with identifier and display fields"""
+        model = cls(identifier=identifier)
+        model.stage = ModelStage.display
+        model.exists = ModelExistence.unknown
+        for k, v in kwargs.items():
+            if k in cls.meta.fields_display:
+                setattr(model, k + '_display', v)
+        return model

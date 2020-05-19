@@ -1,4 +1,5 @@
 from fuocore.models import Model as Struct
+from fuocore.models import Model, ModelExistence
 
 
 def test_basic_usage():
@@ -113,3 +114,37 @@ def test_init_with_part_kwargs():
 
     u = User(name='ysw')
     assert u.age is None
+
+
+def test_model_init_with_kwargs():
+    class XModel(Model):
+        class Meta:
+            fields = ['a']
+
+    xmodel = XModel(a=1, b=2)
+    assert xmodel.a == 1
+    assert not hasattr(xmodel, 'b')
+
+
+def test_model_init_with_model():
+
+    class XModel(Model):
+        class Meta:
+            fields = ['a', 'b']
+            fields_display = ['b']
+
+    class YModel(Model):
+        class Meta:
+            fields = ['a', 'b', 'c']
+            fields_display = ['b', 'c']
+
+    xmodel = XModel.create_by_display(identifier=1, b='miao')
+    assert xmodel.a is None
+    xmodel.exists = ModelExistence.yes
+
+    ymodel = YModel(xmodel, a=1, c=3, d=4)
+    assert ymodel.exists is ModelExistence.yes
+    assert ymodel.b_display == 'miao'
+    assert ymodel.a == 1
+    assert ymodel.c == 3
+    assert not hasattr(ymodel, 'd')

@@ -19,7 +19,7 @@ Currently, there is not way to achieve this.
 import asyncio
 import re
 
-from fuocore.models import ModelType
+from fuocore.models import ModelType, ModelExistence
 from fuocore.provider import dummy_provider
 
 
@@ -28,6 +28,7 @@ class ResolveFailed(Exception):
 
 
 class ResolverNotFound(Exception):
+    # TODO: use ResolveFailed instead
     pass
 
 
@@ -35,6 +36,7 @@ class NoReverseMatch(Exception):
     pass
 
 
+# TODO: maybe expose a API like get_type_by_ ?
 TYPE_NS_MAP = {
     ModelType.song: 'songs',
     ModelType.artist: 'artists',
@@ -144,12 +146,10 @@ def resolve(line, model=None):
         library = Resolver.library
         provider = library.get(model.source)
         if provider is None:
-            raise ResolverNotFound('provider not found: {}'.format(model.source))
-        data = {}
-        for field in model.meta.fields_display:
-            data[field] = getattr(model, field + '_display', '')
-        model_cls = provider.get_model_cls(model.meta.model_type)
-        model = model_cls.create_by_display(identifier=model.identifier, **data)
+            model.exists = ModelExistence.no
+        else:
+            model_cls = provider.get_model_cls(model.meta.model_type)
+            model = model_cls(model)
     else:
         path = line
     if path:
