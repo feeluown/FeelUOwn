@@ -58,7 +58,12 @@ def _extract_and_sort_song_standby_list(song, result_g):
 
 class Library:
     """音乐库，管理资源提供方以及资源"""
-    def __init__(self):
+    def __init__(self, providers_standby=None):
+        """
+
+        :type app: feeluown.app.App
+        """
+        self._providers_standby = providers_standby
         self._providers = set()
 
         self.provider_added = Signal()  # emit(AbstractProvider)
@@ -71,7 +76,7 @@ class Library:
         :raises ValueError:
 
         >>> from fuocore.provider import dummy_provider
-        >>> library = Library()
+        >>> library = Library(None)
         >>> library.register(dummy_provider)
         >>> library.register(dummy_provider)
         Traceback (most recent call last):
@@ -194,10 +199,11 @@ class Library:
     async def a_list_song_standby(self, song, onlyone=True):
         """async version of list_song_standby
         """
-        valid_sources = [pvd.identifier for pvd in self.list()
-                         if pvd.identifier != song.source]
+        providers = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        valid_providers = [provider for provider in providers
+                           if provider != song.source]
         q = '{} {}'.format(song.title_display, song.artists_name_display)
-        result_g = await self.a_search(q, source_in=valid_sources)
+        result_g = await self.a_search(q, source_in=valid_providers)
         sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
         # choose one or two valid standby
         result = []

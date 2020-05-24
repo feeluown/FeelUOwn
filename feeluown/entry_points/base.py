@@ -41,6 +41,7 @@ def create_config():
     config.deffield('AUDIO_SELECT_POLICY', default='hq<>')
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
+    config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
     return config
 
 
