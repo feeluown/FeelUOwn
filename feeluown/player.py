@@ -177,7 +177,10 @@ class Playlist(_Playlist):
 class Player(MpvPlayer):
 
     def __init__(self, app, *args, **kwargs):
-        super().__init__(playlist=Playlist(app), *args, **kwargs)
+        playlist = Playlist(
+            app,
+            audio_select_policy=app.config.AUDIO_SELECT_POLICY)
+        super().__init__(playlist=playlist, *args, **kwargs)
         self._app = app
 
     def play(self, url, video=True, **kwargs):
