@@ -11,6 +11,8 @@ from feeluown.containers.left_panel import LeftPanel
 from feeluown.containers.right_panel import RightPanel
 from feeluown.containers.top_panel import TopPanel
 
+from feeluown.gui.video_show import VideoShowCtl
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,6 +32,7 @@ class Ui:
         self.right_panel = RightPanel(self._app, self._splitter)
         self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
+        self.frameless_container = None
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -44,14 +47,11 @@ class Ui:
 
         self.pc_panel.playlist_btn.clicked.connect(
             lambda: self._app.browser.goto(uri='/player_playlist'))
-        self.pc_panel.mv_btn.clicked.connect(self._play_mv)
-        self.toggle_video_btn.clicked.connect(self._toggle_video)
-        self._app.player.video_format_changed.connect(
-            self.on_video_format_changed, aioqueue=True)
 
-        self.show_video_widget()
-        self._app.initialized.connect(lambda app: self.hide_video_widget(), weak=False)
         self._setup_ui()
+
+        # ui controllers
+        self.video_show_ctl = VideoShowCtl(self._app, self)
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -74,41 +74,3 @@ class Ui:
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
         self._app.resize(880, 600)
-
-    def _play_mv(self):
-        song = self._app.player.current_song
-        mv = song.mv if song else None
-        if mv is not None:
-            if mv.meta.support_multi_quality:
-                media, _ = mv.select_media()
-            else:
-                media = mv.media
-            self.toggle_video_btn.show()
-            self.show_video_widget()
-            self._app.player.play(media)
-
-    def on_video_format_changed(self, vformat):
-        """when video is available, show toggle_video_btn"""
-        if vformat is None:
-            self.hide_video_widget()
-            self.toggle_video_btn.hide()
-        else:
-            self.toggle_video_btn.show()
-
-    def _toggle_video(self):
-        if self.mpv_widget.isVisible():
-            self.hide_video_widget()
-        else:
-            self.show_video_widget()
-
-    def hide_video_widget(self):
-        self.mpv_widget.hide()
-        self._splitter.show()
-        self.bottom_panel.show()
-        self.pc_panel.toggle_video_btn.setText('△')
-
-    def show_video_widget(self):
-        self.bottom_panel.hide()
-        self._splitter.hide()
-        self.mpv_widget.show()
-        self.pc_panel.toggle_video_btn.setText('▽')

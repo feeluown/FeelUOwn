@@ -29,6 +29,7 @@ setup(
         # feeluown gui
         'feeluown.gui',
         'feeluown.gui.pages',
+        'feeluown.gui.widgets',
         'feeluown.widgets',
         'feeluown.widgets.statusline_items',
         'feeluown.uimodels',

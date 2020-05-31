@@ -40,7 +40,6 @@ class MpvOpenGLWidget(QOpenGLWidget):
         self.on_update_c = OpenGlCbUpdateFn(self.on_update)
         self.on_update_fake_c = OpenGlCbUpdateFn(self.on_update_fake)
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
-        _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_c, None)
         self.frameSwapped.connect(self.swapped)
 
         self._mpv_gl_inited = False
@@ -52,10 +51,13 @@ class MpvOpenGLWidget(QOpenGLWidget):
                 _mpv_opengl_cb_set_update_callback(
                     self.mpv_gl, self.on_update_fake_c, None)
             _mpv_opengl_cb_uninit_gl(self.mpv_gl)
+            self.doneCurrent()
 
     def initializeGL(self):
         _mpv_opengl_cb_init_gl(self.mpv_gl, None, self.get_proc_addr_c, None)
+        _mpv_opengl_cb_set_update_callback(self.mpv_gl, self.on_update_c, None)
         self._mpv_gl_inited = True
+        self.context().aboutToBeDestroyed.connect(self.shutdown)
 
     def paintGL(self):
         # compatible with HiDPI display

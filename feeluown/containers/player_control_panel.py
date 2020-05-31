@@ -90,6 +90,8 @@ class PlayerControlPanel(QFrame):
         self.lyric_btn = TextButton('词', self)
         self.download_btn = QPushButton(self)
         self.toggle_video_btn = TextButton('△', self)
+        # toggle picture-in-picture button
+        self.toggle_pip_btn = TextButton('◲', self)
 
         self.lyric_window = LyricWindow()
         self.lyric_window.hide()
@@ -120,6 +122,7 @@ class PlayerControlPanel(QFrame):
         self.like_btn.setCheckable(True)
         self.download_btn.setCheckable(True)
         self.toggle_video_btn.hide()
+        self.toggle_pip_btn.hide()
 
         self.song_title_label = QLabel('No song is playing.', parent=self)
         self.song_source_label = QLabel('歌曲来源', parent=self)
@@ -221,6 +224,8 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.toggle_video_btn)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.toggle_pip_btn)
         self._layout.addSpacing(18)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
