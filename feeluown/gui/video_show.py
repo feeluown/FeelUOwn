@@ -23,6 +23,7 @@ class VideoShowCtl:
         self._pip_container = ResizableFramelessContainer()
         self._mode = Mode.none
         self._mpv_normal = True
+        self._count = 0
 
         self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
@@ -37,27 +38,6 @@ class VideoShowCtl:
         self._pip_container.setMinimumSize(100, 80)
         self._pip_container.hide()
 
-    def enter_normal_mode(self):
-        """enter normal mode"""
-        self._ui.bottom_panel.hide()
-        self._ui._splitter.hide()
-        self._ui.pc_panel.toggle_video_btn.setText('▽')
-        logger.info("enter video-show normal mode")
-        if self._mpv_normal is False:
-            self._ui.mpv_widget.hide()
-            self._pip_container.detach()
-            self._app.layout().insertWidget(1, self._ui.mpv_widget)
-            self._mpv_normal = True
-        self._ui.mpv_widget.show()
-
-    def exit_normal_mode(self):
-        print('call exit normal mode')
-        self._ui.mpv_widget.hide()
-        self._ui._splitter.show()
-        self._ui.bottom_panel.show()
-        self._ui.pc_panel.toggle_video_btn.setText('△')
-        logger.info("exit video-show normal mode")
-
     def show_ctl_btns(self):
         self._ui.toggle_video_btn.show()
         self._ui.pc_panel.toggle_pip_btn.show()
@@ -66,6 +46,29 @@ class VideoShowCtl:
         self._ui.toggle_video_btn.hide()
         self._ui.pc_panel.toggle_pip_btn.hide()
 
+    def enter_normal_mode(self):
+        """enter normal mode"""
+        self._ui.bottom_panel.hide()
+        self._ui._splitter.hide()
+        self._ui.pc_panel.toggle_video_btn.setText('▽')
+        logger.info("enter video-show normal mode")
+        if self._mpv_normal is False:
+            self._count += 1
+            self._ui.mpv_widget.hide()
+            self._pip_container.detach()
+            self._app.layout().insertWidget(1, self._ui.mpv_widget)
+            self._mpv_normal = True
+            self._ui.mpv_widget.show()
+            self._replay()
+        self._ui.mpv_widget.show()
+
+    def exit_normal_mode(self):
+        self._ui.mpv_widget.hide()
+        self._ui._splitter.show()
+        self._ui.bottom_panel.show()
+        self._ui.pc_panel.toggle_video_btn.setText('△')
+        logger.info("exit video-show normal mode")
+
     def enter_pip_mode(self):
         """enter picture in picture mode"""
         # hide toggle_normal_mode button
@@ -73,10 +76,14 @@ class VideoShowCtl:
         self._ui.toggle_video_btn.hide()
         logger.info("enter video-show picture in picture mode")
         if self._mpv_normal is True:
+            self._count += 1
             self._ui.mpv_widget.hide()
             self._app.layout().removeWidget(self._ui.mpv_widget)
             self._pip_container.attach_widget(self._ui.mpv_widget)
             self._mpv_normal = False
+            self._pip_container.show()
+            self._ui.mpv_widget.show()
+            self._replay()
         self._pip_container.show()
         self._ui.mpv_widget.show()
 
@@ -99,12 +106,13 @@ class VideoShowCtl:
                 media, _ = mv.select_media()
             else:
                 media = mv.media
-            self.toggle_video_btn.show()
-            self.show_video_widget()
+            self._ui.toggle_video_btn.show()
+            self.enter_normal_mode()
             self._app.player.play(media)
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode
+        logger.info(f"set video show mode to {mode}")
         if mode is Mode.none:
             if self._mode is Mode.normal:
                 self.exit_normal_mode()
@@ -144,7 +152,9 @@ class VideoShowCtl:
         """
         logger.info(f"video format changed to {video_format}")
         if video_format is None:
-            self.set_mode(Mode.none)
+            if self._count <= 0:
+                self.set_mode(Mode.none)
+            self._count -= 1
         else:
             self.show_ctl_btns()
 
@@ -152,20 +162,22 @@ class VideoShowCtl:
     # private methods
     #
     def _replay(self):
-        logger.info("will re-initialize video")
         player = self._app.player
+        pos = player.position
+        media = player.current_media
+        player.pause()
+        signal_count_down = 2
 
-        def before_media_change(old_media, media):
-            if old_media is not None:
+        def before_media_change(old_media, new_media):
+            global signal_count_down
+            signal_count_down -= 1
+            if old_media is media and signal_count_down <= 0:
                 player.media_about_to_changed.disconnect(before_media_change)
                 player.set_play_range()
                 player.resume()
 
-        player.media_about_to_changed.connect(before_media_change,
-                                              weak=False)
-        pos = player.position
-        media = player.current_media
-        player.pause()
         player.set_play_range(start=pos)
         player.play(media)
+        player.media_about_to_changed.connect(before_media_change,
+                                              weak=False)
         player.resume()
