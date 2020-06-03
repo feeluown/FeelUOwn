@@ -54,3 +54,13 @@ def patch_qeventloop():
     QEventLoop.get_default_executor = get_default_executor
     QEventLoop.set_default_executor_v2 = set_default_executor_v2
     QEventLoop.run_in_executor = run_in_executor
+
+
+def patch_janus():
+    """
+    https://github.com/aio-libs/janus/issues/250
+    """
+
+    import janus
+
+    janus.current_loop = asyncio.get_event_loop

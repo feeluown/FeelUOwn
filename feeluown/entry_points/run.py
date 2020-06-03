@@ -1,3 +1,6 @@
+from feeluown.patch import patch_janus
+patch_janus()
+
 try:
     from feeluown.patch import patch_qeventloop
 except ImportError:
@@ -7,11 +10,10 @@ except ImportError:
 else:
     patch_qeventloop()
 
-import socket
+import socket  # noqa: E402
 
 # pylint: disable=wrong-import-position
 from .base import create_config, setup_argparse  # noqa: E402
-
 from .run_cli import run_cli  # noqa: E402
 from .run_app import run_once, run_forever  # noqa: E402
 
