@@ -1,6 +1,16 @@
 Changelog
 ---------
 
+3.5a0 (2020-06-03)
+""""""""""""""""""""""
+- 去掉 Python 3.5 支持
+- 修复 daemon 模式不能运行的 bug
+- 修复 AUDIO_SELECT_POLICY 不生效的问题
+- 兼容老版本的 libmpv（兼容 Ubuntu 18.04 ）
+- 给 library 添加 `provider_added/provider_removed` 两个信号
+- 添加配置项 `PROVIDERS_STANDBY`
+- 添加信号 `app.ui.songs_table.about_to_show_menu`
+
 3.4.1 (2020-03-21)
 """"""""""""""""""""""
 - feat: 歌词窗口
