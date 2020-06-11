@@ -1,6 +1,8 @@
 import logging
 from enum import IntEnum
 
+from mpv import _mpv_set_property_string
+
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
 logger = logging.getLogger(__name__)
@@ -17,13 +19,13 @@ class VideoShowCtl:
         """video show controller
 
         :type app: feeluown.app.App
+        :type ui: feeluown.ui.Ui
         """
         self._app = app
         self._ui = ui
         self._pip_container = ResizableFramelessContainer()
         self._mode = Mode.none
-        self._mpv_normal = True
-        self._count = 0
+        self._parent_is_normal = True
 
         self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
@@ -50,16 +52,17 @@ class VideoShowCtl:
         """enter normal mode"""
         self._ui.bottom_panel.hide()
         self._ui._splitter.hide()
+        self._ui.pc_panel.toggle_video_btn.show()
         self._ui.pc_panel.toggle_video_btn.setText('▽')
         logger.info("enter video-show normal mode")
-        if self._mpv_normal is False:
-            self._count += 1
+        if self._parent_is_normal is False:
+            self._before_change_mpv_widget_parent()
             self._ui.mpv_widget.hide()
             self._pip_container.detach()
             self._app.layout().insertWidget(1, self._ui.mpv_widget)
-            self._mpv_normal = True
+            self._parent_is_normal = True
             self._ui.mpv_widget.show()
-            self._replay()
+            self._after_change_mpv_widget_parent()
         self._ui.mpv_widget.show()
 
     def exit_normal_mode(self):
@@ -75,15 +78,15 @@ class VideoShowCtl:
         # when we exit pip mode, we should show it
         self._ui.toggle_video_btn.hide()
         logger.info("enter video-show picture in picture mode")
-        if self._mpv_normal is True:
-            self._count += 1
+        if self._parent_is_normal is True:
+            self._before_change_mpv_widget_parent()
             self._ui.mpv_widget.hide()
             self._app.layout().removeWidget(self._ui.mpv_widget)
             self._pip_container.attach_widget(self._ui.mpv_widget)
-            self._mpv_normal = False
+            self._parent_is_normal = False
             self._pip_container.show()
             self._ui.mpv_widget.show()
-            self._replay()
+            self._after_change_mpv_widget_parent()
         self._pip_container.show()
         self._ui.mpv_widget.show()
 
@@ -106,7 +109,6 @@ class VideoShowCtl:
                 media, _ = mv.select_media()
             else:
                 media = mv.media
-            self._ui.toggle_video_btn.show()
             self.enter_normal_mode()
             self._app.player.play(media)
 
@@ -119,6 +121,7 @@ class VideoShowCtl:
             elif self._mode is Mode.pip:
                 self.exit_pip_mode()
             self._mode = mode
+            self.hide_ctl_btns()
             return
 
         # change current mode to mode
@@ -152,32 +155,37 @@ class VideoShowCtl:
         """
         logger.info(f"video format changed to {video_format}")
         if video_format is None:
-            if self._count <= 0:
-                self.set_mode(Mode.none)
-            self._count -= 1
+            self.set_mode(Mode.none)
         else:
             self.show_ctl_btns()
 
     #
     # private methods
     #
-    def _replay(self):
-        player = self._app.player
-        pos = player.position
-        media = player.current_media
-        player.pause()
-        signal_count_down = 2
+    def _before_change_mpv_widget_parent(self):
+        """
+        According to Qt docs, reparenting an OpenGLWidget will destory the GL context.
+        In mpv widget, it calls _mpv_opengl_cb_uninit_gl. After uninit_gl, mpv can't show
+        video anymore because video_out is destroyed.
 
-        def before_media_change(old_media, new_media):
-            global signal_count_down
-            signal_count_down -= 1
-            if old_media is media and signal_count_down <= 0:
-                player.media_about_to_changed.disconnect(before_media_change)
-                player.set_play_range()
-                player.resume()
+        See mpv mpv_opengl_cb_uninit_gl implementation for more details.
+        """
+        _mpv_set_property_string(self._app.player._mpv.handle, b'vid', b'no')
 
-        player.set_play_range(start=pos)
-        player.play(media)
-        player.media_about_to_changed.connect(before_media_change,
-                                              weak=False)
-        player.resume()
+    def _after_change_mpv_widget_parent(self):
+        """
+        To recover the video show, we should reinit gl and reinit video. gl is
+        automatically reinited when the mpv_widget do painting. We should
+        manually reinit video.
+
+        NOTE(cosven): After some investigation, I found that the API in mpv to
+        reinit video_out(maybe video is almost same as video_out)
+        is init_best_video_out. Theoretically, sending 'video-reload' command
+        will trigger this API. However, we can't run this command
+        in our case and I don't know why. Another way to trigger
+        the API is to switch track. Changing vid property just switch the track.
+
+        Inpect mpv init_best_video_out caller for more details. You should see
+        mp_switch_track_n is one of the entrypoint.
+        """
+        _mpv_set_property_string(self._app.player._mpv.handle, b'vid', b'1')
