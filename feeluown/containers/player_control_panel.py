@@ -107,6 +107,7 @@ class PlayerControlPanel(QFrame):
         self.mv_btn.setObjectName('mv_btn')
         self.lyric_btn.setObjectName('lyric_btn')
         self.toggle_video_btn.setObjectName('toggle_video_btn')
+        self.toggle_pip_btn.setObjectName('toggle_pip_btn')
 
         self.progress_slider = ProgressSlider(self)
 
