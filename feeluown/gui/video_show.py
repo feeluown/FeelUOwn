@@ -1,4 +1,5 @@
 import logging
+from contextlib import contextmanager
 from enum import IntEnum
 
 from mpv import _mpv_set_property_string
@@ -26,18 +27,19 @@ class VideoShowCtl:
         self._pip_container = ResizableFramelessContainer()
         self._mode = Mode.none
         self._parent_is_normal = True
+        self._parent_is_changing = False
 
         self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
         self._ui.pc_panel.toggle_pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
 
-        self.enter_normal_mode()
+        self._ui.mpv_widget.show()
         self._app.initialized.connect(
-            lambda app: self.exit_normal_mode(), weak=False)
+            lambda app: self._ui.mpv_widget.hide(), weak=False)
         self._app.player.video_format_changed.connect(
             self.on_video_format_changed, aioqueue=True)
 
-        self._pip_container.setMinimumSize(100, 80)
+        self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
 
     def show_ctl_btns(self):
@@ -48,6 +50,14 @@ class VideoShowCtl:
         self._ui.toggle_video_btn.hide()
         self._ui.pc_panel.toggle_pip_btn.hide()
 
+    @contextmanager
+    def change_parent(self):
+        self._parent_is_changing = True
+        self._before_change_mpv_widget_parent()
+        yield
+        self._after_change_mpv_widget_parent()
+        self._parent_is_changing = False
+
     def enter_normal_mode(self):
         """enter normal mode"""
         self._ui.bottom_panel.hide()
@@ -56,14 +66,14 @@ class VideoShowCtl:
         self._ui.pc_panel.toggle_video_btn.setText('▽')
         logger.info("enter video-show normal mode")
         if self._parent_is_normal is False:
-            self._before_change_mpv_widget_parent()
-            self._ui.mpv_widget.hide()
-            self._pip_container.detach()
-            self._app.layout().insertWidget(1, self._ui.mpv_widget)
-            self._parent_is_normal = True
+            with self.change_parent():
+                self._ui.mpv_widget.hide()
+                self._pip_container.detach()
+                self._app.layout().insertWidget(1, self._ui.mpv_widget)
+                self._parent_is_normal = True
+                self._ui.mpv_widget.show()
+        else:
             self._ui.mpv_widget.show()
-            self._after_change_mpv_widget_parent()
-        self._ui.mpv_widget.show()
 
     def exit_normal_mode(self):
         self._ui.mpv_widget.hide()
@@ -74,21 +84,22 @@ class VideoShowCtl:
 
     def enter_pip_mode(self):
         """enter picture in picture mode"""
-        # hide toggle_normal_mode button
-        # when we exit pip mode, we should show it
         self._ui.toggle_video_btn.hide()
         logger.info("enter video-show picture in picture mode")
         if self._parent_is_normal is True:
-            self._before_change_mpv_widget_parent()
-            self._ui.mpv_widget.hide()
-            self._app.layout().removeWidget(self._ui.mpv_widget)
-            self._pip_container.attach_widget(self._ui.mpv_widget)
-            self._parent_is_normal = False
+            width = self._app.player._mpv.width
+            height = self._app.player._mpv.height
+            with self.change_parent():
+                self._ui.mpv_widget.hide()
+                self._app.layout().removeWidget(self._ui.mpv_widget)
+                self._pip_container.attach_widget(self._ui.mpv_widget)
+                self._parent_is_normal = False
+                self._pip_container.show()
+                self._ui.mpv_widget.show()
+            self._pip_container.resize(width, height)
+        else:
             self._pip_container.show()
             self._ui.mpv_widget.show()
-            self._after_change_mpv_widget_parent()
-        self._pip_container.show()
-        self._ui.mpv_widget.show()
 
     def exit_pip_mode(self):
         """exit picture in picture mode and enter normal mode"""
@@ -123,7 +134,6 @@ class VideoShowCtl:
             self._mode = mode
             self.hide_ctl_btns()
             return
-
         # change current mode to mode
         #
         # if mode is same as the current mode, exit mode
@@ -155,6 +165,9 @@ class VideoShowCtl:
         """
         logger.info(f"video format changed to {video_format}")
         if video_format is None:
+            # ignore the signal if parent is changing
+            if self._parent_is_changing:
+                return
             self.set_mode(Mode.none)
         else:
             self.show_ctl_btns()
