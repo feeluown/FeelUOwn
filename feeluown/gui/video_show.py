@@ -98,7 +98,9 @@ class VideoShowCtl:
                 self._parent_is_normal = False
                 self._pip_container.show()
                 self._ui.mpv_widget.show()
-            self._pip_container.resize(width, height)
+            proper_width = min(width, 666)
+            proper_height = height * proper_width / width
+            self._ui.mpv_widget.resize(proper_width, proper_height)
         else:
             self._pip_container.show()
             self._ui.mpv_widget.show()
