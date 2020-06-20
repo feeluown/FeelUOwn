@@ -68,6 +68,9 @@ TextButton {
     padding: 2px 8px;
     border-radius: 3px;
 }
+TextButton:hover {
+    border: 1px solid #777;
+}
 #mv_btn, #lyric_btn {
     font-size: 9px;
 }
@@ -80,10 +83,6 @@ TextButton {
 #toggle_video_btn, #toggle_pip_btn {
     padding: 0px 3px;
 }
-TextButton:hover {
-    border: 1px solid #777;
-}
-
 #back_btn, #forward_btn {
     width: 30px;
     height: 30px;
@@ -91,7 +90,11 @@ TextButton:hover {
     font-size: 15px;
     border: 0px;
 }
-
 #back_btn:hover, #forward_btn:hover {
     background-color: #CCC;
+}
+
+LeftPanel ListViewContainer TextButton {
+    padding: 0px 2px;
+    border: none;
 }

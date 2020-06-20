@@ -1,13 +1,58 @@
 import sys
 
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea
+from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
+    QHBoxLayout
 
 from feeluown.helpers import use_mac_theme
 from feeluown.widgets.playlists import PlaylistsView
 from feeluown.widgets.provider import ProvidersView
 from feeluown.widgets.collections import CollectionsView
 from feeluown.widgets.my_music import MyMusicView
+from feeluown.widgets.textbtn import TextButton
+
+
+class ListViewContainer(QFrame):
+    btn_text_hide = '△'
+    btn_text_show = '▼'
+
+    def __init__(self, label, view, parent=None):
+        super().__init__(parent)
+
+        self._label = label
+        self._view = view
+        self._toggle_btn = TextButton(self.btn_text_hide, self)
+
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+        self._h_layout = QHBoxLayout()
+        label.setFixedHeight(25)
+        self._h_layout.addWidget(label)
+        self._h_layout.addStretch(0)
+        self._h_layout.addWidget(self._toggle_btn)
+        self._h_layout.addSpacing(10)
+        self._layout.addLayout(self._h_layout)
+        self._layout.addWidget(view)
+        self._layout.addStretch(0)
+        # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+
+        self._toggle_btn.clicked.connect(self.toggle_view)
+
+    def toggle_view(self):
+        if self._view.isVisible():
+            self.hide_view()
+        else:
+            self.show_view()
+
+    def show_view(self):
+        self._toggle_btn.setText(self.btn_text_hide)
+        self._view.show()
+
+    def hide_view(self):
+        self._toggle_btn.setText(self.btn_text_show)
+        self._view.hide()
 
 
 class LeftPanel(QScrollArea):
@@ -43,29 +88,19 @@ class _LeftPanel(QFrame):
         self.playlists_header = QLabel('歌单列表', self)
         self.my_music_header = QLabel('我的音乐', self)
 
-        class Container(QFrame):
-            def __init__(self, label, view, parent=None):
-                super().__init__(parent)
-
-                self._layout = QVBoxLayout(self)
-                self._layout.setContentsMargins(0, 0, 0, 0)
-                self._layout.setSpacing(0)
-                label.setFixedHeight(25)
-                self._layout.addWidget(label)
-                self._layout.addWidget(view)
-                self._layout.addStretch(0)
-                # XXX: 本意是让 Container 下方不要出现多余的空间
-                self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
-
         self.playlists_view = PlaylistsView(self)
         self.providers_view = ProvidersView(self)
         self.my_music_view = MyMusicView(self)
         self.collections_view = CollectionsView(self)
 
-        self.providers_con = Container(self.library_header, self.providers_view)
-        self.collections_con = Container(self.collections_header, self.collections_view)
-        self.playlists_con = Container(self.playlists_header, self.playlists_view)
-        self.my_music_con = Container(self.my_music_header, self.my_music_view)
+        self.providers_con = ListViewContainer(
+            self.library_header, self.providers_view)
+        self.collections_con = ListViewContainer(
+            self.collections_header, self.collections_view)
+        self.playlists_con = ListViewContainer(
+            self.playlists_header, self.playlists_view)
+        self.my_music_con = ListViewContainer(
+            self.my_music_header, self.my_music_view)
 
         self.providers_view.setModel(self._app.pvd_uimgr.model)
         self.playlists_view.setModel(self._app.pl_uimgr.model)
