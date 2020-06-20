@@ -77,7 +77,7 @@ TextButton {
 #lyric_btn {
     padding: 0px 5px;
 }
-#toggle_video_btn {
+#toggle_video_btn, #toggle_pip_btn {
     padding: 0px 3px;
 }
 TextButton:hover {
