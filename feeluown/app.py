@@ -261,7 +261,7 @@ def create_app(config):
 
 def init_app(app):
     app.player.position_changed.connect(app.live_lyric.on_position_changed)
-    app.playlist.song_changed.connect(app.live_lyric.on_song_changed)
+    app.playlist.song_changed.connect(app.live_lyric.on_song_changed, aioqueue=True)
     if app.mode & app.DaemonMode:
         app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
 

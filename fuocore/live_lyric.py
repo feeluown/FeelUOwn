@@ -1,5 +1,6 @@
 import logging
 
+from fuocore import aio
 from fuocore.dispatch import Signal
 from fuocore.utils import find_previous
 
@@ -53,12 +54,29 @@ class LiveLyric(object):
 
     def on_song_changed(self, song):
         """bind song changed signal with this"""
-        if song is None or song.lyric is None:
+        if song is None:
+            self._set_lyric(None)
+            return
+
+        def cb(future):
+            try:
+                lyric = future.result()
+            except:  # noqa
+                logger.exception('get lyric failed')
+                lyric = None
+            self._set_lyric(lyric)
+
+        # TODO: use app.task_mgr instead
+        future = aio.run_in_executor(None, lambda: song.lyric)
+        future.add_done_callback(cb)
+
+    def _set_lyric(self, lyric):
+        if lyric is None:
             self._lyric = None
             self._pos_s_map = {}
         else:
-            self._lyric = song.lyric.content
+            self._lyric = lyric.content
             self._pos_s_map = parse(self._lyric)
-        self._pos_list = sorted(list(self._pos_s_map.keys()))
-        self._pos = None
-        self.current_sentence = ''
+            self._pos_list = sorted(list(self._pos_s_map.keys()))
+            self._pos = None
+            self.current_sentence = ''

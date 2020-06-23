@@ -1,4 +1,5 @@
-from unittest import TestCase
+import asyncio
+import pytest
 
 from fuocore import LiveLyric
 
@@ -51,11 +52,11 @@ class FakeSong(object):
         self.lyric = FakeLyric()
 
 
-class TestLiveLyric(TestCase):
-    def test_all(self):
-        song = FakeSong()
-        live_lyric = LiveLyric()
-        live_lyric.on_song_changed(song)
-        live_lyric.on_position_changed(60)
-        self.assertEqual(live_lyric.current_sentence,
-                         '互いのすべてを　知りつくすまでが')
+@pytest.mark.asyncio
+async def test_no_song_changed():
+    song = FakeSong()
+    live_lyric = LiveLyric()
+    live_lyric.on_song_changed(song)
+    await asyncio.sleep(0.1)
+    live_lyric.on_position_changed(60)
+    assert live_lyric.current_sentence == '互いのすべてを　知りつくすまでが'
