@@ -1,6 +1,8 @@
 import logging
 
 from fuocore.excs import FuoException
+from fuocore.router import ShowCmdException
+
 from .base import cmd_handler_mapping
 
 from .help import HelpHandler  # noqa
@@ -66,6 +68,9 @@ def exec_cmd(cmd, *args, app):
                               playlist=playlist,
                               live_lyric=live_lyric)
         rv = handler.handle(cmd)
+    except ShowCmdException:
+        logger.exception('handle cmd({}) error'.format(cmd))
+        return False, 'show command not correct'
     except Exception:
         logger.exception('handle cmd({}) error'.format(cmd))
         return False, 'internal server error'
