@@ -4,16 +4,11 @@ import logging
 from PyQt5.QtCore import Qt, QTime, pyqtSignal, QSize
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtWidgets import (
-    QApplication,
-    QLabel,
-    QFrame,
-    QHBoxLayout,
-    QVBoxLayout,
-    QPushButton,
-    QSizePolicy,
-    QSlider,
+    QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
+    QPushButton, QSizePolicy, QSlider, QMenu,
 )
 
+from fuocore import aio
 from fuocore.excs import ProviderIOError
 from fuocore.media import MediaType
 from fuocore.utils import parse_ms
@@ -54,6 +49,67 @@ class ProgressSlider(QSlider):
 
     def update_state(self, ms):
         self.setValue(ms / 1000)
+
+
+class SongBriefLabel(QLabel):
+    default_text = '...'
+
+    def __init__(self, app):
+        super().__init__(text=self.default_text, parent=None)
+        self._app = app
+        self._fetching_artists = False
+
+    def contextMenuEvent(self, e):
+        song = self._app.playlist.current_song
+        if song is None:
+            return
+
+        menu = QMenu()
+        menu.hovered.connect(self.on_action_hovered)
+        artist_menu = menu.addMenu('查看歌手')
+        album_action = menu.addAction('查看专辑')
+        artist_menu.menuAction().setData({'artists': None, 'song': song})
+        album_action.setData({'song': song})
+        artist_menu.menuAction().triggered.connect(
+            lambda: aio.create_task(self._goto_artists(song)))
+        album_action.triggered.connect(
+            lambda: aio.create_task(self._goto_album(song)))
+        menu.exec(e.globalPos())
+
+    async def _goto_album(self, song):
+        album = await aio.run_in_executor(None, lambda: song.album)
+        self._app.browser.goto(model=album)
+
+    def on_action_hovered(self, action):
+        """
+        Fetch song.artists when artists_action is hovered. If it is
+        already fetched, ignore.
+        """
+        data = action.data()
+        if data is None:  # submenu action
+            return
+
+        def artists_fetched_cb(future):
+            self._fetching_artists = False
+            artists = future.result()  # ignore the potential exception
+            if artists:
+                for artist in artists:
+                    artist_action = action.menu().addAction(artist.name)
+                    # create a closure to bind variable artist
+                    artist_action.triggered.connect(
+                        (lambda x: lambda: self._app.browser.goto(model=x))(artist))
+            data['artists'] = artists or []
+            action.setData(data)
+
+        # the action is artists_action
+        if 'artists' in data:
+            # artists value has not been fetched
+            if data['artists'] is None and self._fetching_artists is False:
+                logger.debug('fetch song.artists for actions')
+                song = data['song']
+                self._fetching_artists = True
+                task = aio.run_in_executor(None, lambda: song.artists)
+                task.add_done_callback(artists_fetched_cb)
 
 
 class PlayerControlPanel(QFrame):
@@ -125,7 +181,7 @@ class PlayerControlPanel(QFrame):
         self.toggle_video_btn.hide()
         self.toggle_pip_btn.hide()
 
-        self.song_title_label = QLabel('No song is playing.', parent=self)
+        self.song_title_label = SongBriefLabel(self._app)
         self.song_source_label = QLabel('歌曲来源', parent=self)
         self.song_title_label.setAlignment(Qt.AlignCenter)
         self.duration_label = QLabel('00:00', parent=self)
