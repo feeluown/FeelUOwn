@@ -111,7 +111,8 @@ def album_detail(req, provider, bid):
         return "album identified by {} in {} is unavailable".format(bid, provider.name)
     else:
         if album is None:
-            return "album identified by {} in {} is unavailable".format(bid, provider.name)
+            return "album identified by {} in {} is unavailable"\
+            .format(bid, provider.name)
         return album
 
 
@@ -144,7 +145,8 @@ def user_detail(req, provider, uid):
         if user is not None:
             return user
         elif uid == 'me':
-            return "User is not logged in in current session(plugin) {}-{}".format(provider.name, provider_path_name)
+            return "User is not logged in in current session(plugin) \{}-{}"\
+            .format(provider.name, provider_path_name)
         else:
             return "No user in local"
 
@@ -207,4 +209,3 @@ def albums_of_artist(req, provider, aid):
             albums = reader_to_list(to_reader(artist, "albums"))
             return albums
         return "artist identified by {} is not found in {}".format(aid, provider.name)
-
