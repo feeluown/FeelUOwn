@@ -11,7 +11,6 @@ fuocore.cmds.show
 import logging
 from urllib.parse import urlparse
 
-from fuocore.router import Router, ShowCmdException
 from fuocore.utils import reader_to_list, to_reader
 
 from .base import AbstractHandler
@@ -124,6 +123,8 @@ Issue #317
 Description: fuo show nehancement -- show info about current user
 example : fuo show fuo://<provider>/users/me
 '''
+
+
 @route('/<provider>/users/<uid>')
 def user_detail(req, provider, uid):
     provider_path_name = provider
@@ -142,7 +143,7 @@ def user_detail(req, provider, uid):
         if user is not None:
             return user
         elif uid == 'me':
-            return "User is not logged in in current session(plugin) -- {}-{}".format(provider.name, provider_path_name)
+            return "User is not logged in in current session(plugin) {}-{}".format(provider.name, provider_path_name)
         else:
             return "No user in local"
 
@@ -164,7 +165,6 @@ def playlist_detail(req, provider, pid):
         return playlist
 
 
-
 @route('/<provider>/playlists/<pid>/songs')
 def playlist_songs(req, provider, pid):
     provider_path_name = provider
@@ -183,12 +183,13 @@ def playlist_songs(req, provider, pid):
         return songs
 
 
-
 '''
 Issue #317
 Description: fuo show enhancement -- show all albums of an artist identified by aid
 example : fuo show fuo://<provider>/artists/<aid>/albums
 '''
+
+
 @route('/<provider>/artists/<aid>/albums')
 def albums_of_artist(req, provider, aid):
     provider_path_name = provider
@@ -205,3 +206,4 @@ def albums_of_artist(req, provider, aid):
             albums = reader_to_list(to_reader(artist, "albums"))
             return albums
         return "artist identified by {} is not found in {}".format(aid, provider.name)
+

@@ -2,8 +2,10 @@ import re
 from collections import namedtuple
 from urllib.parse import parse_qsl, urlsplit
 
+
 class ShowCmdException(Exception):
     pass
+
 
 # Rule not found
 class NotFound(ShowCmdException):
@@ -14,7 +16,7 @@ class NotFound(ShowCmdException):
         # use backstrace lib (the format_exc/print_exc) causes fail
         # maybe the coroutine issue ?
         uri_msg = "Bad Uri Exception: fuo://{}".format(self.rule)
-        return uri_msg    
+        return uri_msg
 
 
 def match(url, rules):
