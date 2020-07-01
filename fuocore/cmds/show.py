@@ -12,6 +12,7 @@ import logging
 from urllib.parse import urlparse
 
 from fuocore.utils import reader_to_list, to_reader
+from fuocore.router import Router
 
 from .base import AbstractHandler
 
