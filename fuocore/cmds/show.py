@@ -90,3 +90,15 @@ def playlist_songs(req, provider, pid):
     playlist = provider.Playlist.get(pid)
     songs = reader_to_list(to_reader(playlist, "songs"))
     return songs
+
+'''
+Issue #317
+Description: fuo show enhancment -- show all albums of an artist identified by aid
+example : fuo show fuo://<provider>/artists/<aid>/albums
+'''
+@route('/<provider>/artists/<aid>/albums')
+def albums_of_artist(req, provider, aid):
+    provider = req.ctx['library'].get(provider)
+    artist = provider.Artist.get(aid)
+    albums = reader_to_list(to_reader(artist, "albums"))
+    return albums
