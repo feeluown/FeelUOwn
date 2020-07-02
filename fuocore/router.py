@@ -3,20 +3,10 @@ from collections import namedtuple
 from urllib.parse import parse_qsl, urlsplit
 
 
-class ShowCmdException(Exception):
-    pass
-
-
-# Rule not found
-class NotFound(ShowCmdException):
-    def __init__(self, rule):
-        self.rule = rule
-
-    def __str__(self):
-        # use backstrace lib (the format_exc/print_exc) causes fail
-        # maybe the coroutine issue ?
-        uri_msg = "Bad Uri Exception: fuo://{}".format(self.rule)
-        return uri_msg
+class NotFound(Exception):
+    """
+    No matched rule for path
+    """
 
 
 def match(url, rules):
@@ -42,8 +32,7 @@ def match(url, rules):
             query = dict(parse_qsl(qs))
             params = match.groupdict()
             return rule, params, query
-
-    raise NotFound(path)
+    raise NotFound(f"No matched rule for {path}")
 
 
 def _validate_rule(rule):
@@ -109,13 +98,7 @@ class Router(object):
         return decorator
 
     def dispatch(self, uri, ctx):
-        try:
-            rule, params, query = match(uri, self.rules)
-        except NotFound:
-            # pass it to the exception handle procedure in __init__.py
-            raise
-            return None
-
+        rule, params, query = match(uri, self.rules)
         handler = self.handlers[rule]
         req = Request(uri=uri, rule=rule, params=params, query=query, ctx=ctx)
         return handler(req, **params)

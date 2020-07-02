@@ -12,9 +12,10 @@ import logging
 from urllib.parse import urlparse
 
 from fuocore.utils import reader_to_list, to_reader
-from fuocore.router import Router
+from fuocore.router import Router, NotFound
 
 from .base import AbstractHandler
+from .excs import CmdException
 
 logger = logging.getLogger(__name__)
 
@@ -34,7 +35,10 @@ class ShowHandler(AbstractHandler):
         r = urlparse(furi)
         path = '/{}{}'.format(r.netloc, r.path)
         logger.debug('请求 path: {}'.format(path))
-        rv = router.dispatch(path, {'library': self.library})
+        try:
+            rv = router.dispatch(path, {'library': self.library})
+        except NotFound:
+            raise CmdException(f'path {path} not found')
         return rv
 
 
