@@ -9,7 +9,7 @@ from copy import copy, deepcopy
 from functools import wraps
 from itertools import filterfalse
 
-from fuocore.reader import Reader, RandomSequentialReader, SequentialReader
+from fuocore.reader import wrap as reader_wrap
 
 
 logger = logging.getLogger(__name__)
@@ -89,14 +89,6 @@ def get_osx_theme():
     return 1 if theme == 'Dark' else -1
 
 
-def reader_to_list(reader):
-    if not isinstance(reader, Reader):
-        raise TypeError
-    if reader.allow_random_read:
-        return reader.readall()
-    return list(reader)
-
-
 def to_reader(model, field):
     flag_attr = 'allow_create_{}_g'.format(field)
     method_attr = 'create_{}_g'.format(field)
@@ -104,14 +96,25 @@ def to_reader(model, field):
     flag_g = getattr(model.meta, flag_attr)
 
     if flag_g:
-        return SequentialReader.wrap(getattr(model, method_attr)())
+        return reader_wrap(getattr(model, method_attr)())
 
     value = getattr(model, field, None)
     if value is None:
-        return RandomSequentialReader.from_list([])
+        return reader_wrap([])
     if isinstance(value, (list, tuple)):
-        return RandomSequentialReader.from_list(value)
-    return SequentialReader.wrap(iter(value))  # TypeError if not iterable
+        return reader_wrap(value)
+    return reader_wrap(iter(value))  # TypeError if not iterable
+
+
+def to_readall_reader(*args, **kwargs):
+    """
+    hack: set SequentialReader reader's count to 1000 if it is None
+    so that we can call readall method.
+    """
+    reader = to_reader(*args, **kwargs)
+    if reader.count is None:
+        reader.count = 1000
+    return reader
 
 
 class DedupList(list):

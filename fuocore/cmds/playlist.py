@@ -1,6 +1,6 @@
 from fuocore.models import ModelType
 from fuocore.models.uri import resolve, reverse
-from fuocore.utils import reader_to_list, to_reader
+from fuocore.utils import to_readall_reader
 from .base import AbstractHandler
 
 
@@ -31,7 +31,7 @@ class PlaylistHandler(AbstractHandler):
                 if obj_type == ModelType.song:
                     playlist.add(obj)
                 elif obj_type == ModelType.playlist:
-                    songs = reader_to_list(to_reader(obj, "songs"))
+                    songs = to_readall_reader(obj, "songs").readall()
                     for song in songs:
                         playlist.add(song)
 
