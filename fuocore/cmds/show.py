@@ -46,10 +46,10 @@ def noexception_handler_default(obj_name, obj_identifier, obj):
 
 
 def noexception_handler_lyric(obj_name, obj_identifier, obj):
-    song,sid = obj,obj_identifier
+    song, sid = obj, obj_identifier
     if song is None:
         return "{} identified by {} is not found"\
-            .format(obj_name, obj_identifier)
+            .format(obj_name, sid)
 
     if song.lyric is None:
         return "no lyric for this song, enjoy it ~"
@@ -58,7 +58,7 @@ def noexception_handler_lyric(obj_name, obj_identifier, obj):
 
 
 def noexception_handler_user(obj_name, obj_identifier, obj):
-    user,uid = obj, obj_identifier
+    user, uid = obj, obj_identifier
     if user is not None:
         return user
     elif uid == 'me':
@@ -71,7 +71,7 @@ def noexception_handler_readerlist(obj_name, obj_identifier, obj):
     if obj is None:
         return "No {} found by {} "\
             .format(obj_name, obj_identifier)
-    
+
     # quick and dirty implement
     if obj_name == 'playlists':
         return reader_to_list(to_reader(obj, "songs"))
@@ -80,10 +80,10 @@ def noexception_handler_readerlist(obj_name, obj_identifier, obj):
 
 
 def get_from_provider(
-        req, 
-        provider, 
-        obj_identifier, 
-        obj_name, 
+        req,
+        provider,
+        obj_identifier,
+        obj_name,
         handler=noexception_handler_default):
     provider_path_name = provider
     provider = req.ctx['library'].get(provider)
@@ -163,10 +163,10 @@ def playlist_detail(req, provider, pid):
 @route('/<provider>/playlists/<pid>/songs')
 def playlist_songs(req, provider, pid):
     return get_from_provider(
-        req, 
-        provider, 
-        pid, 
-        "playlists", 
+        req,
+        provider,
+        pid,
+        "playlists",
         noexception_handler_readerlist
     )
 
@@ -181,7 +181,7 @@ example : fuo show fuo://<provider>/artists/<aid>/albums
 @route('/<provider>/artists/<aid>/albums')
 def albums_of_artist(req, provider, aid):
     return get_from_provider(
-        req, 
+        req,
         provider,
         aid,
         "artists",
