@@ -1,54 +1,25 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt, QTime, pyqtSignal, QSize
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
-    QPushButton, QSizePolicy, QSlider, QMenu,
+    QPushButton, QSizePolicy, QMenu,
 )
 
 from fuocore import aio
 from fuocore.excs import ProviderIOError
 from fuocore.media import MediaType
-from fuocore.utils import parse_ms
 from fuocore.player import PlaybackMode, State
 from feeluown.helpers import async_run
 from feeluown.widgets import TextButton
 from feeluown.widgets.lyric import Window as LyricWindow
 from feeluown.widgets.volume_button import VolumeButton
+from feeluown.widgets.progress_slider import ProgressSlider
+from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 
 logger = logging.getLogger(__name__)
-
-
-class ProgressSlider(QSlider):
-    pause_player_needed = pyqtSignal()
-    resume_player_needed = pyqtSignal()
-    change_position_needed = pyqtSignal([int])
-
-    def __init__(self, parent=None):
-        super().__init__(parent)
-
-        self.setOrientation(Qt.Horizontal)
-        self.sliderPressed.connect(self._on_pressed)
-        self.sliderReleased.connect(self._on_released)
-
-    def sizeHint(self):
-        size = super().sizeHint()
-        return QSize(360, size.height())
-
-    def _on_pressed(self):
-        self.pause_player_needed.emit()
-
-    def _on_released(self):
-        self.change_position_needed.emit(self.value())
-        self.resume_player_needed.emit()
-
-    def set_duration(self, ms):
-        self.setRange(0, ms / 1000)
-
-    def update_state(self, ms):
-        self.setValue(ms / 1000)
 
 
 class SongBriefLabel(QLabel):
@@ -165,12 +136,11 @@ class PlayerControlPanel(QFrame):
         self.toggle_video_btn.setObjectName('toggle_video_btn')
         self.toggle_pip_btn.setObjectName('toggle_pip_btn')
 
-        self.progress_slider = ProgressSlider(self)
+        self.progress_slider = ProgressSlider(app=app, parent=self)
 
         self.pms_btn.setToolTip('修改播放模式')
         self.volume_btn.setToolTip('调整音量')
         self.playlist_btn.setToolTip('显示当前播放列表')
-        self.progress_slider.setToolTip('拖动调节进度')
 
         self.mv_btn.setToolTip('播放 MV')
         self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
@@ -184,8 +154,8 @@ class PlayerControlPanel(QFrame):
         self.song_title_label = SongBriefLabel(self._app)
         self.song_source_label = QLabel('歌曲来源', parent=self)
         self.song_title_label.setAlignment(Qt.AlignCenter)
-        self.duration_label = QLabel('00:00', parent=self)
-        self.position_label = QLabel('00:00', parent=self)
+        self.duration_label = DurationLabel(app, parent=self)
+        self.position_label = ProgressLabel(app, parent=self)
 
         self.song_source_label.setObjectName('song_source_label')
 
@@ -200,8 +170,6 @@ class PlayerControlPanel(QFrame):
         player = self._app.player
 
         player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
-        player.position_changed.connect(self.on_position_changed)
-        player.duration_changed.connect(self.on_duration_changed, aioqueue=True)
         player.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed, aioqueue=True)
         player.playlist.song_changed.connect(
@@ -209,10 +177,6 @@ class PlayerControlPanel(QFrame):
         player.media_changed.connect(
             self.on_player_media_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
-        self.progress_slider.resume_player_needed.connect(player.resume)
-        self.progress_slider.pause_player_needed.connect(player.pause)
-        self.progress_slider.change_position_needed.connect(
-            lambda value: setattr(player, 'position', value))
         self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
         self.lyric_window.play_previous_needed.connect(player.playlist.previous)
         self.lyric_window.play_next_needed.connect(player.playlist.next)
@@ -296,22 +260,6 @@ class PlayerControlPanel(QFrame):
         else:
             pm_idx = 0
         playlist.playback_mode = self._playback_modes[pm_idx]
-
-    def on_duration_changed(self, duration):
-        duration = duration * 1000
-        m, s = parse_ms(duration)
-        t = QTime(0, m, s)
-        self.progress_slider.set_duration(duration)
-        self.duration_label.setText(t.toString('mm:ss'))
-
-    def on_position_changed(self, position):
-        if position is None:
-            return
-        position = position * 1000
-        m, s = parse_ms(position)
-        t = QTime(0, m, s)
-        self.position_label.setText(t.toString('mm:ss'))
-        self.progress_slider.update_state(position)
 
     def on_playback_mode_changed(self, playback_mode):
         self._update_pms_btn_text()

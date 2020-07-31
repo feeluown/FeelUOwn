@@ -58,7 +58,10 @@ class Signal:
     async def worker(cls):
         while True:
             func, args = await cls.aioqueue.async_q.get()
-            func(*args)
+            try:
+                func(*args)
+            except:  # noqa
+                logger.exception(f'run {func.__name__} with {args} failed')
             cls.aioqueue.async_q.task_done()
 
     def emit(self, *args):

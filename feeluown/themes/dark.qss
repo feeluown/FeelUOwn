@@ -22,10 +22,10 @@ TextButton:pressed {
     background-color: #3e3e3e;
 }
 
-#pp_btn {
+#pp_btn, #video_pp_btn {
     border-image: url(icons/play_dark.png);
 }
-#pp_btn:checked {
+#pp_btn:checked, #video_pp_btn:checked {
     border-image: url(icons/pause_dark.png);
 }
 #previous_btn {
