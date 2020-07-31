@@ -106,10 +106,9 @@ class VideoShowCtl:
             self._ui.mpv_widget.show()
 
     def exit_pip_mode(self):
-        """exit picture in picture mode and enter normal mode"""
+        """exit picture in picture mode"""
         self._pip_container.hide()
         self._ui.mpv_widget.hide()
-        self._ui.toggle_video_btn.show()
         logger.info("exit video-show picture in picture mode")
 
     #

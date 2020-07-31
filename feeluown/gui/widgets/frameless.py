@@ -1,7 +1,7 @@
-from PyQt5.QtCore import Qt, QRect, QRectF, QTimer
-from PyQt5.QtGui import QColor, QTextOption, QPainter
-from PyQt5.QtWidgets import QWidget, QSizeGrip, \
-    QSizePolicy, QVBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QKeySequence
+from PyQt5.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, \
+    QShortcut
 
 
 class ResizableFramelessContainer(QWidget):
@@ -17,22 +17,18 @@ class ResizableFramelessContainer(QWidget):
         super().__init__(parent=None)
 
         self._widget = None
-        self._timer = QTimer(self)
         self._old_pos = None
         self._widget = None
-        self._size_grip = QSizeGrip(self)
-        self._timer.timeout.connect(self.__on_timeout)
 
         # setup window layout
         self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
-        self._size_grip.setFixedSize(20, 20)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self._layout.addWidget(self._size_grip)
-        self._layout.setAlignment(self._size_grip, Qt.AlignBottom | Qt.AlignRight)
 
         self.setMouseTracking(True)
+
+        QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
 
     def attach_widget(self, widget):
         """set inner widget"""
@@ -43,17 +39,6 @@ class ResizableFramelessContainer(QWidget):
     def detach(self):
         self._layout.removeWidget(self._widget)
         self._widget = None
-
-    def paintEvent(self, e):
-        painter = QPainter(self)
-        if self._size_grip.isVisible():
-            painter.save()
-            painter.setPen(QColor('white'))
-            option = QTextOption()
-            option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-            rect = QRect(self._size_grip.pos(), self._size_grip.size())
-            painter.drawText(QRectF(rect), '●', option)
-            painter.restore()
 
     def mousePressEvent(self, e):
         self._old_pos = e.globalPos()
@@ -70,24 +55,8 @@ class ResizableFramelessContainer(QWidget):
     def mouseReleaseEvent(self, e):
         self._old_pos = None
 
-    def enterEvent(self, e):
-        super().enterEvent(e)
-        if not self._size_grip.isVisible():
-            self.resize(self.width(), self.height() + 20)
-            self._size_grip.show()
-        self._timer.stop()
-
-    def leaveEvent(self, e):
-        super().leaveEvent(e)
-        self._timer.start(2000)
-
     def resizeEvent(self, e):
         super().resizeEvent(e)
-
-    def __on_timeout(self):
-        if self._size_grip.isVisible():
-            self._size_grip.hide()
-            self.resize(self.width(), self.height() - 20)
 
 
 if __name__ == '__main__':

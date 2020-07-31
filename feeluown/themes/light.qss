@@ -13,10 +13,10 @@ TextButton:pressed {
     background-color: #DDD;
 }
 
-#pp_btn {
+#pp_btn, #video_pp_btn {
     border-image: url(icons/play.png);
 }
-#pp_btn:checked {
+#pp_btn:checked, #video_pp_btn:checked {
     border-image: url(icons/pause.png);
 }
 #previous_btn {

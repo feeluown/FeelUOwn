@@ -1,5 +1,4 @@
 from PyQt5.QtCore import QMetaObject, pyqtSlot
-from PyQt5.QtWidgets import QOpenGLWidget
 from PyQt5.QtOpenGL import QGLContext
 
 # HELP: 需要 import GL 模块，否则在 Linux(Ubuntu 18.04) 下会出现 seg fault
@@ -8,6 +7,8 @@ from OpenGL import GL  # noqa
 from mpv import _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
         _mpv_opengl_cb_init_gl, OpenGlCbGetProcAddrFn, _mpv_opengl_cb_draw, \
         _mpv_opengl_cb_report_flip, MpvSubApi, OpenGlCbUpdateFn, _mpv_opengl_cb_uninit_gl
+
+from feeluown.gui.widgets.video import VideoOpenGLWidget
 
 
 def get_proc_addr(_, name):
@@ -18,7 +19,7 @@ def get_proc_addr(_, name):
     return addr
 
 
-class MpvOpenGLWidget(QOpenGLWidget):
+class MpvOpenGLWidget(VideoOpenGLWidget):
     """Mpv 视频输出窗口
 
     销毁时，应该调用 shutdown 方法来释放资源。
@@ -33,7 +34,7 @@ class MpvOpenGLWidget(QOpenGLWidget):
     """
 
     def __init__(self, app, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(app=app, parent=parent)
         self._app = app
         self.mpv_gl = _mpv_get_sub_api(app.player._mpv.handle,
                                        MpvSubApi.MPV_SUB_API_OPENGL_CB)
