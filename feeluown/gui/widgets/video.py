@@ -45,8 +45,8 @@ class VideoOverlay(QWidget):
         self._video_pp_btn.setCheckable(True)
 
         # configure self
-        self.setFixedHeight(60)  # btn(35) + slider(20) + 5(remain)
-        self._video_pp_btn.setFixedSize(35, 35)
+        # button size is set by stylesheet
+        self.setFixedHeight(60)  # btn(36) + slider(20) + 5(remain)
         self._progress_slider.setFixedHeight(20)
         self._left_label.setFixedWidth(45)
         self._right_label.setFixedWidth(45)
