@@ -75,20 +75,25 @@ def resize_font(font, delta):
         font.setPointSize(max(1, font.pointSize() + delta))
 
 
+def palette_set_bg_color(palette, color):
+    """set palette background color"""
+    if sys.platform == 'linux':
+        # KDE use the QPalette.Base as background color
+        palette.setColor(QPalette.Active, QPalette.Base, color)
+        palette.setColor(QPalette.Inactive, QPalette.Base, color)
+        # GNOME use the QPalette.Window as background color
+        palette.setColor(QPalette.Active, QPalette.Window, color)
+        palette.setColor(QPalette.Inactive, QPalette.Window, color)
+    else:
+        # macOS use the QPalette.Window as background color
+        palette.setColor(QPalette.Active, QPalette.Window, color)
+        palette.setColor(QPalette.Inactive, QPalette.Window, color)
+
+
 class BgTransparentMixin:
     def __init__(self, *args, **kwargs):
         palette = self.palette()
-        if sys.platform == 'linux':
-            # KDE use the QPalette.Base as background color
-            palette.setColor(QPalette.Active, QPalette.Base, Qt.transparent)
-            palette.setColor(QPalette.Inactive, QPalette.Base, Qt.transparent)
-            # GNOME use the QPalette.Window as background color
-            palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)
-            palette.setColor(QPalette.Inactive, QPalette.Window, Qt.transparent)
-        else:
-            # macOS use the QPalette.Window as background color
-            palette.setColor(QPalette.Active, QPalette.Window, Qt.transparent)
-            palette.setColor(QPalette.Inactive, QPalette.Window, Qt.transparent)
+        palette_set_bg_color(palette, Qt.transparent)
         self.setPalette(palette)
 
 

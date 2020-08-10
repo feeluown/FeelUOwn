@@ -42,7 +42,7 @@ PlayerControlPanel IconButton, VolumeButton {
     border-radius: 15px;
     outline: none;
 }
-PlayerControlPanel IconButton:hover, VolumeButton:hover {
+PlayerControlPanel IconButton:hover, VolumeButton:hover{
     /* just to make button (looks) smaller */
     border-width: 3px;
 }
@@ -97,4 +97,11 @@ TextButton:hover {
 LeftPanel ListViewContainer TextButton {
     padding: 0px 2px;
     border: none;
+}
+
+VideoOverlay QPushButton {
+    width: 36px;
+    height: 36px;
+    border-radius: 18px;
+    outline: none;
 }
