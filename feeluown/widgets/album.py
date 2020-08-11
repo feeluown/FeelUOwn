@@ -25,7 +25,7 @@ class AlbumFilterProxyModel(ImgFilterProxyModel):
         self.types = types
 
     def filter_by_types(self, types):
-        # if tyeps is a empty list or None, we show all albums
+        # if types is a empty list or None, we show all albums
         if not types:
             types = None
         self.types = types
