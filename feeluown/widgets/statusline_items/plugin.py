@@ -16,9 +16,9 @@ class PluginStatus(QLabel):
         self.setText('☯' + ' ' * 5)
         self.setMinimumWidth(40)
 
-        self._app.plugin_mgr.scan_finished.connect(self.on_scan_finishd)
+        self._app.plugin_mgr.scan_finished.connect(self.on_scan_finished)
 
-    def on_scan_finishd(self, plugins):
+    def on_scan_finished(self, plugins):
         self._total_count = len(plugins)
         for plugin in plugins:
             if plugin.is_enabled:
