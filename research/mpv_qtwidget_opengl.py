@@ -4,16 +4,16 @@
 - https://github.com/ozmartian/vidcutter/blob/793127c521b18f0bab19b67bc42e8da16a667afd/vidcutter/libs/mpvwidget.py
 - https://github.com/mpv-player/mpv-examples/blob/master/libmpv/qt_opengl/mpvwidget.cpp
 """
+from sys import platform as os_name
+if os_name == 'linux':
+    # HELP: 需要 import GL 模块，否则在 Linux(Ubuntu 18.04) 下会出现 seg fault
+    from OpenGL import GL  # noqa
 from os import path
 
 from PyQt5.QtCore import Qt, QMetaObject, pyqtSlot
 from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from PyQt5.QtOpenGL import QGLContext
 
-from sys import platform as os_name
-if os_name == 'linux':
-    # HELP: 需要 import GL 模块，否则在 Linux(Ubuntu 18.04) 下会出现 seg fault
-    from OpenGL import GL  # noqa
 
 from mpv import MPV, _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
         _mpv_opengl_cb_init_gl, OpenGlCbGetProcAddrFn, _mpv_opengl_cb_draw, \
