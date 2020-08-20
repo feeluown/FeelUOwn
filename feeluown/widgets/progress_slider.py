@@ -8,6 +8,7 @@ class ProgressSlider(QSlider):
         super().__init__(parent)
 
         self._app = app
+        self._draging = False
 
         self.setToolTip('拖动调节进度')
 
@@ -21,9 +22,11 @@ class ProgressSlider(QSlider):
             self.update_state, aioqueue=True)
 
     def _on_pressed(self):
+        self._draging = True
         self._app.player.pause()
 
     def _on_released(self):
+        self._draging = False
         self._app.player.position = self.value()
         self._app.player.resume()
 
@@ -32,6 +35,7 @@ class ProgressSlider(QSlider):
             self.setRange(0, s)
 
     def update_state(self, s):
-        if s is None:
-            s = 0
-        self.setValue(s)
+        if not self._draging:
+            if s is None:
+                s = 0
+            self.setValue(s)
