@@ -24,6 +24,7 @@ from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
 from .task import TaskManager
+from .download import DownloadManager
 
 logger = logging.getLogger(__name__)
 
@@ -163,6 +164,7 @@ def attach_attrs(app):
     app.request = Request()
     app.task_mgr = TaskManager(app, loop)
     app.fm = FM(app)
+    app.dm_mgr = DownloadManager(app)
 
     if app.mode & (app.DaemonMode | app.GuiMode):
         app.version_mgr = VersionManager(app)
@@ -266,6 +268,7 @@ def init_app(app):
         app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
 
     app.plugin_mgr.scan()
+    app.dm_mgr.initialize()
     if app.mode & App.GuiMode:
         app.theme_mgr.initialize()
         app.tips_mgr.show_random_tip()

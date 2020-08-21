@@ -166,6 +166,7 @@ class PlayerControlPanel(QFrame):
         self.lyric_btn.clicked.connect(self._toggle_lyric_window)
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
+        self.download_btn.clicked.connect(self._download_cur_media)
 
         player = self._app.player
 
@@ -287,6 +288,14 @@ class PlayerControlPanel(QFrame):
         loop = asyncio.get_event_loop()
         loop.create_task(self.update_mv_btn_status(song))
 
+        filename = f'{song.title_display} - {song.artists_name_display}.mp3'
+        if self._app.dm_mgr.is_file_downloaded(filename):
+            self.download_btn.setChecked(True)
+            self.download_btn.setEnabled(False)
+        else:
+            self.download_btn.setChecked(False)
+            self.download_btn.setEnabled(True)
+
     def on_player_media_changed(self, media):
         if media is not None and media.type_ == MediaType.audio:
             metadata = media.metadata
@@ -317,3 +326,21 @@ class PlayerControlPanel(QFrame):
             self.lyric_window.hide()
         else:
             self.lyric_window.show()
+
+    def _download_cur_media(self):
+        song = self._app.playlist.current_song
+        if song is None:
+            return
+
+        filename = f'{song.title_display} - {song.artists_name_display}.mp3'
+        if self._app.dm_mgr.is_file_downloaded(filename):
+            self.download_btn.setChecked(True)
+            self.download_btn.setEnabled(False)
+            return
+
+        if song.meta.support_multi_quality:
+            media, quality = song.select_media('>>>')
+            url = media.url
+        else:
+            url = song.url  # maybe a empty string
+        aio.create_task(self._app.dm_mgr.get(url, filename))
