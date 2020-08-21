@@ -4,13 +4,16 @@
 - https://github.com/ozmartian/vidcutter/blob/793127c521b18f0bab19b67bc42e8da16a667afd/vidcutter/libs/mpvwidget.py
 - https://github.com/mpv-player/mpv-examples/blob/master/libmpv/qt_opengl/mpvwidget.cpp
 """
+from sys import platform as os_name
+if os_name == 'linux':
+    # HELP: 需要 import GL 模块，否则在 Linux(Ubuntu 18.04) 下会出现 seg fault
+    from OpenGL import GL  # noqa
+from os import path
 
 from PyQt5.QtCore import Qt, QMetaObject, pyqtSlot
 from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from PyQt5.QtOpenGL import QGLContext
 
-# HELP: 需要 import GL 模块，否则在 Linux(Ubuntu 18.04) 下会出现 seg fault
-from OpenGL import GL  # noqa
 
 from mpv import MPV, _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
         _mpv_opengl_cb_init_gl, OpenGlCbGetProcAddrFn, _mpv_opengl_cb_draw, \
@@ -77,12 +80,20 @@ class MpvWidget(QOpenGLWidget):
         self.mpv.terminate()
 
 
+def _get_test_file_path() -> str:
+    research_dir = path.dirname(path.abspath(__file__))
+    project_dir = path.dirname(research_dir)
+    # let python choice '/' or '\' as path sep as it is different from *nix to windows system
+    file_path = path.join(project_dir, "data", "test.webm")
+    return file_path
+
+
 if __name__ == '__main__':
     import locale
     app = QApplication([])
     locale.setlocale(locale.LC_NUMERIC, 'C')
     widget = MpvWidget()
     widget.show()
-    url = 'data/test.webm'
+    url = _get_test_file_path()
     widget.mpv.play(url)
     app.exec()
