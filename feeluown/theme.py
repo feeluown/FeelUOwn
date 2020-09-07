@@ -112,6 +112,18 @@ class ThemeManager:
         self._app.setPalette(palette)
         QApplication.instance().paletteChanged.connect(self.autoload)
 
+    def get_pressed_color(self):
+        """pressed color for button-like widget
+
+        In Feeluown, we have two kinds of buttons, text and icon. All TextButtons
+        have same color in pressed state.
+
+        THINKING: we can create a API for theme manager like QPalette.color if we need
+        """
+        if self.guess_system_theme() == DARK:
+            return '#3e3e3e'
+        return '#DDD'
+
 
 def dump_colors():
     json_ = defaultdict(dict)
