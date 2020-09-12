@@ -1,21 +1,17 @@
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QPainter, QColor
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtCore import Qt, QRectF
+from PyQt5.QtGui import QTextOption
+
+from feeluown.widgets.statusline import StatuslineLabel
 
 
-class PluginStatus(QLabel):
+class PluginStatus(StatuslineLabel):
     def __init__(self, app, parent=None):
-        super().__init__(parent)
+        super().__init__(app, parent)
         self._app = app
 
         self._total_count = 0
         self._enabled_count = 0
-
-        self.setAlignment(Qt.AlignCenter)
-        # FIXME: 暂时通过设置 5 个空格，来让整个文字显示居中
-        self.setText('☯' + ' ' * 5)
-        self.setMinimumWidth(40)
-
+        self._status_color = 'blue'
         self._app.plugin_mgr.scan_finished.connect(self.on_scan_finished)
 
     def on_scan_finished(self, plugins):
@@ -25,19 +21,8 @@ class PluginStatus(QLabel):
                 self._enabled_count += 1
         plugins_alias = '\n'.join([p.alias for p in plugins])
         self.setToolTip('已经加载的插件：\n{}'.format(plugins_alias))
+        self.setText(f'{self._enabled_count}')
 
-    def paintEvent(self, e):
-        super().paintEvent(e)
-        painter = QPainter(self)
-        font = painter.font()
-        pen = painter.pen()
-        font.setPointSize(8)
-        pen.setColor(QColor('grey'))
-        painter.setFont(font)
-        painter.setPen(pen)
-        painter.setRenderHint(QPainter.Antialiasing)
-        x = self.width() - 20
-        y = self.height() - 5
-        bottomright = QPoint(x, y)
-        text = '{}/{}'.format(self._enabled_count, self._total_count)
-        painter.drawText(bottomright, text)
+    def drawInner(self, painter):
+        inner_rect = QRectF(0, 0, self._inner_width, self._inner_height)
+        painter.drawText(inner_rect, '☯', QTextOption(Qt.AlignCenter))
