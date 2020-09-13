@@ -23,7 +23,7 @@ from PyQt5.QtGui import (
     QBrush, QPainter, QTextOption, QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate, QListView, QFrame
+    QAbstractItemDelegate, QListView, QFrame,
 )
 
 from fuocore import aio

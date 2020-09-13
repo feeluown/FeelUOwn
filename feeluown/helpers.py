@@ -119,7 +119,8 @@ class ItemViewNoScrollMixin:
             height = self.sizeHint().height() - int(rect.height() * 1.5) - self._reserved
             self.setFixedHeight(max(height, self._min_height()))
         else:
-            self.setFixedHeight(self.sizeHint().height())
+            height = self.sizeHint().height()
+            self.setFixedHeight(height)
         self.updateGeometry()
 
     def on_rows_changed(self, *args):

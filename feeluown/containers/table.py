@@ -330,6 +330,14 @@ class AlbumsCollectionRenderer(Renderer):
         self.show_albums(self.reader)
 
 
+class VideosRenderer(Renderer):
+    def __init__(self, reader):
+        self.reader = reader
+
+    async def render(self):
+        self.show_videos(self.reader)
+
+
 class PlayerPlaylistRenderer(Renderer):
 
     async def render(self):
@@ -419,6 +427,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout.addWidget(self.desc_widget)
         for table in self._tables:
             self._layout.addWidget(table)
+        self._layout.addStretch(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 

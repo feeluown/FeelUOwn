@@ -108,6 +108,15 @@ class RightPanel(QFrame):
             self.collection_container.show()
             self.collection_container.show_collection(coll)
 
+        def _show_pure_videos_coll(coll):
+            from feeluown.containers.table import VideosRenderer
+
+            self.collection_container.hide()
+            self.scrollarea.show()
+            reader = RandomSequentialReader.from_list(coll.models)
+            renderer = VideosRenderer(reader)
+            aio.create_task(self.table_container.set_renderer(renderer))
+
         if coll.name == DEFAULT_COLL_ALBUMS:
             _show_pure_albums_coll(coll)
             return
@@ -124,6 +133,8 @@ class RightPanel(QFrame):
                 _show_pure_songs_coll(coll)
             elif type_ == ModelType.album:
                 _show_pure_albums_coll(coll)
+            elif type_ == ModelType.video:
+                _show_pure_videos_coll(coll)
             else:
                 _show_mixed_coll(coll)
         else:
@@ -176,13 +187,23 @@ class RightPanel(QFrame):
             self._draw_pixmap(painter, draw_width, draw_height, scrolled)
             self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
         else:
+            # draw gradient for widgets(bottom panel + meta_widget + ...) above table
             self._draw_overlay(painter, draw_width, draw_height, scrolled)
+
+            # if scrolled height > 30, draw background to seperate bottom_panel and body
             if scrolled >= 30:
                 painter.save()
                 painter.setBrush(self.palette().brush(QPalette.Window))
                 painter.drawRect(self.bottom_panel.rect())
                 painter.restore()
                 return
+
+            # since the body's background color is palette(base), we use
+            # the color to draw background for remain empty area
+            painter.save()
+            painter.setBrush(self.palette().brush(QPalette.Base))
+            painter.drawRect(0, draw_height, draw_width, self.height() - draw_height)
+            painter.restore()
         painter.end()
 
     def _draw_pixmap_overlay(self, painter, draw_width, draw_height, scrolled):
