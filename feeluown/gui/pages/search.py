@@ -13,6 +13,7 @@ TypeTabMapping = {
     SearchType.al: Tab.albums,
     SearchType.ar: Tab.artists,
     SearchType.pl: Tab.playlists,
+    SearchType.vi: Tab.videos,
 }
 
 
@@ -62,6 +63,9 @@ class SearchResultRenderer(Renderer):
                             self.tabbar.show_artists_needed),
             SearchType.pl: ('playlists', self.show_playlists,
                             self.tabbar.show_playlists_needed),
+            SearchType.vi: ('videos', self.show_videos,
+                            self.tabbar.show_videos_needed),
+
         }
         for search_type, (_, _, signal) in mapping.items():
             signal.connect(self._show(search_type))

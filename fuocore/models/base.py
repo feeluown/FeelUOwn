@@ -85,6 +85,7 @@ class ModelType(IntEnum):
     album = 3
     playlist = 4
     lyric = 5
+    video = 6
 
     user = 17
 
@@ -94,6 +95,7 @@ class SearchType(Enum):
     al = 'album'
     ar = 'artist'
     so = 'song'
+    vi = 'video'
 
     @classmethod
     def parse(cls, obj):
@@ -118,7 +120,8 @@ class SearchType(Enum):
             cls.pl: ('playlist', 'pl'),
             cls.al: ('album', 'al'),
             cls.ar: ('artist', 'ar'),
-            cls.so: ('song', 'so')
+            cls.so: ('song', 'so'),
+            cls.vi: ('video', 'vi'),
         }
         for type_, aliases in type_aliases_map.items():
             if obj in aliases:

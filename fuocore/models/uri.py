@@ -44,6 +44,7 @@ TYPE_NS_MAP = {
     ModelType.playlist: 'playlists',
     ModelType.user: 'users',
     ModelType.lyric: 'lyrics',
+    ModelType.video: 'videos',
 }
 NS_TYPE_MAP = {
     value: key
@@ -95,6 +96,13 @@ def parse_artist_str(album_str):
     }
 
 
+def parse_video_str(video_str):
+    values = _split(video_str, 1)
+    return {
+        'title': values[0]
+    }
+
+
 def parse_unknown(_):
     return {}
 
@@ -128,6 +136,8 @@ def parse_line(line):
         parse_func = parse_album_str
     elif ns == 'artists':
         parse_func = parse_artist_str
+    elif ns == 'videos':
+        parse_func = parse_video_str
     else:
         parse_func = parse_unknown
     data = parse_func(model_str.strip())

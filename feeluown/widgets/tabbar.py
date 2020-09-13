@@ -21,6 +21,7 @@ class Tab(Enum):
     albums = 2
     artists = 3
     playlists = 4
+    videos = 5
 
     desc = 8
 
@@ -37,6 +38,7 @@ class TableTabBarV2(QWidget):
     show_artists_needed = pyqtSignal()
     show_albums_needed = pyqtSignal()
     show_playlists_needed = pyqtSignal()
+    show_videos_needed = pyqtSignal()
     show_desc_needed = pyqtSignal()
     show_contributed_albums_needed = pyqtSignal()
 
@@ -47,6 +49,7 @@ class TableTabBarV2(QWidget):
         self.albums_btn = QRadioButton('专辑', self)
         self.artists_btn = QRadioButton('歌手', self)
         self.playlists_btn = QRadioButton('歌单', self)
+        self.videos_btn = QRadioButton('视频', self)
         self.desc_btn = QRadioButton('简介', self)
         self.contributed_btn = QRadioButton('参与作品', self)
         self._layout = QHBoxLayout(self)
@@ -57,12 +60,14 @@ class TableTabBarV2(QWidget):
         self.desc_btn.clicked.connect(self.show_desc_needed.emit)
         self.contributed_btn.clicked.connect(self.show_contributed_albums_needed.emit)
         self.playlists_btn.clicked.connect(self.show_playlists_needed.emit)
+        self.videos_btn.clicked.connect(self.show_videos_needed.emit)
 
         self._tab_btn_mapping = {
             Tab.songs: self.songs_btn,
             Tab.albums: self.albums_btn,
             Tab.artists: self.artists_btn,
             Tab.playlists: self.playlists_btn,
+            Tab.videos: self.videos_btn,
             Tab.desc: self.desc_btn,
             Tab.contributed: self.contributed_btn,
         }
@@ -94,6 +99,7 @@ class TableTabBarV2(QWidget):
         self.albums_btn.show()
         self.artists_btn.show()
         self.playlists_btn.show()
+        self.videos_btn.show()
 
     def _setup_ui(self):
         self._layout.setSpacing(0)
@@ -103,6 +109,7 @@ class TableTabBarV2(QWidget):
         self._layout.addWidget(self.artists_btn)
         self._layout.addWidget(self.albums_btn)
         self._layout.addWidget(self.playlists_btn)
+        self._layout.addWidget(self.videos_btn)
         self._layout.addWidget(self.contributed_btn)
 
 
