@@ -104,6 +104,8 @@ class ItemViewNoScrollMixin:
         self._row_height = 0
         self._reserved = 30
 
+        self._min_height = 0
+
     def adjust_height(self):
         if self.model() is None:
             return
@@ -117,7 +119,7 @@ class ItemViewNoScrollMixin:
             index = self._last_index()
             rect = self.visualRect(index)
             height = self.sizeHint().height() - int(rect.height() * 1.5) - self._reserved
-            self.setFixedHeight(max(height, self._min_height()))
+            self.setFixedHeight(max(height, self.min_height()))
         else:
             height = self.sizeHint().height()
             self.setFixedHeight(height)
@@ -136,7 +138,7 @@ class ItemViewNoScrollMixin:
         e.ignore()
 
     def sizeHint(self):
-        height = min_height = self._min_height()
+        height = min_height = self.min_height()
         if self.model() is not None:
             index = self._last_index()
             rect = self.visualRect(index)
@@ -151,5 +153,12 @@ class ItemViewNoScrollMixin:
         # can't use createIndex here, why?
         return source_model.index(row_count - 1, column_count - 1)
 
-    def _min_height(self):
-        return self._row_height * self._least_row_count + self._reserved
+    def min_height(self):
+        default = self._row_height * self._least_row_count + self._reserved
+        return max(self._min_height, default)
+
+    def suggest_min_height(self, height):
+        """
+        parent should call this method where it's size changed
+        """
+        self._min_height = height

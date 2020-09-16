@@ -9,7 +9,7 @@ from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
 from feeluown.theme import Light
-from feeluown.helpers import BgTransparentMixin
+from feeluown.helpers import BgTransparentMixin, ItemViewNoScrollMixin
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer
@@ -23,6 +23,12 @@ def add_alpha(color, alpha):
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
+    """
+    该 ScrollArea 和 TableContainer 是紧密耦合的一个组件，
+    目标是为了让整个 Table 内容都处于一个滚动的窗口内。
+
+    TODO: 给这个 ScrollArea 添加更多注释，对它进行一些重构
+    """
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app
@@ -53,6 +59,25 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
     def wheelEvent(self, e):
         super().wheelEvent(e)
         self._app.ui.bottom_panel.update()
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        table = self.t.current_table
+        if table is not None and isinstance(table, ItemViewNoScrollMixin):
+            table.suggest_min_height(self.height_for_table())
+
+    def height_for_table(self):
+        """a proper height for the table widget"""
+        # spacing is 10
+        table_container = self.t
+        table_proper_height = self.height() - 10
+        if table_container.meta_widget.isVisible():
+            table_proper_height -= table_container.meta_widget.height()
+        if table_container.toolbar.isVisible():
+            table_proper_height -= table_container.toolbar.height()
+        if table_container.desc_widget.isVisible():
+            table_proper_height -= table_container.desc_widget.height()
+        return table_proper_height
 
 
 class RightPanel(QFrame):
