@@ -330,6 +330,14 @@ class AlbumsCollectionRenderer(Renderer):
         self.show_albums(self.reader)
 
 
+class ArtistsCollectionRenderer(Renderer):
+    def __init__(self, reader):
+        self.reader = reader
+
+    async def render(self):
+        self.show_artists(self.reader)
+
+
 class VideosRenderer(Renderer):
     def __init__(self, reader):
         self.reader = reader
@@ -466,6 +474,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         else:
             self.desc_widget.hide()
             table.show()
+            if table is self.artists_table:
+                self.toolbar.artists_mode()
             if table is self.albums_table:
                 self.toolbar.albums_mode()
             if table is self.songs_table:
@@ -570,6 +580,9 @@ class TableContainer(QFrame, BgTransparentMixin):
 
     def show_albums_coll(self, albums_g):
         aio.create_task(self.set_renderer(AlbumsCollectionRenderer(albums_g)))
+
+    def show_artists_coll(self, artists_g):
+        aio.create_task(self.set_renderer(ArtistsCollectionRenderer(artists_g)))
 
     def show_player_playlist(self):
         aio.create_task(self.set_renderer(PlayerPlaylistRenderer()))
