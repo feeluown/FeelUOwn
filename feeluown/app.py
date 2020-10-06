@@ -211,14 +211,15 @@ def create_app(config):
 
     if mode & App.GuiMode:
 
-        from PyQt5.QtCore import Qt
+        from PyQt5.QtCore import Qt, QEvent
         from PyQt5.QtGui import QIcon, QPixmap
-        from PyQt5.QtWidgets import QApplication, QWidget
+        from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon
 
         from feeluown.compat import QEventLoop
 
         q_app = QApplication(sys.argv)
-        q_app.setQuitOnLastWindowClosed(True)
+
+        q_app.setQuitOnLastWindowClosed(not config.CLOSE_TO_TRAY)
         q_app.setApplicationName('FeelUOwn')
 
         app_event_loop = QEventLoop(q_app)
@@ -233,6 +234,14 @@ def create_app(config):
                 QApplication.setWindowIcon(QIcon(QPixmap(APP_ICON)))
 
             def closeEvent(self, e):
+                if not self.config.CLOSE_TO_TRAY:
+                    self.exit()
+
+            def changeEvent(self, event: QEvent):
+                if self.config.MINIMIZE_TO_TRAY and event.type() == QEvent.WindowStateChange and self.isMinimized():
+                    self.tray.tray_activated(QSystemTrayIcon.Trigger)
+
+            def exit(self):
                 self.ui.mpv_widget.close()
                 event_loop = asyncio.get_event_loop()
                 event_loop.stop()
