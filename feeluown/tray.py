@@ -14,16 +14,18 @@ class Tray:
     }
 
     def __init__(self, app):
+        # init
         self._app = app
         self._player = app.player
         self._playlist = app.player.playlist
         self.tray_icon = QSystemTrayIcon()
+        self.context_menu = QMenu()
+        # create menu, icon and connect signals
         self.create_menu()
         self.create_icon()
         self.connect_signals()
 
     def create_menu(self):
-        self.context_menu = QMenu()
         for alias, action in self.ACTIONS.items():
             setattr(self, alias + '_action', QAction(action[0]))
             getattr(self, alias + '_action').setEnabled(action[2])
@@ -35,7 +37,7 @@ class Tray:
 
     def create_icon(self):
         cpath = os.path.dirname(__file__)
-        self.tray_icon.setIcon(QIcon.fromTheme('feeluown_tray', QIcon(f'{cpath}/tray.png')))
+        self.tray_icon.setIcon(QIcon.fromTheme('feeluowntray', QIcon(f'{cpath}/tray.png')))
         self.tray_icon.activated.connect(self.tray_activated)
         self.tray_icon.show()
 
@@ -54,7 +56,13 @@ class Tray:
 
     def tray_activated(self, reason):
         if reason == QSystemTrayIcon.Trigger:
-            self._app.show() if self._app.isHidden() else self._app.hide()
+            if self._app.isHidden():
+                self._app.show()
+                self._app.activateWindow()
+            elif self._app.isActiveWindow():
+                self._app.hide()
+            else:
+                self._app.activateWindow()
 
     def connect_signals(self):
         self._player.state_changed.connect(self.state_changed)
