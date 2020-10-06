@@ -185,6 +185,7 @@ def attach_attrs(app):
         from .theme import ThemeManager
         from .tips import TipsManager
         from .ui import Ui
+        from .tray import Tray
 
         # GUI 的一些辅助管理模块
         app.coll_mgr = CollectionManager(app)
@@ -201,6 +202,7 @@ def attach_attrs(app):
 
         app.browser = Browser(app)
         app.ui = Ui(app)
+        app.tray = Tray(app)
         app.show_msg = app.ui.magicbox.show_msg
 
 
