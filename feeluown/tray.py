@@ -1,3 +1,5 @@
+import os
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu
 
@@ -32,7 +34,8 @@ class Tray:
         self.tray_icon.setContextMenu(self.context_menu)
 
     def create_icon(self):
-        self.tray_icon.setIcon(QIcon.fromTheme('feeluown', QIcon('./feeluown.png')))
+        cpath = os.path.dirname(__file__)
+        self.tray_icon.setIcon(QIcon.fromTheme('feeluown_tray', QIcon(f'{cpath}/tray.png')))
         self.tray_icon.activated.connect(self.tray_activated)
         self.tray_icon.show()
 
