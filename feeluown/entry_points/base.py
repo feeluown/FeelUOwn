@@ -42,10 +42,13 @@ def create_config():
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
-    config.deffield('NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False, desc='切换歌曲时显示桌面通知')
+    config.deffield('NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False,
+                    desc='切换歌曲时显示桌面通知')
     config.deffield('NOTIFY_DURATION', type_=int, default=3000, desc='桌面通知保留时长(ms)')
-    config.deffield('MINIMIZE_TO_TRAY', type_=bool, default=False, desc='最小化到系统托盘，点击托盘图标恢复')
-    config.deffield('CLOSE_TO_TRAY', type_=bool, default=False, desc='关闭时最小化到系统托盘，右击托盘图标可退出')
+    config.deffield('MINIMIZE_TO_TRAY', type_=bool, default=False,
+                    desc='最小化到系统托盘，点击托盘图标恢复')
+    config.deffield('CLOSE_TO_TRAY', type_=bool, default=False,
+                    desc='关闭时最小化到系统托盘，右击托盘图标可退出')
     return config
 
 

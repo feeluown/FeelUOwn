@@ -238,7 +238,8 @@ def create_app(config):
                     self.exit()
 
             def changeEvent(self, event: QEvent):
-                if self.config.MINIMIZE_TO_TRAY and event.type() == QEvent.WindowStateChange and self.isMinimized():
+                if self.config.MINIMIZE_TO_TRAY and event.type() ==\
+                        QEvent.WindowStateChange and self.isMinimized():
                     self.tray.tray_activated(QSystemTrayIcon.Trigger)
 
             def exit(self):

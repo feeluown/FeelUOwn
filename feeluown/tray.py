@@ -37,7 +37,8 @@ class Tray:
                     getattr(self, alias + '_action').setIcon(QIcon.fromTheme(action[1], QIcon(f'{cpath}/tray.png'))) # noqa
                 else:
                     getattr(self, alias + '_action').setIcon(QIcon.fromTheme(action[1])) # noqa
-            getattr(self, alias + '_action').triggered.connect(getattr(self, 'trigger_' + alias, self.trigger_default))
+            getattr(self, alias + '_action').triggered\
+                .connect(getattr(self, 'trigger_' + alias, self.trigger_default))
             self.context_menu.addAction(getattr(self, alias + '_action'))
         self.tray_icon.setContextMenu(self.context_menu)
 
@@ -87,7 +88,9 @@ class Tray:
             title = f'{song.title_display} - {song.artists_name}'[0:30]
             if self._app.config.NOTIFY_ON_TRACK_CHANGED:
                 cpath = os.path.dirname(__file__)
-                self.tray_icon.showMessage(song.title_display, song.artists_name, QIcon(f'{cpath}/feeluown.png'),
+                self.tray_icon.showMessage(song.title_display,
+                                           song.artists_name,
+                                           QIcon(f'{cpath}/feeluown.png'),
                                            self._app.config.NOTIFY_DURATION)
             self.current_action.setText(title) # noqa
             self.tray_icon.setToolTip(title)
