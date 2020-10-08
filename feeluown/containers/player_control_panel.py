@@ -282,7 +282,8 @@ class PlayerControlPanel(QFrame):
         # three button: 63, source label: 150
         elided_text = font_metrics.elidedText(
             text, Qt.ElideRight, self.progress_slider.width() - 200)
-        self.song_source_label.setText(source_name_map[song.source])
+        source_name = source_name_map.get(song.source, song.source)
+        self.song_source_label.setText(source_name)
         self.song_title_label.setText(elided_text)
         loop = asyncio.get_event_loop()
         loop.create_task(self.update_mv_btn_status(song))
