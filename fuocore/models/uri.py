@@ -53,7 +53,6 @@ NS_TYPE_MAP = {
 
 
 class Resolver:
-
     loop = None
     library = None
 
@@ -62,9 +61,20 @@ class Resolver:
         cls.loop = asyncio.get_event_loop()
 
 
+def _model_unescape(model_str):
+    # \- => -
+    return model_str.replace('\\-', '-').replace('\\\\', '\\')
+
+
+def _model_escape(model_str):
+    # - => \-
+    return model_str.replace('\\', '\\\\').replace('-', '\\-')
+
+
 def _split(s, num):
-    DELIMITER = ' - '
+    DELIMITER = ' -'
     values = s.split(DELIMITER)
+    values = [v.strip() for v in values]
     current = len(values)
     if current < num:
         values.extend([''] * (num - current))
@@ -116,9 +126,10 @@ def parse_line(line):
     ('xxx', '没有人知道')
     """
     line = line.strip()
-    parts = line.split('#')
+    parts = line.split('#', maxsplit=1)
     if len(parts) == 2:
         uri, model_str = parts
+        model_str = _model_unescape(model_str)
     else:
         uri, model_str = parts[0], ''
     ns_list = list(TYPE_NS_MAP.values())
@@ -186,21 +197,23 @@ def reverse(model, path='', as_line=False):
         if model.meta.model_type == ModelType.song:
             song = model
             model_str = '{} - {} - {} - {}'.format(
-                song.title_display,
-                song.artists_name_display,
-                song.album_name_display,
-                song.duration_ms_display
+                _model_escape(song.title_display),
+                _model_escape(song.artists_name_display),
+                _model_escape(song.album_name_display),
+                _model_escape(song.duration_ms_display)
             )
         elif model.meta.model_type == ModelType.album:
             album = model
             model_str = '{} - {}'.format(
-                album.name_display,
-                album.artists_name_display
+                _model_escape(album.name_display),
+                _model_escape(album.artists_name_display)
             )
 
         elif model.meta.model_type == ModelType.artist:
             artist = model
-            model_str = '{}'.format(artist.name_display)
+            model_str = '{}'.format(
+                _model_escape(artist.name_display)
+            )
         else:
             model_str = ''
         if model_str:
