@@ -1,5 +1,6 @@
 import logging
 import os
+import toml
 from enum import Enum
 from pathlib import Path
 
@@ -16,6 +17,8 @@ DEFAULT_COLL_ALBUMS = 'Albums'
 SONGS_FILENAME = 'Songs.fuo'
 ALBUMS_FILENAME = 'Albums.fuo'
 
+TOML_DELIMLF = "+ + +\n"
+
 
 class CollectionType(Enum):
     # predefined collections
@@ -24,6 +27,27 @@ class CollectionType(Enum):
     sys_artist = 4
 
     mixed = 8
+
+
+class FuoMetaData(dict):
+
+    def __init__(self, toml_doc_str):
+        super(FuoMetaData, self).__init__()
+        self._metadata = toml.loads(toml_doc_str)
+        self._metadata_changed = False
+
+    def __setitem__(self, key, value):
+        self._metadata_changed = True
+        super().__setitem__(key, value)
+
+    def __delitem__(self, key):
+        self._metadata_changed = True
+        super().__delitem__(key)
+
+    def dumps(self):
+        if self._metadata_changed:
+            return toml.dumps(self._metadata)
+        return self._metadata
 
 
 class Collection:
@@ -37,6 +61,7 @@ class Collection:
         self.type = None
         self.name = None
         self.models = []
+        self.metadata = None
         self.updated_at = None
         self.created_at = None
         self._has_nonexistent_models = False
@@ -56,6 +81,18 @@ class Collection:
         else:
             self.type = CollectionType.mixed
         with filepath.open(encoding='utf-8') as f:
+            first = f.readline()
+            if first.startswith(TOML_DELIMLF):
+                tmp = []
+                for line in f:
+                    if line.startswith(TOML_DELIMLF):
+                        break
+                    tmp.append(line)
+                toml_str = "".join(tmp)
+                self.metadata = FuoMetaData(toml_str)
+            else:
+                f.seek(0, os.SEEK_SET)
+
             for line in f:
                 try:
                     model = resolve(line)
@@ -86,8 +123,22 @@ class Collection:
             line = reverse(model, as_line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 content = f.read()
+                parts = content.split(TOML_DELIMLF, maxsplit=2)
                 f.seek(0, 0)
-                f.write(line + '\n' + content)
+                # FIXME: if metadata changed
+                if len(parts) == 3:
+                    f.write(
+                        TOML_DELIMLF
+                        + parts[1]
+                        + TOML_DELIMLF
+                        + line + '\n'
+                        + parts[2]
+                    )
+                else:
+                    f.write(
+                        line + '\n'
+                        + parts[-1]
+                    )
             self.models.insert(0, model)
         return True
 

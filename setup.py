@@ -79,6 +79,7 @@ setup(
         'requests',
         'pyopengl',
         'qasync',
+        'toml',
     ],
     extras_require={
         'battery': ['fuo-local>=0.2.1',
