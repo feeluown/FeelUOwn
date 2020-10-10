@@ -213,7 +213,7 @@ def create_app(config):
 
         from PyQt5.QtCore import Qt, QEvent
         from PyQt5.QtGui import QIcon, QPixmap
-        from PyQt5.QtWidgets import QApplication, QWidget, QSystemTrayIcon
+        from PyQt5.QtWidgets import QApplication, QWidget
 
         from feeluown.compat import QEventLoop
 
