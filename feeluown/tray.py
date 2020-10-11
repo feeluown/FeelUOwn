@@ -23,7 +23,7 @@ class Tray(QSystemTrayIcon):
 
         # setup context menu
         self._menu = QMenu()
-        self._status_action = QAction(self.icon(), '...')
+        self._status_action = QAction('...')
         self._toggle_player_action = QAction(QIcon.fromTheme('media-play'),
                                              TOGGLE_PLAYER_TEXT[0])
         self._next_action = QAction(QIcon.fromTheme('media-skip-forward'), '下一首')
@@ -57,6 +57,7 @@ class Tray(QSystemTrayIcon):
 
     def initialize(self):
         self._set_icon()
+        self._status_action.setIcon(self.icon())
         self.show()
 
     def setup_ui(self):
