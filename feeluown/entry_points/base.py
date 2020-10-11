@@ -42,6 +42,10 @@ def create_config():
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
+    config.deffield('ENABLE_TRAY', type_=bool, default=True, desc='启用系统托盘')
+    config.deffield('NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False,
+                    desc='切换歌曲时显示桌面通知')
+    config.deffield('NOTIFY_DURATION', type_=int, default=3000, desc='桌面通知保留时长(ms)')
     return config
 
 

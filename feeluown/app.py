@@ -185,6 +185,7 @@ def attach_attrs(app):
         from .theme import ThemeManager
         from .tips import TipsManager
         from .ui import Ui
+        from .tray import Tray
 
         # GUI 的一些辅助管理模块
         app.coll_mgr = CollectionManager(app)
@@ -201,6 +202,8 @@ def attach_attrs(app):
 
         app.browser = Browser(app)
         app.ui = Ui(app)
+        if app.config.ENABLE_TRAY:
+            app.tray = Tray(app)
         app.show_msg = app.ui.magicbox.show_msg
 
 
@@ -216,7 +219,8 @@ def create_app(config):
         from feeluown.compat import QEventLoop
 
         q_app = QApplication(sys.argv)
-        q_app.setQuitOnLastWindowClosed(True)
+
+        q_app.setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         q_app.setApplicationName('FeelUOwn')
 
         app_event_loop = QEventLoop(q_app)
@@ -230,7 +234,11 @@ def create_app(config):
                 self.setObjectName('app')
                 QApplication.setWindowIcon(QIcon(QPixmap(APP_ICON)))
 
-            def closeEvent(self, e):
+            def closeEvent(self, _):
+                if not self.config.ENABLE_TRAY:
+                    self.exit()
+
+            def exit(self):
                 self.ui.mpv_widget.close()
                 event_loop = asyncio.get_event_loop()
                 event_loop.stop()
@@ -268,6 +276,8 @@ def init_app(app):
     app.plugin_mgr.scan()
     if app.mode & App.GuiMode:
         app.theme_mgr.initialize()
+        if app.config.ENABLE_TRAY:
+            app.tray.initialize()
         app.tips_mgr.show_random_tip()
         app.coll_uimgr.initialize()
         app.browser.initialize()

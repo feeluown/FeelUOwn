@@ -12,9 +12,9 @@ from functools import wraps
 
 try:
     # helper module should work in no-window mode
-    from PyQt5.QtCore import QModelIndex, QSize
-    from PyQt5.QtCore import Qt
-    from PyQt5.QtGui import QPalette
+    from PyQt5.QtCore import QModelIndex, QSize, Qt
+    from PyQt5.QtGui import QPalette, QFontMetrics
+    from PyQt5.QtWidgets import QApplication
 except ImportError:
     pass
 
@@ -162,3 +162,8 @@ class ItemViewNoScrollMixin:
         parent should call this method where it's size changed
         """
         self._min_height = height
+
+
+def elided_text(text, width):
+    font_metrics = QFontMetrics(QApplication.font())
+    return font_metrics.elidedText(text, Qt.ElideRight, width)

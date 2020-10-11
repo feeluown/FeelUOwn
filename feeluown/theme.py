@@ -6,6 +6,7 @@ import os
 import sys
 from collections import defaultdict
 
+from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
 from PyQt5.QtWidgets import QApplication
 from fuocore.utils import get_osx_theme
@@ -35,15 +36,13 @@ def read_resource(filename):
     return s
 
 
-class ThemeManager:
-    """检测系统主题，自动适配
+class ThemeManager(QObject):
+    """colors/icons manager"""
 
-    **TODO**:
+    theme_changed = pyqtSignal(str)
 
-    - 添加 dark 主题
-    - 检测系统主题
-    """
     def __init__(self, app):
+        super().__init__(parent=app)
         self._app = app
         self.theme = None
 
@@ -67,7 +66,9 @@ class ThemeManager:
                     theme = MacOSDark
         else:  # user settings have highest priority
             theme = self._app.config.THEME
+        self.load_theme(theme)
 
+    def load_theme(self, theme):
         if theme == DARK:
             self.load_dark()
         elif theme == MacOSDark:
@@ -75,6 +76,7 @@ class ThemeManager:
         else:
             self.load_light()
         self.theme = theme
+        self.theme_changed.emit(theme)
 
     def guess_system_theme(self):
         palette = self._app.palette()
@@ -123,6 +125,17 @@ class ThemeManager:
         if self.guess_system_theme() == DARK:
             return '#3e3e3e'
         return '#DDD'
+
+    def get_icon(self, name):
+        """get icon by name
+
+        this API is similar to QIcon.fromTheme
+        """
+        theme_kind = self.guess_system_theme()
+        if name == 'tray':
+            if theme_kind == DARK:
+                return 'icons/tray-dark.png'
+            return 'icons/tray-light.png'
 
 
 def dump_colors():
