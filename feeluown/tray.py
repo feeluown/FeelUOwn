@@ -36,14 +36,15 @@ class Tray(QSystemTrayIcon):
                                               TOGGLE_APP_TEXT[1])
         else:
             self._toggle_app_action = None
-            self.activated.connect(self.toggle_window_active) # noqa
+            self.activated.connect(self._toggle_app_state) # noqa
 
         # bind signals
         self._quit_action.triggered.connect(self._app.exit)
         self._toggle_player_action.triggered.connect(self._app.player.toggle)
         self._prev_action.triggered.connect(self._app.playlist.previous)
         self._next_action.triggered.connect(self._app.playlist.next)
-        self._toggle_app_action.triggered.connect(self._toggle_app_state)
+        if self._toggle_app_action is not None:
+            self._toggle_app_action.triggered.connect(self._toggle_app_state)
         self._app.player.state_changed.connect(self.on_player_state_changed)
         self._app.playlist.song_changed.connect(self.on_player_song_changed)
         self._app.theme_mgr.theme_changed.connect(self.on_theme_changed)
@@ -125,20 +126,24 @@ class Tray(QSystemTrayIcon):
             self._app.activateWindow()
         elif state == Qt.ApplicationInactive:
             # when app window is not the top window, it changes to inactive
-            self._toggle_app_action.setText(TOGGLE_APP_TEXT[0])
+            if self._toggle_app_action is not None:
+                self._toggle_app_action.setText(TOGGLE_APP_TEXT[0])
 
     def eventFilter(self, obj, event):
         """event filter for app"""
+        app_text_idx = None
         if event.type() == QEvent.WindowStateChange:
             # when window is maximized before minimized, the window state will
             # be Qt.WindowMinimized | Qt.WindowMaximized
             if obj.windowState() & Qt.WindowMinimized:
                 self._app_old_state = event.oldState()
-                self._toggle_app_action.setText(TOGGLE_APP_TEXT[0])
+                app_text_idx = 0
             else:
-                self._toggle_app_action.setText(TOGGLE_APP_TEXT[1])
+                app_text_idx = 1
         elif event.type() == QEvent.Hide:
-            self._toggle_app_action.setText(TOGGLE_APP_TEXT[0])
+            app_text_idx = 0
         elif event.type() == QEvent.Show:
-            self._toggle_app_action.setText(TOGGLE_APP_TEXT[1])
+            app_text_idx = 1
+        if app_text_idx is not None and self._toggle_app_action is not None:
+            self._toggle_app_action.setText(TOGGLE_APP_TEXT[app_text_idx])
         return False
