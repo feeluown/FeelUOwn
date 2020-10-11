@@ -82,7 +82,7 @@ def run():
         else:
             print('ok')
 
-    subprocess.run(['fuo', 'exec', 'app.close()'])
+    subprocess.run(['fuo', 'exec', 'app.exit()'])
     returncode = popen.wait(timeout=2)
     sys.exit(returncode)
 
