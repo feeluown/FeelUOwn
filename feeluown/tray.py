@@ -28,7 +28,7 @@ class Tray(QSystemTrayIcon):
                                              TOGGLE_PLAYER_TEXT[0])
         self._next_action = QAction(QIcon.fromTheme('media-skip-forward'), '下一首')
         self._prev_action = QAction(QIcon.fromTheme('media-skip-backward'), '上一首')
-        self._quit_action = QAction(QIcon.fromTheme('quit'), '退出')
+        self._quit_action = QAction(QIcon.fromTheme('exit'), '退出')
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
         if sys.platform == 'darwin':
