@@ -17,7 +17,7 @@ DEFAULT_COLL_ALBUMS = 'Albums'
 SONGS_FILENAME = 'Songs.fuo'
 ALBUMS_FILENAME = 'Albums.fuo'
 
-TOML_DELIMLF = "+ + +\n"
+TOML_DELIMLF = "+++\n"
 
 
 class CollectionType(Enum):
