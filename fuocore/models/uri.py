@@ -72,6 +72,10 @@ def _model_escape(model_str):
 
 
 def _split(s, num):
+    # 这里使用'- '的原因是为了解决:无网络条件下无法获取在线歌曲时长,
+    # 导致写出格式存在问题,之前的_split无法解析下列异常情况
+    # 'fuo://xiami/songs/1769834090	# Flower Dance - DJ OKAWARI -  -'
+    # FIXME:修改写入部分的代码,而不是hack parse 过程
     DELIMITER = ' -'
     values = s.split(DELIMITER)
     values = [v.strip() for v in values]
