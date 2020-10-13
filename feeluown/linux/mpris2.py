@@ -118,7 +118,7 @@ class Mpris2Service(dbus.service.Object):
             'xesam:url': song.url,
             'mpris:length': dbus.Int64(song.duration*1000),
             'mpris:trackid': to_track_id(song),
-            'mpris:artUrl': song.album.cover if song.album else '',
+            'mpris:artUrl': (song.album.cover if song.album else '') or '',
             'xesam:album': song.album_name,
             'xesam:title': song.title,
         }, signature='sv'))
