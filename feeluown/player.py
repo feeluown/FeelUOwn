@@ -24,7 +24,7 @@ class PlaylistMode(IntEnum):
 
     **What is FM mode?**
 
-    In FM mode, playlist's playback_mode is unchangable, it will
+    In FM mode, playlist's playback_mode is unchangeable, it will
     always be sequential. When playlist has no more song,
     the playlist hopes someone(we call it ``FMPlaylist`` here) will:
     1. catch the ``eof_reached`` signal
