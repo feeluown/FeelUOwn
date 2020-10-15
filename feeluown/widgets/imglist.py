@@ -159,7 +159,7 @@ class ImgListModel(QAbstractListModel):
         elif role == Qt.UserRole:
             return item
         elif role == Qt.WhatsThisRole:
-            return self.source_name_map[item.source]
+            return self.source_name_map.get(item.source, item.source)
         return None
 
 
