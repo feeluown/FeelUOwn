@@ -109,6 +109,19 @@ class Playlist(_Playlist):
         task_spec = self._app.task_mgr.get_or_create('set-current-song')
         task_spec.bind_coro(self.a_set_current_song(song))
 
+    def init_from(self, songs):
+        # THINKING: maybe we should rename this method or maybe we should
+        # change mode on application level
+        #
+        # We change playlistmode here because the `player.play_all` call this
+        # method. We should check if we need to exit fm mode in `play_xxx`.
+        # Currently, we have two play_xxx API: play_all and play_song.
+        # 1. play_all -> init_from
+        # 2. play_song -> current_song.setter
+        if self.mode is PlaylistMode.fm:
+            self.mode = PlaylistMode.normal
+        super().init_from(songs)
+
     async def a_set_current_song(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
         future = task_spec.bind_blocking_io(self.prepare_media, song)
