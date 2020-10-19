@@ -23,7 +23,7 @@ from PyQt5.QtGui import (
     QBrush, QPainter, QTextOption, QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemDelegate, QListView, QFrame
+    QAbstractItemDelegate, QListView, QFrame,
 )
 
 from fuocore import aio
@@ -63,6 +63,7 @@ def calc_cover_width(width):
     width = width - 20
     # calculate max column count
     count = (width - CoverSpacing) // (CoverMinWidth + CoverSpacing)
+    count = max(count, 1)
     cover_width = (width - ((count + 1) * CoverSpacing)) // count
     return cover_width
 
@@ -158,7 +159,7 @@ class ImgListModel(QAbstractListModel):
         elif role == Qt.UserRole:
             return item
         elif role == Qt.WhatsThisRole:
-            return self.source_name_map[item.source]
+            return self.source_name_map.get(item.source, item.source)
         return None
 
 
@@ -167,6 +168,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         super().__init__(parent)
 
         self.as_circle = True
+        self.w_h_ratio = 1
 
     def paint(self, painter, option, index):
         painter.save()
@@ -243,9 +245,7 @@ class ImgListDelegate(QAbstractItemDelegate):
     def sizeHint(self, option, index):
         width = calc_cover_width(self.parent().width())
         if index.isValid():
-            return QSize(
-                width,
-                width + TextHeight)
+            return QSize(width, int(width / self.w_h_ratio) + TextHeight)
         return super().sizeHint(option, index)
 
 

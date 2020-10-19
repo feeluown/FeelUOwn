@@ -5,7 +5,7 @@ import pytest
 
 from fuocore.playlist import PlaybackMode
 from fuocore.dispatch import Signal
-from feeluown.player import Playlist, PlaylistMode
+from feeluown.player import Playlist, PlaylistMode, Player
 
 
 @pytest.mark.asyncio
@@ -101,3 +101,11 @@ async def test_prepare_media_in_non_mainthread(app_mock, song):
         await loop.run_in_executor(None, pl.prepare_media, song)
     except RuntimeError:
         pytest.fail('Prepare media in non mainthread should work')
+
+
+def test_play_all(app_mock):
+    player = Player(app_mock)
+    playlist = player.playlist
+    playlist.mode = PlaylistMode.fm
+    player.play_songs([])
+    assert playlist.mode == PlaylistMode.normal

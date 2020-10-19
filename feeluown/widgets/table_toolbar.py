@@ -28,30 +28,33 @@ class SongsTableToolbar(QWidget):
         self.filter_albums_combobox.hide()
         self._setup_ui()
 
-    def before_change_mode(self):
+    def _before_change_mode(self):
         """filter all filter buttons"""
         self.filter_albums_combobox.hide()
         self.play_all_btn.hide()
 
     def albums_mode(self):
-        self.before_change_mode()
+        self._before_change_mode()
         self.filter_albums_combobox.show()
 
     def songs_mode(self):
-        self.before_change_mode()
+        self._before_change_mode()
         self.play_all_btn.show()
+
+    def artists_mode(self):
+        self._before_change_mode()
 
     def enter_state_playall_start(self):
         self.play_all_btn.setEnabled(False)
         # currently, this is called only when feeluown is fetching songs,
         # so when we enter state_playall_start, we set play all btn text
         # to this.
-        self.play_all_btn.setText('正在获取全部歌曲...')
+        self.play_all_btn.setText('Fetching All Songs...')
 
     def enter_state_playall_end(self):
-        self.play_all_btn.setText('正在获取全部歌曲...done')
+        self.play_all_btn.setText('Fetching All Songs...done')
         self.play_all_btn.setEnabled(True)
-        self.play_all_btn.setText('播放全部')
+        self.play_all_btn.setText('Play All')
 
     def _setup_ui(self):
         self._layout = QHBoxLayout(self)

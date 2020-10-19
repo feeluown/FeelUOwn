@@ -220,7 +220,6 @@ class Media:
         # network options
         self.http_headers = http_headers or {}
 
-    @classmethod
     def _copy(self, media):
         self.url = media.url
         self.http_headers = media.http_headers

@@ -74,6 +74,3 @@ feeluown.egg-info/
 .pytest_cache/
 *.dat
 htmlcov/
-
-# vscode
-.vscode/

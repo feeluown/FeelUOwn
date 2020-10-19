@@ -9,7 +9,7 @@ from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
 from feeluown.theme import Light
-from feeluown.helpers import BgTransparentMixin
+from feeluown.helpers import BgTransparentMixin, ItemViewNoScrollMixin
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer
@@ -23,6 +23,12 @@ def add_alpha(color, alpha):
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
+    """
+    该 ScrollArea 和 TableContainer 是紧密耦合的一个组件，
+    目标是为了让整个 Table 内容都处于一个滚动的窗口内。
+
+    TODO: 给这个 ScrollArea 添加更多注释，对它进行一些重构
+    """
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app
@@ -53,6 +59,25 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
     def wheelEvent(self, e):
         super().wheelEvent(e)
         self._app.ui.bottom_panel.update()
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        table = self.t.current_table
+        if table is not None and isinstance(table, ItemViewNoScrollMixin):
+            table.suggest_min_height(self.height_for_table())
+
+    def height_for_table(self):
+        """a proper height for the table widget"""
+        # spacing is 10
+        table_container = self.t
+        table_proper_height = self.height() - 10
+        if table_container.meta_widget.isVisible():
+            table_proper_height -= table_container.meta_widget.height()
+        if table_container.toolbar.isVisible():
+            table_proper_height -= table_container.toolbar.height()
+        if table_container.desc_widget.isVisible():
+            table_proper_height -= table_container.desc_widget.height()
+        return table_proper_height
 
 
 class RightPanel(QFrame):
@@ -108,6 +133,15 @@ class RightPanel(QFrame):
             self.collection_container.show()
             self.collection_container.show_collection(coll)
 
+        def _show_pure_videos_coll(coll):
+            from feeluown.containers.table import VideosRenderer
+
+            self.collection_container.hide()
+            self.scrollarea.show()
+            reader = RandomSequentialReader.from_list(coll.models)
+            renderer = VideosRenderer(reader)
+            aio.create_task(self.table_container.set_renderer(renderer))
+
         if coll.name == DEFAULT_COLL_ALBUMS:
             _show_pure_albums_coll(coll)
             return
@@ -124,6 +158,8 @@ class RightPanel(QFrame):
                 _show_pure_songs_coll(coll)
             elif type_ == ModelType.album:
                 _show_pure_albums_coll(coll)
+            elif type_ == ModelType.video:
+                _show_pure_videos_coll(coll)
             else:
                 _show_mixed_coll(coll)
         else:
@@ -176,13 +212,23 @@ class RightPanel(QFrame):
             self._draw_pixmap(painter, draw_width, draw_height, scrolled)
             self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
         else:
+            # draw gradient for widgets(bottom panel + meta_widget + ...) above table
             self._draw_overlay(painter, draw_width, draw_height, scrolled)
+
+            # if scrolled height > 30, draw background to seperate bottom_panel and body
             if scrolled >= 30:
                 painter.save()
                 painter.setBrush(self.palette().brush(QPalette.Window))
                 painter.drawRect(self.bottom_panel.rect())
                 painter.restore()
                 return
+
+            # since the body's background color is palette(base), we use
+            # the color to draw background for remain empty area
+            painter.save()
+            painter.setBrush(self.palette().brush(QPalette.Base))
+            painter.drawRect(0, draw_height, draw_width, self.height() - draw_height)
+            painter.restore()
         painter.end()
 
     def _draw_pixmap_overlay(self, painter, draw_width, draw_height, scrolled):

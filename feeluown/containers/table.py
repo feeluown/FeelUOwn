@@ -19,6 +19,8 @@ from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel
+from feeluown.widgets.video import VideoListModel, VideoListView, \
+    VideoFilterProxyModel
 from feeluown.widgets.playlist import PlaylistListModel, PlaylistListView, \
     PlaylistFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
@@ -61,6 +63,7 @@ class Renderer:
         self.songs_table = container.songs_table
         self.albums_table = container.albums_table
         self.artists_table = container.artists_table
+        self.videos_table = container.videos_table
         self.playlists_table = container.playlists_table
         # pylint: disable=protected-access
         self._app = container._app
@@ -117,6 +120,12 @@ class Renderer:
                                     self.artists_table,
                                     ArtistListModel,
                                     ArtistFilterProxyModel)
+
+    def show_videos(self, reader):
+        self._show_model_with_cover(reader,
+                                    self.videos_table,
+                                    VideoListModel,
+                                    VideoFilterProxyModel)
 
     def show_playlists(self, reader):
         self._show_model_with_cover(reader,
@@ -321,6 +330,22 @@ class AlbumsCollectionRenderer(Renderer):
         self.show_albums(self.reader)
 
 
+class ArtistsCollectionRenderer(Renderer):
+    def __init__(self, reader):
+        self.reader = reader
+
+    async def render(self):
+        self.show_artists(self.reader)
+
+
+class VideosRenderer(Renderer):
+    def __init__(self, reader):
+        self.reader = reader
+
+    async def render(self):
+        self.show_videos(self.reader)
+
+
 class PlayerPlaylistRenderer(Renderer):
 
     async def render(self):
@@ -368,6 +393,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.songs_table = SongsTableView(parent=self)
         self.albums_table = AlbumListView(parent=self)
         self.artists_table = ArtistListView(parent=self)
+        self.videos_table = VideoListView(parent=self)
         self.playlists_table = PlaylistListView(parent=self)
         self.desc_widget = DescLabel(parent=self)
 
@@ -375,16 +401,20 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._tables.append(self.albums_table)
         self._tables.append(self.artists_table)
         self._tables.append(self.playlists_table)
+        self._tables.append(self.videos_table)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
+        self.videos_table.play_video_needed.connect(
+            lambda video: aio.create_task(self.play_video(video)))
 
         def goto_model(model): self._app.browser.goto(model=model)
         for signal in [self.songs_table.show_artist_needed,
                        self.songs_table.show_album_needed,
                        self.albums_table.show_album_needed,
                        self.artists_table.show_artist_needed,
-                       self.playlists_table.show_playlist_needed]:
+                       self.playlists_table.show_playlist_needed,
+                       ]:
             signal.connect(goto_model)
 
         self.toolbar.play_all_needed.connect(self.play_all)
@@ -403,10 +433,9 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._layout.addWidget(self.toolbar)
         self._layout.addSpacing(10)
         self._layout.addWidget(self.desc_widget)
-        self._layout.addWidget(self.songs_table)
-        self._layout.addWidget(self.albums_table)
-        self._layout.addWidget(self.artists_table)
-        self._layout.addWidget(self.playlists_table)
+        for table in self._tables:
+            self._layout.addWidget(table)
+        self._layout.addStretch(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
@@ -445,6 +474,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         else:
             self.desc_widget.hide()
             table.show()
+            if table is self.artists_table:
+                self.toolbar.artists_mode()
             if table is self.albums_table:
                 self.toolbar.albums_mode()
             if table is self.songs_table:
@@ -498,6 +529,10 @@ class TableContainer(QFrame, BgTransparentMixin):
     async def play_song(self, song):
         self._app.player.play_song(song)
 
+    async def play_video(self, video):
+        media = await aio.run_in_executor(None, lambda: video.media)
+        self._app.player.play(media)
+
     def play_all(self):
         task_name = 'play-all'
         task_spec = self._app.task_mgr.get_or_create(task_name)
@@ -545,6 +580,9 @@ class TableContainer(QFrame, BgTransparentMixin):
 
     def show_albums_coll(self, albums_g):
         aio.create_task(self.set_renderer(AlbumsCollectionRenderer(albums_g)))
+
+    def show_artists_coll(self, artists_g):
+        aio.create_task(self.set_renderer(ArtistsCollectionRenderer(artists_g)))
 
     def show_player_playlist(self):
         aio.create_task(self.set_renderer(PlayerPlaylistRenderer()))

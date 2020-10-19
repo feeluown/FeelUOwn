@@ -217,8 +217,8 @@ class SearchModel(BaseModel):
 
         # XXX: songs should be a empty list instead of None
         # when there is not song.
-        fields = ['q', 'songs', 'playlists', 'artists', 'albums']
-        fields_no_get = ['q', 'songs', 'playlists', 'artists', 'albums']
+        fields = ['q', 'songs', 'playlists', 'artists', 'albums', 'videos']
+        fields_no_get = ['q', 'songs', 'playlists', 'artists', 'albums', 'videos']
 
     def __str__(self):
         return 'fuo://{}?q={}'.format(self.source, self.q)
@@ -278,3 +278,14 @@ class UserModel(BaseModel):
 
     def remove_from_fav_artists(self, artist_id):
         pass
+
+
+class VideoModel(BaseModel):
+
+    class Meta:
+        model_type = ModelType.video.value
+        fields = ['title', 'cover', 'media']
+        fields_display = ['title']
+
+    def __str__(self):
+        return f'fuo://{self.source}/videos/{self.identifier}'

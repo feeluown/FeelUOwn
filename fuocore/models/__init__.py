@@ -8,7 +8,7 @@ from .base import (
 from .models import (
     BaseModel, LyricModel,
     SongModel, AlbumModel, ArtistModel, PlaylistModel,
-    UserModel, MvModel, SearchModel,
+    UserModel, MvModel, SearchModel, VideoModel,
 )
 from .uri import (
     resolve,
