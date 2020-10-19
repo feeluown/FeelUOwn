@@ -118,13 +118,14 @@ def _split(s: str, num: int) -> list:
 
     fields = []
     field = ""
-    # TODO:修复类似这样的解析"Flower Dance - DJ OKAWARI -  - "
-    # 特别注意这种形式"Flower Dance - DJ OKAWARI -  - 4:23"
-    # 中间字段的空白可能导致解析错位
     s += '\n'
     for ch in s:
         if parse_state is ParseState.find_next_filed:
             if ch == ' ' or ch == '\n':
+                continue
+            # 针对含有空白字段"Flower Dance - DJ OKAWARI -  - 4:23"
+            if ch == '-':
+                fields.append("")
                 continue
             if ch == '"':
                 parse_state = ParseState.parse_quoted_filed
@@ -136,8 +137,7 @@ def _split(s: str, num: int) -> list:
                 fields.append(field)
                 field = ""
             elif ch == '-':
-                # TODO:去除末尾空格
-                fields.append(field)
+                fields.append(field.lstrip())
                 field = ""
                 parse_state = ParseState.find_next_filed
             else:
@@ -274,8 +274,8 @@ def do_reverse(fields: list) -> str:
     line = ""
     for field in fields[0:-1]:
         if not field:
-            field = ' '
-        line += _field_escape(field) + ' - '
+            field = '""'
+        line += _field_escape(field.strip()) + ' - '
     line += fields[-1] if fields[-1] else ' '
     return line
 
