@@ -1,5 +1,6 @@
 import logging
 import os
+import time
 import toml
 from enum import Enum
 from pathlib import Path
@@ -29,25 +30,40 @@ class CollectionType(Enum):
     mixed = 8
 
 
-class FuoMetaData(dict):
+class FuoMetaData:
 
-    def __init__(self, toml_doc_str):
+    def __init__(self):
         super(FuoMetaData, self).__init__()
-        self._metadata = toml.loads(toml_doc_str)
+        self._data = {}
+        self._toml_str = None
         self._metadata_changed = False
 
+    def __contains__(self, key):
+        return self._data.__contains__(key)
+
+    def __getitem__(self, key):
+        return self._data.__getitem__(key)
+
     def __setitem__(self, key, value):
-        self._metadata_changed = True
-        super().__setitem__(key, value)
+        if self._data.get(key, None) != value:
+            self._data.__setitem__(key, value)
+            self._metadata_changed = True
 
     def __delitem__(self, key):
-        self._metadata_changed = True
-        super().__delitem__(key)
+        if self._data.__contains__(key):
+            self._data.__delitem__(key)
+            self._metadata_changed = True
 
     def dumps(self):
         if self._metadata_changed:
-            return toml.dumps(self._metadata)
-        return self._metadata
+            self._toml_str = toml.dumps(self._data)
+            self._metadata_changed = False
+        return self._toml_str
+
+    def loads(self, toml_doc_str):
+        if self._toml_str is None:
+            self._toml_str = toml_doc_str
+            self._data = toml.loads(toml_doc_str)
 
 
 class Collection:
@@ -61,7 +77,7 @@ class Collection:
         self.type = None
         self.name = None
         self.models = []
-        self.metadata = None
+        self.metadata = FuoMetaData()
         self.updated_at = None
         self.created_at = None
         self._has_nonexistent_models = False
@@ -89,7 +105,7 @@ class Collection:
                         break
                     tmp.append(line)
                 toml_str = "".join(tmp)
-                self.metadata = FuoMetaData(toml_str)
+                self.metadata.loads(toml_str)
             else:
                 f.seek(0, os.SEEK_SET)
 
@@ -107,6 +123,11 @@ class Collection:
                         self._has_nonexistent_models = True
                     self.models.append(model)
 
+                if self.metadata.__contains__('updated_at'):
+                    self.updated_at = int(self.metadata['updated_at'])
+                if self.metadata.__contains__('title'):
+                    self.name = self.metadata['title']
+
     def add(self, model):
         """add model to collection
 
@@ -115,30 +136,25 @@ class Collection:
         """
         if (self.type == CollectionType.sys_song and
             model.meta.model_type != ModelType.song) or \
-            (self.type == CollectionType.sys_album and
-             model.meta.model_type != ModelType.album):
+                (self.type == CollectionType.sys_album and
+                 model.meta.model_type != ModelType.album):
             return False
 
         if model not in self.models:
+            self.updated_at = int(time.time())
+            self.metadata['updated_at'] = self.updated_at
             line = reverse(model, as_line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 content = f.read()
                 parts = content.split(TOML_DELIMLF, maxsplit=2)
                 f.seek(0, 0)
-                # FIXME: if metadata changed
-                if len(parts) == 3:
-                    f.write(
-                        TOML_DELIMLF
-                        + parts[1]
-                        + TOML_DELIMLF
-                        + line + '\n'
-                        + parts[2]
-                    )
-                else:
-                    f.write(
-                        line + '\n'
-                        + parts[-1]
-                    )
+                f.write(
+                    TOML_DELIMLF
+                    + self.metadata.dumps()
+                    + TOML_DELIMLF
+                    + line + '\n'
+                    + parts[-1]
+                )
             self.models.insert(0, model)
         return True
 
@@ -146,13 +162,30 @@ class Collection:
         if model in self.models:
             url = reverse(model)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
+                first = f.readline()
+                if first.startswith(TOML_DELIMLF):
+                    for line in f:
+                        if line.startswith(TOML_DELIMLF):
+                            break
+                else:
+                    f.seek(0, os.SEEK_SET)
+
                 lines = []
                 for line in f:
                     if line.startswith(url):
+                        # TODO:确认GUI的同步更新
+                        self.updated_at = int(time.time())
+                        self.metadata['updated_at'] = self.updated_at
                         continue
                     lines.append(line)
+
                 f.seek(0)
-                f.write(''.join(lines))
+                f.write(
+                    TOML_DELIMLF
+                    + self.metadata.dumps()
+                    + TOML_DELIMLF
+                    + ''.join(lines)
+                )
                 f.truncate()
                 # 确保最后写入一个换行符，让文件更加美观
                 if lines and not lines[-1].endswith('\n'):
