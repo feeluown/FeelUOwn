@@ -63,16 +63,6 @@ class Resolver:
         cls.loop = asyncio.get_event_loop()
 
 
-# def _model_unescape(model_str):
-#     # \- => -
-#     return model_str.replace('\\-', '-').replace('\\\\', '\\')
-#
-#
-# def _model_escape(model_str):
-#     # - => \-
-#     return model_str.replace('\\', '\\\\').replace('-', '\\-')
-#
-
 def _field_unescape(filed: str) -> str:
     # '"\" \" \\"' => '" " \'
     if len(filed) >= 2 and filed.startswith('"') and filed.endswith('"'):
@@ -86,20 +76,6 @@ def _field_escape(filed: str) -> str:
         filed = filed.replace('\\', '\\\\').replace('"', '\\"')
         return '"{}"'.format(filed)
     return filed
-
-
-# def _split(s, num):
-#     # 这里使用'- '的原因是为了解决:无网络条件下无法获取在线歌曲时长,
-#     # 导致写出格式存在问题,之前的_split无法解析下列异常情况
-#     # 'fuo://xiami/songs/1769834090	# Flower Dance - DJ OKAWARI -  -'
-#     # FIXME:修改写入部分的代码,而不是hack parse 过程
-#     DELIMITER = ' -'
-#     values = s.split(DELIMITER)
-#     values = [v.strip() for v in values]
-#     current = len(values)
-#     if current < num:
-#         values.extend([''] * (num - current))
-#     return values
 
 
 def _split(s: str, num: int) -> list:
@@ -125,7 +101,7 @@ def _split(s: str, num: int) -> list:
                 continue
             # 针对含有空白字段"Flower Dance - DJ OKAWARI -  - 4:23"
             if ch == '-':
-                fields.append("")
+                fields.append('""')
                 continue
             if ch == '"':
                 parse_state = ParseState.parse_quoted_filed
@@ -160,7 +136,7 @@ def _split(s: str, num: int) -> list:
             + 'but get {} fields:\n{}'.format(current, fields))
 
         if current < num:
-            fields.extend([''] * (num - current))
+            fields.extend(['""'] * (num - current))
 
     return fields
 
@@ -276,7 +252,7 @@ def do_reverse(fields: list) -> str:
         if not field:
             field = '""'
         line += _field_escape(field.strip()) + ' - '
-    line += fields[-1] if fields[-1] else ' '
+    line += fields[-1] if fields[-1] else '""'
     return line
 
 
