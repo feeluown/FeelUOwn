@@ -105,7 +105,10 @@ class ListSerializer(PlainSerializer, metaclass=SerializerMeta):
             serializer = serializer_cls(fetch=False, level=level)
         text_list = []
         for item in list_:
-            text_list.append(serializer.serialize(item))
+            serialized_item = serializer.serialize(item)
+            if serialized_item:
+                text_list.append(serialized_item)
+
         return '\n'.join(text_list)
 
     def serialize_search_result_list(self, list_):

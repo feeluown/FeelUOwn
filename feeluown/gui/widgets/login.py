@@ -38,8 +38,8 @@ class CookiesLoginDialog(LoginDialog):
         self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
             '请从浏览器中复制 Cookie：\n\n'
-            'Chrome 复制的 cookie 类似：uid=111; userAction=222\n\n'
-            'Firefox 复制的 cookie 类似：{"uid": 111, "userAction": 222}'
+            'Chrome 复制的 cookie 格式类似：key1=value1; key2=value2\n\n'
+            'Firefox 复制的 cookie 格式类似：{"key1": value1, "key1": value2}'
         )
 
         self.login_btn.clicked.connect(lambda: aio.create_task(self.login()))

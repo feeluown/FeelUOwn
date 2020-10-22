@@ -277,7 +277,8 @@ class SongsTableModel(QAbstractTableModel):
             if index.column() == Column.index:
                 return index.row() + 1
             elif index.column() == Column.source:
-                return self._source_name_map.get(song.source, '').strip()
+                name = source = song.source
+                return self._source_name_map.get(source, name).strip()
             elif index.column() == Column.song:
                 return song.title_display
             elif index.column() == Column.duration:
