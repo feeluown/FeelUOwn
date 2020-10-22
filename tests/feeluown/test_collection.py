@@ -40,7 +40,7 @@ def test_collection_add(album, artist, song, tmp_path):
 
     # test add album
     coll.add(album)
-    expected = 'fuo://fake/albums/0\t# blue and green - \n'
+    expected = 'fuo://fake/albums/0\t# blue and green\n'
     text = f.read_text()
     assert text == expected
 

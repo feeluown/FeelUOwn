@@ -17,6 +17,7 @@ Currently, there is not way to achieve this.
 """
 
 import asyncio
+import json
 import re
 
 from fuocore.models import ModelType, ModelExistence
@@ -53,7 +54,6 @@ NS_TYPE_MAP = {
 
 
 class Resolver:
-
     loop = None
     library = None
 
@@ -62,13 +62,108 @@ class Resolver:
         cls.loop = asyncio.get_event_loop()
 
 
-def _split(s, num):
-    DELIMITER = ' - '
-    values = s.split(DELIMITER)
-    current = len(values)
-    if current < num:
-        values.extend([''] * (num - current))
-    return values
+DELIMETER = ' - '
+
+
+def quote_field(field: str) -> str:
+    r"""quote field which contains DELIMETER
+
+    >>> quote_field('决定')
+    '决定'
+    >>> quote_field('决"定')
+    '决"定'
+    >>> quote_field('决 - 定')
+    '"决 - 定"'
+    >>> quote_field('决" - 定')   # "决\" - 定"
+    '"决\\" - 定"'
+    """
+    if not field:
+        return '""'
+    if field.startswith('"') or field.find(DELIMETER) != -1:
+        return json.dumps(field, ensure_ascii=False)
+    return field
+
+
+def unquote_field(field):
+    return json.loads(field)
+
+
+quoted_delim_re = re.compile(rf'"([^"\\]*(?:\\.[^"\\]*)*)"?{DELIMETER}', re.S)
+normal_delim_re = re.compile(rf'.*?{DELIMETER}')
+quoted_eof_re = re.compile(r'"([^"\\]*(?:\\.[^"\\]*)*)"$', re.S)
+normal_eof_re = re.compile(r'.+$')
+
+
+class TokenType:
+    quoted_delim = 0
+    quoted_eof = 1
+    normal_delim = 2
+    normal_eof = 3
+
+
+def _split(s: str, num: int) -> list:
+    """
+
+    # backward compat
+    >>> _split('約束（Cover：リリィ、… - Akie秋绘 -  - ', 4)
+    ['約束（Cover：リリィ、…', 'Akie秋绘', '', '']
+    >>> _split('没有人知道 - 李宗盛', 4)
+    ['没有人知道', '李宗盛', '', '']
+
+    # when the trailing whitespace is deleted by user
+    >>> _split('Flower Dance - DJ OKAWARI -  -', 4)
+    ['Flower Dance', 'DJ OKAWARI', '', '']
+
+    >>> _split('Flower Dance - DJ OKAWARI - "" - ""', 4)
+    ['Flower Dance', 'DJ OKAWARI', '', '']
+    >>> _split('Flower Dance - DJ OKAWARI - ""', 4)
+    ['Flower Dance', 'DJ OKAWARI', '', '']
+    """
+    # when the trailing whitespace is deleted by accident,
+    # we just delete the DELIMTER part
+    if s.endswith(' -'):
+        s = s[:-2]
+
+    rules = [(TokenType.quoted_delim, quoted_delim_re),
+             (TokenType.quoted_eof, quoted_eof_re),
+             (TokenType.normal_delim, normal_delim_re),
+             (TokenType.normal_eof, normal_eof_re)]
+
+    fields = []
+    pos = 0
+    while True:
+        for rule in rules:
+            token_type, regex = rule
+            m = regex.match(s, pos)
+            if m is None:
+                continue
+
+            # handle value by token type
+            value = m.group()
+            if token_type is TokenType.quoted_delim:
+                fields.append(unquote_field(value[:-3]))
+            elif token_type is TokenType.quoted_eof:
+                fields.append(unquote_field(value))
+
+            elif token_type is TokenType.normal_delim:
+                fields.append(value[:-3])
+            else:  # TokenType.delim_eof
+                fields.append(value)
+
+            pos = m.end()
+            break
+        else:
+            if pos != len(s):
+                raise ValueError('invalid fields string')
+            else:
+                break
+
+    if len(fields) != num:
+        current = len(fields)
+        if current < num:
+            fields.extend([''] * (num - current))
+
+    return fields
 
 
 def parse_song_str(song_str):
@@ -116,7 +211,7 @@ def parse_line(line):
     ('xxx', '没有人知道')
     """
     line = line.strip()
-    parts = line.split('#')
+    parts = line.split('#', maxsplit=1)
     if len(parts) == 2:
         uri, model_str = parts
     else:
@@ -168,7 +263,8 @@ def resolve(line, model=None):
                 method_name = 'resolve_' + path.replace('/', '_')
                 handler = getattr(model, method_name)
                 return handler()
-        raise ResolverNotFound('resolver-not-found for {}/{}'.format(str(model), path))
+        raise ResolverNotFound(
+            'resolver-not-found for {}/{}'.format(str(model), path))
     return model
 
 
@@ -185,25 +281,29 @@ def reverse(model, path='', as_line=False):
     if as_line:
         if model.meta.model_type == ModelType.song:
             song = model
-            model_str = '{} - {} - {} - {}'.format(
-                song.title_display,
-                song.artists_name_display,
-                song.album_name_display,
-                song.duration_ms_display
-            )
+            fields = [song.title_display,
+                      song.artists_name_display,
+                      song.album_name_display,
+                      song.duration_ms_display]
         elif model.meta.model_type == ModelType.album:
             album = model
-            model_str = '{} - {}'.format(
-                album.name_display,
-                album.artists_name_display
-            )
-
+            fields = [album.name_display,
+                      album.artists_name_display]
         elif model.meta.model_type == ModelType.artist:
             artist = model
-            model_str = '{}'.format(artist.name_display)
+            fields = [artist.name_display]
         else:
-            model_str = ''
-        if model_str:
+            fields = []
+
+        # strip emtpy suffix
+        for field in reversed(fields):
+            if not field:
+                fields.pop(-1)
+            else:
+                break
+
+        if fields and any((bool(f) for f in fields)):
+            model_str = DELIMETER.join([quote_field(f) for f in fields])
             text += '\t# '
             text += model_str
     return text
