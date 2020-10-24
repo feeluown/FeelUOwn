@@ -386,7 +386,6 @@ class DescLabel(QLabel):
 
         self.setContentsMargins(30, 15, 30, 10)
         self.setWordWrap(True)
-        self.setTextFormat(Qt.RichText)
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
 
