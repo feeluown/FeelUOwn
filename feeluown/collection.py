@@ -1,7 +1,11 @@
+import itertools
 import logging
 import os
+from datetime import datetime
 from enum import Enum
 from pathlib import Path
+
+import tomlkit
 
 from fuocore.models.uri import resolve, reverse, ResolverNotFound, \
     ResolveFailed, ModelExistence
@@ -15,6 +19,8 @@ DEFAULT_COLL_ALBUMS = 'Albums'
 # for backward compat, we should never change these filenames
 SONGS_FILENAME = 'Songs.fuo'
 ALBUMS_FILENAME = 'Albums.fuo'
+
+TOML_DELIMLF = "+++\n"
 
 
 class CollectionType(Enum):
@@ -39,7 +45,11 @@ class Collection:
         self.models = []
         self.updated_at = None
         self.created_at = None
+        self.description = None
         self._has_nonexistent_models = False
+
+        #: tomkit.toml_document.Document
+        self._metadata = None
 
     def load(self):
         """解析文件，初始化自己"""
@@ -47,7 +57,7 @@ class Collection:
         filepath = Path(self.fpath)
         name = filepath.stem
         stat_result = filepath.stat()
-        self.updated_at = stat_result.st_mtime
+        self.updated_at = datetime.fromtimestamp(stat_result.st_mtime)
         self.name = name
         if name == DEFAULT_COLL_SONGS:
             self.type = CollectionType.sys_song
@@ -55,8 +65,32 @@ class Collection:
             self.type = CollectionType.sys_album
         else:
             self.type = CollectionType.mixed
+
+        # parse file content
         with filepath.open(encoding='utf-8') as f:
-            for line in f:
+            first = f.readline()
+            lines = []
+            if first == TOML_DELIMLF:
+                is_valid = True
+                for line in f:
+                    if line == TOML_DELIMLF:
+                        break
+                    else:
+                        lines.append(line)
+                else:
+                    logger.warning('the metadata is invalid, will ignore it')
+                    is_valid = False
+                if is_valid is True:
+                    toml_str = ''.join(lines)
+                    metadata = tomlkit.parse(toml_str)
+                    self._loads_metadata(metadata)
+                    lines = []
+            else:
+                lines.append(first)
+
+            for line in itertools.chain(lines, f):
+                if not line.strip():  # ignore empty lines
+                    continue
                 try:
                     model = resolve(line)
                 except ResolverNotFound:
@@ -78,16 +112,19 @@ class Collection:
         """
         if (self.type == CollectionType.sys_song and
             model.meta.model_type != ModelType.song) or \
-            (self.type == CollectionType.sys_album and
-             model.meta.model_type != ModelType.album):
+                (self.type == CollectionType.sys_album and
+                 model.meta.model_type != ModelType.album):
             return False
 
         if model not in self.models:
             line = reverse(model, as_line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
                 content = f.read()
+                parts = content.split(TOML_DELIMLF, maxsplit=2)
+                body = parts[-1]
+                self._write_metadata_if_needed(f)
                 f.seek(0, 0)
-                f.write(line + '\n' + content)
+                f.write(f'{line}\n{body}')
             self.models.insert(0, model)
         return True
 
@@ -95,13 +132,19 @@ class Collection:
         if model in self.models:
             url = reverse(model)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
+                content = f.read()
+                parts = content.split(TOML_DELIMLF, maxsplit=2)
+                body = parts[-1]
                 lines = []
-                for line in f:
+                for line in body.split('\n'):
                     if line.startswith(url):
                         continue
-                    lines.append(line)
+                    if line:
+                        lines.append(line)
+
                 f.seek(0)
-                f.write(''.join(lines))
+                self._write_metadata_if_needed(f)
+                f.write('\n'.join(lines))
                 f.truncate()
                 # 确保最后写入一个换行符，让文件更加美观
                 if lines and not lines[-1].endswith('\n'):
@@ -125,6 +168,22 @@ class Collection:
             if model.source == provider.identifier:
                 model.exists = ModelExistence.no
                 self._has_nonexistent_models = True
+
+    def _loads_metadata(self, metadata):
+        self._metadata = metadata
+        self.created_at = metadata.get('created')
+        self.updated_at = metadata.get('updated', self.updated_at)
+        self.name = metadata.get('title', self.name)
+        self.description = metadata.get('description')
+
+    def _write_metadata_if_needed(self, f):
+        # write metadata only if it had before
+        if self._metadata:
+            self.updated_at = self._metadata['updated'] = datetime.now()
+            f.write(TOML_DELIMLF)
+            f.write(tomlkit.dumps(self._metadata))
+            f.write('\n')
+            f.write(TOML_DELIMLF)
 
 
 class CollectionManager:

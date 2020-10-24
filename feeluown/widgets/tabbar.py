@@ -12,6 +12,7 @@ def mode(func):
         this.playlists_btn.hide()
         this.desc_btn.hide()
         this.contributed_btn.hide()
+        this.videos_btn.hide()
         func(this)
     return wrapper
 

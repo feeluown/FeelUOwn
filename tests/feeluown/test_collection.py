@@ -64,3 +64,51 @@ def test_collection_add_song_to_sys_album(song, tmp_path):
     coll = Collection(str(f))
     coll.load()
     assert coll.add(song) is False
+
+
+def test_load_and_write_file_with_metadata(song, tmp_path, mocker):
+    mocker.patch('feeluown.collection.resolve', return_value=song)
+    f = tmp_path / 'test.fuo'
+    f.touch()
+    text = '''\
++++
+title = 'title'
+xx = 2
++++
+fuo://fake/songs/0
+fuo://fake/songs/1
+'''
+    f.write_text(text)
+    coll = Collection(str(f))
+    coll.load()
+
+    # metadata should be correctly loaded
+    assert coll.name == 'title'
+
+    # field `updated` should be written into file
+    coll.remove(song)
+    line = f.read_text().split('\n')[3]
+    assert line.startswith('updated')
+
+
+def test_load_and_write_file_with_no_metadata(song, song3, tmp_path, mocker):
+    mocker.patch('feeluown.collection.resolve', return_value=song)
+    f = tmp_path / 'test.fuo'
+    f.touch()
+    first_line = 'fuo://fake/songs/0\n'  # song
+    remain_lines = 'fuo://fake/songs/1\n' + 'fuo://fake/songs/2\n'
+    text = first_line + remain_lines
+    f.write_text(text)
+    coll = Collection(str(f))
+    coll.load()
+    assert coll.name == 'test'  # name should be filename
+
+    coll.remove(song)
+    # 1. the first line should be removed
+    # 2. no metadata should be written
+    assert f.read_text() == remain_lines
+
+    coll.add(song3)
+    lines = f.read_text().split('\n')
+    assert len(lines) == 4  # three plus two empty
+    assert lines[0].startswith('fuo://fake/songs/3')

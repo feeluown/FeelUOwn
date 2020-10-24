@@ -313,9 +313,22 @@ class SongsCollectionRenderer(Renderer):
         self.meta_widget.title = collection.name
         self.meta_widget.updated_at = collection.updated_at
         self.meta_widget.created_at = collection.created_at
-        self.show_songs([model for model in collection.models
-                         if model.meta.model_type == ModelType.song])
         self.songs_table.remove_song_func = collection.remove
+        self._show_songs()
+
+        # only show tabbar if description is not empty
+        if self.collection.description:
+            self.tabbar.show()
+            # FIXME: maybe add a playlist/collection mode for tabbar
+            self.tabbar.album_mode()
+            self.tabbar.show_songs_needed.connect(self._show_songs)
+            self.tabbar.show_desc_needed.connect(
+                lambda: self.show_desc(self.collection.description))
+
+    def _show_songs(self):
+        """filter model with other type"""
+        self.show_songs([model for model in self.collection.models
+                         if model.meta.model_type == ModelType.song])
 
 
 class AlbumsCollectionRenderer(Renderer):

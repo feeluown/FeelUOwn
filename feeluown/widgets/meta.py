@@ -2,8 +2,6 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
-from datetime import datetime
-
 from PyQt5.QtCore import Qt, QRect, QSize
 from PyQt5.QtGui import QPainter, QBrush
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
@@ -173,13 +171,11 @@ class TableMetaWidget(MetaWidget):
         creator_part = creator if creator else ''
         created_part = updated_part = songs_count_part = ''
         if self.updated_at:
-            updated_at = datetime.fromtimestamp(self.updated_at)
             updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'\
-                .format(updated_at.strftime('%Y-%m-%d'))
+                .format(self.updated_at.strftime('%Y-%m-%d'))
         if self.created_at:
-            created_at = datetime.fromtimestamp(self.created_at)
             created_part = '🕛 创建于 <code style="font-size: small">{}</code>'\
-                .format(created_at.strftime('%Y-%m-%d'))
+                .format(self.created_at.strftime('%Y-%m-%d'))
         if self.songs_count is not None:
             text = self.songs_count if self.songs_count != -1 else '未知'
             songs_count_part = '<code style="font-size: small">{}</code> 首歌曲'\
@@ -301,14 +297,12 @@ class CollMetaWidget(MetaWidget):
                 part = '{} 首歌曲'.format(self.songs_count)
                 parts.append(part)
             if self.created_at is not None:
-                created_at = datetime.fromtimestamp(self.created_at)
                 part = '🕛 创建于 <code style="font-size: small">{}</code>'\
-                    .format(created_at.strftime('%Y-%m-%d'))
+                    .format(self.created_at.strftime('%Y-%m-%d'))
                 parts.append(part)
             if self.updated_at:
-                updated_at = datetime.fromtimestamp(self.updated_at)
                 part = '🕒 更新于 <code style="font-size: small">{}</code>'\
-                    .format(updated_at.strftime('%Y-%m-%d'))
+                    .format(self.updated_at.strftime('%Y-%m-%d'))
                 parts.append(part)
 
             s = ' • '.join(parts)
