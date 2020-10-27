@@ -188,7 +188,7 @@ class Playlist:
 
         :param base: base index
         :param random: random strategy or not
-        :param direction: forward if > 0 else backword
+        :param direction: forward if > 0 else backward
         :param loop: regard the song list as a loop
 
         >>> pl = Playlist([1, 2, 3])
