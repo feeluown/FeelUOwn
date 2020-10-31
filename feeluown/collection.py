@@ -122,9 +122,10 @@ class Collection:
                 content = f.read()
                 parts = content.split(TOML_DELIMLF, maxsplit=2)
                 body = parts[-1]
-                self._write_metadata_if_needed(f)
                 f.seek(0, 0)
+                self._write_metadata_if_needed(f)
                 f.write(f'{line}\n{body}')
+                f.truncate()
             self.models.insert(0, model)
         return True
 

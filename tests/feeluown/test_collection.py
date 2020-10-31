@@ -76,7 +76,6 @@ title = 'title'
 xx = 2
 +++
 fuo://fake/songs/0
-fuo://fake/songs/1
 '''
     f.write_text(text)
     coll = Collection(str(f))
@@ -89,6 +88,11 @@ fuo://fake/songs/1
     coll.remove(song)
     line = f.read_text().split('\n')[3]
     assert line.startswith('updated')
+
+    coll.add(song)
+    text = f.read_text().strip()
+    line = text.split('\n')[-1]
+    assert line.startswith('fuo://fake/songs/0')
 
 
 def test_load_and_write_file_with_no_metadata(song, song3, tmp_path, mocker):
