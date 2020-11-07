@@ -1,27 +1,39 @@
-from PyQt5.QtCore import Qt, QRectF, QRect, QSize, pyqtSignal
+from PyQt5.QtCore import Qt, QRectF, QRect, QSize, pyqtSignal, \
+    QPropertyAnimation, QAbstractAnimation
 from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
     QKeySequence
-from PyQt5.QtWidgets import QLabel, QWidget,\
+from PyQt5.QtWidgets import QLabel, QWidget, \
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
-    QMenu, QAction, QFontDialog, QShortcut
+    QMenu, QAction, QFontDialog, QShortcut, \
+    QGraphicsOpacityEffect, QApplication, QDesktopWidget
 
 from feeluown.helpers import resize_font
 
 
 class Window(QWidget):
+    FADING_TIME = 200
 
     play_previous_needed = pyqtSignal()
     play_next_needed = pyqtSignal()
 
     def __init__(self):
         super().__init__(parent=None)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        flags = self.windowFlags() | Qt.WindowStaysOnTopHint \
+            | Qt.FramelessWindowHint | Qt.ToolTip
+        self.setWindowFlags(flags)
         self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WA_AlwaysShowToolTips)
         self.c = Container(self)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
         self._layout.addWidget(self.c)
+
+        # for fade-in & fadeout animation
+        self.effect = QGraphicsOpacityEffect()
+        self.setGraphicsEffect(self.effect)
+        self.animation = QPropertyAnimation(self.effect, b'opacity')
+        self.set_default_pos()
 
         self._old_pos = None
 
@@ -36,6 +48,15 @@ class Window(QWidget):
 * Ctrl+- 可以减小字体
 * 鼠标前进后退键可以播放前一首/下一首
 ''')
+
+    def set_default_pos(self):
+        frame: QRect = self.frameGeometry()
+        desktop: QDesktopWidget = QApplication.desktop()
+        screen = desktop.screenNumber(QApplication.desktop().cursor().pos())
+        geo: QRect = desktop.availableGeometry(screen)
+        frame.moveTop(geo.bottom() - 80)
+        frame.moveLeft((geo.width() - frame.width()) / 2)
+        self.move(frame.topLeft())
 
     def set_sentence(self, text):
         if self.isVisible():
@@ -75,6 +96,24 @@ class Window(QWidget):
 
     def sizeHint(self):
         return QSize(500, 60)
+
+    def show(self):
+        super(Window, self).show()
+        self.animation.setDuration(self.FADING_TIME)
+        self.animation.setStartValue(0)
+        self.animation.setEndValue(1)
+        self.animation.start()
+
+    def hide(self):
+        self.animation.setDuration(self.FADING_TIME)
+        self.animation.setStartValue(1)
+        self.animation.setEndValue(0)
+        self.animation.finished.connect(self._hide)
+        self.animation.start(QAbstractAnimation.DeleteWhenStopped)
+
+    def _hide(self):
+        super().hide()
+        self.animation = QPropertyAnimation(self.effect, b'opacity')
 
 
 class Container(QWidget):
