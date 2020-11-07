@@ -15,7 +15,8 @@ class Window(QWidget):
 
     def __init__(self):
         super().__init__(parent=None)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setWindowFlags(
+            Qt.Tool | Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.c = Container(self)
         self._layout = QVBoxLayout(self)
