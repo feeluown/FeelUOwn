@@ -19,10 +19,9 @@ class Window(QWidget):
     def __init__(self):
         super().__init__(parent=None)
         flags = self.windowFlags() | Qt.WindowStaysOnTopHint \
-            | Qt.FramelessWindowHint | Qt.ToolTip
+            | Qt.FramelessWindowHint | Qt.Tool | Qt.BypassWindowManagerHint
         self.setWindowFlags(flags)
         self.setAttribute(Qt.WA_TranslucentBackground)
-        self.setAttribute(Qt.WA_AlwaysShowToolTips)
         self.c = Container(self)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
