@@ -5,7 +5,7 @@ class SerializerError(Exception):
     """
     this error will be raised when
 
-    * Serializer initialization faield
+    * Serializer initialization failed
     * Serializer not found
     * Serializer serialization failed
     """
