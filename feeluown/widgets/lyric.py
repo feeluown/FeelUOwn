@@ -1,3 +1,5 @@
+import sys
+
 from PyQt5.QtCore import Qt, QRectF, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
     QKeySequence
@@ -8,6 +10,9 @@ from PyQt5.QtWidgets import QLabel, QWidget,\
 from feeluown.helpers import resize_font
 
 
+IS_MACOS = sys.platform == 'darwin'
+
+
 class Window(QWidget):
 
     play_previous_needed = pyqtSignal()
@@ -15,7 +20,16 @@ class Window(QWidget):
 
     def __init__(self):
         super().__init__(parent=None)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        if IS_MACOS:
+            # On macOS, Qt.Tooltip widget can't accept focus and it will hide
+            # when the application window is actiavted. Qt.Tool widget can't
+            # keep staying on top. Neither of them work well on macOS.
+            flags = Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
+        else:
+            # TODO: use proper flags on other platforms
+            # see #413 for more details
+            flags = Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool
+        self.setWindowFlags(flags)
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.c = Container(self)
         self._layout = QVBoxLayout(self)
