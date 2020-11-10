@@ -11,6 +11,8 @@ from feeluown.helpers import elided_text
 TOGGLE_APP_TEXT = ('激活主窗口', '隐藏主窗口')
 TOGGLE_PLAYER_TEXT = ('播放', '暂停')
 
+IS_MACOS = sys.platform == 'darwin'
+
 
 class Tray(QSystemTrayIcon):
     def __init__(self, app):
@@ -31,7 +33,7 @@ class Tray(QSystemTrayIcon):
         self._quit_action = QAction(QIcon.fromTheme('exit'), '退出')
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
-        if sys.platform == 'darwin':
+        if IS_MACOS:
             self._toggle_app_action = QAction(QIcon.fromTheme('window'),
                                               TOGGLE_APP_TEXT[1])
         else:
@@ -122,9 +124,13 @@ class Tray(QSystemTrayIcon):
             # For other platforms(Win32/Linux), the dock icon is not visible if
             # the window is hidden/closed.
             #
-            # When the dock icon is clicked, the state will changed to QApplicationActive
-            self._app.show()
-            self._app.activateWindow()
+            # When the state will be changed to QApplicationActive?
+            # * the dock icon is clicked (on macOS)
+            # * the Qt.Tool widget got focus (on macOS and Linux)
+            # * the Qt.Window widget got focus (on Linux)
+            if IS_MACOS:
+                self._app.show()
+                self._app.activateWindow()
         elif state == Qt.ApplicationInactive:
             # when app window is not the top window, it changes to inactive
             if self._toggle_app_action is not None:
