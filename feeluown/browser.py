@@ -44,14 +44,15 @@ class Browser:
     def goto(self, model=None, path=None, uri=None, query=None):
         """跳转到 model 页面或者具体的地址
 
-        必须提供 model 或者 uri 其中一个参数，都提供时，以 model 为准。
+        必须提供 model 或者 path 其中一个参数，都提供时，以 model 为准。
         """
         if uri is not None:
             warnings.warn('please use path instead of uri')
+            path = uri
         if query:
             qs = urlencode(query)
-            uri = (path or uri) + '?' + qs
-        self._goto(model, uri)
+            path = path + '?' + qs
+        self._goto(model, path)
         if self._last_uri is not None and self._last_uri != self.current_uri:
             self._back_stack.append(self._last_uri)
         self._forward_stack.clear()
