@@ -13,6 +13,49 @@ class RequestError(Exception):
     pass
 
 
+async def read_request(reader):
+    """读取一个请求
+
+    读取成功时，返回 Request 对象，如果读取失败（比如客户端关闭连接），
+    则返回 None。其它异常会抛出 RequestError。
+
+    :type reader: asyncio.StreamReader
+    """
+    try:
+        line_bytes = await reader.readline()
+    except ValueError as e:
+        raise RequestError('request size should be less than 64KiB') from e
+    if not line_bytes:  # EOF
+        return None
+    line_text = line_bytes.decode('utf-8').strip()
+    if not line_text:
+        return 0
+    req = None
+    try:
+        req = Parser(line_text).parse()
+    except FuoSyntaxError as e:
+        raise RequestError(e.human_readabe_msg) from e
+    else:
+        if not req.has_heredoc:
+            return req
+        word_bytes = bytes(req.heredoc_word, 'utf-8')
+        buf = bytearray()
+        while 1:
+            line_bytes = await reader.readline()
+            if line_bytes[-2:] == b'\r\n':
+                stripped_line_bytes = line_bytes[:-2]
+            else:
+                stripped_line_bytes = line_bytes[:-1]
+            if stripped_line_bytes == word_bytes:
+                break
+            else:
+                buf.extend(line_bytes)
+            if len(buf) >= 2 ** 16:
+                raise RequestError('heredoc body should be less than 64KiB')
+        req.set_heredoc_body(bytes(buf).decode('utf-8'))
+    return req
+
+
 class FuoServerProtocol(asyncio.streams.FlowControlMixin):
     """asyncio-style fuo server protocol (ClientHandler)
 
@@ -37,45 +80,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         self._peername = None
 
     async def read_request(self):
-        """读取一个请求
-
-        读取成功时，返回 Request 对象，如果读取失败（比如客户端关闭连接），
-        则返回 None。其它异常会抛出 RequestError。
-        """
-        try:
-            line_bytes = await self._reader.readline()
-        except ValueError:
-            raise RequestError('request size should be less than 64KiB')
-        if not line_bytes:  # EOF
-            return None
-        line_text = line_bytes.decode('utf-8').strip()
-        if not line_text:
-            return 0
-        req = None
-        try:
-            req = Parser(line_text).parse()
-        except FuoSyntaxError as e:
-            raise RequestError(e.human_readabe_msg)
-        else:
-            if not req.has_heredoc:
-                return req
-            word_bytes = bytes(req.heredoc_word, 'utf-8')
-            buf = bytearray()
-            while 1:
-                line_bytes = await self._reader.readline()
-                if line_bytes[-2:] == b'\r\n':
-                    stripped_line_bytes = line_bytes[:-2]
-                else:
-                    stripped_line_bytes = line_bytes[:-1]
-                if stripped_line_bytes == word_bytes:
-                    break
-                else:
-                    buf.extend(line_bytes)
-                if len(buf) >= 2 ** 16:
-                    raise RequestError('heredoc body should be less than 64KiB')
-                    break
-            req.set_heredoc_body(bytes(buf).decode('utf-8'))
-        return req
+        return await read_request(self._reader)
 
     async def write_response(self, resp):
         # TODO: 区分客户端和服务端错误（比如客户端错误后面加 ! 标记）
