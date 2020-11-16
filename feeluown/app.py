@@ -19,7 +19,7 @@ from .consts import APP_ICON, STATE_FILE
 from .fm import FM
 from .player import Player
 from .plugin import PluginsManager
-from .server import FuoServer
+from .server import FuoServer, FuoWebsocketServer
 from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
@@ -169,6 +169,7 @@ def attach_attrs(app):
 
     if app.mode & app.DaemonMode:
         app.server = FuoServer(app)
+        app.ws_server = FuoWebsocketServer(app)
         app.pubsub_gateway = PubsubGateway()
         app._ll_publisher = LiveLyricPublisher(app.pubsub_gateway)
 
@@ -304,6 +305,7 @@ def run_app(app):
             run_mpris2_server(app)
 
         loop.create_task(app.server.run(app.get_listen_addr()))
+        loop.create_task(app.ws_server.run(app.get_listen_addr()))
         client_connected_cb = PubsubHandlerV1(app.pubsub_gateway).handle
         loop.create_task(asyncio.start_server(
             client_connected_cb,

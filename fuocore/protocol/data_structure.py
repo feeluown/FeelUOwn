@@ -68,3 +68,14 @@ class Response:
         self.options = options or {}
 
         self.req = req
+
+    @property
+    def raw(self):
+        buf = bytearray()
+        msg_bytes = bytes(self.text, 'utf-8')
+        response_line = ('ACK {} {}\r\n'
+                         .format(self.code, len(msg_bytes)))
+        buf.extend(bytes(response_line, 'utf-8'))
+        buf.extend(msg_bytes)
+        buf.extend(b'\r\n')
+        return buf

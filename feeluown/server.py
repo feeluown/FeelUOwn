@@ -1,8 +1,10 @@
 import asyncio
 import logging
 
+from fuocore import aio
 from fuocore.cmds import exec_cmd, Cmd
-from fuocore.protocol import FuoServerProtocol, Response
+from fuocore.protocol import FuoServerProtocol, Response, parse_request, \
+    RequestError
 from fuocore.serializers import serialize
 
 logger = logging.getLogger(__name__)
@@ -52,3 +54,33 @@ class FuoServer:
 
     def handle_req(self, req, session=None):
         return handle_request(req, self._app, ctx=session)
+
+
+class FuoWebsocketServer:
+    def __init__(self, app):
+        self._app = app
+
+    async def run(self, host, port=23332):
+        try:
+            import websockets
+        except ImportError:
+            logger.error('websockets is not installed')
+        else:
+            try:
+                await websockets.serve(self.handler, host, port)
+            except OSError as e:
+                raise SystemExit(str(e)) from None
+            logger.info('Fuo websocket daemon run at {}:{}'.format(host, port))
+
+    async def handler(self, ws, path):
+        # TODO: implement handler in fuocore.protocol package
+        # TODO: handle websockets errors
+        async for msg in ws:
+            # we assume the message clients send are all text messages
+            try:
+                req = parse_request(msg)
+            except RequestError as e:
+                resp = Response(ok=False, text='bad request!\r\n' + str(e))
+            else:
+                resp = await aio.run_in_executor(None, handle_request, req, self._app)
+            await ws.send(resp.raw.decode('utf-8'))
