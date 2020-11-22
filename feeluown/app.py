@@ -216,6 +216,11 @@ def create_app(config):
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
+        try:
+            from PyQt5.QtWebEngineWidgets import QWebEngineView
+        except ImportError as e:
+            print(e)
+
         from feeluown.compat import QEventLoop
 
         q_app = QApplication(sys.argv)

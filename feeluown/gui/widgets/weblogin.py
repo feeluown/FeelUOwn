@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSignal, QUrl, QRect
 from PyQt5.QtNetwork import QNetworkCookie
 from PyQt5.QtWebEngineCore import QWebEngineCookieStore
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
-from PyQt5.QtWidgets import QDesktopWidget, QApplication
+from PyQt5.QtWidgets import QApplication, QDesktopWidget
 
 
 class WebLogin(QWebEngineView):
@@ -14,7 +14,7 @@ class WebLogin(QWebEngineView):
     def __init__(self, uri: str, required_cookies: List[str], parent=None):
         """
         此工具类用于 QtWebEngine 自动化 Cookie 登录过程
-        Example: QtWebEngine('https://y.qq.com', ['qqmusickey'])
+        Example: QtWebEngine('https://y.qq.com', ['qqmusic_key'])
 
         :param uri: 初始化登录地址 获取到的 Cookie 也会按照此地址筛选
         :rtype uri: str
@@ -67,3 +67,10 @@ class WebLogin(QWebEngineView):
     def cookie_removed(self, cookie: QNetworkCookie):
         if cookie.name().data().decode() in self.saved_cookies.keys():
             self.saved_cookies.pop(cookie.name().data().decode())
+
+
+if __name__ == '__main__':
+    app = QApplication([])
+    widget = WebLogin("https://y.qq.com", ['qqmusic_key'])
+    widget.show()
+    app.exec()

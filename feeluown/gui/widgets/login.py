@@ -5,6 +5,7 @@ from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QDialog, QTextEdit, QPushButton, \
     QVBoxLayout, QLabel
 
+from feeluown.gui.widgets.weblogin import WebLogin
 from fuocore import aio
 
 
@@ -13,7 +14,6 @@ class InvalidCookies(Exception):
 
 
 class LoginDialog(QDialog):
-
     login_succeed = pyqtSignal()
 
 
@@ -21,12 +21,21 @@ class CookiesLoginDialog(LoginDialog):
     """
     usage example: feeluown-qqmusic
     """
-    def __init__(self):
-        super().__init__(None, Qt.Popup)
 
+    def __init__(self, uri: str = None, required_cookies=None):
+        if uri is not None:
+            super().__init__()
+        else:
+            super().__init__(None, Qt.Popup)
+
+        if required_cookies is None:
+            required_cookies = []
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
         self.login_btn = QPushButton('登录', self)
+
+        if uri is not None:
+            self.web_btn = QPushButton('WebLogin', self)
 
         self.hint_label.setTextFormat(Qt.RichText)
 
@@ -35,6 +44,9 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.hint_label)
         self._layout.addWidget(self.login_btn)
 
+        if uri is not None:
+            self._layout.addWidget(self.web_btn)
+
         self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
             '请从浏览器中复制 Cookie：\n\n'
@@ -42,8 +54,21 @@ class CookiesLoginDialog(LoginDialog):
             'Firefox 复制的 cookie 格式类似：{"key1": value1, "key1": value2}'
         )
 
+        if uri is not None:
+            self.uri = uri
+            self.required_cookies = required_cookies
+            self.web_btn.clicked.connect(self.start_web_login)
         self.login_btn.clicked.connect(lambda: aio.create_task(self.login()))
         self.login_succeed.connect(self.hide)
+
+    def start_web_login(self):
+        self.web_login = WebLogin(self.uri, self.required_cookies)
+        self.web_login.succeed.connect(self.load_web_cookies)
+        self.web_login.show()
+
+    def load_web_cookies(self, cookies: dict):
+        print(cookies)
+        self.cookies_text_edit.setText(json.dumps(cookies))
 
     def _parse_json_cookies(self, text):
         try:
