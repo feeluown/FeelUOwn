@@ -1,14 +1,15 @@
 from typing import List
 from urllib.parse import urlparse
 
-from PyQt5.QtCore import pyqtSignal, QUrl
+from PyQt5.QtCore import pyqtSignal, QUrl, QRect
 from PyQt5.QtNetwork import QNetworkCookie
 from PyQt5.QtWebEngineCore import QWebEngineCookieStore
 from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile
+from PyQt5.QtWidgets import QDesktopWidget, QApplication
 
 
 class WebLogin(QWebEngineView):
-    succeed: pyqtSignal(dict)
+    succeed = pyqtSignal(dict)
 
     def __init__(self, uri: str, required_cookies: List[str], parent=None):
         """
@@ -22,6 +23,7 @@ class WebLogin(QWebEngineView):
         :param parent:
         """
         super(WebLogin, self).__init__(parent)
+        self.set_pos()
         self.init_uri = uri
         profile = QWebEngineProfile.defaultProfile()
         cookie_store: QWebEngineCookieStore = profile.cookieStore()
@@ -31,6 +33,16 @@ class WebLogin(QWebEngineView):
         self.saved_cookies = dict()
         self.required_cookies = required_cookies
         self.load(QUrl(uri))
+
+    def set_pos(self):
+        desktop: QDesktopWidget = QApplication.desktop()
+        screen = desktop.screenNumber(QApplication.desktop().cursor().pos())
+        geo: QRect = desktop.availableGeometry(screen)
+        self.setFixedWidth(int(geo.width() / 1.5))
+        self.setFixedHeight(int(geo.height() / 1.5))
+        frame: QRect = self.frameGeometry()
+        frame.moveCenter(geo.center())
+        self.move(frame.topLeft())
 
     def check_cookie_domain(self, cookie: QNetworkCookie):
         """
