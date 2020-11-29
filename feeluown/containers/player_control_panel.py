@@ -44,6 +44,7 @@ class SongBriefLabel(QLabel):
             self.newX = 0
             return
         if self.text_rect.width() + self.newX > 0:
+            # control the speed of rolling
             self.newX -= 5
         else:
             self.newX = self.width()
@@ -57,6 +58,7 @@ class SongBriefLabel(QLabel):
 
     def enterEvent(self, event):
         if self.txt != self.raw_text:
+            # decrease to make rolling more fluent
             self.t.start(150)
 
     def leaveEvent(self, event):
