@@ -1,11 +1,15 @@
 import json
+import sys
 from http.cookies import SimpleCookie
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QDialog, QTextEdit, QPushButton, \
     QVBoxLayout, QLabel
+try:
+    from feeluown.gui.widgets.weblogin import WebLogin
+except ImportError:
+    pass
 
-from feeluown.gui.widgets.weblogin import WebLogin
 from fuocore import aio
 
 
@@ -33,8 +37,9 @@ class CookiesLoginDialog(LoginDialog):
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
         self.login_btn = QPushButton('登录', self)
+        self.web_btn = None
 
-        if uri is not None:
+        if uri is not None and 'feeluown.gui.widgets.weblogin' in sys.modules:
             self.web_btn = QPushButton('WebLogin', self)
 
         self.hint_label.setTextFormat(Qt.RichText)
@@ -44,7 +49,7 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.hint_label)
         self._layout.addWidget(self.login_btn)
 
-        if uri is not None:
+        if self.web_btn is not None:
             self._layout.addWidget(self.web_btn)
 
         self.cookies_text_edit.setAcceptRichText(False)
@@ -54,7 +59,7 @@ class CookiesLoginDialog(LoginDialog):
             'Firefox 复制的 cookie 格式类似：{"key1": value1, "key1": value2}'
         )
 
-        if uri is not None:
+        if self.web_btn is not None:
             self.uri = uri
             self.required_cookies = required_cookies
             self.web_btn.clicked.connect(self.start_web_login)
@@ -67,8 +72,7 @@ class CookiesLoginDialog(LoginDialog):
         self.web_login.show()
 
     def load_web_cookies(self, cookies: dict):
-        print(cookies)
-        self.cookies_text_edit.setText(json.dumps(cookies))
+        self.cookies_text_edit.setText(json.dumps(cookies, indent=2))
 
     def _parse_json_cookies(self, text):
         try:

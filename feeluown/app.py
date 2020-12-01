@@ -217,6 +217,8 @@ def create_app(config):
         from PyQt5.QtWidgets import QApplication, QWidget
 
         try:
+            # Must import QWebEngine before QApplication or the following error will be raised:
+            #   ImportError: QtWebEngineWidgets must be imported before a QCoreApplication instance is created
             from PyQt5.QtWebEngineWidgets import QWebEngineView
         except ImportError as e:
             print(e)
