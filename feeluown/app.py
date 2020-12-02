@@ -216,6 +216,14 @@ def create_app(config):
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
+        try:
+            # HELP: QtWebEngineWidgets must be imported before a
+            # QCoreApplication instance is created
+            # TODO: add a command line option to control this import
+            import PyQt5.QtWebEngineWidgets  # noqa
+        except ImportError:
+            logger.info('import QtWebEngineWidgets failed')
+
         from feeluown.compat import QEventLoop
 
         q_app = QApplication(sys.argv)
