@@ -14,10 +14,12 @@ dict_config = {
     'disable_existing_loggers': False,
     'formatters': {
         'standard': {
-            'format': "[%(asctime)s %(levelname)s %(module)s] : %(message)s",
+            'format': ("[%(asctime)s %(name)s:%(lineno)d] "
+                       "[%(levelname)s]: %(message)s"),
         },
         'thread': {
-            'format': "[%(asctime)s %(levelname)s %(module)s %(thread)d] : %(message)s",
+            'format': ("[%(asctime)s %(name)s:%(lineno)d %(thread)d] "
+                       "[%(levelname)s]: %(message)s"),
         },
     },
     'handlers': {},

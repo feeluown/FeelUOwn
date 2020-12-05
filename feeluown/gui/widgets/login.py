@@ -4,6 +4,12 @@ from http.cookies import SimpleCookie
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QDialog, QTextEdit, QPushButton, \
     QVBoxLayout, QLabel
+try:
+    from feeluown.gui.widgets.weblogin import WebLoginView
+except ImportError:
+    has_webengine = False
+else:
+    has_webengine = True
 
 from fuocore import aio
 
@@ -13,7 +19,6 @@ class InvalidCookies(Exception):
 
 
 class LoginDialog(QDialog):
-
     login_succeed = pyqtSignal()
 
 
@@ -21,12 +26,24 @@ class CookiesLoginDialog(LoginDialog):
     """
     usage example: feeluown-qqmusic
     """
-    def __init__(self):
-        super().__init__(None, Qt.Popup)
+
+    def __init__(self, uri: str = None, required_cookies_fields=None):
+        if has_webengine and uri and required_cookies_fields:
+            use_webview = True
+            flags = Qt.Window
+        else:
+            use_webview = False
+            flags = Qt.Popup
+
+        super().__init__(None, flags)
+        self._use_webview = use_webview
+        self._uri = uri
+        self._required_cookies_fields = required_cookies_fields
 
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
         self.login_btn = QPushButton('登录', self)
+        self.weblogin_btn = QPushButton('网页登录', self)
 
         self.hint_label.setTextFormat(Qt.RichText)
 
@@ -34,6 +51,7 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.cookies_text_edit)
         self._layout.addWidget(self.hint_label)
         self._layout.addWidget(self.login_btn)
+        self._layout.addWidget(self.weblogin_btn)
 
         self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
@@ -42,8 +60,28 @@ class CookiesLoginDialog(LoginDialog):
             'Firefox 复制的 cookie 格式类似：{"key1": value1, "key1": value2}'
         )
 
+        if self._use_webview is True:
+            self.weblogin_btn.clicked.connect(self._start_web_login)
+        else:
+            # disable the button if feeluown does not support
+            if uri and required_cookies_fields and not has_webengine:
+                self.weblogin_btn.setEnabled(False)
+            else:
+                # hide the button if provider does not support
+                self.weblogin_btn.hide()
         self.login_btn.clicked.connect(lambda: aio.create_task(self.login()))
         self.login_succeed.connect(self.hide)
+
+    def _start_web_login(self):
+        self._web_login = WebLoginView(self._uri, self._required_cookies_fields)
+        self._web_login.succeed.connect(self._on_web_login_succeed)
+        self._web_login.show()
+
+    def _on_web_login_succeed(self, cookies):
+        self.cookies_text_edit.setText(json.dumps(cookies, indent=2))
+        self._web_login.close()
+        del self._web_login
+        aio.create_task(self.login())
 
     def _parse_json_cookies(self, text):
         try:

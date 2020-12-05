@@ -3,10 +3,6 @@ from fuocore.models import SongModel, ArtistModel, \
     AlbumModel, PlaylistModel, UserModel, SearchModel
 
 
-simple_fields = set({'title', 'duration', 'url',
-                     'name', 'artists_name', 'album_name'})
-
-
 class ModelSerializerMixin:
 
     def _get_items(self, model):

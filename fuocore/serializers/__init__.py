@@ -16,6 +16,7 @@ def register_serializer(type_, serializer_cls):
 def _load_serializers():
     register_serializer('plain', PlainSerializer)
     register_serializer('json', JsonSerializer)
+    register_serializer('python', PythonSerializer)
 
 
 def get_serializer(format):

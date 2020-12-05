@@ -90,6 +90,7 @@ setup(
                     ],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
         'win32': ['pyshortcuts'],
+        'webengine': ['PyQtWebEngine'],
     },
     tests_require=['pytest-runner',
                    'pytest',
