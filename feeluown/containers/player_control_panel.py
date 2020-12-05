@@ -28,58 +28,62 @@ class SongBriefLabel(QLabel):
     def __init__(self, app):
         super().__init__(text=self.default_text, parent=None)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self._app = app
-        self.t = QTimer()
-        self.txt = self.raw_text = '...'
-        self.font_metrics = QFontMetrics(QApplication.font())
-        self.text_rect = self.font_metrics.boundingRect(self.raw_text)
-        self.newX = 0
 
-        self.t.timeout.connect(self.change_text_position)
+        self._app = app
+        self._timer = QTimer()
+        self._txt = self._raw_text = '...'
+        self._font_metrics = QFontMetrics(QApplication.font())
+        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        # text's position, keep changing to make text roll
+        self._pos = 0
+
+        self._timer.timeout.connect(self.change_text_position)
+
         self._fetching_artists = False
 
     def change_text_position(self):
         if not self.parent().isVisible():
-            self.t.stop()
-            self.newX = 0
+            self._timer.stop()
+            self._pos = 0
             return
-        if self.text_rect.width() + self.newX > 0:
+        if self._text_rect.width() + self._pos > 0:
             # control the speed of rolling
-            self.newX -= 5
+            self._pos -= 5
         else:
-            self.newX = self.width()
+            self._pos = self.width()
         self.update()
 
     def setText(self, text):
-        self.txt = self.raw_text = text
-        self.text_rect = self.font_metrics.boundingRect(self.raw_text)
-        self.newX = 0
+        self._txt = self._raw_text = text
+        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        self._pos = 0
         self.update()
 
     def enterEvent(self, event):
-        if self.txt != self.raw_text:
+        if self._txt != self._raw_text:
             # decrease to make rolling more fluent
-            self.t.start(150)
+            self._timer.start(150)
 
     def leaveEvent(self, event):
-        self.t.stop()
-        self.newX = 0
+        self._timer.stop()
+        self._pos = 0
         self.update()
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setFont(QApplication.font())
-        painter.setPen(QColorConstants.Black)
+        painter.setPen(self.palette().color(self.palette().Text))
 
-        if self.t.isActive():
-            self.txt = self.raw_text
+        if self._timer.isActive():
+            self._txt = self._raw_text
         else:
-            self.txt = self.font_metrics.elidedText(self.raw_text, Qt.ElideRight, self.width())
+            self._txt = self._font_metrics.elidedText(
+                self._raw_text, Qt.ElideRight, self.width())
 
         painter.drawText(
-            QRect(self.newX, 0, self.width()-self.newX, self.height()),
+            QRect(self._pos, 0, self.width()-self._pos, self.height()),
             Qt.AlignLeft | Qt.AlignVCenter,
-            self.txt
+            self._txt
         )
 
     def contextMenuEvent(self, e):
