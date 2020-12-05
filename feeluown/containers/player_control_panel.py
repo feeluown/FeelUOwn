@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from PyQt5.QtCore import Qt, QTimer, QRect
-from PyQt5.QtGui import QFontMetrics, QPainter, QColorConstants
+from PyQt5.QtGui import QFontMetrics, QPainter
 from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
     QPushButton, QSizePolicy, QMenu,
@@ -31,7 +31,7 @@ class SongBriefLabel(QLabel):
 
         self._app = app
         self._timer = QTimer()
-        self._txt = self._raw_text = '...'
+        self._txt = self._raw_text = self.default_text
         self._font_metrics = QFontMetrics(QApplication.font())
         self._text_rect = self._font_metrics.boundingRect(self._raw_text)
         # text's position, keep changing to make text roll
@@ -72,7 +72,7 @@ class SongBriefLabel(QLabel):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setFont(QApplication.font())
-        painter.setPen(self.palette().color(self.palette().Text))
+        painter.setPen(self._app.palette().color(self._app.palette().Text))
 
         if self._timer.isActive():
             self._txt = self._raw_text
