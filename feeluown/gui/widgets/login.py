@@ -19,12 +19,26 @@ class InvalidCookies(Exception):
 
 
 class LoginDialog(QDialog):
+    """Base class for login dialogs"""
+    #: login succeed signal
     login_succeed = pyqtSignal()
 
 
 class CookiesLoginDialog(LoginDialog):
     """
-    usage example: feeluown-qqmusic
+
+    CookiesLoginDialog provides a text edit area and a login button.
+    User firstly fill in the text edit area with cookies. User can
+    then click the login button. The `clicked` signal is connected to
+    :meth:`.login`.
+
+    Cookies can be in text or json format. User can copy cookies from
+    web browser like Chrome or Firefox. Cookies copied from firefox are
+    in json format and cookies copied from Chrome are in text format.
+
+    Subclass MUST implement four methods.
+
+    One usage example: feeluown-qqmusic.
     """
 
     def __init__(self, uri: str = None, required_cookies_fields=None):
@@ -122,6 +136,13 @@ class CookiesLoginDialog(LoginDialog):
         self.hint_label.setText(f"<p style='color: {color}'>{text}</p>")
 
     async def login(self):
+        """login with cookies
+
+        Read cookies that has been filled in and create a user from it.
+        If succeed, the :attr:`.login_succeed` signal will be emit.
+        If failed, show specific error message on the dialog based on
+        the exception.
+        """
         await self.login_with_cookies(self.get_cookies())
 
     async def login_with_cookies(self, cookies):

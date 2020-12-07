@@ -89,8 +89,17 @@ GUI 相关管理模块
 .. automodule:: feeluown.uimodels.playlist
    :members:
 
+GUI 组件
+-------------------
+
+.. autoclass:: feeluown.gui.widgets.LoginDialog
+   :members:
+
+.. autoclass:: feeluown.gui.widgets.CookiesLoginDialog
+   :members:
+
 异常
-------------------
+-------------------
 
 .. automodule:: fuocore.excs
    :members:

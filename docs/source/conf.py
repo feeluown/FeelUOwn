@@ -23,7 +23,7 @@ class Mock(MagicMock):
         return MagicMock()
 
 
-MOCK_MODULES = ['mpv', 'PyQt5']
+MOCK_MODULES = ['mpv']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 sys.path.insert(0, os.path.abspath('../..'))
