@@ -19,12 +19,31 @@ class InvalidCookies(Exception):
 
 
 class LoginDialog(QDialog):
+    """Base class for login dialogs"""
+    #: login succeed signal
     login_succeed = pyqtSignal()
 
 
 class CookiesLoginDialog(LoginDialog):
     """
-    usage example: feeluown-qqmusic
+
+    CookiesLoginDialog provides a text edit area and a login button.
+    User firstly fill in the text edit area with cookies. User can
+    then click the login button. The `clicked` signal is connected to
+    :meth:`.login`.
+
+    Cookies can be in text or json format. User can copy cookies from
+    web browser like Chrome or Firefox. Cookies copied from firefox are
+    in json format and cookies copied from Chrome are in text format.
+
+    Subclass MUST implement four methods.
+
+    - :meth:`setup_user`
+    - :meth:`user_from_cookies`
+    - :meth:`load_user_cookies`
+    - :meth:`dump_user_cookies`
+
+    One usage example: feeluown-qqmusic.
     """
 
     def __init__(self, uri: str = None, required_cookies_fields=None):
@@ -101,6 +120,11 @@ class CookiesLoginDialog(LoginDialog):
         return cookie_dict or None
 
     def get_cookies(self):
+        """Parse the content in text edit area
+
+        :return: return None when the content is invalid
+        :rtype: dict or None
+        """
         # We assume users only use firefox and chrome. Cookies from firefox are
         # in json format. Cookies copied from chrome are in text format.
         parsers = (('json', self._parse_json_cookies),
@@ -117,11 +141,23 @@ class CookiesLoginDialog(LoginDialog):
         return cookies
 
     def show_hint(self, text, color=None):
+        """Show hint message on dialog
+
+        :param string color: red for error, orange for warning,
+            green for success
+        """
         if color is None:
             color = ''
         self.hint_label.setText(f"<p style='color: {color}'>{text}</p>")
 
     async def login(self):
+        """Login with cookies
+
+        Read cookies that has been filled in and create a user from it.
+        If succeed, the :attr:`.login_succeed` signal will be emit.
+        If failed, show specific error message on the dialog based on
+        the exception.
+        """
         await self.login_with_cookies(self.get_cookies())
 
     async def login_with_cookies(self, cookies):
@@ -136,6 +172,10 @@ class CookiesLoginDialog(LoginDialog):
             self.login_succeed.emit()
 
     def autologin(self):
+        """Try to load user cookies and login with it
+
+        Generally, you can call this method after dialog is shown.
+        """
         cookies = self.load_user_cookies()
         if cookies is not None:
             self.show_hint('正在尝试加载已有用户...', color='green')
@@ -143,28 +183,36 @@ class CookiesLoginDialog(LoginDialog):
             aio.create_task(self.login_with_cookies(cookies))
 
     def setup_user(self, user):
-        """setup user session
+        """Setup user session
 
         :type user: fuocore.models.UserModel
         """
         raise NotImplementedError
 
     async def user_from_cookies(self, cookies):
-        """
+        """Create a user model from cookies dict
 
-        :rtype UserModel:
+        :type cookies: dict
+        :rtype: fuocore.models.UserModel
         """
         raise NotImplementedError
 
     def load_user_cookies(self):
-        """load user cookies from data file
+        """Load user cookies from somewhere
+
+        Load the cookies that is dumped before. If the load processing failed,
+        just return None.
 
         :return: cookies in dict format
+        :rtype: dict or None
         """
         raise NotImplementedError
 
     def dump_user_cookies(self, user, cookies):
-        """
+        """Dump user cookies to somewhere
+
+        Generally, you can store the cookies in FeelUOwn data directory
+        with specifical filename.
 
         :type user: fuocore.models.UserModel
         :type cookies: dict
