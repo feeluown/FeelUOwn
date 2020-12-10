@@ -42,7 +42,7 @@ setup(
         'fuocore.models',
         'fuocore.protocol',
     ],
-    py_modules=['mpv'],
+    py_modules=['mpv', 'mpv_old'],
     package_data={
         '': ['*.qss',
              '*.xml',
