@@ -1,14 +1,26 @@
 import locale
 import logging
 
-from mpv import (
-    MPV,
-    MpvEventID,
-    MpvEventEndFile,
-    _mpv_set_property_string,
-    _mpv_set_option_string,
-    _mpv_client_api_version,
-)
+from fuocore.utils import use_mpv_old
+
+if use_mpv_old():
+    from mpv_old import (
+        MPV,
+        MpvEventID,
+        MpvEventEndFile,
+        _mpv_set_property_string,
+        _mpv_set_option_string,
+        _mpv_client_api_version,
+    )
+else:
+    from mpv import (
+        MPV,
+        MpvEventID,
+        MpvEventEndFile,
+        _mpv_set_property_string,
+        _mpv_set_option_string,
+        _mpv_client_api_version,
+    )
 
 from fuocore.dispatch import Signal
 from fuocore.media import Media
@@ -33,12 +45,19 @@ class MpvPlayer(AbstractPlayer):
         mpvkwargs = {}
         if winid is not None:
             mpvkwargs['wid'] = winid
-        mpvkwargs['vo'] = 'opengl-cb'
+        self._version = _mpv_client_api_version()
+
+        # old version libmpv can use opengl-cb
+        if self._version < (1, 107):
+            mpvkwargs['vo'] = 'opengl-cb'
+            self.use_opengl_cb = True
+        else:
+            self.use_opengl_cb = False
+
         # set log_handler if you want to debug
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'
         # the default version of libmpv on Ubuntu 18.04 is (1, 25)
-        self._version = _mpv_client_api_version()
         self._mpv = MPV(ytdl=False,
                         input_default_bindings=True,
                         input_vo_keyboard=True,

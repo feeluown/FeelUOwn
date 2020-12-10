@@ -5,8 +5,14 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
+from fuocore.utils import use_mpv_old
 from feeluown.widgets.separator import Separator
-from feeluown.widgets.mpv import MpvOpenGLWidget
+
+if use_mpv_old():
+    from feeluown.widgets.mpv_old import MpvOpenGLWidget
+else:
+    from feeluown.widgets.mpv import MpvOpenGLWidget
+
 from feeluown.containers.left_panel import LeftPanel
 from feeluown.containers.right_panel import RightPanel
 from feeluown.containers.top_panel import TopPanel

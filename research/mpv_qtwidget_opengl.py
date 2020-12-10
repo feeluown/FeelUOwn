@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from PyQt5.QtOpenGL import QGLContext
 
 
-from mpv import MPV, _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
+from mpv_old import MPV, _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
         _mpv_opengl_cb_init_gl, OpenGlCbGetProcAddrFn, _mpv_opengl_cb_draw, \
         _mpv_opengl_cb_report_flip, MpvSubApi, OpenGlCbUpdateFn, _mpv_opengl_cb_uninit_gl
 

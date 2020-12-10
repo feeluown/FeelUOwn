@@ -15,6 +15,18 @@ from fuocore.reader import wrap as reader_wrap
 logger = logging.getLogger(__name__)
 
 
+def use_mpv_old():
+    try:
+        import mpv  # noqa
+    except AttributeError as e:
+        # undefined symbol: mpv_render_context_create
+        msg = str(e)
+        if 'undefined symbol' in msg:
+            logger.info(f'use mpv old because of err: {msg}')
+            return True
+    return False
+
+
 def parse_ms(ms):
     minute = int(ms / 60000)
     second = int((ms % 60000) / 1000)
