@@ -18,12 +18,10 @@
 #
 # ------------------------------------------------
 #
-# based on v0.3.9, changes in feeluown:
+# based on v0.5.2, changes in feeluown:
 #
 # 1. read MPV_DYLIB_PATH from environ
 #    https://github.com/feeluown/FeelUOwn/pull/325
-#
-# 2. https://github.com/jaseg/python-mpv/issues/84
 #
 
 from ctypes import *
