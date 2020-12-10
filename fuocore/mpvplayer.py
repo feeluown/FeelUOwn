@@ -33,7 +33,7 @@ class MpvPlayer(AbstractPlayer):
         mpvkwargs = {}
         if winid is not None:
             mpvkwargs['wid'] = winid
-        mpvkwargs['vo'] = 'opengl-cb'
+        # mpvkwargs['vo'] = 'opengl-cb'
         # set log_handler if you want to debug
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'

@@ -1,9 +1,14 @@
-from PyQt5.QtCore import QMetaObject, pyqtSlot
+from PyQt5.QtCore import Qt, QMetaObject, pyqtSlot
+from PyQt5.QtWidgets import QOpenGLWidget, QApplication
 from PyQt5.QtOpenGL import QGLContext
 
-from mpv import MpvRenderContext, OpenGlCbGetProcAddrFn
+# HELP: currently, we need import GL module，otherwise it will raise seg fault on Linux(Ubuntu 18.04)
+from OpenGL import GL  # noqa
 
-from feeluown.gui.widgets.video import VideoOpenGLWidget
+from mpv import MPV, _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
+        _mpv_opengl_cb_init_gl, OpenGlCbGetProcAddrFn, _mpv_opengl_cb_draw, \
+        _mpv_opengl_cb_report_flip, MpvSubApi, OpenGlCbUpdateFn, _mpv_opengl_cb_uninit_gl, \
+        MpvRenderContext
 
 
 def get_proc_addr(_, name):
@@ -14,24 +19,10 @@ def get_proc_addr(_, name):
     return addr
 
 
-class MpvOpenGLWidget(VideoOpenGLWidget):
-    """Mpv 视频输出窗口
-
-    销毁时，应该调用 shutdown 方法来释放资源。
-
-    该 Widget 是模仿一些 C++ 程序编写而成（详见项目 research 目录下的例子），
-    我们对背后的原理不太理解，目前测试是可以正常工作的。
-
-    目前主要的疑问有：
-
-    - [ ] shutdown 方法期望是用来释放资源的，目前的写法不知是否合理？
-          应该在什么时候调用 shutdown 方法？
-    """
-
-    def __init__(self, app, parent=None):
-        super().__init__(app=app, parent=parent)
-        self._app = app
-        self.mpv = self._app.player._mpv  # noqa
+class MpvWidget(QOpenGLWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self.mpv = MPV(ytdl=True)
         self.ctx = None
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
 
@@ -44,7 +35,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
 
     def paintGL(self):
         # compatible with HiDPI display
-        ratio = self._app.devicePixelRatio()
+        ratio = self.windowHandle().devicePixelRatio()
         w = int(self.width() * ratio)
         h = int(self.height() * ratio)
         opengl_fbo = {'w': w,
@@ -63,12 +54,26 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
             self.update()
 
     def on_update(self, ctx=None):
-        # maybe_update method should run on the thread that creates the
-        # OpenGLContext, which in general is the main thread.
-        # QMetaObject.invokeMethod can do this trick.
+        # maybe_update method should run on the thread that creates the OpenGLContext,
+        # which in general is the main thread. QMetaObject.invokeMethod can
+        # do this trick.
         QMetaObject.invokeMethod(self, 'maybe_update')
 
+    def on_update_fake(self, ctx=None):
+        pass
 
-# TODO: 实现 MpvEmbeddedWidget
-class MpvEmbeddedWidget:
-    pass
+    def closeEvent(self, _):
+        # self.makeCurrent()
+        # self.mpv.terminate()
+        pass
+
+
+if __name__ == '__main__':
+    import locale
+    app = QApplication([])
+    locale.setlocale(locale.LC_NUMERIC, 'C')
+    widget = MpvWidget()
+    widget.show()
+    url = 'data/test.webm'
+    widget.mpv.play(url)
+    app.exec()
