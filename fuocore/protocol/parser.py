@@ -225,3 +225,30 @@ class Parser:
         else:
             assert next_token.type_ == TOKEN_HEREDOC_WORD
             return True, next_token.value
+
+
+class HeredocParser:
+    """
+    parse a heredoc text block
+
+    ::
+
+        {heredoc}
+        {heredoc_delimter}[\r]\n
+    """
+    def __init__(self, source, delimeter):
+        self._source = source
+        self._delim = delimeter
+
+        assert delimeter
+
+    def parse(self):
+        source = self._source
+        if not source:
+            raise FuoSyntaxError('invalid heredoc')
+        if source[-1] != '\n':
+            raise FuoSyntaxError('heredoc not ends with newline')
+        source = source.rstrip()  # strip \r maybe
+        if source[-len(self._delim):] != self._delim:
+            raise FuoSyntaxError('heredoc delimeter not found')
+        return source[:-len(self._delim)]

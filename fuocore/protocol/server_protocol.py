@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from .parser import Parser
+from .parser import Parser, HeredocParser
 from .excs import FuoSyntaxError
 from .data_structure import Response
 
@@ -54,6 +54,28 @@ async def read_request(reader):
                 raise RequestError('heredoc body should be less than 64KiB')
         req.set_heredoc_body(bytes(buf).decode('utf-8'))
     return req
+
+
+def parse_request(text_block):
+    if not text_block[-1] == '\n':
+        raise RequestError('request body does not contain newline charactor')
+
+    try:
+        for i, c in enumerate(text_block):
+            if c == '\n':
+                # strip spaces including \r
+                line = text_block[:i].strip()
+                req = Parser(line).parse()
+                if req.has_heredoc:
+                    heredoc = HeredocParser(text_block[i+1:]).parse()
+                    req.set_heredoc_body(heredoc)
+                return req
+        req = Parser(text_block.strip()).parse()
+        i = len(text_block)
+        assert not req.has_heredoc
+        return req
+    except FuoSyntaxError as e:
+        raise RequestError(e.human_readabe_msg) from e
 
 
 class FuoServerProtocol(asyncio.streams.FlowControlMixin):
