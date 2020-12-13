@@ -30,13 +30,15 @@ class SongBriefLabel(QLabel):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self._app = app
+
+        # TODO: we can create a label class that roll the text when
+        # the text is longer than the label width
         self._timer = QTimer()
         self._txt = self._raw_text = self.default_text
         self._font_metrics = QFontMetrics(QApplication.font())
         self._text_rect = self._font_metrics.boundingRect(self._raw_text)
         # text's position, keep changing to make text roll
         self._pos = 0
-
         self._timer.timeout.connect(self.change_text_position)
 
         self._fetching_artists = False
@@ -60,6 +62,9 @@ class SongBriefLabel(QLabel):
         self.update()
 
     def enterEvent(self, event):
+        # we do not compare text_rect with self_rect here because of
+        # https://github.com/feeluown/FeelUOwn/pull/425#discussion_r536817226
+        # TODO: find out why
         if self._txt != self._raw_text:
             # decrease to make rolling more fluent
             self._timer.start(150)
@@ -81,7 +86,7 @@ class SongBriefLabel(QLabel):
                 self._raw_text, Qt.ElideRight, self.width())
 
         painter.drawText(
-            QRect(self._pos, 0, self.width()-self._pos, self.height()),
+            QRect(self._pos, 0, self.width() - self._pos, self.height()),
             Qt.AlignLeft | Qt.AlignVCenter,
             self._txt
         )
