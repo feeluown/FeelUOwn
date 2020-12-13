@@ -1,8 +1,8 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtCore import Qt, QTimer, QRect
+from PyQt5.QtGui import QFontMetrics, QPainter
 from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
     QPushButton, QSizePolicy, QMenu,
@@ -27,8 +27,64 @@ class SongBriefLabel(QLabel):
 
     def __init__(self, app):
         super().__init__(text=self.default_text, parent=None)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
         self._app = app
+        self._timer = QTimer()
+        self._txt = self._raw_text = self.default_text
+        self._font_metrics = QFontMetrics(QApplication.font())
+        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        # text's position, keep changing to make text roll
+        self._pos = 0
+
+        self._timer.timeout.connect(self.change_text_position)
+
         self._fetching_artists = False
+
+    def change_text_position(self):
+        if not self.parent().isVisible():
+            self._timer.stop()
+            self._pos = 0
+            return
+        if self._text_rect.width() + self._pos > 0:
+            # control the speed of rolling
+            self._pos -= 5
+        else:
+            self._pos = self.width()
+        self.update()
+
+    def setText(self, text):
+        self._txt = self._raw_text = text
+        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        self._pos = 0
+        self.update()
+
+    def enterEvent(self, event):
+        if self._txt != self._raw_text:
+            # decrease to make rolling more fluent
+            self._timer.start(150)
+
+    def leaveEvent(self, event):
+        self._timer.stop()
+        self._pos = 0
+        self.update()
+
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setFont(QApplication.font())
+        painter.setPen(self._app.palette().color(self._app.palette().Text))
+
+        if self._timer.isActive():
+            self._txt = self._raw_text
+        else:
+            self._txt = self._font_metrics.elidedText(
+                self._raw_text, Qt.ElideRight, self.width())
+
+        painter.drawText(
+            QRect(self._pos, 0, self.width()-self._pos, self.height()),
+            Qt.AlignLeft | Qt.AlignVCenter,
+            self._txt
+        )
 
     def contextMenuEvent(self, e):
         song = self._app.playlist.current_song
@@ -188,8 +244,8 @@ class PlayerControlPanel(QFrame):
         # set widget layout
         self.song_source_label.setFixedHeight(20)
         self.progress_slider.setFixedHeight(20)  # half of parent height
-        self.position_label.setFixedWidth(45)
-        self.duration_label.setFixedWidth(45)
+        self.position_label.setFixedWidth(50)
+        self.duration_label.setFixedWidth(50)
         # on macOS, we should set AlignVCenter flag
         self.position_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.like_btn.setFixedSize(15, 15)
@@ -207,7 +263,6 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addSpacing(5)
         self._sub_top_layout.addWidget(self.song_title_label)
         self._sub_top_layout.addSpacing(5)
-        self._sub_top_layout.addStretch(0)
         self._sub_top_layout.addWidget(self.like_btn)
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.mv_btn)
@@ -276,15 +331,12 @@ class PlayerControlPanel(QFrame):
             return
         source_name_map = {p.identifier: p.name
                            for p in self._app.library.list()}
-        font_metrics = QFontMetrics(QApplication.font())
         text = '{} - {}'.format(song.title_display, song.artists_name_display)
         # width -> three button + source label + text <= progress slider
         # three button: 63, source label: 150
-        elided_text = font_metrics.elidedText(
-            text, Qt.ElideRight, self.progress_slider.width() - 200)
         source_name = source_name_map.get(song.source, song.source)
         self.song_source_label.setText(source_name)
-        self.song_title_label.setText(elided_text)
+        self.song_title_label.setText(text)
         loop = asyncio.get_event_loop()
         loop.create_task(self.update_mv_btn_status(song))
 
