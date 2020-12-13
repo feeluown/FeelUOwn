@@ -8,6 +8,11 @@ from fuocore.dispatch import Signal
 from feeluown.player import Playlist, PlaylistMode, Player
 
 
+@pytest.fixture
+def mock_a_set_cursong(mocker):
+    mocker.patch.object(Playlist, 'a_set_current_song', new=mock.MagicMock)
+
+
 @pytest.mark.asyncio
 async def test_playlist_change_mode(app_mock, mocker):
     mock_clear = mocker.patch.object(Playlist, 'clear')
@@ -23,8 +28,8 @@ async def test_playlist_change_mode(app_mock, mocker):
 
 
 @pytest.mark.asyncio
-async def test_playlist_exit_fm_mode(app_mock, song, mocker):
-    mocker.patch.object(Playlist, 'a_set_current_song')
+async def test_playlist_exit_fm_mode(app_mock, song, mocker,
+                                     mock_a_set_cursong):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.current_song = song
@@ -33,8 +38,8 @@ async def test_playlist_exit_fm_mode(app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
-async def test_playlist_fm_mode_play_next(app_mock, song, song1, mocker):
-    mocker.patch.object(Playlist, 'a_set_current_song')
+async def test_playlist_fm_mode_play_next(app_mock, song, song1,
+                                          mock_a_set_cursong):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
@@ -45,8 +50,8 @@ async def test_playlist_fm_mode_play_next(app_mock, song, song1, mocker):
 
 
 @pytest.mark.asyncio
-async def test_playlist_fm_mode_play_previous(app_mock, song, song1, mocker):
-    mocker.patch.object(Playlist, 'a_set_current_song')
+async def test_playlist_fm_mode_play_previous(app_mock, song, song1,
+                                              mock_a_set_cursong):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
@@ -57,8 +62,8 @@ async def test_playlist_fm_mode_play_previous(app_mock, song, song1, mocker):
 
 
 @pytest.mark.asyncio
-async def test_playlist_eof_reached(app_mock, song, mocker):
-    mocker.patch.object(Playlist, 'a_set_current_song')
+async def test_playlist_eof_reached(app_mock, song, mocker,
+                                    mock_a_set_cursong):
     mock_emit = mocker.patch.object(Signal, 'emit')
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
@@ -74,8 +79,8 @@ async def test_playlist_eof_reached(app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
-async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker):
-    mocker.patch.object(Playlist, 'a_set_current_song')
+async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker,
+                                                 mock_a_set_cursong):
     mock_current_song = mocker.patch.object(Playlist, 'current_song')
     mock_set = mocker.MagicMock()
     mock_current_song.__get__ = mocker.MagicMock(return_value=None)

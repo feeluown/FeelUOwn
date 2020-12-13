@@ -1,4 +1,4 @@
-import time
+from datetime import datetime
 
 import pytest
 
@@ -15,5 +15,5 @@ def test_table_meta(qtbot):
     widget.title = '我喜欢的音乐'
     widget.subtitle = '嘿嘿'
     widget.creator = 'cosven'
-    widget.updated_at = time.time()
+    widget.updated_at = datetime.now()
     widget.desc = "<pre><code>print('hello world')</code><pre>"

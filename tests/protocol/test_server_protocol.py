@@ -1,6 +1,8 @@
 import asyncio
 from unittest import mock, TestCase
 
+import pytest
+
 from fuocore.protocol import FuoServerProtocol
 
 
@@ -8,6 +10,9 @@ async def coro():
     return None
 
 
+# ignore RuntimeWaarnig:
+# coroutine 'AsyncMockMixin._execute_mock_call' was never awaited
+@pytest.mark.filterwarnings('ignore:coroutine')
 class TestFuoServerProtocol(TestCase):
     def setUp(self):
         self.loop = asyncio.new_event_loop()
@@ -21,12 +26,9 @@ class TestFuoServerProtocol(TestCase):
         self.assertIsNotNone(self.protocol._reader)
         self.assertIsNotNone(self.protocol._writer)
 
-    @mock.patch.object(asyncio.StreamWriter, 'drain')
+    @mock.patch.object(asyncio.StreamWriter, 'drain', return_value=coro())
     def test_start_write_drain(self, mock_drain):
         """drain should be called after start coro runs"""
-        async def func():
-            return None
-        mock_drain.side_effect = func
         transport = mock.Mock()
         self.protocol.connection_made(transport)
         self.protocol._connection_lost = True
