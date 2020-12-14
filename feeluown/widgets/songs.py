@@ -19,7 +19,7 @@ from fuocore.dispatch import Signal
 from fuocore.excs import ProviderIOError
 from fuocore.models import ModelExistence
 
-from feeluown.mimedata import ModelMimeData
+from feeluown.gui.mimedata import ModelMimeData
 from feeluown.helpers import ItemViewNoScrollMixin
 
 
