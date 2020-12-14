@@ -1,0 +1,23 @@
+name: Publish package to PyPI
+on:
+  push:
+    tags:
+      - v*
+
+jobs:
+  build-n-publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: 3.6
+    - name: Build
+      run: >-
+        python setup.py sdist
+    - name: Publish
+      uses: pypa/gh-action-pypi-publish@master
+      with:
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
