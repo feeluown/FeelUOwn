@@ -30,7 +30,7 @@ Groups = ['Disabled', 'Active', 'Inactive']
 def read_resource(filename):
     filepath = os.path.abspath(__file__)
     dirname = os.path.dirname(filepath)
-    qssfilepath = os.path.join(dirname, 'themes/{}'.format(filename))
+    qssfilepath = os.path.join(dirname, '../themes/{}'.format(filename))
     with open(qssfilepath, encoding='UTF-8') as f:
         s = f.read()
     return s

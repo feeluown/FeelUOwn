@@ -182,7 +182,7 @@ def attach_attrs(app):
         from .browser import Browser
         from .hotkey import HotkeyManager
         from .image import ImgManager
-        from .theme import ThemeManager
+        from .gui.theme import ThemeManager
         from .tips import TipsManager
         from .ui import Ui
         from .tray import Tray
