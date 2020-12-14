@@ -6,7 +6,7 @@ import time
 from hashlib import md5
 
 from fuocore.models import resolve
-from .consts import CACHE_DIR
+from feeluown.consts import CACHE_DIR
 
 
 logger = logging.getLogger(__name__)

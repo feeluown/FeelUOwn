@@ -179,13 +179,13 @@ def attach_attrs(app):
         from feeluown.uimodels.collection import CollectionUiManager
         from feeluown.collection import CollectionManager
 
-        from .browser import Browser
-        from .hotkey import HotkeyManager
-        from .image import ImgManager
+        from .gui.browser import Browser
+        from .gui.hotkey import HotkeyManager
+        from .gui.image import ImgManager
         from .gui.theme import ThemeManager
-        from .tips import TipsManager
-        from .ui import Ui
-        from .tray import Tray
+        from .gui.tips import TipsManager
+        from .gui.ui import Ui
+        from .gui.tray import Tray
 
         # GUI 的一些辅助管理模块
         app.coll_mgr = CollectionManager(app)
