@@ -21,7 +21,7 @@ install:
     # - sudo apt-get install python3-dbus python3-dbus.mainloop.pyqt5 -y
     #
     # TODO: think about a way to test mpris2 in travis environment
-    - pip install pyqt5==5.14.0
+    - pip install pyqt5==5.14.0 pyopengl
     - pip install coveralls
     - pip install sphinx_rtd_theme
     - pip install 'pytest>=5.4.0' flake8 pytest-cov pytest-asyncio pytest-qt pytest-mock --upgrade
