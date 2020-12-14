@@ -55,7 +55,7 @@ setup(
              'themes/*.colors',
              ]
     },
-    python_requires=">=3.5",
+    python_requires=">=3.6",
     url='https://github.com/feeluown/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
     classifiers=[
@@ -77,7 +77,6 @@ setup(
     install_requires=[
         'janus',
         'requests',
-        'pyopengl',
         'qasync',
         'tomlkit',
     ],

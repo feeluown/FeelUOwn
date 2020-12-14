@@ -32,6 +32,7 @@ Ubuntu
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
     pip3 install 'feeluown>=3.0[battery]' --upgrade --user
+    pip3 install pyopengl
 
     # 运行 feeluown -h 来测试安装是否成功
     # 如果提示 Commmand Not Found，请查看文档「常见问题」部分
@@ -49,10 +50,9 @@ macOS
 
 .. sourcecode:: sh
 
-    brew install python3
-    brew install pyqt
-    brew install mpv
-    pip3 install 'feeluown[battery,macos]>=3.0' --upgrade
+    # macOS 11 可能不能正常安装
+    # https://github.com/feeluown/FeelUOwn/issues/421
+    brew install feeluown/feeluown/feeluown
     feeluown-genicon  # 在桌面会生成一个 FeelUOwn 图标
 
 Windows
