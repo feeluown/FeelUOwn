@@ -26,9 +26,12 @@ class TestFuoServerProtocol(TestCase):
         self.assertIsNotNone(self.protocol._reader)
         self.assertIsNotNone(self.protocol._writer)
 
-    @mock.patch.object(asyncio.StreamWriter, 'drain', return_value=coro())
+    @mock.patch.object(asyncio.StreamWriter, 'drain')
     def test_start_write_drain(self, mock_drain):
         """drain should be called after start coro runs"""
+        async def func():
+            return None
+        mock_drain.side_effect = func
         transport = mock.Mock()
         self.protocol.connection_made(transport)
         self.protocol._connection_lost = True
