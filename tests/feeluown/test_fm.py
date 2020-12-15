@@ -4,8 +4,7 @@ import pytest
 
 from fuocore.excs import ProviderIOError
 
-from feeluown.fm import FM
-from feeluown.player import Playlist, PlaylistMode
+from feeluown.player import Playlist, PlaylistMode, FM
 from feeluown.task import TaskManager
 
 

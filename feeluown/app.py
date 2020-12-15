@@ -18,8 +18,7 @@ from feeluown.pubsub import (
 )
 
 from .consts import APP_ICON, STATE_FILE
-from .fm import FM
-from .player import Player
+from .player import FM, Player
 from .plugin import PluginsManager
 from .server import FuoServer
 from .request import Request
