@@ -1,8 +1,8 @@
 from fuocore.mpvplayer import MpvPlayer
-from fuocore.serializers import serialize
+from feeluown.serializers import serialize
 
 from feeluown.app import App
-from feeluown.serializers import *  # noqa
+from feeluown.serializers.app import *  # noqa
 
 
 def test_serialize_app(mocker):

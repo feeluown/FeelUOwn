@@ -3,14 +3,14 @@ import logging
 
 from feeluown.rpc.cmds import exec_cmd, Cmd
 from feeluown.rpc import FuoServerProtocol, Response
-from fuocore.serializers import serialize
+from feeluown.serializers import serialize
 
 logger = logging.getLogger(__name__)
 _REGISTERED = False
 
 
 def register_feeluown_serializers():
-    from feeluown.serializers import (  # noqa
+    from feeluown.serializers.app import (  # noqa
         AppPythonSerializer,
         AppPlainSerializer
     )

@@ -3,10 +3,9 @@ serializers for feeluown objects
 """
 
 from feeluown.player import PlaybackMode, State
-from fuocore.serializers import PlainSerializer, PythonSerializer, \
-    SerializerMeta, SimpleSerializerMixin
-
 from feeluown.app import App
+from . import PlainSerializer, PythonSerializer, \
+    SerializerMeta, SimpleSerializerMixin
 
 
 __all__ = (

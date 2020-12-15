@@ -1,4 +1,4 @@
-from fuocore.serializers import serialize
+from feeluown.serializers import serialize
 from fuocore.provider import dummy_provider, Dummy
 
 
