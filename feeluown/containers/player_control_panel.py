@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import aio
-from fuocore.excs import ProviderIOError
+from feeluown.excs import ProviderIOError
 from fuocore.media import MediaType
 from fuocore.player import PlaybackMode, State
 from feeluown.gui.widgets.lyric import Window as LyricWindow

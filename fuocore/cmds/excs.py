@@ -1,4 +1,4 @@
-from fuocore.excs import FuoException
+from feeluown.excs import FuoException
 
 
 class CmdException(FuoException):

@@ -2,7 +2,7 @@ import asyncio
 import logging
 from queue import deque
 
-from fuocore.excs import ProviderIOError
+from feeluown.excs import ProviderIOError
 from feeluown.player import PlaylistMode
 
 logger = logging.getLogger(__name__)
@@ -46,7 +46,7 @@ class FM:
             please ensure that fetch_songs_func can receive keyword arguments,
             we may send some keyword args(such as timeout) in the future.
             If exception occured in fetch_songs_func, it should raise
-            :class:`fuocore.excs.ProviderIOError`.
+            :class:`feeluown.excs.ProviderIOError`.
         """
         if self.is_active:
             logger.warning('fm already actiavted')

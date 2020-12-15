@@ -101,5 +101,5 @@ GUI 组件
 异常
 -------------------
 
-.. automodule:: fuocore.excs
+.. automodule:: feeluown.excs
    :members:

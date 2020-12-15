@@ -9,7 +9,7 @@ import logging
 import warnings
 from collections.abc import Iterable, Sequence
 
-from fuocore.excs import ReadFailed, ProviderIOError
+from feeluown.excs import ReadFailed, ProviderIOError
 
 logger = logging.getLogger(__name__)
 
