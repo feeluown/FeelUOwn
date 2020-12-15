@@ -4,7 +4,7 @@
 """
 import base64
 
-from fuocore.utils import elfhash
+from feeluown.utils.utils import elfhash
 from feeluown.widgets.collections import CollectionsModel
 from feeluown.collection import CollectionType
 

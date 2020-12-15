@@ -5,7 +5,7 @@ from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from fuocore.models import SearchType
 from fuocore.provider import AbstractProvider
-from fuocore.utils import log_exectime
+from feeluown.utils.utils import log_exectime
 
 logger = logging.getLogger(__name__)
 

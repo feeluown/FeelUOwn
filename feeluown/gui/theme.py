@@ -9,7 +9,7 @@ from collections import defaultdict
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
 from PyQt5.QtWidgets import QApplication
-from fuocore.utils import get_osx_theme
+from feeluown.utils.utils import get_osx_theme
 
 logger = logging.getLogger(__name__)
 

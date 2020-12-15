@@ -1,7 +1,7 @@
 from PyQt5.QtCore import QTime, Qt
 from PyQt5.QtWidgets import QLabel
 
-from fuocore.utils import parse_ms
+from feeluown.utils.utils import parse_ms
 
 
 class DurationLabel(QLabel):

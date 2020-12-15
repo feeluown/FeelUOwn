@@ -1,7 +1,7 @@
 import locale
 import logging
 
-from fuocore.utils import use_mpv_old
+from feeluown.utils.utils import use_mpv_old
 
 if use_mpv_old():
     from mpv_old import (

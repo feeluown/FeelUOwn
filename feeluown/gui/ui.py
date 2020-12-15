@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
 )
 
-from fuocore.utils import use_mpv_old
+from feeluown.utils.utils import use_mpv_old
 from feeluown.widgets.separator import Separator
 
 if use_mpv_old():

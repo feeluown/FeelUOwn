@@ -2,7 +2,7 @@ import logging
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from fuocore.utils import find_previous
+from feeluown.utils.utils import find_previous
 
 from .lyric import parse
 

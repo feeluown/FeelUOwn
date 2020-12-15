@@ -2,7 +2,7 @@ import logging
 import warnings
 
 from fuocore.media import MultiQualityMixin, Quality
-from fuocore.utils import elfhash
+from feeluown.utils.utils import elfhash
 from .base import ModelType, AlbumType, Model
 
 logger = logging.getLogger(__name__)

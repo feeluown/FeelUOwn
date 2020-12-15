@@ -5,7 +5,7 @@ from enum import IntEnum
 
 from feeluown.utils.dispatch import Signal
 from fuocore.media import Media
-from fuocore.utils import DedupList
+from feeluown.utils.utils import DedupList
 
 logger = logging.getLogger(__name__)
 
