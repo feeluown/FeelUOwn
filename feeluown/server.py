@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from fuocore.cmds import exec_cmd, Cmd
+from feeluown.rpc.cmds import exec_cmd, Cmd
 from feeluown.rpc import FuoServerProtocol, Response
 from fuocore.serializers import serialize
 

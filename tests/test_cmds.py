@@ -1,6 +1,6 @@
 import pytest
 
-from fuocore.cmds.show import router
+from feeluown.rpc.cmds.show import router
 from fuocore.provider import dummy_provider, Dummy, \
     DummyAlbumModel, DummyArtistModel, DummyPlaylistModel, \
     DummySongModel

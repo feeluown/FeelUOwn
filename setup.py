@@ -39,7 +39,7 @@ setup(
         # fuocore
         'fuocore',
         'fuocore.serializers',
-        'fuocore.cmds',
+        'feeluown.rpc.cmds',
         'fuocore.models',
         'feeluown.rpc',
     ],
