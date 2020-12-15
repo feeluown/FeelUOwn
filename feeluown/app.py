@@ -17,11 +17,11 @@ from feeluown.pubsub import (
     LiveLyricPublisher
 )
 
+from feeluown.utils.request import Request
 from .consts import APP_ICON, STATE_FILE
 from .player import FM, Player
 from .plugin import PluginsManager
 from .server import FuoServer
-from .request import Request
 from .version import VersionManager
 from .task import TaskManager
 
@@ -224,7 +224,7 @@ def create_app(config):
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
 
-        from feeluown.compat import QEventLoop
+        from feeluown.utils.compat import QEventLoop
 
         q_app = QApplication(sys.argv)
 

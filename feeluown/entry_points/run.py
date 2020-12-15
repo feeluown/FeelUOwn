@@ -1,8 +1,8 @@
-from feeluown.patch import patch_janus
+from feeluown.utils.patch import patch_janus
 patch_janus()
 
 try:
-    from feeluown.patch import patch_qeventloop
+    from feeluown.utils.patch import patch_qeventloop
 except ImportError:
     # when qasync/quamash is not installed
     # FIXME: should not catch the error at here

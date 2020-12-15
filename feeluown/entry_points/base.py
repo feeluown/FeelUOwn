@@ -104,7 +104,7 @@ def setup_config(args, config):
                 logger.warning('PyQt5 is not installed, fallback to daemon mode.')
             else:
                 try:
-                    from feeluown.compat import QEventLoop  # noqa
+                    from feeluown.utils.compat import QEventLoop  # noqa
                 except ImportError:
                     logger.warning('no QEventLoop, fallback to daemon mode.')
                 else:

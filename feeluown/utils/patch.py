@@ -1,7 +1,7 @@
 # flake8: noqa
 
 import asyncio
-from feeluown.compat import QEventLoop, QThreadExecutor
+from .compat import QEventLoop, QThreadExecutor
 
 
 def run_in_executor(self, executor, callback, *args):
