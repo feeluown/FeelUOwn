@@ -25,6 +25,7 @@ setup(
         # feeluown common
         'feeluown.entry_points',
         'feeluown.linux',
+        'feeluown.pubsub',
 
         # feeluown gui
         'feeluown.gui',

@@ -10,9 +10,11 @@ from fuocore.dispatch import Signal
 from fuocore.models import Resolver, reverse, resolve, \
     ResolverNotFound
 from fuocore.playlist import PlaybackMode
-from fuocore.pubsub import (
+
+from feeluown.pubsub import (
     Gateway as PubsubGateway,
     HandlerV1 as PubsubHandlerV1,
+    LiveLyricPublisher
 )
 
 from .consts import APP_ICON, STATE_FILE
@@ -20,7 +22,6 @@ from .fm import FM
 from .player import Player
 from .plugin import PluginsManager
 from .server import FuoServer
-from .publishers import LiveLyricPublisher
 from .request import Request
 from .version import VersionManager
 from .task import TaskManager
