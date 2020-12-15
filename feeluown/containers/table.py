@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel
 from requests.exceptions import RequestException
 
 from fuocore import ModelType
-from fuocore import aio
+from feeluown.utils import aio
 from fuocore.reader import wrap
 from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError

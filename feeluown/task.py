@@ -3,7 +3,7 @@ import logging
 import threading
 from enum import Enum
 
-from fuocore import aio
+from feeluown.utils import aio
 
 logger = logging.getLogger(__name__)
 

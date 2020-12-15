@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QSizePolicy, QMenu,
 )
 
-from fuocore import aio
+from feeluown.utils import aio
 from fuocore.excs import ProviderIOError
 from fuocore.media import MediaType
 from fuocore.player import PlaybackMode, State

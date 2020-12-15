@@ -6,7 +6,7 @@ from urllib.parse import urlencode
 
 from PyQt5.QtGui import QKeySequence
 
-from fuocore import aio
+from feeluown.utils import aio
 from fuocore.router import Router, NotFound
 from fuocore.models.uri import resolve, reverse, ResolveFailed
 

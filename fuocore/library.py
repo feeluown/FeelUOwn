@@ -1,7 +1,7 @@
 import logging
 from functools import partial
 
-from fuocore import aio
+from feeluown.utils import aio
 from fuocore.dispatch import Signal
 from fuocore.models import SearchType
 from fuocore.provider import AbstractProvider

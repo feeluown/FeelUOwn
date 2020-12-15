@@ -1,6 +1,6 @@
 import logging
 
-from fuocore import aio
+from feeluown.utils import aio
 from fuocore.dispatch import Signal
 from fuocore.utils import find_previous
 

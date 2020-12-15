@@ -26,7 +26,7 @@ from PyQt5.QtWidgets import (
     QAbstractItemDelegate, QListView, QFrame,
 )
 
-from fuocore import aio
+from feeluown.utils import aio
 from fuocore.reader import wrap
 from fuocore.excs import ProviderIOError
 from fuocore.models.uri import reverse

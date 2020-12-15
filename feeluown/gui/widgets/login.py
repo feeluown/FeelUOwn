@@ -11,7 +11,7 @@ except ImportError:
 else:
     has_webengine = True
 
-from fuocore import aio
+from feeluown.utils import aio
 
 
 class InvalidCookies(Exception):
