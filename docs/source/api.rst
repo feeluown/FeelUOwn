@@ -44,7 +44,7 @@
                                        |
                                     MpvPlayer
 
-.. automodule:: fuocore.player
+.. automodule:: feeluown.player
    :members:
 
 .. automodule:: fuocore.live_lyric

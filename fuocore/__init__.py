@@ -1,11 +1,11 @@
 from fuocore.models import ModelType  # noqa
-from fuocore.player import (
+from feeluown.player import (
     State as PlayerState,
     PlaybackMode,
     Playlist,
 )  # noqa
 # FIXME: remove this when no one import MpvPlayer from here
-from fuocore.mpvplayer import MpvPlayer  # noqa
+from feeluown.player.mpvplayer import MpvPlayer  # noqa
 from .library import Library  # noqa
 
 

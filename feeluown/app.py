@@ -9,7 +9,7 @@ from fuocore import Library
 from feeluown.utils.dispatch import Signal
 from fuocore.models import Resolver, reverse, resolve, \
     ResolverNotFound
-from fuocore.playlist import PlaybackMode
+from feeluown.player import PlaybackMode
 
 from feeluown.lyric import LiveLyric
 from feeluown.pubsub import (

@@ -2,7 +2,7 @@ import logging
 from contextlib import contextmanager
 from enum import IntEnum
 
-from fuocore.mpvplayer import _mpv_set_property_string
+from feeluown.player.mpvplayer import _mpv_set_property_string
 
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 

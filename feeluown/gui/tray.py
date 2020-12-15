@@ -4,7 +4,7 @@ from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu, QApplication
 
-from fuocore.player import State
+from feeluown.player import State
 from feeluown.gui.helpers import elided_text
 
 

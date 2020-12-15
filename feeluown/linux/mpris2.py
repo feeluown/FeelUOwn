@@ -3,7 +3,7 @@ import os
 
 import dbus
 import dbus.service
-from fuocore.player import State
+from feeluown.player import State
 
 
 SupportedMimeTypes = ['audio/aac',

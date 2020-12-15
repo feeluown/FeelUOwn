@@ -3,7 +3,7 @@ from PyQt5.QtGui import QPalette, QPainter
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
     QHBoxLayout, QOpenGLWidget
 
-from fuocore.player import State
+from feeluown.player import State
 from feeluown.widgets.progress_slider import ProgressSlider
 from feeluown.widgets.size_grip import SizeGrip
 from .labels import ProgressLabel, DurationLabel

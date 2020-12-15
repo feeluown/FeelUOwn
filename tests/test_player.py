@@ -3,7 +3,9 @@ import time
 from unittest import TestCase, skipIf, mock
 
 from fuocore.media import Media
-from fuocore.player import MpvPlayer, Playlist, PlaybackMode, State
+from fuocore.player import State
+from fuocore.playlist import Playlist, PlaybackMode
+from fuocore.mpvplayer import MpvPlayer
 from .helpers import cannot_play_audio
 
 
@@ -80,7 +82,7 @@ class TestPlayer(TestCase):
         self.assertEqual(self.player.volume, 30)
         cb.assert_called_once_with(30)
 
-    @mock.patch('fuocore.mpvplayer._mpv_set_option_string')
+    @mock.patch('feeluown.player.mpvplayer._mpv_set_option_string')
     def test_play_media_with_http_headers(self, mock_set_option_string):
         media = Media('http://xxx', http_headers={'referer': 'http://xxx'})
         self.player.play(media)

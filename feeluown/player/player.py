@@ -5,9 +5,9 @@ import logging
 import threading
 from enum import IntEnum
 
-from fuocore.player import MpvPlayer, Playlist as _Playlist
-from fuocore.playlist import PlaybackMode
+from feeluown.player.mpvplayer import MpvPlayer
 from feeluown.utils.dispatch import Signal
+from .playlist import Playlist as _Playlist, PlaybackMode
 
 logger = logging.getLogger(__name__)
 
