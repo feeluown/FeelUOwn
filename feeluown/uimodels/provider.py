@@ -1,6 +1,6 @@
 from feeluown.widgets.provider import ProvidersModel
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 
 
 class ProviderUiItem:

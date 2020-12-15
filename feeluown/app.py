@@ -6,7 +6,7 @@ from functools import partial
 from contextlib import contextmanager
 
 from fuocore import Library
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from fuocore.models import Resolver, reverse, resolve, \
     ResolverNotFound
 from fuocore.playlist import PlaybackMode

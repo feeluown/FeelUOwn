@@ -1,7 +1,7 @@
 from unittest import TestCase, mock
 
-from fuocore.dispatch import Signal
-from fuocore.dispatch import receiver
+from feeluown.utils.dispatch import Signal
+from feeluown.utils.dispatch import receiver
 
 
 class A(object):

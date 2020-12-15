@@ -1,7 +1,7 @@
 import logging
 import requests
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from requests.exceptions import ConnectionError, HTTPError, Timeout
 
 

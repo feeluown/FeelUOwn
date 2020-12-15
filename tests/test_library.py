@@ -50,6 +50,6 @@ async def test_library_a_list_songs_standby_with_specified_providers(song):
 
 
 def test_library_register_should_emit_signal(library, mocker):
-    mock_emit = mocker.patch('fuocore.dispatch.Signal.emit')
+    mock_emit = mocker.patch('feeluown.utils.dispatch.Signal.emit')
     library.register(dummy_provider)
     mock_emit.assert_called_once_with(dummy_provider)

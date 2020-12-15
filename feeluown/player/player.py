@@ -7,7 +7,7 @@ from enum import IntEnum
 
 from fuocore.player import MpvPlayer, Playlist as _Playlist
 from fuocore.playlist import PlaybackMode
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 
 logger = logging.getLogger(__name__)
 

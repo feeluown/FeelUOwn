@@ -22,7 +22,7 @@ else:
         _mpv_client_api_version,
     )
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from fuocore.media import Media
 from fuocore.player import AbstractPlayer, State
 

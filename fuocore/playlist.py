@@ -3,7 +3,7 @@ import logging
 import random
 from enum import IntEnum
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from fuocore.media import Media
 from fuocore.utils import DedupList
 

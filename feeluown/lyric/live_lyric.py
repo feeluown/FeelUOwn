@@ -1,7 +1,7 @@
 import logging
 
 from feeluown.utils import aio
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from fuocore.utils import find_previous
 
 from .lyric import parse

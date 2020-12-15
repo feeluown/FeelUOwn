@@ -2,7 +2,7 @@ import logging
 from functools import partial
 
 from feeluown.utils import aio
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from fuocore.models import SearchType
 from fuocore.provider import AbstractProvider
 from fuocore.utils import log_exectime

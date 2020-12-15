@@ -15,7 +15,7 @@ from PyQt5.QtWidgets import (
     QStyle, QSizePolicy, QStyleOptionButton, QStyledItemDelegate,
 )
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from fuocore.excs import ProviderIOError
 from fuocore.models import ModelExistence
 

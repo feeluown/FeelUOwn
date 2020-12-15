@@ -3,7 +3,7 @@ from unittest import mock
 
 import pytest
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from feeluown.fuoexec import SignalsSlotsManager
 
 

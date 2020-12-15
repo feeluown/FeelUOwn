@@ -4,7 +4,7 @@ from unittest import mock
 import pytest
 
 from fuocore.playlist import PlaybackMode
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from feeluown.player import Playlist, PlaylistMode, Player
 
 

@@ -6,7 +6,7 @@ import os
 import pkg_resources
 import sys
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 from .consts import USER_PLUGINS_DIR
 
 logger = logging.getLogger(__name__)

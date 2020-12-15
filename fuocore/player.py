@@ -2,7 +2,7 @@ import logging
 from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 
-from fuocore.dispatch import Signal
+from feeluown.utils.dispatch import Signal
 # some may import `Playlist` and `PlaybackMode` from player module
 from fuocore.playlist import PlaybackMode, Playlist
 
