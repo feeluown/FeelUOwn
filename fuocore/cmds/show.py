@@ -13,7 +13,7 @@ from functools import wraps
 from urllib.parse import urlparse
 
 from feeluown.utils.utils import to_readall_reader
-from fuocore.router import Router, NotFound
+from feeluown.utils.router import Router, NotFound
 from fuocore.models.uri import NS_TYPE_MAP, TYPE_NS_MAP
 from fuocore.models import ModelType
 
