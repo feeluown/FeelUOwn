@@ -7,7 +7,7 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from fuocore.cmds.helpers import show_song
-from fuocore.protocol import Request, Response
+from feeluown.rpc import Request, Response
 from feeluown.consts import CACHE_DIR
 from feeluown.server import handle_request
 

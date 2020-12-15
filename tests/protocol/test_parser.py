@@ -1,5 +1,5 @@
 from unittest import TestCase
-from fuocore.protocol import Parser, FuoSyntaxError
+from feeluown.rpc import Parser, FuoSyntaxError
 
 
 class TestParser(TestCase):

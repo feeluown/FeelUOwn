@@ -2,7 +2,7 @@ import asyncio
 import logging
 
 from fuocore.cmds import exec_cmd, Cmd
-from fuocore.protocol import FuoServerProtocol, Response
+from feeluown.rpc import FuoServerProtocol, Response
 from fuocore.serializers import serialize
 
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ def register_feeluown_serializers():
 
 def handle_request(req, app, ctx=None):
     """
-    :type req: fuocore.protocol.Request
+    :type req: feeluown.rpc.Request
     """
     if not _REGISTERED:
         register_feeluown_serializers()

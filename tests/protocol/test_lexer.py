@@ -1,6 +1,6 @@
 from unittest import TestCase
 
-from fuocore.protocol import Lexer, FuoSyntaxError
+from feeluown.rpc import Lexer, FuoSyntaxError
 
 
 lexer = Lexer()
