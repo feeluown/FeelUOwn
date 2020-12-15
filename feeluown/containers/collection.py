@@ -5,7 +5,7 @@ from fuocore import aio
 from fuocore.reader import RandomSequentialReader
 from fuocore.media import Media, MediaType
 from fuocore.models.uri import reverse
-from feeluown.helpers import async_run
+from feeluown.gui.helpers import async_run
 
 from feeluown.widgets.collection import CollectionTOCView, CollectionTOCModel, \
     CollectionBody

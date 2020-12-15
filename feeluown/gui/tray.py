@@ -5,7 +5,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu, QApplication
 
 from fuocore.player import State
-from feeluown.helpers import elided_text
+from feeluown.gui.helpers import elided_text
 
 
 TOGGLE_APP_TEXT = ('激活主窗口', '隐藏主窗口')

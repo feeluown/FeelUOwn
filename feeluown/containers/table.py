@@ -15,7 +15,7 @@ from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse
 
-from feeluown.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
+from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel

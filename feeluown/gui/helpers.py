@@ -1,5 +1,5 @@
 """
-feeluown.helpers
+feeluown.gui.helpers
 ~~~~~~~~~~~~~~~~
 
 和应用逻辑相关的一些工具函数

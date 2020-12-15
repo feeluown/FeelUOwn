@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QLabel, QWidget,\
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
     QMenu, QAction, QFontDialog, QShortcut
 
-from feeluown.helpers import resize_font
+from feeluown.gui.helpers import resize_font
 
 
 IS_MACOS = sys.platform == 'darwin'

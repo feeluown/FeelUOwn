@@ -20,7 +20,7 @@ from fuocore.excs import ProviderIOError
 from fuocore.models import ModelExistence
 
 from feeluown.gui.mimedata import ModelMimeData
-from feeluown.helpers import ItemViewNoScrollMixin
+from feeluown.gui.helpers import ItemViewNoScrollMixin
 
 
 logger = logging.getLogger(__name__)

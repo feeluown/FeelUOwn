@@ -30,7 +30,7 @@ from fuocore import aio
 from fuocore.reader import wrap
 from fuocore.excs import ProviderIOError
 from fuocore.models.uri import reverse
-from feeluown.helpers import ItemViewNoScrollMixin, resize_font
+from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font
 
 logger = logging.getLogger(__name__)
 

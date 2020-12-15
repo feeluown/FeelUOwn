@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import (QListView, QStyledItemDelegate, QStyle,
                              QSizePolicy, QFrame, QVBoxLayout)
 
 from fuocore.models import ModelType
-from feeluown.helpers import resize_font
+from feeluown.gui.helpers import resize_font
 from feeluown.widgets.meta import CollMetaWidget
 from feeluown.widgets.songs import SongListView
 

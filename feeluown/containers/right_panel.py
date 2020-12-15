@@ -9,7 +9,7 @@ from fuocore.models import ModelType
 from fuocore.reader import RandomSequentialReader
 
 from feeluown.gui.theme import Light
-from feeluown.helpers import BgTransparentMixin, ItemViewNoScrollMixin
+from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
 from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer

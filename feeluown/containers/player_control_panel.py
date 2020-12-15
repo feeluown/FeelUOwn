@@ -13,7 +13,7 @@ from fuocore.excs import ProviderIOError
 from fuocore.media import MediaType
 from fuocore.player import PlaybackMode, State
 from feeluown.gui.widgets.lyric import Window as LyricWindow
-from feeluown.helpers import async_run
+from feeluown.gui.helpers import async_run
 from feeluown.widgets import TextButton
 from feeluown.widgets.volume_button import VolumeButton
 from feeluown.widgets.progress_slider import ProgressSlider
