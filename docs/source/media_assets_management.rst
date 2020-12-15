@@ -291,18 +291,18 @@ model 可能会触发一个网络请求，从资源提供方的服务端来获�
 这两种设计各有优劣，在 UI 上，feeluown 目前也是使用流式分页。比如一个歌单有上千首，
 则用户需要一直往下拉。在接口层面，fuocore 模块提供了 SequentialReader 来帮助实现流式分页。
 
-.. autoclass:: fuocore.reader.SequentialReader
+.. autoclass:: feeluown.utils.reader.SequentialReader
 
 流式分页存在一个问题，必须按照顺序来获取数据。而有些场景，我们希望根据 index 来获取数据。
 举个例子，假设一个播放列表有 3000 首歌曲，在随机播放模式下，系统需要随机选择了 index
 为 2500 的歌曲，这时候，我们不能去把 index<2500 的歌曲全部拉取下来。
 feeluown 提供了 RandomReader 类来实现这个功能
 
-.. autoclass:: fuocore.reader.RandomReader
+.. autoclass:: feeluown.utils.reader.RandomReader
    :members:
    :special-members: __init__
 
-.. autoclass:: fuocore.reader.RandomSequentialReader
+.. autoclass:: feeluown.utils.reader.RandomSequentialReader
 
 
 模型实例化

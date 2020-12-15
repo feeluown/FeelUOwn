@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
 from feeluown.utils import aio
 from fuocore.models import ModelType
-from fuocore.reader import RandomSequentialReader
+from feeluown.utils.reader import RandomSequentialReader
 
 from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin

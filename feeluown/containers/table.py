@@ -10,7 +10,7 @@ from requests.exceptions import RequestException
 
 from fuocore import ModelType
 from feeluown.utils import aio
-from fuocore.reader import wrap
+from feeluown.utils.reader import wrap
 from fuocore.media import Media, MediaType
 from fuocore.excs import ProviderIOError
 from fuocore.models import GeneratorProxy, reverse

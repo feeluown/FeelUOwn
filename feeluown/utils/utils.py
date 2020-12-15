@@ -9,7 +9,7 @@ from copy import copy, deepcopy
 from functools import wraps
 from itertools import filterfalse
 
-from fuocore.reader import wrap as reader_wrap
+from feeluown.utils.reader import wrap as reader_wrap
 
 
 logger = logging.getLogger(__name__)

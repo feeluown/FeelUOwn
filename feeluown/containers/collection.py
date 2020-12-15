@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QFrame, QHBoxLayout, QSplitter
 from PyQt5.QtGui import QPixmap, QImage
 
 from feeluown.utils import aio
-from fuocore.reader import RandomSequentialReader
+from feeluown.utils.reader import RandomSequentialReader
 from fuocore.media import Media, MediaType
 from fuocore.models.uri import reverse
 from feeluown.gui.helpers import async_run

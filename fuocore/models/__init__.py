@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from fuocore.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
+from feeluown.utils.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
 from .base import (
     cached_field, ModelType, Model, ModelExistence, ModelStage,
     SearchType, AlbumType, display_property,
