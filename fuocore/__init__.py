@@ -6,7 +6,6 @@ from fuocore.player import (
 )  # noqa
 # FIXME: remove this when no one import MpvPlayer from here
 from fuocore.mpvplayer import MpvPlayer  # noqa
-from fuocore.live_lyric import LiveLyric  # noqa
 from .library import Library  # noqa
 
 
@@ -15,5 +14,4 @@ __all__ = [
     'PlayerState',
     'PlaybackMode',
     'Playlist',
-    'LiveLyric',
 ]

@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from fuocore import LiveLyric
+from feeluown.lyric import LiveLyric
 
 
 lyric = """[by:魏积分]
