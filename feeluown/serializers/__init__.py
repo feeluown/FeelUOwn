@@ -28,7 +28,7 @@ def get_serializer(format):
 
 
 def serialize(format, obj, **options):
-    """serialize python object defined in fuocore package
+    """serialize python object defined in feeluown package
 
     :raises SerializerError:
 

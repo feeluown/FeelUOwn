@@ -3,7 +3,7 @@
 
 FeelUOwn 中有一个核心对象 ``app``, 它是我们进行几乎一切操作的入口。
 在初始化 app 时，我们会实例化一些类，比如 Library/LiveLyric, 这些实例工作不依赖
-app 对象，我们把它们放在 fuocore 包中。另外，我们也会创建很多 Manager 实例，
+app 对象，我们把它们放在 feeluown 包中。另外，我们也会创建很多 Manager 实例，
 比如 PluginManager/HotkeyManager 等，它们往往都是依赖 app 的，
 我们目前将它们各自作为一个模块放在 feeluown 包中。
 
@@ -16,7 +16,7 @@ app 对象，我们把它们放在 fuocore 包中。另外，我们也会创建�
 🔴       音乐资源模型          :py:mod:`feeluown.models`
 🔴       音乐库               :py:class:`feeluown.library.Library`
 🔴       播放器               :py:mod:`feeluown.player`
-🔴       歌词                 :py:class:`fuocore.live_lyric.LiveLyric`
+🔴       歌词                 :py:class:`feeluown.lyric.LiveLyric`
 🔴       fuo 协议             :py:class:`feeluown.protocol.FuoProcotol`
 🔴       版本                 :py:class:`feeluown.version.VersionManager`
 🔴       小提示管理            :py:class:`feeluown.tips.TipsManager`

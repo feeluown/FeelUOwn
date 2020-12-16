@@ -1,7 +1,7 @@
 """
 model/uri transform
 
-TODO: move feeluown.rpc.model_parser to fuocore.models.parser
+TODO: move feeluown.rpc.model_parser to feeluown.models.parser
 
 .. warn::
 

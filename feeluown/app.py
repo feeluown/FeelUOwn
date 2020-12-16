@@ -5,7 +5,7 @@ import sys
 from functools import partial
 from contextlib import contextmanager
 
-from fuocore import Library
+from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
 from feeluown.models import Resolver, reverse, resolve, \
     ResolverNotFound

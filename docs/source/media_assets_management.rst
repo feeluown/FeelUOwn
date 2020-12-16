@@ -289,7 +289,7 @@ model 可能会触发一个网络请求，从资源提供方的服务端来获�
 2. 电梯式分页（常见于搜索结果，比如百度搜索的结果页）
 
 这两种设计各有优劣，在 UI 上，feeluown 目前也是使用流式分页。比如一个歌单有上千首，
-则用户需要一直往下拉。在接口层面，fuocore 模块提供了 SequentialReader 来帮助实现流式分页。
+则用户需要一直往下拉。在接口层面，feeluown 模块提供了 SequentialReader 来帮助实现流式分页。
 
 .. autoclass:: feeluown.utils.reader.SequentialReader
 

@@ -47,10 +47,6 @@
 .. automodule:: feeluown.player
    :members:
 
-.. automodule:: fuocore.live_lyric
-   :members:
-
-
 通用管理模块
 ----------------
 

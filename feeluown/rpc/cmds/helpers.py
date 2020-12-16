@@ -1,5 +1,5 @@
 """
-fuocore.cmds.helper
+feeluown.cmds.helper
 ~~~~~~~~~~~~~~~~~~~
 
 良好的用文字展示一个对象

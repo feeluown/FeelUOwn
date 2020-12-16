@@ -8,7 +8,7 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel
 from requests.exceptions import RequestException
 
-from fuocore import ModelType
+from feeluown import ModelType
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType

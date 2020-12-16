@@ -1,5 +1,5 @@
 """
-fuocore.cmds.show
+feeluown.cmds.show
 ~~~~~~~~~~~~~~~~~
 
 处理 ``show`` 命令::

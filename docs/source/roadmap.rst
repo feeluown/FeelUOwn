@@ -27,7 +27,7 @@ Roadmap
 代码结构优化
 """"""""""""""""""""""""""""""
 
-1. 去除 fuocore 概念，按照 daemon 和 gui 两种模式来组织代码
+1. 去除 feeluown 概念，按照 daemon 和 gui 两种模式来组织代码
 2. 调研 type hint 的必要性与可行性？
 
 fuo 协议优化
