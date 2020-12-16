@@ -285,7 +285,7 @@ def climain(args):
 
     # FIXME: move this code to somewhere else
     if args.cmd == 'genicon':
-        from feeluown.install import generate_icon
+        from .install import generate_icon
         generate_icon()
         return
 

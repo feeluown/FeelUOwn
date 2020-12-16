@@ -19,6 +19,7 @@ setup(
     license="GPL-3.0",
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
+    # TODO: get all subpackages 
     packages=[
         'feeluown',
 
@@ -26,6 +27,14 @@ setup(
         'feeluown.entry_points',
         'feeluown.linux',
         'feeluown.pubsub',
+        'feeluown.cli',
+        'feeluown.utils',
+        'feeluown.lyric',
+        'feeluown.library',
+        'feeluown.models',
+        'feeluown.serializers',
+        'feeluown.rpc',
+        'feeluown.rpc.cmds',
 
         # feeluown gui
         'feeluown.gui',
@@ -38,10 +47,7 @@ setup(
 
         # fuocore
         'fuocore',
-        'feeluown.serializers',
-        'feeluown.rpc.cmds',
-        'feeluown.models',
-        'feeluown.rpc',
+        'fuocore.models',
     ],
     py_modules=['mpv', 'mpv_old'],
     package_data={
@@ -102,7 +108,7 @@ setup(
         'console_scripts': [
             "feeluown=feeluown.__main__:main",
             "fuo=feeluown.__main__:main",
-            "feeluown-genicon=feeluown.install:generate_icon",
+            "feeluown-genicon=feeluown.cli.install:generate_icon",
             # "feeluown-update=feeluown.install:update"
         ]
     },
