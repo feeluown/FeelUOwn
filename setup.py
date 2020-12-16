@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from setuptools import setup
+from setuptools import setup, find_packages
 from os import path
 
 import feeluown
@@ -20,35 +20,7 @@ setup(
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
     # TODO: get all subpackages 
-    packages=[
-        'feeluown',
-
-        # feeluown common
-        'feeluown.entry_points',
-        'feeluown.linux',
-        'feeluown.pubsub',
-        'feeluown.cli',
-        'feeluown.utils',
-        'feeluown.lyric',
-        'feeluown.library',
-        'feeluown.models',
-        'feeluown.serializers',
-        'feeluown.rpc',
-        'feeluown.rpc.cmds',
-
-        # feeluown gui
-        'feeluown.gui',
-        'feeluown.gui.pages',
-        'feeluown.gui.widgets',
-        'feeluown.widgets',
-        'feeluown.widgets.statusline_items',
-        'feeluown.uimodels',
-        'feeluown.containers',
-
-        # fuocore
-        'fuocore',
-        'fuocore.models',
-    ],
+    packages=find_packages(exclude=('tests*',)),
     py_modules=['mpv', 'mpv_old'],
     package_data={
         '': ['*.qss',
