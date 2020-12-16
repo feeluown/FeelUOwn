@@ -19,10 +19,10 @@ from feeluown.pubsub import (
 )
 
 from feeluown.utils.request import Request
+from feeluown.rpc.server import FuoServer
 from .consts import APP_ICON, STATE_FILE
 from .player import FM, Player
 from .plugin import PluginsManager
-from .server import FuoServer
 from .version import VersionManager
 from .task import TaskManager
 

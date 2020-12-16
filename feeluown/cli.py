@@ -6,10 +6,10 @@ import sys
 from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
+from feeluown.consts import CACHE_DIR
 from feeluown.rpc.cmds.helpers import show_song
 from feeluown.rpc import Request, Response
-from feeluown.consts import CACHE_DIR
-from feeluown.server import handle_request
+from feeluown.rpc.server import handle_request
 
 
 OUTPUT_CACHE_FILEPATH = os.path.join(CACHE_DIR, 'cli.out')

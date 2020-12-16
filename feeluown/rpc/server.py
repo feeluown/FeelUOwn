@@ -1,9 +1,10 @@
 import asyncio
 import logging
 
-from feeluown.rpc.cmds import exec_cmd, Cmd
-from feeluown.rpc import FuoServerProtocol, Response
 from feeluown.serializers import serialize
+from .cmds import exec_cmd, Cmd
+from .server_protocol import FuoServerProtocol, Response
+
 
 logger = logging.getLogger(__name__)
 _REGISTERED = False
