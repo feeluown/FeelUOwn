@@ -2,7 +2,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QCheckBox, QHBoxLayout
 
 from feeluown.utils.reader import wrap
-from fuocore.models import SearchType
+from feeluown.models import SearchType
 from feeluown.widgets.tabbar import Tab
 from feeluown.widgets.magicbox import KeySourceIn, KeyType
 from feeluown.containers.table import Renderer

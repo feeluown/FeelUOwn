@@ -23,7 +23,7 @@ else:
     )
 
 from feeluown.utils.dispatch import Signal
-from fuocore.media import Media
+from feeluown.media import Media
 from .base_player import AbstractPlayer, State
 
 

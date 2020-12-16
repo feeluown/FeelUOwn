@@ -13,8 +13,8 @@ app 对象，我们把它们放在 fuocore 包中。另外，我们也会创建�
 ======   =================   =======================
 稳定         名字                模块
 ======   =================   =======================
-🔴       音乐资源模型          :py:mod:`fuocore.models`
-🔴       音乐库               :py:class:`fuocore.library.Library`
+🔴       音乐资源模型          :py:mod:`feeluown.models`
+🔴       音乐库               :py:class:`feeluown.library.Library`
 🔴       播放器               :py:mod:`feeluown.player`
 🔴       歌词                 :py:class:`fuocore.live_lyric.LiveLyric`
 🔴       fuo 协议             :py:class:`feeluown.protocol.FuoProcotol`

@@ -77,8 +77,8 @@ MODE                        ``str``    ``0x0000``     CLI or GUI 模式
 THEME                       ``str``    ``auto``       auto/light/dark
 COLLECTIONS_DIR             ``str``    ``''``         本地收藏所在目录
 LOG_TO_FILE                 ``bool``   ``True``       将日志输出到文件中
-AUDIO_SELECT_POLICY         ``str``    ``hq<>``       :class:`fuocore.media.Quality.SortPolicy`
-VIDEO_SELECT_POLICY         ``str``    ``hd<>``       :class:`fuocore.media.Quality.SortPolicy`
+AUDIO_SELECT_POLICY         ``str``    ``hq<>``       :class:`feeluown.media.Quality.SortPolicy`
+VIDEO_SELECT_POLICY         ``str``    ``hd<>``       :class:`feeluown.media.Quality.SortPolicy`
 ====================       =========  ============    =========
 
 **MPV 播放器配置项** (使用 MPV 做为播放引擎时生效)

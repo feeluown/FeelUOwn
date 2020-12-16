@@ -12,7 +12,7 @@ TODO: 让代码长得更好看
 
 from itertools import chain
 
-from fuocore.models.uri import reverse
+from feeluown.models.uri import reverse
 
 
 def _fit_text(text, length, filling=True):

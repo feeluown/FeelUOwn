@@ -1,6 +1,6 @@
 from PyQt5.QtCore import QMimeData
 
-from fuocore.models import ModelType
+from feeluown.models import ModelType
 
 from feeluown.gui.helpers import get_model_type
 

@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.excs import ProviderIOError
-from fuocore.models.uri import reverse
+from feeluown.models.uri import reverse
 from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font
 
 logger = logging.getLogger(__name__)

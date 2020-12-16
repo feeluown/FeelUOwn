@@ -11,9 +11,9 @@ from requests.exceptions import RequestException
 from fuocore import ModelType
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
-from fuocore.media import Media, MediaType
+from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from fuocore.models import GeneratorProxy, reverse
+from feeluown.models import GeneratorProxy, reverse
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel

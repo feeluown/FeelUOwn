@@ -7,9 +7,9 @@ from pathlib import Path
 
 import tomlkit
 
-from fuocore.models.uri import resolve, reverse, ResolverNotFound, \
+from feeluown.models.uri import resolve, reverse, ResolverNotFound, \
     ResolveFailed, ModelExistence
-from fuocore.models import ModelType
+from feeluown.models import ModelType
 from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
@@ -107,7 +107,7 @@ class Collection:
     def add(self, model):
         """add model to collection
 
-        :param model: :class:`fuocore.models.BaseModel`
+        :param model: :class:`feeluown.models.BaseModel`
         :return: True means succeed, False means failed
         """
         if (self.type == CollectionType.sys_song and

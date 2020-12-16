@@ -40,7 +40,7 @@ setup(
         'fuocore',
         'feeluown.serializers',
         'feeluown.rpc.cmds',
-        'fuocore.models',
+        'feeluown.models',
         'feeluown.rpc',
     ],
     py_modules=['mpv', 'mpv_old'],

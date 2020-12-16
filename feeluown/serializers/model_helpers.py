@@ -1,5 +1,5 @@
-from fuocore.provider import AbstractProvider
-from fuocore.models import SongModel, ArtistModel, \
+from feeluown.library import AbstractProvider
+from feeluown.models import SongModel, ArtistModel, \
     AlbumModel, PlaylistModel, UserModel, SearchModel
 
 

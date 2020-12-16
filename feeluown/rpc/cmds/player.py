@@ -1,7 +1,7 @@
 from collections import defaultdict
 from difflib import SequenceMatcher
 
-from fuocore.models.uri import resolve
+from feeluown.models.uri import resolve
 from .base import AbstractHandler
 from .helpers import show_song
 

@@ -5,7 +5,7 @@ from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
 from feeluown.utils import aio
-from fuocore.models import ModelType
+from feeluown.models import ModelType
 from feeluown.utils.reader import RandomSequentialReader
 
 from feeluown.gui.theme import Light

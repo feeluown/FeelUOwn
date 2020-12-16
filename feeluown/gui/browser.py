@@ -8,7 +8,7 @@ from PyQt5.QtGui import QKeySequence
 
 from feeluown.utils import aio
 from feeluown.utils.router import Router, NotFound
-from fuocore.models.uri import resolve, reverse, ResolveFailed
+from feeluown.models.uri import resolve, reverse, ResolveFailed
 
 logger = logging.getLogger(__name__)
 

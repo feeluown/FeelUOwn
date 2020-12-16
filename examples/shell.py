@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from fuocore.library import Library
+from feeluown.library import Library
 
 from fuo_xiami import provider as xp
 from fuo_netease import provider as np

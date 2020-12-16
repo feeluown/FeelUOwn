@@ -9,7 +9,7 @@ You should install two package from pypi:
 """
 
 import logging
-from fuocore.library import Library
+from feeluown.library import Library
 
 from fuo_xiami import provider as xp
 from fuo_netease import provider as np

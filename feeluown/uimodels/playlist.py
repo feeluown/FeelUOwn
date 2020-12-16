@@ -5,7 +5,7 @@
 
 from feeluown.widgets.playlists import PlaylistsModel
 
-from fuocore.models import PlaylistModel
+from feeluown.models import PlaylistModel
 
 
 class PlaylistUiItem(PlaylistModel):

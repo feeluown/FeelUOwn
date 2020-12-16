@@ -262,7 +262,7 @@ Changelog
 3.0 (2019-06-30)
 """""""""""""""""""""
 - 修复歌曲播放不能自动 fallback
-- 重新设计 fuocore.models.Media
+- 重新设计 feeluown.models.Media
 - 支持多品质音乐选择
 
 3.0a7 (2019-04-24)

@@ -58,7 +58,7 @@ feeluown 通过“媒体资源管理”子系统来解决这些困难。
     library.search('linkin park')
 
 
-.. autoclass:: fuocore.library.Library
+.. autoclass:: feeluown.library.Library
    :members:
 
 
@@ -103,7 +103,7 @@ provider 是我们访问具体一个音乐平台资源音乐的入口。
 
 下面是音乐资源提供方的抽象基类，我们推荐大家基于此来实现一个 Provider 类。
 
-.. autoclass:: fuocore.provider.AbstractProvider
+.. autoclass:: feeluown.library.AbstractProvider
    :members:
 
 
@@ -132,7 +132,7 @@ provider 是我们访问具体一个音乐平台资源音乐的入口。
 
 我们预定义的音乐资源相关的模型有 6 种：歌曲，歌手，专辑，歌单，歌词，用户。
 
-.. autoclass:: fuocore.models.ModelType
+.. autoclass:: feeluown.models.ModelType
    :members:
    :undoc-members:
 
@@ -144,7 +144,7 @@ provider 是我们访问具体一个音乐平台资源音乐的入口。
 而每个模型都会有自己的的元信息，比如：这个模型是什么类型？有哪些字段？
 有哪些方法？这些元信息都会记录在模型的 inner class ``Meta`` 中。
 
-.. autoclass:: fuocore.models.BaseModel
+.. autoclass:: feeluown.models.BaseModel
 
    .. py:class:: Meta
 
@@ -249,7 +249,7 @@ model 可能会触发一个网络请求，从资源提供方的服务端来获�
 
    模型实例生命阶段更多细节可以参考 :ref:`model-stage` 。
 
-.. autoclass:: fuocore.models.BaseModel
+.. autoclass:: feeluown.models.BaseModel
 
    .. automethod:: __getattribute__
 
@@ -321,7 +321,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 
 第二种：我们也可以通过展示字段和 ``identifier`` 来创建一个资源实例
 
-.. autoclass:: fuocore.models.BaseModel()
+.. autoclass:: feeluown.models.BaseModel()
 
    .. automethod:: create_by_display
 
@@ -352,7 +352,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 如果支持，则实现 get 方法，get 方法返回的资源实例的字段应该 **尽可能**
 全部初始化，访问它的任何字段都应该 **尽可能** 不触发网络请求。
 
-.. autoclass:: fuocore.models.BaseModel
+.. autoclass:: feeluown.models.BaseModel
 
    .. py:class:: Meta
 
@@ -396,7 +396,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 
 预定义的模型
 ''''''''''''''''''''
-.. autoclass:: fuocore.models.BaseModel
+.. autoclass:: feeluown.models.BaseModel
 
    .. py:class:: Meta
 
@@ -418,7 +418,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
          identifier   :class:`str`            model instance identifier
          ==========   =====================   ======================
 
-.. autoclass:: fuocore.models.SongModel
+.. autoclass:: feeluown.models.SongModel
    :members: artists_name, album_name, duration_ms, filename
    :undoc-members:
 
@@ -446,7 +446,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
       .. py:attribute:: fields_display
          :annotation: = [title, artists_name, album_name, duration_ms]
 
-.. autoclass:: fuocore.models.ArtistModel
+.. autoclass:: feeluown.models.ArtistModel
 
    .. py:class:: Meta
 
@@ -483,11 +483,11 @@ feeluown 提供了 RandomReader 类来实现这个功能
    .. automethod:: create_songs_g
 
 
-.. autoclass:: fuocore.models.AlbumType
+.. autoclass:: feeluown.models.AlbumType
    :members:
    :undoc-members:
 
-.. autoclass:: fuocore.models.AlbumModel
+.. autoclass:: feeluown.models.AlbumModel
    :members: artists_name
    :undoc-members:
 
@@ -510,7 +510,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
          type      :class:`AlbumType`
          ========  =====================   ======================
 
-.. autoclass:: fuocore.models.LyricModel
+.. autoclass:: feeluown.models.LyricModel
 
    .. py:class:: Meta
 
@@ -529,7 +529,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
          =============   =====================   ======================
 
 
-.. autoclass:: fuocore.models.MvModel
+.. autoclass:: feeluown.models.MvModel
 
    .. py:class:: Meta
 
@@ -547,7 +547,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
          =============   =====================   ======================
 
 
-.. autoclass:: fuocore.models.PlaylistModel
+.. autoclass:: feeluown.models.PlaylistModel
 
    .. py:class:: Meta
 
@@ -573,7 +573,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
    .. automethod:: remove
 
 
-.. autoclass:: fuocore.models.SearchModel
+.. autoclass:: feeluown.models.SearchModel
 
    .. py:class:: Meta
 
@@ -588,7 +588,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
          =============   =====================   ======================
 
 
-.. autoclass:: fuocore.models.UserModel
+.. autoclass:: feeluown.models.UserModel
 
    .. py:class:: Meta
 
@@ -655,7 +655,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 
 在 feeluown 中，我们定义了三种媒体资源类型：音频，视频，图片。
 
-.. autoclass:: fuocore.media.MediaType
+.. autoclass:: feeluown.media.MediaType
    :members:
    :undoc-members:
 
@@ -666,7 +666,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 大于 320kbps 的为 ``shq`` (super high quality)，一般是无损音乐，200kbps
 左右的音频为 ``sq`` (standard quality)， 比特率小于 200kbps 的音频质量为 ``lq`` (low quality)。
 
-.. autoclass:: fuocore.media.Quality.Audio
+.. autoclass:: feeluown.media.Quality.Audio
    :members:
    :undoc-members:
 
@@ -681,7 +681,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 <480p             ``ld`` (low definition)
 ============     ======================
 
-.. autoclass:: fuocore.media.Quality.Video
+.. autoclass:: feeluown.media.Quality.Video
    :members:
    :undoc-members:
 
@@ -689,7 +689,7 @@ feeluown 提供了 RandomReader 类来实现这个功能
 SongModel 继承 ``MultiQualityMixin`` 类，并实现 ``list_quality``
 和 ``get_media`` 两个方法：
 
-.. autoclass:: fuocore.media.MultiQualityMixin
+.. autoclass:: feeluown.media.MultiQualityMixin
    :members:
 
 ``select_media`` 方法的参数为 policy，policy 是一个符合一定规则的字符串，
@@ -706,7 +706,7 @@ SongModel 继承 ``MultiQualityMixin`` 类，并实现 ``list_quality``
 
 SortPolicy 类定义了 6 中规则，见如下的 rules 变量文档。
 
-.. autoclass:: fuocore.media.Quality.SortPolicy
+.. autoclass:: feeluown.media.Quality.SortPolicy
 
    .. py:attribute:: rules
 
@@ -734,7 +734,7 @@ media 对象中包含了资源文件的元信息，对于音频文件，有 bitr
 metadata 是 ``AudioMeta`` 的实例。对于视频文件，metadata 则是 ``VideoMeta``
 （暂时未实现） 的实例。
 
-.. autoclass:: fuocore.media.AudioMeta
+.. autoclass:: feeluown.media.AudioMeta
 
 
 .. _media_assets_management_usage:

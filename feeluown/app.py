@@ -7,7 +7,7 @@ from contextlib import contextmanager
 
 from fuocore import Library
 from feeluown.utils.dispatch import Signal
-from fuocore.models import Resolver, reverse, resolve, \
+from feeluown.models import Resolver, reverse, resolve, \
     ResolverNotFound
 from feeluown.player import PlaybackMode
 

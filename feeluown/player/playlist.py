@@ -4,7 +4,7 @@ import random
 from enum import IntEnum
 
 from feeluown.utils.dispatch import Signal
-from fuocore.media import Media
+from feeluown.media import Media
 from feeluown.utils.utils import DedupList
 
 logger = logging.getLogger(__name__)
@@ -27,7 +27,7 @@ class Playlist:
     def __init__(self, songs=None, playback_mode=PlaybackMode.loop,
                  audio_select_policy='hq<>'):
         """
-        :param songs: list of :class:`fuocore.models.SongModel`
+        :param songs: list of :class:`feeluown.models.SongModel`
         :param playback_mode: :class:`feeluown.player.PlaybackMode`
         """
         #: store value for ``current_song`` property

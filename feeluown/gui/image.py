@@ -5,7 +5,7 @@ import os
 import time
 from hashlib import md5
 
-from fuocore.models import resolve
+from feeluown.models import resolve
 from feeluown.consts import CACHE_DIR
 
 

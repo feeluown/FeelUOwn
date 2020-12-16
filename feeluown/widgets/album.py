@@ -1,6 +1,6 @@
 from PyQt5.QtCore import Qt, pyqtSignal
 
-from fuocore.models import AlbumType
+from feeluown.models import AlbumType
 from .imglist import (
     ImgListModel, ImgListDelegate, ImgListView,
     ImgFilterProxyModel

@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils.dispatch import Signal
 from feeluown.excs import ProviderIOError
-from fuocore.models import ModelExistence
+from feeluown.models import ModelExistence
 
 from feeluown.gui.mimedata import ModelMimeData
 from feeluown.gui.helpers import ItemViewNoScrollMixin
