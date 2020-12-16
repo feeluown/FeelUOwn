@@ -20,7 +20,6 @@ import asyncio
 import json
 import re
 
-from feeluown.library import dummy_provider
 from .base import ModelType, ModelExistence
 
 
@@ -210,6 +209,8 @@ def parse_line(line):
     >>> model.source, model.title_display
     ('xxx', '没有人知道')
     """
+    from feeluown.library import dummy_provider
+
     line = line.strip()
     parts = line.split('#', maxsplit=1)
     if len(parts) == 2:

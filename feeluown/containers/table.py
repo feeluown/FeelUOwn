@@ -8,12 +8,11 @@ from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel
 from requests.exceptions import RequestException
 
-from feeluown import ModelType
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.models import GeneratorProxy, reverse
+from feeluown.models import GeneratorProxy, reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
