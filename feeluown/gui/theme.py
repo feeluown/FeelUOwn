@@ -134,8 +134,8 @@ class ThemeManager(QObject):
         theme_kind = self.guess_system_theme()
         if name == 'tray':
             if theme_kind == DARK:
-                return 'icons/tray-dark.png'
-            return 'icons/tray-light.png'
+                return 'icons:tray-dark.png'
+            return 'icons:tray-light.png'
 
 
 def dump_colors():

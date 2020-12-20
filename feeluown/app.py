@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import json
+import os
 import sys
 from functools import partial
 from contextlib import contextmanager
@@ -20,7 +21,7 @@ from feeluown.pubsub import (
 
 from feeluown.utils.request import Request
 from feeluown.rpc.server import FuoServer
-from .consts import APP_ICON, STATE_FILE
+from .consts import STATE_FILE
 from .player import FM, Player
 from .plugin import PluginsManager
 from .version import VersionManager
@@ -213,7 +214,7 @@ def create_app(config):
 
     if mode & App.GuiMode:
 
-        from PyQt5.QtCore import Qt
+        from PyQt5.QtCore import Qt, QDir
         from PyQt5.QtGui import QIcon, QPixmap
         from PyQt5.QtWidgets import QApplication, QWidget
 
@@ -227,7 +228,11 @@ def create_app(config):
 
         from feeluown.utils.compat import QEventLoop
 
+        pkg_root_dir = os.path.dirname(__file__)
+        icons_dir = os.path.join(pkg_root_dir, 'icons')
+
         q_app = QApplication(sys.argv)
+        QDir.addSearchPath('icons', icons_dir)
 
         q_app.setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         q_app.setApplicationName('FeelUOwn')
@@ -241,7 +246,7 @@ def create_app(config):
             def __init__(self):
                 super().__init__()
                 self.setObjectName('app')
-                QApplication.setWindowIcon(QIcon(QPixmap(APP_ICON)))
+                QApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
 
             def closeEvent(self, _):
                 if not self.config.ENABLE_TRAY:

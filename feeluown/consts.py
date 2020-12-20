@@ -2,8 +2,6 @@
 
 import os
 
-APP_ICON = './feeluown/feeluown.png'
-
 HOME_DIR = os.path.expanduser('~') + '/.FeelUOwn'
 
 DATA_DIR = HOME_DIR + '/data'

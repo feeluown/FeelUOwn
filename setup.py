@@ -19,17 +19,13 @@ setup(
     license="GPL-3.0",
     author='Cosven',
     author_email='yinshaowen241@gmail.com',
-    # TODO: get all subpackages 
     packages=find_packages(exclude=('tests*',)),
     py_modules=['mpv', 'mpv_old'],
     package_data={
-        '': ['*.qss',
-             '*.xml',
-             '*.colors',
-             '*.png',
-             '../icons/*.png',
-             '../icons/*.ico',
-             '../icons/*.icns',
+        '': ['linux/*.xml',
+             'icons/*.png',
+             'icons/*.ico',
+             'icons/*.icns',
              'themes/*.qss',
              'themes/*.colors',
              ]

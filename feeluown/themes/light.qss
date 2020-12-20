@@ -14,32 +14,32 @@ TextButton:pressed {
 }
 
 #pp_btn, #video_pp_btn {
-    border-image: url(icons/play.png);
+    border-image: url(icons:play.png);
 }
 #pp_btn:checked, #video_pp_btn:checked {
-    border-image: url(icons/pause.png);
+    border-image: url(icons:pause.png);
 }
 #previous_btn {
-    border-image: url(icons/last.png);
+    border-image: url(icons:last.png);
 }
 #next_btn {
-    border-image: url(icons/next.png);
+    border-image: url(icons:next.png);
 }
 #playlist_btn {
-    border-image: url(icons/cur_playlist.png);
+    border-image: url(icons:cur_playlist.png);
 }
 #volume_btn {
-    border-image: url(icons/volume.png);
+    border-image: url(icons:volume.png);
 }
 #like_btn {
-    border-image: url(icons/like.png);
+    border-image: url(icons:like.png);
 }
 #like_btn:checked {
-    border-image: url(icons/like_checked.png);
+    border-image: url(icons:like_checked.png);
 }
 #download_btn {
-    border-image: url(icons/download.png);
+    border-image: url(icons:download.png);
 }
 #download_btn:checked {
-    border-image: url(icons/already_download.png);
+    border-image: url(icons:already_download.png);
 }

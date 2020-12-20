@@ -6,6 +6,7 @@ import sys
 import pathlib
 
 HERE = pathlib.Path(__file__).resolve()
+ICONS_DIR = HERE.parent.parent / 'icons'
 
 mac_shell_str = """#!/bin/bash
 /usr/local/bin/feeluown --log-to-file
@@ -61,7 +62,7 @@ def gen_for_mac():
         p.mkdir() if not p.exists() else None
     info_plist = content_dir / 'info.plist'
     run_file = os_dir / 'feeluown'
-    from_icon = HERE.parent.parent.parent / 'icons' / 'feeluown.icns'
+    from_icon = ICONS_DIR / 'feeluown.icns'
     to_icon = resource_dir / 'feeluown.icns'
 
     write_file(run_file, mac_shell_str)
@@ -71,7 +72,7 @@ def gen_for_mac():
 
 def gen_for_win_linux():
     DESKTOP_FILE = 'feeluown.desktop'
-    from_icon = HERE.parent.parent / 'feeluown.png'
+    from_icon = ICONS_DIR / 'feeluown.png'
     to_icon = pathlib.Path.home() / '.FeelUOwn' / 'feeluown.png'
     shutil.copy(from_icon, to_icon)
 
@@ -109,7 +110,7 @@ def gen_for_win32():
     #   will tell user it has no priviledge to run this program
     pyexe = os.path.join(os.path.dirname(sys.executable), 'pythonw')
     command = '{} -m feeluown'.format(pyexe)
-    ico = HERE.parent.parent.parent / 'icons' / 'feeluown.ico'
+    ico = HERE.parent.parent / 'icons' / 'feeluown.ico'
     name = 'FeelUOwn'
     make_shortcut(command, name=name, icon=ico, terminal=False)
 
