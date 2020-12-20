@@ -29,7 +29,7 @@ class MpvCacheManager(CacheManager):
                 while True:
                     yield f.read(1024 * 1024)
 
-        return f'python://{stream}'
+        return f'python://{stream}', read_from_cache
 
 
 if __name__ == '__main__':

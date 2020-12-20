@@ -95,6 +95,7 @@ class MpvPlayer(AbstractPlayer):
             from ..cache import MpvCacheManager
             self._cache = MpvCacheManager(self.MPV_CACHE_DIR, self._mpv)
             self._use_cache = True
+            self._current_reader = None
         except Exception as e:
             logger.debug('cannot initialize mpv cache: ' + str(e))
 
@@ -117,7 +118,10 @@ class MpvPlayer(AbstractPlayer):
         self.media_about_to_changed.emit(self._current_media, media)
         self._mpv.playlist_clear()
         if self._use_cache and url.startswith('http'):
-            url = self._cache.get(url)
+            if self._current_reader:
+                self._current_reader.unregister()
+            url, reader = self._cache.get(url)
+            self._current_reader = reader
         self._mpv.play(url)
         self._current_media = media
         self.media_changed.emit(media)
@@ -151,6 +155,8 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.pause = True
         self.state = State.stopped
         self._current_media = None
+        if self._use_cache and self._current_reader:
+            self._current_reader.unregister()
         self._mpv.playlist_clear()
         logger.info('Player stopped.')
 
