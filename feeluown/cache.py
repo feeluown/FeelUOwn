@@ -23,7 +23,7 @@ class MpvCacheManager(CacheManager):
     def get(self, remote_uri: str):
         stream = sha256(remote_uri.encode()).hexdigest()
 
-        @self._mpv.python_stream(stream)
+        @self._mpv.python_stream(stream, size=self._cache.size(remote_uri))
         def read_from_cache():
             with super(MpvCacheManager, self).open(remote_uri) as f:
                 while True:

@@ -193,8 +193,7 @@ class MpvPlayer(AbstractPlayer):
     def _on_duration_changed(self, duration):
         """listening to mpv duration change event"""
         logger.debug('Player receive duration changed signal')
-        if not hasattr(self, '_use_cache') or not self._use_cache:
-            self.duration = duration
+        self.duration = duration
 
     def _on_video_format_changed(self, vformat):
         self.video_format = vformat
