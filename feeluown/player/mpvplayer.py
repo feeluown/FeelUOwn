@@ -2,6 +2,7 @@ import locale
 import logging
 
 from feeluown.utils.utils import use_mpv_old
+from ..consts import CACHE_DIR
 
 if use_mpv_old():
     from mpv_old import (
@@ -31,6 +32,7 @@ logger = logging.getLogger(__name__)
 
 
 class MpvPlayer(AbstractPlayer):
+    MPV_CACHE_DIR = CACHE_DIR + '/songs'
     """
 
     player will always play playlist current song. player will listening to
@@ -67,6 +69,7 @@ class MpvPlayer(AbstractPlayer):
         # _mpv_set_option_string, while newer version can use _mpv_set_property_string
         _mpv_set_option_string(self._mpv.handle, b'user-agent',
                                b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
+        _mpv_set_option_string(self._mpv.handle, b'audio-client-name', b'feeluown')
 
         #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()
@@ -85,6 +88,16 @@ class MpvPlayer(AbstractPlayer):
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv._event_callbacks.append(self._on_event)
+
+        self._cache = None
+        self._use_cache = False
+        try:
+            from ..cache import MpvCacheManager
+            self._cache = MpvCacheManager(self.MPV_CACHE_DIR, self._mpv)
+            self._use_cache = True
+        except Exception as e:
+            logger.debug('cannot initialize mpv cache: ' + str(e))
+
         logger.debug('Player initialize finished.')
 
     def shutdown(self):
@@ -103,6 +116,8 @@ class MpvPlayer(AbstractPlayer):
         # otherwise, mpv will seek to the last position and play.
         self.media_about_to_changed.emit(self._current_media, media)
         self._mpv.playlist_clear()
+        if self._use_cache and url.startswith('http'):
+            url = self._cache.get(url)
         self._mpv.play(url)
         self._current_media = media
         self.media_changed.emit(media)
@@ -172,7 +187,8 @@ class MpvPlayer(AbstractPlayer):
     def _on_duration_changed(self, duration):
         """listening to mpv duration change event"""
         logger.debug('Player receive duration changed signal')
-        self.duration = duration
+        if not hasattr(self, '_use_cache') or not self._use_cache:
+            self.duration = duration
 
     def _on_video_format_changed(self, vformat):
         self.video_format = vformat
