@@ -15,6 +15,7 @@ from feeluown.excs import ProviderIOError
 from feeluown.models import GeneratorProxy, reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
+from feeluown.widgets import TextButton
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel
@@ -366,8 +367,16 @@ class PlayerPlaylistRenderer(Renderer):
         player = self._app.player
         playlist = player.playlist
 
+        async def clear_playlist():
+            playlist.clear()
+            await self.render()  # re-render
+
         songs = playlist.list()
         self.show_songs(songs=songs.copy())
+        btn = TextButton('清空', self.toolbar)
+        btn.clicked.connect(lambda *args: aio.create_task(clear_playlist()))
+        self.toolbar.add_tmp_button(btn)
+
         self.songs_table.remove_song_func = playlist.remove
 
         # scroll to current song
