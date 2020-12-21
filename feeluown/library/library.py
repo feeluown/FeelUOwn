@@ -6,6 +6,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.models import SearchType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
+from .provider_v2 import ProviderV2
 
 logger = logging.getLogger(__name__)
 
@@ -214,3 +215,20 @@ class Library:
                 if onlyone or len(result) >= 2:
                     break
         return result
+
+    #
+    # methods for v2
+    #
+    def check_flags(self, model, flags):
+        provider = self.get(model.source)
+        if provider is None:
+            return False
+        if isinstance(provider, ProviderV2):
+            return provider.check_flags(model.meta.model_type, flags)
+        return False
+
+    def song_list_similar(self, song):
+        provider = self.get(song.source)
+        if provider is None:
+            raise ProviderNotFound(f'provider {model.source} not found')
+        return provider.song_list_similar(song)

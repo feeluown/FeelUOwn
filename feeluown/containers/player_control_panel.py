@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QSizePolicy, QMenu,
 )
 
+from feeluown.library import ProviderFlags
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
@@ -100,12 +101,17 @@ class SongBriefLabel(QLabel):
         menu.hovered.connect(self.on_action_hovered)
         artist_menu = menu.addMenu('查看歌手')
         album_action = menu.addAction('查看专辑')
+
         artist_menu.menuAction().setData({'artists': None, 'song': song})
-        album_action.setData({'song': song})
-        artist_menu.menuAction().triggered.connect(
-            lambda: aio.create_task(self._goto_artists(song)))
+
         album_action.triggered.connect(
             lambda: aio.create_task(self._goto_album(song)))
+
+        if self._app.library.check_flags(song, ProviderFlags.similar):
+            similar_song_action = menu.addAction('相似歌曲')
+            similar_song_action.triggered.connect(
+                lambda: self._app.browser.goto(model=song, path='/similar'))
+
         menu.exec(e.globalPos())
 
     async def _goto_album(self, song):
