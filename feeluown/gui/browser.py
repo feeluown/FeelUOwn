@@ -138,7 +138,7 @@ class Browser:
         path = path or ''
         page = base_page = MODEL_PAGE_PREFIX + reverse(model)[6:]
         if path:
-            page = f'{base_page}/{path}'
+            page = f'{base_page}{path}'
         self._goto(page, {'app': self._app, 'model': model})
 
     def _goto(self, page, ctx):
@@ -181,9 +181,13 @@ class Browser:
         from feeluown.gui.pages.search import render as render_search
         from feeluown.gui.pages.player_playlist import render as render_player_playlist
         from feeluown.gui.pages.model import render as render_model
+        from feeluown.gui.pages.similar_songs import render as render_similar_songs
+
+        model_page_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
 
         urlpatterns = [
-            (f'{MODEL_PAGE_PREFIX}<provider>/<ns>/<identifier>', render_model),
+            (f'{model_page_prefix}/<ns>/<identifier>', render_model),
+            (f'{model_page_prefix}/songs/<identifier>/similar', render_similar_songs),
             ('/colls/<identifier>', self._render_coll),
             ('/search', render_search),
             ('/player_playlist', render_player_playlist),
