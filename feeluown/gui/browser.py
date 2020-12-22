@@ -3,6 +3,7 @@ import inspect
 import warnings
 from collections import deque
 from urllib.parse import urlencode
+from typing import Optional
 
 from PyQt5.QtGui import QKeySequence
 
@@ -25,13 +26,16 @@ class Browser:
 
     def __init__(self, app):
         self._app = app
-        # 保存后退、前进历史的两个栈
+        # The two stack are used to save history
+        # TODO: Currently, browser only save the whole page path in history, and the
+        # related data such as model is not cached. Caching the data should improve
+        # performance.
         self._back_stack = deque(maxlen=10)
         self._forward_stack = deque(maxlen=10)
         self.router = Router()  # alpha
 
-        self._last_page = None
-        self.current_page = None
+        self._last_page: Optional[str] = None
+        self.current_page: Optional[str] = None
 
         #: the value in local_storage must be string,
         # please follow the convention
@@ -44,9 +48,8 @@ class Browser:
     def ui(self):
         return self._app.ui
 
-    def goto(self, model=None, path=None, page=None, query=None,
-             uri=None):
-        """goto page
+    def goto(self, model=None, path=None, page=None, query=None, uri=None):
+        """Goto page
 
         Typical usage::
 
@@ -78,8 +81,9 @@ class Browser:
                     page = page + '?' + qs
                 self._goto_page(page)
         except NotFound:
-            self._app.show_msg('-> {page} ...failed', timeout=1)
+            logger.warning(f'{page} renderer not found')
         else:
+            # save history records
             if self._last_page is not None and self._last_page != self.current_page:
                 self._back_stack.append(self._last_page)
             self._forward_stack.clear()
@@ -126,8 +130,13 @@ class Browser:
             self._goto(page, {'app': self._app})
 
     def _goto_model_page(self, model, path=''):
+        """goto model page
+
+        The main difference between model page and other pages is that model page
+        has different context. It's context has an extra key `model`.
+        """
         path = path or ''
-        page = base_page = '/models/' + reverse(model)[6:]
+        page = base_page = MODEL_PAGE_PREFIX + reverse(model)[6:]
         if path:
             page = f'{base_page}/{path}'
         self._goto(page, {'app': self._app, 'model': model})
@@ -167,17 +176,17 @@ class Browser:
     def initialize(self):
         """browser should be initialized after all ui components are created
 
-        1. bind routes with handler
+        1. bind routes with renderer
         """
         from feeluown.gui.pages.search import render as render_search
         from feeluown.gui.pages.player_playlist import render as render_player_playlist
         from feeluown.gui.pages.model import render as render_model
 
         urlpatterns = [
-            ('/models/<provider>/<ns>/<identifier>', render_model),
+            (f'{MODEL_PAGE_PREFIX}<provider>/<ns>/<identifier>', render_model),
             ('/colls/<identifier>', self._render_coll),
             ('/search', render_search),
             ('/player_playlist', render_player_playlist),
         ]
-        for url, handler in urlpatterns:
-            self.route(url)(handler)
+        for url, renderer in urlpatterns:
+            self.route(url)(renderer)
