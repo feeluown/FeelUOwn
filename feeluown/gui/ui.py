@@ -52,7 +52,7 @@ class Ui:
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
         self.pc_panel.playlist_btn.clicked.connect(
-            lambda: self._app.browser.goto(uri='/player_playlist'))
+            lambda: self._app.browser.goto(page='/player_playlist'))
 
         self._setup_ui()
 
