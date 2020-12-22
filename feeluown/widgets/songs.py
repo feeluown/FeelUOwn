@@ -543,15 +543,18 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
             menu.addSeparator()
             menu.addAction(remove_song_action)
 
+        model = self.model()
+        models = [model.data(index, Qt.UserRole) for index in indexes]
+
         def add_action(text, callback):
             action = QAction(text, menu)
             menu.addSeparator()
             menu.addAction(action)
-            model = self.model()
-            action.triggered.connect(
-                lambda: callback([model.data(index, Qt.UserRole) for index in indexes]))
+            action.triggered.connect(lambda: callback(models))
 
-        self.about_to_show_menu.emit({'add_action': add_action})
+        # .. versionadded: v3.7
+        #   The context key *models*
+        self.about_to_show_menu.emit({'add_action': add_action, 'models': models})
         menu.exec(event.globalPos())
 
     def _add_to_playlist(self, indexes):

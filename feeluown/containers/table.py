@@ -12,6 +12,7 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
+from feeluown.library import ProviderFlags
 from feeluown.models import GeneratorProxy, reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
@@ -439,6 +440,7 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         self.toolbar.play_all_needed.connect(self.play_all)
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
+        self.songs_table.about_to_show_menu.connect(self._add_similar_songs_action)
 
         self._setup_ui()
 
@@ -614,3 +616,16 @@ class TableContainer(QFrame, BgTransparentMixin):
     def _add_songs_to_playlist(self, songs):
         for song in songs:
             self._app.playlist.add(song)
+
+    def _add_similar_songs_action(self, ctx):
+        add_action = ctx['add_action']
+        models = ctx['models']
+        if not models or models[0].meta.model_type != ModelType.song:
+            return
+
+        song = models[0]
+        if self._app.library.check_flags(song, ProviderFlags.similar):
+            add_action(
+                '相似歌曲',
+                lambda *args: self._app.browser.goto(model=song, path='/similar')
+            )

@@ -59,6 +59,7 @@ def _extract_and_sort_song_standby_list(song, result_g):
 
 class Library:
     """音乐库，管理资源提供方以及资源"""
+
     def __init__(self, providers_standby=None):
         """
 
@@ -230,5 +231,5 @@ class Library:
     def song_list_similar(self, song):
         provider = self.get(song.source)
         if provider is None:
-            raise ProviderNotFound(f'provider {model.source} not found')
+            raise ProviderNotFound(f'provider {song.source} not found')
         return provider.song_list_similar(song)

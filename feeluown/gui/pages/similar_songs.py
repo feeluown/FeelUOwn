@@ -1,5 +1,4 @@
 from feeluown.utils import aio
-from feeluown.models.uri import resolve, ResolveFailed
 from feeluown.containers.table import Renderer
 
 
