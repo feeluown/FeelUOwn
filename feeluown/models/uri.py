@@ -19,6 +19,7 @@ Currently, there is not way to achieve this.
 import asyncio
 import json
 import re
+import warnings
 
 from .base import ModelType, ModelExistence
 
@@ -258,7 +259,9 @@ def resolve(line, model=None):
             model = model_cls(model)
     else:
         path = line
+    # NOTE: the path resolve logic is deprecated
     if path:
+        warnings.warn('model path resolver will be removed')
         for path_ in model.meta.paths:
             if path_ == path:
                 method_name = 'resolve_' + path.replace('/', '_')

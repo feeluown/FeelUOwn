@@ -3,14 +3,18 @@ import inspect
 import warnings
 from collections import deque
 from urllib.parse import urlencode
+from typing import Optional
 
 from PyQt5.QtGui import QKeySequence
 
 from feeluown.utils import aio
 from feeluown.utils.router import Router, NotFound
-from feeluown.models.uri import resolve, reverse, ResolveFailed
+from feeluown.models.uri import resolve, reverse, ResolveFailed, parse_line
 
 logger = logging.getLogger(__name__)
+
+
+MODEL_PAGE_PREFIX = '/models/'
 
 
 class Browser:
@@ -22,13 +26,16 @@ class Browser:
 
     def __init__(self, app):
         self._app = app
-        # 保存后退、前进历史的两个栈
+        # The two stack are used to save history
+        # TODO: Currently, browser only save the whole page path in history, and the
+        # related data such as model is not cached. Caching the data should improve
+        # performance.
         self._back_stack = deque(maxlen=10)
         self._forward_stack = deque(maxlen=10)
         self.router = Router()  # alpha
 
-        self._last_uri = None
-        self.current_uri = None
+        self._last_page: Optional[str] = None
+        self.current_page: Optional[str] = None
 
         #: the value in local_storage must be string,
         # please follow the convention
@@ -41,74 +48,106 @@ class Browser:
     def ui(self):
         return self._app.ui
 
-    def goto(self, model=None, path=None, uri=None, query=None):
-        """跳转到 model 页面或者具体的地址
+    def goto(self, model=None, path=None, page=None, query=None, uri=None):
+        """Goto page
 
-        必须提供 model 或者 path 其中一个参数，都提供时，以 model 为准。
+        Typical usage::
+
+            goto(model=model, path=path, query=xxx)
+            goto(page=page, query=xxx)
+
+        Wrong usage::
+
+            goto(path=page, query=xxx)
         """
+        # backward compact: old code use goto(uri=page)
         if uri is not None:
-            warnings.warn('please use path instead of uri')
-            path = uri
-        if query:
-            qs = urlencode(query)
-            path = path + '?' + qs
-        self._goto(model, path)
-        if self._last_uri is not None and self._last_uri != self.current_uri:
-            self._back_stack.append(self._last_uri)
-        self._forward_stack.clear()
-        self.on_history_changed()
+            warnings.warn('please use parameter page', DeprecationWarning)
+            page = page or uri
+
+        qs = urlencode(query) if query else ''
+
+        try:
+            if model is not None:
+                if qs:
+                    path = (path or '') + '?' + qs
+                self._goto_model_page(model, path)
+            else:
+                # backward compat: old code use goto(path=page) wrongly
+                if path is not None:
+                    warnings.warn('please use parameter page')
+                page = page or path
+                if qs:
+                    page = page + '?' + qs
+                self._goto_page(page)
+        except NotFound:
+            logger.warning(f'{page} renderer not found')
+        else:
+            # save history records
+            if self._last_page is not None and self._last_page != self.current_page:
+                self._back_stack.append(self._last_page)
+            self._forward_stack.clear()
+            self.on_history_changed()
 
     def back(self):
         try:
-            uri = self._back_stack.pop()
+            page = self._back_stack.pop()
         except IndexError:
             logger.warning("Can't go back.")
         else:
-            self._goto(uri=uri)
-            self._forward_stack.append(self._last_uri)
+            self._goto_page(page=page)
+            self._forward_stack.append(self._last_page)
             self.on_history_changed()
 
     def forward(self):
         try:
-            uri = self._forward_stack.pop()
+            page = self._forward_stack.pop()
         except IndexError:
             logger.warning("Can't go forward.")
         else:
-            self._goto(uri=uri)
-            self._back_stack.append(self._last_uri)
+            self._goto_page(page=page)
+            self._back_stack.append(self._last_page)
             self.on_history_changed()
 
     def route(self, rule):
         """路由装饰器 (alpha)"""
         return self.router.route(rule)
 
-    def _goto(self, model=None, uri=None):
-        """真正的跳转逻辑"""
-        if model is None:
+    def _goto_page(self, page):
+        # see if the page match the two special cases
+        if page.startswith(MODEL_PAGE_PREFIX):
             try:
-                model = resolve(uri)
+                # FIXME: resolve is temporarily too magic
+                uri = 'fuo://' + page[len(MODEL_PAGE_PREFIX):]
+                model, path = parse_line(uri)
+                model = resolve(reverse(model))
             except ResolveFailed:
                 model = None
-        else:
-            uri = reverse(model)
-        if not uri.startswith('fuo://'):
-            uri = 'fuo://' + uri
-        with self._app.create_action('-> {}'.format(uri)) as action:
-            if model is not None:
-                self._render_model(model)
+                logger.warning(f'invalid model page:{page}')
             else:
-                try:
-                    x = self.router.dispatch(uri, {'app': self._app})
-                    if inspect.iscoroutine(x):
-                        aio.create_task(x)
-                except NotFound:
-                    action.failed(f'{uri} not found.')
-                    return
-        self._last_uri = self.current_uri
-        if model is not None:
-            self.current_uri = reverse(model)
+                return self._goto_model_page(model, path)
         else:
-            self.current_uri = uri
+            self._goto(page, {'app': self._app})
+
+    def _goto_model_page(self, model, path=''):
+        """goto model page
+
+        The main difference between model page and other pages is that model page
+        has different context. It's context has an extra key `model`.
+        """
+        path = path or ''
+        page = base_page = MODEL_PAGE_PREFIX + reverse(model)[6:]
+        if path:
+            page = f'{base_page}/{path}'
+        self._goto(page, {'app': self._app, 'model': model})
+
+    def _goto(self, page, ctx):
+        x = self.router.dispatch(page, ctx)
+        if inspect.iscoroutine(x):
+            aio.create_task(x)
+
+        self._last_page = self.current_page
+        self.current_page = page
 
     @property
     def can_back(self):
@@ -121,10 +160,6 @@ class Browser:
     # --------------
     # UI Controllers
     # --------------
-
-    def _render_model(self, model):
-        """渲染 model 页面"""
-        self._app.ui.right_panel.show_model(model)
 
     def _render_coll(self, _, identifier):
         coll = self._app.coll_uimgr.get(int(identifier))
@@ -141,17 +176,17 @@ class Browser:
     def initialize(self):
         """browser should be initialized after all ui components are created
 
-        1. bind routes with handler
+        1. bind routes with renderer
         """
-        from feeluown.gui.pages import (
-            render_search,
-            render_player_playlist,
-        )
+        from feeluown.gui.pages.search import render as render_search
+        from feeluown.gui.pages.player_playlist import render as render_player_playlist
+        from feeluown.gui.pages.model import render as render_model
 
         urlpatterns = [
+            (f'{MODEL_PAGE_PREFIX}<provider>/<ns>/<identifier>', render_model),
             ('/colls/<identifier>', self._render_coll),
             ('/search', render_search),
             ('/player_playlist', render_player_playlist),
         ]
-        for url, handler in urlpatterns:
-            self.route(url)(handler)
+        for url, renderer in urlpatterns:
+            self.route(url)(renderer)

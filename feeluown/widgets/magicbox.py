@@ -116,7 +116,6 @@ class MagicBox(QLineEdit):
             self._exec_code(text[4:])
         else:
             local_storage = self._app.browser.local_storage
-            path = '/search'
             type_ = local_storage.get(KeyType)
             source_in = local_storage.get(KeySourceIn)
             query = {'q': text}
@@ -124,7 +123,7 @@ class MagicBox(QLineEdit):
                 query['type'] = type_
             if source_in is not None:
                 query['source_in'] = source_in
-            self._app.browser.goto(path=path, query=query)
+            self._app.browser.goto(page='/search', query=query)
 
     def __on_timeout(self):
         self._set_mode('cmd')

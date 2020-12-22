@@ -102,7 +102,7 @@ class SearchResultRenderer(Renderer):
             source_in = self._app.browser.local_storage.get(KeySourceIn, None)
             if source_in is not None:
                 query['source_in'] = source_in
-            self._app.browser.goto(uri='/search', query=query)
+            self._app.browser.goto(page='/search', query=query)
         return cb
 
 
