@@ -13,6 +13,9 @@ from feeluown.models.uri import resolve, reverse, ResolveFailed, parse_line
 logger = logging.getLogger(__name__)
 
 
+MODEL_PAGE_PREFIX = '/models/'
+
+
 class Browser:
     """GUI 页面管理中心
 
@@ -27,8 +30,8 @@ class Browser:
         self._forward_stack = deque(maxlen=10)
         self.router = Router()  # alpha
 
-        self._last_uri = None
-        self.current_uri = None
+        self._last_page = None
+        self.current_page = None
 
         #: the value in local_storage must be string,
         # please follow the convention
@@ -41,101 +44,101 @@ class Browser:
     def ui(self):
         return self._app.ui
 
-    def goto(self, model=None, path=None, uri=None, query=None):
-        """跳转到 model 页面或者具体的地址
-
-        必须提供 model 或者 path 其中一个参数，都提供时，以 model 为准。
+    def goto(self, model=None, path=None, page=None, query=None,
+             uri=None):
+        """goto page
 
         Typical usage::
 
             goto(model=model, path=path, query=xxx)
-            goto(uri=uri, query=xxx)
+            goto(page=page, query=xxx)
+
+        Wrong usage::
+
+            goto(path=page, query=xxx)
         """
-        if query:
-            qs = urlencode(query)
-        else:
-            qs = ''
+        # backward compact: old code use goto(uri=page)
+        if uri is not None:
+            warnings.warn('please use parameter page', DeprecationWarning)
+            page = page or uri
+
+        qs = urlencode(query) if query else ''
+
         try:
             if model is not None:
                 if qs:
                     path = (path or '') + '?' + qs
-                self._goto_model(model, path)
+                self._goto_model_page(model, path)
             else:
-                # old code use goto(path=uri)
-                uri = uri or path
+                # backward compat: old code use goto(path=page) wrongly
+                if path is not None:
+                    warnings.warn('please use parameter page')
+                page = page or path
                 if qs:
-                    uri = uri + '?' + qs
-                if not uri.startswith('fuo://'):
-                    warnings.warn(f'browser uri should start with fuo://, {uri}')
-                    uri = f'fuo://{uri}'
-                self._goto_uri(uri)
+                    page = page + '?' + qs
+                self._goto_page(page)
         except NotFound:
-            self._app.show_msg('-> {uri} ...failed', timeout=1)
+            self._app.show_msg('-> {page} ...failed', timeout=1)
         else:
-            if self._last_uri is not None and self._last_uri != self.current_uri:
-                self._back_stack.append(self._last_uri)
+            if self._last_page is not None and self._last_page != self.current_page:
+                self._back_stack.append(self._last_page)
             self._forward_stack.clear()
             self.on_history_changed()
 
     def back(self):
         try:
-            uri = self._back_stack.pop()
+            page = self._back_stack.pop()
         except IndexError:
             logger.warning("Can't go back.")
         else:
-            self._goto_uri(uri=uri)
-            self._forward_stack.append(self._last_uri)
+            self._goto_page(page=page)
+            self._forward_stack.append(self._last_page)
             self.on_history_changed()
 
     def forward(self):
         try:
-            uri = self._forward_stack.pop()
+            page = self._forward_stack.pop()
         except IndexError:
             logger.warning("Can't go forward.")
         else:
-            self._goto_uri(uri=uri)
-            self._back_stack.append(self._last_uri)
+            self._goto_page(page=page)
+            self._back_stack.append(self._last_page)
             self.on_history_changed()
 
     def route(self, rule):
         """路由装饰器 (alpha)"""
         return self.router.route(rule)
 
-    def _goto_uri(self, uri):
-        assert uri.startswith('fuo://')
-        # see if the uri match the two special cases
-        # fuo:///models/<provider>/<ns>/<identifier>
-        # fuo://<provider>/<ns>/<identifier>
-        if uri.startswith('fuo:///models/') or not uri.startswith('fuo:///'):
+    def _goto_page(self, page):
+        # see if the page match the two special cases
+        if page.startswith(MODEL_PAGE_PREFIX):
             try:
                 # FIXME: resolve is temporarily too magic
-                model_uri = 'fuo://' + uri[14:]
-                model, path = parse_line(model_uri)
+                uri = 'fuo://' + page[len(MODEL_PAGE_PREFIX):]
+                model, path = parse_line(uri)
                 model = resolve(reverse(model))
             except ResolveFailed:
                 model = None
-                logger.warning(f'invalid browser model uri:{uri}')
+                logger.warning(f'invalid model page:{page}')
             else:
-                return self._goto_model(model, path)
+                return self._goto_model_page(model, path)
         else:
-            self._goto(uri, {'app': self._app})
+            self._goto(page, {'app': self._app})
 
-    def _goto_model(self, model, path=''):
+    def _goto_model_page(self, model, path=''):
         path = path or ''
-        base_uri = 'fuo:///models/' + reverse(model)[6:]
+        page = base_page = '/models/' + reverse(model)[6:]
         if path:
-            uri = f'{base_uri}/{path}'
-        else:
-            uri = base_uri
-        self._goto(uri, {'app': self._app, 'model': model})
+            page = f'{base_page}/{path}'
+        self._goto(page, {'app': self._app, 'model': model})
 
-    def _goto(self, uri, ctx):
-        x = self.router.dispatch(uri, ctx)
+    def _goto(self, page, ctx):
+        x = self.router.dispatch(page, ctx)
         if inspect.iscoroutine(x):
             aio.create_task(x)
 
-        self._last_uri = self.current_uri
-        self.current_uri = uri
+        self._last_page = self.current_page
+        self.current_page = page
 
     @property
     def can_back(self):

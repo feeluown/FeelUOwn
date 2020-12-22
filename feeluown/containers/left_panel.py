@@ -137,4 +137,4 @@ class _LeftPanel(QFrame):
 
     def show_coll(self, coll):
         coll_id = self._app.coll_uimgr.get_coll_id(coll)
-        self._app.browser.goto(uri='/colls/{}'.format(coll_id))
+        self._app.browser.goto(page='/colls/{}'.format(coll_id))
