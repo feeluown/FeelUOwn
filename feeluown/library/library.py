@@ -3,10 +3,11 @@ from functools import partial
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from feeluown.models import SearchType
+from feeluown.models import SearchType, ModelType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
+from .flags import Flags as ProviderFlags
 
 logger = logging.getLogger(__name__)
 
@@ -220,12 +221,12 @@ class Library:
     #
     # methods for v2
     #
-    def check_flags(self, model, flags):
-        provider = self.get(model.source)
+    def check_flags(self, source: str, model_type: ModelType, flags: ProviderFlags):
+        provider = self.get(source)
         if provider is None:
             return False
         if isinstance(provider, ProviderV2):
-            return provider.check_flags(model.meta.model_type, flags)
+            return provider.check_flags(model_type, flags)
         return False
 
     def song_list_similar(self, song):

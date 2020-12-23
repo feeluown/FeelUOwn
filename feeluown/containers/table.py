@@ -624,7 +624,8 @@ class TableContainer(QFrame, BgTransparentMixin):
             return
 
         song = models[0]
-        if self._app.library.check_flags(song, ProviderFlags.similar):
+        if self._app.library.check_flags(
+                song.source, song.meta.model_type, ProviderFlags.similar):
             add_action(
                 '相似歌曲',
                 lambda *args: self._app.browser.goto(model=song, path='/similar')
