@@ -186,6 +186,11 @@ class Playlist(_Playlist):
         else:
             super().next()
 
+    def prepare_media(self, song):
+        """prepare media data
+        """
+        return self._app.library.song_prepare_media(song, self.audio_select_policy)
+
 
 class Player(MpvPlayer):
 

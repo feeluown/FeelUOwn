@@ -5,8 +5,9 @@ Model v2 design principles
 2. as less magic as possible
 """
 
+import time
 from enum import IntFlag
-from typing import List, Any, Optional
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -31,8 +32,20 @@ class BaseModel(BaseModel):
     class Config:
         orm_mode = True
 
+    __cache__: dict = {}
+
     identifier: str
     source: str = 'dummy'
+
+    def cache_get(self, key):
+        if key in self.__cache__:
+            value, expired_at = self.__cache__[key]
+            if expired_at >= int(time.time()):
+                return value
+
+    def cache_set(self, key, value, ttl=None):
+        expired_at = int(time.time()) + ttl
+        self.__cache__[key] = (value, expired_at)
 
 
 class BaseBriefModel(BaseModel):

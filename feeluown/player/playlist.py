@@ -1,12 +1,12 @@
 import copy
 import logging
 import random
+import warnings
 from enum import IntEnum
 
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media
 from feeluown.utils.utils import DedupList
-from feeluown.library import ModelFlags as MF
 
 logger = logging.getLogger(__name__)
 
@@ -169,13 +169,11 @@ class Playlist:
     def prepare_media(self, song):
         """prepare media data
         """
-        if song.meta.flags & MF.v2:
-            pass
+        warnings.warn('use library.song_prepare_media please', DeprecationWarning)
+        if song.meta.support_multi_quality:
+            media, quality = song.select_media(self.audio_select_policy)
         else:
-            if song.meta.support_multi_quality:
-                media, quality = song.select_media(self.audio_select_policy)
-            else:
-                media = song.url  # maybe a empty string
+            media = song.url  # maybe a empty string
         return Media(media) if media else None
 
     @property

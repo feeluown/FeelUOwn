@@ -108,7 +108,7 @@ class SongBriefLabel(QLabel):
             lambda: aio.create_task(self._goto_album(song)))
 
         if self._app.library.check_flags(
-                song.source, source.meta.model_type, ProviderFlags.similar):
+                song.source, song.meta.model_type, ProviderFlags.similar):
             similar_song_action = menu.addAction('相似歌曲')
             similar_song_action.triggered.connect(
                 lambda: self._app.browser.goto(model=song, path='/similar'))

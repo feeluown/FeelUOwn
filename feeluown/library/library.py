@@ -1,13 +1,16 @@
 import logging
 from functools import partial
+from typing import Optional
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
+from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
-from .flags import Flags as ProviderFlags
+from .flags import Flags as PF
+from .models import ModelFlags as MF
 
 logger = logging.getLogger(__name__)
 
@@ -221,7 +224,13 @@ class Library:
     #
     # methods for v2
     #
-    def check_flags(self, source: str, model_type: ModelType, flags: ProviderFlags):
+    def get_or_raise(self, identifier):
+        provider = self.get(identifier)
+        if provider is None:
+            raise ProviderNotFound(f'provider {identifier} not found')
+        return provider
+
+    def check_flags(self, source: str, model_type: ModelType, flags: PF):
         provider = self.get(source)
         if provider is None:
             return False
@@ -230,7 +239,21 @@ class Library:
         return False
 
     def song_list_similar(self, song):
-        provider = self.get(song.source)
-        if provider is None:
-            raise ProviderNotFound(f'provider {song.source} not found')
+        provider = self.get_or_raise(song.source)
         return provider.song_list_similar(song)
+
+    def song_prepare_media(self, song, policy) -> Optional[Media]:
+        source = song.source
+        model_type = song.meta.model_type
+        if song.meta.flags & MF.v2:
+            # provider MUST has multi_quality flag for song
+            assert self.check_flags(source, model_type, PF.multi_quality)
+            provider = self.get_or_raise(source)
+            media, _ = provider.song_select_media(song, policy)
+        else:
+            if song.meta.support_multi_quality:
+                media, _ = song.select_media(policy)
+            else:
+                url = song.url  # maybe a empty string
+                media = Media(url) if url else None
+        return media
