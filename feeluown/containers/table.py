@@ -429,7 +429,10 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.videos_table.play_video_needed.connect(
             lambda video: aio.create_task(self.play_video(video)))
 
-        def goto_model(model): self._app.browser.goto(model=model)
+        def goto_model(model):
+            model = self._app.library.cast_model_to_v1(model)
+            self._app.browser.goto(model=model)
+
         for signal in [self.songs_table.show_artist_needed,
                        self.songs_table.show_album_needed,
                        self.albums_table.show_album_needed,
@@ -442,7 +445,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
         self.songs_table.about_to_show_menu.connect(self._add_similar_songs_action)
         self.songs_table.activated.connect(
-            aio.create_task(self._on_songs_table_activated()))
+            lambda index: aio.create_task(self._on_songs_table_activated(index)))
 
         self._setup_ui()
 
@@ -636,33 +639,27 @@ class TableContainer(QFrame, BgTransparentMixin):
     async def _on_songs_table_activated(self, index):
         from feeluown.widgets.songs import Column
 
-        async def _fetch_and_show_artists(song):
-            artists = await async_run(lambda: song.artists)
-            if artists:
-                if len(artists) > 1:
-                    self.songs_table.show_artists_by_index(index)
-                else:
-                    self.songs_table.show_artist_needed.emit(artists[0])
-
-        async def _fetch_and_show_album(song):
-            album = await async_run(lambda: song.album)
-            self.songs_table.show_album_needed.emit(album)
-
-        try:
-            if index.column() == Column.song:
-                song = index.data(Qt.UserRole)
-                self.songs_table.play_song_needed.emit(song)
-            elif index.column() == Column.artist:
-                song = index.data(Qt.UserRole)
-                await _fetch_and_show_artists(song)
+        song = index.data(Qt.UserRole)
+        if index.column() == Column.song:
+            self.songs_table.play_song_needed.emit(song)
+        else:
+            try:
+                song = await aio.run_in_executor(
+                    None, self._app.library.song_upgrade, song)
+            except ProviderIOError:
+                # FIXME: we should only catch ProviderIOError here,
+                # but currently, some plugins such fuo-qqmusic may raise
+                # requests.RequestException
+                logger.exception('upgrade song failed')
+            if index.column() == Column.artist:
+                artists = song.artists
+                if artists:
+                    if len(artists) > 1:
+                        self.songs_table.show_artists_by_index(index)
+                    else:
+                        self.songs_table.show_artist_needed.emit(artists[0])
             elif index.column() == Column.album:
-                song = index.data(Qt.UserRole)
-                await _fetch_and_show_album(song)
-        except (ProviderIOError, Exception):
-            # FIXME: we should only catch ProviderIOError here,
-            # but currently, some plugins such fuo-qqmusic may raise
-            # requests.RequestException
-            logger.exception('fetch song.album failed')
+                self.songs_table.show_album_needed.emit(song.album)
         # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
         # 测试 dataChanged 似乎不能按照预期工作
         model = self.songs_table.model()

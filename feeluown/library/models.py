@@ -48,6 +48,10 @@ class BaseModel(_BaseModel):
         expired_at = int(time.time()) + ttl
         self.__cache__[key] = (value, expired_at)
 
+    def __hash__(self):
+        id_hash = elfhash(self.identifier.encode())
+        return id_hash * 1000 + id(type(self)) % 1000
+
 
 class BaseBriefModel(BaseModel):
     """
@@ -88,10 +92,6 @@ class BriefSongModel(BaseBriefModel):
     album_name: str = ''
     duration_ms: str = ''
 
-    def __hash__(self):
-        id_hash = elfhash(self.identifier.encode())
-        return id_hash * 1000 + id(type(self)) % 1000
-
 
 class BriefAlbumModel(BaseBriefModel):
     class meta(BaseBriefModel.meta):
@@ -103,7 +103,7 @@ class BriefAlbumModel(BaseBriefModel):
 
 class BriefArtistModel(BaseBriefModel):
     class meta(BaseBriefModel.meta):
-        model_type = ModelType.album
+        model_type = ModelType.artist
 
     name: str = ''
 

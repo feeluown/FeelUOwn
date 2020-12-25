@@ -10,7 +10,7 @@ from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .flags import Flags as PF
-from .models import ModelFlags as MF, BriefSongModel, BaseModel
+from .models import ModelFlags as MF, BriefSongModel, BaseModel, SongModel
 
 logger = logging.getLogger(__name__)
 
@@ -242,38 +242,39 @@ class Library:
 
     # methods for backward compat
 
-    @lru_cache(maxsize=1024)
     def cast_model_to_v1(self, model):
         """
         I think this method is mainly used for playlist song models
         """
         if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
-            provider = self.get_or_raise(model.source)
-            ModelCls = provider.get_model_cls(model.meta.model_type)
-            return ModelCls.create_by_display(identifier=model.identifier)
+            return self._cast_model_to_v1_impl(model)
         return model
 
-    def ensure_v1_model_fields(self, model, fields):
-        values = []
-        for field in fields:
-            value = getattr(model, field)
-            values.append(value)
-        return values
+    @lru_cache(maxsize=1024)
+    def _cast_model_to_v1_impl(self, model):
+        provider = self.get_or_raise(model.source)
+        ModelCls = provider.get_model_cls(model.meta.model_type)
+        return ModelCls.create_by_display(identifier=model.identifier)
 
     # songs
     def song_upgrade(self, song):
         if song.meta.flags & MF.v2:
-           if not (song.meta.flags & MF.normal):
-               source = song.source
-               provider = self.get_or_raise(source)
-               if self.check_flags(source, model_type, ProviderFlags.get):
-                   upgraded_song = provider.song_get(song.identifier)
-               else:
-                   raise UpgradeFailed('')
-           else:
-               upgraded_song = song
+            if not (MF.normal in song.meta.flags):
+                source = song.source
+                model_type = ModelType.song
+                provider = self.get_or_raise(source)
+                if self.check_flags(source, model_type, PF.get):
+                    upgraded_song = provider.song_get(song.identifier)
+                else:
+                    # TODO: add an Exception UpgradeFailed?
+                    raise Exception('song upgrade failed')
+            else:
+                upgraded_song = song
         else:
-            fields = None
+            fields = [f for f in list(SongModel.__fields__)
+                      if f not in list(BaseModel.__fields__)]
+            for field in fields:
+                getattr(song, field)
             upgraded_song = song
         return upgraded_song
 
