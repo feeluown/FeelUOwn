@@ -9,7 +9,7 @@ import time
 from enum import IntFlag
 from typing import List, Optional
 
-from pydantic import BaseModel, PrivateAttr
+from pydantic import BaseModel as _BaseModel, PrivateAttr
 
 from feeluown.models import ModelType, ModelExistence
 from feeluown.utils.utils import elfhash
@@ -24,7 +24,7 @@ class ModelFlags(IntFlag):
     brief = 0x00000010
 
 
-class BaseModel(BaseModel):
+class BaseModel(_BaseModel):
     class meta:
         flags = ModelFlags.v2
         model_type = ModelType.dummy.value

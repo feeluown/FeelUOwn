@@ -10,7 +10,7 @@ from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .flags import Flags as PF
-from .models import ModelFlags as MF, BriefSongModel
+from .models import ModelFlags as MF, BriefSongModel, BaseModel
 
 logger = logging.getLogger(__name__)
 
@@ -245,7 +245,7 @@ class Library:
         """
         I think this method is mainly used for playlist song models
         """
-        if model.meta.flags & MF.v2:
+        if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
             provider = self.get_or_raise(model.source)
             ModelCls = provider.get_model_cls(model.meta.model_type)
             return ModelCls.create_by_display(identifier=model.identifier)
