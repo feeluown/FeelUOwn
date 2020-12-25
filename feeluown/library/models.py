@@ -22,6 +22,7 @@ class ModelFlags(IntFlag):
     v2 = 0x00000002
 
     brief = 0x00000010
+    normal = brief | 0x00000020
 
 
 class BaseModel(_BaseModel):

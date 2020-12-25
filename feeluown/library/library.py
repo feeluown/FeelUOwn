@@ -224,7 +224,7 @@ class Library:
     # methods for v2
     #
 
-    # common
+    # provider common
 
     def get_or_raise(self, identifier):
         provider = self.get(identifier)
@@ -240,6 +240,8 @@ class Library:
             return provider.check_flags(model_type, flags)
         return False
 
+    # methods for backward compat
+
     @lru_cache(maxsize=1024)
     def cast_model_to_v1(self, model):
         """
@@ -251,7 +253,29 @@ class Library:
             return ModelCls.create_by_display(identifier=model.identifier)
         return model
 
+    def ensure_v1_model_fields(self, model, fields):
+        values = []
+        for field in fields:
+            value = getattr(model, field)
+            values.append(value)
+        return values
+
     # songs
+    def song_upgrade(self, song):
+        if song.meta.flags & MF.v2:
+           if not (song.meta.flags & MF.normal):
+               source = song.source
+               provider = self.get_or_raise(source)
+               if self.check_flags(source, model_type, ProviderFlags.get):
+                   upgraded_song = provider.song_get(song.identifier)
+               else:
+                   raise UpgradeFailed('')
+           else:
+               upgraded_song = song
+        else:
+            fields = None
+            upgraded_song = song
+        return upgraded_song
 
     def song_list_similar(self, song):
         provider = self.get_or_raise(song.source)

@@ -441,6 +441,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.toolbar.play_all_needed.connect(self.play_all)
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
         self.songs_table.about_to_show_menu.connect(self._add_similar_songs_action)
+        self.songs_table.activated.connect(
+            aio.create_task(self._on_songs_table_activated()))
 
         self._setup_ui()
 
@@ -630,3 +632,40 @@ class TableContainer(QFrame, BgTransparentMixin):
                 '相似歌曲',
                 lambda *args: self._app.browser.goto(model=song, path='/similar')
             )
+
+    async def _on_songs_table_activated(self, index):
+        from feeluown.widgets.songs import Column
+
+        async def _fetch_and_show_artists(song):
+            artists = await async_run(lambda: song.artists)
+            if artists:
+                if len(artists) > 1:
+                    self.songs_table.show_artists_by_index(index)
+                else:
+                    self.songs_table.show_artist_needed.emit(artists[0])
+
+        async def _fetch_and_show_album(song):
+            album = await async_run(lambda: song.album)
+            self.songs_table.show_album_needed.emit(album)
+
+        try:
+            if index.column() == Column.song:
+                song = index.data(Qt.UserRole)
+                self.songs_table.play_song_needed.emit(song)
+            elif index.column() == Column.artist:
+                song = index.data(Qt.UserRole)
+                await _fetch_and_show_artists(song)
+            elif index.column() == Column.album:
+                song = index.data(Qt.UserRole)
+                await _fetch_and_show_album(song)
+        except (ProviderIOError, Exception):
+            # FIXME: we should only catch ProviderIOError here,
+            # but currently, some plugins such fuo-qqmusic may raise
+            # requests.RequestException
+            logger.exception('fetch song.album failed')
+        # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
+        # 测试 dataChanged 似乎不能按照预期工作
+        model = self.songs_table.model()
+        topleft = model.index(index.row(), 0)
+        bottomright = model.index(index.row(), 4)
+        model.dataChanged.emit(topleft, bottomright, [])
