@@ -136,7 +136,7 @@ def add_hook(signal_symbol, func, use_symbol=False):
     """add hook on signal
 
     :param signal_symbol: app.{object}.{signal_name}
-    :param func: siganl callback function
+    :param func: signal callback function
 
     >>> def func(): pass
     >>> add_hook('app.initialized', func)
