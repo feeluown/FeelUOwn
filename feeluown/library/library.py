@@ -1,5 +1,5 @@
 import logging
-from functools import partial
+from functools import partial, lru_cache
 from typing import Optional
 
 from feeluown.utils import aio
@@ -10,7 +10,7 @@ from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .flags import Flags as PF
-from .models import ModelFlags as MF
+from .models import ModelFlags as MF, BriefSongModel
 
 logger = logging.getLogger(__name__)
 
@@ -220,10 +220,12 @@ class Library:
                 if onlyone or len(result) >= 2:
                     break
         return result
-
     #
     # methods for v2
     #
+
+    # common
+
     def get_or_raise(self, identifier):
         provider = self.get(identifier)
         if provider is None:
@@ -237,6 +239,19 @@ class Library:
         if isinstance(provider, ProviderV2):
             return provider.check_flags(model_type, flags)
         return False
+
+    @lru_cache(maxsize=1024)
+    def cast_model_to_v1(self, model):
+        """
+        I think this method is mainly used for playlist song models
+        """
+        if model.meta.flags & MF.v2:
+            provider = self.get_or_raise(model.source)
+            ModelCls = provider.get_model_cls(model.meta.model_type)
+            return ModelCls.create_by_display(identifier=model.identifier)
+        return model
+
+    # songs
 
     def song_list_similar(self, song):
         provider = self.get_or_raise(song.source)
@@ -257,3 +272,9 @@ class Library:
                 url = song.url  # maybe a empty string
                 media = Media(url) if url else None
         return media
+
+    def song_get_lyric(self, song: BriefSongModel):
+        pass
+
+    def song_get_mv(self, song: BriefSongModel):
+        pass

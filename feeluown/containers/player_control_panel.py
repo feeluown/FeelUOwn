@@ -362,6 +362,7 @@ class PlayerControlPanel(QFrame):
                     '{} - {}'.format(text, bitrate_text))
 
     async def update_mv_btn_status(self, song):
+        song = self._app.library.cast_model_to_v1(song)
         try:
             mv = await async_run(lambda: song.mv)
         except ProviderIOError:

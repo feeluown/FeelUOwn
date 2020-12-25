@@ -21,7 +21,8 @@ class LiveLyric(object):
         player.song_changed.connect(live_lyric.on_song_changed)
         player.position_change.connect(live_lyric.on_position_changed)
     """
-    def __init__(self):
+    def __init__(self, app):
+        self._app = app
         self.sentence_changed = Signal(str)
 
         self._lyric = None
@@ -57,6 +58,8 @@ class LiveLyric(object):
         if song is None:
             self._set_lyric(None)
             return
+
+        song = self._app.library.cast_model_to_v1(song)
 
         def cb(future):
             try:

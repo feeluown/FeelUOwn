@@ -29,21 +29,23 @@ class ProviderV2:
     def song_get_media(self, song, quality):
         pass
 
-    def song_select_media(self, song, policy) -> Optional[Media]:
+    def song_select_media(self, song, policy: Optional[str] = None) -> (
+            Optional[Media], Optional[Quality.Audio]):
         # fetch available quality list
         available_q_set = set(self.song_list_quality(song))
         if not available_q_set:
-            return None
+            return None, None
 
         QualityCls = Quality.Audio
         # translate policy into quality priority list
         if policy is None:
             policy = 'hq<>'
         sorted_q_list = Quality.SortPolicy.apply(
-            policy, [each.value for each in list(QualityCls)])
+            policy, [each for each in list(QualityCls)])
 
         # find the first available quality
         for quality in sorted_q_list:
             if quality in available_q_set:
-                break
-        return self.song_get_media(song, quality), quality
+                return self.song_get_media(song, quality), quality
+
+        assert False, 'this should not happen'

@@ -9,7 +9,7 @@ import time
 from enum import IntFlag
 from typing import List, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, PrivateAttr
 
 from feeluown.models import ModelType, ModelExistence
 from feeluown.utils.utils import elfhash
@@ -32,7 +32,7 @@ class BaseModel(BaseModel):
     class Config:
         orm_mode = True
 
-    __cache__: dict = {}
+    __cache__: dict = PrivateAttr(default_factory=dict)
 
     identifier: str
     source: str = 'dummy'
