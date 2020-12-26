@@ -54,6 +54,7 @@ setup(
         'requests',
         'qasync',
         'tomlkit',
+        'pydantic',
     ],
     extras_require={
         'battery': ['fuo-local>=0.2.1',
