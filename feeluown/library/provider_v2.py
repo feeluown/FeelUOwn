@@ -1,8 +1,9 @@
-from typing import Optional
+from typing import Tuple
 
 from feeluown.media import Media, Quality
 from feeluown.models import ModelType
 from .flags import Flags
+from .excs import MediaNotFound
 
 
 def check_flags(provider, model_type: ModelType, flags: Flags):
@@ -29,12 +30,14 @@ class ProviderV2:
     def song_get_media(self, song, quality):
         pass
 
-    def song_select_media(self, song, policy: Optional[str] = None) -> (
-            Optional[Media], Optional[Quality.Audio]):
+    def song_select_media(self, song, policy=None) -> Tuple[Media, Quality.Audio]:
+        """
+        :raises: MediaNotFound
+        """
         # fetch available quality list
         available_q_set = set(self.song_list_quality(song))
         if not available_q_set:
-            return None, None
+            raise MediaNotFound
 
         QualityCls = Quality.Audio
         # translate policy into quality priority list

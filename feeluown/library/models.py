@@ -13,6 +13,7 @@ from pydantic import BaseModel as _BaseModel, PrivateAttr
 
 from feeluown.models import ModelType, ModelExistence
 from feeluown.utils.utils import elfhash
+from .model_state import ModelState
 
 
 class ModelFlags(IntFlag):
@@ -61,14 +62,26 @@ class BaseBriefModel(BaseModel):
     class meta(BaseModel.meta):
         flags = BaseModel.meta.flags | ModelFlags.brief
 
+    state: ModelState = ModelState.artificial
+    # (DEPRECATED) for backward compact
     exists: ModelExistence = ModelExistence.unknown
 
     @classmethod
     def from_display_model(cls, model):
         data = {}
         for field in cls.__fields__:
+            if field in ('state', ):
+                continue
             if field in ('identifier', 'source', 'exists'):
                 value = getattr(model, field)
+                if field == 'exists':
+                    if value == ModelExistence.no:
+                        state_value = ModelState.not_exists
+                    elif value == ModelExistence.unknown:
+                        state_value = ModelState.artificial
+                    else:
+                        state_value = ModelState.exists
+                    data['state'] = state_value
             else:
                 value = getattr(model, f'{field}_display')
             data[field] = value
@@ -81,6 +94,13 @@ class BaseBriefModel(BaseModel):
             if attr.endswith('_display'):
                 return getattr(self, attr[:-8])
             raise
+
+
+class BaseNormalModel(BaseModel):
+    class meta(BaseModel.meta):
+        flags = BaseModel.meta.flags | ModelFlags.normal
+
+    state: ModelState = ModelState.upgraded
 
 
 class BriefSongModel(BaseBriefModel):
@@ -108,7 +128,7 @@ class BriefArtistModel(BaseBriefModel):
     name: str = ''
 
 
-class SongModel(BaseModel):
+class SongModel(BaseNormalModel):
     title: str
     album: Optional[BriefAlbumModel]
     artists: List[BriefArtistModel]

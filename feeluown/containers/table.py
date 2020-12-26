@@ -637,6 +637,9 @@ class TableContainer(QFrame, BgTransparentMixin):
             )
 
     async def _on_songs_table_activated(self, index):
+        """
+        QTableView should have no IO operations.
+        """
         from feeluown.widgets.songs import Column
 
         song = index.data(Qt.UserRole)

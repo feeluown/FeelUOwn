@@ -65,13 +65,24 @@ setup(
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
         'win32': ['pyshortcuts'],
         'webengine': ['PyQtWebEngine'],
+        'dev': [
+            # lint
+            'flake8',
+            'mypy',
+
+            # unittest
+            'pytest>=5.4.0',
+            'pytest-runner',
+            'pytest-cov',
+            'pytest-asyncio',
+            'pytest-qt',
+            'pytest-mock',
+
+            # docs
+            'sphinx',
+            'sphinx_rtd_theme',
+        ],
     },
-    tests_require=['pytest-runner',
-                   'pytest',
-                   'pytest-cov',
-                   'pytest-asyncio',
-                   'pytest-qt',
-                   'pytest-mock'],
     entry_points={
         'console_scripts': [
             "feeluown=feeluown.__main__:main",

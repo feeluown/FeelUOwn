@@ -1,11 +1,9 @@
-# -*- coding: utf-8 -*-
-
 """
 feeluown.library
 ~~~~~~~~~~~~~~~~
 
 """
-from abc import ABC, abstractmethod
+
 from contextlib import contextmanager
 from feeluown.models import (
     BaseModel,
@@ -35,7 +33,7 @@ _TYPE_NAME_MAP = {
 }
 
 
-class AbstractProvider(ABC):
+class AbstractProvider:
     """abstract music resource provider
     """
 
@@ -60,12 +58,10 @@ class AbstractProvider(ABC):
         setattr(self, name, model_cls)
 
     @property
-    @abstractmethod
     def identifier(self):
         """provider identify"""
 
     @property
-    @abstractmethod
     def name(self):
         """provider name"""
 
