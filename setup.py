@@ -55,6 +55,8 @@ setup(
         'qasync',
         'tomlkit',
         'pydantic',
+
+        'typing_extensions;python_version<"3.8"',
     ],
     extras_require={
         'battery': ['fuo-local>=0.2.1',

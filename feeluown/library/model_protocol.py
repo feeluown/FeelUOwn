@@ -1,5 +1,6 @@
-from typing import Protocol, Optional, List, Any
+from typing import Optional, List, Any
 
+from feeluown.utils.typing_ import Protocol
 from .model_state import ModelState
 
 
