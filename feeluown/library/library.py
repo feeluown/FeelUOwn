@@ -1,12 +1,23 @@
 import logging
-from functools import partial
+from functools import partial, lru_cache
+from typing import Optional, List
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from feeluown.models import SearchType
+from feeluown.media import Media
+from feeluown.models import SearchType, ModelType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
+from .excs import NotSupported
+from .flags import Flags as PF
+from .models import (
+    ModelFlags as MF, BaseModel, BriefSongModel, SongModel,
+)
+from .model_protocol import (
+    ModelProtocol, BriefSongProtocol, SongProtocol
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -216,20 +227,100 @@ class Library:
                 if onlyone or len(result) >= 2:
                     break
         return result
-
     #
     # methods for v2
     #
-    def check_flags(self, model, flags):
-        provider = self.get(model.source)
+
+    # provider common
+
+    def get_or_raise(self, identifier):
+        provider = self.get(identifier)
+        if provider is None:
+            raise ProviderNotFound(f'provider {identifier} not found')
+        return provider
+
+    def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
+        """Check if a provider satisfies the specific ability for a model type
+
+        .. note::
+
+             Currently, we use ProviderFlags to define which ability a
+             provider has. In the future, we may use typing.Protocol.
+             So you should use :meth:`check_flags` method to check ability
+             instead of compare provider flags directly.
+        """
+        provider = self.get(source)
         if provider is None:
             return False
         if isinstance(provider, ProviderV2):
-            return provider.check_flags(model.meta.model_type, flags)
+            return provider.check_flags(model_type, flags)
         return False
 
-    def song_list_similar(self, song):
-        provider = self.get(song.source)
-        if provider is None:
-            raise ProviderNotFound(f'provider {song.source} not found')
+    def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
+        """Alias for check_flags"""
+        return self.check_flags(model.source,
+                                ModelType(model.meta.model_type),
+                                flags)
+
+    # methods for backward compat
+
+    def cast_model_to_v1(self, model):
+        """Cast a v1/v2 model to v1
+
+        During the model migration from v1 to v2, v2 may lack some ability.
+        Cast the model to v1 to acquire such ability.
+        """
+        if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
+            return self._cast_model_to_v1_impl(model)
+        return model
+
+    @lru_cache(maxsize=1024)
+    def _cast_model_to_v1_impl(self, model):
+        provider = self.get_or_raise(model.source)
+        ModelCls = provider.get_model_cls(model.meta.model_type)
+        return ModelCls.create_by_display(identifier=model.identifier)
+
+    # songs
+    def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
+        if song.meta.flags & MF.v2:
+            if not (MF.normal in song.meta.flags):
+                provider = self.get_or_raise(song.source)
+                if self.check_flags_by_model(song, PF.get):
+                    upgraded_song = provider.song_get(song.identifier)
+                else:
+                    raise NotSupported("provider has not flag 'get' for 'song'")
+            else:
+                upgraded_song = song
+        else:
+            fields = [f for f in list(SongModel.__fields__)
+                      if f not in list(BaseModel.__fields__)]
+            for field in fields:
+                getattr(song, field)
+            upgraded_song = song
+        return upgraded_song
+
+    def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
+        provider = self.get_or_raise(song.source)
         return provider.song_list_similar(song)
+
+    def song_prepare_media(self, song: BriefSongProtocol, policy) -> Optional[Media]:
+        source = song.source
+        model_type = song.meta.model_type
+        if song.meta.flags & MF.v2:
+            # provider MUST has multi_quality flag for song
+            assert self.check_flags(source, model_type, PF.multi_quality)
+            provider = self.get_or_raise(source)
+            media, _ = provider.song_select_media(song, policy)
+        else:
+            if song.meta.support_multi_quality:
+                media, _ = song.select_media(policy)  # type: ignore
+            else:
+                url = song.url  # type: ignore
+                media = Media(url) if url else None
+        return media
+
+    def song_get_lyric(self, song: BriefSongModel):
+        pass
+
+    def song_get_mv(self, song: BriefSongModel):
+        pass

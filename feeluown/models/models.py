@@ -1,3 +1,5 @@
+# type: ignore
+
 import logging
 import warnings
 
@@ -20,6 +22,7 @@ class BaseModel(Model):
     class Meta:
         """Model metadata"""
 
+        flags = 0x0  # flags should help us upgrade to model v2 gracefully
         allow_get = True  #: whether model has a valid get method
         allow_list = False  #: whether model has a valid list method
         model_type = ModelType.dummy.value

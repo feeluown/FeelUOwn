@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils.dispatch import Signal
 from feeluown.excs import ProviderIOError
+from feeluown.library import ModelState, ModelFlags
 from feeluown.models import ModelExistence
 
 from feeluown.gui.mimedata import ModelMimeData
@@ -224,13 +225,24 @@ class SongsTableModel(QAbstractTableModel):
         self.endInsertRows()
 
     def flags(self, index):
+        if index.column() in (Column.source, Column.index, Column.duration):
+            return Qt.NoItemFlags
+
         song = index.data(Qt.UserRole)
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        if song and song.exists == ModelExistence.no or \
-           index.column() in (Column.source, Column.index, Column.duration):
-            return Qt.ItemIsSelectable
         if index.column() in (Column.song, Column.album):
-            return flags | Qt.ItemIsDragEnabled
+            flags = flags | Qt.ItemIsDragEnabled
+        if ModelFlags.v2 & song.meta.flags:
+            if song.state is ModelState.not_exists:
+                flags = Qt.NoItemFlags
+            elif song.state is ModelState.cant_upgrade:
+                if index.column() == Column.song:
+                    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+                else:
+                    flags = Qt.NoItemFlags
+        else:
+            if song and song.exists == ModelExistence.no:
+                flags = Qt.NoItemFlags
         return flags
 
     def rowCount(self, parent=QModelIndex()):
@@ -469,7 +481,6 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
         self.delegate = SongsTableDelegate(self)
         self.setItemDelegate(self.delegate)
-        self.activated.connect(self._on_activated)
         self.about_to_show_menu = Signal()
 
         self._setup_ui()
@@ -494,34 +505,8 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
 
-    def _on_activated(self, index):
-        try:
-            if index.column() == Column.song:
-                song = index.data(Qt.UserRole)
-                self.play_song_needed.emit(song)
-            elif index.column() == Column.artist:
-                song = index.data(Qt.UserRole)
-                artists = song.artists
-                if artists is not None:
-                    if len(artists) > 1:
-                        self.edit(index)
-                    else:
-                        self.show_artist_needed.emit(artists[0])
-            elif index.column() == Column.album:
-                song = index.data(Qt.UserRole)
-                album = song.album
-                self.show_album_needed.emit(album)
-        except (ProviderIOError, Exception):
-            # FIXME: we should only catch ProviderIOError here,
-            # but currently, some plugins such fuo-qqmusic may raise
-            # requests.RequestException
-            logger.exception('fetch song.album failed')
-        # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
-        # 测试 dataChanged 似乎不能按照预期工作
-        model = self.model()
-        topleft = model.index(index.row(), 0)
-        bottomright = model.index(index.row(), 4)
-        model.dataChanged.emit(topleft, bottomright, [])
+    def show_artists_by_index(self, index):
+        self.edit(index)
 
     def contextMenuEvent(self, event):
         indexes = self.selectionModel().selectedIndexes()

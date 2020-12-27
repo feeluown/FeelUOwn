@@ -107,7 +107,8 @@ class SongBriefLabel(QLabel):
         album_action.triggered.connect(
             lambda: aio.create_task(self._goto_album(song)))
 
-        if self._app.library.check_flags(song, ProviderFlags.similar):
+        if self._app.library.check_flags(
+                song.source, song.meta.model_type, ProviderFlags.similar):
             similar_song_action = menu.addAction('相似歌曲')
             similar_song_action.triggered.connect(
                 lambda: self._app.browser.goto(model=song, path='/similar'))
@@ -361,6 +362,7 @@ class PlayerControlPanel(QFrame):
                     '{} - {}'.format(text, bitrate_text))
 
     async def update_mv_btn_status(self, song):
+        song = self._app.library.cast_model_to_v1(song)
         try:
             mv = await async_run(lambda: song.mv)
         except ProviderIOError:

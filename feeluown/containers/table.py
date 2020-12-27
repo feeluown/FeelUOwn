@@ -12,7 +12,7 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ProviderFlags
+from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
 from feeluown.models import GeneratorProxy, reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
@@ -429,7 +429,10 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.videos_table.play_video_needed.connect(
             lambda video: aio.create_task(self.play_video(video)))
 
-        def goto_model(model): self._app.browser.goto(model=model)
+        def goto_model(model):
+            model = self._app.library.cast_model_to_v1(model)
+            self._app.browser.goto(model=model)
+
         for signal in [self.songs_table.show_artist_needed,
                        self.songs_table.show_album_needed,
                        self.albums_table.show_album_needed,
@@ -441,6 +444,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.toolbar.play_all_needed.connect(self.play_all)
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
         self.songs_table.about_to_show_menu.connect(self._add_similar_songs_action)
+        self.songs_table.activated.connect(
+            lambda index: aio.create_task(self._on_songs_table_activated(index)))
 
         self._setup_ui()
 
@@ -624,8 +629,48 @@ class TableContainer(QFrame, BgTransparentMixin):
             return
 
         song = models[0]
-        if self._app.library.check_flags(song, ProviderFlags.similar):
+        if self._app.library.check_flags(
+                song.source, song.meta.model_type, ProviderFlags.similar):
             add_action(
                 '相似歌曲',
                 lambda *args: self._app.browser.goto(model=song, path='/similar')
             )
+
+    async def _on_songs_table_activated(self, index):
+        """
+        QTableView should have no IO operations.
+        """
+        from feeluown.widgets.songs import Column
+
+        song = index.data(Qt.UserRole)
+        if index.column() == Column.song:
+            self.songs_table.play_song_needed.emit(song)
+        else:
+            try:
+                song = await aio.run_in_executor(
+                    None, self._app.library.song_upgrade, song)
+            except NotSupported:
+                assert ModelFlags.v2 & song.meta.flags
+                self._app.show_msg('资源提供放不支持该功能')
+                logger.info(f'provider:{song.source} does not support song_get')
+                song.state = ModelState.cant_upgrade
+            except (ProviderIOError, RequestException) as e:
+                # FIXME: we should only catch ProviderIOError here,
+                # but currently, some plugins such fuo-qqmusic may raise
+                # requests.RequestException
+                logger.exception('upgrade song failed')
+                self._app.show_msg(f'请求失败: {str(e)}')
+            else:
+                if index.column() == Column.artist:
+                    artists = song.artists
+                    if artists:
+                        if len(artists) > 1:
+                            self.songs_table.show_artists_by_index(index)
+                        else:
+                            self.songs_table.show_artist_needed.emit(artists[0])
+                elif index.column() == Column.album:
+                    self.songs_table.show_album_needed.emit(song.album)
+        model = self.songs_table.model()
+        topleft = model.index(index.row(), 0)
+        bottomright = model.index(index.row(), 4)
+        model.dataChanged.emit(topleft, bottomright, [])
