@@ -17,6 +17,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils.dispatch import Signal
 from feeluown.excs import ProviderIOError
+from feeluown.library import ModelState, ModelFlags
 from feeluown.models import ModelExistence
 
 from feeluown.gui.mimedata import ModelMimeData
@@ -224,13 +225,24 @@ class SongsTableModel(QAbstractTableModel):
         self.endInsertRows()
 
     def flags(self, index):
+        if index.column() in (Column.source, Column.index, Column.duration):
+            return Qt.NoItemFlags
+
         song = index.data(Qt.UserRole)
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        if song and song.exists == ModelExistence.no or \
-           index.column() in (Column.source, Column.index, Column.duration):
-            return Qt.ItemIsSelectable
         if index.column() in (Column.song, Column.album):
-            return flags | Qt.ItemIsDragEnabled
+            flags = flags | Qt.ItemIsDragEnabled
+        if ModelFlags.v2 & song.meta.flags:
+            if song.state is ModelState.not_exists:
+                flags = Qt.NoItemFlags
+            elif song.state is ModelState.cant_upgrade:
+                if index.column() == Column.song:
+                    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+                else:
+                    flags = Qt.NoItemFlags
+        else:
+            if song and song.exists == ModelExistence.no:
+                flags = Qt.NoItemFlags
         return flags
 
     def rowCount(self, parent=QModelIndex()):

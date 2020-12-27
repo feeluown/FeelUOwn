@@ -9,7 +9,7 @@ from feeluown.models import SearchType, ModelType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
-from .excs import ModelUpgradeFailed
+from .excs import NotSupported
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel, BriefSongModel, SongModel,
@@ -288,7 +288,7 @@ class Library:
                 if self.check_flags_by_model(song, PF.get):
                     upgraded_song = provider.song_get(song.identifier)
                 else:
-                    raise ModelUpgradeFailed("provider has not flag 'get' for 'song'")
+                    raise NotSupported("provider has not flag 'get' for 'song'")
             else:
                 upgraded_song = song
         else:

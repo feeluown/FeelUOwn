@@ -2,7 +2,7 @@ class LibraryException(Exception):
     pass
 
 
-class ModelUpgradeFailed(LibraryException):
+class NotSupported(LibraryException):
     pass
 
 

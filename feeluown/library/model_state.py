@@ -17,5 +17,9 @@ class ModelState(IntFlag):
     not_exists = 0x00000004
 
     #: the model identifier existence is proved and fields value are accurate
+    # the model is a brief model
+    cant_upgrade = exists | 0x00000010
+
+    #: the model identifier existence is proved and fields value are accurate
     # the model is a normal model instead of a brief model
-    upgraded = exists | 0x00000008
+    upgraded = exists | 0x000000020

@@ -12,7 +12,7 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ProviderFlags
+from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
 from feeluown.models import GeneratorProxy, reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
@@ -649,22 +649,27 @@ class TableContainer(QFrame, BgTransparentMixin):
             try:
                 song = await aio.run_in_executor(
                     None, self._app.library.song_upgrade, song)
-            except ProviderIOError:
+            except NotSupported:
+                assert ModelFlags.v2 & song.meta.flags
+                self._app.show_msg('资源提供放不支持该功能')
+                logger.info(f'provider:{song.source} does not support song_get')
+                song.state = ModelState.cant_upgrade
+            except (ProviderIOError, RequestException) as e:
                 # FIXME: we should only catch ProviderIOError here,
                 # but currently, some plugins such fuo-qqmusic may raise
                 # requests.RequestException
                 logger.exception('upgrade song failed')
-            if index.column() == Column.artist:
-                artists = song.artists
-                if artists:
-                    if len(artists) > 1:
-                        self.songs_table.show_artists_by_index(index)
-                    else:
-                        self.songs_table.show_artist_needed.emit(artists[0])
-            elif index.column() == Column.album:
-                self.songs_table.show_album_needed.emit(song.album)
-        # FIXME: 在点击之后，音乐数据可能会有更新，理应触发界面更新
-        # 测试 dataChanged 似乎不能按照预期工作
+                self._app.show_msg(f'请求失败: {str(e)}')
+            else:
+                if index.column() == Column.artist:
+                    artists = song.artists
+                    if artists:
+                        if len(artists) > 1:
+                            self.songs_table.show_artists_by_index(index)
+                        else:
+                            self.songs_table.show_artist_needed.emit(artists[0])
+                elif index.column() == Column.album:
+                    self.songs_table.show_album_needed.emit(song.album)
         model = self.songs_table.model()
         topleft = model.index(index.row(), 0)
         bottomright = model.index(index.row(), 4)
