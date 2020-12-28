@@ -525,7 +525,9 @@ def notnull_errcheck(res, func, *args):
 
 ec_errcheck = ErrorCode.raise_for_ec
 
-def _handle_gl_func(name, args=[], restype=None, deprecated=False):
+def _handle_gl_func(name, args=None, restype=None, deprecated=False):
+    if args is None:
+        args = []
     _handle_func(name, args, restype, errcheck=None, ctx=MpvOpenGLCbContext, deprecated=deprecated)
 
 backend.mpv_client_api_version.restype = c_ulong
