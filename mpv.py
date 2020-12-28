@@ -408,7 +408,7 @@ class MpvEvent(Structure):
                 MpvEventID.LOG_MESSAGE:             MpvEventLogMessage,
                 MpvEventID.SCRIPT_INPUT_DISPATCH:   MpvEventScriptInputDispatch,
                 MpvEventID.CLIENT_MESSAGE:          MpvEventClientMessage
-            }.get(self.event_id.value, None)
+            }.get(self.event_id.value)
         return {'event_id': self.event_id.value,
                 'error': self.error,
                 'reply_userdata': self.reply_userdata,

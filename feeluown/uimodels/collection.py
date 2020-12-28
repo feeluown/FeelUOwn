@@ -16,7 +16,7 @@ class CollectionUiManager:
         self._id_coll_mapping = {}
 
     def get(self, identifier):
-        return self._id_coll_mapping.get(identifier, None)
+        return self._id_coll_mapping.get(identifier)
 
     def get_coll_id(self, coll):
         # TODO: 目前还没想好 collection identifier 计算方法，故添加这个函数
