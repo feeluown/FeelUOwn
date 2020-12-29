@@ -5,6 +5,7 @@ import logging
 import threading
 from enum import IntEnum
 
+from feeluown.library.excs import MediaNotFound
 from feeluown.player.mpvplayer import MpvPlayer
 from feeluown.utils.dispatch import Signal
 from .playlist import Playlist as _Playlist, PlaybackMode
@@ -127,6 +128,8 @@ class Playlist(_Playlist):
         future = task_spec.bind_blocking_io(self.prepare_media, song)
         try:
             media = await future
+        except MediaNotFound:
+            media = None
         except:  # noqa
             logger.exception('prepare media failed')
             self.next()

@@ -11,7 +11,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel as _BaseModel, PrivateAttr
 
-from feeluown.models import ModelType, ModelExistence
+from feeluown.models import ModelType, ModelExistence, ModelStage
 from feeluown.utils.utils import elfhash
 from .model_state import ModelState
 
@@ -53,6 +53,14 @@ class BaseModel(_BaseModel):
         id_hash = elfhash(self.identifier.encode())
         return id_hash * 1000 + id(type(self)) % 1000
 
+    def __getattr__(self, attr):
+        try:
+            return super().__getattribute__(attr)
+        except AttributeError:
+            if attr.endswith('_display'):
+                return getattr(self, attr[:-8])
+            raise
+
 
 class BaseBriefModel(BaseModel):
     """
@@ -68,12 +76,13 @@ class BaseBriefModel(BaseModel):
 
     @classmethod
     def from_display_model(cls, model):
+        assert model.stage is ModelStage.display
         data = {}
         for field in cls.__fields__:
             if field in ('state', ):
                 continue
             if field in ('identifier', 'source', 'exists'):
-                value = getattr(model, field)
+                value = object.__getattribute__(model, field)
                 if field == 'exists':
                     if value == ModelExistence.no:
                         state_value = ModelState.not_exists
@@ -83,17 +92,10 @@ class BaseBriefModel(BaseModel):
                         state_value = ModelState.exists
                     data['state'] = state_value
             else:
+                assert field in model.meta.fields_display
                 value = getattr(model, f'{field}_display')
             data[field] = value
         return cls(**data)
-
-    def __getattr__(self, attr):
-        try:
-            return super().__getattribute__(attr)
-        except AttributeError:
-            if attr.endswith('_display'):
-                return getattr(self, attr[:-8])
-            raise
 
 
 class BaseNormalModel(BaseModel):
@@ -129,6 +131,9 @@ class BriefArtistModel(BaseBriefModel):
 
 
 class SongModel(BaseNormalModel):
+    class meta(BaseNormalModel.meta):
+        model_type = ModelType.song
+
     title: str
     album: Optional[BriefAlbumModel]
     artists: List[BriefArtistModel]

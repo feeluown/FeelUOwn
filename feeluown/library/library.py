@@ -304,12 +304,10 @@ class Library:
         return provider.song_list_similar(song)
 
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Optional[Media]:
-        source = song.source
-        model_type = song.meta.model_type
         if song.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for song
-            assert self.check_flags(source, model_type, PF.multi_quality)
-            provider = self.get_or_raise(source)
+            assert self.check_flags_by_model(song, PF.multi_quality)
+            provider = self.get_or_raise(song.source)
             media, _ = provider.song_select_media(song, policy)
         else:
             if song.meta.support_multi_quality:
