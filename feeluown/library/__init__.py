@@ -6,5 +6,6 @@ from .flags import Flags as ProviderFlags
 from .model_state import ModelState
 from .models import ModelFlags, BaseModel, \
     SongModel, BriefSongModel, \
-    BriefArtistModel, BriefAlbumModel
+    BriefArtistModel, BriefAlbumModel, \
+    cook_artists_name
 from .excs import NotSupported

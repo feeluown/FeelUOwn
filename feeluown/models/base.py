@@ -211,6 +211,7 @@ class ModelMetadata(object):
 
 class display_property:
     """Model 的展示字段的描述器"""
+
     def __init__(self, name):
         #: display 属性对应的真正属性的名字
         self.name_real = name

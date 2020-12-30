@@ -16,6 +16,12 @@ from feeluown.utils.utils import elfhash
 from .model_state import ModelState
 
 
+def cook_artists_name(names):
+    # [a, b, c] -> 'a, b & c'
+    artists_name = ', '.join(names)
+    return ' & '.join(artists_name.rsplit(', ', 1))
+
+
 class ModelFlags(IntFlag):
     none = 0x00000000
 
@@ -76,26 +82,34 @@ class BaseBriefModel(BaseModel):
 
     @classmethod
     def from_display_model(cls, model):
+        """Create a new model from an old model in display stage.
+
+        This method never triggers IO operations.
+        """
+        # Due to the display_property mechanism, it is unsafe to
+        # get attribute of other stage model property.
         assert model.stage is ModelStage.display
-        data = {}
+        data = {'state': cls._guess_state_from_exists(model.exists)}
         for field in cls.__fields__:
             if field in ('state', ):
                 continue
             if field in ('identifier', 'source', 'exists'):
                 value = object.__getattribute__(model, field)
-                if field == 'exists':
-                    if value == ModelExistence.no:
-                        state_value = ModelState.not_exists
-                    elif value == ModelExistence.unknown:
-                        state_value = ModelState.artificial
-                    else:
-                        state_value = ModelState.exists
-                    data['state'] = state_value
             else:
                 assert field in model.meta.fields_display
                 value = getattr(model, f'{field}_display')
             data[field] = value
         return cls(**data)
+
+    @classmethod
+    def _guess_state_from_exists(cls, exists):
+        if exists == ModelExistence.no:
+            state_value = ModelState.not_exists
+        elif exists == ModelExistence.unknown:
+            state_value = ModelState.artificial
+        else:
+            state_value = ModelState.exists
+        return state_value
 
 
 class BaseNormalModel(BaseModel):
