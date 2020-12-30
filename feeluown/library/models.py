@@ -44,6 +44,10 @@ class BaseModel(_BaseModel):
 
     identifier: str
     source: str = 'dummy'
+    state: ModelState = ModelState.artificial
+
+    #: (DEPRECATED) for backward compact
+    exists: ModelExistence = ModelExistence.unknown
 
     def cache_get(self, key):
         if key in self.__cache__:
@@ -75,10 +79,6 @@ class BaseBriefModel(BaseModel):
     """
     class meta(BaseModel.meta):
         flags = BaseModel.meta.flags | ModelFlags.brief
-
-    state: ModelState = ModelState.artificial
-    # (DEPRECATED) for backward compact
-    exists: ModelExistence = ModelExistence.unknown
 
     @classmethod
     def from_display_model(cls, model):
