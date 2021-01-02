@@ -7,7 +7,7 @@ Model v2 design principles
 
 import time
 from enum import IntFlag
-from typing import List, Optional
+from typing import List, Optional, Tuple, Any
 
 from pydantic import BaseModel as _BaseModel, PrivateAttr
 
@@ -32,21 +32,35 @@ class BaseModel(_BaseModel):
         model_type = ModelType.dummy.value
 
     class Config:
-        orm_mode = True
+        # Do not use Model.from_orm to convert v1 model to v2 model
+        # since v1 model has too much magic.
+        orm_mode = False
+        # Forbidding extra fields is good for debugging. The default behavior
+        # is a little implicit. If you want to store an extra attribute on model,
+        # use :meth:`cache_set` explicitly.
+        extra = 'forbid'
 
     __cache__: dict = PrivateAttr(default_factory=dict)
 
     identifier: str
-    source: str = 'dummy'
+    # Before, the default value of source is 'dummy', which is too implicit.
+    source: str
 
-    def cache_get(self, key):
+    def cache_get(self, key) -> Tuple[Any, bool]:
         if key in self.__cache__:
             value, expired_at = self.__cache__[key]
-            if expired_at >= int(time.time()):
-                return value
+            if expired_at is None or expired_at >= int(time.time()):
+                return value, True
+        return None, False
 
     def cache_set(self, key, value, ttl=None):
-        expired_at = int(time.time()) + ttl
+        """
+        :param int ttl: the unit is seconds.
+        """
+        if ttl is None:
+            expired_at = None
+        else:
+            expired_at = int(time.time()) + ttl
         self.__cache__[key] = (value, expired_at)
 
     def __hash__(self):
@@ -158,3 +172,21 @@ class SongModel(BaseNormalModel):
         else:
             m, s = 0, 0
         return '{:02}:{:02}'.format(int(m), int(s))
+
+
+class BriefUserModel(BaseBriefModel):
+    class Meta(BaseBriefModel.meta):
+        model_type = ModelType.user
+
+    name: str = ''
+    avatar_url: str = ''
+
+
+class CommentModel(BaseNormalModel):
+    class Meta(BaseNormalModel.meta):
+        model_type = ModelType.comment
+
+    content: str
+    parent_comment_id: str
+    time: int  # unix timestamp, for example 1591695620
+    user: BriefUserModel

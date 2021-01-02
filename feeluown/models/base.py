@@ -88,6 +88,7 @@ class ModelType(IntEnum):
     video = 6
 
     user = 17
+    comment = 18
 
 
 class SearchType(Enum):
