@@ -107,8 +107,7 @@ class SongBriefLabel(QLabel):
         album_action.triggered.connect(
             lambda: aio.create_task(self._goto_album(song)))
 
-        if self._app.library.check_flags(
-                song.source, song.meta.model_type, ProviderFlags.similar):
+        if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
             similar_song_action = menu.addAction('相似歌曲')
             similar_song_action.triggered.connect(
                 lambda: self._app.browser.goto(model=song, path='/similar'))
@@ -116,7 +115,8 @@ class SongBriefLabel(QLabel):
         menu.exec(e.globalPos())
 
     async def _goto_album(self, song):
-        album = await aio.run_in_executor(None, lambda: song.album)
+        album = await aio.run_in_executor(
+            None, lambda: self._app.library.song_upgrade(song).album)
         self._app.browser.goto(model=album)
 
     def on_action_hovered(self, action):
@@ -147,7 +147,8 @@ class SongBriefLabel(QLabel):
                 logger.debug('fetch song.artists for actions')
                 song = data['song']
                 self._fetching_artists = True
-                task = aio.run_in_executor(None, lambda: song.artists)
+                task = aio.run_in_executor(
+                    None, lambda: self._app.library.song_upgrade(song).artists)
                 task.add_done_callback(artists_fetched_cb)
 
 

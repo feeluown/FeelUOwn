@@ -430,7 +430,6 @@ class TableContainer(QFrame, BgTransparentMixin):
             lambda video: aio.create_task(self.play_video(video)))
 
         def goto_model(model):
-            model = self._app.library.cast_model_to_v1(model)
             self._app.browser.goto(model=model)
 
         for signal in [self.songs_table.show_artist_needed,
@@ -583,6 +582,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._app.player.play_songs(songs=songs)
 
     async def show_model(self, model):
+        model = self._app.library.cast_model_to_v1(model)
         model_type = ModelType(model.meta.model_type)
         if model_type == ModelType.album:
             renderer = AlbumRenderer(model)
