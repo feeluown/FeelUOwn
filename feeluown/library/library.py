@@ -303,6 +303,10 @@ class Library:
         provider = self.get_or_raise(song.source)
         return provider.song_list_similar(song)
 
+    def song_list_hot_comments(self, song: BriefSongProtocol):
+        provider = self.get_or_raise(song.source)
+        return provider.song_list_hot_comments(song)
+
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Optional[Media]:
         if song.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for song

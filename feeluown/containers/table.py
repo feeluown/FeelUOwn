@@ -25,6 +25,7 @@ from feeluown.widgets.video import VideoListModel, VideoListView, \
 from feeluown.widgets.playlist import PlaylistListModel, PlaylistListView, \
     PlaylistFilterProxyModel
 from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
+from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.widgets.meta import TableMetaWidget
 from feeluown.widgets.table_toolbar import SongsTableToolbar
 from feeluown.widgets.tabbar import TableTabBarV2
@@ -66,6 +67,7 @@ class Renderer:
         self.artists_table = container.artists_table
         self.videos_table = container.videos_table
         self.playlists_table = container.playlists_table
+        self.comments_table = container.comments_table
         # pylint: disable=protected-access
         self._app = container._app
 
@@ -178,6 +180,12 @@ class Renderer:
         self.container.current_table = None
         self.desc_widget.setText(desc)
         self.desc_widget.show()
+
+    def show_comments(self, comments):
+        self.container.current_table = self.comments_table
+        reader = wrap(comments)
+        model = CommentListModel(reader)
+        self.comments_table.setModel(model)
 
 
 class ArtistRenderer(Renderer):
@@ -416,6 +424,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.artists_table = ArtistListView(parent=self)
         self.videos_table = VideoListView(parent=self)
         self.playlists_table = PlaylistListView(parent=self)
+        self.comments_table = CommentListView(parent=self)
         self.desc_widget = DescLabel(parent=self)
 
         self._tables.append(self.songs_table)
@@ -423,6 +432,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._tables.append(self.artists_table)
         self._tables.append(self.playlists_table)
         self._tables.append(self.videos_table)
+        self._tables.append(self.comments_table)
 
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
@@ -442,7 +452,7 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         self.toolbar.play_all_needed.connect(self.play_all)
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
-        self.songs_table.about_to_show_menu.connect(self._add_similar_songs_action)
+        self.songs_table.about_to_show_menu.connect(self._songs_table_about_to_show_menu)
         self.songs_table.activated.connect(
             lambda index: aio.create_task(self._on_songs_table_activated(index)))
 
@@ -622,19 +632,20 @@ class TableContainer(QFrame, BgTransparentMixin):
         for song in songs:
             self._app.playlist.add(song)
 
-    def _add_similar_songs_action(self, ctx):
+    def _songs_table_about_to_show_menu(self, ctx):
         add_action = ctx['add_action']
         models = ctx['models']
         if not models or models[0].meta.model_type != ModelType.song:
             return
 
         song = models[0]
-        if self._app.library.check_flags(
-                song.source, song.meta.model_type, ProviderFlags.similar):
-            add_action(
-                '相似歌曲',
-                lambda *args: self._app.browser.goto(model=song, path='/similar')
-            )
+        goto = self._app.browser.goto
+
+        add_action('歌曲详情', lambda *args: goto(model=song))
+        if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
+            add_action('相似歌曲', lambda *args: goto(model=song, path='/similar'))
+        if self._app.library.check_flags_by_model(song, ProviderFlags.hot_comments):
+            add_action('歌曲评论', lambda *args: goto(model=song, path='/hot_comments'))
 
     async def _on_songs_table_activated(self, index):
         """

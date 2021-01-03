@@ -19,6 +19,7 @@ class Flags(IntFlag):
     multi_quality = 0x0001000
     similar = 0x00002000
     model_v2 = 0x00004000
+    hot_comments = 0x00008000
     """
     provider uses ModelV2 for a specific resource
     """

@@ -182,12 +182,14 @@ class Browser:
         from feeluown.gui.pages.player_playlist import render as render_player_playlist
         from feeluown.gui.pages.model import render as render_model
         from feeluown.gui.pages.similar_songs import render as render_similar_songs
+        from feeluown.gui.pages.comment import render as render_hot_comments
 
         model_page_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
 
         urlpatterns = [
             (f'{model_page_prefix}/<ns>/<identifier>', render_model),
             (f'{model_page_prefix}/songs/<identifier>/similar', render_similar_songs),
+            (f'{model_page_prefix}/songs/<identifier>/hot_comments', render_hot_comments),
             ('/colls/<identifier>', self._render_coll),
             ('/search', render_search),
             ('/player_playlist', render_player_playlist),

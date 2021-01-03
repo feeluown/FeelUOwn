@@ -196,11 +196,25 @@ class BriefUserModel(BaseBriefModel):
     avatar_url: str = ''
 
 
+class BriefCommentModel(BaseBriefModel):
+    class Meta(BaseBriefModel.meta):
+        model_type = ModelType.comment
+
+    user_name: str = ''
+    content: str = ''
+
+
 class CommentModel(BaseNormalModel):
     class Meta(BaseNormalModel.meta):
         model_type = ModelType.comment
 
-    content: str
-    parent_comment_id: str
-    time: int  # unix timestamp, for example 1591695620
     user: BriefUserModel
+    content: str
+    #: -1 means that the provider does not have such data
+    like_count: int
+    #: unix timestamp, for example 1591695620
+    time: int
+    #: the parent comment which this comment replies to
+    parent: Optional[BriefCommentModel]
+    #: the root comment id
+    root_comment_id: Optional[str]

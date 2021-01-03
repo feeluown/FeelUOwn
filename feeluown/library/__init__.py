@@ -7,5 +7,7 @@ from .model_state import ModelState
 from .models import ModelFlags, BaseModel, \
     SongModel, BriefSongModel, \
     BriefArtistModel, BriefAlbumModel, \
+    BriefCommentModel, CommentModel, \
+    BriefUserModel, \
     cook_artists_name
 from .excs import NotSupported
