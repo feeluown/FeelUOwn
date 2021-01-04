@@ -111,6 +111,10 @@ class SongBriefLabel(QLabel):
             similar_song_action = menu.addAction('相似歌曲')
             similar_song_action.triggered.connect(
                 lambda: self._app.browser.goto(model=song, path='/similar'))
+        if self._app.library.check_flags_by_model(song, ProviderFlags.hot_comments):
+            song_comments_action = menu.addAction('歌曲评论')
+            song_comments_action.triggered.connect(
+                lambda: self._app.browser.goto(model=song, path='/hot_comments'))
 
         menu.exec(e.globalPos())
 

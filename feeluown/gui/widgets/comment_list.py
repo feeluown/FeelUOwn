@@ -120,7 +120,7 @@ class CommentListDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         parent_width = self.parent().width()
-        fm = option.fontMetrics()
+        fm = option.fontMetrics
         comment = index.data(Qt.UserRole)
         content_rect = fm.boundingRect(
             0, 0, parent_width, 0,
