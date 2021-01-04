@@ -1,7 +1,22 @@
-from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, pyqtSignal, QSize, \
+from datetime import datetime
+
+from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
     QPoint, QRect
-from PyQt5.QtGui import QPalette, QPen, QFontMetrics, QFont
+from PyQt5.QtGui import QPalette, QPen, QFont
 from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame
+
+from feeluown.gui.helpers import ItemViewNoScrollMixin
+
+
+def human_readable_number_v1(n):
+    levels = [(100000000, '亿'),
+              (10000, '万')]
+    for value, unit in levels:
+        if n > value:
+            first, second = n // value, (n % value) // (value // 10)
+            return f'{first}.{second}{unit}'
+    else:
+        return str(n)
 
 
 class CommentListModel(QAbstractListModel):
@@ -12,6 +27,9 @@ class CommentListModel(QAbstractListModel):
 
     def rowCount(self, _=QModelIndex()):
         return self._reader.count
+
+    def columnCount(self, _=QModelIndex()):
+        return 1
 
     def flags(self, index):
         if not index.isValid():
@@ -31,7 +49,7 @@ class CommentListDelegate(QStyledItemDelegate):
 
         self._margin_h = 10
         self._margin_v = 10
-        self._name_content_margin = 3
+        self._name_content_margin = 5
         self._name_height = 15
 
     def paint(self, painter, option, index):
@@ -52,6 +70,26 @@ class CommentListDelegate(QStyledItemDelegate):
         painter.setFont(font)
         name_rect = QRect(0, 0, width, self._name_height)
         painter.drawText(name_rect, Qt.AlignLeft, comment.user.name)
+        painter.restore()
+
+        # draw comment other metadata
+        painter.save()
+        metadata_rect = QRect(0, 0, width, self._name_height)
+        text_list = []
+        if comment.time:
+            dt = datetime.fromtimestamp(comment.time)
+            text_list.append(dt.strftime('%Y-%m-%d %H:%M'))
+        if comment.liked_count != -1:
+            liked_count_text = human_readable_number_v1(comment.liked_count)
+            text_list.append(f'♥ {liked_count_text}')
+        text = '  |  '.join(text_list)
+        text_color = option.palette.color(QPalette.Text)
+        text_color.setAlpha(100)
+        pen = QPen()
+        pen.setColor(text_color)
+        painter.setPen(pen)
+        if text:
+            painter.drawText(metadata_rect, Qt.AlignRight, text)
         painter.restore()
 
         # draw comment content
@@ -82,7 +120,7 @@ class CommentListDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         parent_width = self.parent().width()
-        fm = self.parent().fontMetrics()
+        fm = option.fontMetrics()
         comment = index.data(Qt.UserRole)
         content_rect = fm.boundingRect(
             0, 0, parent_width, 0,
@@ -94,14 +132,15 @@ class CommentListDelegate(QStyledItemDelegate):
         return QSize(parent_width, height)
 
 
-class CommentListView(QListView):
+class CommentListView(ItemViewNoScrollMixin, QListView):
 
     def __init__(self, parent=None):
-        super().__init__(parent=parent)
+        super().__init__(parent)
+        QListView.__init__(self, parent)
 
         self._delegate = CommentListDelegate(self)
         self.setItemDelegate(self._delegate)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setMouseTracking(True)

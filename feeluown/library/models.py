@@ -211,7 +211,7 @@ class CommentModel(BaseNormalModel):
     user: BriefUserModel
     content: str
     #: -1 means that the provider does not have such data
-    like_count: int
+    liked_count: int
     #: unix timestamp, for example 1591695620
     time: int
     #: the parent comment which this comment replies to
