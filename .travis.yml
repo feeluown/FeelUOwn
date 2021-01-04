@@ -24,8 +24,7 @@ install:
     - pip install pyqt5==5.14.0 pyopengl
     - pip install coveralls
     - pip install sphinx_rtd_theme
-    - pip install 'pytest>=5.4.0' flake8 pytest-cov pytest-asyncio pytest-qt pytest-mock --upgrade
-    - pip install -e .
+    - pip install -e .[dev]
 
 script:
     - make test

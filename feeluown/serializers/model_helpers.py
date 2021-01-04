@@ -2,10 +2,13 @@ from feeluown.library import AbstractProvider
 from feeluown.models import SongModel, ArtistModel, \
     AlbumModel, PlaylistModel, UserModel, SearchModel
 
+from .base import try_cast_model_to_v1
+
 
 class ModelSerializerMixin:
 
     def _get_items(self, model):
+        model = try_cast_model_to_v1(model)
         # initialize fields that need to be serialized
         # if as_line option is set, we always use fields_display
         if self.opt_as_line or self.opt_brief:

@@ -155,7 +155,7 @@ def attach_attrs(app):
     """初始化 app 属性"""
     loop = asyncio.get_event_loop()
     app.library = Library(app.config.PROVIDERS_STANDBY)
-    app.live_lyric = LiveLyric()
+    app.live_lyric = LiveLyric(app)
     player_kwargs = dict(
         audio_device=bytes(app.config.MPV_AUDIO_DEVICE, 'utf-8')
     )

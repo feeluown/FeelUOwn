@@ -1,6 +1,7 @@
 import copy
 import logging
 import random
+import warnings
 from enum import IntEnum
 
 from feeluown.utils.dispatch import Signal
@@ -168,6 +169,7 @@ class Playlist:
     def prepare_media(self, song):
         """prepare media data
         """
+        warnings.warn('use library.song_prepare_media please', DeprecationWarning)
         if song.meta.support_multi_quality:
             media, quality = song.select_media(self.audio_select_policy)
         else:

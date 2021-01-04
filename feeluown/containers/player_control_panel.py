@@ -8,6 +8,7 @@ from PyQt5.QtWidgets import (
     QPushButton, QSizePolicy, QMenu,
 )
 
+from feeluown.library import ProviderFlags
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
@@ -100,16 +101,26 @@ class SongBriefLabel(QLabel):
         menu.hovered.connect(self.on_action_hovered)
         artist_menu = menu.addMenu('查看歌手')
         album_action = menu.addAction('查看专辑')
+
         artist_menu.menuAction().setData({'artists': None, 'song': song})
-        album_action.setData({'song': song})
-        artist_menu.menuAction().triggered.connect(
-            lambda: aio.create_task(self._goto_artists(song)))
+
         album_action.triggered.connect(
             lambda: aio.create_task(self._goto_album(song)))
+
+        if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
+            similar_song_action = menu.addAction('相似歌曲')
+            similar_song_action.triggered.connect(
+                lambda: self._app.browser.goto(model=song, path='/similar'))
+        if self._app.library.check_flags_by_model(song, ProviderFlags.hot_comments):
+            song_comments_action = menu.addAction('歌曲评论')
+            song_comments_action.triggered.connect(
+                lambda: self._app.browser.goto(model=song, path='/hot_comments'))
+
         menu.exec(e.globalPos())
 
     async def _goto_album(self, song):
-        album = await aio.run_in_executor(None, lambda: song.album)
+        album = await aio.run_in_executor(
+            None, lambda: self._app.library.song_upgrade(song).album)
         self._app.browser.goto(model=album)
 
     def on_action_hovered(self, action):
@@ -140,7 +151,8 @@ class SongBriefLabel(QLabel):
                 logger.debug('fetch song.artists for actions')
                 song = data['song']
                 self._fetching_artists = True
-                task = aio.run_in_executor(None, lambda: song.artists)
+                task = aio.run_in_executor(
+                    None, lambda: self._app.library.song_upgrade(song).artists)
                 task.add_done_callback(artists_fetched_cb)
 
 
@@ -355,6 +367,7 @@ class PlayerControlPanel(QFrame):
                     '{} - {}'.format(text, bitrate_text))
 
     async def update_mv_btn_status(self, song):
+        song = self._app.library.cast_model_to_v1(song)
         try:
             mv = await async_run(lambda: song.mv)
         except ProviderIOError:

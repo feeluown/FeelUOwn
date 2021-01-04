@@ -117,6 +117,7 @@ class VideoShowCtl:
 
     def play_mv(self):
         song = self._app.player.current_song
+        song = self._app.library.cast_model_to_v1(song)
         mv = song.mv if song else None
         if mv is not None:
             if mv.meta.support_multi_quality:

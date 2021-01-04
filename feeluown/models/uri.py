@@ -248,6 +248,8 @@ def resolve(line, model=None):
 
     for example, line can be 'fuo://local/songs/1/cover/data'
     """
+    from feeluown.library import ProviderFlags, BriefSongModel
+
     if model is None:
         model, path = parse_line(line)
         library = Resolver.library
@@ -255,8 +257,13 @@ def resolve(line, model=None):
         if provider is None:
             model.exists = ModelExistence.no
         else:
-            model_cls = provider.get_model_cls(model.meta.model_type)
-            model = model_cls(model)
+            if model.meta.model_type == ModelType.song \
+               and library.check_flags(
+                   model.source, model.meta.model_type, ProviderFlags.model_v2):
+                model = BriefSongModel.from_display_model(model)
+            else:
+                model_cls = provider.get_model_cls(model.meta.model_type)
+                model = model_cls(model)
     else:
         path = line
     # NOTE: the path resolve logic is deprecated

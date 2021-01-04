@@ -58,7 +58,9 @@ class Serializer:
 
     @classmethod
     def get_serializer_cls(cls, model):
+        model = try_cast_model_to_v1(model)
         for model_cls, serialize_cls in cls._mapping.items():
+            # FIXME: remove me when model v2 has its own serializer
             if isinstance(model, model_cls):
                 return serialize_cls
         raise SerializerError("no serializer for {}".format(model))
@@ -101,3 +103,15 @@ class SimpleSerializerMixin(Serializer):
         """
         items = self._get_items(obj)
         return self.serialize_items(items)
+
+
+def try_cast_model_to_v1(model):
+    from feeluown.library import BaseModel
+    from feeluown.fuoexec import _exec_globals
+
+    if isinstance(model, BaseModel):
+        app = _exec_globals.get('app')
+        if app is not None:
+            model = app.library.cast_model_to_v1(model)
+            return model
+    return model
