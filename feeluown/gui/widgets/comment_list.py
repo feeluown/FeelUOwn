@@ -5,7 +5,7 @@ from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
 from PyQt5.QtGui import QPalette, QPen, QFont
 from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame
 
-from feeluown.gui.helpers import ItemViewNoScrollMixin
+from feeluown.gui.helpers import ItemViewNoScrollMixin, Paddings, Margins
 
 
 def human_readable_number_v1(n):
@@ -51,14 +51,17 @@ class CommentListDelegate(QStyledItemDelegate):
         self._margin_v = 10
         self._name_content_margin = 5
         self._name_height = 15
+        self._parent_comment_paddings = Paddings(8, 3, 8, 3)
+        self._parent_comment_margins = Margins(20, 5, 10, 5)
 
     def paint(self, painter, option, index):
         painter.save()
         comment = index.data(Qt.UserRole)
+        fm = option.fontMetrics
 
         # size for render comment
-        width = option.rect.width() - self._margin_h * 2
-        height = option.rect.height() - self._margin_v * 2
+        body_width = option.rect.width() - self._margin_h * 2
+        body_height = option.rect.height() - self._margin_v * 2
 
         painter.translate(QPoint(option.rect.x() + self._margin_h,
                                  option.rect.y() + self._margin_v))
@@ -68,13 +71,13 @@ class CommentListDelegate(QStyledItemDelegate):
         font = QFont()
         font.setBold(True)
         painter.setFont(font)
-        name_rect = QRect(0, 0, width, self._name_height)
+        name_rect = QRect(0, 0, body_width, self._name_height)
         painter.drawText(name_rect, Qt.AlignLeft, comment.user.name)
         painter.restore()
 
         # draw comment other metadata
         painter.save()
-        metadata_rect = QRect(0, 0, width, self._name_height)
+        metadata_rect = QRect(0, 0, body_width, self._name_height)
         text_list = []
         if comment.time:
             dt = datetime.fromtimestamp(comment.time)
@@ -96,16 +99,37 @@ class CommentListDelegate(QStyledItemDelegate):
         painter.save()
         name_height = self._name_height + self._name_content_margin
         painter.translate(QPoint(0, name_height))
-        content_height = height - name_height
-        content_rect = QRect(0, 0, width, content_height)
+        content_height = self._get_text_height(fm, body_width, comment.content)
+        content_rect = QRect(0, 0, body_width, content_height)
         painter.drawText(content_rect,
                          Qt.TextWordWrap,
                          comment.content)
+        parent_comment = comment.parent
+        if parent_comment is not None:
+            p_margins = self._parent_comment_margins
+            p_paddings = self._parent_comment_paddings
+            text = f'{parent_comment.user_name}：{parent_comment.content}'
+            p_width = body_width - p_margins.width
+            p_height = self._get_text_height(fm, p_width, text)
+            p_body_rect = QRect(p_margins.left, p_margins.top + content_height,
+                                p_width, p_height + p_paddings.height)
+            p_content_rect = QRect(p_body_rect.x() + p_paddings.left,
+                                   p_body_rect.y() + p_paddings.top,
+                                   p_body_rect.width() - p_paddings.width,
+                                   p_body_rect.height() - p_paddings.height)
+            bg_color = option.palette.color(QPalette.Window)
+            if bg_color.lightness() > 150:
+                bg_color = bg_color.darker(100)
+            else:
+                bg_color = bg_color.lighter(100)
+            painter.fillRect(p_body_rect, bg_color)
+            painter.drawText(p_content_rect, Qt.TextWordWrap, text)
+
         painter.restore()
 
         # draw a dotted line under each row
         painter.save()
-        painter.translate(QPoint(0, height + self._margin_v))
+        painter.translate(QPoint(0, body_height + self._margin_v))
         text_color = option.palette.color(QPalette.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
@@ -113,7 +137,7 @@ class CommentListDelegate(QStyledItemDelegate):
             non_text_color = text_color.lighter(150)
         non_text_color.setAlpha(30)
         painter.setPen(QPen(non_text_color, 1, Qt.DotLine))
-        painter.drawLine(QPoint(0, 0),  QPoint(width, 0))
+        painter.drawLine(QPoint(0, 0),  QPoint(body_width, 0))
         painter.restore()
 
         painter.restore()
@@ -122,14 +146,25 @@ class CommentListDelegate(QStyledItemDelegate):
         parent_width = self.parent().width()
         fm = option.fontMetrics
         comment = index.data(Qt.UserRole)
-        content_rect = fm.boundingRect(
-            0, 0, parent_width, 0,
-            Qt.AlignVCenter | Qt.TextWordWrap,
-            comment.content
-        )
-        height = content_rect.height() + self._name_height + \
+        content_width = parent_width - 2 * self._margin_h
+        content_height = self._get_text_height(fm, content_width, comment.content)
+        height = content_height + self._name_height + \
             self._name_content_margin + self._margin_v * 2
+        parent_comment = comment.parent
+        if parent_comment is not None:
+            p_margins = self._parent_comment_margins
+            p_paddings = self._parent_comment_paddings
+            text = f'{parent_comment.user_name}：{parent_comment.content}'
+            p_height = self._get_text_height(fm, content_width - p_margins.width, text)
+            height += p_height + p_margins.height + p_paddings.height
         return QSize(parent_width, height)
+
+    def _get_text_height(self, fm, width, text):
+        return fm.boundingRect(
+            0, 0, width, 0,
+            Qt.AlignVCenter | Qt.TextWordWrap,
+            text
+        ).height()
 
 
 class CommentListView(ItemViewNoScrollMixin, QListView):
@@ -147,25 +182,51 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
         self.setFrameShape(QFrame.NoFrame)
         self.setResizeMode(QListView.Adjust)
 
+    def min_height(self):
+        """
+        override ItemViewNoScrollMixin.min_height
+        """
+        model = self.model()
+        if model is None:
+            return super().min_height()
+        row_count = model.rowCount()
+        height = 0
+        while row_count >= 0:
+            row_count -= 1
+            height += self.sizeHintForRow(row_count)
+        return height + self._reserved
+
+    def sizeHint(self):
+        """
+        HELP: I don't know why ItemViewNoScrollMixin use self.width() as
+        sizeHint width.
+        """
+        s_size = super().sizeHint()
+        o_size = super(QListView, self).sizeHint()
+        return QSize(o_size.width(), s_size.height())
+
 
 if __name__ == '__main__':
     import time
     from PyQt5.QtWidgets import QApplication
     from feeluown.utils.reader import wrap
-    from feeluown.library.models import CommentModel, BriefUserModel
+    from feeluown.library.models import CommentModel, BriefUserModel, BriefCommentModel
 
     user = BriefUserModel(identifier='fuo-bot',
                           source='fuo',
                           name='随风而去')
     content = ('有没有一首歌会让你很想念，有没有一首歌你会假装听不见，'
                '听了又掉眼泪，却按不下停止健')
+    brief_comment = BriefCommentModel(identifier='ouf',
+                                      user_name='world',
+                                      content='有没有人曾告诉你')
     comment = CommentModel(identifier='fuo',
                            source='fuo',
                            user=user,
-                           like_count=1,
+                           liked_count=1,
                            content=content,
                            time=int(time.time()),
-                           parent=None,)
+                           parent=brief_comment,)
     comment2 = comment.copy()
     comment2.content = 'hello world'
 

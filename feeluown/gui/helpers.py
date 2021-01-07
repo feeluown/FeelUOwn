@@ -167,3 +167,36 @@ class ItemViewNoScrollMixin:
 def elided_text(text, width):
     font_metrics = QFontMetrics(QApplication.font())
     return font_metrics.elidedText(text, Qt.ElideRight, width)
+
+
+class Paddings(tuple):
+    def __new__(cls, *sequence):
+        assert len(sequence) == 4
+        return super().__new__(cls, tuple(sequence))
+
+    @property
+    def left(self):
+        return self[0]
+
+    @property
+    def top(self):
+        return self[1]
+
+    @property
+    def right(self):
+        return self[2]
+
+    @property
+    def bottom(self):
+        return self[3]
+
+    @property
+    def height(self):
+        return self[1] + self[3]
+
+    @property
+    def width(self):
+        return self[0] + self[2]
+
+
+Margins = Paddings
