@@ -143,6 +143,7 @@ class CommentListDelegate(QStyledItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
+        super_size_hint = super().sizeHint(option, index)
         parent_width = self.parent().width()
         fm = option.fontMetrics
         comment = index.data(Qt.UserRole)
@@ -157,7 +158,7 @@ class CommentListDelegate(QStyledItemDelegate):
             text = f'{parent_comment.user_name}：{parent_comment.content}'
             p_height = self._get_text_height(fm, content_width - p_margins.width, text)
             height += p_height + p_margins.height + p_paddings.height
-        return QSize(parent_width, height)
+        return QSize(super_size_hint.width(), height)
 
     def _get_text_height(self, fm, width, text):
         return fm.boundingRect(
@@ -175,7 +176,7 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
 
         self._delegate = CommentListDelegate(self)
         self.setItemDelegate(self._delegate)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setMouseTracking(True)
@@ -190,20 +191,11 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
         if model is None:
             return super().min_height()
         row_count = model.rowCount()
-        height = 0
+        height = self._reserved
         while row_count >= 0:
             row_count -= 1
             height += self.sizeHintForRow(row_count)
-        return height + self._reserved
-
-    def sizeHint(self):
-        """
-        HELP: I don't know why ItemViewNoScrollMixin use self.width() as
-        sizeHint width.
-        """
-        s_size = super().sizeHint()
-        o_size = super(QListView, self).sizeHint()
-        return QSize(o_size.width(), s_size.height())
+        return height
 
 
 if __name__ == '__main__':

@@ -138,13 +138,14 @@ class ItemViewNoScrollMixin:
         e.ignore()
 
     def sizeHint(self):
+        super_size_hint = super().sizeHint()
         height = min_height = self.min_height()
         if self.model() is not None:
             index = self._last_index()
             rect = self.visualRect(index)
             height = rect.y() + rect.height() + self._reserved
             height = max(min_height, height)
-        return QSize(self.width(), height)
+        return QSize(super_size_hint.width(), height)
 
     def _last_index(self):
         source_model = self.model()
