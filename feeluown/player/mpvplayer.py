@@ -119,7 +119,10 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.playlist_clear()
         if self._use_cache and url.startswith('http'):
             if self._current_reader:
-                self._current_reader.unregister()
+                try:
+                    self._current_reader.unregister()
+                except RuntimeError:
+                    pass
             url, reader = self._cache.get(url)
             self._current_reader = reader
         self._mpv.play(url)
@@ -156,7 +159,10 @@ class MpvPlayer(AbstractPlayer):
         self.state = State.stopped
         self._current_media = None
         if self._use_cache and self._current_reader:
-            self._current_reader.unregister()
+            try:
+                self._current_reader.unregister()
+            except RuntimeError:
+                pass
         self._mpv.playlist_clear()
         logger.info('Player stopped.')
 
