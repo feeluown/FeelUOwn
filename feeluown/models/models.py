@@ -1,5 +1,6 @@
 # type: ignore
 
+import time
 import logging
 import warnings
 
@@ -28,13 +29,13 @@ class BaseModel(Model):
         model_type = ModelType.dummy.value
 
         #: declare model fields, each model must have an identifier field
-        fields = ['identifier']
+        fields = ['identifier', '__cache__']
 
         #: Model 用来展示的字段
         fields_display = []
 
         #: 不触发 get 的 Model 字段，这些字段往往 get 是获取不到的
-        fields_no_get = ['identifier']
+        fields_no_get = ['identifier', '__cache__']
 
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
@@ -50,6 +51,30 @@ class BaseModel(Model):
     @classmethod
     def list(cls, identifier_list):
         """Model batch get method"""
+
+    def cache_get(self, key):
+        self._init_cache()
+        if key in self.__cache__:
+            value, expired_at = self.__cache__[key]
+            if expired_at is None or expired_at >= int(time.time()):
+                return value, True
+        return None, False
+
+    def cache_set(self, key, value, ttl=None):
+        """
+        :param int ttl: the unit is seconds.
+        """
+        self._init_cache()
+        if ttl is None:
+            expired_at = None
+        else:
+            expired_at = int(time.time()) + ttl
+        self.__cache__[key] = (value, expired_at)
+
+    def _init_cache(self):
+        # not thread safe
+        if self.__cache__ is None:
+            self.__cache__ = {}
 
 
 class ArtistModel(BaseModel):
