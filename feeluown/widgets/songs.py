@@ -248,7 +248,7 @@ class SongsTableModel(QAbstractTableModel):
     def rowCount(self, parent=QModelIndex()):
         return len(self.songs)
 
-    def columnCount(self, _):
+    def columnCount(self, _=QModelIndex()):
         return 6
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
@@ -258,7 +258,7 @@ class SongsTableModel(QAbstractTableModel):
                 if section < len(sections):
                     return sections[section]
                 return ''
-            elif role == Qt.SizeHintRole:
+            elif role == Qt.SizeHintRole and self.parent() is not None:
                 # we set height to 25 since the header can be short under macOS.
                 # HELP: set height to fixed value manually is not so elegant
                 height = 25
@@ -443,7 +443,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         can be uncertain. I don't know why this would happen,
         since we have set width for the header.
         """
-        if index.isValid():
+        if index.isValid() and self.parent() is not None:
             widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
             width = self.parent().width()
             w = int(width * widths[index.column()])
