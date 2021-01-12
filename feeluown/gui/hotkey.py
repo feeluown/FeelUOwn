@@ -1,8 +1,6 @@
 from PyQt5.QtCore import Qt, QObject, QCoreApplication, QEvent
 from PyQt5.QtGui import QKeySequence as KS
-from PyQt5.QtWidgets import QShortcut as Sc
-
-from feeluown.player import State
+from PyQt5.QtWidgets import QShortcut
 
 
 class HotkeyManager(QObject):
@@ -17,18 +15,24 @@ class HotkeyManager(QObject):
         ui = self._app.ui
 
         # magicbox
-        Sc(KS('Ctrl+F'), app).activated.connect(ui.magicbox.setFocus)
+        QShortcut(KS('Ctrl+F'), app).activated.connect(ui.magicbox.setFocus)
 
         # player
-        Sc(KS(Qt.Key_Space), app).activated.connect(app.player.toggle)
-        Sc(KS(Qt.Key_Right), app).activated.connect(self._player_forward_a_little)
-        Sc(KS(Qt.Key_Left), app).activated.connect(self._player_backward_a_little)
-        Sc(KS(Qt.Key_Up), app).activated.connect(self._player_volume_up_a_little)
-        Sc(KS(Qt.Key_Down), app).activated.connect(self._player_volume_down_a_little)
+        QShortcut(KS(Qt.Key_Space), app).activated.connect(app.player.toggle)
+
+        def p_shortcut_connect(k, cb):  # an alias to simplify code
+            sc = QShortcut(KS(k), ui.pc_panel)
+            sc.setContext(Qt.WidgetWithChildrenShortcut)
+            sc.activated.connect(cb)
+
+        p_shortcut_connect(Qt.Key_Right, self._player_forward_a_little)
+        p_shortcut_connect(Qt.Key_Left, self._player_backward_a_little)
+        p_shortcut_connect(Qt.Key_Up, self._player_volume_up_a_little)
+        p_shortcut_connect(Qt.Key_Down, self._player_volume_down_a_little)
 
         # browser
-        Sc(KS.Back, app).activated.connect(app.browser.back)
-        Sc(KS.Forward, app).activated.connect(app.browser.forward)
+        QShortcut(KS.Back, app).activated.connect(app.browser.back)
+        QShortcut(KS.Forward, app).activated.connect(app.browser.forward)
 
         # install event filter on app
         q_app = QCoreApplication.instance()
@@ -46,14 +50,15 @@ class HotkeyManager(QObject):
         return False
 
     def _player_forward_a_little(self):
-        if self._app.player.state in (State.paused, State.playing):
-            self._app.player.position = min(self._app.player.duration - 1,
-                                            self._app.player.position + 5)
+        old_position = self._app.player.position
+        duration = self._app.player.duration
+        if None not in (old_position, duration):
+            self._app.player.position = min(duration - 1, old_position + 5)
 
     def _player_backward_a_little(self):
-        if self._app.player.state in (State.paused, State.playing):
-            self._app.player.position = max(0,
-                                            self._app.player.position - 5)
+        old_position = self._app.player.position
+        if old_position is not None:
+            self._app.player.position = max(0, old_position - 5)
 
     def _player_volume_up_a_little(self):
         self._app.player.volume = min(100,

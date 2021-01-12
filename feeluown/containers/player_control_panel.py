@@ -230,6 +230,8 @@ class PlayerControlPanel(QFrame):
         self.duration_label = DurationLabel(app, parent=self)
         self.position_label = ProgressLabel(app, parent=self)
 
+        # we should enable focus since we want to have shortcut keys
+        self.setFocusPolicy(Qt.StrongFocus)
         self.song_source_label.setObjectName('song_source_label')
 
         self.next_btn.clicked.connect(self._app.playlist.next)
