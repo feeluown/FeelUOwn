@@ -5,8 +5,6 @@ from collections import deque
 from urllib.parse import urlencode
 from typing import Optional
 
-from PyQt5.QtGui import QKeySequence
-
 from feeluown.utils import aio
 from feeluown.utils.router import Router, NotFound
 from feeluown.models.uri import resolve, reverse, ResolveFailed, parse_line
@@ -40,9 +38,6 @@ class Browser:
         #: the value in local_storage must be string,
         # please follow the convention
         self.local_storage = {}
-
-        self._app.hotkey_mgr.register([QKeySequence.Back], self.back)
-        self._app.hotkey_mgr.register([QKeySequence.Forward], self.forward)
 
     @property
     def ui(self):

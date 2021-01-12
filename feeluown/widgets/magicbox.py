@@ -2,7 +2,7 @@ import io
 import sys
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QFontDatabase, QKeySequence
+from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.fuoexec import fuoexec
@@ -45,11 +45,6 @@ class MagicBox(QLineEdit):
         self.textChanged.connect(self.__on_text_edited)
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
-
-        self._app.hotkey_mgr.register(
-            [QKeySequence('Ctrl+F'), QKeySequence(':'), QKeySequence('Alt+x')],
-            self.setFocus
-        )
 
     def show_msg(self, text, timeout=2000, force=False):
         # do not show message if we has focus, since it will

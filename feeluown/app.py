@@ -289,6 +289,7 @@ def init_app(app):
 
     app.plugin_mgr.scan()
     if app.mode & App.GuiMode:
+        app.hotkey_mgr.initialize()
         app.theme_mgr.initialize()
         if app.config.ENABLE_TRAY:
             app.tray.initialize()

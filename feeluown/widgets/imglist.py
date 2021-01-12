@@ -292,9 +292,3 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
 
         self._row_height = calc_cover_size(self.width())[1] + CoverSpacing
         self.adjust_height()
-
-    def mouseReleaseEvent(self, e):
-        if e.button() in (Qt.BackButton, Qt.ForwardButton):
-            e.ignore()
-        else:
-            super().mouseReleaseEvent(e)

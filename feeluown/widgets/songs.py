@@ -561,9 +561,3 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
                 self.remove_song_func(song)
                 distinct_rows.add(row)
         source_model.removeRows(indexes[0].row(), len(distinct_rows))
-
-    def mouseReleaseEvent(self, e):
-        if e.button() in (Qt.BackButton, Qt.ForwardButton):
-            e.ignore()
-        else:
-            super().mouseReleaseEvent(e)
