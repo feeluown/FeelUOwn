@@ -1,8 +1,9 @@
 import sys
 
-from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
+from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex, QUrl
 from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
+from PyQt5.QtQuick import QQuickView
 
 from feeluown.utils import aio
 from feeluown.models import ModelType
@@ -92,52 +93,73 @@ class RightPanel(QFrame):
         self.table_container = self.scrollarea.t
         # TODO: collection container will be removed
         self.collection_container = CollectionContainer(self._app, self)
+        self.quick_view = QQuickView()
+        self.qml_container = self.createWindowContainer(self.quick_view)
+        self.quick_view.setResizeMode(QQuickView.SizeRootObjectToView)
         self.bottom_panel = BottomPanel(app, self)
 
         self._setup_ui()
 
+        self.quick_view.statusChanged.connect(self.on_quickview_status_changed)
+
     def _setup_ui(self):
         self.scrollarea.setMinimumHeight(100)
-        self.collection_container.hide()
+        self.set_central_widget(self.scrollarea)
         self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self.scrollarea)
         self._layout.addWidget(self.collection_container)
+        self._layout.addWidget(self.qml_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
+    def set_central_widget(self, widget):
+        widgets = [self.scrollarea, self.collection_container, self.qml_container]
+        for w in widgets:
+            if w is widget:
+                w.show()
+            else:
+                w.hide()
+
     def show_model(self, model):
-        self.scrollarea.show()
-        self.collection_container.hide()
+        self.set_central_widget(self.scrollarea)
         # TODO: use PreemptiveTask
         aio.create_task(self.table_container.show_model(model))
 
     def show_songs(self, songs):
-        self.collection_container.hide()
-        self.scrollarea.show()
+        self.set_central_widget(self.scrollarea)
         self.table_container.show_songs(songs)
+
+    def show_playlists(self, playlists):
+        from feeluown.widgets.playlists import PlaylistsModel
+
+        class O:
+            name = ''
+
+        model = PlaylistsModel(self.qml_container)
+        model.add(O())
+        self.set_central_widget(self.qml_container)
+        self.quick_view.setInitialProperties({'model': model})
+        self.quick_view.setSource(QUrl('qml:img_list.qml'))
 
     def show_collection(self, coll):
 
         def _show_pure_albums_coll(coll):
-            self.collection_container.hide()
+            self.set_central_widget(self.scrollarea)
             reader = RandomSequentialReader.from_list(coll.models)
             self.table_container.show_albums_coll(reader)
 
         def _show_pure_songs_coll(coll):
-            self.collection_container.hide()
-            self.scrollarea.show()
+            self.set_central_widget(self.scrollarea)
             self.table_container.show_collection(coll)
 
         def _show_mixed_coll(coll):
-            self.scrollarea.hide()
-            self.collection_container.show()
+            self.set_central_widget(self.collection_container)
             self.collection_container.show_collection(coll)
 
         def _show_pure_videos_coll(coll):
             from feeluown.containers.table import VideosRenderer
 
-            self.collection_container.hide()
-            self.scrollarea.show()
+            self.set_central_widget(self.scrollarea)
             reader = RandomSequentialReader.from_list(coll.models)
             renderer = VideosRenderer(reader)
             aio.create_task(self.table_container.set_renderer(renderer))
@@ -294,3 +316,8 @@ class RightPanel(QFrame):
     def sizeHint(self):
         size = super().sizeHint()
         return QSize(760, size.height())
+
+    def on_quickview_status_changed(self, status):
+        if status == QQuickView.Error:
+            for err in self.quick_view.errors():
+                print(err.toString())

@@ -77,8 +77,9 @@ class App:
                 else:
                     songs.append(song)
             playlist.init_from(songs)
-            if songs and self.mode & App.GuiMode:
-                self.browser.goto(page='/player_playlist')
+            # if songs and self.mode & App.GuiMode:
+            #     self.browser.goto(page='/player_playlist')
+            self.ui.right_panel.show_playlists(None)
 
             song = state['song']
 
@@ -230,9 +231,11 @@ def create_app(config):
 
         pkg_root_dir = os.path.dirname(__file__)
         icons_dir = os.path.join(pkg_root_dir, 'icons')
+        qml_dir = os.path.join(pkg_root_dir, 'gui/qml')
 
         q_app = QApplication(sys.argv)
         QDir.addSearchPath('icons', icons_dir)
+        QDir.addSearchPath('qml', qml_dir)
 
         q_app.setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         q_app.setApplicationName('FeelUOwn')

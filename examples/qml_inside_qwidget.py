@@ -29,6 +29,7 @@ comment2.content = 'hello world'
 reader = wrap([comment, comment2] * 1000)
 QML_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                         'demo.qml')
+QML_PATH = 'feeluown/gui/qml/img_list.qml'
 
 
 if __name__ == '__main__':
