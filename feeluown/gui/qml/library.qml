@@ -2,6 +2,8 @@ import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
 
+import './' as Local
+
 
 Item {
   width: 640
@@ -15,7 +17,7 @@ Item {
       width: parent.width
 
       Repeater {
-        model: ["概览", "歌曲", "歌手", "专辑", "视频"]
+        model: ["歌曲", "歌手", "专辑", "视频"]
 
         TabButton {
           id: button
@@ -47,10 +49,11 @@ Item {
       Item {
         id: homeTab
 
-        Text {
-          text: "最近播放"
-          font.pointSize: 15
-          font.bold: true
+        Local.SongTable {
+          id: songTable
+
+          width: parent.width
+          height: parent.height
         }
       }
       Item {
