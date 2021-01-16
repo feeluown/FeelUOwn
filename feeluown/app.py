@@ -77,9 +77,8 @@ class App:
                 else:
                     songs.append(song)
             playlist.init_from(songs)
-            # if songs and self.mode & App.GuiMode:
-            #     self.browser.goto(page='/player_playlist')
-            self.ui.right_panel.show_playlists(None)
+            if songs and self.mode & App.GuiMode:
+                self.browser.goto(page='/player_playlist')
 
             song = state['song']
 

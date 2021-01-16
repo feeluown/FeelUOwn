@@ -129,17 +129,13 @@ class RightPanel(QFrame):
         self.set_central_widget(self.scrollarea)
         self.table_container.show_songs(songs)
 
-    def show_playlists(self, playlists):
-        from feeluown.widgets.playlists import PlaylistsModel
+    def show_collections_library(self, songs):
+        from feeluown.serializers import serialize
 
-        class O:
-            name = ''
-
-        model = PlaylistsModel(self.qml_container)
-        model.add(O())
         self.set_central_widget(self.qml_container)
-        self.quick_view.setInitialProperties({'model': model})
-        self.quick_view.setSource(QUrl('qml:img_list.qml'))
+        self.quick_view.setInitialProperties(
+            {'songs': serialize('json', songs)})
+        self.quick_view.setSource(QUrl('qml:SongTable.qml'))
 
     def show_collection(self, coll):
 
@@ -166,6 +162,9 @@ class RightPanel(QFrame):
 
         if coll.name == DEFAULT_COLL_ALBUMS:
             _show_pure_albums_coll(coll)
+            return
+        elif coll.name == 'Songs':
+            self.show_collections_library(coll.models)
             return
 
         types = set()

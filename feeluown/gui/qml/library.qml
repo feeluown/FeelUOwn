@@ -1,8 +1,9 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.15
 import QtQuick.Layouts 1.15
+import Qt.labs.qmlmodels 1.0
 
-import './' as Local
+import 'qml:' as Local
 
 
 Item {
@@ -51,7 +52,6 @@ Item {
 
         Local.SongTable {
           id: songTable
-
           width: parent.width
           height: parent.height
         }

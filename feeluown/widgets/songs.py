@@ -308,6 +308,17 @@ class SongsTableModel(QAbstractTableModel):
             return 1
         elif role == Qt.UserRole:
             return song
+
+        # for qml
+        elif role == Qt.UserRole + 1:
+            return song.title_display
+        elif role == Qt.UserRole + 2:
+            return song.artists_name_display
+        elif role == Qt.UserRole + 3:
+            return song.album_name_display
+        elif role == Qt.UserRole + 4:
+            return song.duration_ms_display
+
         return QVariant()
 
     def mimeData(self, indexes):
@@ -320,6 +331,14 @@ class SongsTableModel(QAbstractTableModel):
                 except (ProviderIOError, Exception):
                     model = None
             return ModelMimeData(model)
+
+    def roleNames(self):
+        return {
+            Qt.UserRole + 1: b'title',
+            Qt.UserRole + 2: b'artists_name',
+            Qt.UserRole + 3: b'album_name',
+            Qt.UserRole + 4: b'duration',
+        }
 
 
 class SongFilterProxyModel(QSortFilterProxyModel):
