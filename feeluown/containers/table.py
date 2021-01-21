@@ -14,7 +14,7 @@ from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
 from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
-from feeluown.models import GeneratorProxy, reverse, ModelType
+from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets import TextButton

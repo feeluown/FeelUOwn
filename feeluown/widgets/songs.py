@@ -16,7 +16,6 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils.dispatch import Signal
-from feeluown.utils.reader import wrap
 from feeluown.excs import ProviderIOError
 from feeluown.library import ModelState, ModelFlags
 from feeluown.models import ModelExistence
