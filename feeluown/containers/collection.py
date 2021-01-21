@@ -58,7 +58,7 @@ class CollectionContainer(QFrame):
         meta_widget.creator = album.artists_name_display
         songs = await async_run(lambda: album.songs)
         meta_widget.songs_count = len(songs)
-        reader = RandomSequentialReader.from_list(songs)
+        reader = wrap(songs)
         model = SongListModel(reader)
         self.collection_body.song_list_view.show()
         self.collection_body.song_list_view.setModel(model)

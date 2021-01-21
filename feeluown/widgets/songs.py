@@ -179,17 +179,14 @@ class SongListView(QListView):
 
 
 class SongsTableModel(QAbstractTableModel, ReaderFetchMoreMixin):
-    def __init__(self, songs=None, source_name_map=None, songs_g=None, parent=None):
+    def __init__(self, source_name_map=None, reader=None, parent=None):
         """
 
         :param songs: 歌曲列表
         :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
         """
         super().__init__(parent)
-        if songs_g is None:
-            self._reader = wrap(songs or [])
-        else:
-            self._reader = wrap(songs_g)
+        self._reader = reader
         self._fetch_more_step = 30
         self._items = []
         self._is_fetching = False

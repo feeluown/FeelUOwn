@@ -19,6 +19,7 @@ try:
 except ImportError:
     pass
 
+from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 
 logger = logging.getLogger(__name__)
@@ -242,13 +243,26 @@ class ReaderFetchMoreMixin:
         reader = self._reader
         step = self._fetch_more_step
 
-        try:
-            items = list(itertools.islice(reader, step))
-        except ProviderIOError:
-            logger.exception('fetch more items failed')
-            self._fetch_more_cb(None)
+        if reader.is_async:
+            async def fetch():
+                items = []
+                count = 0
+                async for item in reader:
+                    items.append(item)
+                    count += 1
+                    if count == step:
+                        break
+                return items
+            future = aio.create_task(fetch())
+            future.add_done_callback(self._async_fetch_cb)
         else:
-            self._fetch_more_cb(items)
+            try:
+                items = list(itertools.islice(reader, step))
+            except ProviderIOError:
+                logger.exception('fetch more items failed')
+                self._fetch_more_cb(None)
+            else:
+                self._fetch_more_cb(items)
 
     def on_items_fetched(self, items):
         begin = len(self._items)
@@ -261,3 +275,12 @@ class ReaderFetchMoreMixin:
         if items is None:
             return
         self.on_items_fetched(items)
+
+    def _async_fetch_cb(self, future):
+        try:
+            items = future.result()
+        except:  # noqa
+            logger.exception('async fetch more items failed')
+            self._fetch_more_cb(None)
+        else:
+            self._fetch_more_cb(items)
