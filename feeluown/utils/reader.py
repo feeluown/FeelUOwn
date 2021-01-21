@@ -95,13 +95,6 @@ class SequentialReader(Reader):
         self.offset = offset
         self._objects = []
 
-    @classmethod
-    def wrap(cls, g):
-        warnings.warn("use wrap function instead, this will be removed on 3.5")
-        if isinstance(g, Reader):
-            return g
-        return cls(g, count=None)
-
     def readall(self):
         if self.count is None:
             raise ReadFailed("can't readall when count is unknown")
@@ -120,7 +113,11 @@ class SequentialReader(Reader):
             self.offset += 1
             self._objects.append(obj)
             return obj
-        except (StopIteration, ProviderIOError):
+        except StopIteration:
+            if self.count is None:
+                self.count = self.offset + 1
+            raise
+        except ProviderIOError:
             raise
         # TODO: caller should not crash when reader raise other exception
         except Exception as e:

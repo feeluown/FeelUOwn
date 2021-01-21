@@ -10,7 +10,6 @@ resized, the cover width and the margin should make a few adjustment.
 """
 
 # pylint: disable=unused-argument
-import itertools
 import logging
 import random
 
@@ -28,9 +27,8 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
-from feeluown.excs import ProviderIOError
 from feeluown.models.uri import reverse
-from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font
+from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +72,7 @@ def calc_cover_size(view_width):
     return width, height
 
 
-class ImgListModel(QAbstractListModel):
+class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
@@ -84,43 +82,26 @@ class ImgListModel(QAbstractListModel):
         """
         super().__init__(parent)
 
+        self.reader = self._reader = wrap(reader)
+        self._fetch_more_step = 10
+        self._items = []
+        self._is_fetching = False
+
         self.source_name_map = source_name_map or {}
-        self.reader = wrap(reader)
         self.fetch_image = fetch_image
-        # false: no more, true: maybe more
-        self._maybe_has_more = True
-        self.items = []
         self.colors = []
         self.pixmaps = {}  # {uri: QPixmap}
 
     def rowCount(self, parent=QModelIndex()):
-        return len(self.items)
+        return len(self._items)
 
-    def canFetchMore(self, _=QModelIndex()):
-        count, offset = self.reader.count, self.reader.offset
-        if count is not None:
-            return count > offset
-        return self._maybe_has_more
-
-    def fetchMore(self, _=QModelIndex()):
-        expect_len = 10
-        try:
-            items = list(itertools.islice(self.reader, expect_len))
-        except ProviderIOError:
-            logger.exception('fetch more items failed')
+    def _fetch_more_cb(self, items):
+        if items is None:
             return
-
-        acture_len = len(items)
-        colors = [random.choice(list(COLORS.values()))
-                  for _ in range(0, acture_len)]
-        if acture_len < expect_len:
-            self._maybe_has_more = False
-        begin = len(self.items)
-        self.beginInsertRows(QModelIndex(), begin, begin + acture_len - 1)
-        self.items.extend(items)
+        items_len = len(items)
+        colors = [random.choice(list(COLORS.values())) for _ in range(0, items_len)]
         self.colors.extend(colors)
-        self.endInsertRows()
-
+        self.on_items_fetched(items)
         for item in items:
             aio.create_task(self.fetch_image(
                 item,
@@ -134,7 +115,7 @@ class ImgListModel(QAbstractListModel):
             pixmap = QPixmap(img)
             uri = reverse(item)
             self.pixmaps[uri] = pixmap
-            row = self.items.index(item)
+            row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
             self.dataChanged.emit(top_left, bottom_right)
@@ -142,9 +123,9 @@ class ImgListModel(QAbstractListModel):
 
     def data(self, index, role):
         offset = index.row()
-        if not index.isValid() or offset >= len(self.items):
+        if not index.isValid() or offset >= len(self._items):
             return None
-        item = self.items[offset]
+        item = self._items[offset]
         if role == Qt.DecorationRole:
             uri = reverse(item)
             pixmap = self.pixmaps.get(uri)
