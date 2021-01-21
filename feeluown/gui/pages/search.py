@@ -41,7 +41,7 @@ async def render(req, **kwargs):
     right_panel.collection_container.hide()
     right_panel.scrollarea.show()
 
-    reader = wrap(await app.library.a_search(q, type_in=type_, source_in=source_in))
+    reader = wrap(app.library.a_search(q, type_in=type_, source_in=source_in))
     renderer = SearchResultRenderer(q, type_, reader, source_in=source_in)
     await table_container.set_renderer(renderer)
 
@@ -80,10 +80,14 @@ class SearchResultRenderer(Renderer):
         self.render_toolbar()
 
         attr, show_handler, signal = mapping[self.type_]
-        objects = []
-        for result in self.reader:
-            objects.extend(getattr(result, attr) or [])
-        show_handler(objects)
+
+        async def models_g():
+            async for result in self.reader:
+                if result is not None:
+                    for obj in (getattr(result, attr) or []):
+                        yield obj
+
+        show_handler(reader=wrap(models_g()))
 
     def render_toolbar(self):
         source_in = self.source_in or [p.identifier for p in self._app.library.list()]

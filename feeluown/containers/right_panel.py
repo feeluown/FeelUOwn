@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
 
 from feeluown.utils import aio
 from feeluown.models import ModelType
-from feeluown.utils.reader import RandomSequentialReader
+from feeluown.utils.reader import wrap
 
 from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
@@ -120,7 +120,7 @@ class RightPanel(QFrame):
 
         def _show_pure_albums_coll(coll):
             self.collection_container.hide()
-            reader = RandomSequentialReader.from_list(coll.models)
+            reader = wrap(coll.models)
             self.table_container.show_albums_coll(reader)
 
         def _show_pure_songs_coll(coll):
@@ -138,7 +138,7 @@ class RightPanel(QFrame):
 
             self.collection_container.hide()
             self.scrollarea.show()
-            reader = RandomSequentialReader.from_list(coll.models)
+            reader = wrap(coll.models)
             renderer = VideosRenderer(reader)
             aio.create_task(self.table_container.set_renderer(renderer))
 

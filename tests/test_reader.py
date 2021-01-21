@@ -1,3 +1,4 @@
+import pytest
 from unittest import mock, TestCase
 
 from fuocore.reader import RandomReader, RandomSequentialReader, wrap
@@ -11,7 +12,20 @@ def test_sequential_reader():
 
     g = g_func()
     reader = wrap(g)
+    assert reader.is_async is False
     assert len(list(reader)) == 5
+
+
+@pytest.mark.asyncio
+async def test_async_sequential_reader():
+    async def ag_func():
+        for i in range(0, 5):
+            yield i
+
+    ag = ag_func()
+    reader = wrap(ag)
+    assert reader.is_async is True
+    assert len([x async for x in reader]) == 5
 
 
 class TestRandomReader(TestCase):

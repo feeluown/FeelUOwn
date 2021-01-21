@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QFrame, QHBoxLayout, QSplitter
 from PyQt5.QtGui import QPixmap, QImage
 
 from feeluown.utils import aio
-from feeluown.utils.reader import RandomSequentialReader
+from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import async_run
@@ -58,7 +58,7 @@ class CollectionContainer(QFrame):
         meta_widget.creator = album.artists_name_display
         songs = await async_run(lambda: album.songs)
         meta_widget.songs_count = len(songs)
-        reader = RandomSequentialReader.from_list(songs)
+        reader = wrap(songs)
         model = SongListModel(reader)
         self.collection_body.song_list_view.show()
         self.collection_body.song_list_view.setModel(model)

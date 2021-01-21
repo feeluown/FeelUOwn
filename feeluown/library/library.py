@@ -168,17 +168,13 @@ class Library:
                     partial(provider.search, keyword, type_=type_))
                 fs.append(future)
 
-        results = []
-        # TODO: use async generator when we only support Python 3.6 or above
         for future in aio.as_completed(fs, timeout=timeout):
             try:
                 result = await future
             except Exception as e:
                 logger.exception(str(e))
             else:
-                if result is not None:
-                    results.append(result)
-        return results
+                yield result
 
     @log_exectime
     def list_song_standby(self, song, onlyone=True):
@@ -216,7 +212,9 @@ class Library:
         valid_providers = [provider for provider in providers
                            if provider != song.source]
         q = '{} {}'.format(song.title_display, song.artists_name_display)
-        result_g = await self.a_search(q, source_in=valid_providers)
+        result_g = []
+        async for result in self.a_search(q, source_in=valid_providers):
+            result_g.append(result)
         sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
         # choose one or two valid standby
         result = []

@@ -21,7 +21,7 @@ from feeluown.library import ModelState, ModelFlags
 from feeluown.models import ModelExistence
 
 from feeluown.gui.mimedata import ModelMimeData
-from feeluown.gui.helpers import ItemViewNoScrollMixin
+from feeluown.gui.helpers import ItemViewNoScrollMixin, ReaderFetchMoreMixin
 
 
 logger = logging.getLogger(__name__)
@@ -177,52 +177,28 @@ class SongListView(QListView):
         self.play_song_needed.emit(index.data(Qt.UserRole))
 
 
-class SongsTableModel(QAbstractTableModel):
-    def __init__(self, songs=None, source_name_map=None, songs_g=None, parent=None):
+class SongsTableModel(QAbstractTableModel, ReaderFetchMoreMixin):
+    def __init__(self, source_name_map=None, reader=None, parent=None):
         """
 
         :param songs: 歌曲列表
         :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
         """
         super().__init__(parent)
-        self.songs_g = songs_g
-        self.songs = (songs or []) if self.songs_g is None else []
-        self._can_fetch_more = self.songs_g is not None
+        self._reader = reader
+        self._fetch_more_step = 30
+        self._items = []
+        self._is_fetching = False
+
         self._source_name_map = source_name_map or {}
 
     def removeRows(self, row, count, parent=QModelIndex()):
         self.beginRemoveRows(parent, row, row + count - 1)
         while count > 0:
-            self.songs.pop(row)
+            self._items.pop(row)
             count -= 1
         self.endRemoveRows()
         return True
-
-    def canFetchMore(self, _):
-        return self._can_fetch_more
-
-    def fetchMore(self, _):
-        songs = []
-        current = len(self.songs)
-        fetched = self.songs_g.offset
-        if current < fetched:
-            # FIXME: maybe SequentialReader should support seek
-            songs = self.songs_g._objects[current:fetched]
-        else:
-            for _ in range(current, len(self.songs) + 30):
-                try:
-                    song = next(self.songs_g)
-                except StopIteration:
-                    self._can_fetch_more = False
-                    break
-                except ProviderIOError:
-                    logger.exception("fetch more failed")
-                    break
-                else:
-                    songs.append(song)
-        self.beginInsertRows(QModelIndex(), current, current + len(songs) - 1)
-        self.songs.extend(songs)
-        self.endInsertRows()
 
     def flags(self, index):
         if index.column() in (Column.source, Column.index, Column.duration):
@@ -246,7 +222,7 @@ class SongsTableModel(QAbstractTableModel):
         return flags
 
     def rowCount(self, parent=QModelIndex()):
-        return len(self.songs)
+        return len(self._items)
 
     def columnCount(self, _=QModelIndex()):
         return 6
@@ -281,10 +257,10 @@ class SongsTableModel(QAbstractTableModel):
     def data(self, index, role=Qt.DisplayRole):
         if not index.isValid():
             return QVariant()
-        if index.row() >= len(self.songs) or index.row() < 0:
+        if index.row() >= len(self._items) or index.row() < 0:
             return QVariant()
 
-        song = self.songs[index.row()]
+        song = self._items[index.row()]
         if role in (Qt.DisplayRole, Qt.ToolTipRole):
             if index.column() == Column.index:
                 return index.row() + 1

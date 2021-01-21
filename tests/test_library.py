@@ -12,7 +12,7 @@ def test_library_search(library):
 
 @pytest.mark.asyncio
 async def test_library_a_search(library):
-    result = (await library.a_search('xxx'))[0]
+    result = [x async for x in library.a_search('xxx')][0]
     assert result.q == 'xxx'
 
 

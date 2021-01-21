@@ -6,8 +6,7 @@ Moreover, different provider has different pagination API.
 For feeluown, we want a unified API, so we create the Reader class.
 """
 import logging
-import warnings
-from collections.abc import Iterable, Sequence
+from collections.abc import Iterable, Sequence, AsyncIterable
 
 from feeluown.excs import ReadFailed, ProviderIOError
 
@@ -26,9 +25,60 @@ class Reader:
 
     allow_sequential_read = False
     allow_random_read = False
+    is_async = False
+
+    def __init__(self):
+        self._objects = []
 
 
-class SequentialReader(Reader):
+class SequentialReadMixin:
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        try:
+            return self.read_next()
+        except StopIteration:
+            raise
+        # TODO: caller should not crash when reader raise other exception
+        except Exception as e:
+            raise ProviderIOError('read next obj failed') from e
+
+
+class AsyncSequntialReadMixin:
+    def __aiter__(self):
+        return self
+
+    async def __anext__(self):
+        try:
+            return await self.a_read_next()
+        except StopAsyncIteration:
+            raise
+        # TODO: caller should not crash when reader raise other exception
+        except Exception as e:
+            raise ProviderIOError('read next obj failed') from e
+
+
+class BaseSequentialReader(Reader):
+    allow_sequential_read = True
+
+    def __init__(self, g, count, offset=0):
+        """init
+
+        :param g: Python generator
+        :param offset: current offset
+        :param count: total count. count can be None, which means the
+                      total count is unknown. When it is unknown, be
+                      CAREFUL to use list(reader).
+        """
+        super().__init__()
+        self._g = g
+        self.count = count
+        self.offset = offset
+
+
+class SequentialReader(BaseSequentialReader, SequentialReadMixin):
     """Help you sequential read data
 
     We only want to launch web request when we need the resource
@@ -78,53 +128,25 @@ class SequentialReader(Reader):
     .. versionadded:: 3.1
     """
 
-    # FIXME: use isinstance(reader, SequentialReader) to check
-    allow_sequential_read = True
-
-    def __init__(self, g, count, offset=0):
-        """init
-
-        :param g: Python generator
-        :param offset: current offset
-        :param count: total count. count can be None, which means the
-                      total count is unknown. When it is unknown, be
-                      CAREFUL to use list(reader).
-        """
-        self._g = g
-        self.count = count
-        self.offset = offset
-        self._objects = []
-
-    @classmethod
-    def wrap(cls, g):
-        warnings.warn("use wrap function instead, this will be removed on 3.5")
-        if isinstance(g, Reader):
-            return g
-        return cls(g, count=None)
-
     def readall(self):
         if self.count is None:
             raise ReadFailed("can't readall when count is unknown")
         list(self)
         return self._objects
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
-        try:
-            if self.count is None or self.offset < self.count:
+    def read_next(self):
+        if self.count is None or self.offset < self.count:
+            try:
                 obj = next(self._g)
-            else:
-                raise StopIteration
-            self.offset += 1
-            self._objects.append(obj)
-            return obj
-        except (StopIteration, ProviderIOError):
-            raise
-        # TODO: caller should not crash when reader raise other exception
-        except Exception as e:
-            raise ProviderIOError(e)
+            except StopIteration:
+                if self.count is None:
+                    self.count = self.offset + 1
+                raise
+        else:
+            raise StopIteration
+        self.offset += 1
+        self._objects.append(obj)
+        return obj
 
 
 class RandomReader(Reader):
@@ -137,6 +159,7 @@ class RandomReader(Reader):
         :param function read_func: func(start: int, end: int) -> list
         :param int max_per_read: max count per read, it must big than 0
         """
+        super().__init__()
         self.count = count
         self._ranges = []  # list of tuple
         self._objects = [None] * count
@@ -253,7 +276,7 @@ class RandomReader(Reader):
         self._ranges = ranges
 
 
-class RandomSequentialReader(RandomReader):
+class RandomSequentialReader(RandomReader, SequentialReadMixin):
     """random reader which support sequential read"""
 
     allow_sequential_read = True
@@ -263,23 +286,37 @@ class RandomSequentialReader(RandomReader):
 
         self.offset = 0
 
-    def __iter__(self):
-        return self
-
-    def __next__(self):
+    def read_next(self):
         if self.offset >= self.count:
             raise StopIteration
         obj = self.read(self.offset)
         self.offset += 1
         return obj
 
-    @classmethod
-    def from_list(cls, list_):
-        """
-        :param list list_: list of objects
-        """
-        warnings.warn("use wrap function instead, this will be removed on 3.5")
-        return wrap(list_)
+
+class AsyncSequentialReader(BaseSequentialReader, AsyncSequntialReadMixin):
+    is_async = True
+
+    async def a_readall(self):
+        if self.count is None:
+            raise ReadFailed("can't readall when count is unknown")
+        async for _ in self:
+            pass
+        return self._objects
+
+    async def a_read_next(self):
+        if self.count is None or self.offset < self.count:
+            try:
+                obj = await self._g.asend(None)
+            except StopAsyncIteration:
+                if self.count is None:
+                    self.count = self.offset + 1
+                raise
+        else:
+            raise StopAsyncIteration
+        self.offset += 1
+        self._objects.append(obj)
+        return obj
 
 
 def wrap(iterable):
@@ -299,10 +336,16 @@ def wrap(iterable):
 
     .. versionadded:: 3.4
     """
-    if not isinstance(iterable, Iterable):
-        raise TypeError("must be a Iterable, got {}".format(type(iterable)))
+    # if it is a reader already, just return it
     if isinstance(iterable, Reader):
         return iterable
+
+    # async reader
+    if isinstance(iterable, AsyncIterable):
+        return AsyncSequentialReader(iterable, count=None)
+
+    if not isinstance(iterable, Iterable):
+        raise TypeError("must be a Iterable, got {}".format(type(iterable)))
     if isinstance(iterable, Sequence):
         count = len(iterable)
         return RandomSequentialReader(count,
