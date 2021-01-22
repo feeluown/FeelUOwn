@@ -224,7 +224,6 @@ class ReaderFetchMoreMixin:
         if self._is_fetching is False:
             self._is_fetching = True
             self.fetch_more_impl()
-            self._is_fetching = False
 
     def can_fetch_more(self, _=None):
         reader = self._reader
@@ -272,6 +271,7 @@ class ReaderFetchMoreMixin:
         self.endInsertRows()
 
     def _fetch_more_cb(self, items):
+        self._is_fetching = False
         if items is None:
             return
         self.on_items_fetched(items)
