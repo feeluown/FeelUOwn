@@ -42,17 +42,12 @@ class CollectionUiManager:
 
     def _scan(self):
         colls = []
-        song_coll = None
-        album_coll = None
+        library_coll = None
         for coll in self._app.coll_mgr.scan():
-            if coll.type == CollectionType.sys_song:
-                song_coll = coll
-                continue
-            if coll.type == CollectionType.sys_album:
-                album_coll = coll
+            if coll.type == CollectionType.sys_library:
+                library_coll = coll
                 continue
             colls.append(coll)
-        colls.insert(0, album_coll)
-        colls.insert(0, song_coll)
+        colls.insert(0, library_coll)
         for coll in colls:
             self.add(coll)

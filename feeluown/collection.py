@@ -14,20 +14,15 @@ from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_COLL_SONGS = 'Songs'
-DEFAULT_COLL_ALBUMS = 'Albums'
+COLL_LIBRARY_IDENTIFIER = 'library'
 # for backward compat, we should never change these filenames
-SONGS_FILENAME = 'Songs.fuo'
-ALBUMS_FILENAME = 'Albums.fuo'
+LIBRARY_FILENAME = f'{COLL_LIBRARY_IDENTIFIER}.fuo'
 
 TOML_DELIMLF = "+++\n"
 
 
 class CollectionType(Enum):
-    # predefined collections
-    sys_song = 1
-    sys_album = 2
-    sys_artist = 4
+    sys_library = 16
 
     mixed = 8
 
@@ -59,10 +54,8 @@ class Collection:
         stat_result = filepath.stat()
         self.updated_at = datetime.fromtimestamp(stat_result.st_mtime)
         self.name = name
-        if name == DEFAULT_COLL_SONGS:
-            self.type = CollectionType.sys_song
-        elif name == DEFAULT_COLL_ALBUMS:
-            self.type = CollectionType.sys_album
+        if name == COLL_LIBRARY_IDENTIFIER:
+            self.type = CollectionType.sys_library
         else:
             self.type = CollectionType.mixed
 
@@ -110,12 +103,6 @@ class Collection:
         :param model: :class:`feeluown.models.BaseModel`
         :return: True means succeed, False means failed
         """
-        if (self.type == CollectionType.sys_song and
-            model.meta.model_type != ModelType.song) or \
-                (self.type == CollectionType.sys_album and
-                 model.meta.model_type != ModelType.album):
-            return False
-
         if model not in self.models:
             line = reverse(model, as_line=True)
             with open(self.fpath, 'r+', encoding='utf-8') as f:
@@ -197,8 +184,7 @@ class CollectionManager:
         scan collections directories for valid fuo files, yield
         Collection instance for each file.
         """
-        has_default_songs = False
-        has_default_albums = False
+        default_fpaths = []
         directorys = [COLLECTIONS_DIR]
         if self._app.config.COLLECTIONS_DIR:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
@@ -213,58 +199,49 @@ class CollectionManager:
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):
                     continue
-                if filename == SONGS_FILENAME:
-                    has_default_songs = True
-                elif filename == ALBUMS_FILENAME:
-                    has_default_albums = True
                 filepath = os.path.join(directory, filename)
+                if filename in ('Songs.fuo', 'Albums.fuo', 'Artists.fuo', 'Videos.fuo'):
+                    default_fpaths.append(filepath)
+                    continue
                 coll = Collection(filepath)
-                # TODO: 可以调整为并行
                 coll.load()
                 self._app.library.provider_added.connect(coll.on_provider_added)
                 self._app.library.provider_removed.connect(coll.on_provider_removed)
                 yield coll
 
-        default_fpaths = []
-        if not has_default_songs:
-            default_fpaths.append(self.gen_default_songs_fuo())
-        if not has_default_albums:
-            default_fpaths.append(self.gen_default_albums_fuo())
+        fpath = self.generate_library_coll_if_needed(default_fpaths)
+        coll = Collection(fpath)
+        coll.load()
+        self._app.library.provider_added.connect(coll.on_provider_added)
+        self._app.library.provider_removed.connect(coll.on_provider_removed)
+        yield coll
+
+    def generate_library_coll_if_needed(self, default_fpaths):
+        library_fpath = os.path.join(COLLECTIONS_DIR, LIBRARY_FILENAME)
+        if os.path.exists(library_fpath):
+            if default_fpaths:
+                paths_str = ','.join(default_fpaths)
+                logger.warning(f'{paths_str} and {library_fpath} '
+                               'should not exist at the same time')
+            return library_fpath
+
+        logger.info('Generating collection library')
+        lines = [TOML_DELIMLF,
+                 'title = "Library"',
+                 TOML_DELIMLF]
+        if default_fpaths:
+            for fpath in default_fpaths:
+                with open(fpath) as f:
+                    for line in f:
+                        if line.startswith('fuo://'):
+                            lines.append(line)
+        with open(library_fpath, 'w', encoding='utf-8') as f:
+            f.write('\n'.join(lines))
         for fpath in default_fpaths:
-            coll = Collection(fpath)
-            coll.load()
-            self._app.library.provider_added.connect(coll.on_provider_added)
-            self._app.library.provider_removed.connect(coll.on_provider_removed)
-            yield coll
-
-    @classmethod
-    def gen_default_songs_fuo(cls):
-        logger.info('正在生成默认的本地收藏集 - Songs')
-        default_fpath = os.path.join(COLLECTIONS_DIR, SONGS_FILENAME)
-        if not os.path.exists(default_fpath):
-            with open(default_fpath, 'w', encoding='utf-8') as f:
-                lines = [
-                    'fuo://netease/songs/16841667  # No Matter What - Boyzone',
-                    'fuo://netease/songs/65800     # 最佳损友 - 陈奕迅',
-                    'fuo://xiami/songs/3406085     # Love Story - Taylor Swift',
-                    'fuo://netease/songs/5054926   # When You Say Noth… - Ronan Keating',
-                    'fuo://qqmusic/songs/97773     # 晴天 - 周杰伦',
-                    'fuo://qqmusic/songs/102422162 # 给我一首歌的时间 … - 周杰伦,蔡依林',
-                    'fuo://xiami/songs/1769834090  # Flower Dance - DJ OKAWARI',
-                ]
-                f.write('\n'.join(lines))
-        return default_fpath
-
-    @classmethod
-    def gen_default_albums_fuo(cls):
-        logger.info('正在生成默认的本地收藏集 - Albums')
-        albums_fpath = os.path.join(COLLECTIONS_DIR, ALBUMS_FILENAME)
-        if not os.path.exists(albums_fpath):
-            with open(albums_fpath, 'w', encoding='utf-8') as f:
-                lines = [
-                    'fuo://xiami/albums/1194678626     # 脱掉高跟鞋 世界巡回演唱会',
-                    'fuo://xiami/albums/32623          # 理性与感性 作品音乐会',
-                    'fuo://netease/albums/18878        # OK - 张震岳',
-                ]
-                f.write('\n'.join(lines))
-        return albums_fpath
+            dirname = os.path.dirname(fpath)
+            filename = os.path.basename(fpath)
+            filename += '.bak'
+            new_fpath = os.path.join(dirname, filename)
+            logger.info(f'Rename {fpath} to {new_fpath}')
+            os.rename(fpath, new_fpath)
+        return library_fpath
