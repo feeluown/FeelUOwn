@@ -52,6 +52,7 @@ def logger_config(verbose=1, to_file=False):
             'filename': LOG_FILE,
             'mode': 'w'
         })
+        verbose = max(1, verbose)
     else:
         handler.update({'class': 'logging.StreamHandler'})
 
