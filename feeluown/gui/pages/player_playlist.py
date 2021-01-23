@@ -3,6 +3,6 @@ async def render(req, **kwargs):
     """
     app = req.ctx['app']
 
-    app.ui.right_panel.collection_container.hide()
-    app.ui.right_panel.table_container.show()
+    right_panel = app.ui.right_panel
+    right_panel.set_body(right_panel.table_container)
     app.ui.table_container.show_player_playlist()

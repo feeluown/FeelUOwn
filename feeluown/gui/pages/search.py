@@ -37,9 +37,7 @@ async def render(req, **kwargs):
     ui = app.ui
     right_panel = ui.right_panel
     table_container = right_panel.table_container
-
-    right_panel.collection_container.hide()
-    right_panel.scrollarea.show()
+    right_panel.set_body(right_panel.scrollarea)
 
     search_type, _ = TabidSearchMapping[tab_id]
     reader = wrap(app.library.a_search(q, source_in=source_in, type_in=search_type))

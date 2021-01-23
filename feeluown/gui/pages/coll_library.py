@@ -11,8 +11,7 @@ async def render(req, **kwargs):
     tab_id = Tab(int(req.query.get('tab_id', Tab.songs.value)))
 
     ui = app.ui
-    ui.right_panel.collection_container.hide()
-    ui.right_panel.scrollarea.show()
+    ui.right_panel.set_body(ui.right_panel.scrollarea)
 
     table_container = ui.right_panel.table_container
     renderer = LibraryRenderer(tab_id)
