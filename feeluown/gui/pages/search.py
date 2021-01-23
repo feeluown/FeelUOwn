@@ -6,14 +6,15 @@ from feeluown.models import SearchType
 from feeluown.widgets.tabbar import Tab
 from feeluown.widgets.magicbox import KeySourceIn, KeyType
 from feeluown.containers.table import Renderer
+from feeluown.gui.base_renderer import LibraryTabRendererMixin
 
 
-TypeTabMapping = {
-    SearchType.so: Tab.songs,
-    SearchType.al: Tab.albums,
-    SearchType.ar: Tab.artists,
-    SearchType.pl: Tab.playlists,
-    SearchType.vi: Tab.videos,
+TabidSearchMapping = {
+    Tab.songs: (SearchType.so, 'songs'),
+    Tab.albums: (SearchType.al, 'albums'),
+    Tab.artists: (SearchType.ar, 'artists'),
+    Tab.playlists: (SearchType.pl, 'playlists'),
+    Tab.videos: (SearchType.vi, 'videos'),
 }
 
 
@@ -25,8 +26,7 @@ async def render(req, **kwargs):
     q = req.query.get('q', '')
     if not q:
         return
-    type_ = req.query.get('type', None)
-    type_ = SearchType.parse(type_) if type_ else SearchType.so
+    tab_id = Tab(int(req.query.get('tab_id', Tab.songs.value)))
     source_in = req.query.get('source_in', None)
     if source_in is not None:
         source_in = source_in.split(',')
@@ -41,50 +41,38 @@ async def render(req, **kwargs):
     right_panel.collection_container.hide()
     right_panel.scrollarea.show()
 
-    reader = wrap(app.library.a_search(q, type_in=type_, source_in=source_in))
-    renderer = SearchResultRenderer(q, type_, reader, source_in=source_in)
+    search_type, _ = TabidSearchMapping[tab_id]
+    reader = wrap(app.library.a_search(q, source_in=source_in, type_in=search_type))
+    renderer = SearchResultRenderer(q, tab_id, reader, source_in=source_in)
     await table_container.set_renderer(renderer)
 
 
-class SearchResultRenderer(Renderer):
-    def __init__(self, q, type_, reader, source_in=None):
+class SearchResultRenderer(Renderer, LibraryTabRendererMixin):
+    def __init__(self, q, tab_id, reader, source_in=None):
         self.q = q
-        self.type_ = type_
+        self.tab_id = tab_id
         self.source_in = source_in
         self.reader = reader
 
     async def render(self):
-        mapping = {
-            SearchType.so: ('songs', self.show_songs,
-                            self.tabbar.show_songs_needed),
-            SearchType.al: ('albums', self.show_albums,
-                            self.tabbar.show_albums_needed),
-            SearchType.ar: ('artists', self.show_artists,
-                            self.tabbar.show_artists_needed),
-            SearchType.pl: ('playlists', self.show_playlists,
-                            self.tabbar.show_playlists_needed),
-            SearchType.vi: ('videos', self.show_videos,
-                            self.tabbar.show_videos_needed),
-
-        }
-        for search_type, (_, _, signal) in mapping.items():
-            signal.connect(self._show(search_type))
+        self.init_tabbar_signal_binding()
 
         self.tabbar.show()
         self.tabbar.library_mode()
-        self.tabbar.check(TypeTabMapping[self.type_])
+        self.tabbar.check(self.tab_id)
 
         self.meta_widget.show()
         self.meta_widget.title = '搜索 “{}”'.format(self.q)
 
         self.render_toolbar()
 
-        attr, show_handler, signal = mapping[self.type_]
+        show_handler = self.get_tabid_handler_mapping()[self.tab_id]
+        _, attrname = TabidSearchMapping[self.tab_id]
 
         async def models_g():
             async for result in self.reader:
                 if result is not None:
-                    for obj in (getattr(result, attr) or []):
+                    for obj in (getattr(result, attrname) or []):
                         yield obj
 
         show_handler(reader=wrap(models_g()))
@@ -99,15 +87,14 @@ class SearchResultRenderer(Renderer):
     def update_source_in(self, source_in):
         self._app.browser.local_storage[KeySourceIn] = ','.join(source_in)
 
-    def _show(self, type_):
-        def cb():
-            self._app.browser.local_storage[KeyType] = type_.value
-            query = {'q': self.q, 'type': type_.value}
-            source_in = self._app.browser.local_storage.get(KeySourceIn, None)
-            if source_in is not None:
-                query['source_in'] = source_in
-            self._app.browser.goto(page='/search', query=query)
-        return cb
+    def show_by_tab_id(self, tab_id):
+        search_type = TabidSearchMapping[tab_id][0]
+        self._app.browser.local_storage[KeyType] = search_type.value
+        query = {'q': self.q, 'tab_id': tab_id.value}
+        source_in = self._app.browser.local_storage.get(KeySourceIn, None)
+        if source_in is not None:
+            query['source_in'] = source_in
+        self._app.browser.goto(page='/search', query=query)
 
 
 class _ProviderCheckBox(QCheckBox):
