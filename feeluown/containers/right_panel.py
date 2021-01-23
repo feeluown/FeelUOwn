@@ -8,9 +8,9 @@ from feeluown.utils import aio
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
 
+from feeluown.collection import CollectionType
 from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
-from feeluown.collection import DEFAULT_COLL_ALBUMS
 from feeluown.containers.bottom_panel import BottomPanel
 from feeluown.containers.table import TableContainer
 from feeluown.containers.collection import CollectionContainer
@@ -142,8 +142,8 @@ class RightPanel(QFrame):
             renderer = VideosRenderer(reader)
             aio.create_task(self.table_container.set_renderer(renderer))
 
-        if coll.name == DEFAULT_COLL_ALBUMS:
-            _show_pure_albums_coll(coll)
+        if coll.type is CollectionType.sys_library:
+            self._app.browser.goto(page='/colls/library')
             return
 
         types = set()

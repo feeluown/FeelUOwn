@@ -58,14 +58,6 @@ def test_collection_add(album, artist, song, tmp_path):
     assert text == expected
 
 
-def test_collection_add_song_to_sys_album(song, tmp_path):
-    f = tmp_path / 'Albums.fuo'
-    f.touch()
-    coll = Collection(str(f))
-    coll.load()
-    assert coll.add(song) is False
-
-
 def test_load_and_write_file_with_metadata(song, tmp_path, mocker):
     mocker.patch('feeluown.collection.resolve', return_value=song)
     f = tmp_path / 'test.fuo'
