@@ -9,7 +9,6 @@ import tomlkit
 
 from feeluown.models.uri import resolve, reverse, ResolverNotFound, \
     ResolveFailed, ModelExistence
-from feeluown.models import ModelType
 from feeluown.consts import COLLECTIONS_DIR
 
 logger = logging.getLogger(__name__)
@@ -223,6 +222,7 @@ class CollectionManager:
                 paths_str = ','.join(default_fpaths)
                 logger.warning(f'{paths_str} and {library_fpath} '
                                'should not exist at the same time')
+                logger.warning(f'{paths_str} are ignored')
             return library_fpath
 
         logger.info('Generating collection library')
@@ -237,6 +237,8 @@ class CollectionManager:
                             lines.append(line)
         with open(library_fpath, 'w', encoding='utf-8') as f:
             f.write('\n'.join(lines))
+
+        # backup old sys collections if they exists
         for fpath in default_fpaths:
             dirname = os.path.dirname(fpath)
             filename = os.path.basename(fpath)

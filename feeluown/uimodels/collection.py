@@ -23,6 +23,12 @@ class CollectionUiManager:
         # 现在把 fpath 当作 identifier 使用，但对外透明
         return elfhash(base64.b64encode(bytes(coll.fpath, 'utf-8')))
 
+    def get_coll_library(self):
+        for coll in self._id_coll_mapping.values():
+            if coll.type == CollectionType.sys_library:
+                return coll
+        raise Exception('collection library not found')
+
     def add(self, collection):
         coll_id = self.get_coll_id(collection)
         self._id_coll_mapping[coll_id] = collection

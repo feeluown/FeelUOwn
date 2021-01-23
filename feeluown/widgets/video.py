@@ -9,9 +9,9 @@ from .imglist import (
 class VideoListModel(ImgListModel):
     def data(self, index, role):
         offset = index.row()
-        if not index.isValid() or offset >= len(self.items):
+        if not index.isValid() or offset >= len(self._items):
             return None
-        video = self.items[offset]
+        video = self._items[offset]
         if role == Qt.DisplayRole:
             return video.title_display
         return super().data(index, role)
