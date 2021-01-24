@@ -253,9 +253,11 @@ def create_app(config):
                     self.exit()
 
             def exit(self):
-                self.ui.mpv_widget.close()
-                event_loop = asyncio.get_event_loop()
-                event_loop.stop()
+                self.about_to_shutdown.emit(app)
+                Signal.teardown_aio_support()
+                self.player.stop()
+                # self.player.shutdown()  # this cause 'abort trap' on macOS
+                QApplication.quit()
 
             def mouseReleaseEvent(self, e):
                 if not self.rect().contains(e.pos()):
@@ -333,7 +335,7 @@ def run_app(app):
         # NOTE: gracefully shutdown?
         pass
     finally:
-        _shutdown_app(app)
+        app.exit()
         loop.stop()
         loop.close()
 
@@ -346,13 +348,6 @@ def run_app_once(app, future):
     except KeyboardInterrupt:
         pass
     finally:
-        _shutdown_app(app)
+        app.exit()
         loop.stop()
         loop.close()
-
-
-def _shutdown_app(app):
-    app.about_to_shutdown.emit(app)
-    app.player.stop()
-    app.player.shutdown()
-    Signal.teardown_aio_support()
