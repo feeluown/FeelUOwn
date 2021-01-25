@@ -1,7 +1,7 @@
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
 from feeluown.widgets.tabbar import Tab
-from feeluown.containers.table import Renderer
+from feeluown.gui.page_containers.table import Renderer
 
 from feeluown.gui.base_renderer import LibraryTabRendererMixin
 

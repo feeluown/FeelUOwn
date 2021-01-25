@@ -1,6 +1,6 @@
 from feeluown.utils import aio
 from feeluown.library import ProviderFlags as PF
-from feeluown.containers.table import Renderer
+from feeluown.gui.page_containers.table import Renderer
 
 
 async def render(req, **kwargs):

@@ -1,4 +1,4 @@
-from feeluown.containers.table import Renderer
+from feeluown.gui.page_containers.table import Renderer
 from feeluown.utils import aio
 from feeluown.models import ModelType
 from feeluown.models.uri import reverse

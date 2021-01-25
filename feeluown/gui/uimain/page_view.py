@@ -11,9 +11,9 @@ from feeluown.utils.reader import wrap
 from feeluown.collection import CollectionType
 from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
-from feeluown.containers.bottom_panel import BottomPanel
-from feeluown.containers.table import TableContainer
-from feeluown.containers.collection import CollectionContainer
+from feeluown.gui.uimain.toolbar import BottomPanel
+from feeluown.gui.page_containers.table import TableContainer
+from feeluown.gui.page_containers.collection import CollectionContainer
 
 
 def add_alpha(color, alpha):
@@ -136,7 +136,7 @@ class RightPanel(QFrame):
             self.collection_container.show_collection(coll)
 
         def _show_pure_videos_coll(coll):
-            from feeluown.containers.table import VideosRenderer
+            from feeluown.gui.page_containers.table import VideosRenderer
 
             self.set_body(self.scrollarea)
             reader = wrap(coll.models)

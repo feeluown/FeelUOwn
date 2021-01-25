@@ -5,7 +5,7 @@ from feeluown.utils.reader import wrap
 from feeluown.models import SearchType
 from feeluown.widgets.tabbar import Tab
 from feeluown.widgets.magicbox import KeySourceIn, KeyType
-from feeluown.containers.table import Renderer
+from feeluown.gui.page_containers.table import Renderer
 from feeluown.gui.base_renderer import LibraryTabRendererMixin
 
 
