@@ -1,5 +1,18 @@
 Changelog
 ---------
+
+3.7 (2021-01-25)
+""""""""""""""""""""""
+- bugfix
+
+  - 修复不能正常退出的 bug
+
+- enhancement
+
+  - 解决 --log-to-file 默认 verbose level 较低的问题
+  - 将本地收藏 Songs/Albums 统一为 Library
+  - 代码结构优化
+
 3.7b0 (2021-01-22)
 """"""""""""""""""""""
 - enhancement
