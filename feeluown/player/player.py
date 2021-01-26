@@ -107,8 +107,15 @@ class Playlist(_Playlist):
         if self.mode is PlaylistMode.fm and song not in self._songs:
             self.mode = PlaylistMode.normal
 
+        def cb(future):
+            try:
+                future.result()
+            except:  # noqa
+                logger.exception('async set current song failed')
+
         task_spec = self._app.task_mgr.get_or_create('set-current-song')
-        task_spec.bind_coro(self.a_set_current_song(song))
+        task = task_spec.bind_coro(self.a_set_current_song(song))
+        task.add_done_callback(cb)
 
     def init_from(self, songs):
         # THINKING: maybe we should rename this method or maybe we should
@@ -143,9 +150,9 @@ class Playlist(_Playlist):
         # if mode is fm mode, do not find standby song,
         # just skip the song
         if self.mode is not PlaylistMode.fm:
-            self._app.show_msg('{} is invalid, try to find standby'
-                               .format(str(song)))
-
+            song_str = f'song:{song.source}:{song.title_display}'
+            self._app.show_msg(f'{song_str} is invalid, try to find standby')
+            logger.info(f'try to find standby for {song_str}')
             songs = await self._app.library.a_list_song_standby(song)
             if songs:
                 final_song = songs[0]
