@@ -186,10 +186,13 @@ class SourceLabel(QLabel):
         songs = await self._app.library.a_list_song_standby_from_spec_provider(
             song, providers_identifier_list)
         if songs:
+            logger.info('mark current_song as bad')
+            self._app.playlist.mark_as_bad(song)
+            self._app.playlist._set_current_song(songs[0], songs[0].url)
             # FIXME:需要一种替换当前歌曲的机制
             # FIXME:remove(song) 没有删除窗口组件中保存的数据
             self._app.playlist.remove(song)
-            self._app.playlist.current_song = songs[0]
+            #self._app.playlist.current_song = songs[0]
             # 下列解决方式在随机播放模式下存在问题
             # self._app.playlist.insert(songs[0])
             # self._app.playlist.remove(song)
