@@ -38,20 +38,9 @@ class CommentListModel(QAbstractListModel):
         return flags
 
     def data(self, index, role=Qt.DisplayRole):
-        comment = self._reader.read(index.row())
         if role == Qt.UserRole:
-            return comment
-        elif role == Qt.DisplayRole:
-            return comment.content
-        elif role == Qt.UserRole + 1:
-            return comment.user.name
+            return self._reader.read(index.row())
         return None
-
-    def roleNames(self):
-        return {
-            Qt.UserRole + 1: b'user',
-            Qt.DisplayRole: b'content'
-        }
 
 
 class CommentListDelegate(QStyledItemDelegate):

@@ -1,5 +1,5 @@
 from feeluown.utils import aio
-from feeluown.containers.table import Renderer
+from feeluown.gui.page_containers.table import Renderer
 
 
 async def render(req, provider, identifier, **kwargs):

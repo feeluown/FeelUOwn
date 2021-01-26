@@ -2,18 +2,18 @@ import sys
 
 from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
 from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea, QStackedLayout
 
 from feeluown.utils import aio
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
 
+from feeluown.collection import CollectionType
 from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
-from feeluown.collection import DEFAULT_COLL_ALBUMS
-from feeluown.containers.bottom_panel import BottomPanel
-from feeluown.containers.table import TableContainer
-from feeluown.containers.collection import CollectionContainer
+from feeluown.gui.uimain.toolbar import BottomPanel
+from feeluown.gui.page_containers.table import TableContainer
+from feeluown.gui.page_containers.collection import CollectionContainer
 
 
 def add_alpha(color, alpha):
@@ -88,6 +88,7 @@ class RightPanel(QFrame):
         self._pixmap = None
 
         self._layout = QVBoxLayout(self)
+        self._stacked_layout = QStackedLayout()
         self.scrollarea = ScrollArea(self._app, self)
         self.table_container = self.scrollarea.t
         # TODO: collection container will be removed
@@ -100,50 +101,50 @@ class RightPanel(QFrame):
         self.scrollarea.setMinimumHeight(100)
         self.collection_container.hide()
         self._layout.addWidget(self.bottom_panel)
-        self._layout.addWidget(self.scrollarea)
-        self._layout.addWidget(self.collection_container)
+        self._layout.addLayout(self._stacked_layout)
+        self._stacked_layout.addWidget(self.scrollarea)
+        self._stacked_layout.addWidget(self.collection_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
     def show_model(self, model):
-        self.scrollarea.show()
-        self.collection_container.hide()
+        self.set_body(self.scrollarea)
         # TODO: use PreemptiveTask
         aio.create_task(self.table_container.show_model(model))
 
     def show_songs(self, songs):
         self.collection_container.hide()
-        self.scrollarea.show()
+        self.set_body(self.scrollarea)
         self.table_container.show_songs(songs)
+
+    def set_body(self, widget):
+        self._stacked_layout.setCurrentWidget(widget)
 
     def show_collection(self, coll):
 
         def _show_pure_albums_coll(coll):
-            self.collection_container.hide()
+            self.set_body(self.scrollarea)
             reader = wrap(coll.models)
             self.table_container.show_albums_coll(reader)
 
         def _show_pure_songs_coll(coll):
-            self.collection_container.hide()
-            self.scrollarea.show()
+            self.set_body(self.scrollarea)
             self.table_container.show_collection(coll)
 
         def _show_mixed_coll(coll):
-            self.scrollarea.hide()
-            self.collection_container.show()
+            self.set_body(self.collection_container)
             self.collection_container.show_collection(coll)
 
         def _show_pure_videos_coll(coll):
-            from feeluown.containers.table import VideosRenderer
+            from feeluown.gui.page_containers.table import VideosRenderer
 
-            self.collection_container.hide()
-            self.scrollarea.show()
+            self.set_body(self.scrollarea)
             reader = wrap(coll.models)
             renderer = VideosRenderer(reader)
             aio.create_task(self.table_container.set_renderer(renderer))
 
-        if coll.name == DEFAULT_COLL_ALBUMS:
-            _show_pure_albums_coll(coll)
+        if coll.type is CollectionType.sys_library:
+            self._app.browser.goto(page='/colls/library')
             return
 
         types = set()

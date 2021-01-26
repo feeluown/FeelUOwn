@@ -13,9 +13,9 @@ if use_mpv_old():
 else:
     from feeluown.widgets.mpv import MpvOpenGLWidget
 
-from feeluown.containers.left_panel import LeftPanel
-from feeluown.containers.right_panel import RightPanel
-from feeluown.containers.top_panel import TopPanel
+from feeluown.gui.uimain.sidebar import LeftPanel
+from feeluown.gui.uimain.page_view import RightPanel
+from feeluown.gui.uimain.player_bar import TopPanel
 
 from feeluown.gui.video_show import VideoShowCtl
 
@@ -33,7 +33,7 @@ class Ui:
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
         self.top_panel = TopPanel(app, app)
-        self._left_panel_con = LeftPanel(self._app,)
+        self.sidebar = self._left_panel_con = LeftPanel(self._app,)
         self.left_panel = self._left_panel_con.p
         self.right_panel = RightPanel(self._app, self._splitter)
         self.bottom_panel = self.right_panel.bottom_panel

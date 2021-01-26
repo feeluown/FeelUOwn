@@ -458,3 +458,17 @@ class PlayerControlPanel(QFrame):
             self.lyric_window.hide()
         else:
             self.lyric_window.show()
+
+
+class TopPanel(QFrame):
+    def __init__(self, app, parent=None):
+        super().__init__(parent)
+        self._app = app
+
+        self._layout = QHBoxLayout(self)
+        self.pc_panel = PlayerControlPanel(self._app, self)
+        self.setObjectName('top_panel')
+
+        self.setFixedHeight(60)
+
+        self._layout.addWidget(self.pc_panel)

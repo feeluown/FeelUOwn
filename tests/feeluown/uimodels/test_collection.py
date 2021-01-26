@@ -1,6 +1,6 @@
 from unittest import mock
 
-from feeluown.collection import Collection, SONGS_FILENAME, ALBUMS_FILENAME
+from feeluown.collection import Collection, LIBRARY_FILENAME
 from feeluown.uimodels.collection import CollectionUiManager
 from feeluown.widgets.collections import CollectionsModel
 
@@ -20,15 +20,13 @@ def test_predefined_collection_should_on_top(tmp_path, app_mock, mocker):
 
     coll1 = new_collection(tmp_path / '1.fuo')
     coll2 = new_collection(tmp_path / '2.fuo')
-    coll_song = new_collection(tmp_path / SONGS_FILENAME)
-    coll_album = new_collection(tmp_path / ALBUMS_FILENAME)
+    coll_library = new_collection(tmp_path / LIBRARY_FILENAME)
 
-    app_mock.coll_mgr.scan.return_value = [coll1, coll_song, coll2, coll_album]
+    app_mock.coll_mgr.scan.return_value = [coll1, coll_library, coll2]
     mgr.initialize()
 
     mock_add.assert_has_calls([
-        mock.call(coll_song),
-        mock.call(coll_album),
+        mock.call(coll_library),
         mock.call(coll1),
         mock.call(coll2),
     ])
