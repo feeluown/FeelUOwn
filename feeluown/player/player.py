@@ -157,10 +157,13 @@ class Playlist(_Playlist):
             if songs:
                 final_song = songs[0]
                 logger.info('find song standby success: %s', final_song)
+                # NOTE: a_list_song_standby ensure that the song.url is not empty
+                # FIXME: maybe a_list_song_standby should return media directly
+                self._set_current_song(final_song, final_song.url)
             else:
                 logger.info('find song standby failed: not found')
                 final_song = song
-            self._set_current_song(final_song, final_song.url)
+                self._set_current_song(final_song, None)
         else:
             self.next()
 

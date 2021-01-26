@@ -210,8 +210,10 @@ class Library:
         """async version of list_song_standby
         """
         providers = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        # FIXME(cosven): the model return from netease is new model,
+        # and it does not has url attribute
         valid_providers = [provider for provider in providers
-                           if provider != song.source]
+                           if provider != song.source and provider != 'netease']
         q = '{} {}'.format(song.title_display, song.artists_name_display)
         result_g = []
         async for result in self.a_search(q, source_in=valid_providers):
@@ -220,7 +222,6 @@ class Library:
         sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
         # choose one or two valid standby
         result = []
-        print('sorted standby list', sorted_standby_list)
         for standby in sorted_standby_list:
             try:
                 url = await aio.run_in_executor(None, lambda: standby.url)
