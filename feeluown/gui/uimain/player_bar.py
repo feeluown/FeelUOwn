@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from functools import partial
 
 from PyQt5.QtCore import Qt, QTimer, QRect,pyqtSlot
 from PyQt5.QtGui import QFontMetrics, QPainter
@@ -167,12 +168,14 @@ class SourceLabel(QLabel):
 
     def _init_mean(self):
         self._menu = QMenu()
-        # self._menu.hovered.connect(self.on_action_hovered)
-        providrs = self._app.library.list()
-        from functools import partial
+
+        providrs:list = self._app.library.list()
+        sorted(providrs, key=lambda provider: provider.identifier)
+
         for idx in range(len(providrs)):
             action = self._menu.addAction(providrs[idx].name)
             action.setData({'provider_identifier': providrs[idx].identifier})
+            action.setVisible(True)
             action.triggered.connect(
                 partial(self._do_switch_provider, providrs[idx].identifier)
             )
@@ -192,10 +195,6 @@ class SourceLabel(QLabel):
             # FIXME:需要一种替换当前歌曲的机制
             # FIXME:remove(song) 没有删除窗口组件中保存的数据
             self._app.playlist.remove(song)
-            #self._app.playlist.current_song = songs[0]
-            # 下列解决方式在随机播放模式下存在问题
-            # self._app.playlist.insert(songs[0])
-            # self._app.playlist.remove(song)
         else:
             logging.warning("切换provider失败,返回结果为空")
             msg = f"can't get " \
@@ -213,13 +212,13 @@ class SourceLabel(QLabel):
 
         current_provider = song.source
         actions = self._menu.actions()
-        # FIXME(wuliaotc):change action's background when act disabled
+
         for act in actions:
             data = act.data()
             if current_provider != data['provider_identifier']:
-                act.setEnabled(True)
+                act.setVisible(True)
             else:
-                act.setEnabled(False)
+                act.setVisible(False)
 
         self._menu.exec(e.globalPos())
 
