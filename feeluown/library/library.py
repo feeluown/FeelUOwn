@@ -238,24 +238,30 @@ class Library:
     async def a_list_song_standby_from_spec_provider(self, song, providers=None, onlyone=True):
         """async version of list_song_standby
         """
-        if providers is None:
-            providers = self._providers_standby or [pvd.identifier for pvd in
-                                                    self.list()]
-        valid_providers = [provider for provider in providers if provider != song.source]
+        assert (providers is not None)
+        # FIXME(cosven): the model return from netease is new model,
+        # and it does not has url attribute
+        valid_providers = [provider for provider in providers
+                           if provider != song.source and provider != 'netease']
         q = '{} {}'.format(song.title_display, song.artists_name_display)
         result_g = []
         async for result in self.a_search(q, source_in=valid_providers):
-            result_g.append(result)
+            if result is not None:
+                result_g.append(result)
         sorted_standby_list = _extract_and_sort_song_standby_list(song,
                                                                   result_g)
         # choose one or two valid standby
         result = []
         for standby in sorted_standby_list:
-            url = await aio.run_in_executor(None, lambda: standby.url)
-            if url:
-                result.append(standby)
-                if onlyone or len(result) >= 2:
-                    break
+            try:
+                url = await aio.run_in_executor(None, lambda: standby.url)
+            except:  # noqa
+                logger.exception('get standby url failed')
+            else:
+                if url:
+                    result.append(standby)
+                    if onlyone or len(result) >= 2:
+                        break
         return result
     #
     # methods for v2
