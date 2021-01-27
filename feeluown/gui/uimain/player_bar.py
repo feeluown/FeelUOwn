@@ -197,9 +197,13 @@ class SourceLabel(QLabel):
             # self._app.playlist.insert(songs[0])
             # self._app.playlist.remove(song)
         else:
-            # FIXME(wuliaotc):如果provider中请求结果为空,需要让用户感知
             logging.warning("切换provider失败,返回结果为空")
-            pass
+            msg = f"can't get " \
+                  f"{song.title_display}:{song.artists_name_display} " \
+                  f"from {providers_identifier_list}" \
+                  f",please try another provider"
+            self._app.show_msg(msg)
+
 
     # FIXME:在切换provider时禁用menu
     def contextMenuEvent(self, e):
