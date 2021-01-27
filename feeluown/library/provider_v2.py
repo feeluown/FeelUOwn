@@ -44,10 +44,11 @@ class ProviderV2:
         if policy is None:
             policy = 'hq<>'
         sorted_q_list = Quality.SortPolicy.apply(
-            policy, [each for each in list(QualityCls)])
+            policy, [each.value for each in list(QualityCls)])
 
         # find the first available quality
         for quality in sorted_q_list:
+            quality = QualityCls(quality)
             if quality in available_q_set:
                 return self.song_get_media(song, quality), quality
 
