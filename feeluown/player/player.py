@@ -5,6 +5,7 @@ import logging
 import threading
 from enum import IntEnum
 
+from feeluown.excs import ProviderIOError
 from feeluown.library.excs import MediaNotFound
 from feeluown.player.mpvplayer import MpvPlayer
 from feeluown.utils.dispatch import Signal
@@ -131,26 +132,44 @@ class Playlist(_Playlist):
         super().init_from(songs)
 
     async def a_set_current_song(self, song):
+        """
+        1. prepare media for song
+        2. if media is valid, just play it
+        3.
+        """
+        song_str = f'song:{song.source}:{song.title_display}'
+
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
-        future = task_spec.bind_blocking_io(self.prepare_media, song)
+        is_bad_song = False
         try:
-            media = await future
+            media = await task_spec.bind_blocking_io(self.prepare_media, song)
         except MediaNotFound:
-            media = None
-        except:  # noqa
+            is_bad_song = True
+        except ProviderIOError:
             logger.exception('prepare media failed')
+            # Try to play next song if the song is invalid
+            if self.next_song is song:
+                self.next()
+            else:
+                media = None  # the song has
+        except:  # noqa
+            # The failure may lead to infinite loop
+            # When the exception is unknown, we mark the song as bad.
+            logger.exception('prepare media failed due to unknown error, '
+                             'so we mark the song as a bad one')
+            self.mark_as_bad(song)
             self.next()
-            return
-        if media is not None:
+        else:
+            # The song is ok, and we just play it
             self._set_current_song(song, media)
             return
-        logger.info('song:{} media is None, mark as bad')
+
+        logger.info(f'{song_str} has no valid media, mark it as bad')
         self.mark_as_bad(song)
 
         # if mode is fm mode, do not find standby song,
         # just skip the song
         if self.mode is not PlaylistMode.fm:
-            song_str = f'song:{song.source}:{song.title_display}'
             self._app.show_msg(f'{song_str} is invalid, try to find standby')
             logger.info(f'try to find standby for {song_str}')
             songs = await self._app.library.a_list_song_standby(song)

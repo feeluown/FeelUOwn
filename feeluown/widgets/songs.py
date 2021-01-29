@@ -15,6 +15,7 @@ from PyQt5.QtWidgets import (
     QStyle, QSizePolicy, QStyleOptionButton, QStyledItemDelegate,
 )
 
+from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.excs import ProviderIOError
 from feeluown.library import ModelState, ModelFlags
@@ -378,11 +379,21 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def setEditorData(self, editor, index):
         super().setEditorData(editor, index)
+
+        def cb(future):
+            try:
+                artists = future.result()
+            except:  # noqa
+                logger.error('song.artists failed')
+            else:
+                model = ArtistsModel(artists)
+                editor.setModel(model)
+                editor.setCurrentIndex(QModelIndex())
+
         if index.column() == Column.artist:
             song = index.data(role=Qt.UserRole)
-            model = ArtistsModel(song.artists)
-            editor.setModel(model)
-            editor.setCurrentIndex(QModelIndex())
+            future = aio.run_in_executor(lambda: song.artists)
+            future.add_done_callback(cb)
 
     def setModelData(self, editor, model, index):
         if index.column() == Column.artist:
