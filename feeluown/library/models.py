@@ -35,7 +35,7 @@ class ModelFlags(IntFlag):
 class BaseModel(_BaseModel):
     class meta:
         flags = ModelFlags.v2
-        model_type = ModelType.dummy.value
+        model_type = ModelType.dummy
 
     class Config:
         # Do not use Model.from_orm to convert v1 model to v2 model

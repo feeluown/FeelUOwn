@@ -25,10 +25,6 @@ from feeluown.excs import ProviderIOError
 logger = logging.getLogger(__name__)
 
 
-def get_model_type(model):
-    return model._meta.model_type
-
-
 async def async_run(func, loop=None, executor=None):
     """异步的获取 model 属性值
 
