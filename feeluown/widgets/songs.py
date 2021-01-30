@@ -392,7 +392,7 @@ class SongsTableDelegate(QStyledItemDelegate):
 
         if index.column() == Column.artist:
             song = index.data(role=Qt.UserRole)
-            future = aio.run_in_executor(lambda: song.artists)
+            future = aio.run_in_executor(None, lambda: song.artists)
             future.add_done_callback(cb)
 
     def setModelData(self, editor, model, index):
