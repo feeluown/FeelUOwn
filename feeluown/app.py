@@ -150,6 +150,12 @@ class App:
         else:
             show_msg(s + '...done')  # done
 
+    def exit(self):
+        self.about_to_shutdown.emit(self)
+        Signal.teardown_aio_support()
+        self.player.stop()
+        # self.player.shutdown()  # this cause 'abort trap' on macOS
+
 
 def attach_attrs(app):
     """初始化 app 属性"""
@@ -252,13 +258,6 @@ def create_app(config):
                 if not self.config.ENABLE_TRAY:
                     self.exit()
 
-            def exit(self):
-                self.about_to_shutdown.emit(app)
-                Signal.teardown_aio_support()
-                self.player.stop()
-                # self.player.shutdown()  # this cause 'abort trap' on macOS
-                QApplication.quit()
-
             def mouseReleaseEvent(self, e):
                 if not self.rect().contains(e.pos()):
                     return
@@ -272,6 +271,9 @@ def create_app(config):
                 App.__init__(self, config)
                 GuiApp.__init__(self)
 
+            def exit(self):
+                super().exit()
+                QApplication.quit()
     else:
         FApp = App
 
@@ -335,7 +337,6 @@ def run_app(app):
         # NOTE: gracefully shutdown?
         pass
     finally:
-        app.exit()
         loop.stop()
         loop.close()
 
