@@ -132,59 +132,45 @@ class Playlist(_Playlist):
         super().init_from(songs)
 
     async def a_set_current_song(self, song):
-        """
-        1. prepare media for song
-        2. if media is valid, just play it
-        3.
-        """
         song_str = f'song:{song.source}:{song.title_display}'
 
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
-        is_bad_song = False
         try:
             media = await task_spec.bind_blocking_io(self.prepare_media, song)
         except MediaNotFound:
-            is_bad_song = True
-        except ProviderIOError:
-            logger.exception('prepare media failed')
-            # Try to play next song if the song is invalid
-            if self.next_song is song:
-                self.next()
+            logger.info(f'{song_str} has no valid media, mark it as bad')
+            self.mark_as_bad(song)
+
+            # if mode is fm mode, do not find standby song,
+            # just skip the song
+            if self.mode is not PlaylistMode.fm:
+                self._app.show_msg(f'{song_str} is invalid, try to find standby')
+                logger.info(f'try to find standby for {song_str}')
+                songs = await self._app.library.a_list_song_standby(song)
+                if songs:
+                    final_song = songs[0]
+                    logger.info('find song standby success: %s', final_song)
+                    # NOTE: a_list_song_standby ensure that the song.url is not empty
+                    # FIXME: maybe a_list_song_standby should return media directly
+                    self._set_current_song(final_song, final_song.url)
+                else:
+                    logger.info('find song standby failed: not found')
+                    final_song = song
+                    self._set_current_song(final_song, None)
             else:
-                media = None  # the song has
+                self.next()
+        except ProviderIOError as e:
+            # FIXME: This may cause infinite loop when the prepare media always fails
+            logger.error(f'prepare media failed: {e}, try next song')
+            self._set_current_song(song, None)
         except:  # noqa
-            # The failure may lead to infinite loop
             # When the exception is unknown, we mark the song as bad.
             logger.exception('prepare media failed due to unknown error, '
                              'so we mark the song as a bad one')
             self.mark_as_bad(song)
             self.next()
         else:
-            # The song is ok, and we just play it
             self._set_current_song(song, media)
-            return
-
-        logger.info(f'{song_str} has no valid media, mark it as bad')
-        self.mark_as_bad(song)
-
-        # if mode is fm mode, do not find standby song,
-        # just skip the song
-        if self.mode is not PlaylistMode.fm:
-            self._app.show_msg(f'{song_str} is invalid, try to find standby')
-            logger.info(f'try to find standby for {song_str}')
-            songs = await self._app.library.a_list_song_standby(song)
-            if songs:
-                final_song = songs[0]
-                logger.info('find song standby success: %s', final_song)
-                # NOTE: a_list_song_standby ensure that the song.url is not empty
-                # FIXME: maybe a_list_song_standby should return media directly
-                self._set_current_song(final_song, final_song.url)
-            else:
-                logger.info('find song standby failed: not found')
-                final_song = song
-                self._set_current_song(final_song, None)
-        else:
-            self.next()
 
     @_Playlist.playback_mode.setter
     def playback_mode(self, playback_mode):

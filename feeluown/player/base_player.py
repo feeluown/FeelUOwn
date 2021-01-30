@@ -191,7 +191,6 @@ class AbstractPlayer(metaclass=ABCMeta):
         """
         if song is not None:
             if media is None:
-                self._playlist.mark_as_bad(song)
                 self._playlist.next()
             else:
                 self.play(media)

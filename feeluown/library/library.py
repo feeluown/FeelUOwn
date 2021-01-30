@@ -1,6 +1,6 @@
 import logging
 from functools import partial, lru_cache
-from typing import Optional, List
+from typing import List
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
@@ -9,7 +9,7 @@ from feeluown.models import SearchType, ModelType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
-from .excs import NotSupported
+from .excs import NotSupported, MediaNotFound
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel, BriefSongModel, SongModel,
@@ -313,18 +313,23 @@ class Library:
         provider = self.get_or_raise(song.source)
         return provider.song_list_hot_comments(song)
 
-    def song_prepare_media(self, song: BriefSongProtocol, policy) -> Optional[Media]:
+    def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
+        provider = self.get(song.source)
+        if provider is None:
+            raise MediaNotFound(f'provider:{song.source} not found')
         if song.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for song
             assert self.check_flags_by_model(song, PF.multi_quality)
-            provider = self.get_or_raise(song.source)
             media, _ = provider.song_select_media(song, policy)
         else:
             if song.meta.support_multi_quality:
                 media, _ = song.select_media(policy)  # type: ignore
             else:
                 url = song.url  # type: ignore
-                media = Media(url) if url else None
+                if url:
+                    media = Media(url)
+                else:
+                    raise MediaNotFound
         return media
 
     def song_get_lyric(self, song: BriefSongModel):

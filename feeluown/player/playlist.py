@@ -104,8 +104,9 @@ class Playlist:
                     self._songs.remove(song)
                     self.current_song = self.next_song
                 else:
-                    self.current_song = self.next_song
+                    next_song = self.next_song
                     self._songs.remove(song)
+                    self.current_song = next_song
             else:
                 self._songs.remove(song)
             logger.debug('Remove {} from player playlist'.format(song))
