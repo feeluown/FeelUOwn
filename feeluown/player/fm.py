@@ -1,6 +1,6 @@
 import asyncio
 import logging
-from queue import deque
+from collections import deque
 
 from feeluown.excs import ProviderIOError
 from feeluown.player import PlaylistMode

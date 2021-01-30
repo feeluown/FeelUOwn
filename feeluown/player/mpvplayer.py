@@ -4,7 +4,7 @@ import logging
 from feeluown.utils.utils import use_mpv_old
 
 if use_mpv_old():
-    from mpv_old import (
+    from mpv_old import (  # type: ignore
         MPV,
         MpvEventID,
         MpvEventEndFile,
@@ -13,7 +13,7 @@ if use_mpv_old():
         _mpv_client_api_version,
     )
 else:
-    from mpv import (
+    from mpv import (  # type: ignore
         MPV,
         MpvEventID,
         MpvEventEndFile,
@@ -151,7 +151,7 @@ class MpvPlayer(AbstractPlayer):
         else:
             logger.warn("can't set position when current media is empty")
 
-    @AbstractPlayer.volume.setter
+    @AbstractPlayer.volume.setter  # type: ignore
     def volume(self, value):
         super(MpvPlayer, MpvPlayer).volume.__set__(self, value)
         self._mpv.volume = self.volume

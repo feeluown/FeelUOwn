@@ -97,7 +97,7 @@ class Playlist(_Playlist):
     def fm_add(self, song):
         super().add(song)
 
-    @_Playlist.current_song.setter
+    @_Playlist.current_song.setter  # type: ignore
     def current_song(self, song):
         """if song has not valid media, we find a replacement in other providers"""
 
@@ -172,7 +172,7 @@ class Playlist(_Playlist):
         else:
             self._set_current_song(song, media)
 
-    @_Playlist.playback_mode.setter
+    @_Playlist.playback_mode.setter  # type: ignore
     def playback_mode(self, playback_mode):
         if self._mode is PlaylistMode.fm:
             if playback_mode is not PlaybackMode.sequential:

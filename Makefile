@@ -7,7 +7,7 @@ docs:
 
 lint:
 	flake8 fuocore/ feeluown/ tests/
-	mypy feeluown/library
+	mypy feeluown/library feeluown/player
 
 unittest: pytest
 
