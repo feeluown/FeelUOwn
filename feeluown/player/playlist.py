@@ -1,12 +1,15 @@
+import asyncio
 import copy
 import logging
 import random
-import warnings
 from enum import IntEnum
+from typing import Optional
 
+from feeluown.excs import ProviderIOError
 from feeluown.utils.dispatch import Signal
-from feeluown.media import Media
 from feeluown.utils.utils import DedupList
+from feeluown.library.excs import MediaNotFound
+from feeluown.library.model_protocol import SongProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -21,16 +24,63 @@ class PlaybackMode(IntEnum):
     random = 3  #: Random
 
 
-class Playlist:
-    """player playlist provide a list of song model to play
-    """
+class PlaylistMode(IntEnum):
+    """playlist mode
 
-    def __init__(self, songs=None, playback_mode=PlaybackMode.loop,
+    **What is FM mode?**
+
+    In FM mode, playlist's playback_mode is unchangeable, it will
+    always be sequential. When playlist has no more song,
+    the playlist hopes someone(we call it ``FMPlaylist`` here) will:
+    1. catch the ``eof_reached`` signal
+    2. add news songs to playlist by using ``fm_add`` method
+    3. call ``next`` method to resume the player
+
+    **How to enter FM mode?**
+
+    Only FMPlaylist can(should) make playlist enter FM mode, it should
+    do following things:
+    1. clear the playlist
+    2. change playlist mode to FM
+    3. add several songs to playlist
+    4. resume the player with the first song
+
+    **When will playlist exit FM mode?**
+
+    If user manually play a song, playlist will exit FM mode, at the
+    same time, playlist will:
+    1. clear itself
+    2. change to normal mode
+    3. set current song to the song
+    """
+    normal = 0  #: Normal
+    fm = 1  #: FM mode
+
+
+class Playlist:
+    def __init__(self, app, songs=None, playback_mode=PlaybackMode.loop,
                  audio_select_policy='hq<>'):
         """
         :param songs: list of :class:`feeluown.models.SongModel`
         :param playback_mode: :class:`feeluown.player.PlaybackMode`
         """
+        self._app = app
+
+        #: mainthread asyncio loop ref
+        # We know that feeluown is a asyncio-app, and we can assume
+        # that the playlist is inited in main thread.
+        self._loop = asyncio.get_event_loop()
+
+        #: init playlist mode normal
+        self._mode = PlaylistMode.normal
+
+        #: playlist eof signal
+        # playlist have no enough songs
+        self.eof_reached = Signal()
+
+        #: playlist mode changed signal
+        self.mode_changed = Signal()
+
         #: store value for ``current_song`` property
         self._current_song = None
 
@@ -59,6 +109,22 @@ class Playlist:
         emit(song, media)
         """
 
+    @property
+    def mode(self):
+        return self._mode
+
+    @mode.setter
+    def mode(self, mode):
+        """set playlist mode"""
+        if self._mode is not mode:
+            if mode is PlaylistMode.fm:
+                self.playback_mode = PlaybackMode.sequential
+            self.clear()
+            # we should change _mode at the very end
+            self._mode = mode
+            self.mode_changed.emit(mode)
+            logger.info('playlist mode changed to %s', mode)
+
     def __len__(self):
         return len(self._songs)
 
@@ -71,14 +137,29 @@ class Playlist:
             self._bad_songs.append(song)
 
     def add(self, song):
-        """往播放列表末尾添加一首歌曲"""
+        """add song to playlist
+
+        Theoretically, when playlist is in FM mode, we should not
+        change songs list manually(without ``fm_add`` method). However,
+        when it happens, we exit FM mode.
+        """
+        if self._mode is PlaylistMode.fm:
+            self.mode = PlaylistMode.normal
         if song in self._songs:
             return
         self._songs.append(song)
         logger.debug('Add %s to player playlist', song)
 
+    def fm_add(self, song):
+        self.add(song)
+
     def insert(self, song):
-        """在当前歌曲后插入一首歌曲"""
+        """Insert song after current song
+
+        When current song is none, the song is appended.
+        """
+        if self._mode is PlaylistMode.fm:
+            self.mode = PlaylistMode.normal
         if song in self._songs:
             return
         if self._current_song is None:
@@ -117,7 +198,21 @@ class Playlist:
             self._bad_songs.remove(song)
 
     def init_from(self, songs):
-        """(alpha) temporarily, should only called by player.play_songs"""
+        """
+        THINKING: maybe we should rename this method or maybe we should
+        change mode on application level
+
+        We change playlistmode here because the `player.play_all` call this
+        method. We should check if we need to exit fm mode in `play_xxx`.
+        Currently, we have two play_xxx API: play_all and play_song.
+        1. play_all -> init_from
+        2. play_song -> current_song.setter
+
+        (alpha) temporarily, should only called by player.play_songs
+        """
+
+        if self.mode is PlaylistMode.fm:
+            self.mode = PlaylistMode.normal
         self.clear()
         # since we will call songs.clear method during playlist clearing,
         # we need to deepcopy songs object here.
@@ -131,51 +226,8 @@ class Playlist:
         self._bad_songs.clear()
 
     def list(self):
-        """get all songs in playlists"""
+        """Get all songs in playlists"""
         return self._songs
-
-    @property
-    def current_song(self):
-        """
-        current playing song, return None if there is no current song
-        """
-        return self._current_song
-
-    @current_song.setter
-    def current_song(self, song):
-        """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
-
-        .. note::
-
-            该方法理论上只应该被 Player 对象调用。
-        """
-        media = None
-        if song is not None:
-            media = self.prepare_media(song)
-        self._set_current_song(song, media)
-
-    def _set_current_song(self, song, media):
-        if song is None:
-            self._current_song = None
-        else:
-            # add it to playlist if song not in playlist
-            if song in self._songs:
-                self._current_song = song
-            else:
-                self.insert(song)
-                self._current_song = song
-        self.song_changed.emit(song)
-        self.song_changed_v2.emit(song, media)
-
-    def prepare_media(self, song):
-        """prepare media data
-        """
-        warnings.warn('use library.song_prepare_media please', DeprecationWarning)
-        if song.meta.support_multi_quality:
-            media, quality = song.select_media(self.audio_select_policy)
-        else:
-            media = song.url  # maybe a empty string
-        return Media(media) if media else None
 
     @property
     def playback_mode(self):
@@ -183,8 +235,12 @@ class Playlist:
 
     @playback_mode.setter
     def playback_mode(self, playback_mode):
+        if self._mode is PlaylistMode.fm:
+            if playback_mode is not PlaybackMode.sequential:
+                logger.warning("can't set playback mode to others in fm mode")
+                return
         self._playback_mode = playback_mode
-        self.playback_mode_changed.emit(playback_mode)
+        self.playback_mode_changed.emit(self.playback_mode)
 
     def _get_good_song(self, base=0, random_=False, direction=1, loop=True):
         """从播放列表中获取一首可以播放的歌曲
@@ -269,9 +325,102 @@ class Playlist:
         return previous_song
 
     def next(self):
-        """advance to the next song in playlist"""
-        self.current_song = self.next_song
+        if self.next_song is None:
+            self.eof_reached.emit()
+        else:
+            self.current_song = self.next_song
 
     def previous(self):
         """return to the previous song in playlist"""
         self.current_song = self.previous_song
+
+    @property
+    def current_song(self) -> Optional[SongProtocol]:
+        """Current song
+
+        return None if there is no current song
+        """
+        return self._current_song
+
+    @current_song.setter
+    def current_song(self, song):
+        """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
+
+        .. note::
+
+            该方法理论上只应该被 Player 对象调用。
+
+        if song has not valid media, we find a replacement in other providers
+        """
+
+        if song is None:
+            self._set_current_song(None, None)
+            return
+
+        if self.mode is PlaylistMode.fm and song not in self._songs:
+            self.mode = PlaylistMode.normal
+
+        def cb(future):
+            try:
+                future.result()
+            except:  # noqa
+                logger.exception('async set current song failed')
+
+        task_spec = self._app.task_mgr.get_or_create('set-current-song')
+        task = task_spec.bind_coro(self.a_set_current_song(song))
+        task.add_done_callback(cb)
+
+    async def a_set_current_song(self, song):
+        song_str = f'song:{song.source}:{song.title_display}'
+
+        task_spec = self._app.task_mgr.get_or_create('prepare-media')
+        try:
+            media = await task_spec.bind_blocking_io(
+                self._app.library.song_prepare_media, song, self.audio_select_policy)
+        except MediaNotFound:
+            logger.info(f'{song_str} has no valid media, mark it as bad')
+            self.mark_as_bad(song)
+
+            # if mode is fm mode, do not find standby song,
+            # just skip the song
+            if self.mode is not PlaylistMode.fm:
+                self._app.show_msg(f'{song_str} is invalid, try to find standby')
+                logger.info(f'try to find standby for {song_str}')
+                songs = await self._app.library.a_list_song_standby(song)
+                if songs:
+                    final_song = songs[0]
+                    logger.info('find song standby success: %s', final_song)
+                    # NOTE: a_list_song_standby ensure that the song.url is not empty
+                    # FIXME: maybe a_list_song_standby should return media directly
+                    self._set_current_song(final_song, final_song.url)
+                else:
+                    logger.info('find song standby failed: not found')
+                    final_song = song
+                    self._set_current_song(final_song, None)
+            else:
+                self.next()
+        except ProviderIOError as e:
+            # FIXME: This may cause infinite loop when the prepare media always fails
+            logger.error(f'prepare media failed: {e}, try next song')
+            self._set_current_song(song, None)
+        except:  # noqa
+            # When the exception is unknown, we mark the song as bad.
+            logger.exception('prepare media failed due to unknown error, '
+                             'so we mark the song as a bad one')
+            self.mark_as_bad(song)
+            self.next()
+        else:
+            self._set_current_song(song, media)
+
+    def _set_current_song(self, song, media):
+        if song is None:
+            self._current_song = None
+        else:
+            # add it to playlist if song not in playlist
+            if song in self._songs:
+                self._current_song = song
+            else:
+                self.insert(song)
+                self._current_song = song
+        self.song_changed.emit(song)
+        self.song_changed_v2.emit(song, media)

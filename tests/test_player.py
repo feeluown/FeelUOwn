@@ -14,6 +14,9 @@ MP3_URL = os.path.join(os.path.dirname(__file__),
 MPV_SLEEP_SECOND = 0.1  # 留给 MPV 反应的时间
 
 
+app_mock = mock.MagicMock()
+
+
 class FakeSongModel:  # pylint: disable=all
     class meta:
         support_multi_quality = False
@@ -36,7 +39,7 @@ class FakeValidSongModel:
 class TestPlayer(TestCase):
 
     def setUp(self):
-        self.player = MpvPlayer()
+        self.player = MpvPlayer(Playlist(app_mock))
         self.player.volume = 0
 
     def tearDown(self):
@@ -94,7 +97,7 @@ class TestPlaylist(TestCase):
     def setUp(self):
         self.s1 = FakeSongModel()
         self.s2 = FakeSongModel()
-        self.playlist = Playlist()
+        self.playlist = Playlist(app_mock)
         self.playlist.add(self.s1)
         self.playlist.add(self.s2)
 
@@ -156,13 +159,6 @@ class TestPlaylist(TestCase):
         self.playlist.current_song = s3
         self.assertIn(s3, self.playlist)
 
-    def test_next_song(self):
-        self.playlist.playback_mode = PlaybackMode.sequential
-        self.playlist.current_song = self.s2
-        self.assertIsNone(self.playlist.next_song)
-        self.playlist.playback_mode = PlaybackMode.random
-        self.playlist.next_song  # assert no exception
-
     def test_previous_song(self):
         self.assertEqual(self.playlist.previous_song, self.s2)
         self.playlist.current_song = self.s2
@@ -172,7 +168,7 @@ class TestPlaylist(TestCase):
 class TestPlayerAndPlaylist(TestCase):
 
     def setUp(self):
-        self.player = MpvPlayer()
+        self.player = MpvPlayer(Playlist(app_mock))
 
     def tearDown(self):
         self.player.stop()
