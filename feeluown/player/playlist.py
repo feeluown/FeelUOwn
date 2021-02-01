@@ -136,6 +136,11 @@ class Playlist:
         if song in self._songs and song not in self._bad_songs:
             self._bad_songs.append(song)
 
+    def _add(self, song):
+        if song in self._songs:
+            return
+        self._songs.append(song)
+
     def add(self, song):
         """add song to playlist
 
@@ -145,13 +150,10 @@ class Playlist:
         """
         if self._mode is PlaylistMode.fm:
             self.mode = PlaylistMode.normal
-        if song in self._songs:
-            return
-        self._songs.append(song)
-        logger.debug('Add %s to player playlist', song)
+        self._add(song)
 
     def fm_add(self, song):
-        self.add(song)
+        self._add(song)
 
     def insert(self, song):
         """Insert song after current song
@@ -343,7 +345,7 @@ class Playlist:
         return self._current_song
 
     @current_song.setter
-    def current_song(self, song):
+    def current_song(self, song: Optional[SongProtocol]):
         """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
 
         .. note::
@@ -354,7 +356,7 @@ class Playlist:
         """
 
         if song is None:
-            self._set_current_song(None, None)
+            self.pure_set_current_song(None, None)
             return
 
         if self.mode is PlaylistMode.fm and song not in self._songs:
@@ -366,6 +368,8 @@ class Playlist:
             except:  # noqa
                 logger.exception('async set current song failed')
 
+        # FIXME(cosven): `current_song.setter` depends on app.task_mgr and app.library,
+        # which make it hard to test.
         task_spec = self._app.task_mgr.get_or_create('set-current-song')
         task = task_spec.bind_coro(self.a_set_current_song(song))
         task.add_done_callback(cb)
@@ -373,10 +377,8 @@ class Playlist:
     async def a_set_current_song(self, song):
         song_str = f'song:{song.source}:{song.title_display}'
 
-        task_spec = self._app.task_mgr.get_or_create('prepare-media')
         try:
-            media = await task_spec.bind_blocking_io(
-                self._app.library.song_prepare_media, song, self.audio_select_policy)
+            media = await self._prepare_media(song)
         except MediaNotFound:
             logger.info(f'{song_str} has no valid media, mark it as bad')
             self.mark_as_bad(song)
@@ -392,17 +394,17 @@ class Playlist:
                     logger.info('find song standby success: %s', final_song)
                     # NOTE: a_list_song_standby ensure that the song.url is not empty
                     # FIXME: maybe a_list_song_standby should return media directly
-                    self._set_current_song(final_song, final_song.url)
+                    self.pure_set_current_song(final_song, final_song.url)
                 else:
                     logger.info('find song standby failed: not found')
                     final_song = song
-                    self._set_current_song(final_song, None)
+                    self.pure_set_current_song(final_song, None)
             else:
                 self.next()
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
             logger.error(f'prepare media failed: {e}, try next song')
-            self._set_current_song(song, None)
+            self.pure_set_current_song(song, None)
         except:  # noqa
             # When the exception is unknown, we mark the song as bad.
             logger.exception('prepare media failed due to unknown error, '
@@ -410,9 +412,9 @@ class Playlist:
             self.mark_as_bad(song)
             self.next()
         else:
-            self._set_current_song(song, media)
+            self.pure_set_current_song(song, media)
 
-    def _set_current_song(self, song, media):
+    def pure_set_current_song(self, song, media):
         if song is None:
             self._current_song = None
         else:
@@ -424,3 +426,8 @@ class Playlist:
                 self._current_song = song
         self.song_changed.emit(song)
         self.song_changed_v2.emit(song, media)
+
+    async def _prepare_media(self, song):
+        task_spec = self._app.task_mgr.get_or_create('prepare-media')
+        return await task_spec.bind_blocking_io(
+            self._app.library.song_prepare_media, song, self.audio_select_policy)

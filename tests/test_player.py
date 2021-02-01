@@ -4,7 +4,7 @@ from unittest import TestCase, skipIf, mock
 
 from fuocore.media import Media
 from fuocore.player import State
-from fuocore.playlist import Playlist, PlaybackMode
+from fuocore.playlist import Playlist, PlaybackMode  # noqa
 from fuocore.mpvplayer import MpvPlayer
 from .helpers import cannot_play_audio
 
@@ -108,40 +108,6 @@ class TestPlaylist(TestCase):
         self.playlist.add(self.s1)
         self.assertEqual(len(self.playlist), 2)
 
-    @mock.patch.object(MpvPlayer, 'play')
-    def test_remove_current_song(self, mock_play):
-        s3 = FakeSongModel()
-        self.playlist.add(s3)
-        self.playlist.current_song = self.s2
-        self.playlist.remove(self.s2)
-        self.assertEqual(self.playlist.current_song, s3)
-        self.assertEqual(len(self.playlist), 2)
-
-    def test_remove(self):
-        self.playlist.remove(self.s1)
-        self.assertEqual(len(self.playlist), 1)
-
-    @mock.patch.object(MpvPlayer, 'play')
-    def test_remove_2(self, mock_play):
-        """播放器正在播放，移除一首歌"""
-        self.playlist.current_song = self.s2
-        self.playlist.remove(self.s1)
-        self.assertEqual(self.playlist.current_song, self.s2)
-        self.assertEqual(len(self.playlist), 1)
-
-    def test_remove_3(self):
-        """移除一首不存在的歌"""
-        self.playlist.remove(FakeSongModel())
-        self.assertEqual(len(self.playlist), 2)
-
-    def test_remove_4(self):
-        """移除一首被标记为无效的歌曲"""
-        self.playlist.mark_as_bad(self.s2)
-        self.assertEqual(len(self.playlist._bad_songs), 1)
-        self.playlist.remove(self.s2)
-        self.assertEqual(len(self.playlist), 1)
-        self.assertEqual(len(self.playlist._bad_songs), 0)
-
     def test_getitem(self):
         self.assertEqual(self.playlist[1], self.s2)
 
@@ -153,17 +119,6 @@ class TestPlaylist(TestCase):
     def test_list(self):
         self.assertIn(self.s1, self.playlist.list())
 
-    def test_set_current_song(self):
-        """将一首不存在于播放列表的歌曲设置为当前播放歌曲"""
-        s3 = FakeSongModel()
-        self.playlist.current_song = s3
-        self.assertIn(s3, self.playlist)
-
-    def test_previous_song(self):
-        self.assertEqual(self.playlist.previous_song, self.s2)
-        self.playlist.current_song = self.s2
-        self.assertEqual(self.playlist.previous_song, self.s1)
-
 
 class TestPlayerAndPlaylist(TestCase):
 
@@ -173,23 +128,6 @@ class TestPlayerAndPlaylist(TestCase):
     def tearDown(self):
         self.player.stop()
         self.player.shutdown()
-
-    @skipIf(os.environ.get('TEST_ENV') == 'travis', '')
-    @mock.patch.object(MpvPlayer, 'play')
-    def test_change_song(self, _):
-        s1 = FakeValidSongModel()
-        s2 = FakeValidSongModel()
-
-        playlist = self.player.playlist
-        playlist.add(s1)
-        playlist.add(s2)
-
-        self.player.play_song(s1)
-        playlist.next()
-        self.assertTrue(playlist.current_song, s2)
-
-        playlist.previous()
-        self.assertTrue(playlist.current_song, s1)
 
     @skipIf(cannot_play_audio, '')
     @mock.patch.object(MpvPlayer, 'play')

@@ -25,7 +25,6 @@ else:
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media
 from .base_player import AbstractPlayer, State
-from .playlist import Playlist
 
 
 logger = logging.getLogger(__name__)
@@ -40,7 +39,7 @@ class MpvPlayer(AbstractPlayer):
     todo: make me singleton
     """
     def __init__(self, playlist, audio_device=b'auto', winid=None, **kwargs):
-        super(MpvPlayer, self).__init__(playlist=playlist, **kwargs)
+        super().__init__(playlist=playlist, **kwargs)
         # https://github.com/cosven/FeelUOwn/issues/246
         locale.setlocale(locale.LC_NUMERIC, 'C')
         mpvkwargs = {}
