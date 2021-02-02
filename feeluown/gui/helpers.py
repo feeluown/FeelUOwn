@@ -132,6 +132,8 @@ class ItemViewNoScrollMixin:
         super().setModel(model)
         model.rowsInserted.connect(self.on_rows_changed)
         model.rowsRemoved.connect(self.on_rows_changed)
+        if 'no_more_item' in dir(model.sourceModel()):
+            model.sourceModel().no_more_item.connect(self.on_rows_changed)
         self.on_rows_changed()
 
     def wheelEvent(self, e):

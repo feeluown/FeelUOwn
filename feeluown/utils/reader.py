@@ -139,8 +139,9 @@ class SequentialReader(BaseSequentialReader, SequentialReadMixin):
             try:
                 obj = next(self._g)
             except StopIteration:
+                # let count=offset, or the last adjust_height not work
                 if self.count is None:
-                    self.count = self.offset + 1
+                    self.count = self.offset
                 raise
         else:
             raise StopIteration

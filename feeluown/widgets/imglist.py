@@ -15,7 +15,7 @@ import random
 
 from PyQt5.QtCore import (
     QAbstractListModel, QModelIndex, Qt,
-    QRectF, QRect, QSize, QSortFilterProxyModel
+    QRectF, QRect, QSize, QSortFilterProxyModel, pyqtSignal
 )
 from PyQt5.QtGui import (
     QImage, QPixmap, QColor,
@@ -73,6 +73,9 @@ def calc_cover_size(view_width):
 
 
 class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
+
+    no_more_item = pyqtSignal()
+
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
@@ -96,17 +99,27 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
         return len(self._items)
 
     def _fetch_more_cb(self, items):
-        if items is None:
+        async def fetched(self, tasks):
+            import asyncio
+            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
+            self._is_fetching = False
+
+        if not items:
+            self._is_fetching = False
+            if items is not None:
+                self.no_more_item.emit()
             return
         items_len = len(items)
         colors = [random.choice(list(COLORS.values())) for _ in range(0, items_len)]
         self.colors.extend(colors)
         self.on_items_fetched(items)
+        tasks = []
         for item in items:
-            aio.create_task(self.fetch_image(
+            tasks.append(aio.create_task(self.fetch_image(
                 item,
                 self._fetch_image_callback(item),
-                uid=reverse(item) + '/cover'))
+                uid=reverse(item) + '/cover')))
+        aio.create_task(fetched(self, tasks))
 
     def _fetch_image_callback(self, item):
         def cb(content):
@@ -267,6 +280,7 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
         self.setWrapping(True)
         self.setFrameShape(QFrame.NoFrame)
         self.setSpacing(CoverSpacing)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
