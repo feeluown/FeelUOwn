@@ -15,7 +15,7 @@ import random
 
 from PyQt5.QtCore import (
     QAbstractListModel, QModelIndex, Qt,
-    QRectF, QRect, QSize, QSortFilterProxyModel, pyqtSignal
+    QRectF, QRect, QSize, QSortFilterProxyModel
 )
 from PyQt5.QtGui import (
     QImage, QPixmap, QColor,
@@ -73,9 +73,6 @@ def calc_cover_size(view_width):
 
 
 class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
-
-    no_more_item = pyqtSignal()
-
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
