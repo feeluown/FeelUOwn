@@ -228,7 +228,7 @@ class ReaderFetchMoreMixin:
 
         count, offset = reader.count, reader.offset
         if count is not None:
-            return count > offset
+            return count > offset + 1
 
         # The reader sets the count when it has no more items,
         # so it is safe to return True here
