@@ -99,27 +99,19 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
         return len(self._items)
 
     def _fetch_more_cb(self, items):
-        async def fetched(self, tasks):
-            import asyncio
-            await asyncio.wait(tasks, return_when=asyncio.FIRST_EXCEPTION)
-            self._is_fetching = False
-
-        if not items:
-            self._is_fetching = False
-            if items is not None:
-                self.no_more_item.emit()
+        self._is_fetching = False
+        if items is not None and not items:
+            self.no_more_item.emit()
             return
         items_len = len(items)
         colors = [random.choice(list(COLORS.values())) for _ in range(0, items_len)]
         self.colors.extend(colors)
         self.on_items_fetched(items)
-        tasks = []
         for item in items:
-            tasks.append(aio.create_task(self.fetch_image(
+            aio.create_task(self.fetch_image(
                 item,
                 self._fetch_image_callback(item),
-                uid=reverse(item) + '/cover')))
-        aio.create_task(fetched(self, tasks))
+                uid=reverse(item) + '/cover'))
 
     def _fetch_image_callback(self, item):
         def cb(content):
