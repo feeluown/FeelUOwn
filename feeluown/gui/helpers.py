@@ -13,7 +13,7 @@ from functools import wraps
 
 try:
     # helper module should work in no-window mode
-    from PyQt5.QtCore import QModelIndex, QSize, Qt
+    from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel
     from PyQt5.QtGui import QPalette, QFontMetrics
     from PyQt5.QtWidgets import QApplication
 except ImportError:
@@ -132,6 +132,10 @@ class ItemViewNoScrollMixin:
         super().setModel(model)
         model.rowsInserted.connect(self.on_rows_changed)
         model.rowsRemoved.connect(self.on_rows_changed)
+        if isinstance(model, QSortFilterProxyModel):
+            srcModel = model.sourceModel()
+            if isinstance(srcModel, ReaderFetchMoreMixin):
+                srcModel.no_more_item.connect(self.on_rows_changed)
         self.on_rows_changed()
 
     def wheelEvent(self, e):
@@ -212,6 +216,7 @@ class ReaderFetchMoreMixin:
     3. _fetch_more_step
     4. _is_fetching
     """
+    no_more_item = pyqtSignal()
 
     def canFetchMore(self, _=None):
         return self.can_fetch_more()
@@ -226,7 +231,7 @@ class ReaderFetchMoreMixin:
 
         count, offset = reader.count, reader.offset
         if count is not None:
-            return count > offset
+            return count > offset + 1
 
         # The reader sets the count when it has no more items,
         # so it is safe to return True here
