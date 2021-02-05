@@ -96,7 +96,9 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
         return len(self._items)
 
     def _fetch_more_cb(self, items):
-        if items is None:
+        self._is_fetching = False
+        if items is not None and not items:
+            self.no_more_item.emit()
             return
         items_len = len(items)
         colors = [random.choice(list(COLORS.values())) for _ in range(0, items_len)]
@@ -267,6 +269,7 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
         self.setWrapping(True)
         self.setFrameShape(QFrame.NoFrame)
         self.setSpacing(CoverSpacing)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
