@@ -18,7 +18,7 @@ from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets import TextButton
-from feeluown.widgets.imglist import ImgListView, ImgListModel, ImgFilterProxyModel
+from feeluown.widgets.imglist import ImgListView
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel
@@ -511,7 +511,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             if table is self.songs_table:
                 self.toolbar.songs_mode()
         if isinstance(self._table, ImgListView):
-            self._table.setModel(ImgFilterProxyModel())
+            self._table.setModel(None)
         self._table = table
 
     async def set_renderer(self, renderer):
