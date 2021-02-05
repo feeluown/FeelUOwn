@@ -130,6 +130,8 @@ class ItemViewNoScrollMixin:
 
     def setModel(self, model):
         super().setModel(model)
+        if model is None:
+            return
         model.rowsInserted.connect(self.on_rows_changed)
         model.rowsRemoved.connect(self.on_rows_changed)
         if isinstance(model, QSortFilterProxyModel):

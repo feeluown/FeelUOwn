@@ -18,6 +18,7 @@ from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
 from feeluown.widgets import TextButton
+from feeluown.widgets.imglist import ImgListView
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel
@@ -139,11 +140,10 @@ class Renderer:
 
     def _show_model_with_cover(self, reader, table, model_cls, filter_model_cls):
         self.container.current_table = table
-        filter_model = filter_model_cls(self.albums_table)
+        filter_model = filter_model_cls()
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = model_cls(reader,
                           fetch_cover_wrapper(self._app.img_mgr),
-                          parent=self.artists_table,
                           source_name_map=source_name_map)
         filter_model.setSourceModel(model)
         table.setModel(filter_model)
@@ -510,6 +510,8 @@ class TableContainer(QFrame, BgTransparentMixin):
                 self.toolbar.albums_mode()
             if table is self.songs_table:
                 self.toolbar.songs_mode()
+        if isinstance(self._table, ImgListView):
+            self._table.setModel(None)
         self._table = table
 
     async def set_renderer(self, renderer):
