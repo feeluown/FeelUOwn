@@ -354,7 +354,6 @@ class Playlist:
 
         if song has not valid media, we find a replacement in other providers
         """
-
         if song is None:
             self.pure_set_current_song(None, None)
             return
@@ -412,6 +411,7 @@ class Playlist:
             self.mark_as_bad(song)
             self.next()
         else:
+            assert media, "media must not be empty"
             self.pure_set_current_song(song, media)
 
     def pure_set_current_song(self, song, media):

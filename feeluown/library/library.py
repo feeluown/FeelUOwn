@@ -330,6 +330,8 @@ class Library:
                     media = Media(url)
                 else:
                     raise MediaNotFound
+        if not media:
+            raise MediaNotFound
         return media
 
     def song_get_lyric(self, song: BriefSongModel):
