@@ -3,6 +3,8 @@ import os
 
 import dbus
 import dbus.service
+
+from feeluown.media import Media
 from feeluown.player import State
 from feeluown.library import ProviderFlags
 
@@ -108,14 +110,22 @@ class Mpris2Service(dbus.service.Object):
 
     def async_update_song_props(self, song, media):
         task_spec = self._app.task_mgr.get_or_create('mpris2-update-property')
-        task_spec.bind_blocking_io(self._update_song_props, song, media)
+        task = task_spec.bind_blocking_io(self._update_song_props, song, Media(media))
+
+        def cb(future):
+            try:
+                future.result()
+            except:
+                logger.exception('mpris update song props failed')
+
+        task.add_done_callback(cb)
 
     def _update_song_props(self, song, media):
         if song is not None:
             if self._app.library.check_flags_by_model(song, ProviderFlags.model_v2):
                 # TODO: catch NotSupported exception
-                upgraded_song = self._app.library.song_upgrade(song)
-                album = upgraded_song.album
+                song = self._app.library.song_upgrade(song)
+                album = song.album
                 album = self._app.library.cast_model_to_v1(album)
             else:
                 album = song.album
