@@ -1,6 +1,7 @@
 from .playlist import PlaybackMode
 from .base_player import State
-from .player import Player, PlaylistMode, Playlist
+from .mpvplayer import MpvPlayer as Player
+from .playlist import PlaylistMode, Playlist
 from .fm import FM
 
 

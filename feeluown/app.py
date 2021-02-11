@@ -10,7 +10,7 @@ from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
 from feeluown.models import Resolver, reverse, resolve, \
     ResolverNotFound
-from feeluown.player import PlaybackMode
+from feeluown.player import PlaybackMode, Playlist
 
 from feeluown.lyric import LiveLyric
 from feeluown.pubsub import (
@@ -165,8 +165,9 @@ def attach_attrs(app):
     player_kwargs = dict(
         audio_device=bytes(app.config.MPV_AUDIO_DEVICE, 'utf-8')
     )
-    app.player = Player(app=app, **(player_kwargs or {}))
-    app.playlist = app.player.playlist
+    app.playlist = Playlist(
+        app, audio_select_policy=app.config.AUDIO_SELECT_POLICY)
+    app.player = Player(app.playlist, **(player_kwargs or {}))
     app.plugin_mgr = PluginsManager(app)
     app.request = Request()
     app.task_mgr = TaskManager(app, loop)

@@ -38,8 +38,8 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, audio_device=b'auto', winid=None, *args, **kwargs):
-        super(MpvPlayer, self).__init__(*args, **kwargs)
+    def __init__(self, playlist, audio_device=b'auto', winid=None, **kwargs):
+        super().__init__(playlist=playlist, **kwargs)
         # https://github.com/cosven/FeelUOwn/issues/246
         locale.setlocale(locale.LC_NUMERIC, 'C')
         mpvkwargs = {}
@@ -91,6 +91,8 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.terminate()
 
     def play(self, media, video=True):
+        # if not (self._app.mode & self._app.GuiMode):
+        #     video = False
         logger.debug("Player will play: '%s'", media)
         if isinstance(media, Media):
             media = media

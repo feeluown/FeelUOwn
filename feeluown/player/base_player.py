@@ -27,10 +27,10 @@ class State(IntEnum):
 class AbstractPlayer(metaclass=ABCMeta):
     """Player abstrace base class"""
 
-    def __init__(self, playlist=None, **kwargs):
+    def __init__(self, playlist, **kwargs):
         self._position = 0  # seconds
         self._volume = 100  # (0, 100)
-        self._playlist = Playlist() if playlist is None else playlist
+        self._playlist = playlist
         self._state = State.stopped
         self._duration = None
 
