@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from PyQt5.QtCore import Qt, QEvent
@@ -12,6 +13,9 @@ TOGGLE_APP_TEXT = ('激活主窗口', '隐藏主窗口')
 TOGGLE_PLAYER_TEXT = ('播放', '暂停')
 
 IS_MACOS = sys.platform == 'darwin'
+
+
+logger = logging.getLogger(__name__)
 
 
 class Tray(QSystemTrayIcon):
@@ -38,7 +42,7 @@ class Tray(QSystemTrayIcon):
                                               TOGGLE_APP_TEXT[1])
         else:
             self._toggle_app_action = None
-            self.activated.connect(self._toggle_app_state) # noqa
+            self.activated.connect(self._on_activated) # noqa
 
         # bind signals
         self._quit_action.triggered.connect(self._app.exit)
@@ -72,6 +76,20 @@ class Tray(QSystemTrayIcon):
             self._menu.addAction(self._toggle_app_action)
         self._menu.addAction(self._quit_action)
         self._status_action.setEnabled(False)
+
+    def _on_activated(self, reason=QSystemTrayIcon.Unknown):
+        """
+        NOTE(cosven): Theoretically, we need not give default value for param reason.
+        However, we connect activated signal with `_toggle_app_state method` before,
+        and as you can see, `_toggle_app_state` does not accepts other parameters and it
+        works well. So we give an default value to avoid potential strange errors.
+        """
+        # Only toggle app state when it is a single click
+        # NOTE(cosven): I have not testing the behaviour as the activated signal
+        # onlu emits on some desktop environments.
+        if reason not in (QSystemTrayIcon.Context, QSystemTrayIcon.DoubleClick):
+            self._toggle_app_state()
+        logger.info(f'tray icon activated, reason:{reason}')
 
     def _toggle_app_state(self):
         """activate/deactivate app"""
