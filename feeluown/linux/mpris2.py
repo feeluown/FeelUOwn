@@ -4,6 +4,7 @@ import os
 import dbus
 import dbus.service
 from feeluown.player import State
+from feeluown.library import ProviderFlags
 
 
 SupportedMimeTypes = ['audio/aac',
@@ -75,7 +76,7 @@ class Mpris2Service(dbus.service.Object):
     def enable(self):
         self._app.player.position_changed.connect(self.update_position)
         self._app.player.state_changed.connect(self.update_playback_status)
-        self._app.playlist.song_changed.connect(self.async_update_song_props)
+        self._app.playlist.song_changed_v2.connect(self.async_update_song_props)
 
     def disable(self):
         pass
@@ -105,23 +106,43 @@ class Mpris2Service(dbus.service.Object):
         if abs(dbus_position - old_position) >= 1 * 1000 * 1000:
             self.Seeked(dbus_position)
 
-    def async_update_song_props(self, song):
+    def async_update_song_props(self, song, media):
         task_spec = self._app.task_mgr.get_or_create('mpris2-update-property')
-        task_spec.bind_blocking_io(self._update_song_props, song)
+        task_spec.bind_blocking_io(self._update_song_props, song, media)
 
-    def _update_song_props(self, song):
-        artist = [', '.join((e.name for e in song.artists))] or ['Unknown']
-        self._metadata.update(dbus.Dictionary({
-            # make xesam:artist a one-element list to compat with KDE
-            # KDE will not update artist field if the length>=2
-            'xesam:artist': artist,
-            'xesam:url': song.url,
-            'mpris:length': dbus.Int64(song.duration*1000),
-            'mpris:trackid': to_track_id(song),
-            'mpris:artUrl': (song.album.cover if song.album else '') or '',
-            'xesam:album': song.album_name,
-            'xesam:title': song.title,
-        }, signature='sv'))
+    def _update_song_props(self, song, media):
+        if song is not None:
+            if self._app.library.check_flags_by_model(song, ProviderFlags.model_v2):
+                # TODO: catch NotSupported exception
+                upgraded_song = self._app.library.song_upgrade(song)
+                album = upgraded_song.album
+                album = self._app.library.cast_model_to_v1(album)
+            else:
+                album = song.album
+            art_url = (album.cover if album else '') or ''
+            self._metadata.update(dbus.Dictionary({
+                # make xesam:artist a one-element list to compat with KDE
+                # KDE will not update artist field if the length>=2
+                'xesam:artist': [song.artists_name_display] or ['Unknown'],
+                'xesam:url': media.url if media else '',
+                'mpris:length': dbus.Int64(song.duration*1000),
+                'mpris:trackid': to_track_id(song),
+                'mpris:artUrl': art_url,
+                'xesam:album': song.album_name_display,
+                'xesam:title': song.title_display,
+            }, signature='sv'))
+        else:
+            self._metadata.update(dbus.Dictionary({
+                # make xesam:artist a one-element list to compat with KDE
+                # KDE will not update artist field if the length>=2
+                'xesam:artist': [],
+                'xesam:url': '',
+                'mpris:length': dbus.Int64(0),
+                'mpris:trackid': '',
+                'mpris:artUrl': '',
+                'xesam:album': '',
+                'xesam:title': '',
+            }, signature='sv'))
         changed_properties = dbus.Dictionary({'Metadata': self._metadata})
         self.PropertiesChanged(PlayerInterface, changed_properties, [])
 
