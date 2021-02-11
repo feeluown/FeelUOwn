@@ -9,6 +9,9 @@ from feeluown.player import Playlist
 
 @pytest.fixture()
 def pl(app_mock, song, song1):
+    """
+    pl: [song, song1], current_song: song
+    """
     playlist = Playlist(app_mock)
     playlist.add(song)
     playlist.add(song1)
@@ -17,7 +20,7 @@ def pl(app_mock, song, song1):
 
 
 @pytest.fixture()
-def pl_set_bad_song_as_current_song(mocker, pl):
+def pl_prepare_media_none(mocker, pl):
     f = asyncio.Future()
     f.set_exception(MediaNotFound())
     mocker.patch.object(Playlist, '_prepare_media', side_effect=f)
@@ -83,7 +86,7 @@ def test_set_current_song(pl, song2):
 @pytest.mark.asyncio
 async def test_set_current_song_with_bad_song_1(
         mocker, song2, pl,
-        pl_set_bad_song_as_current_song,
+        pl_prepare_media_none,
         pl_list_standby_return_empty):
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
@@ -97,7 +100,7 @@ async def test_set_current_song_with_bad_song_1(
 @pytest.mark.asyncio
 async def test_set_current_song_with_bad_song_2(
         mocker, song2, pl,
-        pl_set_bad_song_as_current_song,
+        pl_prepare_media_none,
         pl_list_standby_return_song2):
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
@@ -106,3 +109,29 @@ async def test_set_current_song_with_bad_song_2(
     assert mock_mark_as_bad.called
     # Since there exists standby songs, the media should the url
     mock_pure_set_current_song.assert_called_once_with(song2, song2.url)
+
+
+def test_pure_set_current_song(
+        mocker, song, song2, pl):
+    # Current song index is 0
+    assert pl.list().index(song) == 0
+    # song2 is not in playlist before
+    pl.pure_set_current_song(song2, song2.url)
+    assert pl.current_song == song2
+    # The song should be inserted after the current song,
+    # so the index should be 1
+    assert pl.list().index(song2) == 1
+
+
+@pytest.mark.asyncio
+async def test_set_an_existing_bad_song_as_current_song(
+        mocker, song1, song2, pl,
+        pl_prepare_media_none,
+        pl_list_standby_return_song2):
+    """
+    pl is [song, song1]
+    song1 is bad, standby is [song2]
+    play song1, song2 should be insert after song1 instead of song
+    """
+    await pl.a_set_current_song(song1)
+    assert pl.list().index(song2) == 2
