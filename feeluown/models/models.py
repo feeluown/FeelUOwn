@@ -41,7 +41,7 @@ class BaseModel(Model):
         if not isinstance(other, BaseModel):
             return False
         return all([other.source == self.source,
-                    other.identifier == self.identifier,
+                    str(other.identifier) == str(self.identifier),
                     other.meta.model_type == self.meta.model_type])
 
     @classmethod
@@ -198,7 +198,7 @@ class SongModel(BaseModel, MultiQualityMixin):
         if not isinstance(other, SongModel):
             return False
         return all([other.source == self.source,
-                    other.identifier == self.identifier])
+                    str(other.identifier) == str(self.identifier)])
 
 
 class PlaylistModel(BaseModel):

@@ -17,7 +17,6 @@ from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
 from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
-from feeluown.widgets import TextButton
 from feeluown.widgets.imglist import ImgListView
 from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
 from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
@@ -362,35 +361,6 @@ class VideosRenderer(Renderer):
         self.show_videos(self.reader)
 
 
-class PlayerPlaylistRenderer(Renderer):
-
-    async def render(self):
-        self.meta_widget.title = '当前播放列表'
-        self.meta_widget.show()
-        player = self._app.player
-        playlist = player.playlist
-
-        async def clear_playlist():
-            playlist.clear()
-            await self.render()  # re-render
-
-        songs = playlist.list()
-        self.show_songs(wrap(songs.copy()))
-        btn = TextButton('清空', self.toolbar)
-        btn.clicked.connect(lambda *args: aio.create_task(clear_playlist()))
-        self.toolbar.add_tmp_button(btn)
-
-        self.songs_table.remove_song_func = playlist.remove
-
-        # scroll to current song
-        current_song = self._app.playlist.current_song
-        if current_song is not None:
-            row = songs.index(current_song)
-            model_index = self.songs_table.model().index(row, 0)
-            self.songs_table.scrollTo(model_index)
-            self.songs_table.selectRow(row)
-
-
 class DescLabel(QLabel):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
@@ -621,9 +591,6 @@ class TableContainer(QFrame, BgTransparentMixin):
 
     def show_artists_coll(self, artists_g):
         aio.create_task(self.set_renderer(ArtistsCollectionRenderer(artists_g)))
-
-    def show_player_playlist(self):
-        aio.create_task(self.set_renderer(PlayerPlaylistRenderer()))
 
     def search(self, text):
         if self.isVisible() and self.songs_table is not None:

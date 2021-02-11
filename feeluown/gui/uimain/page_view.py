@@ -118,6 +118,8 @@ class RightPanel(QFrame):
         self.table_container.show_songs(songs)
 
     def set_body(self, widget):
+        if widget is self.table_container:
+            widget = self.scrollarea
         self._stacked_layout.setCurrentWidget(widget)
 
     def show_collection(self, coll):

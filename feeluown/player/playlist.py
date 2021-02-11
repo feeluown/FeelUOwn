@@ -136,6 +136,9 @@ class Playlist:
         if song in self._songs and song not in self._bad_songs:
             self._bad_songs.append(song)
 
+    def is_bad(self, song):
+        return song in self._bad_songs
+
     def _add(self, song):
         if song in self._songs:
             return
@@ -392,7 +395,7 @@ class Playlist:
                     standby = standby_candidates[0]
                     logger.info('find song standby success: %s', standby)
                     # Insert the standby song after the song
-                    if song in self._songs:
+                    if song in self._songs and standby not in self._songs:
                         index = self._songs.index(song)
                         self._songs.insert(index + 1, standby)
                     # NOTE: a_list_song_standby ensure that the song.url is not empty
