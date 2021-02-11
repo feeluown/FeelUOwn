@@ -24,11 +24,6 @@ class PlayerPlaylistRenderer(Renderer):
         self.meta_widget.title = '当前播放列表'
         self.meta_widget.show()
 
-        self.toolbar.show()
-        btn = TextButton('清空', self.toolbar)
-        btn.clicked.connect(lambda *args: aio.create_task(self.clear_playlist()))
-        self.toolbar.add_tmp_button(btn)
-
         self.container.current_table = self.songs_table
         self.songs_table.remove_song_func = self._app.playlist.remove
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
@@ -38,6 +33,11 @@ class PlayerPlaylistRenderer(Renderer):
         self.songs_table.setModel(filter_model)
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
+
+        self.toolbar.show()
+        btn = TextButton('清空', self.toolbar)
+        btn.clicked.connect(lambda *args: aio.create_task(self.clear_playlist()))
+        self.toolbar.add_tmp_button(btn)
 
         # scroll to current song
         current_song = self._app.playlist.current_song
@@ -63,6 +63,6 @@ class PlaylistTableModel(SongsTableModel):
         if index.column() == Column.song:
             song = index.data(Qt.UserRole)
             if self._playlist.is_bad(song):
-                # Disable click/dbclick event, and contextMenu is allowed
-                return flags & (~Qt.ItemIsEnabled)
+                # a bad song is disabled
+                flags &= ~Qt.ItemIsEnabled
         return flags

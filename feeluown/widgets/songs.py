@@ -202,24 +202,35 @@ class SongsTableModel(QAbstractTableModel, ReaderFetchMoreMixin):
         return True
 
     def flags(self, index):
+        # Qt.NoItemFlags is ItemFlag and we should return ItemFlags
+        no_item_flags = Qt.NoItemFlags | Qt.NoItemFlags
         if index.column() in (Column.source, Column.index, Column.duration):
-            return Qt.NoItemFlags
+            return no_item_flags
+
+        # default flags
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        if index.column() == Column.song:
+            flags |= Qt.ItemIsDragEnabled
 
         song = index.data(Qt.UserRole)
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsEditable
-        if index.column() in (Column.song, Column.album):
-            flags = flags | Qt.ItemIsDragEnabled
+        # If song's state is `not_exists` or `cant_upgrade`, the album and
+        # artist columns are disabled.
+        incomplete = False
         if ModelFlags.v2 & song.meta.flags:
-            if song.state is ModelState.not_exists:
-                flags = Qt.NoItemFlags
-            elif song.state is ModelState.cant_upgrade:
-                if index.column() == Column.song:
-                    flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
-                else:
-                    flags = Qt.NoItemFlags
+            if song.state is (ModelState.not_exists, ModelState.cant_upgrade):
+                incomplete = True
         else:
             if song and song.exists == ModelExistence.no:
-                flags = Qt.NoItemFlags
+                incomplete = True
+        if incomplete:
+            if index.column() != Column.song:
+                flags = no_item_flags
+        else:
+            if index.column() == Column.album:
+                flags |= Qt.ItemIsDragEnabled
+            elif index.column() == Column.artist:
+                flags |= Qt.ItemIsEditable
+
         return flags
 
     def rowCount(self, parent=QModelIndex()):
