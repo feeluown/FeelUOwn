@@ -84,10 +84,9 @@ class Tray(QSystemTrayIcon):
         and as you can see, `_toggle_app_state` does not accepts other parameters and it
         works well. So we give an default value to avoid potential strange errors.
         """
-        # Only toggle app state when it is a single click
-        # NOTE(cosven): I have not testing the behaviour as the activated signal
-        # onlu emits on some desktop environments.
-        if reason not in (QSystemTrayIcon.Context, QSystemTrayIcon.DoubleClick):
+        # On Ubuntu 18.04, when we double left click the tray icon, the activated
+        # signal is emitted and the reason is `QSystemTrayIcon.Trigger`.
+        if reason not in (QSystemTrayIcon.Context, ):
             self._toggle_app_state()
         logger.info(f'tray icon activated, reason:{reason}')
 
