@@ -168,6 +168,14 @@ class Tray(QSystemTrayIcon):
             app_text_idx = 0
         elif event.type() == QEvent.Show:
             app_text_idx = 1
+        else:
+            # Only handle known event. When QApplication is quiting,
+            # some unknown event is emitted.
+            #
+            # For exmaple, `_toggle_app_action.setText` may raise this error when
+            # app is quiting.
+            # RuntimeError: wrapped C/C++ object of type QAction has been deleted
+            return False
         if app_text_idx is not None and self._toggle_app_action is not None:
             self._toggle_app_action.setText(TOGGLE_APP_TEXT[app_text_idx])
         return False
