@@ -123,6 +123,7 @@ class TableMetaWidget(MetaWidget):
         self._refresh()
 
     def _setup_ui(self):
+        self.cover_label.setMinimumWidth(150)
         self.cover_label.setMaximumWidth(200)
         self._v_layout = QVBoxLayout(self)
         self._h_layout = QHBoxLayout()
