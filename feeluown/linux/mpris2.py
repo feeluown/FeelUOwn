@@ -115,7 +115,7 @@ class Mpris2Service(dbus.service.Object):
         def cb(future):
             try:
                 future.result()
-            except:
+            except:  # noqa
                 logger.exception('mpris update song props failed')
 
         task.add_done_callback(cb)

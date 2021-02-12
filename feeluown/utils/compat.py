@@ -1,6 +1,3 @@
-import sys
-
-
 from qasync import QEventLoop, QThreadExecutor
 
 
