@@ -377,7 +377,7 @@ class Playlist:
         task.add_done_callback(cb)
 
     async def a_set_current_song(self, song):
-        song_str = f'song:{song.source}:{song.title_display}'
+        song_str = f'{song.source}:{song.title_display} - {song.artists_name_display}'
 
         try:
             media = await self._prepare_media(song)
@@ -393,7 +393,7 @@ class Playlist:
                 standby_candidates = await self._app.library.a_list_song_standby(song)
                 if standby_candidates:
                     standby = standby_candidates[0]
-                    logger.info('find song standby success: %s', standby)
+                    self._app.show_msg(f'Song standby was found in {standby.source} ✅')
                     # Insert the standby song after the song
                     if song in self._songs and standby not in self._songs:
                         index = self._songs.index(song)
@@ -402,7 +402,7 @@ class Playlist:
                     # FIXME: maybe a_list_song_standby should return media directly
                     self.pure_set_current_song(standby, standby.url)
                 else:
-                    logger.info('find song standby failed: not found')
+                    self._app.show_msg('Song standby not found')
                     self.pure_set_current_song(song, None)
             else:
                 self.next()

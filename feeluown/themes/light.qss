@@ -35,7 +35,7 @@ TextButton:pressed {
     border-image: url(icons:like.png);
 }
 #like_btn:checked {
-    border-image: url(icons:like_checked.png);
+    border-image: url(icons:like_checked_dark.png);
 }
 #download_btn {
     border-image: url(icons:download.png);

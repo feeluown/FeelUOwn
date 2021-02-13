@@ -23,6 +23,41 @@ from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 logger = logging.getLogger(__name__)
 
 
+class LikeButton(QPushButton):
+    def __init__(self, app, parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+        self.setCheckable(True)
+        self._app.playlist.song_changed_v2.connect(self.on_song_changed)
+        self.clicked.connect(self.toggle_liked)
+        self.toggled.connect(self.on_toggled)
+
+    def on_song_changed(self, song, media):
+        if song is not None:
+            self.setChecked(self.is_song_liked(song))
+
+    def toggle_liked(self):
+        song = self._app.playlist.current_song
+        coll_library = self._app.coll_uimgr.get_coll_library()
+        if self.is_song_liked(song):
+            coll_library.remove(song)
+            self._app.show_msg('歌曲已经从“本地收藏”中移除')
+        else:
+            coll_library.add(song)
+            self._app.show_msg('歌曲已经添加到“本地收藏”')
+
+    def on_toggled(self):
+        song = self._app.playlist.current_song
+        if self.is_song_liked(song):
+            self.setToolTip('添加到“本地收藏”')
+        else:
+            self.setToolTip('从“本地收藏”中移除')
+
+    def is_song_liked(self, song):
+        coll_library = self._app.coll_uimgr.get_coll_library()
+        return song in coll_library.models
+
+
 class SongBriefLabel(QLabel):
     default_text = '...'
 
@@ -185,7 +220,7 @@ class PlayerControlPanel(QFrame):
         self.volume_btn = VolumeButton(self)
         self.playlist_btn = IconButton(parent=self)
         #: mark song as favorite button
-        self.like_btn = QPushButton(self)
+        self.like_btn = LikeButton(self._app, self)
         self.mv_btn = TextButton('MV', self)
         self.lyric_btn = TextButton('词', self)
         self.download_btn = QPushButton(self)
@@ -217,9 +252,7 @@ class PlayerControlPanel(QFrame):
 
         self.mv_btn.setToolTip('播放 MV')
         self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
-        self.like_btn.setToolTip('收藏歌曲（未实现，欢迎 PR）')
         self.pp_btn.setCheckable(True)
-        self.like_btn.setCheckable(True)
         self.download_btn.setCheckable(True)
         self.toggle_video_btn.hide()
         self.toggle_pip_btn.hide()
