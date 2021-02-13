@@ -79,7 +79,7 @@ class PreemptiveTaskSpec:
     def _cb(self, future):
         try:
             future.result()
-        except:  # noqa
+        except Exception as e:  # noqa
             logger.warn(f'Task {self.name} failed: {e}')
 
 

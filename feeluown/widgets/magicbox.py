@@ -80,7 +80,14 @@ class MagicBox(QLineEdit):
         finally:
             sys.stderr = sys.__stderr__
             sys.stdout = sys.__stdout__
-        self._app.show_msg(output.getvalue() or 'No output.')
+
+        text = output.getvalue() or 'No output.'
+        if not text:
+            return
+        self._set_mode('msg')
+        self.setText(text)
+        self._timer.start(1000)
+        self._app.show_msg(text)
 
     def __on_text_edited(self):
         text = self.text()
