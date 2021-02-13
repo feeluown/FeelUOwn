@@ -36,8 +36,8 @@ class VideoShowCtl:
         self._ui.mpv_widget.show()
         self._app.initialized.connect(
             lambda app: self._ui.mpv_widget.hide(), weak=False)
-        self._app.player.video_format_changed.connect(
-            self.on_video_format_changed, aioqueue=True)
+        self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
+        self._app.player.media_loaded.connect(self.on_media_loaded, aioqueue=True)
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
@@ -165,16 +165,20 @@ class VideoShowCtl:
                 self.enter_normal_mode()
                 self._mode = mode
 
-    def on_video_format_changed(self, video_format):
-        """
-        When video is available, show control buttons. If video
-        is unavailable, hide video and control buttons.
-        """
-        logger.info(f"video format changed to {video_format}")
+    def on_media_changed(self, media):
+        if not media:
+            logger.info('Media is changed to empty, set mode to none')
+            self.set_mode(Mode.none)
+
+    def on_media_loaded(self):
+        # When video is available, show control buttons. If video
+        # is unavailable, hide video and control buttons.
+        video_format = self._app.player.video_format
         if video_format is None:
             # ignore the signal if parent is changing
             if self._parent_is_changing:
                 return
+            logger.info('Media is changed to audio, set mode to none')
             self.set_mode(Mode.none)
         else:
             self.show_ctl_btns()
