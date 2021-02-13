@@ -124,8 +124,9 @@ class VideoShowCtl:
                 media, _ = mv.select_media()
             else:
                 media = mv.media
-            self.set_mode(Mode.normal)
-            self._app.player.play(media)
+            if media:
+                self.set_mode(Mode.normal)
+                self._app.player.play(media)
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode
