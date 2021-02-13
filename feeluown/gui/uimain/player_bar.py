@@ -1,7 +1,7 @@
 import asyncio
 import logging
 
-from PyQt5.QtCore import Qt, QTimer, QRect
+from PyQt5.QtCore import Qt, QTimer, QRect, QEvent
 from PyQt5.QtGui import QFontMetrics, QPainter
 from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
@@ -81,6 +81,31 @@ class WatchButton(TextButton):
         font = self.font()
         resize_font(font, -2)
         self.setFont(font)
+
+
+class LyricButton(TextButton):
+    def __init__(self, app, parent):
+        super().__init__('词', parent=parent)
+        self._app = app
+
+        self.setCheckable(True)
+        self.clicked.connect(self._toggle_lyric_window)
+        self.parent().lyric_window.installEventFilter(self)  # hack
+
+    def _toggle_lyric_window(self):
+        lyric_window = self._app.ui.player_bar.lyric_window
+        if lyric_window.isVisible():
+            lyric_window.hide()
+        else:
+            lyric_window.show()
+
+    def eventFilter(self, obj, event):
+        """Event filter for lyric window"""
+        if event.type() == QEvent.Show:
+            self.setChecked(True)
+        elif event.type() == QEvent.Hide:
+            self.setChecked(False)
+        return False
 
 
 class SongBriefLabel(QLabel):
@@ -272,6 +297,8 @@ class PlayerControlPanel(QFrame):
             PlaybackMode.loop: '循环播放',
             PlaybackMode.random: '随机播放',
         }
+        self.lyric_window = LyricWindow()
+        self.lyric_window.hide()
 
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
@@ -286,15 +313,12 @@ class PlayerControlPanel(QFrame):
         #: mark song as favorite button
         self.like_btn = LikeButton(self._app, self)
         self.mv_btn = TextButton('MV', self)
-        self.lyric_btn = TextButton('词', self)
+        self.toggle_lyric_btn = LyricButton(self._app, self)
         self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)
         self.toggle_video_btn = TextButton('△', self)
         # toggle picture-in-picture button
         self.toggle_pip_btn = TextButton('◲', self)
-
-        self.lyric_window = LyricWindow()
-        self.lyric_window.hide()
 
         self.previous_btn.setObjectName('previous_btn')
         self.pp_btn.setObjectName('pp_btn')
@@ -305,7 +329,7 @@ class PlayerControlPanel(QFrame):
         self.download_btn.setObjectName('download_btn')
         self.like_btn.setObjectName('like_btn')
         self.mv_btn.setObjectName('mv_btn')
-        self.lyric_btn.setObjectName('lyric_btn')
+        self.toggle_lyric_btn.setObjectName('toggle_lyric_btn')
         self.toggle_video_btn.setObjectName('toggle_video_btn')
         self.toggle_pip_btn.setObjectName('toggle_pip_btn')
 
@@ -337,7 +361,6 @@ class PlayerControlPanel(QFrame):
         self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self.pms_btn.clicked.connect(self._switch_playback_mode)
-        self.lyric_btn.clicked.connect(self._toggle_lyric_window)
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
 
@@ -372,7 +395,7 @@ class PlayerControlPanel(QFrame):
         self.download_btn.setFixedSize(15, 15)
         self.download_btn.hide()
         self.mv_btn.setFixedHeight(16)
-        self.lyric_btn.setFixedHeight(16)
+        self.toggle_lyric_btn.setFixedHeight(16)
         self.toggle_watch_btn.setFixedHeight(16)
 
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding,
@@ -390,7 +413,7 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.mv_btn)
         self._sub_top_layout.addSpacing(8)
-        self._sub_top_layout.addWidget(self.lyric_btn)
+        self._sub_top_layout.addWidget(self.toggle_lyric_btn)
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.toggle_watch_btn)
         # self._sub_top_layout.addSpacing(8)
@@ -490,12 +513,6 @@ class PlayerControlPanel(QFrame):
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
-
-    def _toggle_lyric_window(self):
-        if self.lyric_window.isVisible():
-            self.lyric_window.hide()
-        else:
-            self.lyric_window.show()
 
 
 class TopPanel(QFrame):

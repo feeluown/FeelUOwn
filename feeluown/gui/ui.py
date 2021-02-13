@@ -42,7 +42,7 @@ class Ui:
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
-        self.pc_panel = self.top_panel.pc_panel
+        self.player_bar = self.pc_panel = self.top_panel.pc_panel
         self.table_container = self.right_panel.table_container
         # backward compatible, old name is songs_table_container
         self.songs_table_container = self.table_container

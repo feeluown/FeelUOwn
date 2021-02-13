@@ -75,13 +75,13 @@ TextButton:checked {
     border: 1px solid #d75a4a;  /* same as like_btn red color */
     color: #d75a4a;
 }
-#mv_btn, #lyric_btn {
+#mv_btn, #toggle_lyric_btn {
     font-size: 9px;
 }
 #mv_btn {
     padding: 0px 3px;
 }
-#lyric_btn {
+#toggle_lyric_btn {
     padding: 0px 5px;
 }
 #toggle_video_btn, #toggle_pip_btn {
