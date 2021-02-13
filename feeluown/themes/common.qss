@@ -71,6 +71,10 @@ TextButton {
 TextButton:hover {
     border: 1px solid #777;
 }
+TextButton:checked {
+    border: 1px solid #d75a4a;  /* same as like_btn red color */
+    color: #d75a4a;
+}
 #mv_btn, #lyric_btn {
     font-size: 9px;
 }

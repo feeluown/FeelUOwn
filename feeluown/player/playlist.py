@@ -109,6 +109,9 @@ class Playlist:
         emit(song, media)
         """
 
+        #: When watch mode is on, playlist try to play the mv/video of the song
+        self.watch_mode = False
+
     @property
     def mode(self):
         return self._mode
@@ -428,5 +431,19 @@ class Playlist:
 
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
+        if self.watch_mode is True:
+            try:
+                mv_media = await task_spec.bind_blocking_io(
+                    self._app.library.song_prepare_mv_media,
+                    song,
+                    self._app.config.VIDEO_SELECT_POLICY)
+            except MediaNotFound:
+                mv_media = None
+                self._app.show_msg('No mv found')
+            except Exception as e:  # noqa
+                mv_media = None
+                self._app.show_msg(f'Prepare mv media failed: {e}')
+            if mv_media:
+                return mv_media
         return await task_spec.bind_blocking_io(
             self._app.library.song_prepare_media, song, self.audio_select_policy)

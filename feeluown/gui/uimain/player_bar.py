@@ -13,7 +13,7 @@ from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
 from feeluown.player import PlaybackMode, State
 from feeluown.gui.widgets.lyric import Window as LyricWindow
-from feeluown.gui.helpers import async_run
+from feeluown.gui.helpers import async_run, resize_font
 from feeluown.widgets import TextButton
 from feeluown.widgets.volume_button import VolumeButton
 from feeluown.widgets.progress_slider import ProgressSlider
@@ -55,6 +55,32 @@ class LikeButton(QPushButton):
     def is_song_liked(self, song):
         coll_library = self._app.coll_uimgr.get_coll_library()
         return song in coll_library.models
+
+
+class WatchButton(TextButton):
+    def __init__(self, app, parent):
+        super().__init__('♨', parent=parent)
+        self._app = app
+
+        self.setToolTip('开启 watch 模式时，播放器会优先尝试为歌曲找一个合适的视频来播放。\n'
+                        '最佳实践：开启 watch 的同时建议开启视频的画中画模式。')
+
+        self.setCheckable(True)
+        self._setup_ui()
+        self.clicked.connect(self.on_clicked)
+
+    def on_clicked(self):
+        self._app.playlist.watch_mode = not self._app.playlist.watch_mode
+        # Assume that playlist.watch_mode will only be changed by WatchButton
+        if self._app.playlist.watch_mode is True:
+            self.setChecked(True)
+        else:
+            self.setChecked(False)
+
+    def _setup_ui(self):
+        font = self.font()
+        resize_font(font, -2)
+        self.setFont(font)
 
 
 class SongBriefLabel(QLabel):
@@ -262,6 +288,7 @@ class PlayerControlPanel(QFrame):
         self.mv_btn = TextButton('MV', self)
         self.lyric_btn = TextButton('词', self)
         self.download_btn = QPushButton(self)
+        self.toggle_watch_btn = WatchButton(self._app, self)
         self.toggle_video_btn = TextButton('△', self)
         # toggle picture-in-picture button
         self.toggle_pip_btn = TextButton('◲', self)
@@ -343,8 +370,10 @@ class PlayerControlPanel(QFrame):
         self.position_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
         self.like_btn.setFixedSize(15, 15)
         self.download_btn.setFixedSize(15, 15)
+        self.download_btn.hide()
         self.mv_btn.setFixedHeight(16)
         self.lyric_btn.setFixedHeight(16)
+        self.toggle_watch_btn.setFixedHeight(16)
 
         self.progress_slider.setSizePolicy(QSizePolicy.Expanding,
                                            QSizePolicy.Preferred)
@@ -363,7 +392,9 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.lyric_btn)
         self._sub_top_layout.addSpacing(8)
-        self._sub_top_layout.addWidget(self.download_btn)
+        self._sub_top_layout.addWidget(self.toggle_watch_btn)
+        # self._sub_top_layout.addSpacing(8)
+        # self._sub_top_layout.addWidget(self.download_btn)
         self._sub_top_layout.addSpacing(3)
 
         self._sub_layout.addSpacing(3)
