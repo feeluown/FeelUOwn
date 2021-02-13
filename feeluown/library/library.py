@@ -206,14 +206,20 @@ class Library:
                     break
         return result
 
-    async def a_list_song_standby(self, song, onlyone=True):
+    async def a_list_song_standby(self, song, onlyone=True, source_in=None):
         """async version of list_song_standby
+
+        .. versionadded:: 3.7.5
+             The *source_in* paramter.
         """
-        providers = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        if source_in is None:
+            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        else:
+            pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
         # FIXME(cosven): the model return from netease is new model,
         # and it does not has url attribute
-        valid_providers = [provider for provider in providers
-                           if provider != song.source and provider != 'netease']
+        valid_providers = [pvd_id for pvd_id in pvd_ids
+                           if pvd_id != song.source and pvd_id != 'netease']
         q = '{} {}'.format(song.title_display, song.artists_name_display)
         result_g = []
         async for result in self.a_search(q, source_in=valid_providers):
@@ -233,6 +239,7 @@ class Library:
                     if onlyone or len(result) >= 2:
                         break
         return result
+
     #
     # methods for v2
     #

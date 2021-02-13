@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
     QPushButton, QSizePolicy, QMenu,
 )
-
 from feeluown.library import ProviderFlags
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
@@ -191,6 +190,45 @@ class SongBriefLabel(QLabel):
                 task.add_done_callback(artists_fetched_cb)
 
 
+class SourceLabel(QLabel):
+    default_text = '音乐来源'
+
+    def __init__(self, app, parent=None):
+        super().__init__(text=SourceLabel.default_text, parent=parent)
+        self._app = app
+
+    def contextMenuEvent(self, e):
+        # FIXME(wuliaotc): 在切换provider时禁用menu
+        song = self._app.playlist.current_song
+        if song is None:
+            return
+
+        menu = QMenu()
+        submenu = menu.addMenu('“智能”替换')
+        for provider in self._app.library.list():
+            pid = provider.identifier
+            if pid == song.source:
+                continue
+            action = submenu.addAction(provider.name)
+            action.triggered.connect(
+                (lambda x: lambda: asyncio.create_task(self._switch_provider(x)))(pid)
+            )
+        menu.exec(e.globalPos())
+
+    async def _switch_provider(self, provider_id):
+        song = self._app.playlist.current_song
+        songs = await self._app.library.a_list_song_standby(
+            song, source_in=[provider_id])
+        if songs:
+            standby = songs[0]
+            assert standby != song
+            self._app.show_msg(f'使用 {standby} 替换当前歌曲')
+            self._app.playlist.pure_set_current_song(standby, standby.url)
+            self._app.playlist.remove(song)
+        else:
+            self._app.show_msg(f'提供方 “{provider_id}” 没有找到可用的相似歌曲')
+
+
 class PlayerControlPanel(QFrame):
 
     def __init__(self, app, parent=None):
@@ -258,8 +296,9 @@ class PlayerControlPanel(QFrame):
         self.toggle_pip_btn.hide()
 
         self.song_title_label = SongBriefLabel(self._app)
-        self.song_source_label = QLabel('歌曲来源', parent=self)
         self.song_title_label.setAlignment(Qt.AlignCenter)
+        self.song_source_label = SourceLabel(self._app, parent=self)
+
         self.duration_label = DurationLabel(app, parent=self)
         self.position_label = ProgressLabel(app, parent=self)
 
@@ -277,7 +316,8 @@ class PlayerControlPanel(QFrame):
 
         player = self._app.player
 
-        player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
+        player.state_changed.connect(self._on_player_state_changed,
+                                     aioqueue=True)
         player.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed, aioqueue=True)
         player.playlist.song_changed.connect(
@@ -285,7 +325,8 @@ class PlayerControlPanel(QFrame):
         player.media_changed.connect(
             self.on_player_media_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
-        self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
+        self._app.live_lyric.sentence_changed.connect(
+            self.lyric_window.set_sentence)
         self.lyric_window.play_previous_needed.connect(player.playlist.previous)
         self.lyric_window.play_next_needed.connect(player.playlist.next)
 
@@ -305,7 +346,8 @@ class PlayerControlPanel(QFrame):
         self.mv_btn.setFixedHeight(16)
         self.lyric_btn.setFixedHeight(16)
 
-        self.progress_slider.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.progress_slider.setSizePolicy(QSizePolicy.Expanding,
+                                           QSizePolicy.Preferred)
         self._sub_layout = QVBoxLayout()
         self._sub_top_layout = QHBoxLayout()
 
