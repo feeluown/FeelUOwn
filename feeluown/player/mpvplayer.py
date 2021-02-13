@@ -180,11 +180,14 @@ class MpvPlayer(AbstractPlayer):
         self.video_format = vformat
 
     def _on_event(self, event):
-        if event['event_id'] == MpvEventID.END_FILE:
+        event_id = event['event_id']
+        if event_id == MpvEventID.END_FILE:
             reason = event['event']['reason']
             logger.debug('Current song finished. reason: %d' % reason)
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
                 self.media_finished.emit()
+        elif event_id == MpvEventID.FILE_LOADED:
+            self.media_loaded.emit()
 
     def _set_http_headers(self, http_headers):
         if http_headers:

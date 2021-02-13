@@ -52,6 +52,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         self.media_about_to_changed = Signal()
         #: media changed signal
         self.media_changed = Signal()
+        self.media_loaded = Signal()
 
         #: volume changed signal: (int)
         self.volume_changed = Signal()
