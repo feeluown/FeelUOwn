@@ -341,6 +341,28 @@ class Library:
             raise MediaNotFound
         return media
 
+    def song_prepare_mv_media(self, song: BriefSongProtocol, policy) -> Media:
+        """
+
+        .. versionadded:: 3.7.5
+        """
+        provider = self.get(song.source)
+        if provider is None:
+            raise MediaNotFound(f'provider:{song.source} not found')
+        song_v1 = self.cast_model_to_v1(song)
+        mv = song_v1.mv
+        if mv.meta.support_multi_quality:
+            media, _ = mv.select_media(policy)
+        else:
+            media = mv.media
+            if media:
+                media = Media(media)
+            else:
+                media = None
+        if not media:
+            raise MediaNotFound
+        return media
+
     def song_get_lyric(self, song: BriefSongModel):
         pass
 
