@@ -127,6 +127,8 @@ class VideoShowCtl:
             if media:
                 self.set_mode(Mode.normal)
                 self._app.player.play(media)
+            else:
+                self._app.show_msg('MV 没有可用的播放链接')
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode

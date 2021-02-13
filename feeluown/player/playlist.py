@@ -364,17 +364,10 @@ class Playlist:
         if self.mode is PlaylistMode.fm and song not in self._songs:
             self.mode = PlaylistMode.normal
 
-        def cb(future):
-            try:
-                future.result()
-            except:  # noqa
-                logger.exception('async set current song failed')
-
         # FIXME(cosven): `current_song.setter` depends on app.task_mgr and app.library,
         # which make it hard to test.
         task_spec = self._app.task_mgr.get_or_create('set-current-song')
-        task = task_spec.bind_coro(self.a_set_current_song(song))
-        task.add_done_callback(cb)
+        task_spec.bind_coro(self.a_set_current_song(song))
 
     async def a_set_current_song(self, song):
         song_str = f'{song.source}:{song.title_display} - {song.artists_name_display}'

@@ -31,6 +31,7 @@ class PreemptiveTaskSpec:
         self.name = name
         self.kind = TaskKind.preemptive
         self._task = None
+        self._use_default_cb = True
 
     def _before_bind(self):
         if self._task is None:
@@ -55,6 +56,8 @@ class PreemptiveTaskSpec:
             self._task = aio.create_task(coro)
         else:
             self._task = asyncio.run_coroutine_threadsafe(coro, loop=self._mgr.loop)
+        if self._use_default_cb:
+            self._task.add_done_callback(self._cb)
         return self._task
 
     def bind_blocking_io(self, func, *args):
@@ -66,7 +69,18 @@ class PreemptiveTaskSpec:
         """
         self._before_bind()
         self._task = self._mgr.loop.run_in_executor(None, func, *args)
+        if self._use_default_cb:
+            self._task.add_done_callback(self._cb)
         return self._task
+
+    def disable_default_cb(self):
+        self._use_default_cb = False
+
+    def _cb(self, future):
+        try:
+            future.result()
+        except:  # noqa
+            logger.warn(f'Task {self.name} failed: {e}')
 
 
 class TaskManager:

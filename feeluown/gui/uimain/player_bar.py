@@ -431,8 +431,8 @@ class PlayerControlPanel(QFrame):
         source_name = source_name_map.get(song.source, song.source)
         self.song_source_label.setText(source_name)
         self.song_title_label.setText(text)
-        loop = asyncio.get_event_loop()
-        loop.create_task(self.update_mv_btn_status(song))
+        task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
+        task_spec.bind_coro(self.update_mv_btn_status(song))
 
     def on_player_media_changed(self, media):
         if media is not None and media.type_ == MediaType.audio:
