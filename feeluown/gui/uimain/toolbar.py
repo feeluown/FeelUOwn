@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout
 
 from feeluown.widgets.magicbox import MagicBox
 from feeluown.widgets.statusline import StatusLine, StatusLineItem
-from feeluown.widgets.statusline_items import PluginStatus
+from feeluown.widgets.statusline_items import PluginStatus, NotifyStatus
 
 
 class BottomPanel(QWidget):
@@ -18,6 +18,7 @@ class BottomPanel(QWidget):
 
         # initialize widgets
         self.status_line.add_item(StatusLineItem('plugin', PluginStatus(self._app)))
+        self.status_line.add_item(StatusLineItem('notify', NotifyStatus(self._app)))
         self.back_btn.setEnabled(False)
         self.forward_btn.setEnabled(False)
 

@@ -46,18 +46,6 @@ class MagicBox(QLineEdit):
         # self.textEdited.connect(self.__on_text_edited)
         self.returnPressed.connect(self.__on_return_pressed)
 
-    def show_msg(self, text, timeout=2000, force=False):
-        # do not show message if we has focus, since it will
-        # break the user input
-        if not force and self.hasFocus():
-            return
-        if not text:
-            return
-        self._set_mode('msg')
-        self.setText(text)
-        if timeout > 0:
-            self._timer.start(timeout)
-
     def _set_mode(self, mode):
         """修改当前模式
 
@@ -92,7 +80,7 @@ class MagicBox(QLineEdit):
         finally:
             sys.stderr = sys.__stderr__
             sys.stdout = sys.__stdout__
-        self.show_msg(output.getvalue() or 'No output.', force=True)
+        self._app.show_msg(output.getvalue() or 'No output.')
 
     def __on_text_edited(self):
         text = self.text()

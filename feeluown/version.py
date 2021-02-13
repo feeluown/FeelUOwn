@@ -36,11 +36,11 @@ class VersionManager(object):
                 msg = '检测到新版本 %s，当前版本为 %s' % (latest, current)
                 logger.warning(msg)
                 if self._app.mode & self._app.GuiMode:
-                    self._app.ui.magicbox.show_msg(msg)
+                    self._app.show_msg(msg)
             else:
                 logger.info('当前已经是最新版本')
                 if self._app.mode & self._app.GuiMode:
-                    self._app.ui.magicbox.show_msg('当前已经是最新版本')
+                    self._app.show_msg('当前已经是最新版本')
 
 
 if __name__ == '__main__':

@@ -228,7 +228,7 @@ def attach_attrs(app):
         app.ui = Ui(app)
         if app.config.ENABLE_TRAY:
             app.tray = Tray(app)
-        app.show_msg = app.ui.magicbox.show_msg
+        app.show_msg = app.ui.toolbar.status_line.get_item('notify').widget.show_msg
 
 
 def create_app(config):

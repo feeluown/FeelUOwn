@@ -123,6 +123,11 @@ class StatusLine(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(5)
 
+    def get_item(self, name):
+        for item in self._items:
+            if item.name == name:
+                return item
+
     def add_item(self, item):
         """添加组件"""
         if item not in self._items:
