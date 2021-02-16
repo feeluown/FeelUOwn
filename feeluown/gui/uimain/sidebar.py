@@ -5,11 +5,11 @@ from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollAre
     QHBoxLayout
 
 from feeluown.gui.helpers import use_mac_theme
-from feeluown.widgets.playlists import PlaylistsView
-from feeluown.widgets.provider import ProvidersView
-from feeluown.widgets.collections import CollectionsView
-from feeluown.widgets.my_music import MyMusicView
-from feeluown.widgets.textbtn import TextButton
+from feeluown.gui.widgets.playlists import PlaylistsView
+from feeluown.gui.widgets.provider import ProvidersView
+from feeluown.gui.widgets.collections import CollectionsView
+from feeluown.gui.widgets.my_music import MyMusicView
+from feeluown.gui.widgets.textbtn import TextButton
 
 
 class ListViewContainer(QFrame):

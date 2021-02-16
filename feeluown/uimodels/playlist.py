@@ -3,7 +3,7 @@
 ~~~~~~~~~~~~~
 """
 
-from feeluown.widgets.playlists import PlaylistsModel
+from feeluown.gui.widgets.playlists import PlaylistsModel
 
 from feeluown.models import PlaylistModel
 

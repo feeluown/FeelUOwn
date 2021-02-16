@@ -2,7 +2,7 @@ from unittest import mock
 
 from feeluown.collection import Collection, LIBRARY_FILENAME
 from feeluown.uimodels.collection import CollectionUiManager
-from feeluown.widgets.collections import CollectionsModel
+from feeluown.gui.widgets.collections import CollectionsModel
 
 
 def new_collection(path):

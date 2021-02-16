@@ -1,7 +1,7 @@
 import pytest
 
 from tests.helpers import cannot_run_qt_test
-from feeluown.widgets.tabbar import TableTabBar
+from feeluown.gui.widgets.tabbar import TableTabBar
 
 
 # TODO: use xvfb in travis env

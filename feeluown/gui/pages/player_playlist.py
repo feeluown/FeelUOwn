@@ -2,10 +2,10 @@ from PyQt5.QtCore import Qt
 
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
-from feeluown.widgets import TextButton
+from feeluown.gui.widgets import TextButton
 from feeluown.gui.helpers import disconnect_slots_if_has
 from feeluown.gui.page_containers.table import Renderer
-from feeluown.widgets.songs import SongsTableModel, Column, SongFilterProxyModel
+from feeluown.gui.widgets.songs import SongsTableModel, Column, SongFilterProxyModel
 
 
 async def render(req, **kwargs):

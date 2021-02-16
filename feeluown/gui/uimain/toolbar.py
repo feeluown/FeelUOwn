@@ -1,8 +1,8 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout
 
-from feeluown.widgets.magicbox import MagicBox
-from feeluown.widgets.statusline import StatusLine, StatusLineItem
-from feeluown.widgets.statusline_items import PluginStatus, NotifyStatus
+from feeluown.gui.widgets.magicbox import MagicBox
+from feeluown.gui.widgets.statusline import StatusLine, StatusLineItem
+from feeluown.gui.widgets.statusline_items import PluginStatus, NotifyStatus
 
 
 class BottomPanel(QWidget):

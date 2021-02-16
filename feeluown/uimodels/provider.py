@@ -1,4 +1,4 @@
-from feeluown.widgets.provider import ProvidersModel
+from feeluown.gui.widgets.provider import ProvidersModel
 
 from feeluown.utils.dispatch import Signal
 

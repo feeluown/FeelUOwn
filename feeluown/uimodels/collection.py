@@ -5,7 +5,7 @@
 import base64
 
 from feeluown.utils.utils import elfhash
-from feeluown.widgets.collections import CollectionsModel
+from feeluown.gui.widgets.collections import CollectionsModel
 from feeluown.collection import CollectionType
 
 

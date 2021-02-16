@@ -4,8 +4,8 @@ from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
     QHBoxLayout, QOpenGLWidget
 
 from feeluown.player import State
-from feeluown.widgets.progress_slider import ProgressSlider
-from feeluown.widgets.size_grip import SizeGrip
+from feeluown.gui.widgets.progress_slider import ProgressSlider
+from feeluown.gui.widgets.size_grip import SizeGrip
 from .labels import ProgressLabel, DurationLabel
 
 

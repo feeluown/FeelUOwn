@@ -17,19 +17,21 @@ from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
 from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
-from feeluown.widgets.imglist import ImgListView
-from feeluown.widgets.album import AlbumListModel, AlbumListView, AlbumFilterProxyModel
-from feeluown.widgets.artist import ArtistListModel, ArtistListView, \
+from feeluown.gui.widgets.imglist import ImgListView
+from feeluown.gui.widgets.album import AlbumListModel, AlbumListView, \
+    AlbumFilterProxyModel
+from feeluown.gui.widgets.artist import ArtistListModel, ArtistListView, \
     ArtistFilterProxyModel
-from feeluown.widgets.video import VideoListModel, VideoListView, \
+from feeluown.gui.widgets.video_list import VideoListModel, VideoListView, \
     VideoFilterProxyModel
-from feeluown.widgets.playlist import PlaylistListModel, PlaylistListView, \
+from feeluown.gui.widgets.playlist import PlaylistListModel, PlaylistListView, \
     PlaylistFilterProxyModel
-from feeluown.widgets.songs import SongsTableModel, SongsTableView, SongFilterProxyModel
+from feeluown.gui.widgets.songs import SongsTableModel, SongsTableView, \
+    SongFilterProxyModel
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
-from feeluown.widgets.meta import TableMetaWidget
-from feeluown.widgets.table_toolbar import SongsTableToolbar
-from feeluown.widgets.tabbar import TableTabBarV2
+from feeluown.gui.widgets.meta import TableMetaWidget
+from feeluown.gui.widgets.table_toolbar import SongsTableToolbar
+from feeluown.gui.widgets.tabbar import TableTabBarV2
 
 logger = logging.getLogger(__name__)
 
@@ -618,7 +620,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         """
         QTableView should have no IO operations.
         """
-        from feeluown.widgets.songs import Column
+        from feeluown.gui.widgets.songs import Column
 
         song = index.data(Qt.UserRole)
         if index.column() == Column.song:

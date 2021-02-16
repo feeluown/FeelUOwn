@@ -1,7 +1,7 @@
 from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtGui import QTextOption
 
-from feeluown.widgets.statusline import StatuslineLabel
+from feeluown.gui.widgets.statusline import StatuslineLabel
 
 
 class PluginStatus(StatuslineLabel):

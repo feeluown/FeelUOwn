@@ -2,7 +2,7 @@ feeluown.containers
 ===================
 
 
-feeluown.containers 和 feeluown.widgets 的区别
+feeluown.containers 和 feeluown.gui.widgets 的区别
 """"""""""""""""""""""""""""""""""""""""""""""
 
 1. Container 知道 `app` 这个概念的存在，并且应该将它作为构造函数的

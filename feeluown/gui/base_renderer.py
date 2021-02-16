@@ -1,4 +1,4 @@
-from feeluown.widgets.tabbar import Tab
+from feeluown.gui.widgets.tabbar import Tab
 
 
 class LibraryTabRendererMixin:

@@ -2,7 +2,7 @@ from PyQt5.QtCore import Qt, QRectF, QPoint
 from PyQt5.QtGui import QTextOption
 from PyQt5.QtWidgets import QToolTip
 
-from feeluown.widgets.statusline import StatuslineLabel
+from feeluown.gui.widgets.statusline import StatuslineLabel
 
 
 class NotifyStatus(StatuslineLabel):

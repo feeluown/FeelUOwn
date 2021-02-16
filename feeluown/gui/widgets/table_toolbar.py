@@ -2,7 +2,7 @@ from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QWidget
 
 from feeluown.models import AlbumType
-from feeluown.widgets import TextButton
+from feeluown.gui.widgets import TextButton
 
 
 class SongsTableToolbar(QWidget):

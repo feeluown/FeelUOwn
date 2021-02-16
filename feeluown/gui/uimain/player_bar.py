@@ -14,9 +14,9 @@ from feeluown.media import MediaType
 from feeluown.player import PlaybackMode, State
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.helpers import async_run, resize_font
-from feeluown.widgets import TextButton
-from feeluown.widgets.volume_button import VolumeButton
-from feeluown.widgets.progress_slider import ProgressSlider
+from feeluown.gui.widgets import TextButton
+from feeluown.gui.widgets.volume_button import VolumeButton
+from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 
 logger = logging.getLogger(__name__)

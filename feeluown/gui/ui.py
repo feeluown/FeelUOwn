@@ -6,12 +6,12 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils.utils import use_mpv_old
-from feeluown.widgets.separator import Separator
+from feeluown.gui.widgets.separator import Separator
 
 if use_mpv_old():
-    from feeluown.widgets.mpv_old import MpvOpenGLWidget
+    from feeluown.gui.widgets.mpv_old import MpvOpenGLWidget
 else:
-    from feeluown.widgets.mpv import MpvOpenGLWidget
+    from feeluown.gui.widgets.mpv import MpvOpenGLWidget
 
 from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel

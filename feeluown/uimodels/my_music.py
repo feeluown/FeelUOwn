@@ -1,5 +1,5 @@
 from feeluown.utils.dispatch import Signal
-from feeluown.widgets.my_music import MyMusicModel
+from feeluown.gui.widgets.my_music import MyMusicModel
 
 
 class MyMusicItem(object):

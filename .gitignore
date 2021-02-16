@@ -44,8 +44,8 @@ cache/*.json
 # test image
 # feeluown/*.png
 # feeluown/*.jpg
-# feeluown/widgets/*.png
-# feeluown/widgets/*.jpg
+# feeluown.gui.widgets/*.png
+# feeluown.gui.widgets/*.jpg
 #
 # node
 node_modules

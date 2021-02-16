@@ -1,4 +1,4 @@
-feeluown.widgets
+feeluown.gui.widgets
 ====================
 
 

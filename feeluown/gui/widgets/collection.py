@@ -10,8 +10,8 @@ from PyQt5.QtWidgets import (QListView, QStyledItemDelegate, QStyle,
 
 from feeluown.models import ModelType
 from feeluown.gui.helpers import resize_font
-from feeluown.widgets.meta import CollMetaWidget
-from feeluown.widgets.songs import SongListView
+from feeluown.gui.widgets.meta import CollMetaWidget
+from feeluown.gui.widgets.songs import SongListView
 
 
 def draw_album_icon(painter, x, y, h):

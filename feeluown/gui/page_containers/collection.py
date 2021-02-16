@@ -7,9 +7,9 @@ from feeluown.media import Media, MediaType
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import async_run
 
-from feeluown.widgets.collection import CollectionTOCView, CollectionTOCModel, \
+from feeluown.gui.widgets.collection import CollectionTOCView, CollectionTOCModel, \
     CollectionBody
-from feeluown.widgets.songs import SongListModel
+from feeluown.gui.widgets.songs import SongListModel
 
 
 class CollectionContainer(QFrame):
