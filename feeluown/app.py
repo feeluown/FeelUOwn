@@ -288,13 +288,8 @@ def create_app(config):
                 GuiApp.__init__(self)
 
             def exit_player(self):
-                # If mpv use render api to show video, we should
-                # free resource explicitly
-                if not self.player.use_opengl_cb:
-                    mpv_render_ctx = self.ui.mpv_widget.ctx
-                    if mpv_render_ctx is not None:
-                        mpv_render_ctx.free()
-                    self.ui.mpv_widget.close()
+                # Destroy GL context or mpv renderer
+                self.ui.mpv_widget.shutdown()
                 self.player.shutdown()
 
             def exit(self):

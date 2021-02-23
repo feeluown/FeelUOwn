@@ -42,6 +42,11 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
                                     opengl_init_params=params)
         self.ctx.update_cb = self.on_update
 
+    def shutdown(self):
+        if self.ctx is not None:
+            self.ctx.free()
+            self.ctx = None
+
     def paintGL(self):
         # compatible with HiDPI display
         ratio = self._app.devicePixelRatio()

@@ -68,6 +68,7 @@ class VideoShowCtl:
         if self._parent_is_normal is False:
             with self.change_parent():
                 self._ui.mpv_widget.hide()
+                self._ui.mpv_widget.shutdown()
                 self._pip_container.detach()
                 self._app.layout().insertWidget(1, self._ui.mpv_widget)
                 self._parent_is_normal = True
@@ -91,6 +92,7 @@ class VideoShowCtl:
             height = self._app.player._mpv.height
             with self.change_parent():
                 self._ui.mpv_widget.hide()
+                self._ui.mpv_widget.shutdown()
                 self._ui._splitter.show()
                 self._ui.bottom_panel.show()
                 self._app.layout().removeWidget(self._ui.mpv_widget)
