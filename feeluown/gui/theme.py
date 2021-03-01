@@ -9,7 +9,7 @@ from collections import defaultdict
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
 from PyQt5.QtWidgets import QApplication
-from feeluown.utils.utils import get_osx_theme
+from feeluown.utils.utils import get_osx_theme, get_win32_theme
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +57,11 @@ class ThemeManager(QObject):
         if self._app.config.THEME == 'auto':
             if sys.platform == 'darwin':
                 if get_osx_theme() == 1:
+                    theme = DARK
+                else:
+                    theme = LIGHT
+            elif sys.platform in ['win32', 'cgywin']:
+                if get_win32_theme() == 1:
                     theme = DARK
                 else:
                     theme = LIGHT

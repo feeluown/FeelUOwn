@@ -101,6 +101,33 @@ def get_osx_theme():
     return 1 if theme == 'Dark' else -1
 
 
+def get_win32_theme():
+    """
+    Detect light/dark mode on Windows 10, returns 1 for older windows.
+
+    :return: 1 for dark, -1 for light
+    :rtype: int
+    """
+    try:
+        import winreg
+        registry = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
+        regpath = r'SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize'
+        try:
+            regkey = winreg.OpenKey(registry, regpath)
+        except:
+            return 1
+        for i in range(1024):
+            try:
+                value_name, value, _ = winreg.EnumValue(regkey, i)
+                if value_name == 'SystemUsesLightTheme':
+                    return 1 if value == 0 else -1
+            except OSError:
+                break
+        return 1
+    except:
+        return 1
+
+
 def to_reader(model, field):
     flag_attr = 'allow_create_{}_g'.format(field)
     method_attr = 'create_{}_g'.format(field)
