@@ -13,7 +13,8 @@ from functools import wraps
 
 try:
     # helper module should work in no-window mode
-    from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel
+    from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
+        QAbstractListModel
     from PyQt5.QtGui import QPalette, QFontMetrics
     from PyQt5.QtWidgets import QApplication
 except ImportError:
@@ -156,7 +157,10 @@ class ItemViewNoScrollMixin:
     def _last_index(self):
         source_model = self.model()
         row_count = source_model.rowCount()
-        column_count = source_model.columnCount()
+        if isinstance(source_model, QAbstractListModel):
+            column_count = 1
+        else:
+            column_count = source_model.columnCount()
         # can't use createIndex here, why?
         return source_model.index(row_count - 1, column_count - 1)
 
