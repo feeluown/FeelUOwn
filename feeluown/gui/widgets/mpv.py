@@ -48,6 +48,10 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
             self.ctx = None
 
     def paintGL(self):
+        # HELP: It seems that `initializeGL` is called by Qt on
+        # old version (<= v5.15.2)
+        if self.ctx is None:
+            self.initializeGL()
         # compatible with HiDPI display
         ratio = self._app.devicePixelRatio()
         w = int(self.width() * ratio)
