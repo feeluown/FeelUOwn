@@ -9,25 +9,20 @@ from feeluown.models import SearchType, ModelType
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
-from .excs import NotSupported, MediaNotFound
+from .excs import (
+    NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
+    ProviderNotFound,
+)
 from .flags import Flags as PF
 from .models import (
-    ModelFlags as MF, BaseModel, BriefSongModel, SongModel,
+    ModelFlags as MF, BaseModel, BriefSongModel, SongModel, UserModel,
 )
 from .model_protocol import (
-    ModelProtocol, BriefSongProtocol, SongProtocol
+    ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
 )
 
 
 logger = logging.getLogger(__name__)
-
-
-class ProviderAlreadyExists(Exception):
-    pass
-
-
-class ProviderNotFound(Exception):
-    pass
 
 
 def _sort_song_standby(song, standby_list):
@@ -66,6 +61,15 @@ def _extract_and_sort_song_standby_list(song, result_g):
             standby_list.append(standby)
     sorted_standby_list = _sort_song_standby(song, standby_list)
     return sorted_standby_list
+
+
+def _get_display_property_or_raise(model, attr):
+    """Get property with no IO operation
+
+    I hope we need not use this function in other module because
+    it is tightly coupled with display_property.
+    """
+    return getattr(model, f'_display_store_{attr}')
 
 
 class Library:
@@ -275,8 +279,9 @@ class Library:
                                 ModelType(model.meta.model_type),
                                 flags)
 
-    # methods for backward compat
-
+    # ---------------------------
+    # Methods for backward compat
+    # ---------------------------
     def cast_model_to_v1(self, model):
         """Cast a v1/v2 model to v1
 
@@ -293,7 +298,9 @@ class Library:
         ModelCls = provider.get_model_cls(model.meta.model_type)
         return ModelCls.create_by_display(identifier=model.identifier)
 
-    # songs
+    # -----
+    # Songs
+    # -----
     def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
         if song.meta.flags & MF.v2:
             if not (MF.normal in song.meta.flags):
@@ -368,3 +375,46 @@ class Library:
 
     def song_get_mv(self, song: BriefSongModel):
         pass
+
+    # --------
+    # Provider
+    # --------
+    def provider_has_current_user(self, source: str) -> bool:
+        """Check if a provider has a logged in user
+
+        No IO operation is triggered.
+
+        .. versionadded:: 3.7.6
+        """
+        provider = self.get_or_raise(source)
+        if self.check_flags(source, None, PF.current_user):
+            return provider.has_current_user()
+
+        try:
+            user_v1 = getattr(provider, '_user')
+        except AttributeError:
+            logger.warn("We can't determine if the provider has a current user")
+            return False
+        else:
+            return user_v1 is not None
+
+    def provider_get_current_user(self, source: str) -> UserProtocol:
+        """Get provider current logged in user
+
+        :raises NotSupported:
+        :raises ProviderNotFound:
+        :raises NoUserLoggedIn:
+
+        .. versionadded:: 3.7.6
+        """
+        provider = self.get_or_raise(source)
+        if self.check_flags(source, None, PF.current_user):
+            return provider.get_current_user()
+
+        user_v1 = getattr(provider, '_user', None)
+        if user_v1 is None:
+            return None
+        return UserModel(identifier=user_v1.identifier,
+                         source=source,
+                         name=user_v1.name_display,
+                         avatar_url='')

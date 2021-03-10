@@ -7,6 +7,15 @@ from .excs import MediaNotFound
 
 
 def check_flags(provider, model_type: ModelType, flags: Flags):
+    """
+
+    Example::
+
+        {
+           ModelType.song: [Flags.get],
+           None: [Flags.current_user]  # flags that is not related to any model
+        }
+    """
     return provider.meta.flags.get(model_type, Flags.none) & flags
 
 
@@ -17,6 +26,12 @@ class ProviderV2:
         flags: dict = {}
 
     check_flags = check_flags
+
+    def get_current_user(self):
+        """Get current logged in user
+
+        :return: If there is no logged in user, return None.
+        """
 
     def song_list_similar(self, song):
         """List similar songs

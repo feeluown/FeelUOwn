@@ -10,4 +10,4 @@ from .models import ModelFlags, BaseModel, \
     BriefCommentModel, CommentModel, \
     BriefUserModel, \
     cook_artists_name
-from .excs import NotSupported
+from .excs import NotSupported, NoUserLoggedIn

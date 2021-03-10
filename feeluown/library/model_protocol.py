@@ -56,6 +56,14 @@ class BriefAlbumProtocol(ModelProtocol):
     artists_name: str
 
 
+class BriefUserProtocol(ModelProtocol):
+    name: str = ''
+
+
+class UserProtocol(BriefUserProtocol):
+    avatar_url: str = ''
+
+
 class SongProtocol(BriefSongProtocol):
     """
     Actually, Song has much more attributes(disc/gene/date), so we may want to

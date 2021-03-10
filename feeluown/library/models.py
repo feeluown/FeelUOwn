@@ -193,6 +193,13 @@ class BriefUserModel(BaseBriefModel):
         model_type = ModelType.user
 
     name: str = ''
+
+
+class UserModel(BaseBriefModel):
+    class Meta(BaseBriefModel.meta):
+        model_type = ModelType.user
+
+    name: str = ''
     avatar_url: str = ''
 
 
