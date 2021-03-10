@@ -26,7 +26,7 @@ class ProvidersModel(TextlistModel):
         if role == Qt.DisplayRole:
             return provider.symbol + ' ' + provider.text
         if role == Qt.ToolTipRole:
-            return provider.desc
+            return f'[{provider.text}] {provider.desc}'
         if role == Qt.UserRole:
             return provider
         return super().data(index, role)
@@ -66,7 +66,8 @@ class ProvidersDelegate(QStyledItemDelegate):
 
         painter.save()
         font = painter.font()
-        resize_font(font, 10)
+        resize_font(font, 4)
+        painter.setFont(font)
         text_option = QTextOption()
         text_option.setAlignment(Qt.AlignCenter)
         painter.drawText(QRectF(body_rect), ch, text_option)
