@@ -54,7 +54,7 @@ setup(
         'requests',
         'qasync',
         'tomlkit',
-        'pydantic',
+        'pydantic>=1.8.1',
 
         'typing_extensions;python_version<"3.8"',
     ],
