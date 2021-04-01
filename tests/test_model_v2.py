@@ -24,3 +24,11 @@ def test_create_song_model_basic():
 def test_create_model_with_extra_field():
     with pytest.raises(pydantic.ValidationError):
         BriefSongModel(identifier=1, source='x', unk=0)
+
+
+def test_song_model_is_hashable():
+    """
+    Song model must be hashable.
+    """
+    song = BriefSongModel(identifier=1, source='x')
+    hash(song)

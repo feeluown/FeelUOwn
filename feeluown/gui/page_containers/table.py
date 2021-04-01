@@ -115,8 +115,8 @@ class Renderer:
     def show_model(self, model):
         aio.create_task(self.real_show_model(model))
 
-    def show_albums(self, albums_g):
-        self._show_model_with_cover(albums_g,
+    def show_albums(self, reader):
+        self._show_model_with_cover(reader,
                                     self.albums_table,
                                     AlbumListModel,
                                     AlbumFilterProxyModel)
