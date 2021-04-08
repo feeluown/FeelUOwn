@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import random
 import warnings
 from contextlib import suppress
 
@@ -16,7 +15,8 @@ from feeluown.excs import ProviderIOError
 from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
 from feeluown.models import reverse, ModelType
 
-from feeluown.gui.helpers import async_run, BgTransparentMixin, disconnect_slots_if_has
+from feeluown.gui.helpers import async_run, BgTransparentMixin, \
+    disconnect_slots_if_has, fetch_cover_wrapper
 from feeluown.gui.widgets.imglist import ImgListView
 from feeluown.gui.widgets.album import AlbumListModel, AlbumListView, \
     AlbumFilterProxyModel
@@ -34,27 +34,6 @@ from feeluown.gui.widgets.table_toolbar import SongsTableToolbar
 from feeluown.gui.widgets.tabbar import TableTabBarV2
 
 logger = logging.getLogger(__name__)
-
-
-def fetch_cover_wrapper(img_mgr):
-    async def fetch_model_cover(model, cb, uid):
-        # try get from cache first
-        content = img_mgr.get_from_cache(uid)
-        if content is not None:
-            return cb(content)
-        # FIXME: sleep random second to avoid send too many request to provider
-        await asyncio.sleep(random.randrange(100) / 100)
-        with suppress(ProviderIOError, RequestException):
-            cover = await async_run(lambda: model.cover)
-            if cover:  # check if cover url is valid
-                # FIXME: we should check if cover is a media object
-                if not isinstance(cover, str):
-                    cover = cover.url
-            url = cover
-            if url:
-                content = await img_mgr.get(url, uid)
-                cb(content)
-    return fetch_model_cover
 
 
 class Renderer:

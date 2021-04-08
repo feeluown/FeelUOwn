@@ -120,6 +120,15 @@ class RightPanel(QFrame):
     def set_body(self, widget):
         if widget is self.table_container:
             widget = self.scrollarea
+
+        # remove tmp widgets
+        for i in range(self._stacked_layout.count()):
+            w = self._stacked_layout.widget(i)
+            if w not in (self.scrollarea,
+                         self.collection_container):
+                self._stacked_layout.removeWidget(w)
+
+        self._stacked_layout.addWidget(widget)
         self._stacked_layout.setCurrentWidget(widget)
 
     def show_collection(self, coll):

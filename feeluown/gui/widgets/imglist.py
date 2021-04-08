@@ -44,33 +44,6 @@ COLORS = {
     'green':     '#859900',
 }
 
-CoverMinWidth = 150
-CoverSpacing = 20
-TextHeight = 40
-
-
-def calc_cover_width(width):
-    """calculate propert cover width by width width
-
-    according to our algorithm, when the widget width is:
-      2(CoverMinWidth + CoverSpacing) + CoverSpacing - 1,
-    the cover width can take the maximum width, it will be:
-      CoverMaxWidth = 2 * CoverMinWidth + CoverSpacing - 1
-    """
-    # HELP: listview needs about 20 spacing left on macOS
-    width = width - 20
-    # calculate max column count
-    count = (width - CoverSpacing) // (CoverMinWidth + CoverSpacing)
-    count = max(count, 1)
-    cover_width = (width - ((count + 1) * CoverSpacing)) // count
-    return cover_width
-
-
-def calc_cover_size(view_width):
-    width = cover_height = calc_cover_width(view_width)
-    height = cover_height + TextHeight
-    return width, height
-
 
 class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
@@ -150,6 +123,8 @@ class ImgListDelegate(QAbstractItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.view = parent
+        # TODO: move as_circle/w_h_ratio attibute to view
         self.as_circle = True
         self.w_h_ratio = 1
 
@@ -158,13 +133,11 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.setRenderHint(QPainter.Antialiasing)
         rect = option.rect
         text_rect_height = 30
-        source_rect_height = TextHeight - text_rect_height
-        cover_spacing = 0
-        text_y = rect.y() + rect.height() - TextHeight
-        cover_height = rect.height() - TextHeight
-        cover_width = rect.width() - cover_spacing
-        cover_x = rect.x() + cover_spacing // 2
-        cover_y = rect.y()
+        img_text_height = self.view.img_text_height
+        source_rect_height = img_text_height - text_rect_height
+        text_y = rect.y() + rect.height() - img_text_height
+        cover_height = rect.height() - img_text_height
+        cover_width = rect.width()
         text_rect = QRectF(rect.x(), text_y, rect.width(), text_rect_height)
         source_rect = QRectF(rect.x(), text_y + text_rect_height - 5,
                              rect.width(), source_rect_height + 5)
@@ -183,7 +156,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         pen = painter.pen()
         pen.setColor(non_text_color)
         painter.setPen(pen)
-        painter.translate(cover_x, cover_y)
+        painter.translate(rect.x(), rect.y())
         if isinstance(obj, QColor):
             color = obj
             brush = QBrush(color)
@@ -226,9 +199,9 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.restore()
 
     def sizeHint(self, option, index):
-        width = calc_cover_width(self.parent().width())
+        width = self.view.img_sizehint()[0]
         if index.isValid():
-            return QSize(width, int(width / self.w_h_ratio) + TextHeight)
+            return QSize(width, int(width / self.w_h_ratio) + self.view.img_text_height)
         return super().sizeHint(option, index)
 
 
@@ -255,24 +228,58 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
 
 
 class ImgListView(ItemViewNoScrollMixin, QListView):
-
-    def __init__(self, parent=None):
-        super().__init__()
+    """
+    .. versionadded:: 3.7.7
+       The *img_min_width*, *img_spacing*, *img_text_height* parameter were added.
+    """
+    def __init__(self, parent=None,
+                 img_min_width=150, img_spacing=20, img_text_height=40,
+                 **kwargs):
+        super().__init__(**kwargs)
         QListView.__init__(self, parent=parent)
+
+        self.img_min_width = img_min_width
+        self.img_spacing = img_spacing
+        self.img_text_height = img_text_height
 
         # override ItemViewNoScrollMixin variables
         self._least_row_count = 1
-        self._row_height = CoverMinWidth + CoverSpacing + TextHeight
+        self._row_height = img_min_width + img_spacing + img_text_height
 
         self.setViewMode(QListView.IconMode)
         self.setResizeMode(QListView.Adjust)
         self.setWrapping(True)
         self.setFrameShape(QFrame.NoFrame)
-        self.setSpacing(CoverSpacing)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setSpacing(self.img_spacing)
+        self.initialize()
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
 
-        self._row_height = calc_cover_size(self.width())[1] + CoverSpacing
-        self.adjust_height()
+        if self._no_scroll_v is True:
+            self._row_height = self.img_sizehint()[1] + self.img_spacing
+            self.adjust_height()
+
+    def img_sizehint(self) -> tuple:
+        """
+
+        .. versionadded:: 3.7.7
+        """
+        # HELP: listview needs about 20 spacing left on macOS
+        width = self.width() - 20
+
+        img_spacing = self.img_spacing
+        img_min_width = self.img_min_width
+        img_text_height = self.img_text_height
+
+        # according to our algorithm, when the widget width is:
+        #   2(img_min_width + img_spacing) + img_spacing - 1,
+        # the cover width can take the maximum width, it will be:
+        #   CoverMaxWidth = 2 * img_min_width + img_spacing - 1
+
+        # calculate max column count
+        count = (width - img_spacing) // (img_min_width + img_spacing)
+        count = max(count, 1)
+        img_height = img_width = (width - ((count + 1) * img_spacing)) // count
+        img_height = img_height + img_text_height
+        return img_width, img_height

@@ -6,10 +6,13 @@ feeluown.gui.helpers
 """
 import asyncio
 import itertools
+import random
 import sys
 import time
 import logging
+from contextlib import suppress
 from functools import wraps
+from requests.exceptions import RequestException
 
 try:
     # helper module should work in no-window mode
@@ -98,13 +101,41 @@ class BgTransparentMixin:
 
 
 class ItemViewNoScrollMixin:
-    def __init__(self, *args, **kwargs):
+    """
+    `no_scroll_v` means that the itemview's size(height) is always enough to hold
+    all fetched items. When new items are fetched, the itemview size is
+    automatically adjueted.
+
+    The itemview with no_scroll_v=True is usually used with an outside ScrollArea.
+    """
+    def __init__(self, *args, no_scroll_v=True, **kwargs):
+        """
+        :params no_scroll_v: enable on no_scroll_v feature or not
+        """
         # ItemView class should override these variables as they need
         self._least_row_count = 0
         self._row_height = 0
         self._reserved = 30
 
         self._min_height = 0
+
+        self._no_scroll_v = no_scroll_v
+
+    def initialize(self):
+        """
+        .. versionadded:: 3.7.7
+        """
+        if self._no_scroll_v is True:
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+    # def set_no_scroll_v(self, no_scroll_v):
+    #     """
+    #     .. versionadded:: 3.7.7
+    #     """
+    #     self._no_scroll_v = no_scroll_v
+    #     if no_scroll_v is True:
+    #         self.adjust_height()
+    #         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
     def adjust_height(self):
         if self.model() is None:
@@ -126,7 +157,8 @@ class ItemViewNoScrollMixin:
         self.updateGeometry()
 
     def on_rows_changed(self, *args):
-        self.adjust_height()
+        if self._no_scroll_v is True:
+            self.adjust_height()
 
     def setModel(self, model):
         super().setModel(model)
@@ -141,10 +173,19 @@ class ItemViewNoScrollMixin:
         self.on_rows_changed()
 
     def wheelEvent(self, e):
-        e.ignore()
+        if self._no_scroll_v is True:
+            if abs(e.angleDelta().x()) > abs(e.angleDelta().y()):
+                QApplication.sendEvent(self.horizontalScrollBar(), e)
+            else:
+                e.ignore()  # let parents handle it
+        else:
+            super().wheelEvent(e)
 
     def sizeHint(self):
         super_size_hint = super().sizeHint()
+        if self._no_scroll_v is False:
+            return super_size_hint
+
         height = min_height = self.min_height()
         if self.model() is not None:
             index = self._last_index()
@@ -287,3 +328,27 @@ class ReaderFetchMoreMixin:
             self._fetch_more_cb(None)
         else:
             self._fetch_more_cb(items)
+
+
+def fetch_cover_wrapper(img_mgr):
+    """
+    Your should only use this helper within ImgListModel.
+    """
+    async def fetch_model_cover(model, cb, uid):
+        # try get from cache first
+        content = img_mgr.get_from_cache(uid)
+        if content is not None:
+            return cb(content)
+        # FIXME: sleep random second to avoid send too many request to provider
+        await asyncio.sleep(random.randrange(100) / 100)
+        with suppress(ProviderIOError, RequestException):
+            cover = await async_run(lambda: model.cover)
+            if cover:  # check if cover url is valid
+                # FIXME: we should check if cover is a media object
+                if not isinstance(cover, str):
+                    cover = cover.url
+            url = cover
+            if url:
+                content = await img_mgr.get(url, uid)
+                cb(content)
+    return fetch_model_cover
