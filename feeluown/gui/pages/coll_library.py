@@ -23,11 +23,7 @@ class LibraryRenderer(Renderer, LibraryTabRendererMixin):
         self.tab_id = tab_id
 
     async def render(self):
-        self.init_tabbar_signal_binding()
-
-        self.tabbar.show()
-        self.tabbar.library_mode()
-        self.tabbar.check(self.tab_id)
+        self.render_tabbar()
 
         self.meta_widget.show()
         self.meta_widget.title = '音乐库'

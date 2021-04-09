@@ -71,6 +71,7 @@ setup(
         'dev': [
             # lint
             'flake8',
+            'pylint',
             'mypy',
 
             # unittest
