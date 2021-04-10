@@ -335,6 +335,8 @@ def wrap(iterable):
     TypeError: must be a Iterable, got <class 'NoneType'>
 
     .. versionadded:: 3.4
+    .. deprecated:: 3.7.7
+       Use :func:`create_reader` instead.
     """
     # if it is a reader already, just return it
     if isinstance(iterable, Reader):
@@ -353,3 +355,10 @@ def wrap(iterable):
                                       max_per_read=max(count, 1))
     # maybe a generator/iterator
     return SequentialReader(iterable, count=None)
+
+
+def create_reader(iterable):
+    """
+    .. versionadded:: 3.7.7
+    """
+    return wrap(iterable)

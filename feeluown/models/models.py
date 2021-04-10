@@ -273,7 +273,7 @@ class UserModel(BaseModel):
         allow_fav_artists_remove = False
 
         model_type = ModelType.user.value
-        fields = ['name', 'playlists', 'fav_playlists', 'fav_songs',
+        fields = ['name', 'avatar_url', 'playlists', 'fav_playlists', 'fav_songs',
                   'fav_albums', 'fav_artists', 'rec_songs', 'rec_playlists']
         fields_display = ['name']
 

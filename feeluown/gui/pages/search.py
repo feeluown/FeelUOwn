@@ -53,11 +53,7 @@ class SearchResultRenderer(Renderer, LibraryTabRendererMixin):
         self.reader = reader
 
     async def render(self):
-        self.init_tabbar_signal_binding()
-
-        self.tabbar.show()
-        self.tabbar.library_mode()
-        self.tabbar.check(self.tab_id)
+        self.render_tabbar()
 
         self.meta_widget.show()
         self.meta_widget.title = '搜索 “{}”'.format(self.q)
@@ -97,7 +93,7 @@ class SearchResultRenderer(Renderer, LibraryTabRendererMixin):
 
 class _ProviderCheckBox(QCheckBox):
     def set_identifier(self, identifier):
-        self.identifier = identifier
+        self.identifier = identifier  # pylint: disable=W0201
 
 
 class SearchProvidersFilter(QWidget):

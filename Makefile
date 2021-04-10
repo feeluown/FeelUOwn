@@ -5,9 +5,19 @@ all: unittest
 docs:
 	cd docs && make html
 
-lint:
-	flake8 fuocore/ feeluown/ tests/
+pylint:
+	pylint feeluown/gui/pages/
+
+mypy:
 	mypy feeluown/library feeluown/player
+
+flake8:
+	flake8 fuocore/ feeluown/ tests/
+
+# flake8 is mainly used for constrainting coding style
+# pylint is mainly used for finding obvious bugs
+# mypy is mainly used for better readable code
+lint: flake8 mypy pylint
 
 unittest: pytest
 

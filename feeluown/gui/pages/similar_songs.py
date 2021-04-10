@@ -1,4 +1,5 @@
 from feeluown.utils import aio
+from feeluown.utils.reader import create_reader
 from feeluown.gui.page_containers.table import Renderer
 
 
@@ -21,4 +22,4 @@ class SimilarSongsRenderer(Renderer):
         song_str = f'{song.title_display} - {song.artists_name_display}'
         self.meta_widget.title = f'“{song_str}”的相似歌曲'
         self.meta_widget.show()
-        self.show_songs(songs=self._songs.copy())
+        self.show_songs(reader=create_reader(self._songs.copy()))

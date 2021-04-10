@@ -90,6 +90,8 @@ class ModelType(IntEnum):
     user = 17
     comment = 18
 
+    none = 128
+
 
 class SearchType(Enum):
     pl = 'playlist'

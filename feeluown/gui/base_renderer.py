@@ -25,6 +25,13 @@ class LibraryTabRendererMixin:
             Tab.videos: self.tabbar.show_videos_needed,
         }
 
+    def render_tabbar(self):
+        self.init_tabbar_signal_binding()
+
+        self.tabbar.show()
+        self.tabbar.library_mode()
+        self.tabbar.check(self.tab_id)
+
     def on_tab_id_activated(self, tab_id):
         def cb():
             if tab_id != self.tab_id:
