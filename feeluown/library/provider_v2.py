@@ -1,9 +1,11 @@
-from typing import Tuple
+from typing import Tuple, List
 
 from feeluown.media import Media, Quality
 from feeluown.models import ModelType
+from .models import CommentModel
+from .model_protocol import SongProtocol
 from .flags import Flags
-from .excs import MediaNotFound
+from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn  # noqa
 
 
 def check_flags(provider, model_type: ModelType, flags: Flags):
@@ -27,10 +29,18 @@ class ProviderV2:
 
     check_flags = check_flags
 
+    def has_current_user(self) -> bool:
+        """Check if there is a logged in user."""
+
     def get_current_user(self):
         """Get current logged in user
 
-        :return: If there is no logged in user, return None.
+        :raises NoUserLoggedIn: there is no logged in user.
+        """
+
+    def song_get(self, identifier) -> SongProtocol:
+        """
+        :raises ModelNotFound: identifier is invalid
         """
 
     def song_list_similar(self, song):
@@ -39,10 +49,10 @@ class ProviderV2:
         flag: (ModelType.song, Flags.similar_song)
         """
 
-    def song_list_quality(self, song):
+    def song_get_media(self, song, quality):
         pass
 
-    def song_get_media(self, song, quality):
+    def song_list_quality(self, song) -> List[Quality.Audio]:
         pass
 
     def song_select_media(self, song, policy=None) -> Tuple[Media, Quality.Audio]:
@@ -68,3 +78,6 @@ class ProviderV2:
                 return self.song_get_media(song, quality), quality
 
         assert False, 'this should not happen'
+
+    def song_list_hot_comments(self, song) -> List[CommentModel]:
+        pass

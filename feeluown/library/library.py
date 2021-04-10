@@ -1,6 +1,6 @@
 import logging
 from functools import partial, lru_cache
-from typing import List
+from typing import List, cast
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
@@ -250,7 +250,10 @@ class Library:
 
     # provider common
 
-    def get_or_raise(self, identifier):
+    def get_or_raise(self, identifier) -> ProviderV2:
+        """
+        :raises ProviderNotFound:
+        """
         provider = self.get(identifier)
         if provider is None:
             raise ProviderNotFound(f'provider {identifier} not found')
@@ -303,20 +306,20 @@ class Library:
     # -----
     def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
         if song.meta.flags & MF.v2:
-            if not (MF.normal in song.meta.flags):
+            if MF.normal in song.meta.flags:
+                upgraded_song = cast(SongProtocol, song)
+            else:
                 provider = self.get_or_raise(song.source)
                 if self.check_flags_by_model(song, PF.get):
                     upgraded_song = provider.song_get(song.identifier)
                 else:
                     raise NotSupported("provider has not flag 'get' for 'song'")
-            else:
-                upgraded_song = song
         else:
             fields = [f for f in list(SongModel.__fields__)
                       if f not in list(BaseModel.__fields__)]
             for field in fields:
                 getattr(song, field)
-            upgraded_song = song
+            upgraded_song = cast(SongProtocol, song)
         return upgraded_song
 
     def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
@@ -387,7 +390,7 @@ class Library:
         .. versionadded:: 3.7.6
         """
         provider = self.get_or_raise(source)
-        if self.check_flags(source, None, PF.current_user):
+        if self.check_flags(source, ModelType.none, PF.current_user):
             return provider.has_current_user()
 
         try:
@@ -408,12 +411,12 @@ class Library:
         .. versionadded:: 3.7.6
         """
         provider = self.get_or_raise(source)
-        if self.check_flags(source, None, PF.current_user):
+        if self.check_flags(source, ModelType.none, PF.current_user):
             return provider.get_current_user()
 
         user_v1 = getattr(provider, '_user', None)
         if user_v1 is None:
-            return None
+            raise NoUserLoggedIn
         return UserModel(identifier=user_v1.identifier,
                          source=source,
                          name=user_v1.name_display,

@@ -8,6 +8,6 @@ from .models import ModelFlags, BaseModel, \
     SongModel, BriefSongModel, \
     BriefArtistModel, BriefAlbumModel, \
     BriefCommentModel, CommentModel, \
-    BriefUserModel, \
+    BriefUserModel, UserModel, \
     cook_artists_name
 from .excs import NotSupported, NoUserLoggedIn

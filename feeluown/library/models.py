@@ -32,11 +32,23 @@ class ModelFlags(IntFlag):
     normal = brief | 0x00000020
 
 
-class BaseModel(_BaseModel):
-    class meta:
-        flags = ModelFlags.v2
-        model_type = ModelType.dummy
+class ModelMeta:
+    def __init__(self, flags, model_type):
+        self.flags = flags
+        self.model_type = model_type
 
+    @classmethod
+    def create(cls, model_type=ModelType.dummy, is_brief=False, is_normal=False):
+        flags = ModelFlags.v2
+        assert not (is_brief is is_normal is True)
+        if is_brief is True:
+            flags |= ModelFlags.brief
+        if is_normal is True:
+            flags |= ModelFlags.normal
+        return cls(model_type=model_type, flags=flags)
+
+
+class BaseModel(_BaseModel):
     class Config:
         # Do not use Model.from_orm to convert v1 model to v2 model
         # since v1 model has too much magic.
@@ -47,6 +59,7 @@ class BaseModel(_BaseModel):
         extra = 'forbid'
 
     __cache__: dict = PrivateAttr(default_factory=dict)
+    meta: Any = ModelMeta.create()
 
     identifier: str
     # Before, the default value of source is 'dummy', which is too implicit.
@@ -91,8 +104,7 @@ class BaseBriefModel(BaseModel):
     BaseBriefModel -> model display stage
     Model -> model gotten stage
     """
-    class meta(BaseModel.meta):
-        flags = BaseModel.meta.flags | ModelFlags.brief
+    meta: Any = ModelMeta.create(is_brief=True)
 
     @classmethod
     def from_display_model(cls, model):
@@ -127,16 +139,12 @@ class BaseBriefModel(BaseModel):
 
 
 class BaseNormalModel(BaseModel):
-    class meta(BaseModel.meta):
-        flags = BaseModel.meta.flags | ModelFlags.normal
-
+    meta: Any = ModelMeta.create(is_normal=False)
     state: ModelState = ModelState.upgraded
 
 
 class BriefSongModel(BaseBriefModel):
-    class meta(BaseBriefModel.meta):
-        model_type = ModelType.song
-
+    meta: Any = ModelMeta.create(ModelType.song, is_brief=True)
     title: str = ''
     artists_name: str = ''
     album_name: str = ''
@@ -144,24 +152,18 @@ class BriefSongModel(BaseBriefModel):
 
 
 class BriefAlbumModel(BaseBriefModel):
-    class meta(BaseBriefModel.meta):
-        model_type = ModelType.album
-
+    meta: Any = ModelMeta.create(ModelType.album, is_brief=True)
     name: str = ''
     artists_name: str = ''
 
 
 class BriefArtistModel(BaseBriefModel):
-    class meta(BaseBriefModel.meta):
-        model_type = ModelType.artist
-
+    meta: Any = ModelMeta.create(ModelType.artist, is_brief=True)
     name: str = ''
 
 
 class SongModel(BaseNormalModel):
-    class meta(BaseNormalModel.meta):
-        model_type = ModelType.song
-
+    meta: Any = ModelMeta.create(ModelType.artist, is_normal=True)
     title: str
     album: Optional[BriefAlbumModel]
     artists: List[BriefArtistModel]
@@ -189,32 +191,24 @@ class SongModel(BaseNormalModel):
 
 
 class BriefUserModel(BaseBriefModel):
-    class Meta(BaseBriefModel.meta):
-        model_type = ModelType.user
-
+    meta: Any = ModelMeta.create(ModelType.user, is_brief=True)
     name: str = ''
 
 
-class UserModel(BaseBriefModel):
-    class Meta(BaseBriefModel.meta):
-        model_type = ModelType.user
-
+class UserModel(BaseNormalModel):
+    meta: Any = ModelMeta.create(ModelType.user, is_normal=True)
     name: str = ''
     avatar_url: str = ''
 
 
 class BriefCommentModel(BaseBriefModel):
-    class Meta(BaseBriefModel.meta):
-        model_type = ModelType.comment
-
+    meta: Any = ModelMeta.create(ModelType.comment, is_brief=True)
     user_name: str = ''
     content: str = ''
 
 
 class CommentModel(BaseNormalModel):
-    class Meta(BaseNormalModel.meta):
-        model_type = ModelType.comment
-
+    meta: Any = ModelMeta.create(ModelType.comment, is_normal=True)
     user: BriefUserModel
     content: str
     #: -1 means that the provider does not have such data
