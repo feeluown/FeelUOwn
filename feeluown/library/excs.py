@@ -14,6 +14,8 @@ class ModelNotFound(LibraryException):
     """Model is not found.
 
     For example, a model identifier is invalid.
+
+    .. versionadded:: 3.7.7
     """
 
 
