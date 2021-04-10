@@ -117,12 +117,13 @@ class BaseBriefModel(BaseModel):
         assert model.stage is ModelStage.display
         data = {'state': cls._guess_state_from_exists(model.exists)}
         for field in cls.__fields__:
-            if field in ('state', ):
+            if field in ('state', 'meta'):
                 continue
             if field in ('identifier', 'source', 'exists'):
                 value = object.__getattribute__(model, field)
             else:
-                assert field in model.meta.fields_display
+                assert field in model.meta.fields_display, \
+                    f'{field} must be a display field'
                 value = getattr(model, f'{field}_display')
             data[field] = value
         return cls(**data)
