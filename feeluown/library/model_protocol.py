@@ -12,7 +12,7 @@ class ModelProtocol(Protocol):
     meta: Any
 
 
-class BriefSongProtocol(ModelProtocol):
+class BriefSongProtocol(ModelProtocol, Protocol):
     """
     We want to have such kind of check in code::
 
@@ -47,16 +47,24 @@ class BriefSongProtocol(ModelProtocol):
     duration_ms: str
 
 
-class BriefArtistProtocol(ModelProtocol):
+class BriefArtistProtocol(ModelProtocol, Protocol):
     name: str
 
 
-class BriefAlbumProtocol(ModelProtocol):
+class BriefAlbumProtocol(ModelProtocol, Protocol):
     name: str
     artists_name: str
 
 
-class SongProtocol(BriefSongProtocol):
+class BriefUserProtocol(ModelProtocol, Protocol):
+    name: str = ''
+
+
+class UserProtocol(BriefUserProtocol, Protocol):
+    avatar_url: str = ''
+
+
+class SongProtocol(BriefSongProtocol, Protocol):
     """
     Actually, Song has much more attributes(disc/gene/date), so we may want to
     extend SongProtocol in the future. I have an idea currently. We can define
