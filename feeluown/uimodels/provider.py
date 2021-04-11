@@ -13,12 +13,14 @@ class ProviderUiItem:
     现在算是找到一个解决方案了。
     """
 
-    def __init__(self, name, text, symbol, desc):
+    def __init__(self, name, text, symbol, desc, colorful_svg=None, provider=None):
         # 如果需要，可以支持右键弹出菜单
         self._name = name
         self.text = text
         self.symbol = symbol
         self.desc = desc
+        self.colorful_svg = colorful_svg
+        self.provider = provider
         self.clicked = Signal()
 
     @property
@@ -36,8 +38,11 @@ class ProviderUiManager:
         self.model = ProvidersModel(self._app)
 
     @classmethod
-    def create_item(self, name, text, symbol='♬ ', desc=''):
-        return ProviderUiItem(name, text, symbol, desc)
+    def create_item(self, name, text, symbol='♬ ', desc='',
+                    colorful_svg=None, provider=None):
+        return ProviderUiItem(name, text, symbol, desc,
+                              colorful_svg=colorful_svg,
+                              provider=provider)
 
     def get_item(self, name):
         return self._items.get(name)
