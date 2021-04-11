@@ -81,7 +81,7 @@ def gen_for_win_linux():
     write_file(f_path, icon_string)
 
     try:
-        desktop_path_str = os.popen('xdg-user-dir DESSKTOP').read().split()[0]
+        desktop_path_str = os.popen('xdg-user-dir DESKTOP').read().split()[0]
         assert desktop_path_str
         desktop_path = pathlib.Path(desktop_path_str)
         assert desktop_path.exists()
