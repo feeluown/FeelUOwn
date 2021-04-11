@@ -86,10 +86,10 @@ def gen_for_win_linux():
         desktop_path = pathlib.Path(desktop_path_str)
         assert desktop_path.exists()
         desktop_file = desktop_path / DESKTOP_FILE
-        shutil.copy(f_path, desktop_file)
-        os.system('chmod +x {}'.format(desktop_file))
-    except (FileNotFoundError, IndexError, AssertionError):
-        pass
+    except (FileNotFoundError, IndexError, AssertionError) as e:
+        raise FileNotFoundError('Cannot find the desktop directory.') from e
+    shutil.copy(f_path, desktop_file)
+    os.system('chmod +x {}'.format(desktop_file))
 
 
 def gen_for_win32():
