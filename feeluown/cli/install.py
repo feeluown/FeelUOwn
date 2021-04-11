@@ -80,15 +80,15 @@ def gen_for_win_linux():
     f_path = pathlib.Path.home() / '.local/share/applications' / DESKTOP_FILE
     write_file(f_path, icon_string)
 
-    en_desktop_path = pathlib.Path.home() / 'Desktop'
-    cn_desktop_path = pathlib.Path.home() / '桌面'
-    desktop_file = None
-    if en_desktop_path.exists():
-        desktop_file = en_desktop_path / DESKTOP_FILE
-    if cn_desktop_path.exists():
-        desktop_file = cn_desktop_path / DESKTOP_FILE
-    if desktop_file:
-        shutil.copy(f_path, desktop_file)
+    try:
+        desktop_path_str = os.popen('xdg-user-dir DESKTOP').read().split()[0]
+        assert desktop_path_str
+        desktop_path = pathlib.Path(desktop_path_str)
+        assert desktop_path.exists()
+        desktop_file = desktop_path / DESKTOP_FILE
+    except (FileNotFoundError, IndexError, AssertionError) as e:
+        raise FileNotFoundError('Cannot find the desktop directory.') from e
+    shutil.copy(f_path, desktop_file)
     os.system('chmod +x {}'.format(desktop_file))
 
 
