@@ -1,6 +1,9 @@
-from PyQt5.QtCore import Qt, QSize, QRectF, QRect
+import math
+
+from PyQt5.QtCore import Qt, QSize, QRectF, QRect, QUrl
 from PyQt5.QtGui import QPainter, QTextOption, QPalette, QBrush  # noqa
 from PyQt5.QtWidgets import QStyledItemDelegate, QListView
+from PyQt5.QtSvg import QSvgRenderer
 
 from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font
 from .textlist import TextlistModel
@@ -36,13 +39,16 @@ class ProvidersDelegate(QStyledItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self._radius = 24
-        self._padding = 4
+        self._radius = 20
+        self._padding = 3
+
+        self.__body_radius = self._radius - self._padding
+        self.__text_rect_x = self.__body_radius - self.__body_radius / math.sqrt(2)
+        self.__text_rect_width = 2 * (self.__body_radius / math.sqrt(2))
 
     def paint(self, painter, option, index):
         painter.setRenderHint(QPainter.Antialiasing)
         provider = index.data(Qt.UserRole)
-        ch = provider._name[0].capitalize()
 
         painter.save()
         painter.translate(self._padding + option.rect.x(),
@@ -51,28 +57,36 @@ class ProvidersDelegate(QStyledItemDelegate):
         w = h = (self._radius - self._padding) * 2
         body_rect = QRect(0, 0, w, h)
 
-        painter.save()
-        text_color = option.palette.color(QPalette.Text)
-        if text_color.lightness() > 150:
-            non_text_color = text_color.darker(140)
+        if provider.colorful_svg:
+            svg_renderer = QSvgRenderer(QUrl(provider.colorful_svg).toString())
+            svg_renderer.render(painter, QRectF(body_rect))
         else:
-            non_text_color = text_color.lighter(150)
-        non_text_color.setAlpha(100)
-        pen = painter.pen()
-        pen.setColor(non_text_color)
-        painter.setPen(pen)
-        painter.drawRoundedRect(body_rect, w//2, h//2)
-        painter.restore()
+            # draw rounded rect
+            painter.save()
+            text_color = option.palette.color(QPalette.Text)
+            if text_color.lightness() > 150:
+                non_text_color = text_color.darker(140)
+            else:
+                non_text_color = text_color.lighter(150)
+            non_text_color.setAlpha(100)
+            pen = painter.pen()
+            pen.setColor(non_text_color)
+            painter.setPen(pen)
+            painter.drawRoundedRect(body_rect, w//2, h//2)
+            painter.restore()
 
-        painter.save()
-        font = painter.font()
-        resize_font(font, 4)
-        painter.setFont(font)
-        text_option = QTextOption()
-        text_option.setAlignment(Qt.AlignCenter)
-        painter.drawText(QRectF(body_rect), ch, text_option)
-        painter.restore()
+            painter.save()
+            font = painter.font()
+            resize_font(font, -3)
+            painter.setFont(font)
+            text_option = QTextOption()
+            text_option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+            text_option.setAlignment(Qt.AlignCenter)
 
+            text_rect = QRectF(self.__text_rect_x, self.__text_rect_x,
+                               self.__text_rect_width, self.__text_rect_width)
+            painter.drawText(QRectF(text_rect), provider.text, text_option)
+            painter.restore()
         painter.restore()
 
     def sizeHint(self, option, index):
