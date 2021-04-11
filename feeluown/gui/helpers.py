@@ -356,3 +356,16 @@ def fetch_cover_wrapper(img_mgr):
                 content = await img_mgr.get(url, uid)
                 cb(content)
     return fetch_model_cover
+
+
+# https://ethanschoonover.com/solarized/
+SOLARIZED_COLORS = {
+    'yellow':    '#b58900',
+    'orange':    '#cb4b16',
+    'red':       '#dc322f',
+    'magenta':   '#d33682',
+    'violet':    '#6c71c4',
+    'blue':      '#268bd2',
+    'cyan':      '#2aa198',
+    'green':     '#859900',
+}

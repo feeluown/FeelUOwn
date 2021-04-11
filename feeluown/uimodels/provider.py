@@ -37,9 +37,9 @@ class ProviderUiManager:
         self._items = {}
         self.model = ProvidersModel(self._app)
 
-    @classmethod
     def create_item(self, name, text, symbol='♬ ', desc='',
-                    colorful_svg=None, provider=None):
+                    colorful_svg=None):
+        provider = self._app.library.get(name)
         return ProviderUiItem(name, text, symbol, desc,
                               colorful_svg=colorful_svg,
                               provider=provider)

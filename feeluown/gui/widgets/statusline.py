@@ -2,18 +2,7 @@ from PyQt5.QtCore import Qt, QRectF
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel
 from PyQt5.QtGui import QTextOption, QColor, QPalette, QPainter
 
-
-# https://ethanschoonover.com/solarized/
-COLORS = {
-    'yellow':    '#b58900',
-    'orange':    '#cb4b16',
-    'red':       '#dc322f',
-    'magenta':   '#d33682',
-    'violet':    '#6c71c4',
-    'blue':      '#268bd2',
-    'cyan':      '#2aa198',
-    'green':     '#859900',
-}
+from feeluown.gui.helpers import SOLARIZED_COLORS
 
 
 class StatusLineItem:
@@ -103,7 +92,7 @@ class StatuslineLabel(QLabel):
         w = h = self._width // 2 - 2
         painter.translate(self._width - w, self._width - h)
         text_rect = QRectF(0, 0, w, h)
-        text_bg_color = QColor(COLORS[self._status_color])
+        text_bg_color = QColor(SOLARIZED_COLORS[self._status_color])
         text_bg_color.setAlpha(225)
         painter.setBrush(text_bg_color)
         radius = 4

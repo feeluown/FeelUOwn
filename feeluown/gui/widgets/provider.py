@@ -1,11 +1,13 @@
 import math
 
-from PyQt5.QtCore import Qt, QSize, QRectF, QRect, QUrl
-from PyQt5.QtGui import QPainter, QTextOption, QPalette, QBrush  # noqa
+from PyQt5.QtCore import Qt, QSize, QRectF, QRect, QUrl, QPoint
+from PyQt5.QtGui import QPainter, QTextOption, QPalette, QBrush, QColor, \
+    QGuiApplication  # noqa
 from PyQt5.QtWidgets import QStyledItemDelegate, QListView
 from PyQt5.QtSvg import QSvgRenderer
 
-from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font
+from feeluown.library import ModelType, ProviderFlags as PF
+from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font, SOLARIZED_COLORS
 from .textlist import TextlistModel
 
 
@@ -36,11 +38,12 @@ class ProvidersModel(TextlistModel):
 
 
 class ProvidersDelegate(QStyledItemDelegate):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, library=None):
         super().__init__(parent)
+        self._library = library
 
-        self._radius = 20
-        self._padding = 3
+        self._radius = 22
+        self._padding = 6
 
         self.__body_radius = self._radius - self._padding
         self.__text_rect_x = self.__body_radius - self.__body_radius / math.sqrt(2)
@@ -48,7 +51,7 @@ class ProvidersDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         painter.setRenderHint(QPainter.Antialiasing)
-        provider = index.data(Qt.UserRole)
+        provider_ui_item = index.data(Qt.UserRole)
 
         painter.save()
         painter.translate(self._padding + option.rect.x(),
@@ -57,8 +60,8 @@ class ProvidersDelegate(QStyledItemDelegate):
         w = h = (self._radius - self._padding) * 2
         body_rect = QRect(0, 0, w, h)
 
-        if provider.colorful_svg:
-            svg_renderer = QSvgRenderer(QUrl(provider.colorful_svg).toString())
+        if provider_ui_item.colorful_svg:
+            svg_renderer = QSvgRenderer(QUrl(provider_ui_item.colorful_svg).toString())
             svg_renderer.render(painter, QRectF(body_rect))
         else:
             # draw rounded rect
@@ -85,8 +88,28 @@ class ProvidersDelegate(QStyledItemDelegate):
 
             text_rect = QRectF(self.__text_rect_x, self.__text_rect_x,
                                self.__text_rect_width, self.__text_rect_width)
-            painter.drawText(QRectF(text_rect), provider.text, text_option)
+            painter.drawText(QRectF(text_rect), provider_ui_item.text, text_option)
             painter.restore()
+
+        # TODO: use library.check_flags instead of provider.check_flags
+        provider = provider_ui_item.provider
+        if self._library.check_flags(
+                provider.identifier, ModelType.none, PF.current_user):
+            if provider.has_current_user():
+                painter.save()
+                bottom_right = body_rect.bottomRight()
+                status_radius = self._radius // 5
+                x = bottom_right.x() - status_radius * 2
+                y = bottom_right.y() - status_radius * 2
+                status_rect = QRect(QPoint(x, y), bottom_right)
+                pen = painter.pen()
+                pen.setWidth(2)
+                pen.setColor(QGuiApplication.palette().color(QPalette.Window))
+                painter.setPen(pen)
+                painter.setBrush(QColor(SOLARIZED_COLORS['blue']))
+                painter.drawRoundedRect(status_rect, status_radius, status_radius)
+                painter.restore()
+
         painter.restore()
 
     def sizeHint(self, option, index):
@@ -94,15 +117,16 @@ class ProvidersDelegate(QStyledItemDelegate):
 
 
 class ProvidersView(ItemViewNoScrollMixin, QListView):
-    def __init__(self, parent):
+    def __init__(self, parent, library):
         super().__init__(parent)
         QListView.__init__(self, parent=parent)
+        self._library = library
 
         self._reserved = 10
         self._least_row_count = 1
         self._row_height = 48
 
-        self.delegate = ProvidersDelegate(self)
+        self.delegate = ProvidersDelegate(self, library=library)
         self.setItemDelegate(self.delegate)
         self.setViewMode(QListView.IconMode)
         self.setResizeMode(QListView.Adjust)
@@ -111,8 +135,8 @@ class ProvidersView(ItemViewNoScrollMixin, QListView):
         self.clicked.connect(self._on_clicked)
 
     def _on_clicked(self, index):
-        provider = index.data(role=Qt.UserRole)
-        provider.clicked.emit()
+        provider_ui_item = index.data(role=Qt.UserRole)
+        provider_ui_item.clicked.emit()
 
     def resizeEvent(self, e):
         super().resizeEvent(e)

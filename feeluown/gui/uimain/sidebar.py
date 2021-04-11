@@ -89,7 +89,7 @@ class _LeftPanel(QFrame):
         self.my_music_header = QLabel('我的音乐', self)
 
         self.playlists_view = PlaylistsView(self)
-        self.providers_view = ProvidersView(self)
+        self.providers_view = ProvidersView(self, library=self._app.library)
         self.my_music_view = MyMusicView(self)
         self.collections_view = CollectionsView(self)
 
