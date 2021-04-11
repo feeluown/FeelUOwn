@@ -164,7 +164,7 @@ class BriefArtistModel(BaseBriefModel):
 
 
 class SongModel(BaseNormalModel):
-    meta: Any = ModelMeta.create(ModelType.artist, is_normal=True)
+    meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
     album: Optional[BriefAlbumModel]
     artists: List[BriefArtistModel]
