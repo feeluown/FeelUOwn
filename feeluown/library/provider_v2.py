@@ -76,13 +76,17 @@ class ProviderV2:
         # find the first available quality
         for quality in sorted_q_list:
             quality = QualityCls(quality)
-            if quality in available_q_set:
-                media = self.song_get_media(song, quality)
-                assert bool(media) is True, \
-                    'get_media by valid quality must not return empty'
+            if quality not in available_q_set:
+                continue
+            media = self.song_get_media(song, quality)
+            if media is not None:
                 media = cast(Media, media)
-                return media, quality
-
+            else:
+                # Media is not found for the quality. The provider show
+                # a non-existing quality.
+                raise MediaNotFound(
+                    f'provider:{song.source} has nonstandard implementation')
+            return media, quality
         assert False, 'this should not happen'
 
     def song_list_hot_comments(self, song) -> List[CommentModel]:
