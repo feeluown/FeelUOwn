@@ -35,9 +35,9 @@ copyright = '2020, cosven'
 author = 'cosven'
 
 # The short X.Y version
-version = '3.3'
+version = '3.7'
 # The full version, including alpha/beta/rc tags
-release = '3.3'
+release = '3.7.7'
 
 
 # -- General configuration ---------------------------------------------------
