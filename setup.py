@@ -46,6 +46,9 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
     ],
     # FIXME: depends on PyQt5
+    # - PyQt5.QtWidgets/QtCore/QtGui
+    # - PyQt5.QtSvg
+    # - PyQt5.QtOpenGL
     #
     # The feeluown.compat module will choose the right package
     # for different python version
@@ -60,7 +63,6 @@ setup(
     ],
     extras_require={
         'battery': ['fuo-local>=0.2.1',
-                    'fuo-xiami>=0.2.3',
                     'fuo-netease>=0.4.2',
                     'fuo-qqmusic>=0.2',
                     'fuo-kuwo>=0.1.1',
