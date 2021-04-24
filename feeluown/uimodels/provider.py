@@ -35,7 +35,7 @@ class ProviderUiManager:
         self._app = app
         # name:model mapping
         self._items = {}
-        self.model = ProvidersModel(self._app)
+        self.model = ProvidersModel(self._app.library, self._app)
 
     def create_item(self, name, text, symbol='♬ ', desc='',
                     colorful_svg=None):

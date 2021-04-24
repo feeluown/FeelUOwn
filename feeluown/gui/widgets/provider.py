@@ -12,8 +12,9 @@ from .textlist import TextlistModel
 
 
 class ProvidersModel(TextlistModel):
-    def __init__(self, parent=None):
+    def __init__(self, library, parent=None):
         super().__init__(parent)
+        self._library = library
         self._association = {}
 
     def assoc(self, provider_id, pm):
@@ -27,13 +28,19 @@ class ProvidersModel(TextlistModel):
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
         provider_id = self._items[row]
-        provider = self._association[provider_id]
+        provider_ui_item = self._association[provider_id]
         if role == Qt.DisplayRole:
-            return provider.symbol + ' ' + provider.text
+            return provider_ui_item.symbol + ' ' + provider_ui_item.text
         if role == Qt.ToolTipRole:
-            return f'[{provider.text}] {provider.desc}'
+            if self._library.check_flags(
+                    provider_id, ModelType.none, PF.current_user):
+                provider = provider_ui_item.provider
+                if provider.has_current_user():
+                    return '已登录'
+                return f'{provider_ui_item.desc}'
+            return f'[{provider_ui_item.text}] {provider_ui_item.desc}'
         if role == Qt.UserRole:
-            return provider
+            return provider_ui_item
         return super().data(index, role)
 
 
