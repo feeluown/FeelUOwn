@@ -184,18 +184,27 @@ class SongBriefLabel(QLabel):
 
         menu = QMenu()
         menu.hovered.connect(self.on_action_hovered)
+        # artist menu
         artist_menu = menu.addMenu('查看歌手')
-        album_action = menu.addAction('查看专辑')
-
         artist_menu.menuAction().setData({'artists': None, 'song': song})
 
+        # album action
+        album_action = menu.addAction('查看专辑')
         album_action.triggered.connect(
             lambda: aio.create_task(self._goto_album(song)))
 
+        # song explore action
+        song_explore_action = menu.addAction('歌曲详情')
+        song_explore_action.triggered.connect(
+            lambda: self._app.browser.goto(model=song, path='/explore'))
+
+        # similar songs action
         if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
             similar_song_action = menu.addAction('相似歌曲')
             similar_song_action.triggered.connect(
                 lambda: self._app.browser.goto(model=song, path='/similar'))
+
+        # song comments action
         if self._app.library.check_flags_by_model(song, ProviderFlags.hot_comments):
             song_comments_action = menu.addAction('歌曲评论')
             song_comments_action.triggered.connect(

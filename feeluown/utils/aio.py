@@ -29,3 +29,19 @@ def run_in_executor(executor, func, *args):
     """alias for loop.run_in_executor"""
     loop = asyncio.get_event_loop()
     return loop.run_in_executor(executor, func, *args)
+
+
+def run_afn(afn, *args):
+    """Alias for create_task
+
+    .. versionadded:: 3.7.8
+    """
+    return create_task(afn(*args))
+
+
+def run_fn(fn, *args):
+    """Alias for run_in_executor with default executor
+
+    .. versionadded:: 3.7.8
+    """
+    return run_in_executor(None, fn, *args)
