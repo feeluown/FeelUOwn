@@ -396,7 +396,8 @@ class Playlist:
                         self._songs.insert(index + 1, standby)
                     # NOTE: a_list_song_standby ensure that the song.url is not empty
                     # FIXME: maybe a_list_song_standby should return media directly
-                    self.pure_set_current_song(standby, standby.url)
+                    # self.pure_set_current_song(standby, standby.url)
+                    await self.a_set_current_song(standby)
                 else:
                     self._app.show_msg('Song standby not found')
                     self.pure_set_current_song(song, None)
