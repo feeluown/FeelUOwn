@@ -135,7 +135,7 @@ class Mpris2Service(dbus.service.Object):
                 # KDE will not update artist field if the length>=2
                 'xesam:artist': [song.artists_name_display] or ['Unknown'],
                 'xesam:url': media.url if media else '',
-                'mpris:length': dbus.Int64(song.duration*1000),
+                'mpris:length': dbus.Int64(song.duration * 1000 if song.duration else 0),
                 'mpris:trackid': to_track_id(song),
                 'mpris:artUrl': art_url,
                 'xesam:album': song.album_name_display,
