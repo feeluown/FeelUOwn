@@ -299,7 +299,10 @@ class Library:
     def _cast_model_to_v1_impl(self, model):
         provider = self.get_or_raise(model.source)
         ModelCls = provider.get_model_cls(model.meta.model_type)
-        return ModelCls.create_by_display(identifier=model.identifier)
+        kv = {}
+        for field in ModelCls.meta.fields_display:
+            kv[field] = getattr(model, field)
+        return ModelCls.create_by_display(identifier=model.identifier, **kv)
 
     # -----
     # Songs

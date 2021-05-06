@@ -1,5 +1,6 @@
 from textwrap import indent
-
+# FIXME: maybe we should move `reverse` into serializers package
+from feeluown.models.uri import reverse
 from .base import Serializer, SerializerMeta, SerializerError
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
@@ -96,8 +97,7 @@ class ListSerializer(PlainSerializer, metaclass=SerializerMeta):
         if issubclass(serializer_cls, ModelSerializer):
             if issubclass(serializer_cls, SearchSerializer):
                 return self.serialize_search_result_list(list_)
-            # FIXME: use reverse
-            uri_length = max(len(str(item)) for item in list_)
+            uri_length = max(len(reverse(item)) for item in list_)
             serializer = serializer_cls(fetch=False, level=level,
                                         uri_length=uri_length, )
         else:
@@ -218,5 +218,5 @@ class SearchSerializer(PlainSerializer, SearchSerializerMixin,
         uri_length = 0
         for field, value in items:
             for each in value:
-                uri_length = max(uri_length, len(str(each)))
+                uri_length = max(uri_length, len(reverse(each)))
         return uri_length
