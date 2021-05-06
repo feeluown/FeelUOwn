@@ -74,7 +74,7 @@ class LiveLyric(object):
         future.add_done_callback(cb)
 
     def _set_lyric(self, lyric):
-        if lyric is None:
+        if lyric is None or lyric.content is None:
             self._lyric = None
             self._pos_s_map = {}
         else:
