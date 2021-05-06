@@ -80,6 +80,11 @@ Debian
 
 https://github.com/coslyk/debianopt-repo
 
+NixOS
+~~~~~
+
+https://github.com/berberman/flakes
+
 
 基本使用
 --------
