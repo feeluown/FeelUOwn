@@ -3,7 +3,6 @@
 import importlib
 import logging
 import os
-import pkg_resources
 import sys
 
 from feeluown.utils.dispatch import Signal
@@ -141,7 +140,13 @@ class PluginsManager:
 
         https://packaging.python.org/guides/creating-and-discovering-plugins/
         """
-        for entry_point in pkg_resources.iter_entry_points('fuo.plugins_v1'):
+        try:
+            import importlib.metadata
+            entry_points = importlib.metadata.entry_points().get('fuo.plugins_v1', [])
+        except ImportError:
+            import pkg_resources
+            entry_points = pkg_resources.iter_entry_points('fuo.plugins_v1')
+        for entry_point in entry_points:
             try:
                 module = entry_point.load()
             except Exception as e:  # noqa
