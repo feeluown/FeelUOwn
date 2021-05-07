@@ -31,7 +31,7 @@ def pl_list_standby_return_empty(mocker, pl):
     pl._app.library.a_list_song_standby
     f2 = asyncio.Future()
     f2.set_result([])
-    mock_a_list_standby = pl._app.library.a_list_song_standby
+    mock_a_list_standby = pl._app.library.a_list_song_standby_v2
     mock_a_list_standby.return_value = f2
 
 
@@ -39,8 +39,8 @@ def pl_list_standby_return_empty(mocker, pl):
 def pl_list_standby_return_song2(mocker, pl, song2):
     pl._app.library.a_list_song_standby
     f2 = asyncio.Future()
-    f2.set_result([song2])
-    mock_a_list_standby = pl._app.library.a_list_song_standby
+    f2.set_result([(song2, song2.url)])
+    mock_a_list_standby = pl._app.library.a_list_song_standby_v2
     mock_a_list_standby.return_value = f2
 
 
@@ -107,7 +107,6 @@ async def test_set_current_song_with_bad_song_2(
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
-    # Since there exists standby songs, the media should the url
     mock_pure_set_current_song.assert_called_once_with(song2, song2.url)
 
 
