@@ -25,6 +25,40 @@ from .model_protocol import (
 logger = logging.getLogger(__name__)
 
 
+FULL_SCORE = 10
+MIN_SCORE = 5
+
+
+def default_score_fn(origin, standby):
+
+    # TODO: move this function to utils module
+    def duration_ms_to_duration(ms):
+        if not ms:  # ms is empty
+            return 0
+        m, s = ms.split(':')
+        return int(m) * 60 + int(s)
+
+    score = FULL_SCORE
+    if origin.artists_name_display != standby.artists_name_display:
+        score -= 3
+    if origin.title_display != standby.title_display:
+        score -= 2
+    if origin.album_name_display != standby.album_name_display:
+        score -= 2
+
+    origin_duration = duration_ms_to_duration(origin.duration_ms_display)
+    standby_duration = duration_ms_to_duration(standby.duration_ms_display)
+    if abs(origin_duration - standby_duration) / max(origin_duration, 1) > 0.1:
+        score -= 3
+
+    # Debug code for score function
+    # print(f"{score}\t('{standby.title_display}', "
+    #       f"'{standby.artists_name_display}', "
+    #       f"'{standby.album_name_display}', "
+    #       f"'{standby.duration_ms_display}')")
+    return score
+
+
 def _sort_song_standby(song, standby_list):
     """sort song standby list by similarity"""
 
@@ -98,7 +132,7 @@ class Library:
         >>> library.register(dummy_provider)
         Traceback (most recent call last):
             ...
-        feeluown.library.ProviderAlreadyExists
+        feeluown.library.excs.ProviderAlreadyExists
         """
         if not isinstance(provider, AbstractProvider):
             raise ValueError('invalid provider instance')
@@ -246,21 +280,12 @@ class Library:
 
     async def a_list_song_standby_v2(self, song,
                                      audio_select_policy='>>>', source_in=None,
-                                     score_fn=None, min_score=5, limit=1):
+                                     score_fn=None, min_score=MIN_SCORE, limit=1):
         """list song standbys and their media
 
         .. versionadded:: 3.7.8
-        """
 
-        def default_score_fn(origin, standby):
-            score = 10
-            if origin.artists_name_display != standby.artists_name_display:
-                score -= 4
-            if origin.title_display != standby.title_display:
-                score -= 3
-            if origin.album_name_display != standby.album_name_display:
-                score -= 2
-            return score
+        """
 
         async def prepare_media(standby, policy):
             media = None
@@ -291,7 +316,7 @@ class Library:
             # Only check the first 3 songs
             for standby in result.songs:
                 score = score_fn(song, standby)
-                if score == 10:  # full mark
+                if score == FULL_SCORE:
                     media = await prepare_media(standby, audio_select_policy)
                     if media is None:
                         continue

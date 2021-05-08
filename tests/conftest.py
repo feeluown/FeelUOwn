@@ -71,6 +71,18 @@ def song(artist, album):
 
 
 @pytest.fixture
+def song_standby(song):
+    return FakeSongModel(
+        identifier=100,
+        title=song.title,
+        artists=song.artists,
+        album=song.album,
+        duration=song.duration,
+        url='standby.mp3'
+    )
+
+
+@pytest.fixture
 def song1(): return _song1
 
 
