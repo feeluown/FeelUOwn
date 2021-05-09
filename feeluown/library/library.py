@@ -25,6 +25,40 @@ from .model_protocol import (
 logger = logging.getLogger(__name__)
 
 
+FULL_SCORE = 10
+MIN_SCORE = 5
+
+
+def default_score_fn(origin, standby):
+
+    # TODO: move this function to utils module
+    def duration_ms_to_duration(ms):
+        if not ms:  # ms is empty
+            return 0
+        m, s = ms.split(':')
+        return int(m) * 60 + int(s)
+
+    score = FULL_SCORE
+    if origin.artists_name_display != standby.artists_name_display:
+        score -= 3
+    if origin.title_display != standby.title_display:
+        score -= 2
+    if origin.album_name_display != standby.album_name_display:
+        score -= 2
+
+    origin_duration = duration_ms_to_duration(origin.duration_ms_display)
+    standby_duration = duration_ms_to_duration(standby.duration_ms_display)
+    if abs(origin_duration - standby_duration) / max(origin_duration, 1) > 0.1:
+        score -= 3
+
+    # Debug code for score function
+    # print(f"{score}\t('{standby.title_display}', "
+    #       f"'{standby.artists_name_display}', "
+    #       f"'{standby.album_name_display}', "
+    #       f"'{standby.duration_ms_display}')")
+    return score
+
+
 def _sort_song_standby(song, standby_list):
     """sort song standby list by similarity"""
 
@@ -98,7 +132,7 @@ class Library:
         >>> library.register(dummy_provider)
         Traceback (most recent call last):
             ...
-        feeluown.library.ProviderAlreadyExists
+        feeluown.library.excs.ProviderAlreadyExists
         """
         if not isinstance(provider, AbstractProvider):
             raise ValueError('invalid provider instance')
@@ -243,6 +277,67 @@ class Library:
                     if onlyone or len(result) >= 2:
                         break
         return result
+
+    async def a_list_song_standby_v2(self, song,
+                                     audio_select_policy='>>>', source_in=None,
+                                     score_fn=None, min_score=MIN_SCORE, limit=1):
+        """list song standbys and their media
+
+        .. versionadded:: 3.7.8
+
+        """
+
+        async def prepare_media(standby, policy):
+            media = None
+            try:
+                media = await aio.run_in_executor(None,
+                                                  self.song_prepare_media,
+                                                  standby, policy)
+            except MediaNotFound:
+                pass
+            except:  # noqa
+                logger.exception(f'get standby:{standby} media failed')
+            return media
+
+        if source_in is None:
+            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        else:
+            pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
+        if score_fn is None:
+            score_fn = default_score_fn
+        limit = max(limit, 1)
+
+        q = '{} {}'.format(song.title_display, song.artists_name_display)
+        standby_score_list = []  # [(standby, score), (standby, score)]
+        song_media_list = []     # [(standby, media), (standby, media)]
+        async for result in self.a_search(q, source_in=pvd_ids):
+            if result is None:
+                continue
+            # Only check the first 3 songs
+            for standby in result.songs:
+                score = score_fn(song, standby)
+                if score == FULL_SCORE:
+                    media = await prepare_media(standby, audio_select_policy)
+                    if media is None:
+                        continue
+                    logger.info(f'find full mark standby for song:{q}')
+                    song_media_list.append((standby, media))
+                    if len(song_media_list) >= limit:
+                        # Return as early as possible to get better performance
+                        return song_media_list
+                elif score >= min_score:
+                    standby_score_list.append((standby, score))
+        # Limit try times since prapare_media is an expensive IO operation
+        max_try = len(pvd_ids) * 2
+        for standby, score in sorted(standby_score_list,
+                                     key=lambda song_score: song_score[1],
+                                     reverse=True)[:max_try]:
+            media = await prepare_media(standby, audio_select_policy)
+            if media is not None:
+                song_media_list.append((standby, media))
+                if len(song_media_list) >= limit:
+                    return song_media_list
+        return song_media_list
 
     #
     # methods for v2

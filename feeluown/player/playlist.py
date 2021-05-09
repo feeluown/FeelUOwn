@@ -386,9 +386,12 @@ class Playlist:
             if self.mode is not PlaylistMode.fm:
                 self._app.show_msg(f'{song_str} is invalid, try to find standby')
                 logger.info(f'try to find standby for {song_str}')
-                standby_candidates = await self._app.library.a_list_song_standby(song)
+                standby_candidates = await self._app.library.a_list_song_standby_v2(
+                    song,
+                    self.audio_select_policy
+                )
                 if standby_candidates:
-                    standby = standby_candidates[0]
+                    standby, media = standby_candidates[0]
                     self._app.show_msg(f'Song standby was found in {standby.source} ✅')
                     # Insert the standby song after the song
                     if song in self._songs and standby not in self._songs:
@@ -396,7 +399,7 @@ class Playlist:
                         self._songs.insert(index + 1, standby)
                     # NOTE: a_list_song_standby ensure that the song.url is not empty
                     # FIXME: maybe a_list_song_standby should return media directly
-                    self.pure_set_current_song(standby, standby.url)
+                    self.pure_set_current_song(standby, media)
                 else:
                     self._app.show_msg('Song standby not found')
                     self.pure_set_current_song(song, None)

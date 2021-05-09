@@ -10,4 +10,5 @@ from .models import ModelFlags, BaseModel, ModelType, \
     BriefCommentModel, CommentModel, \
     BriefUserModel, UserModel, \
     cook_artists_name
-from .excs import NotSupported, NoUserLoggedIn, ModelNotFound
+from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
+    ProviderAlreadyExists
