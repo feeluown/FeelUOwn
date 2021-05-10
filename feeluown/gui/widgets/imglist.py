@@ -124,7 +124,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         super().__init__(parent)
 
         self.view = parent
-        # TODO: move as_circle/w_h_ratio attibute to view
+        # TODO: move as_circle/w_h_ratio attribute to view
         self.as_circle = True
         self.w_h_ratio = 1
 
