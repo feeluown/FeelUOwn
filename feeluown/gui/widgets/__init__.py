@@ -4,7 +4,5 @@ from .login import CookiesLoginDialog
 
 __all__ = (
     'TextButton',
-
-    'LoginDialog',
     'CookiesLoginDialog',
 )

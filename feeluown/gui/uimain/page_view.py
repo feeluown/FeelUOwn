@@ -118,8 +118,15 @@ class RightPanel(QFrame):
         self.table_container.show_songs(songs)
 
     def set_body(self, widget):
+        """
+
+        .. versionadded:: 3.7.7
+        """
         if widget is self.table_container:
             widget = self.scrollarea
+
+        if widget is not self.scrollarea:
+            self.show_background_image(None)
 
         # remove tmp widgets
         for i in range(self._stacked_layout.count()):
