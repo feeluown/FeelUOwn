@@ -182,8 +182,8 @@ class Browser:
 
         model_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
 
-        async def dummy_render():
-            pass
+        async def dummy_render(req, *args, **kwargs):
+            warnings.warn(f'This route:{req.rule} will be removed.')
 
         urlpatterns = [
             (f'{model_prefix}/<ns>/<identifier>', render_model),
