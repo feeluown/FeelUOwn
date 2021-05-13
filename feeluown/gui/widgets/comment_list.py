@@ -47,7 +47,7 @@ class CommentListDelegate(QStyledItemDelegate):
     def __init__(self, parent):
         super().__init__(parent=parent)
 
-        self._margin_h = 10
+        self._margin_h = 0
         self._margin_v = 10
         self._name_content_margin = 5
         self._name_height = 15
@@ -170,8 +170,8 @@ class CommentListDelegate(QStyledItemDelegate):
 
 class CommentListView(ItemViewNoScrollMixin, QListView):
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent, **kwargs)
         QListView.__init__(self, parent)
 
         self._delegate = CommentListDelegate(self)

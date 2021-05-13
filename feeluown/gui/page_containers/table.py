@@ -590,10 +590,9 @@ class TableContainer(QFrame, BgTransparentMixin):
         song = models[0]
         goto = self._app.browser.goto
 
+        add_action('歌曲详情', lambda *args: goto(model=song, path='/explore'))
         if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
             add_action('相似歌曲', lambda *args: goto(model=song, path='/similar'))
-        if self._app.library.check_flags_by_model(song, ProviderFlags.hot_comments):
-            add_action('歌曲评论', lambda *args: goto(model=song, path='/hot_comments'))
 
     async def _on_songs_table_activated(self, index):
         """
