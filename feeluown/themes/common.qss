@@ -1,5 +1,5 @@
 QWidget {
-    /* font-size: 13px; */
+    font-size: 13px;
     /* tips: you can turn on border for debugging */
     /* border: 1px solid red; */
 }

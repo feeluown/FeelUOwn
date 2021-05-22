@@ -121,7 +121,7 @@ class SongBriefLabel(QLabel):
         # the text is longer than the label width
         self._timer = QTimer()
         self._txt = self._raw_text = self.default_text
-        self._font_metrics = QFontMetrics(QApplication.font())
+        self._font_metrics = QFontMetrics(self.font())
         self._text_rect = self._font_metrics.boundingRect(self._raw_text)
         # text's position, keep changing to make text roll
         self._pos = 0
@@ -162,7 +162,7 @@ class SongBriefLabel(QLabel):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setFont(QApplication.font())
+        painter.setFont(self.font())
         painter.setPen(self._app.palette().color(self._app.palette().Text))
 
         if self._timer.isActive():
