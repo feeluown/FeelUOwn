@@ -251,6 +251,10 @@ class SourceLabel(QLabel):
         super().__init__(text=SourceLabel.default_text, parent=parent)
         self._app = app
 
+        font = self.font()
+        resize_font(font, -1)
+        self.setFont(font)
+
     def contextMenuEvent(self, e):
         # FIXME(wuliaotc): 在切换provider时禁用menu
         song = self._app.playlist.current_song

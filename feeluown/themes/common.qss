@@ -7,7 +7,6 @@ QWidget {
 LeftPanel QLabel {
     padding-top: 3px;
     padding-bottom: 3px;
-    font-size: 12px;
     font-weight: bold;
 }
 
@@ -54,7 +53,6 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover{
     border-radius: 2px;
     color: #888;
     border: 1px solid #999;
-    font-size: 12px;
 }
 PlayerControlPanel QPushButton:hover,
 PlayerControlPanel QPushButton:focus

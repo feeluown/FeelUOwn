@@ -4,7 +4,7 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout
 
-from feeluown.gui.helpers import use_mac_theme
+from feeluown.gui.helpers import use_mac_theme, resize_font
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.widgets.provider import ProvidersView
 from feeluown.gui.widgets.collections import CollectionsView
@@ -70,14 +70,23 @@ class LeftPanel(QScrollArea):
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
 
+class HeaderLabel(QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        font = self.font()
+        resize_font(font, -1)
+        self.setFont(font)
+
+
 class _LeftPanel(QFrame):
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
         self._app = app
 
-        self.library_header = QLabel('音乐提供方', self)
-        self.collections_header = QLabel('本地收藏', self)
+        self.library_header = HeaderLabel('音乐提供方', self)
+        self.collections_header = HeaderLabel('本地收藏', self)
         self.collections_header.setToolTip(
             '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
             '每个收藏集都以一个独立 .fuo 文件的存在，'
@@ -85,8 +94,8 @@ class _LeftPanel(QFrame):
             '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
             '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。'
         )
-        self.playlists_header = QLabel('歌单列表', self)
-        self.my_music_header = QLabel('我的音乐', self)
+        self.playlists_header = HeaderLabel('歌单列表', self)
+        self.my_music_header = HeaderLabel('我的音乐', self)
 
         self.playlists_view = PlaylistsView(self)
         self.providers_view = ProvidersView(self, library=self._app.library)
