@@ -12,7 +12,7 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ProviderFlags, ModelState, NotSupported, ModelFlags
+from feeluown.library import ModelState, NotSupported, ModelFlags
 from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, \
@@ -591,8 +591,6 @@ class TableContainer(QFrame, BgTransparentMixin):
         goto = self._app.browser.goto
 
         add_action('歌曲详情', lambda *args: goto(model=song, path='/explore'))
-        if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
-            add_action('相似歌曲', lambda *args: goto(model=song, path='/similar'))
 
     async def _on_songs_table_activated(self, index):
         """

@@ -13,9 +13,10 @@ from feeluown.gui.helpers import BgTransparentMixin, resize_font
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
+from feeluown.gui.widgets.songs import SongListView, SongListModel
 
 
-async def render(req, **kwargs):
+async def render(req, **kwargs):  # pylint: disable=too-many-locals
     app = req.ctx['app']
     song = req.ctx['model']
     view = SongExploreView(app=app)
@@ -30,8 +31,12 @@ async def render(req, **kwargs):
     view.header_label.setText(f'<h1>{song.title}</h1>')
     aio.create_task(view.album_info_label.show_song(song))
 
-    cover = await aio.run_fn(lambda: album.cover)
-    aio.create_task(view.cover_label.show_cover(cover, reverse(album)))
+    if app.library.check_flags_by_model(song, PF.similar):
+        songs = await aio.run_fn(app.library.song_list_similar, song)
+        model = SongListModel(create_reader(songs))
+        view.similar_songs_view.setModel(model)
+    else:
+        view.similar_songs_header.setText('<span>该提供方暂不支持查看相似歌曲，555</span>')
 
     if app.library.check_flags_by_model(song, PF.hot_comments):
         comments = await aio.run_fn(app.library.song_list_hot_comments, song)
@@ -49,6 +54,10 @@ async def render(req, **kwargs):
                                   key=lambda item: item[0]):
             sentences.append(sentence)
         view.lyric_label.set_lyric('\n'.join(sentences))
+
+    # Show album cover in the end since it's an expensive CPU/IO operation.
+    cover = await aio.run_fn(lambda: album.cover)
+    aio.create_task(view.cover_label.show_cover(cover, reverse(album)))
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
@@ -146,11 +155,13 @@ class SongExploreView(QWidget):
         self.header_label = HeaderLabel()
         self.lyric_header = HeaderLabel('<h3>歌词：</h3>')
         self.comments_header = HeaderLabel('<h2>热门评论</h2>')
+        self.similar_songs_header = HeaderLabel('<h2>相似歌曲</h2>')
         self.lyric_label = LyricLabel()
         self.play_btn = TextButton('播放')
         self.cover_label = CoverLabelV2(app=app)
         self.album_info_label = SongAlbumLabel(app)
-        self.comments_view = CommentListView()
+        self.comments_view = CommentListView(reserved=0)
+        self.similar_songs_view = SongListView(reserved=0)
 
         self._lyric_scrollarea = ScrollArea(self._app)
         self._lyric_scrollarea.setWidget(self.lyric_label)
@@ -164,6 +175,9 @@ class SongExploreView(QWidget):
         self._layout = QHBoxLayout(self)
         self._setup_ui()
 
+        self.similar_songs_view.play_song_needed.connect(
+            lambda song: app.player.play_song(song))
+
     def _setup_ui(self):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(10, 0, 10, 0)
@@ -174,6 +188,8 @@ class SongExploreView(QWidget):
         self._left_layout.addWidget(self.header_label)
         self._left_layout.addLayout(self._left_h1_layout)
         self._left_layout.addLayout(self._left_h2_layout)
+        self._left_layout.addWidget(self.similar_songs_header)
+        self._left_layout.addWidget(self.similar_songs_view)
         self._left_layout.addWidget(self.comments_header)
         self._left_layout.addWidget(self.comments_view)
         self._left_layout.addSpacing(10)

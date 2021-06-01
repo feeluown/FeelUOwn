@@ -109,14 +109,17 @@ class ItemViewNoScrollMixin:
 
     The itemview with no_scroll_v=True is usually used with an outside ScrollArea.
     """
-    def __init__(self, *args, no_scroll_v=True, **kwargs):
+    def __init__(self, *args, no_scroll_v=True, row_height=0, least_row_count=0,
+                 reserved=30, **kwargs):
         """
         :params no_scroll_v: enable on no_scroll_v feature or not
+
+        .. versionadded:: 3.7.8
+           The *row_height*, *least_row_count*, *reserved* parameter were added.
         """
-        # ItemView class should override these variables as they need
-        self._least_row_count = 0
-        self._row_height = 0
-        self._reserved = 30
+        self._least_row_count = least_row_count
+        self._row_height = row_height
+        self._reserved = reserved
 
         self._min_height = 0
 

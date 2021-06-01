@@ -11,8 +11,8 @@ from PyQt5.QtCore import (
 from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent
 from PyQt5.QtWidgets import (
     QAction, QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
-    QApplication, QPushButton, QTableView, QWidget, QMenu, QListView,
-    QStyle, QSizePolicy, QStyleOptionButton, QStyledItemDelegate,
+    QPushButton, QTableView, QWidget, QMenu, QListView,
+    QStyle, QSizePolicy, QStyledItemDelegate,
 )
 
 from feeluown.utils import aio
@@ -37,34 +37,17 @@ class Column(IntEnum):
     album = 5
 
 
-class SongListModel(QAbstractListModel):
+class SongListModel(QAbstractListModel, ReaderFetchMoreMixin):
     def __init__(self, reader, parent=None):
         super().__init__(parent)
 
-        self._songs = []  # songs read from reader
-        self._can_fetch_more = True
         self._reader = reader
+        self._fetch_more_step = 10
+        self._items = []
+        self._is_fetching = False
 
     def rowCount(self, _=QModelIndex()):
-        return len(self._songs)
-
-    def fetchMore(self, _=QModelIndex()):
-        fetched, total = 0, 30
-        songs = []
-        for song in self._reader:
-            fetched += 1
-            songs.append(song)
-            if fetched >= total:
-                break
-        else:
-            self._can_fetch_more = False
-        begin = len(self._songs)
-        self.beginInsertRows(QModelIndex(), begin, begin + len(songs) - 1)
-        self._songs.extend(songs)
-        self.endInsertRows()
-
-    def canFetchMore(self, _):
-        return self._can_fetch_more
+        return len(self._items)
 
     def flags(self, index):
         if not index.isValid():
@@ -75,9 +58,9 @@ class SongListModel(QAbstractListModel):
     def data(self, index, role=Qt.DisplayRole):
         row = index.row()
         if role == Qt.DisplayRole:
-            return self._songs[row].title_display
+            return self._items[row].title_display
         elif role == Qt.UserRole:
-            return self._songs[row]
+            return self._items[row]
         return None
 
 
@@ -86,54 +69,46 @@ class SongListDelegate(QStyledItemDelegate):
         super().__init__(parent=parent)
 
         # the rect.x the number text
-        self.number_rect_x = 40
+        self.number_rect_x = 20
         self.play_btn_pressed = False
 
     def paint(self, painter, option, index):
-        if option.state & QStyle.State_Selected:
-            painter.fillRect(option.rect, option.palette.highlight())
-
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
-
-        text_color = option.palette.color(QPalette.Text)
-        if text_color.lightness() > 150:
-            non_text_color = text_color.darker(140)
-        else:
-            non_text_color = text_color.lighter(140)
-        text_pen = QPen(text_color)
-        non_text_pen = QPen(non_text_color)
-        hl_text_pen = QPen(option.palette.color(QPalette.HighlightedText))
-        if option.state & QStyle.State_Selected:
-            painter.setPen(hl_text_pen)
-        else:
-            painter.setPen(text_pen)
 
         song = index.data(Qt.UserRole)
         top = option.rect.top()
         bottom = option.rect.bottom()
         no_x = self.number_rect_x
-        duration_x = option.rect.topRight().x() - 50
-        no_bottom_right = QPoint(no_x, bottom)
-        text_top_left = QPoint(no_x + 10, top)
-        text_bottom_right = QPoint(duration_x, bottom)
-        duration_top_left = QPoint(duration_x, top)
-        no_rect = QRect(option.rect.topLeft(), no_bottom_right)
-        text_rect = QRect(text_top_left, text_bottom_right)
-        duration_rect = QRect(duration_top_left, option.rect.bottomRight())
-        painter.drawText(text_rect, Qt.AlignVCenter, song.title_display)
+        duration_width = 100
+        artists_name_width = 150
 
-        painter.setPen(non_text_pen)
+        # Draw duration ms
+        duration_x = option.rect.topRight().x() - duration_width
+        duration_rect = QRect(QPoint(duration_x, top), option.rect.bottomRight())
+        painter.drawText(duration_rect, Qt.AlignRight | Qt.AlignVCenter,
+                         song.duration_ms_display)
+
+        # Draw artists name
+        artists_name_x = option.rect.topRight().x() - duration_width - artists_name_width
+        artists_name_rect = QRect(QPoint(artists_name_x, top),
+                                  QPoint(duration_x, bottom))
+        painter.drawText(artists_name_rect, Qt.AlignRight | Qt.AlignVCenter,
+                         song.artists_name_display)
+
+        # Draw song number or play_btn when it is hovered
+        no_bottom_right = QPoint(no_x, bottom)
+        no_rect = QRect(option.rect.topLeft(), no_bottom_right)
         if option.state & QStyle.State_MouseOver:
-            opt = QStyleOptionButton()
-            opt.text = '►'
-            opt.palette = option.palette
-            opt.state = QStyle.State_Enabled
-            opt.rect = no_rect
-            QApplication.style().drawControl(QStyle.CE_PushButton, opt, painter)
+            painter.drawText(no_rect, Qt.AlignLeft | Qt.AlignVCenter, '►')
         else:
-            painter.drawText(no_rect, Qt.AlignCenter, str(index.row() + 1))
-        painter.drawText(duration_rect, Qt.AlignCenter, song.duration_ms_display)
+            painter.drawText(no_rect, Qt.AlignLeft | Qt.AlignVCenter,
+                             str(index.row() + 1))
+
+        # Draw title
+        title_rect = QRect(QPoint(no_x, top), QPoint(artists_name_x, bottom))
+        painter.drawText(title_rect, Qt.AlignVCenter, song.title_display)
+
         painter.restore()
 
     def editorEvent(self, event, model, option, index):
@@ -158,12 +133,13 @@ class SongListDelegate(QStyledItemDelegate):
         return size
 
 
-class SongListView(QListView):
+class SongListView(ItemViewNoScrollMixin, QListView):
 
     play_song_needed = pyqtSignal([object])
 
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent, **kwargs)
+        QListView.__init__(self, parent)
 
         self.delegate = SongListDelegate(self)
         self.setItemDelegate(self.delegate)

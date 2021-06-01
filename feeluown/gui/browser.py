@@ -176,7 +176,6 @@ class Browser:
         from feeluown.gui.pages.search import render as render_search
         from feeluown.gui.pages.player_playlist import render as render_player_playlist
         from feeluown.gui.pages.model import render as render_model
-        from feeluown.gui.pages.similar_songs import render as render_similar_songs
         from feeluown.gui.pages.coll_library import render as render_coll_library
         from feeluown.gui.pages.song_explore import render as render_song_explore
 
@@ -187,8 +186,8 @@ class Browser:
 
         urlpatterns = [
             (f'{model_prefix}/<ns>/<identifier>', render_model),
-            (f'{model_prefix}/songs/<identifier>/similar', render_similar_songs),
-            # This route will be removed in v3.9
+            # These routes will be removed in v3.9
+            (f'{model_prefix}/songs/<identifier>/similar', dummy_render),
             (f'{model_prefix}/songs/<identifier>/hot_comments', dummy_render),
             (f'{model_prefix}/songs/<identifier>/explore', render_song_explore),
             ('/colls/library', render_coll_library),

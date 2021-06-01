@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
     QPushButton, QSizePolicy, QMenu,
 )
-from feeluown.library import ProviderFlags
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
@@ -197,12 +196,6 @@ class SongBriefLabel(QLabel):
         song_explore_action = menu.addAction('歌曲详情')
         song_explore_action.triggered.connect(
             lambda: self._app.browser.goto(model=song, path='/explore'))
-
-        # similar songs action
-        if self._app.library.check_flags_by_model(song, ProviderFlags.similar):
-            similar_song_action = menu.addAction('相似歌曲')
-            similar_song_action.triggered.connect(
-                lambda: self._app.browser.goto(model=song, path='/similar'))
 
         menu.exec(e.globalPos())
 
