@@ -231,7 +231,7 @@ class CollectionManager:
                  TOML_DELIMLF]
         if default_fpaths:
             for fpath in default_fpaths:
-                with open(fpath) as f:
+                with open(fpath, 'w', encoding='utf-8') as f:
                     for line in f:
                         if line.startswith('fuo://'):
                             lines.append(line)
