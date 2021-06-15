@@ -1,6 +1,7 @@
 import sys
 
 from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
@@ -19,6 +20,9 @@ from feeluown.gui.widgets.songs import SongListView, SongListModel
 async def render(req, **kwargs):  # pylint: disable=too-many-locals
     app = req.ctx['app']
     song = req.ctx['model']
+
+    # TODO: Initialize the view with song object, and it should reduce
+    # the code complexity.
     view = SongExploreView(app=app)
     app.ui.right_panel.set_body(view)
 
@@ -27,6 +31,20 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
 
     # bind signals
     view.play_btn.clicked.connect(lambda: app.player.play_song(song))
+    if app.library.check_flags_by_model(song, PF.web_url):
+        web_url = await aio.run_fn(app.library.song_get_web_url, song)
+        QGuiApplication.clipboard().setText(web_url)
+        app.show_msg(f'已经复制：{web_url}')
+        # TODO: Open url in browser when alt key is pressed. Use
+        # QDesktopServices.openUrl to open url in browser, and
+        # you may use QGuiApplication::keyboardModifiers to check
+        # if alt key is pressed.
+        #
+        # NOTE(cosven): Since switching from applications is inconvenience,
+        # the default behaviour of button is url-copy instead of url-open.
+    else:
+        view.copy_web_url_btn.hide()
+
     album = app.library.cast_model_to_v1(song.album)
     view.header_label.setText(f'<h1>{song.title}</h1>')
     aio.create_task(view.album_info_label.show_song(song))
@@ -158,6 +176,7 @@ class SongExploreView(QWidget):
         self.similar_songs_header = HeaderLabel('<h2>相似歌曲</h2>')
         self.lyric_label = LyricLabel()
         self.play_btn = TextButton('播放')
+        self.copy_web_url_btn = TextButton('复制网页地址')
         self.cover_label = CoverLabelV2(app=app)
         self.album_info_label = SongAlbumLabel(app)
         self.comments_view = CommentListView(reserved=0)
@@ -195,6 +214,8 @@ class SongExploreView(QWidget):
         self._left_layout.addSpacing(10)
 
         self._left_h2_layout.addWidget(self.play_btn)
+        self._left_h2_layout.addSpacing(10)
+        self._left_h2_layout.addWidget(self.copy_web_url_btn)
         self._left_h2_layout.addStretch(0)
         # self._left_layout.addStretch(0)
 

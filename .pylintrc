@@ -7,4 +7,5 @@ disable=
     unnecessary-lambda,  # pylint is a little bit silly
     unused-argument,  # not so critical
     no-self-use,
+    fixme,
     invalid-name
