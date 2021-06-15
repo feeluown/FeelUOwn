@@ -32,9 +32,12 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     # bind signals
     view.play_btn.clicked.connect(lambda: app.player.play_song(song))
     if app.library.check_flags_by_model(song, PF.web_url):
-        web_url = await aio.run_fn(app.library.song_get_web_url, song)
-        QGuiApplication.clipboard().setText(web_url)
-        app.show_msg(f'已经复制：{web_url}')
+        async def copy_song_web_url():
+            web_url = await aio.run_fn(app.library.song_get_web_url, song)
+            app.show_msg(f'已经复制：{web_url}')
+            QGuiApplication.clipboard().setText(web_url)
+
+        view.copy_web_url_btn.clicked.connect(lambda: aio.run_afn(copy_song_web_url))
         # TODO: Open url in browser when alt key is pressed. Use
         # QDesktopServices.openUrl to open url in browser, and
         # you may use QGuiApplication::keyboardModifiers to check
