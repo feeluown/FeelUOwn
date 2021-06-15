@@ -27,7 +27,7 @@ class PlaylistHandler(AbstractHandler):
             furi = furi.strip()
             obj = resolve(furi)
             if obj is not None:
-                obj_type = type(obj).meta.model_type
+                obj_type = obj.meta.model_type
                 if obj_type == ModelType.song:
                     playlist.add(obj)
                 elif obj_type == ModelType.playlist:
