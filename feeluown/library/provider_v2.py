@@ -91,3 +91,6 @@ class ProviderV2:
 
     def song_list_hot_comments(self, song) -> List[CommentModel]:
         pass
+
+    def song_get_web_url(self, song) -> str:
+        pass

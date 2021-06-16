@@ -477,6 +477,10 @@ class Library:
     def song_get_mv(self, song: BriefSongModel):
         pass
 
+    def song_get_web_url(self, song: BriefSongProtocol) -> str:
+        provider = self.get_or_raise(song.source)
+        return provider.song_get_web_url(song)
+
     # --------
     # Provider
     # --------
