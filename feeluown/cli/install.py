@@ -112,7 +112,7 @@ def gen_for_win32():
     command = '{} -m feeluown'.format(pyexe)
     ico = HERE.parent.parent / 'icons' / 'feeluown.ico'
     name = 'FeelUOwn'
-    make_shortcut(command, name=name, icon=ico, terminal=False)
+    make_shortcut(command, name=name, icon=str(ico), terminal=False)
 
 
 def generate_icon():
