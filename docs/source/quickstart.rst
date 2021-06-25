@@ -68,7 +68,7 @@ Windows
 Arch Linux
 ~~~~~~~~~~
 
-https://aur.archlinux.org/packages/feeluown/
+https://archlinux.org/packages/community/any/feeluown/
 
 Gentoo
 ~~~~~~
