@@ -79,6 +79,14 @@ class TableTabBarV2(QWidget):
     def check_default(self):
         self.songs_btn.setChecked(True)
 
+    def restore_default(self):
+        self.songs_btn.setText('歌曲')
+        self.albums_btn.setText('专辑')
+        self.artists_btn.setText('歌手')
+        self.playlists_btn.setText('歌单')
+        self.videos_btn.setText('视频')
+        self.check_default()
+
     def check(self, tab):
         self._tab_btn_mapping[tab].setChecked(True)
 

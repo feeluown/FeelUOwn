@@ -481,7 +481,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.meta_widget.hide()
         self.meta_widget.clear()
         self.tabbar.hide()
-        self.tabbar.check_default()
+        self.tabbar.restore_default()
         self.current_table = None
         self.current_extra = None
         # clean right_panel background image
@@ -568,9 +568,11 @@ class TableContainer(QFrame, BgTransparentMixin):
             lambda _: renderer.show_songs(reader=reader))
 
     def show_albums_coll(self, albums_g):
+        warnings.warn('use readerer.show_albums please')
         aio.create_task(self.set_renderer(AlbumsCollectionRenderer(albums_g)))
 
     def show_artists_coll(self, artists_g):
+        warnings.warn('use readerer.show_artists please')
         aio.create_task(self.set_renderer(ArtistsCollectionRenderer(artists_g)))
 
     def search(self, text):
