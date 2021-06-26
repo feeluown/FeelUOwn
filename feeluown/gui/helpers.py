@@ -53,6 +53,14 @@ def use_mac_theme():
     return sys.platform == 'darwin'
 
 
+def is_macos():
+    """Check if operating system is macOS
+
+    .. versionadded: v3.7.10
+    """
+    return sys.platform == 'darwin'
+
+
 def measure_time(func):
     @wraps(func)
     def wrapper(*args, **kwargs):

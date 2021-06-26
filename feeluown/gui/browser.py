@@ -46,6 +46,13 @@ class Browser:
     def goto(self, model=None, path=None, page=None, query=None, uri=None):
         """Goto page
 
+        Relations between different goto function, and `_goto` is
+        the real renderer::
+
+                 -> _goto_model_page -> _goto
+            goto -> _goto_page -> _goto_model_page -> _goto
+                               -> _goto
+
         Typical usage::
 
             goto(model=model, path=path, query=xxx)
@@ -137,6 +144,11 @@ class Browser:
         self._goto(page, {'app': self._app, 'model': model})
 
     def _goto(self, page, ctx):
+        # Do some initialization
+        self.ui.toolbar.clear_stacked_widget()
+        # To keep backward compat, we add magicbox by default
+        self.ui.toolbar.add_stacked_widget(self.ui.magicbox)
+
         x = self.router.dispatch(page, ctx)
         if inspect.iscoroutine(x):
             aio.create_task(x)

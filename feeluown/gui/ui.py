@@ -35,7 +35,7 @@ class Ui:
         self.top_panel = TopPanel(app, app)
         self.sidebar = self._left_panel_con = LeftPanel(self._app,)
         self.left_panel = self._left_panel_con.p
-        self.right_panel = RightPanel(self._app, self._splitter)
+        self.page_view = self.right_panel = RightPanel(self._app, self._splitter)
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.frameless_container = None

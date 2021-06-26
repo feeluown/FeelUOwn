@@ -87,14 +87,14 @@ TextButton:checked {
 #toggle_video_btn, #toggle_pip_btn {
     padding: 0px 3px;
 }
-#back_btn, #forward_btn {
+ToolbarButton {
     width: 30px;
     height: 30px;
     border-radius: 15px;
     font-size: 15px;
     border: 0px;
 }
-#back_btn:hover, #forward_btn:hover {
+ToolbarButton:hover {
     background-color: #CCC;
 }
 
