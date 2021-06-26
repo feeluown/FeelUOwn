@@ -1,6 +1,6 @@
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
-from feeluown.gui.widgets.tabbar import Tab
+from feeluown.gui.widgets.tabbar import Tab, TabBar
 from feeluown.gui.page_containers.table import Renderer
 
 from feeluown.gui.base_renderer import LibraryTabRendererMixin
@@ -8,13 +8,33 @@ from feeluown.gui.base_renderer import LibraryTabRendererMixin
 
 async def render(req, **kwargs):
     app = req.ctx['app']
-    tab_id = Tab(int(req.query.get('tab_id', Tab.songs.value)))
+    tab_index = int(req.query.get('tab_index', 0))
 
     ui = app.ui
     ui.right_panel.set_body(ui.right_panel.scrollarea)
 
+    tabbar = TabBar()
+    ui.toolbar.add_stacked_widget(tabbar)
+    ui.toolbar.set_top_stacked_widget(tabbar)
+    mapping = [('歌曲', Tab.songs),
+                ('专辑', Tab.albums),
+                ('歌手', Tab.artists),
+                ('歌单', Tab.playlists),
+                ('视频', Tab.videos)]
+
+    target_tab_id = None
+    for i, (tab_name, tab_id) in enumerate(mapping):
+        tabbar.addTab(tab_name)
+        if i == tab_index:
+            target_tab_id = tab_id
+
+    tabbar.setCurrentIndex(tab_index)
+    tabbar.tabBarClicked.connect(
+        lambda tab_index: app.browser.goto(page='/colls/library',
+                                           query={'tab_index': tab_index}))
+
     table_container = ui.right_panel.table_container
-    renderer = LibraryRenderer(tab_id)
+    renderer = LibraryRenderer(target_tab_id)
     await table_container.set_renderer(renderer)
 
 

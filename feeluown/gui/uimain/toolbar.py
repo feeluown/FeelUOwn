@@ -35,6 +35,7 @@ class BottomPanel(QWidget):
 
         self.back_btn.clicked.connect(self._app.browser.back)
         self.forward_btn.clicked.connect(self._app.browser.forward)
+        self._stack_switch.clicked.connect(self._show_next_stacked_widget)
 
         self._setup_ui()
 
@@ -59,10 +60,21 @@ class BottomPanel(QWidget):
         self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
         self._layout.setSpacing(0)
 
+    def _show_next_stacked_widget(self):
+        current_index = self._stacked_widget.currentIndex()
+        if current_index < self._stacked_widget.count() - 1:
+            next_index = current_index + 1
+        else:
+            next_index = 0
+        self._stacked_widget.setCurrentIndex(next_index)
+
     def add_stacked_widget(self, widget):
         self._stacked_widget.addWidget(widget)
         if self._stacked_widget.count() > 1:
             self._stack_switch.show()
+
+    def set_top_stacked_widget(self, widget):
+        self._stacked_widget.setCurrentWidget(widget)
 
     def clear_stacked_widget(self):
         while self._stacked_widget.count() > 0:

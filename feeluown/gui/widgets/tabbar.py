@@ -1,7 +1,9 @@
 from enum import Enum
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout
+from PyQt5.QtCore import pyqtSignal, QSize, QRect
+from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
+        QStyle, QProxyStyle
+from PyQt5.QtGui import QPalette
 
 
 def mode(func):
@@ -27,6 +29,39 @@ class Tab(Enum):
     desc = 8
 
     contributed = 16
+
+
+class TabBarShapeStyle(QProxyStyle):
+    def drawControl(self, element, option, painter, widget):
+        super().drawControl(element, option, painter, widget)
+        if element == QStyle.CE_TabBarTabShape:
+            # On macOS, there will be seperate line between tabs, which looks bad.
+            # So we fill the seperate line with QPalette.Window color.
+            # https://code.woboq.org/qt5/qtbase/src/plugins/styles/mac/qmacstyle_mac.mm.html#613
+            super().drawControl(element, option, painter, widget)
+            painter.save()
+            left_line = QRect(0, 0, 1, option.rect.height())
+            right_line = QRect(option.rect.width()-1, 0, 1, option.rect.height())
+            painter.translate(option.rect.x(), option.rect.y())
+            painter.fillRect(left_line, option.palette.color(QPalette.Window))
+            painter.fillRect(right_line, option.palette.color(QPalette.Window))
+            painter.restore()
+
+
+class TabBar(QTabBar):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self.setDocumentMode(True)
+        # self.setDrawBase(False)
+        # if is_macos():
+        #     # HELP(cosven): It seems that the widget size policy is changed
+        #     # if setStyle is called.
+        #     self.setStyle(TabBarShapeStyle())
+
+    def tabSizeHint(self, index):
+        size = super().tabSizeHint(index)
+        return QSize(size.width(), 30)
 
 
 class TableTabBarV2(QWidget):
