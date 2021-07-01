@@ -68,7 +68,14 @@ TextButton {
     padding: 2px 8px;
     border-radius: 3px;
 }
-TextButton:hover {
+ToolbarButton {
+    width: 30px;
+    height: 30px;
+    border-radius: 15px;
+    font-size: 15px;
+    border: 0px;
+}
+TextButton:hover, ToolbarButton:hover {
     border: 1px solid #777;
 }
 TextButton:checked {
@@ -86,16 +93,6 @@ TextButton:checked {
 }
 #toggle_video_btn, #toggle_pip_btn {
     padding: 0px 3px;
-}
-ToolbarButton {
-    width: 30px;
-    height: 30px;
-    border-radius: 15px;
-    font-size: 15px;
-    border: 0px;
-}
-ToolbarButton:hover {
-    background-color: #CCC;
 }
 
 LeftPanel ListViewContainer TextButton {

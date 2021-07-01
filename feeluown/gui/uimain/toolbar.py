@@ -42,11 +42,13 @@ class BottomPanel(QWidget):
     def _setup_ui(self):
         self.setObjectName('bottom_panel')
 
+        self._layout.addSpacing(5)
         self._layout.addWidget(self.back_btn)
+        self._layout.addSpacing(5)
         self._layout.addWidget(self.forward_btn)
         self._layout.addSpacing(80)
         self._layout.addWidget(self._stacked_widget)
-        self._layout.addSpacing(5)
+        self._layout.addSpacing(10)
         self._layout.addWidget(self._stack_switch)
         # self._layout.addStretch(0)
         self._layout.addSpacing(80)
