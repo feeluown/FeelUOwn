@@ -15,7 +15,8 @@ class HotkeyManager(QObject):
         ui = self._app.ui
 
         # magicbox
-        QShortcut(KS('Ctrl+F'), app).activated.connect(ui.magicbox.setFocus)
+        QShortcut(KS('Ctrl+F'), app).activated.connect(
+            ui.toolbar.show_and_focus_magicbox)
 
         # player
         QShortcut(KS(Qt.Key_Space), app).activated.connect(app.player.toggle)

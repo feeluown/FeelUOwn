@@ -69,14 +69,35 @@ class BottomPanel(QWidget):
         self._stacked_widget.setCurrentIndex(next_index)
 
     def add_stacked_widget(self, widget):
+        """
+
+        .. versionadded:: 3.7.10
+        """
         self._stacked_widget.addWidget(widget)
         if self._stacked_widget.count() > 1:
             self._stack_switch.show()
 
     def set_top_stacked_widget(self, widget):
+        """
+
+        .. versionadded:: 3.7.10
+        """
         self._stacked_widget.setCurrentWidget(widget)
 
     def clear_stacked_widget(self):
+        """
+
+        .. versionadded:: 3.7.10
+        """
         while self._stacked_widget.count() > 0:
             self._stacked_widget.removeWidget(self._stacked_widget.currentWidget())
         self._stack_switch.hide()
+
+    def show_and_focus_magicbox(self):
+        """Show and focus magicbox
+
+        .. versionadded:: 3.7.10
+        """
+        if self._stacked_widget.indexOf(self.magicbox) != -1:
+            self.set_top_stacked_widget(self.magicbox)
+            self.magicbox.setFocus()
