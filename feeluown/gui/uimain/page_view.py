@@ -312,4 +312,4 @@ class RightPanel(QFrame):
 
     def sizeHint(self):
         size = super().sizeHint()
-        return QSize(760, size.height())
+        return QSize(660, size.height())

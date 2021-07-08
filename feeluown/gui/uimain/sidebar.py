@@ -69,6 +69,15 @@ class LeftPanel(QScrollArea):
         if sys.platform.lower() != 'darwin':
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
+        # HELP(cosven): size policy is not working
+        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+        self.setMaximumWidth(280)
+
+    def sizeHint(self):
+        size = super().sizeHint()
+        width = min(self._app.width() // 4, 240)
+        return QSize(width, size.height())
+
 
 class _LeftPanel(QFrame):
 
@@ -130,10 +139,6 @@ class _LeftPanel(QFrame):
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
         self.collections_view.show_collection.connect(self.show_coll)
-
-    def sizeHint(self):
-        size = super().sizeHint()
-        return QSize(230, size.height())
 
     def show_coll(self, coll):
         coll_id = self._app.coll_uimgr.get_coll_id(coll)

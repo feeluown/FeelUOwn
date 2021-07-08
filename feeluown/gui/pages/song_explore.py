@@ -204,8 +204,10 @@ class SongExploreView(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(10, 0, 10, 0)
 
-        self._layout.addWidget(self._left_con_scrollarea)
-        self._layout.addWidget(self._right_con)
+        self._layout.addWidget(self._left_con_scrollarea, 2)
+        # Assume the max screen height is about 1080.
+        self._right_con.setMaximumWidth(360)
+        self._layout.addWidget(self._right_con, 1)
 
         self._left_layout.addWidget(self.header_label)
         self._left_layout.addLayout(self._left_h1_layout)
