@@ -55,10 +55,10 @@ class BottomPanel(QWidget):
         self._layout.addWidget(self.status_line)
 
         # assume the magicbox height is about 30
-        h_margin, v_margin = 5, 15
+        h_margin, v_margin = 5, 10
         height = self.magicbox.height()
 
-        self.setFixedHeight(height + v_margin * 2)
+        self.setFixedHeight(height + v_margin * 2 + 10)
         self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
         self._layout.setSpacing(0)
 

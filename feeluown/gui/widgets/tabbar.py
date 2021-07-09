@@ -47,7 +47,9 @@ class TabBarShapeStyle(QProxyStyle):
                 pen.setColor(QColor('#777'))
                 pen.setStyle(Qt.DotLine)
                 painter.setPen(pen)
-                painter.drawLine(rect.bottomLeft(), rect.bottomRight())
+                margin = 4
+                painter.drawLine(rect.x() + margin, rect.height(),
+                                 rect.x() + rect.width() - margin, rect.height())
             painter.restore()
         elif element == QStyle.CE_TabBarTabLabel:
             # HELP: Changing font size in QTabBar does not work, so we
@@ -67,7 +69,7 @@ class TabBar(QTabBar):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self._height = 30
+        self._height = 40
         self.setFixedHeight(self._height)
 
         self.setDocumentMode(True)

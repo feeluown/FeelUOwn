@@ -57,7 +57,7 @@ class ArtistRenderer(Renderer, TabBarRendererMixin):
 
     def render_by_tab_index(self, tab_index):
         current_page = self._app.browser.current_page
-        self._app.browser.goto(page=current_page,
+        self._app.browser.goto(model=self.artist,
                                query={'tab_index': tab_index})
 
     async def render(self):
