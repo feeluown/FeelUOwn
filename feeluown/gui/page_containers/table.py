@@ -164,60 +164,6 @@ class Renderer:
         self.comments_table.setModel(model)
 
 
-class ArtistRenderer(Renderer):
-    def __init__(self, artist):
-        self.artist = artist
-
-    async def render(self):
-        artist = self.artist
-
-        # bind signal first
-        # we only show album that implements create_albums_g
-        if artist.meta.allow_create_albums_g:
-            self.toolbar.filter_albums_needed.connect(
-                lambda types: self.albums_table.model().filter_by_types(types))
-            self.tabbar.show_albums_needed.connect(
-                lambda: self.show_albums(self.artist.create_albums_g()))
-        if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
-            # show contributed_album list
-            self.tabbar.show_contributed_albums_needed.connect(
-                lambda: self.show_albums(self.artist.create_contributed_albums_g()))
-
-        # fetch and render basic metadata
-        self.meta_widget.title = artist.name
-        self.meta_widget.show()
-        self.tabbar.show()
-        self.tabbar.artist_mode()
-
-        # fetch and render songs
-        reader = None
-        if artist.meta.allow_create_songs_g:
-            reader = wrap(artist.create_songs_g())
-            self.tabbar.show_songs_needed.connect(
-                lambda: self.show_songs(reader=wrap(artist.create_songs_g()),
-                                        show_count=True))
-        else:
-            songs = await async_run(lambda: artist.songs)
-            reader = wrap(songs)
-            self.tabbar.show_songs_needed.connect(
-                lambda: self.show_songs(reader=wrap(songs), show_count=True))
-        self.show_songs(reader=reader, show_count=True)
-
-        # finally, we render cover and description
-        cover = await async_run(lambda: artist.cover)
-        if cover:
-
-            aio.create_task(
-                self.show_cover(cover, reverse(artist, '/cover'), as_background=True))
-
-        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
-
-    async def _show_desc(self):
-        with suppress(ProviderIOError, RequestException):
-            desc = await async_run(lambda: self.artist.desc)
-            self.show_desc(desc)
-
-
 class PlaylistRenderer(Renderer):
     def __init__(self, playlist):
         self.playlist = playlist
@@ -252,37 +198,6 @@ class PlaylistRenderer(Renderer):
     async def _show_desc(self):
         with suppress(ProviderIOError):
             desc = await async_run(lambda: self.playlist.desc)
-            self.show_desc(desc)
-
-
-class AlbumRenderer(Renderer):
-    def __init__(self, album):
-        self.album = album
-
-    async def render(self):
-        album = self.album
-
-        songs = await async_run(lambda: album.songs)
-        self.show_songs(wrap(songs))
-
-        self.meta_widget.title = album.name_display
-        self.meta_widget.songs_count = len(songs)
-        self.meta_widget.creator = album.artists_name_display
-        self.meta_widget.show()
-
-        # fetch cover and description
-        cover = await async_run(lambda: album.cover)
-        if cover:
-            aio.create_task(self.show_cover(cover, reverse(album, '/cover')))
-
-        self.tabbar.show()
-        self.tabbar.album_mode()
-        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
-        self.tabbar.show_songs_needed.connect(lambda: self.show_songs(songs))
-
-    async def _show_desc(self):
-        with suppress(ProviderIOError):
-            desc = await async_run(lambda: self.album.desc)
             self.show_desc(desc)
 
 
@@ -541,11 +456,7 @@ class TableContainer(QFrame, BgTransparentMixin):
     async def show_model(self, model):
         model = self._app.library.cast_model_to_v1(model)
         model_type = ModelType(model.meta.model_type)
-        if model_type == ModelType.album:
-            renderer = AlbumRenderer(model)
-        elif model_type == ModelType.artist:
-            renderer = ArtistRenderer(model)
-        elif model_type == ModelType.playlist:
+        if model_type == ModelType.playlist:
             renderer = PlaylistRenderer(model)
         else:
             renderer = None

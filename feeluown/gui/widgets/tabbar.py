@@ -1,7 +1,11 @@
 from enum import Enum
 
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout
+from PyQt5.QtCore import pyqtSignal, QSize
+from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
+        QStyle, QProxyStyle
+from PyQt5.QtGui import QPalette
+
+from feeluown.gui.helpers import resize_font
 
 
 def mode(func):
@@ -27,6 +31,57 @@ class Tab(Enum):
     desc = 8
 
     contributed = 16
+
+
+class TabBarStyle(QProxyStyle):
+    def drawControl(self, element, option, painter, widget):
+        if element == QStyle.CE_TabBarTabShape:
+            # https://code.woboq.org/qt5/qtbase/src/plugins/styles/mac/qmacstyle_mac.mm.html#613
+            # On macOS, there will be seperate line between tabs, which looks bad.
+            # So we paint the tab shape by ourselves.
+            painter.save()
+            rect = option.rect
+            is_selected = option.state & QStyle.State_Selected
+            color = widget.palette().color(QPalette.Base)
+            if is_selected:
+                color.setAlpha(160)
+                painter.fillRect(rect, color)
+            else:
+                color.setAlpha(80)
+                painter.fillRect(rect, color)
+            painter.restore()
+        elif element == QStyle.CE_TabBarTabLabel:
+            # HELP: Changing font size in QTabBar does not work, so we
+            # resize font size here.
+            painter.save()
+            font = painter.font()
+            resize_font(font, 2)
+            font.setBold(True)
+            painter.setFont(font)
+            super().drawControl(element, option, painter, widget)
+            painter.restore()
+        else:
+            super().drawControl(element, option, painter, widget)
+
+
+class TabBar(QTabBar):
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self._height = 40
+        self.setFixedHeight(self._height)
+
+        self.setDocumentMode(True)
+        self.setDrawBase(False)
+        # HELP(cosven): It seems that the widget size policy is changed
+        # if setStyle is called. See tabSizeHint comment for more info.
+        self.setStyle(TabBarStyle())
+
+    def tabSizeHint(self, index):
+        # NOTE(cosven): On macOS, the width of default sizeHint is too large.
+        # We set the width to 0 and the widget can calculate a proper width
+        # for it. I don't know if this works well on other platforms.
+        return QSize(0, self._height)
 
 
 class TableTabBarV2(QWidget):

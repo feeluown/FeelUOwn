@@ -18,7 +18,7 @@ TextButton {
     border: 1px solid #444;
 }
 
-TextButton:pressed {
+TextButton:pressed, ToolbarButton:pressed {
     background-color: #3e3e3e;
 }
 

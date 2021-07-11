@@ -1,4 +1,4 @@
-from feeluown.gui.widgets.tabbar import Tab
+from feeluown.gui.widgets.tabbar import Tab, TabBar
 
 
 class LibraryTabRendererMixin:
@@ -39,4 +39,24 @@ class LibraryTabRendererMixin:
         return cb
 
     def show_by_tab_id(self, tab_id):
+        raise NotImplementedError
+
+
+class TabBarRendererMixin:
+    """
+    Requirements:
+    1. the instance MUST has `tabs` attribute
+    2. the instance MUST implement `render_by_tab_index`
+    """
+    def render_tab_bar(self):
+        tab_bar = TabBar()
+        ui = self._app.ui
+        ui.toolbar.add_stacked_widget(tab_bar)
+        ui.toolbar.set_top_stacked_widget(tab_bar)
+        for tab in self.tabs:
+            tab_bar.addTab(tab[0])
+        tab_bar.setCurrentIndex(self.tab_index)
+        tab_bar.tabBarClicked.connect(self.render_by_tab_index)
+
+    def render_by_tab_index(self, tab_index):
         raise NotImplementedError
