@@ -1,11 +1,11 @@
 from enum import Enum
 
-from PyQt5.QtCore import pyqtSignal, QSize, Qt
+from PyQt5.QtCore import pyqtSignal, QSize
 from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
         QStyle, QProxyStyle
-from PyQt5.QtGui import QColor
+from PyQt5.QtGui import QPalette
 
-from feeluown.gui.helpers import is_macos, resize_font
+from feeluown.gui.helpers import resize_font
 
 
 def mode(func):
@@ -33,7 +33,7 @@ class Tab(Enum):
     contributed = 16
 
 
-class TabBarShapeStyle(QProxyStyle):
+class TabBarStyle(QProxyStyle):
     def drawControl(self, element, option, painter, widget):
         if element == QStyle.CE_TabBarTabShape:
             # https://code.woboq.org/qt5/qtbase/src/plugins/styles/mac/qmacstyle_mac.mm.html#613
@@ -42,14 +42,13 @@ class TabBarShapeStyle(QProxyStyle):
             painter.save()
             rect = option.rect
             is_selected = option.state & QStyle.State_Selected
+            color = widget.palette().color(QPalette.Base)
             if is_selected:
-                pen = painter.pen()
-                pen.setColor(QColor('#777'))
-                pen.setStyle(Qt.DotLine)
-                painter.setPen(pen)
-                margin = 4
-                painter.drawLine(rect.x() + margin, rect.height(),
-                                 rect.x() + rect.width() - margin, rect.height())
+                color.setAlpha(160)
+                painter.fillRect(rect, color)
+            else:
+                color.setAlpha(80)
+                painter.fillRect(rect, color)
             painter.restore()
         elif element == QStyle.CE_TabBarTabLabel:
             # HELP: Changing font size in QTabBar does not work, so we
@@ -74,10 +73,9 @@ class TabBar(QTabBar):
 
         self.setDocumentMode(True)
         self.setDrawBase(False)
-        if is_macos():
-            # HELP(cosven): It seems that the widget size policy is changed
-            # if setStyle is called. See tabSizeHint comment for more info.
-            self.setStyle(TabBarShapeStyle())
+        # HELP(cosven): It seems that the widget size policy is changed
+        # if setStyle is called. See tabSizeHint comment for more info.
+        self.setStyle(TabBarStyle())
 
     def tabSizeHint(self, index):
         # NOTE(cosven): On macOS, the width of default sizeHint is too large.

@@ -1,6 +1,6 @@
 import sys
 
-from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex
+from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex, QEasingCurve
 from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea, QStackedLayout
 
@@ -220,6 +220,7 @@ class RightPanel(QFrame):
         scrolled = self.scrollarea.verticalScrollBar().value()
         max_scroll_height = draw_height - self.bottom_panel.height()
 
+        # Do not draw the pixmap when it is not shown.
         if scrolled >= max_scroll_height:
             painter.save()
             painter.setBrush(self.palette().brush(QPalette.Window))
@@ -230,6 +231,15 @@ class RightPanel(QFrame):
         if self._pixmap is not None:
             self._draw_pixmap(painter, draw_width, draw_height, scrolled)
             self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
+            curve = QEasingCurve(QEasingCurve.OutCubic)
+            alpha_ratio = min(scrolled / max_scroll_height, 1)
+            alpha = 250 * curve.valueForProgress(alpha_ratio)
+            painter.save()
+            color = self.palette().color(QPalette.Window)
+            color.setAlpha(alpha)
+            painter.setBrush(color)
+            painter.drawRect(self.bottom_panel.rect())
+            painter.restore()
         else:
             # draw gradient for widgets(bottom panel + meta_widget + ...) above table
             self._draw_overlay(painter, draw_width, draw_height, scrolled)

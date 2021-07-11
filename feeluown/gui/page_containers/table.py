@@ -201,37 +201,6 @@ class PlaylistRenderer(Renderer):
             self.show_desc(desc)
 
 
-class AlbumRenderer(Renderer):
-    def __init__(self, album):
-        self.album = album
-
-    async def render(self):
-        album = self.album
-
-        songs = await async_run(lambda: album.songs)
-        self.show_songs(wrap(songs))
-
-        self.meta_widget.title = album.name_display
-        self.meta_widget.songs_count = len(songs)
-        self.meta_widget.creator = album.artists_name_display
-        self.meta_widget.show()
-
-        # fetch cover and description
-        cover = await async_run(lambda: album.cover)
-        if cover:
-            aio.create_task(self.show_cover(cover, reverse(album, '/cover')))
-
-        self.tabbar.show()
-        self.tabbar.album_mode()
-        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
-        self.tabbar.show_songs_needed.connect(lambda: self.show_songs(songs))
-
-    async def _show_desc(self):
-        with suppress(ProviderIOError):
-            desc = await async_run(lambda: self.album.desc)
-            self.show_desc(desc)
-
-
 class SongsCollectionRenderer(Renderer):
     def __init__(self, collection):
         self.collection = collection
@@ -487,9 +456,7 @@ class TableContainer(QFrame, BgTransparentMixin):
     async def show_model(self, model):
         model = self._app.library.cast_model_to_v1(model)
         model_type = ModelType(model.meta.model_type)
-        if model_type == ModelType.album:
-            renderer = AlbumRenderer(model)
-        elif model_type == ModelType.playlist:
+        if model_type == ModelType.playlist:
             renderer = PlaylistRenderer(model)
         else:
             renderer = None

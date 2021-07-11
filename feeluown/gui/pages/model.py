@@ -23,6 +23,11 @@ async def render(req, **kwargs):
         tab_index = int(req.query.get('tab_index', 1))
         renderer = ArtistRenderer(artist, tab_index)
         await app.ui.table_container.set_renderer(renderer)
+    elif model.meta.model_type == ModelType.album:
+        album = app.library.cast_model_to_v1(model)
+        tab_index = int(req.query.get('tab_index', 1))
+        renderer = AlbumRenderer(album, tab_index)
+        await app.ui.table_container.set_renderer(renderer)
     else:
         app.ui.right_panel.show_model(model)
 
@@ -44,9 +49,15 @@ class SongRenderer(Renderer):
             await self.show_cover(cover, f'{reverse(album)}/cover')
 
 
-class ArtistRenderer(Renderer, TabBarRendererMixin):
+class ModelTabBarRendererMixin(TabBarRendererMixin):
+    def render_by_tab_index(self, tab_index):
+        self._app.browser.goto(model=self.model,
+                               query={'tab_index': tab_index})
+
+
+class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
     def __init__(self, artist, tab_index):
-        self.artist = artist
+        self.model = artist
         self.tab_index = tab_index
         self.tabs = [
             ('简介', ),
@@ -55,13 +66,8 @@ class ArtistRenderer(Renderer, TabBarRendererMixin):
             ('参与作品', ),
         ]
 
-    def render_by_tab_index(self, tab_index):
-        current_page = self._app.browser.current_page
-        self._app.browser.goto(model=self.artist,
-                               query={'tab_index': tab_index})
-
     async def render(self):
-        artist = self.artist
+        artist = self.model
         tab_index = self.tab_index
 
         # fetch and render basic metadata
@@ -78,21 +84,24 @@ class ArtistRenderer(Renderer, TabBarRendererMixin):
             if artist.meta.allow_create_albums_g:
                 self.toolbar.filter_albums_needed.connect(
                     lambda types: self.albums_table.model().filter_by_types(types))
-                self.show_albums(self.artist.create_albums_g())
+                self.show_albums(artist.create_albums_g())
         elif tab_index == 3:
             if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
-                self.show_albums(self.artist.create_contributed_albums_g())
+                self.show_albums(artist.create_contributed_albums_g())
 
-        # finally, we render cover and description
-        await self._show_cover()
+        # finally, we render cover
+        cover = await aio.run_fn(lambda: artist.cover)
+        if cover:
+            await self.show_cover(cover,
+                                  reverse(artist, '/cover'), as_background=True)
 
     async def _show_desc(self):
         with suppress(ProviderIOError, RequestException):
-            desc = await aio.run_fn(lambda: self.artist.desc)
+            desc = await aio.run_fn(lambda: self.model.desc)
             self.show_desc(desc)
 
     async def _show_songs(self):
-        artist = self.artist
+        artist = self.model
         # fetch and render songs
         reader = None
         if artist.meta.allow_create_songs_g:
@@ -107,8 +116,39 @@ class ArtistRenderer(Renderer, TabBarRendererMixin):
                 lambda: self.show_songs(reader=create_reader(songs), show_count=True))
         self.show_songs(reader=reader, show_count=True)
 
-    async def _show_cover(self):
-        cover = await aio.run_fn(lambda: self.artist.cover)
+
+class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
+    def __init__(self, album, tab_index):
+        self.model = album
+        self.tab_index = tab_index
+        self.tabs = [
+            ('简介', ),
+            ('歌曲', ),
+        ]
+
+    async def render(self):
+        album = self.model
+        tab_index = self.tab_index
+
+        self.meta_widget.title = album.name_display
+        self.meta_widget.creator = album.artists_name_display
+        self.meta_widget.show()
+
+        self.render_tab_bar()
+
+        if tab_index == 0:
+            aio.run_afn(self._show_desc)
+        else:
+            songs = await aio.run_fn(lambda: album.songs)
+            self.meta_widget.songs_count = len(songs)
+            self.show_songs(create_reader(songs))
+
+        # fetch cover and description
+        cover = await aio.run_fn(lambda: album.cover)
         if cover:
-            await self.show_cover(cover,
-                                  reverse(self.artist, '/cover'), as_background=True)
+            aio.run_afn(self.show_cover, cover, reverse(album, '/cover'))
+
+    async def _show_desc(self):
+        with suppress(ProviderIOError):
+            desc = await aio.run_fn(lambda: self.model.desc)
+            self.show_desc(desc)
