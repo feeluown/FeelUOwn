@@ -186,12 +186,7 @@ class RightPanel(QFrame):
 
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
-        if pixmap is None:
-            self.table_container.meta_widget.setMinimumHeight(0)
-        else:
-            height = (self._app.height() - self.bottom_panel.height() -
-                      self.table_container.toolbar.height()) // 2
-            self.table_container.meta_widget.setMinimumHeight(height)
+        self._adjust_meta_widget_height()
         self.update()
 
     def paintEvent(self, e):
@@ -323,3 +318,22 @@ class RightPanel(QFrame):
     def sizeHint(self):
         size = super().sizeHint()
         return QSize(660, size.height())
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        if self._pixmap is not None and e.oldSize().width() != e.size().width():
+            self._adjust_meta_widget_height()
+
+    def _adjust_meta_widget_height(self):
+        # HACK: adjust height of table_container's meta_widget to
+        # adapt to background image.
+        if self._pixmap is None:
+            self.table_container.meta_widget.setMinimumHeight(0)
+        else:
+            height = (self._background_image_height_hint() -
+                      self.bottom_panel.height() -
+                      self.table_container.toolbar.height())
+            self.table_container.meta_widget.setMinimumHeight(height)
+
+    def _background_image_height_hint(self):
+        return self.width() * 5 // 9
