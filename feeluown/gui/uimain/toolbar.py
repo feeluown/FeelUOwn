@@ -26,6 +26,8 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
+        self.settings_btn = ToolbarButton('⋮', self)
+        self.settings_btn.setToolTip('配置')
 
         # initialize widgets
         self.status_line.add_item(StatusLineItem('plugin', PluginStatus(self._app)))
@@ -53,6 +55,7 @@ class BottomPanel(QWidget):
         # self._layout.addStretch(0)
         self._layout.addSpacing(80)
         self._layout.addWidget(self.status_line)
+        self._layout.addWidget(self.settings_btn)
 
         # assume the magicbox height is about 30
         h_margin, v_margin = 5, 10

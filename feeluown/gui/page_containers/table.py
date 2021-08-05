@@ -444,14 +444,12 @@ class TableContainer(QFrame, BgTransparentMixin):
         model = self.songs_table.model()
         # FIXME: think about a more elegant way
         reader = model.sourceModel()._reader
-        if reader is not None:
-            if reader.count is not None:
-                task = task_spec.bind_blocking_io(reader.readall)
-                self.toolbar.enter_state_playall_start()
-                task.add_done_callback(reader_readall_cb)
-                return
-        songs = model.sourceModel().songs
-        self._app.player.play_songs(songs=songs)
+        if reader is not None and reader.count is not None:
+            task = task_spec.bind_blocking_io(reader.readall)
+            self.toolbar.enter_state_playall_start()
+            task.add_done_callback(reader_readall_cb)
+            return
+        assert False, 'The play_all_btn should be hide in this page'
 
     async def show_model(self, model):
         model = self._app.library.cast_model_to_v1(model)

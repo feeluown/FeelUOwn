@@ -1,12 +1,9 @@
 import logging
-from PyQt5.QtWidgets import (
-    QSizePolicy,
-    QSplitter,
-    QVBoxLayout,
-)
+from PyQt5.QtWidgets import QSizePolicy, QSplitter, QVBoxLayout
 
 from feeluown.utils.utils import use_mpv_old
 from feeluown.gui.widgets.separator import Separator
+from feeluown.gui.widgets.settings import SettingsDialog
 
 if use_mpv_old():
     from feeluown.gui.widgets.mpv_old import MpvOpenGLWidget
@@ -53,6 +50,8 @@ class Ui:
 
         self.pc_panel.playlist_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/player_playlist'))
+        self.toolbar.settings_btn.clicked.connect(
+            self.open_settings_dialog)
 
         self._setup_ui()
 
@@ -80,3 +79,7 @@ class Ui:
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
         self._app.resize(880, 600)
+
+    def open_settings_dialog(self):
+        dialog = SettingsDialog(self._app, self._app)
+        dialog.exec()
