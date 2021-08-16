@@ -1,6 +1,6 @@
 import math
 
-from PyQt5.QtCore import Qt, QSize, QRectF, QRect, QUrl, QPoint
+from PyQt5.QtCore import Qt, QSize, QRectF, QRect, QPoint
 from PyQt5.QtGui import QPainter, QTextOption, QPalette, QBrush, QColor, \
     QGuiApplication  # noqa
 from PyQt5.QtWidgets import QStyledItemDelegate, QListView
@@ -68,7 +68,7 @@ class ProvidersDelegate(QStyledItemDelegate):
         body_rect = QRect(0, 0, w, h)
 
         if provider_ui_item.colorful_svg:
-            svg_renderer = QSvgRenderer(QUrl(provider_ui_item.colorful_svg).toString())
+            svg_renderer = QSvgRenderer(provider_ui_item.colorful_svg)
             svg_renderer.render(painter, QRectF(body_rect))
         else:
             # draw rounded rect
