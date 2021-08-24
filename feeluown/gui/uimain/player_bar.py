@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
-from feeluown.player import PlaybackMode, State
+from feeluown.player import PlaybackMode, State, SongRadio
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.helpers import async_run, resize_font
 from feeluown.gui.widgets import TextButton
@@ -196,6 +196,10 @@ class SongBriefLabel(QLabel):
         song_explore_action = menu.addAction('歌曲详情')
         song_explore_action.triggered.connect(
             lambda: self._app.browser.goto(model=song, path='/explore'))
+
+        song_radio_action = menu.addAction('歌曲电台')
+        song_radio_action.triggered.connect(
+            lambda: self._app.fm.activate(SongRadio.create(self._app, song).fetch_songs_func))
 
         menu.exec(e.globalPos())
 

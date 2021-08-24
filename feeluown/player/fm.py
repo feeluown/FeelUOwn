@@ -97,9 +97,10 @@ class FM:
         logger.info('fm mode deactivated')
 
     def _feed_playlist(self):
-        song = self._queue.popleft()
-        self._app.playlist.fm_add(song)
-        self._app.playlist.next()
+        if self._queue:
+            song = self._queue.popleft()
+            self._app.playlist.fm_add(song)
+            self._app.playlist.next()
 
     def _on_songs_fetched(self, future):
         try:
@@ -109,8 +110,12 @@ class FM:
         except ProviderIOError:
             logger.exception('fm-fetch-songs io error')
         else:
-            for song in songs:
-                self._queue.append(song)
-            self._feed_playlist()
+            if len(songs) < self._minimum_per_fetch:
+                logger.info('No enough songs, exit fm mode now')
+                self.deactivate()
+            else:
+                for song in songs:
+                    self._queue.append(song)
+                self._feed_playlist()
         finally:
             self._is_fetching_songs = False
