@@ -1,14 +1,12 @@
-from feeluown.utils.patch import patch_janus
+from feeluown.utils.patch import patch_janus, patch_qeventloop
 patch_janus()
 
 try:
-    from feeluown.utils.patch import patch_qeventloop
+    patch_qeventloop()
 except ImportError:
-    # when qasync/quamash is not installed
+    # qasync/qt is not installed
     # FIXME: should not catch the error at here
     pass
-else:
-    patch_qeventloop()
 
 import socket  # noqa: E402
 
