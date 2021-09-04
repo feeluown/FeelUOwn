@@ -1,11 +1,10 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QModelIndex
 
 from feeluown.utils import aio
-from feeluown.utils.reader import wrap
 from feeluown.gui.widgets import TextButton
 from feeluown.gui.helpers import disconnect_slots_if_has
 from feeluown.gui.page_containers.table import Renderer
-from feeluown.gui.widgets.songs import SongsTableModel, Column, SongFilterProxyModel
+from feeluown.gui.widgets.songs import BaseSongsTableModel, Column, SongFilterProxyModel
 
 
 async def render(req, **kwargs):
@@ -27,7 +26,7 @@ class PlayerPlaylistRenderer(Renderer):
         self.container.current_table = self.songs_table
         self.songs_table.remove_song_func = self._app.playlist.remove
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
-        model = PlaylistTableModel(source_name_map, self._app.playlist)
+        model = PlaylistTableModel(self._app.playlist, source_name_map)
         filter_model = SongFilterProxyModel(self.songs_table)
         filter_model.setSourceModel(model)
         self.songs_table.setModel(filter_model)
@@ -52,11 +51,19 @@ class PlayerPlaylistRenderer(Renderer):
         await self.render()  # re-render
 
 
-class PlaylistTableModel(SongsTableModel):
-    def __init__(self, source_name_map, playlist):
-        reader = wrap(playlist.list())
-        super().__init__(source_name_map, reader)
+class PlaylistTableModel(BaseSongsTableModel):
+    def __init__(self, playlist, source_name_map=None, parent=None):
+        """
+
+        :param songs: 歌曲列表
+        :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
+        """
+        super().__init__(source_name_map, parent)
         self._playlist = playlist
+        self._items = playlist.list().copy()
+
+        self._playlist.songs_added.connect(self.on_songs_added)
+        self._playlist.songs_removed.connect(self.on_songs_removed)
 
     def flags(self, index):
         flags = super().flags(index)
@@ -66,3 +73,13 @@ class PlaylistTableModel(SongsTableModel):
                 # a bad song is disabled
                 flags &= ~Qt.ItemIsEnabled
         return flags
+
+    def on_songs_added(self, index, count):
+        self.beginInsertRows(QModelIndex(), index, index+count-1)
+        self._items = self._playlist.list().copy()
+        self.endInsertRows()
+
+    def on_songs_removed(self, index, count):
+        self.beginRemoveRows(QModelIndex(), index, index+count-1)
+        self._items = self._playlist.list().copy()
+        self.endRemoveRows()

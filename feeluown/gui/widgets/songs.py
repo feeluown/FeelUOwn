@@ -154,19 +154,11 @@ class SongListView(ItemViewNoScrollMixin, QListView):
         self.play_song_needed.emit(index.data(Qt.UserRole))
 
 
-class SongsTableModel(QAbstractTableModel, ReaderFetchMoreMixin):
-    def __init__(self, source_name_map=None, reader=None, parent=None):
-        """
-
-        :param songs: 歌曲列表
-        :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
-        """
+class BaseSongsTableModel(QAbstractTableModel):
+    def __init__(self, source_name_map=None, parent=None):
         super().__init__(parent)
-        self._reader = reader
-        self._fetch_more_step = 30
-        self._items = []
-        self._is_fetching = False
 
+        self._items = []
         self._source_name_map = source_name_map or {}
 
     def removeRows(self, row, count, parent=QModelIndex()):
@@ -284,6 +276,19 @@ class SongsTableModel(QAbstractTableModel, ReaderFetchMoreMixin):
                 except (ProviderIOError, Exception):
                     model = None
             return ModelMimeData(model)
+
+
+class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
+    def __init__(self, source_name_map=None, reader=None, parent=None):
+        """
+
+        :param songs: 歌曲列表
+        :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
+        """
+        super().__init__(source_name_map, parent)
+        self._reader = reader
+        self._fetch_more_step = 30
+        self._is_fetching = False
 
 
 class SongFilterProxyModel(QSortFilterProxyModel):

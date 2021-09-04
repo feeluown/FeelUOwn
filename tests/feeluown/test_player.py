@@ -70,8 +70,11 @@ async def test_playlist_eof_reached(app_mock, song, mocker,
     pl._current_song = song
     pl.next()  # second emit
     mock_emit.assert_has_calls([
+        mock.call(PlaybackMode.sequential),
+        mock.call(PlaylistMode.fm),
         mock.call(),
-        mock.call(),
+        mock.call(0, 1),  # songs_added
+        mock.call()
     ])
 
 

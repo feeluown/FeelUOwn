@@ -102,6 +102,11 @@ class Playlist:
         #: When watch mode is on, playlist try to play the mv/video of the song
         self.watch_mode = False
 
+        # .. versionadded:: 3.7.11
+        #    The *songs_removed* and *songs_added* signal.
+        self.songs_removed = Signal()  # (index, count)
+        self.songs_added = Signal()  # (index, count)
+
     @property
     def mode(self):
         return self._mode
@@ -135,6 +140,8 @@ class Playlist:
         if song in self._songs:
             return
         self._songs.append(song)
+        length = len(self._songs)
+        self.songs_added.emit(length-1, 1)
 
     def add(self, song):
         """add song to playlist
@@ -160,10 +167,11 @@ class Playlist:
         if song in self._songs:
             return
         if self._current_song is None:
-            self._songs.append(song)
+            self._add(song)
         else:
             index = self._songs.index(self._current_song)
             self._songs.insert(index + 1, song)
+            self.songs_added.emit(index + 1, 1)
 
     def remove(self, song):
         """Remove song from playlist. O(n)
@@ -171,7 +179,11 @@ class Playlist:
         If song is current song, remove the song and play next. Otherwise,
         just remove it.
         """
-        if song in self._songs:
+        try:
+            index = self._songs.index(song)
+        except ValueError:
+            logger.debug('Remove failed: {} not in playlist'.format(song))
+        else:
             if self._current_song is None:
                 self._songs.remove(song)
             elif song == self._current_song:
@@ -187,10 +199,8 @@ class Playlist:
                     self.current_song = next_song
             else:
                 self._songs.remove(song)
+            self.songs_removed.emit(index, 1)
             logger.debug('Remove {} from player playlist'.format(song))
-        else:
-            logger.debug('Remove failed: {} not in playlist'.format(song))
-
         if song in self._bad_songs:
             self._bad_songs.remove(song)
 
@@ -214,12 +224,17 @@ class Playlist:
         # since we will call songs.clear method during playlist clearing,
         # we need to deepcopy songs object here.
         self._songs = DedupList(copy.deepcopy(songs))
+        if self._songs:
+            self.songs_added.emit(0, len(self._songs))
 
     def clear(self):
         """remove all songs from playlists"""
         if self.current_song is not None:
             self.current_song = None
+        length = len(self._songs)
         self._songs.clear()
+        if length > 0:
+            self.songs_removed.emit(0, length)
         self._bad_songs.clear()
 
     def list(self):
@@ -386,6 +401,7 @@ class Playlist:
                     if song in self._songs and standby not in self._songs:
                         index = self._songs.index(song)
                         self._songs.insert(index + 1, standby)
+                        self.songs_added.emit(index + 1, 1)
                     # NOTE: a_list_song_standby ensure that the song.url is not empty
                     # FIXME: maybe a_list_song_standby should return media directly
                     self.pure_set_current_song(standby, media)
