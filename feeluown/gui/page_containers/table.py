@@ -17,6 +17,7 @@ from feeluown.models import reverse, ModelType
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper
+from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.widgets.imglist import ImgListView
 from feeluown.gui.widgets.album import AlbumListModel, AlbumListView, \
     AlbumFilterProxyModel
@@ -493,15 +494,14 @@ class TableContainer(QFrame, BgTransparentMixin):
             self._app.playlist.add(song)
 
     def _songs_table_about_to_show_menu(self, ctx):
-        add_action = ctx['add_action']
         models = ctx['models']
         if not models or models[0].meta.model_type != ModelType.song:
             return
 
+        menu = ctx['menu']
         song = models[0]
-        goto = self._app.browser.goto
-
-        add_action('歌曲详情', lambda *args: goto(model=song, path='/explore'))
+        menu.addSeparator()
+        SongMenuInitializer(self._app, song).apply(menu)
 
     async def _on_songs_table_activated(self, index):
         """
