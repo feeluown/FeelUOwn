@@ -39,14 +39,18 @@ class FM:
 
         self._app.playlist.mode_changed.connect(self._on_playlist_mode_changed)
 
-    def activate(self, fetch_songs_func):
-        """activate fm mode
+    def activate(self, fetch_songs_func, reset=True):
+        """change playlist mode to fm
 
         :param fetch_songs_func: func(minimum, *args, **kwargs): -> list
             please ensure that fetch_songs_func can receive keyword arguments,
             we may send some keyword args(such as timeout) in the future.
             If exception occured in fetch_songs_func, it should raise
             :class:`feeluown.excs.ProviderIOError`.
+        :param reset: reset the playlist and play the next song
+
+        .. versionadded:: 3.7.11
+           The *reset* parameter.
         """
         if self.is_active:
             logger.warning('fm already actiavted')
@@ -54,8 +58,10 @@ class FM:
         self._fetch_songs_func = fetch_songs_func
         self._app.playlist.eof_reached.connect(self._on_playlist_eof_reached)
         self._app.playlist.mode = PlaylistMode.fm
-        self._app.playlist.next()
-        self._app.player.resume()
+        if reset is True:
+            self._app.playlist.clear()
+            self._app.playlist.next()
+            self._app.player.resume()
         logger.info('fm mode actiavted')
 
     def deactivate(self):
@@ -97,10 +103,10 @@ class FM:
         logger.info('fm mode deactivated')
 
     def _feed_playlist(self):
-        if self._queue:
+        while self._queue:
             song = self._queue.popleft()
             self._app.playlist.fm_add(song)
-            self._app.playlist.next()
+        self._app.playlist.next()
 
     def _on_songs_fetched(self, future):
         try:

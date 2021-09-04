@@ -14,11 +14,9 @@ def mock_a_set_cursong(mocker):
 
 @pytest.mark.asyncio
 async def test_playlist_change_mode(app_mock, mocker):
-    mock_clear = mocker.patch.object(Playlist, 'clear')
     # from normal to fm
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
-    mock_clear.assert_called_once_with()
     assert pl.playback_mode is PlaybackMode.sequential
 
     # from fm to normal

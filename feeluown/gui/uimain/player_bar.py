@@ -7,11 +7,12 @@ from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
     QPushButton, QSizePolicy, QMenu,
 )
-from feeluown.utils import aio
+
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
-from feeluown.player import PlaybackMode, State, SongRadio
+from feeluown.player import PlaybackMode, State
 from feeluown.gui.widgets.lyric import Window as LyricWindow
+from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import async_run, resize_font
 from feeluown.gui.widgets import TextButton
 from feeluown.gui.widgets.volume_button import VolumeButton
@@ -126,8 +127,6 @@ class SongBriefLabel(QLabel):
         self._pos = 0
         self._timer.timeout.connect(self.change_text_position)
 
-        self._fetching_artists = False
-
     def change_text_position(self):
         if not self.parent().isVisible():
             self._timer.stop()
@@ -182,63 +181,8 @@ class SongBriefLabel(QLabel):
             return
 
         menu = QMenu()
-        menu.hovered.connect(self.on_action_hovered)
-        # artist menu
-        artist_menu = menu.addMenu('查看歌手')
-        artist_menu.menuAction().setData({'artists': None, 'song': song})
-
-        # album action
-        album_action = menu.addAction('查看专辑')
-        album_action.triggered.connect(
-            lambda: aio.create_task(self._goto_album(song)))
-
-        # song explore action
-        song_explore_action = menu.addAction('歌曲详情')
-        song_explore_action.triggered.connect(
-            lambda: self._app.browser.goto(model=song, path='/explore'))
-
-        song_radio_action = menu.addAction('歌曲电台')
-        song_radio_action.triggered.connect(
-            lambda: self._app.fm.activate(SongRadio.create(self._app, song).fetch_songs_func))
-
+        SongMenuInitializer(self._app, song).apply(menu)
         menu.exec(e.globalPos())
-
-    async def _goto_album(self, song):
-        album = await aio.run_in_executor(
-            None, lambda: self._app.library.song_upgrade(song).album)
-        self._app.browser.goto(model=album)
-
-    def on_action_hovered(self, action):
-        """
-        Fetch song.artists when artists_action is hovered. If it is
-        already fetched, ignore.
-        """
-        data = action.data()
-        if data is None:  # submenu action
-            return
-
-        def artists_fetched_cb(future):
-            self._fetching_artists = False
-            artists = future.result()  # ignore the potential exception
-            if artists:
-                for artist in artists:
-                    artist_action = action.menu().addAction(artist.name)
-                    # create a closure to bind variable artist
-                    artist_action.triggered.connect(
-                        (lambda x: lambda: self._app.browser.goto(model=x))(artist))
-            data['artists'] = artists or []
-            action.setData(data)
-
-        # the action is artists_action
-        if 'artists' in data:
-            # artists value has not been fetched
-            if data['artists'] is None and self._fetching_artists is False:
-                logger.debug('fetch song.artists for actions')
-                song = data['song']
-                self._fetching_artists = True
-                task = aio.run_in_executor(
-                    None, lambda: self._app.library.song_upgrade(song).artists)
-                task.add_done_callback(artists_fetched_cb)
 
 
 class SourceLabel(QLabel):
