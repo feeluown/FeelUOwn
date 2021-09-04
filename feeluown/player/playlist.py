@@ -31,19 +31,9 @@ class PlaylistMode(IntEnum):
 
     In FM mode, playlist's playback_mode is unchangeable, it will
     always be sequential. When playlist has no more song,
-    the playlist hopes someone(we call it ``FMPlaylist`` here) will:
+    the playlist hopes someone(we call it ``FM`` here) will:
     1. catch the ``eof_reached`` signal
     2. add news songs to playlist by using ``fm_add`` method
-    3. call ``next`` method to resume the player
-
-    **How to enter FM mode?**
-
-    Only FMPlaylist can(should) make playlist enter FM mode, it should
-    do following things:
-    1. clear the playlist
-    2. change playlist mode to FM
-    3. add several songs to playlist
-    4. resume the player with the first song
 
     **When will playlist exit FM mode?**
 
@@ -122,7 +112,6 @@ class Playlist:
         if self._mode is not mode:
             if mode is PlaylistMode.fm:
                 self.playback_mode = PlaybackMode.sequential
-            self.clear()
             # we should change _mode at the very end
             self._mode = mode
             self.mode_changed.emit(mode)

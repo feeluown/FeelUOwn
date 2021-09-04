@@ -511,9 +511,13 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
             menu.addAction(action)
             action.triggered.connect(lambda: callback(models))
 
-        # .. versionadded: v3.7
+        # .. versionadded: 3.7
         #   The context key *models*
-        self.about_to_show_menu.emit({'add_action': add_action, 'models': models})
+        # .. versionadded: 3.7.11
+        #   The context key *menu*
+        self.about_to_show_menu.emit({'add_action': add_action,
+                                      'menu': menu,
+                                      'models': models})
         menu.exec(event.globalPos())
 
     def _add_to_playlist(self, indexes):
