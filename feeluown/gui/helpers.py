@@ -287,9 +287,9 @@ class ReaderFetchMoreMixin:
     def can_fetch_more(self, _=None):
         reader = self._reader
 
-        count, offset = reader.count, reader.offset
+        count = reader.count
         if count is not None:
-            return count > offset + 1
+            return count > self.rowCount()
 
         # The reader sets the count when it has no more items,
         # so it is safe to return True here
