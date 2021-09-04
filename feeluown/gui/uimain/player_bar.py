@@ -15,6 +15,7 @@ from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import async_run, resize_font
 from feeluown.gui.widgets import TextButton
+from feeluown.gui.widgets.playlist_button import PlaylistButton
 from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
@@ -253,7 +254,7 @@ class PlayerControlPanel(QFrame):
         #: playback mode switch button
         self.pms_btn = TextButton(self)
         self.volume_btn = VolumeButton(self)
-        self.playlist_btn = IconButton(parent=self)
+        self.playlist_btn = PlaylistButton(self._app, self)
         #: mark song as favorite button
         self.like_btn = LikeButton(self._app, self)
         self.mv_btn = TextButton('MV', self)

@@ -36,7 +36,7 @@ MagicBox:focus {
 /*
  * buttons
  */
-PlayerControlPanel IconButton, VolumeButton {
+PlayerControlPanel IconButton, VolumeButton, #playlist_btn {
     width: 30px;
     height: 30px;
     border-radius: 15px;
