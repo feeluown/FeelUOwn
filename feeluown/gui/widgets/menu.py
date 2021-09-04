@@ -23,7 +23,7 @@ class SongMenuInitializer:
 
         def enter_song_radio(song):
             radio = SongRadio.create(app, song)
-            app.fm.activate(radio.fetch_songs_func)
+            app.fm.activate(radio.fetch_songs_func, reset=False)
             if app.playlist.current_song != song:
                 app.playlist.clear()
                 self._app.playlist.next()
