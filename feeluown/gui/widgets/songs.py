@@ -290,6 +290,10 @@ class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
         self._fetch_more_step = 30
         self._is_fetching = False
 
+    @property
+    def reader(self):
+        return self._reader
+
 
 class SongFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None, text=''):

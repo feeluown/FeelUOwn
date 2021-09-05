@@ -5,7 +5,7 @@ from contextlib import suppress
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication
 from requests.exceptions import RequestException
 
 from feeluown.utils import aio
@@ -444,7 +444,7 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         model = self.songs_table.model()
         # FIXME: think about a more elegant way
-        reader = model.sourceModel()._reader
+        reader = model.sourceModel().reader
         if reader is not None and reader.count is not None:
             task = task_spec.bind_blocking_io(reader.readall)
             self.toolbar.enter_state_playall_start()
@@ -511,7 +511,18 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         song = index.data(Qt.UserRole)
         if index.column() == Column.song:
-            self.songs_table.play_song_needed.emit(song)
+            # .. versionadded:: 3.7.11
+            #    Reset playlist with songs in table if Alt key is pressed.
+            if QApplication.keyboardModifiers() & Qt.AltModifier:
+                model = self.songs_table.model()
+                if isinstance(model, SongFilterProxyModel):
+                    model = model.sourceModel()
+                    if isinstance(model, SongsTableModel):
+                        reader = model.reader
+                        songs = await aio.run_fn(reader.readall)
+                        self._app.playlist.clear()
+                        self._app.playlist.init_from(songs)
+            self._app.player.play_song(song)
         else:
             try:
                 song = await aio.run_in_executor(
