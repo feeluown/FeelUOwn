@@ -41,6 +41,14 @@ class SongsTableToolbar(QWidget):
     def artists_mode(self):
         self._before_change_mode()
 
+    def manual_mode(self):
+        """fully customized mode
+
+        .. versionadded:: 3.7.11
+           You'd better use this mode and add_tmp_button to customize toolbar.
+        """
+        self._before_change_mode()
+
     def enter_state_playall_start(self):
         self.play_all_btn.setEnabled(False)
         # currently, this is called only when feeluown is fetching songs,
@@ -57,7 +65,10 @@ class SongsTableToolbar(QWidget):
         """Append text button"""
         if button not in self._tmp_buttons:
             # FIXME(cosven): the button inserted isn't aligned with other buttons
-            self._layout.insertWidget(len(self._tmp_buttons) + 1, button)
+            index = len(self._tmp_buttons)
+            if self.play_all_btn.isVisible():
+                index = index + 1
+            self._layout.insertWidget(index, button)
             self._tmp_buttons.append(button)
 
     def _setup_ui(self):

@@ -33,7 +33,9 @@ class PlayerPlaylistRenderer(Renderer):
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
+        # TODO(cosven): the toolbar is useless, and we should remove it lator.
         self.toolbar.show()
+        self.toolbar.manual_mode()
         btn = TextButton('清空', self.toolbar)
         btn.clicked.connect(lambda *args: aio.create_task(self.clear_playlist()))
         self.toolbar.add_tmp_button(btn)
