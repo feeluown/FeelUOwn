@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from abc import ABCMeta, abstractmethod
 from enum import IntEnum
@@ -139,7 +140,7 @@ class AbstractPlayer(metaclass=ABCMeta):
     def set_play_range(self, start=None, end=None):
         pass
 
-    def load_song(self, song):
+    def load_song(self, song) -> asyncio.Task:
         """加载歌曲
 
         如果目标歌曲与当前歌曲不相同，则修改播放列表当前歌曲，
@@ -150,19 +151,29 @@ class AbstractPlayer(metaclass=ABCMeta):
 
             调用方不应该直接调用 playlist.current_song = song 来切换歌曲
         """
-        if song is not None and song != self.current_song:
-            self._playlist.current_song = song
+        assert song is not None
+        return self._playlist.set_current_song(song)
 
     def play_song(self, song):
         """加载并播放指定歌曲"""
-        self.load_song(song)
-        self.resume()
+        task = self.load_song(song)
+        if task is not None:
+            task.add_done_callback(self._set_current_song_cb)
 
     def play_songs(self, songs):
         """(alpha) play list of songs"""
         self.playlist.init_from(songs)
-        self.playlist.next()
-        self.resume()
+        task = self.playlist.next()
+        if task is not None:
+            task.add_done_callback(self._set_current_song_cb)
+
+    def _set_current_song_cb(self, future):
+        try:
+            future.result()
+        except:  # noqa
+            logger.exception('Set current song failed, callback will not be executed')
+        else:
+            self.resume()
 
     @abstractmethod
     def resume(self):

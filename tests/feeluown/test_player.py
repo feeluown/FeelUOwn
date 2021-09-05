@@ -81,10 +81,7 @@ async def test_playlist_eof_reached(app_mock, song, mocker,
 @pytest.mark.asyncio
 async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker,
                                                  mock_a_set_cursong):
-    mock_current_song = mocker.patch.object(Playlist, 'current_song')
-    mock_set = mocker.MagicMock()
-    mock_current_song.__get__ = mocker.MagicMock(return_value=None)
-    mock_current_song.__set__ = mock_set
+    mock_set_current_song = mocker.patch.object(Playlist, 'set_current_song')
     pl = Playlist(app_mock)
 
     def feed_playlist():
@@ -94,7 +91,7 @@ async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker,
     pl.eof_reached.connect(feed_playlist)
     pl.mode = PlaylistMode.fm
     pl.next()
-    mock_set.assert_has_calls([mock.call(pl, song)])
+    mock_set_current_song.assert_has_calls([mock.call(song)])
 
 
 @pytest.mark.asyncio

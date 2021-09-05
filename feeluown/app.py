@@ -47,6 +47,7 @@ class App:
         # For code auto completion
         self.library: Library = None
         self.playlist: Playlist = None
+        self.player: Player = None
 
         self.initialized.connect(lambda _: self.load_state(), weak=False)
         self.about_to_shutdown.connect(lambda _: self.dump_state(), weak=False)

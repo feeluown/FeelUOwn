@@ -336,15 +336,16 @@ class Playlist:
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
         return previous_song
 
-    def next(self):
+    def next(self) -> Optional[asyncio.Task]:
         if self.next_song is None:
             self.eof_reached.emit()
+            return None
         else:
-            self.current_song = self.next_song
+            return self.set_current_song(self.next_song)
 
-    def previous(self):
+    def previous(self) -> Optional[asyncio.Task]:
         """return to the previous song in playlist"""
-        self.current_song = self.previous_song
+        return self.set_current_song(self.previous_song)
 
     @property
     def current_song(self) -> Optional[SongProtocol]:
@@ -356,6 +357,9 @@ class Playlist:
 
     @current_song.setter
     def current_song(self, song: Optional[SongProtocol]):
+        self.set_current_song(song)
+
+    def set_current_song(self, song) -> Optional[asyncio.Task]:
         """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
 
         .. note::
@@ -363,10 +367,13 @@ class Playlist:
             该方法理论上只应该被 Player 对象调用。
 
         if song has not valid media, we find a replacement in other providers
+
+        .. versionadded:: 3.7.11
+           The method is added to replace current_song.setter.
         """
         if song is None:
             self.pure_set_current_song(None, None)
-            return
+            return None
 
         if self.mode is PlaylistMode.fm and song not in self._songs:
             self.mode = PlaylistMode.normal
@@ -374,7 +381,7 @@ class Playlist:
         # FIXME(cosven): `current_song.setter` depends on app.task_mgr and app.library,
         # which make it hard to test.
         task_spec = self._app.task_mgr.get_or_create('set-current-song')
-        task_spec.bind_coro(self.a_set_current_song(song))
+        return task_spec.bind_coro(self.a_set_current_song(song))
 
     async def a_set_current_song(self, song):
         song_str = f'{song.source}:{song.title_display} - {song.artists_name_display}'
