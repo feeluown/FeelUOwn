@@ -29,7 +29,7 @@ class PlaylistButton(QPushButton):
         h3 = h2 + line_margin + line_height
 
         pen = painter.pen()
-        pen.setColor(QColor("#A9A9A9"))
+        pen.setColor(QColor("#6F6F6F"))
         pen.setWidthF(line_height)
         painter.setPen(pen)
         painter.setBrush(pen.color())
