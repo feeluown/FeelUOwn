@@ -1,8 +1,53 @@
 """
 Model v2 design principles
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-1. as much compatable as possible
+1. as much compatible as possible
 2. as less magic as possible
+
+Thinking in Model
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Q: Object or dict to store data?
+A: Object is more fiendly with lint/code-auto-completion, so we have `Models`.
+
+Q: What data/attributes should a `Model` (not) have (use *Song* as the example)?
+A:
+ 1. identifier/title/album_name/...    -> yes: they never change
+ 2. url                                -> no: it changes too fast
+ 3. web_url                            -> no: it can be cooked with metadata
+ 4. album_id/artist_id                 -> yes: all providers supports these fields
+ 5. mv_id/comments_id/...              -> no: only some providers supports these fields
+
+Q: One or two or many Model for one kind of object (use *Song* as the example)?
+A: Obviously, we should not have too many `Model` for one Song. One `Model` is
+ not so convenient. Two **seems** to be the best option. A Brief{X}Model for
+ minimum and a {X}Model for some details. Extra details can be visited by
+ library.{X}_{y} method.
+
+ Q-sub1: What attributes should a Brief{X}Model have?
+ A: There are several judging rules
+  1. A *human* MUST be able to identify which X it is when he saw all these attributes.
+  2. Each model instance must have an unique identifier to distinguish from each other.
+     The provider SHOULD identify which X it is when it knows the model type and
+     the indentifier.
+  3. All attributes are RECOMMENDED to be string type.
+  4. Less attributes as possible when the upper rules are satisfied.
+
+ Q-sub2: What attributes should a {X}Model have?
+ A: There are several judging rules
+  1. Refer to some existing spec. For example, for Song model, there is already
+     an ID3 tag spec. Almost all those fields defined in ID3 tag CAN be added to SongModel.
+  2. Refer to the provider server API spec. Usually, a provider have {x}_detail API
+     for a instance, and the {X}Model is RECOMMENDED to have the same attributes.
+  3. Generally, a {X}Model instance can be intialized by access one or two IO operations.
+     If too many operations are needed, the design CAN be bad.
+
+ Q-sub3: Rules for adding attributes to a {X}Model?
+ A:
+  1. MUST keep backward compatibility, which means all new attributes should be optional
+     or they have default values.
+  2. Non-string type attributes are not RECOMMENDED to add.
 """
 
 import time
