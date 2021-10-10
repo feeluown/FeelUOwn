@@ -14,6 +14,7 @@ from urllib.parse import urlparse
 
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
+from feeluown.library import NotSupported, ProviderV2, ProviderFlags as PF
 from feeluown.models.uri import NS_TYPE_MAP, TYPE_NS_MAP
 from feeluown.models import ModelType
 
@@ -42,16 +43,23 @@ class ShowHandler(AbstractHandler):
             rv = router.dispatch(path, {'library': self.library})
         except NotFound:
             raise CmdException(f'path {path} not found')
+        except NotSupported as e:
+            raise CmdException(str(e))
         return rv
 
 
 def get_model_or_raise(provider, model_type, model_id):
     ns = TYPE_NS_MAP[model_type]
-    model_cls = provider.get_model_cls(model_type)
-    model = model_cls.get(model_id)
-    if model is None:
-        raise CmdException(
-            f'{ns}:{model_id} not found in provider:{provider.identifier}')
+    # FIXME: use library.check_flags
+    if isinstance(provider, ProviderV2):
+        if provider.check_flags(model_type, PF.get):
+            model = provider.model_get(model_type, model_id)
+    else:
+        model_cls = provider.get_model_cls(model_type)
+        model = model_cls.get(model_id)
+        if model is None:
+            raise CmdException(
+                f'{ns}:{model_id} not found in provider:{provider.identifier}')
     return model
 
 
@@ -96,8 +104,10 @@ for ns, model_type in NS_TYPE_MAP.items():
 @use_provider
 def lyric(req, provider, sid):
     song = get_model_or_raise(provider, ModelType.song, sid)
-    if song.lyric is not None:
-        return song.lyric.content
+    library = req.ctx['library']
+    lyric = library.song_get_lyric(song)
+    if lyric is not None:
+        return lyric.content
     return ''
 
 

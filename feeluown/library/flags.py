@@ -26,3 +26,7 @@ class Flags(IntFlag):
     """
 
     current_user = 0x00100000
+
+    # Flags for Song
+    lyric = 0x100000000000
+    mv = 0x200000000000

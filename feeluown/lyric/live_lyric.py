@@ -59,8 +59,6 @@ class LiveLyric(object):
             self._set_lyric(None)
             return
 
-        song = self._app.library.cast_model_to_v1(song)
-
         def cb(future):
             try:
                 lyric = future.result()
@@ -69,8 +67,7 @@ class LiveLyric(object):
                 lyric = None
             self._set_lyric(lyric)
 
-        # TODO: use app.task_mgr instead
-        future = aio.run_in_executor(None, lambda: song.lyric)
+        future = aio.run_fn(self._app.library.song_get_lyric, song)
         future.add_done_callback(cb)
 
     def _set_lyric(self, lyric):

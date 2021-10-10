@@ -37,7 +37,8 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
  Q-sub2: What attributes should a {X}Model have?
  A: There are several judging rules
   1. Refer to some existing spec. For example, for Song model, there is already
-     an ID3 tag spec. Almost all those fields defined in ID3 tag CAN be added to SongModel.
+     an ID3 tag spec. Almost all those fields defined in ID3 tag CAN be added to
+     SongModel.
   2. Refer to the provider server API spec. Usually, a provider have {x}_detail API
      for a instance, and the {X}Model is RECOMMENDED to have the same attributes.
   3. Generally, a {X}Model instance can be intialized by access one or two IO operations.
@@ -197,6 +198,13 @@ class BriefSongModel(BaseBriefModel):
     duration_ms: str = ''
 
 
+class BriefVideoModel(BaseBriefModel):
+    meta: Any = ModelMeta.create(ModelType.video, is_brief=True)
+    title: str = ''
+    artists_name: str = ''
+    duration_ms: str = ''
+
+
 class BriefAlbumModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.album, is_brief=True)
     name: str = ''
@@ -265,3 +273,9 @@ class CommentModel(BaseNormalModel):
     parent: Optional[BriefCommentModel]
     #: the root comment id
     root_comment_id: Optional[str]
+
+
+class LyricModel(BaseNormalModel):
+    meta: Any = ModelMeta.create(ModelType.lyric, is_normal=True)
+    content: str
+    trans_content: str = ''

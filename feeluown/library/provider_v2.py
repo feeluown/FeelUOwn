@@ -3,9 +3,10 @@ from typing import Tuple, List, Optional, cast
 from feeluown.media import Media, Quality
 from feeluown.models import ModelType
 from .models import CommentModel
-from .model_protocol import SongProtocol
+from .model_protocol import SongProtocol, LyricProtocol
 from .flags import Flags
-from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn  # noqa
+from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
+    NotSupported  # noqa
 
 
 def check_flags(provider, model_type: ModelType, flags: Flags):
@@ -28,6 +29,11 @@ class ProviderV2:
         flags: dict = {}
 
     check_flags = check_flags
+
+    def model_get(self, model_type, model_id):
+        if model_type == ModelType.song:
+            return self.song_get(model_id)
+        raise NotSupported
 
     def has_current_user(self) -> bool:
         """Check if there is a logged in user."""
@@ -93,4 +99,8 @@ class ProviderV2:
         pass
 
     def song_get_web_url(self, song) -> str:
+        pass
+
+    # Flags.lyric
+    def song_get_lyric(self, song) -> Optional[LyricProtocol]:
         pass

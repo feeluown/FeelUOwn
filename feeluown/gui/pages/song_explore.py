@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from PyQt5.QtCore import Qt, QSize
@@ -6,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
 from feeluown.models.uri import reverse, resolve
-from feeluown.library import ProviderFlags as PF
+from feeluown.library import ProviderFlags as PF, NotSupported
 from feeluown.lyric import parse
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
@@ -15,6 +16,8 @@ from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.songs import SongListView, SongListModel
+
+logger = logging.getLogger(__name__)
 
 
 async def render(req, **kwargs):  # pylint: disable=too-many-locals
@@ -48,7 +51,6 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     else:
         view.copy_web_url_btn.hide()
 
-    album = app.library.cast_model_to_v1(song.album)
     view.header_label.setText(f'<h1>{song.title}</h1>')
     aio.create_task(view.album_info_label.show_song(song))
 
@@ -66,17 +68,22 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     else:
         view.comments_header.setText('<span>该提供方暂不支持查看歌曲评论，555</span>')
 
-    song_v1 = app.library.cast_model_to_v1(song)
-    lyric = await aio.run_fn(lambda: song_v1.lyric)
-    if lyric and lyric.content:
-        ms_sentence_map = parse(lyric.content)
-        sentences = []
-        for _, sentence in sorted(ms_sentence_map.items(),
-                                  key=lambda item: item[0]):
-            sentences.append(sentence)
-        view.lyric_label.set_lyric('\n'.join(sentences))
+    try:
+        lyric = app.library.song_get_lyric(song)
+    except NotSupported as e:
+        logger.info('cant show lyric due to %s', str(e))
+    else:
+        if lyric is not None and lyric.content:
+            ms_sentence_map = parse(lyric.content)
+            sentences = []
+            for _, sentence in sorted(ms_sentence_map.items(),
+                                      key=lambda item: item[0]):
+                sentences.append(sentence)
+            view.lyric_label.set_lyric('\n'.join(sentences))
 
     # Show album cover in the end since it's an expensive CPU/IO operation.
+    # FIXME: handle NotSupported exception
+    album = app.library.cast_model_to_v1(song.album)
     cover = await aio.run_fn(lambda: album.cover)
     aio.create_task(view.cover_label.show_cover(cover, reverse(album)))
 
