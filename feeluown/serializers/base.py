@@ -112,6 +112,7 @@ def try_cast_model_to_v1(model):
     if isinstance(model, BaseModel):
         app = _exec_globals.get('app')
         if app is not None:
+            # FIXME: handle NotSupported error
             model = app.library.cast_model_to_v1(model)
             return model
     return model

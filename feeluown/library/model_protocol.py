@@ -47,7 +47,22 @@ class BriefSongProtocol(ModelProtocol, Protocol):
     duration_ms: str
 
 
+class BriefVideoProtocol(ModelProtocol, Protocol):
+    """
+    MvModel is also a kind of VideoModel. There is no MvModel anymore.
+    """
+    name: str
+    artists_name: str
+    # Old VideoModel/MvModel does't have this field, so we give it
+    # a default value.
+    duration_ms: str = ''
+
+
 class BriefArtistProtocol(ModelProtocol, Protocol):
+    """
+    Note that the concept `artist` may be used in radio/mv/video model.
+    Be careful when adding new fields.
+    """
     name: str
 
 
@@ -65,11 +80,26 @@ class UserProtocol(BriefUserProtocol, Protocol):
 
 
 class SongProtocol(BriefSongProtocol, Protocol):
-    """
-    Actually, Song has much more attributes(disc/gene/date), so we may want to
-    extend SongProtocol in the future. I have an idea currently. We can define
-    SongExtMetaProtocol/SongExtXxxProtocol to extend SongProtocol.
-    """
     album: Optional[BriefAlbumProtocol]
     artists: List[BriefArtistProtocol]
     duration: int
+
+
+class VideoProtocol(BriefVideoProtocol, Protocol):
+    artists: List[BriefArtistProtocol]
+    # Old VideoModel/MvModel does't have this field, so we give it
+    # a default value.
+    duration: int = 0
+    cover: str
+    description: str
+
+
+class LyricProtocol(ModelProtocol, Protocol):
+    """
+    Comparing to v1 LyricModel, LyricProtocol does't have `song` field
+    because it is never used.
+
+    It seems BriefLyricProtocol is not needed.
+    """
+    content: str
+    trans_content: str = ''

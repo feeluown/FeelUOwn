@@ -47,16 +47,11 @@ class FakeLyric(object):
         self.content = lyric
 
 
-class FakeSong(object):
-    def __init__(self):
-        self.lyric = FakeLyric()
-
-
 @pytest.mark.asyncio
 async def test_no_song_changed(app_mock):
-    song = FakeSong()
-    app_mock.library.cast_model_to_v1.return_value = song
+    app_mock.library.song_get_lyric.return_value = FakeLyric()
     live_lyric = LiveLyric(app_mock)
+    song = object()
     live_lyric.on_song_changed(song)
     await asyncio.sleep(0.1)
     live_lyric.on_position_changed(60)

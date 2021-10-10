@@ -11,6 +11,7 @@ from PyQt5.QtWidgets import (
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
 from feeluown.player import PlaybackMode, State
+from feeluown.library import NotSupported
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import async_run, resize_font
@@ -443,7 +444,12 @@ class PlayerControlPanel(QFrame):
                     '{} - {}'.format(text, bitrate_text))
 
     async def update_mv_btn_status(self, song):
-        song = self._app.library.cast_model_to_v1(song)
+        try:
+            song = self._app.library.cast_model_to_v1(song)
+        except NotSupported:
+            self.mv_btn.setEnabled(False)
+            return
+
         try:
             mv = await async_run(lambda: song.mv)
         except ProviderIOError:

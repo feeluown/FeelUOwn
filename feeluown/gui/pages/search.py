@@ -48,7 +48,7 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
 
     async def render(self):
         self.meta_widget.show()
-        self.meta_widget.title = '搜索 “{}”'.format(self.q)
+        self.meta_widget.title = f'搜索 “{self.q}”'
         self.render_tab_bar()
 
         _, search_type, attrname, show_handler = self.tabs[self.tab_index]

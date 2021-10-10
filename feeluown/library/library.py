@@ -1,6 +1,6 @@
 import logging
 from functools import partial, lru_cache
-from typing import List, cast
+from typing import List, cast, Optional
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
@@ -19,6 +19,7 @@ from .models import (
 )
 from .model_protocol import (
     ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
+    LyricProtocol, VideoProtocol,
 )
 
 
@@ -385,6 +386,8 @@ class Library:
 
         During the model migration from v1 to v2, v2 may lack some ability.
         Cast the model to v1 to acquire such ability.
+
+        :raises NotSupported: provider doesn't support v1 model
         """
         if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
             return self._cast_model_to_v1_impl(model)
@@ -394,6 +397,10 @@ class Library:
     def _cast_model_to_v1_impl(self, model):
         provider = self.get_or_raise(model.source)
         ModelCls = provider.get_model_cls(model.meta.model_type)
+        # The source of the default SongModel is None
+        if ModelCls.source is None:
+            raise NotSupported(
+                f'provider has no v1 model impl for {model.meta.model_type}')
         kv = {}
         for field in ModelCls.meta.fields_display:
             kv[field] = getattr(model, field)
@@ -454,9 +461,6 @@ class Library:
 
         .. versionadded:: 3.7.5
         """
-        provider = self.get(song.source)
-        if provider is None:
-            raise MediaNotFound(f'provider:{song.source} not found')
         song_v1 = self.cast_model_to_v1(song)
         mv = song_v1.mv
         if mv.meta.support_multi_quality:
@@ -471,11 +475,23 @@ class Library:
             raise MediaNotFound
         return media
 
-    def song_get_lyric(self, song: BriefSongModel):
+    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
         pass
 
-    def song_get_mv(self, song: BriefSongModel):
-        pass
+    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
+        """
+
+        :raises NotSupported:
+        :raises ProviderNotFound:
+        """
+        provider = self.get_or_raise(song.source)
+        if self.check_flags_by_model(song, PF.lyric):
+            lyric = provider.song_get_lyric(song)
+        else:
+            song_v1 = self.cast_model_to_v1(song)
+            lyric_v1 = song_v1.lyric
+            lyric = cast(Optional[LyricProtocol], lyric_v1)
+        return lyric
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
         provider = self.get_or_raise(song.source)

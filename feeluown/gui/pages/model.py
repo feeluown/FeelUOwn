@@ -19,11 +19,13 @@ async def render(req, **kwargs):
         renderer = SongRenderer(model)
         await app.ui.table_container.set_renderer(renderer)
     elif model.meta.model_type == ModelType.artist:
+        # FIXME: handle NotSupported exception
         artist = app.library.cast_model_to_v1(model)
         tab_index = int(req.query.get('tab_index', 1))
         renderer = ArtistRenderer(artist, tab_index)
         await app.ui.table_container.set_renderer(renderer)
     elif model.meta.model_type == ModelType.album:
+        # FIXME: handle NotSupported exception
         album = app.library.cast_model_to_v1(model)
         tab_index = int(req.query.get('tab_index', 1))
         renderer = AlbumRenderer(album, tab_index)
@@ -43,6 +45,7 @@ class SongRenderer(Renderer):
         self.meta_widget.show()
 
         brief_album = song.album
+        # FIXME: handle NotSupported exception
         album = self._app.library.cast_model_to_v1(brief_album)
         cover = await aio.run_in_executor(None, lambda: album.cover)
         if cover:
