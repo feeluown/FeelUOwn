@@ -80,7 +80,7 @@ class PreemptiveTaskSpec:
         try:
             future.result()
         except Exception as e:  # noqa
-            logger.warn(f'Task {self.name} failed: {e}')
+            logger.exception(f'Task {self.name} failed')
 
 
 class TaskManager:

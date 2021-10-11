@@ -29,3 +29,8 @@ class NoUserLoggedIn(LibraryException):
 
 class MediaNotFound(LibraryException):
     pass
+
+
+class ValueIsEmpty(LibraryException):
+    """The attribute value is None
+    """

@@ -11,14 +11,14 @@ from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
     NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
-    ProviderNotFound,
+    ProviderNotFound, ValueIsEmpty,
 )
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel, BriefSongModel, SongModel, UserModel,
 )
 from .model_protocol import (
-    ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
+    BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
     LyricProtocol, VideoProtocol,
 )
 
@@ -438,6 +438,7 @@ class Library:
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
+            # FIXME: raise ProviderNotfound
             raise MediaNotFound(f'provider:{song.source} not found')
         if song.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for song
@@ -475,11 +476,29 @@ class Library:
             raise MediaNotFound
         return media
 
-    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
-        pass
-
-    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
+    def song_get_mv(self, song: BriefSongProtocol) -> VideoProtocol:
         """
+
+        :raises NotSupported:
+        :raises ProviderNotFound:
+        :raises ValueIsEmpty:
+        """
+        provider = self.get_or_raise(song.source)
+        if self.check_flags_by_model(song, PF.mv):
+            mv = provider.song_get_mv(song)
+        else:
+            song_v1 = self.cast_model_to_v1(song)
+            mv = song_v1.mv
+            mv = cast(Optional[VideoProtocol], mv)
+        if mv is None:
+            raise ValueIsEmpty
+        return mv
+
+    def song_get_lyric(self, song: BriefSongModel) -> LyricProtocol:
+        """
+
+        Return None when lyric does not exist instead of raising exceptions,
+        because it is predictable.
 
         :raises NotSupported:
         :raises ProviderNotFound:
@@ -491,11 +510,32 @@ class Library:
             song_v1 = self.cast_model_to_v1(song)
             lyric_v1 = song_v1.lyric
             lyric = cast(Optional[LyricProtocol], lyric_v1)
+        if lyric is None:
+            raise ValueIsEmpty
         return lyric
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
         provider = self.get_or_raise(song.source)
         return provider.song_get_web_url(song)
+
+    # --------
+    # Video
+    # --------
+    def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
+        provider = self.get_or_raise(video.source)
+        if video.meta.flags & MF.v2:
+            # provider MUST has multi_quality flag for video
+            assert self.check_flags_by_model(video, PF.multi_quality)
+            media, _ = provider.video_select_media(video, policy)
+        else:
+            # V1 VideoModel has attribute `media`
+            if video.meta.support_multi_quality:
+                media, _ = video.select_media(policy)  # type: ignore
+            else:
+                media = video.media  # type: ignore
+        if not media:
+            raise MediaNotFound
+        return media
 
     # --------
     # Provider

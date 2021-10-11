@@ -51,7 +51,7 @@ class BriefVideoProtocol(ModelProtocol, Protocol):
     """
     MvModel is also a kind of VideoModel. There is no MvModel anymore.
     """
-    name: str
+    title: str
     artists_name: str
     # Old VideoModel/MvModel does't have this field, so we give it
     # a default value.
@@ -91,7 +91,6 @@ class VideoProtocol(BriefVideoProtocol, Protocol):
     # a default value.
     duration: int = 0
     cover: str
-    description: str
 
 
 class LyricProtocol(ModelProtocol, Protocol):

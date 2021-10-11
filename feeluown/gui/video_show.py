@@ -1,8 +1,8 @@
+from feeluown.library.excs import MediaNotFound
 import logging
 from contextlib import contextmanager
 from enum import IntEnum
 
-from feeluown.library import NotSupported
 from feeluown.player.mpvplayer import _mpv_set_property_string
 
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
@@ -120,22 +120,21 @@ class VideoShowCtl:
 
     def play_mv(self):
         song = self._app.player.current_song
+        if song is None:
+            return
+
+        # The mv button only shows when there is a valid mv object
+        mv = self._app.library.song_get_mv(song)
         try:
-            song = self._app.library.cast_model_to_v1(song)
-        except NotSupported:
-            logger.error('the mv button should have been hidden')
+            media = self._app.library.video_prepare_media(
+                mv,
+                self._app.config.VIDEO_SELECT_POLICY
+            )
+        except MediaNotFound:
+            self._app.show_msg('MV 没有可用的播放链接')
         else:
-            mv = song.mv if song else None
-            if mv is not None:
-                if mv.meta.support_multi_quality:
-                    media, _ = mv.select_media()
-                else:
-                    media = mv.media
-                if media:
-                    self.set_mode(Mode.normal)
-                    self._app.player.play(media)
-                else:
-                    self._app.show_msg('MV 没有可用的播放链接')
+            self.set_mode(Mode.normal)
+            self._app.player.play(media)
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode
