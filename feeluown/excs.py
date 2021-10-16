@@ -10,7 +10,11 @@ class FuoException(Exception):
     pass
 
 
-class ProviderIOError(FuoException, RequestException):
+class LibraryException(FuoException):
+    pass
+
+
+class ProviderIOError(LibraryException, RequestException):
     """Read/write data from/to provider failed
 
     currently, all providers use requests to send http request,
@@ -40,3 +44,37 @@ class ReaderException(ProviderIOError):
 
 class ReadFailed(ProviderIOError):
     """(DEPRECATED) use ProviderIOError instead"""
+
+
+class ResourceNotFound(LibraryException):
+    pass
+
+
+class ProviderAlreadyRegistered(LibraryException):
+    pass
+
+
+class ProviderNotFound(ResourceNotFound):
+    pass
+
+
+class ModelNotFound(ResourceNotFound):
+    """Model is not found
+
+    For example, a model identifier is invalid.
+
+    .. versionadded:: 3.7.7
+    """
+
+
+class NotSupported(LibraryException):
+    """Provider does not support the operation
+    """
+
+
+class MediaNotFound(ResourceNotFound):
+    pass
+
+
+class NoUserLoggedIn(LibraryException):
+    """(DEPRECATED) return None when there is no user logged in"""

@@ -12,7 +12,6 @@ from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
 from feeluown.player import PlaybackMode, State
-from feeluown.library import ResourceNotFound
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import resize_font
@@ -450,11 +449,12 @@ class PlayerControlPanel(QFrame):
         except ProviderIOError:
             logger.exception('fetch song mv info failed')
             self.mv_btn.setEnabled(False)
-        except ResourceNotFound:
-            self.mv_btn.setEnabled(False)
         else:
-            self.mv_btn.setToolTip(mv.name)
-            self.mv_btn.setEnabled(True)
+            if mv is None:
+                self.mv_btn.setEnabled(False)
+            else:
+                self.mv_btn.setToolTip(mv.name)
+                self.mv_btn.setEnabled(True)
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)

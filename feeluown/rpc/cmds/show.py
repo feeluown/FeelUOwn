@@ -14,8 +14,7 @@ from urllib.parse import urlparse
 
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
-from feeluown.library import NotSupported, ProviderV2, ProviderFlags as PF, \
-    ResourceNotFound
+from feeluown.library import NotSupported, ProviderV2, ProviderFlags as PF
 from feeluown.models.uri import NS_TYPE_MAP, TYPE_NS_MAP
 from feeluown.models import ModelType
 
@@ -106,12 +105,10 @@ for ns, model_type in NS_TYPE_MAP.items():
 def lyric(req, provider, sid):
     song = get_model_or_raise(provider, ModelType.song, sid)
     library = req.ctx['library']
-    try:
-        lyric = library.song_get_lyric(song)
-    except ResourceNotFound:
+    lyric = library.song_get_lyric(song)
+    if lyric is None:
         return ''
-    else:
-        return lyric.content
+    return lyric.content
 
 
 @route('/<provider>/playlists/<pid>/songs')

@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
 from feeluown.models.uri import reverse, resolve
-from feeluown.library import ProviderFlags as PF, NotSupported, ResourceNotFound
+from feeluown.library import ProviderFlags as PF, NotSupported
 from feeluown.lyric import parse
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
@@ -70,15 +70,16 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
 
     try:
         lyric = app.library.song_get_lyric(song)
-    except (NotSupported, ResourceNotFound) as e:
+    except NotSupported as e:
         logger.info('cant show lyric due to %s', str(e))
     else:
-        ms_sentence_map = parse(lyric.content)
-        sentences = []
-        for _, sentence in sorted(ms_sentence_map.items(),
-                                  key=lambda item: item[0]):
-            sentences.append(sentence)
-        view.lyric_label.set_lyric('\n'.join(sentences))
+        if lyric is not None:
+            ms_sentence_map = parse(lyric.content)
+            sentences = []
+            for _, sentence in sorted(ms_sentence_map.items(),
+                                      key=lambda item: item[0]):
+                sentences.append(sentence)
+            view.lyric_label.set_lyric('\n'.join(sentences))
 
     # Show album cover in the end since it's an expensive CPU/IO operation.
     # FIXME: handle NotSupported exception

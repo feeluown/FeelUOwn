@@ -11,7 +11,7 @@ from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
     NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
-    ProviderNotFound, ResourceNotFound,
+    ProviderNotFound,
 )
 from .flags import Flags as PF
 from .models import (
@@ -476,12 +476,11 @@ class Library:
             raise MediaNotFound
         return media
 
-    def song_get_mv(self, song: BriefSongProtocol) -> VideoProtocol:
+    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
         """
 
         :raises NotSupported:
         :raises ProviderNotFound:
-        :raises ResourceNotFound:
         """
         provider = self.get_or_raise(song.source)
         if self.check_flags_by_model(song, PF.mv):
@@ -490,11 +489,9 @@ class Library:
             song_v1 = self.cast_model_to_v1(song)
             mv = song_v1.mv
             mv = cast(Optional[VideoProtocol], mv)
-        if mv is None:
-            raise ResourceNotFound
         return mv
 
-    def song_get_lyric(self, song: BriefSongModel) -> LyricProtocol:
+    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
         """
 
         Return None when lyric does not exist instead of raising exceptions,
@@ -510,8 +507,6 @@ class Library:
             song_v1 = self.cast_model_to_v1(song)
             lyric_v1 = song_v1.lyric
             lyric = cast(Optional[LyricProtocol], lyric_v1)
-        if lyric is None:
-            raise ResourceNotFound
         return lyric
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
