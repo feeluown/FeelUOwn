@@ -106,9 +106,9 @@ def lyric(req, provider, sid):
     song = get_model_or_raise(provider, ModelType.song, sid)
     library = req.ctx['library']
     lyric = library.song_get_lyric(song)
-    if lyric is not None:
-        return lyric.content
-    return ''
+    if lyric is None:
+        return ''
+    return lyric.content
 
 
 @route('/<provider>/playlists/<pid>/songs')

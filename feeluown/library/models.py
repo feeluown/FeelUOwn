@@ -279,3 +279,27 @@ class LyricModel(BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.lyric, is_normal=True)
     content: str
     trans_content: str = ''
+
+
+class VideoModel(BaseNormalModel):
+    meta: Any = ModelMeta.create(ModelType.video, is_brief=True)
+    title: str
+    artists: List[BriefArtistModel]
+    duration: int
+    cover: str
+
+    @property
+    def artists_name(self):
+        # [a, b, c] -> 'a, b & c'
+        artists_name = ', '.join((artist.name
+                                  for artist in self.artists))
+        return ' & '.join(artists_name.rsplit(', ', 1))
+
+    @property
+    def duration_ms(self):
+        if self.duration is not None:
+            seconds = self.duration / 1000
+            m, s = seconds / 60, seconds % 60
+        else:
+            m, s = 0, 0
+        return '{:02}:{:02}'.format(int(m), int(s))

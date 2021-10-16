@@ -8,13 +8,13 @@ from PyQt5.QtWidgets import (
     QPushButton, QSizePolicy, QMenu,
 )
 
+from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
 from feeluown.player import PlaybackMode, State
-from feeluown.library import NotSupported
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
-from feeluown.gui.helpers import async_run, resize_font
+from feeluown.gui.helpers import resize_font
 from feeluown.gui.widgets import TextButton
 from feeluown.gui.widgets.playlist_button import PlaylistButton
 from feeluown.gui.widgets.volume_button import VolumeButton
@@ -445,22 +445,16 @@ class PlayerControlPanel(QFrame):
 
     async def update_mv_btn_status(self, song):
         try:
-            song = self._app.library.cast_model_to_v1(song)
-        except NotSupported:
-            self.mv_btn.setEnabled(False)
-            return
-
-        try:
-            mv = await async_run(lambda: song.mv)
+            mv = await aio.run_fn(self._app.library.song_get_mv, song)
         except ProviderIOError:
             logger.exception('fetch song mv info failed')
             self.mv_btn.setEnabled(False)
         else:
-            if mv:
+            if mv is None:
+                self.mv_btn.setEnabled(False)
+            else:
                 self.mv_btn.setToolTip(mv.name)
                 self.mv_btn.setEnabled(True)
-            else:
-                self.mv_btn.setEnabled(False)
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)

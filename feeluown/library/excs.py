@@ -1,31 +1,12 @@
-class LibraryException(Exception):
-    pass
-
-
-class ProviderAlreadyExists(LibraryException):
-    pass
-
-
-class ProviderNotFound(LibraryException):
-    pass
-
-
-class ModelNotFound(LibraryException):
-    """Model is not found.
-
-    For example, a model identifier is invalid.
-
-    .. versionadded:: 3.7.7
-    """
-
-
-class NotSupported(LibraryException):
-    pass
-
-
-class NoUserLoggedIn(LibraryException):
-    pass
-
-
-class MediaNotFound(LibraryException):
-    pass
+# Old code imports these exceptions from this module
+from feeluown.excs import (  # noqa
+    LibraryException,
+    ResourceNotFound,
+    # FIXME: ProviderAlreadyExists should be renamed to ProviderAlreadyRegistered
+    ProviderAlreadyRegistered as ProviderAlreadyExists,
+    ProviderNotFound,
+    ModelNotFound,
+    NotSupported,
+    NoUserLoggedIn,
+    MediaNotFound,
+)  # noqa

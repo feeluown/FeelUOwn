@@ -73,7 +73,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     except NotSupported as e:
         logger.info('cant show lyric due to %s', str(e))
     else:
-        if lyric is not None and lyric.content:
+        if lyric is not None:
             ms_sentence_map = parse(lyric.content)
             sentences = []
             for _, sentence in sorted(ms_sentence_map.items(),

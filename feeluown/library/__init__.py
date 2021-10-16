@@ -9,7 +9,7 @@ from .models import ModelFlags, BaseModel, ModelType, \
     BriefArtistModel, BriefAlbumModel, \
     BriefCommentModel, CommentModel, \
     BriefUserModel, UserModel, \
-    LyricModel, \
+    LyricModel, VideoModel, \
     cook_artists_name
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
-    ProviderAlreadyExists
+    ProviderAlreadyExists, ResourceNotFound
