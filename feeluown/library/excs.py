@@ -2,16 +2,20 @@ class LibraryException(Exception):
     pass
 
 
+class ResourceNotFound(LibraryException):
+    pass
+
+
 class ProviderAlreadyExists(LibraryException):
     pass
 
 
-class ProviderNotFound(LibraryException):
+class ProviderNotFound(ResourceNotFound):
     pass
 
 
-class ModelNotFound(LibraryException):
-    """Model is not found.
+class ModelNotFound(ResourceNotFound):
+    """Model is not found
 
     For example, a model identifier is invalid.
 
@@ -20,17 +24,13 @@ class ModelNotFound(LibraryException):
 
 
 class NotSupported(LibraryException):
-    pass
+    """Provider does not support the operation
+    """
 
 
 class NoUserLoggedIn(LibraryException):
     pass
 
 
-class MediaNotFound(LibraryException):
+class MediaNotFound(ResourceNotFound):
     pass
-
-
-class ValueIsEmpty(LibraryException):
-    """The attribute value is None
-    """

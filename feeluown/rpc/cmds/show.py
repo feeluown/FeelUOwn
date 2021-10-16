@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
 from feeluown.library import NotSupported, ProviderV2, ProviderFlags as PF, \
-    ValueIsEmpty
+    ResourceNotFound
 from feeluown.models.uri import NS_TYPE_MAP, TYPE_NS_MAP
 from feeluown.models import ModelType
 
@@ -108,7 +108,7 @@ def lyric(req, provider, sid):
     library = req.ctx['library']
     try:
         lyric = library.song_get_lyric(song)
-    except ValueIsEmpty:
+    except ResourceNotFound:
         return ''
     else:
         return lyric.content

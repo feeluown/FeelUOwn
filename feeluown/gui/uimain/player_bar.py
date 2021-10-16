@@ -12,7 +12,7 @@ from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
 from feeluown.player import PlaybackMode, State
-from feeluown.library import ValueIsEmpty
+from feeluown.library import ResourceNotFound
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import resize_font
@@ -450,7 +450,7 @@ class PlayerControlPanel(QFrame):
         except ProviderIOError:
             logger.exception('fetch song mv info failed')
             self.mv_btn.setEnabled(False)
-        except ValueIsEmpty:
+        except ResourceNotFound:
             self.mv_btn.setEnabled(False)
         else:
             self.mv_btn.setToolTip(mv.name)
