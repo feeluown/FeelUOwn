@@ -151,6 +151,13 @@ class MvModel(BaseModel, MultiQualityMixin):
         fields = ['name', 'media', 'desc', 'cover', 'artist']
         support_multi_quality = False
 
+    @property
+    def title(self):
+        """
+        V2 VideoModel use `title` instead of `name`.
+        """
+        return self.name
+
 
 class SongModel(BaseModel, MultiQualityMixin):
     QualityCls = Quality.Audio

@@ -453,7 +453,7 @@ class PlayerControlPanel(QFrame):
             if mv is None:
                 self.mv_btn.setEnabled(False)
             else:
-                self.mv_btn.setToolTip(mv.name)
+                self.mv_btn.setToolTip(mv.title)
                 self.mv_btn.setEnabled(True)
 
     def _on_player_state_changed(self, state):
