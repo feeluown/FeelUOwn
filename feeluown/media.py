@@ -1,4 +1,5 @@
 import re
+import warnings
 from enum import Enum
 
 
@@ -178,7 +179,7 @@ class MediaType:
     image = 'image'
 
 
-class AudioMeta:
+class AudioProps:
     def __init__(self, bitrate=None, format=None):
         #: audio bitrate, unit is kbps, int
         self.bitrate = bitrate
@@ -192,20 +193,20 @@ class AudioMeta:
         )
 
 
-class VideoMeta:
+class VideoProps:
     pass
 
 
-class ImageMeta:
+class ImageProps:
     def __init__(self, size=None, format=None):
         self.size = size
         self.format = format
 
 
 TYPE_METACLS_MAP = {
-    MediaType.audio: AudioMeta,
-    MediaType.image: ImageMeta,
-    MediaType.video: VideoMeta,
+    MediaType.audio: AudioProps,
+    MediaType.image: ImageProps,
+    MediaType.video: VideoProps,
 }
 
 
@@ -220,7 +221,7 @@ class Media:
         self.type_ = type_
 
         metacls = TYPE_METACLS_MAP[type_]
-        self._metadata = metacls(**kwargs)
+        self._props = metacls(**kwargs)
 
         # network options
         self.http_headers = http_headers or {}
@@ -229,8 +230,13 @@ class Media:
         self.url = media.url
         self.http_headers = media.http_headers
         self.type_ = media.type_
-        self._metadata = media._metadata
+        self._props = media._props
 
     @property
     def metadata(self):
-        return self._metadata
+        warnings.warn("use 'props' attribute instead", DeprecationWarning)
+        return self._props
+
+    @property
+    def props(self):
+        return self._props

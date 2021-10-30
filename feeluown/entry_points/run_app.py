@@ -1,4 +1,5 @@
 import os
+import sys
 import warnings
 
 from feeluown.app import (
@@ -17,6 +18,9 @@ from .base import (
 
 
 def run_forever(args, config):
+    # Show deprecation warning when user does not set it.
+    if not sys.warnoptions:
+        warnings.simplefilter('default', DeprecationWarning)
     # ensure requiresments, raise SystemExit if failed
     os.chdir(os.path.join(os.path.dirname(__file__), '../..'))
     ensure_dirs()

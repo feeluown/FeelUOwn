@@ -436,10 +436,10 @@ class PlayerControlPanel(QFrame):
 
     def on_player_media_changed(self, media):
         if media is not None and media.type_ == MediaType.audio:
-            metadata = media.metadata
-            if metadata.bitrate:
+            props = media.props
+            if props.bitrate:
                 text = self.song_source_label.text()
-                bitrate_text = str(metadata.bitrate) + 'kbps'
+                bitrate_text = str(props.bitrate) + 'kbps'
                 self.song_source_label.setText(
                     '{} - {}'.format(text, bitrate_text))
 
