@@ -4,6 +4,7 @@ from .mpvplayer import MpvPlayer as Player
 from .playlist import PlaylistMode, Playlist
 from .fm import FM
 from .radio import SongRadio
+from .metadata import MetadataFields, Metadata
 
 
 __all__ = (
@@ -16,4 +17,7 @@ __all__ = (
 
     'Player',
     'Playlist',
+
+    'Metadata',
+    'MetadataFields',
 )

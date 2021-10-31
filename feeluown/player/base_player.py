@@ -6,6 +6,7 @@ from enum import IntEnum
 from feeluown.utils.dispatch import Signal
 # some may import `Playlist` and `PlaybackMode` from player module
 from feeluown.player.playlist import PlaybackMode, Playlist
+from .metadata import MetadataFields, Metadata
 
 __all__ = ('Playlist',
            'AbstractPlayer',
@@ -36,6 +37,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         self._duration = None
 
         self._current_media = None
+        self._current_metadata = Metadata()
 
         #: player position changed signal
         self.position_changed = Signal()
@@ -54,6 +56,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: media changed signal
         self.media_changed = Signal()
         self.media_loaded = Signal()
+        self.metadata_changed = Signal()
 
         #: volume changed signal: (int)
         self.volume_changed = Signal()
@@ -84,8 +87,21 @@ class AbstractPlayer(metaclass=ABCMeta):
         return self._current_media
 
     @property
+    def current_metadata(self) -> dict:
+        """Metadata for the current media
+
+        Check `MetadataFields` for all possible fields. Note that some fields
+        can be missed if them are unknown. For example, a video's metadata
+        may have no genre info.
+        """
+        return self._current_metadata
+
+    @property
     def current_song(self):
-        """alias of playlist.current_song"""
+        """(Deprecated) alias of playlist.current_song
+
+        Please use playlist.current_song instead.
+        """
         return self._playlist.current_song
 
     @property
@@ -128,12 +144,13 @@ class AbstractPlayer(metaclass=ABCMeta):
             self.duration_changed.emit(value)
 
     @abstractmethod
-    def play(self, url, video=True):
+    def play(self, media, video=True, metadata=None):
         """play media
 
-        :param url: a local file absolute path, or a http url that refers to a
+        :param media: a local file absolute path, or a http url that refers to a
             media file
         :param video: show video or not
+        :param metadata: metadata for the media
         """
 
     @abstractmethod
@@ -205,7 +222,14 @@ class AbstractPlayer(metaclass=ABCMeta):
             if media is None:
                 self._playlist.next()
             else:
-                self.play(media)
+                metadata = Metadata({
+                    MetadataFields.source: song.source,
+                    MetadataFields.title: song.title_display,
+                    # The song.artists_name should return a list of strings
+                    MetadataFields.artists: [song.artists_name_display],
+                    MetadataFields.album: song.album_name_display,
+                })
+                self.play(media, metadata=metadata)
         else:
             self.stop()
 

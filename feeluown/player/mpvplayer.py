@@ -1,7 +1,10 @@
+from feeluown.gui.widgets import artist
 import locale
 import logging
+from sys import argv
 
 from feeluown.utils.utils import use_mpv_old
+from .metadata import MetadataFields, Metadata
 
 if use_mpv_old():
     from mpv_old import (  # type: ignore
@@ -90,24 +93,32 @@ class MpvPlayer(AbstractPlayer):
     def shutdown(self):
         self._mpv.terminate()
 
-    def play(self, media, video=True):
-        # if not (self._app.mode & self._app.GuiMode):
-        #     video = False
-        logger.debug("Player will play: '%s'", media)
-        if isinstance(media, Media):
-            media = media
-        else:  # media is a url
-            media = Media(media)
-        self._set_http_headers(media.http_headers)
-        url = media.url
-
-        # Clear playlist before play next song,
-        # otherwise, mpv will seek to the last position and play.
+    def play(self, media, video=True, metadata=None):
         self.media_about_to_changed.emit(self._current_media, media)
-        self._mpv.playlist_clear()
-        self._mpv.play(url)
-        self._current_media = media
+        if media is None:
+            self._mpv.playlist_clear()
+            self._current_media = None
+        else:
+            logger.debug("Player will play: '%s'", media)
+            if isinstance(media, Media):
+                media = media
+            else:  # media is a url
+                media = Media(media)
+            self._set_http_headers(media.http_headers)
+            url = media.url
+            # Clear playlist before play next song,
+            # otherwise, mpv will seek to the last position and play.
+            self._mpv.playlist_clear()
+            self._mpv.play(url)
+            self._current_media = media
         self.media_changed.emit(media)
+        if metadata is None:
+            self._current_metadata = {}
+        else:
+            # The metadata may be set by manual or automatic
+            metadata['__setby__'] = 'manual'
+            self._current_metadata = metadata
+        self.metadata_changed.emit(self.current_metadata)
 
     def set_play_range(self, start=None, end=None):
         if self._version >= (1, 28):
@@ -137,7 +148,7 @@ class MpvPlayer(AbstractPlayer):
     def stop(self):
         self._mpv.pause = True
         self.state = State.stopped
-        self._current_media = None
+        self.play(None)
         self._mpv.playlist_clear()
         logger.info('Player stopped.')
 
@@ -188,6 +199,21 @@ class MpvPlayer(AbstractPlayer):
                 self.media_finished.emit()
         elif event_id == MpvEventID.FILE_LOADED:
             self.media_loaded.emit()
+        elif event_id == MpvEventID.METADATA_UPDATE:
+            metadata = dict(self._mpv.metadata)  # type: ignore
+            logger.debug('metadata updated to %s', metadata)
+            if self._current_metadata.get('__setby__') != 'manual':
+                self._current_metadata['__setby__'] = 'automatic'
+                mapping = Metadata({MetadataFields.title: 'title',
+                                    MetadataFields.album: 'album',
+                                    MetadataFields.artists: 'artist',})
+                for src, tar in mapping.items():
+                    if tar in metadata:
+                        value = metadata[tar]
+                        if src is MetadataFields.artists:
+                            value = [value]
+                        self._current_metadata[src] = value
+                self.metadata_changed.emit(self.current_metadata)
 
     def _set_http_headers(self, http_headers):
         if http_headers:

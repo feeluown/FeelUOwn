@@ -193,6 +193,8 @@ class BaseNormalModel(BaseModel):
 class BriefSongModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.song, is_brief=True)
     title: str = ''
+    # TODO: maybe there should be a field `artist_names`
+    # which return a list of artist name.
     artists_name: str = ''
     album_name: str = ''
     duration_ms: str = ''
