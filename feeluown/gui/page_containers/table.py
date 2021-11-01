@@ -12,7 +12,7 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ModelState, NotSupported, ModelFlags
+from feeluown.library import ModelState, NotSupported, ModelFlags, ProviderFlags as PF
 from feeluown.models import reverse, ModelType
 from feeluown.player import Metadata, MetadataFields
 
@@ -430,10 +430,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._app.player.play_song(song)
 
     async def play_video(self, video):
-        media = await aio.run_in_executor(None, lambda: video.media)
-        metadata = Metadata({MetadataFields.title: video.title,
-                             MetadataFields.source: video.source})
-        self._app.player.play(media, metadata=metadata)
+        await aio.run_fn(self._app.ui.video_show_ctl.play_video, video)
 
     def play_all(self):
         task_name = 'play-all'

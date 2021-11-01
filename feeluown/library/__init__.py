@@ -16,7 +16,7 @@ from .models import ModelFlags, BaseModel, ModelType, \
     BriefArtistModel, BriefAlbumModel, \
     BriefCommentModel, CommentModel, \
     BriefUserModel, UserModel, \
-    LyricModel, VideoModel, \
+    LyricModel, VideoModel, BriefVideoModel, \
     cook_artists_name
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound

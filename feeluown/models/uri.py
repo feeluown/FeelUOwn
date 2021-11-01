@@ -248,7 +248,7 @@ def resolve(line, model=None):
 
     for example, line can be 'fuo://local/songs/1/cover/data'
     """
-    from feeluown.library import ProviderFlags, BriefSongModel
+    from feeluown.library import ProviderFlags, BriefSongModel, BriefVideoModel
 
     if model is None:
         model, path = parse_line(line)
@@ -261,6 +261,9 @@ def resolve(line, model=None):
                and library.check_flags(
                    model.source, model.meta.model_type, ProviderFlags.model_v2):
                 model = BriefSongModel.from_display_model(model)
+            elif model.meta.model_type == ModelType.video \
+                 and library.check_flags_by_model(model, ProviderFlags.model_v2):
+                model = BriefVideoModel.from_display_model(model)
             else:
                 model_cls = provider.get_model_cls(model.meta.model_type)
                 model = model_cls(model)

@@ -168,9 +168,12 @@ class BaseBriefModel(BaseModel):
             if field in ('identifier', 'source', 'exists'):
                 value = object.__getattribute__(model, field)
             else:
-                assert field in model.meta.fields_display, \
-                    f'{field} must be a display field'
-                value = getattr(model, f'{field}_display')
+                if field in model.meta.fields_display:
+                    value = getattr(model, f'{field}_display')
+                else:
+                    # For example, BriefVideoModel has field `artists_name` and
+                    # the old model does not have such display field.
+                    value = ''
             data[field] = value
         return cls(**data)
 
