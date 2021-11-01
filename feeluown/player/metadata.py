@@ -2,7 +2,6 @@ from collections.abc import MutableMapping
 from enum import Enum
 
 
-
 class MetadataFields(Enum):
     """
     Check the following docs for fields definition
@@ -23,6 +22,8 @@ class MetadataFields(Enum):
 
 
 class Metadata(MutableMapping):
+    """Metadata is a dict that transform the key to MetadataFields.
+    """
     def __init__(self, *args, **kwargs):
         self._store = dict()
         self.update(dict(*args, **kwargs))

@@ -1,7 +1,5 @@
-from feeluown.gui.widgets import artist
 import locale
 import logging
-from sys import argv
 
 from feeluown.utils.utils import use_mpv_old
 from .metadata import MetadataFields, Metadata
@@ -206,7 +204,7 @@ class MpvPlayer(AbstractPlayer):
                 self._current_metadata['__setby__'] = 'automatic'
                 mapping = Metadata({MetadataFields.title: 'title',
                                     MetadataFields.album: 'album',
-                                    MetadataFields.artists: 'artist',})
+                                    MetadataFields.artists: 'artist'})
                 for src, tar in mapping.items():
                     if tar in metadata:
                         value = metadata[tar]
