@@ -311,18 +311,15 @@ class PlayerControlPanel(QFrame):
             lambda volume: setattr(self._app.player, 'volume', volume))
 
         player = self._app.player
-
-        player.state_changed.connect(self._on_player_state_changed,
-                                     aioqueue=True)
-        player.playlist.playback_mode_changed.connect(
-            self.on_playback_mode_changed, aioqueue=True)
-        player.playlist.song_changed.connect(
-            self.on_player_song_changed, aioqueue=True)
-        player.media_changed.connect(
-            self.on_player_media_changed, aioqueue=True)
+        playlist = player.playlist
+        playlist.playback_mode_changed.connect(self.on_playback_mode_changed,
+                                               aioqueue=True)
+        player.playlist.song_changed.connect(self.on_player_song_changed, aioqueue=True)
+        player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
+        player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
+        player.media_changed.connect(self.on_player_media_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
-        self._app.live_lyric.sentence_changed.connect(
-            self.lyric_window.set_sentence)
+        self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
         self.lyric_window.play_previous_needed.connect(player.playlist.previous)
         self.lyric_window.play_next_needed.connect(player.playlist.next)
 
@@ -410,7 +407,7 @@ class PlayerControlPanel(QFrame):
             pm_idx = 0
         playlist.playback_mode = self._playback_modes[pm_idx]
 
-    def on_playback_mode_changed(self, playback_mode):
+    def on_playback_mode_changed(self, _):
         self._update_pms_btn_text()
 
     def _update_pms_btn_text(self):
@@ -419,18 +416,6 @@ class PlayerControlPanel(QFrame):
         self.pms_btn.setText(alias)
 
     def on_player_song_changed(self, song):
-        if song is None:
-            self.song_source_label.setText('歌曲来源')
-            self.song_title_label.setText('No song is playing.')
-            return
-        source_name_map = {p.identifier: p.name
-                           for p in self._app.library.list()}
-        text = '{} - {}'.format(song.title_display, song.artists_name_display)
-        # width -> three button + source label + text <= progress slider
-        # three button: 63, source label: 150
-        source_name = source_name_map.get(song.source, song.source)
-        self.song_source_label.setText(source_name)
-        self.song_title_label.setText(text)
         task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
         task_spec.bind_coro(self.update_mv_btn_status(song))
 
@@ -442,6 +427,33 @@ class PlayerControlPanel(QFrame):
                 bitrate_text = str(props.bitrate) + 'kbps'
                 self.song_source_label.setText(
                     '{} - {}'.format(text, bitrate_text))
+
+    def on_metadata_changed(self, metadata):
+        print(metadata)
+        if not metadata:
+            self.song_source_label.setText('歌曲来源')
+            self.song_title_label.setText('')
+            return
+
+        # Set main text.
+        text = metadata.get('title', '')
+        if text:
+            artists = metadata.get('artists', [])
+            if artists:
+                # FIXME: use _get_artists_name
+                text += f" - {','.join(artists)}"
+        self.song_title_label.setText(text)
+
+        # Set source name.
+        source = metadata.get('source', '')
+        default = '未知来源'
+        if source:
+            source_name_map = {p.identifier: p.name
+                               for p in self._app.library.list()}
+            name = source_name_map.get(source, default)
+            self.song_source_label.setText(name)
+        else:
+            self.song_source_label.setText(default)
 
     async def update_mv_btn_status(self, song):
         try:
