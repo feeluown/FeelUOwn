@@ -2,7 +2,7 @@ import logging
 import time
 from threading import RLock
 
-from enum import IntEnum, Enum
+from enum import IntEnum, Enum, IntFlag
 
 logger = logging.getLogger(__name__)
 _NOT_FOUND = object()
@@ -455,3 +455,13 @@ class Model(metaclass=ModelMeta):
             if k in cls.meta.fields_display:
                 setattr(model, k + '_display', v)
         return model
+
+
+class ModelFlags(IntFlag):
+    none = 0x00000000
+
+    v1 = 0x00000001
+    v2 = 0x00000002
+
+    brief = 0x00000010
+    normal = brief | 0x00000020

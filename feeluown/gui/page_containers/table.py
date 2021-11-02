@@ -430,7 +430,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._app.player.play_song(song)
 
     async def play_video(self, video):
-        await aio.run_fn(self._app.ui.video_show_ctl.play_video, video)
+        await aio.run_afn(self._app.ui.video_show_ctl.play_video, video)
 
     def play_all(self):
         task_name = 'play-all'

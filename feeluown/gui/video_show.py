@@ -31,7 +31,7 @@ class VideoShowCtl:
         self._parent_is_normal = True
         self._parent_is_changing = False
 
-        self._ui.pc_panel.mv_btn.clicked.connect(lambda: aio.run_fn(self.play_mv))
+        self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
         self._ui.pc_panel.toggle_pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
 
@@ -126,13 +126,14 @@ class VideoShowCtl:
 
         # The mv button only shows when there is a valid mv object
         mv = self._app.library.song_get_mv(song)
-        self.play_video(mv)
+        aio.run_afn(self.play_video, mv).add_done_cb(lambda f: f.result())
 
-    def play_video(self, video):
-        metadata = Metadata({MetadataFields.title: video.title,
+    async def play_video(self, video):
+        metadata = Metadata({MetadataFields.title: video.title_display,
                              MetadataFields.source: video.source})
         try:
-            media = self._app.library.video_prepare_media(
+            media = await aio.run_fn(
+                self._app.library.video_prepare_media,
                 video,
                 self._app.config.VIDEO_SELECT_POLICY
             )

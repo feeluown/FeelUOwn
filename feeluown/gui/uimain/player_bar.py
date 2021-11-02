@@ -429,7 +429,6 @@ class PlayerControlPanel(QFrame):
                     '{} - {}'.format(text, bitrate_text))
 
     def on_metadata_changed(self, metadata):
-        print(metadata)
         if not metadata:
             self.song_source_label.setText('歌曲来源')
             self.song_title_label.setText('')

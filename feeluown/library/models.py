@@ -57,7 +57,7 @@ from typing import List, Optional, Tuple, Any
 
 from pydantic import BaseModel as _BaseModel, PrivateAttr
 
-from feeluown.models import ModelType, ModelExistence, ModelStage
+from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags
 from feeluown.utils.utils import elfhash
 from .model_state import ModelState
 
@@ -66,16 +66,6 @@ def cook_artists_name(names):
     # [a, b, c] -> 'a, b & c'
     artists_name = ', '.join(names)
     return ' & '.join(artists_name.rsplit(', ', 1))
-
-
-class ModelFlags(IntFlag):
-    none = 0x00000000
-
-    v1 = 0x00000001
-    v2 = 0x00000002
-
-    brief = 0x00000010
-    normal = brief | 0x00000020
 
 
 class ModelMeta:

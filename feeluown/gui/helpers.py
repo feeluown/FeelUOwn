@@ -359,9 +359,8 @@ def fetch_cover_wrapper(img_mgr):
         await asyncio.sleep(random.randrange(100) / 100)
         with suppress(ProviderIOError, RequestException):
             cover = None
-            if model.meta.flags & ModelFlags.v2:
-                if model.meta.flags & ModelFlags.normal:
-                    print(model.meta.flags)
+            if ModelFlags.v2 in model.meta.flags:
+                if ModelFlags.normal in model.meta.flags:
                     cover = model.cover
                 # TODO: upgrade video model
             else:
