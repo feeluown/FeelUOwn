@@ -144,8 +144,7 @@ class Collection:
             return
         for i, model in enumerate(self.models.copy()):
             if model.exists is ModelExistence.no and model.source == provider.identifier:
-                new_model = resolve(reverse(model))
-                print('!!!!', new_model.meta.flags)
+                new_model = resolve(reverse(model, as_line=True))
                 # TODO: emit data changed signal
                 self.models[i] = new_model
         # TODO: set _has_nonexistent_models to proper value

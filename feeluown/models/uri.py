@@ -306,6 +306,9 @@ def reverse(model, path='', as_line=False):
         elif model.meta.model_type == ModelType.artist:
             artist = model
             fields = [artist.name_display]
+        elif model.meta.model_type == ModelType.video:
+            video = model
+            fields = [video.title_display]
         else:
             fields = []
 
