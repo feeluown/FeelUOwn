@@ -24,7 +24,7 @@ else:
     )
 
 from feeluown.utils.dispatch import Signal
-from feeluown.media import Media
+from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
 
 
@@ -100,15 +100,34 @@ class MpvPlayer(AbstractPlayer):
             logger.debug("Player will play: '%s'", media)
             if isinstance(media, Media):
                 media = media
-            else:  # media is a url
+            else:  # media is a url(string)
                 media = Media(media)
             self._set_http_headers(media.http_headers)
-            url = media.url
-            # Clear playlist before play next song,
-            # otherwise, mpv will seek to the last position and play.
             self._mpv.playlist_clear()
-            self._mpv.play(url)
-            self._current_media = media
+            if media.manifest is None:
+                url = media.url
+                # Clear playlist before play next song,
+                # otherwise, mpv will seek to the last position and play.
+                self._mpv.play(url)
+            elif isinstance(media.manifest, VideoAudioManifest):
+                video_url = media.manifest.video_url
+                audio_url = media.manifest.audio_url
+
+                def add_audio():
+                    try:
+                        if self.current_media is media:
+                            self._mpv.audio_add(audio_url)
+                            self.resume()
+                    finally:
+                        self.media_loaded.disconnect(add_audio)
+
+                self._mpv.play(video_url)
+                # It seems we can only add audio after the video is loaded.
+                # TODO: add method connect_once for signal
+                self.media_loaded.connect(add_audio, weak=False)
+            else:
+                assert False, 'Unknown manifest'
+        self._current_media = media
         self.media_changed.emit(media)
         if metadata is None:
             self._current_metadata = {}

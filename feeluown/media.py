@@ -1,6 +1,7 @@
 import re
 import warnings
 from enum import Enum
+from typing import Optional
 
 
 class Quality:
@@ -210,19 +211,33 @@ TYPE_METACLS_MAP = {
 }
 
 
+class MediaManifest:
+    pass
+
+
+class VideoAudioManifest(MediaManifest):
+    def __init__(self, video_url, audio_url):
+        self.video_url = video_url
+        self.audio_url = audio_url
+
+
 class Media:
 
-    def __init__(self, url, type_=MediaType.audio, http_headers=None,
+    def __init__(self, obj, type_=MediaType.audio, http_headers=None,
                  **kwargs):
-        if isinstance(url, Media):
-            self._copy(url)
+        if isinstance(obj, Media):
+            self._copy(obj)
             return
-        self.url = url
-        self.type_ = type_
+        elif isinstance(obj, MediaManifest):
+            self._manifest = obj
+            self.url = ''
+        else:
+            self.url = obj
+            self._manifest = None
 
+        self.type_ = type_
         metacls = TYPE_METACLS_MAP[type_]
         self._props = metacls(**kwargs)
-
         # network options
         self.http_headers = http_headers or {}
 
@@ -231,6 +246,7 @@ class Media:
         self.http_headers = media.http_headers
         self.type_ = media.type_
         self._props = media._props
+        self._manifest = media.manifest
 
     @property
     def metadata(self):
@@ -239,4 +255,14 @@ class Media:
 
     @property
     def props(self):
+        """
+        .. versionadded: 3.7.13
+        """
         return self._props
+
+    @property
+    def manifest(self) -> Optional[MediaManifest]:
+        """
+        .. versionadded: 3.7.13
+        """
+        return self._manifest
