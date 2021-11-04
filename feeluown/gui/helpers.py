@@ -25,6 +25,7 @@ except ImportError:
 
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
+from feeluown.library import ModelFlags
 
 logger = logging.getLogger(__name__)
 
@@ -357,7 +358,14 @@ def fetch_cover_wrapper(img_mgr):
         # FIXME: sleep random second to avoid send too many request to provider
         await asyncio.sleep(random.randrange(100) / 100)
         with suppress(ProviderIOError, RequestException):
-            cover = await async_run(lambda: model.cover)
+            cover = None
+            if ModelFlags.v2 in model.meta.flags:
+                if ModelFlags.normal in model.meta.flags:
+                    cover = model.cover
+                # TODO: upgrade video model
+            else:
+                cover = await async_run(lambda: model.cover)
+
             if cover:  # check if cover url is valid
                 # FIXME: we should check if cover is a media object
                 if not isinstance(cover, str):

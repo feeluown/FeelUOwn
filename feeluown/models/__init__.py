@@ -3,7 +3,7 @@
 from feeluown.utils.reader import SequentialReader as GeneratorProxy  # noqa, for backward compatible
 from .base import (
     cached_field, ModelType, Model, ModelExistence, ModelStage,
-    SearchType, AlbumType, display_property,
+    SearchType, AlbumType, display_property, ModelFlags,
 )
 from .models import (
     BaseModel, LyricModel,
@@ -33,6 +33,7 @@ __all__ = (
     'Model',
     'ModelExistence',
     'ModelStage',
+    'ModelFlags',
 
     'AlbumType',
     'SearchType',

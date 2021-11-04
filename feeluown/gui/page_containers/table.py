@@ -14,7 +14,6 @@ from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
 from feeluown.library import ModelState, NotSupported, ModelFlags
 from feeluown.models import reverse, ModelType
-from feeluown.player import Metadata, MetadataFields
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper
@@ -430,10 +429,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._app.player.play_song(song)
 
     async def play_video(self, video):
-        media = await aio.run_in_executor(None, lambda: video.media)
-        metadata = Metadata({MetadataFields.title: video.title,
-                             MetadataFields.source: video.source})
-        self._app.player.play(media, metadata=metadata)
+        await aio.run_afn(self._app.ui.video_show_ctl.play_video, video)
 
     def play_all(self):
         task_name = 'play-all'

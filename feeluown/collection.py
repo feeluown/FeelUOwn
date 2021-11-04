@@ -144,11 +144,10 @@ class Collection:
             return
         for i, model in enumerate(self.models.copy()):
             if model.exists is ModelExistence.no and model.source == provider.identifier:
-                model_cls = provider.get_model_cls(model.meta.model_type)
-                new_model = model_cls(model)
-                new_model.exists = ModelExistence.unknown
+                new_model = resolve(reverse(model, as_line=True))
                 # TODO: emit data changed signal
                 self.models[i] = new_model
+        # TODO: set _has_nonexistent_models to proper value
 
     def on_provider_removed(self, provider):
         for model in self.models:

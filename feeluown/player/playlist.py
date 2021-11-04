@@ -6,10 +6,11 @@ from enum import IntEnum
 from typing import Optional
 
 from feeluown.excs import ProviderIOError
+from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
-from feeluown.library.excs import MediaNotFound
-from feeluown.library.model_protocol import SongProtocol
+from feeluown.player import Metadata, MetadataFields
+from feeluown.library import MediaNotFound, SongProtocol, ModelType
 
 logger = logging.getLogger(__name__)
 
@@ -101,6 +102,8 @@ class Playlist:
 
         #: When watch mode is on, playlist try to play the mv/video of the song
         self.watch_mode = False
+
+        self._t_scm = self._app.task_mgr.get_or_create('set-current-model')
 
         # .. versionadded:: 3.7.11
         #    The *songs_removed* and *songs_added* signal.
@@ -380,8 +383,7 @@ class Playlist:
 
         # FIXME(cosven): `current_song.setter` depends on app.task_mgr and app.library,
         # which make it hard to test.
-        task_spec = self._app.task_mgr.get_or_create('set-current-song')
-        return task_spec.bind_coro(self.a_set_current_song(song))
+        return self._t_scm.bind_coro(self.a_set_current_song(song))
 
     async def a_set_current_song(self, song):
         song_str = f'{song.source}:{song.title_display} - {song.artists_name_display}'
@@ -462,3 +464,36 @@ class Playlist:
                 return mv_media
         return await task_spec.bind_blocking_io(
             self._app.library.song_prepare_media, song, self.audio_select_policy)
+
+    def set_current_model(self, model):
+        """
+        .. versionadded: 3.7.13
+        """
+        if model.meta.model_type is ModelType.song:
+            return self.set_current_song(model)
+        return self._t_scm.bind_coro(self.a_set_current_model(model))
+
+    async def a_set_current_model(self, model):
+        """
+        TODO: handle when model is a song
+
+        .. versionadded: 3.7.13
+        """
+        assert model.meta.model_type is ModelType.video, \
+            "the model must be a video currently"
+
+        video = model
+        try:
+            media = await aio.run_fn(
+                self._app.library.video_prepare_media,
+                video,
+                self._app.config.VIDEO_SELECT_POLICY
+            )
+        except MediaNotFound:
+            self._app.show_msg('没有可用的播放链接')
+        else:
+            metadata = Metadata({
+                MetadataFields.title: video.title_display,
+                MetadataFields.source: video.source,
+            })
+            self._app.player.play(media, metadata=metadata)

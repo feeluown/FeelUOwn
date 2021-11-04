@@ -47,9 +47,10 @@ class PlayerHandler(AbstractHandler):
 
     def play(self, s):
         if s.startswith('fuo://'):
-            song = resolve(s)
-            if song is not None:
-                self.player.play_song(song)
+            model = resolve(s)
+            if model is None:
+                return 'Invalid fuo uri.'
+            self._app.playlist.set_current_model(model)
             return
         elif s.startswith('http'):
             return self.player.play(s, video=False)

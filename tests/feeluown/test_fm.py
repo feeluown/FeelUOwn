@@ -80,9 +80,9 @@ async def test_reactivate_fm_mode_after_playing_other_songs(
 
     def is_active(fm): return fm.is_active
 
+    app_mock.task_mgr = TaskManager(app_mock, event_loop)
     playlist = Playlist(app_mock)
     app_mock.playlist = playlist
-    app_mock.task_mgr = TaskManager(app_mock, event_loop)
     fm = FM(app_mock)
     fm.activate(f)
     assert playlist.mode is PlaylistMode.fm

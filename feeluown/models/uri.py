@@ -17,11 +17,14 @@ Currently, there is not way to achieve this.
 """
 
 import asyncio
+import logging
 import json
 import re
 import warnings
 
 from .base import ModelType, ModelExistence
+
+logger = logging.getLogger(__name__)
 
 
 class ResolveFailed(Exception):
@@ -248,7 +251,7 @@ def resolve(line, model=None):
 
     for example, line can be 'fuo://local/songs/1/cover/data'
     """
-    from feeluown.library import ProviderFlags, BriefSongModel
+    from feeluown.library import ProviderFlags, BriefSongModel, BriefVideoModel
 
     if model is None:
         model, path = parse_line(line)
@@ -257,10 +260,14 @@ def resolve(line, model=None):
         if provider is None:
             model.exists = ModelExistence.no
         else:
-            if model.meta.model_type == ModelType.song \
-               and library.check_flags(
-                   model.source, model.meta.model_type, ProviderFlags.model_v2):
-                model = BriefSongModel.from_display_model(model)
+            if library.check_flags_by_model(model, ProviderFlags.model_v2):
+                model_type = model.meta.model_type
+                if model_type == ModelType.song:
+                    model = BriefSongModel.from_display_model(model)
+                elif model_type == ModelType.video:
+                    model = BriefVideoModel.from_display_model(model)
+                else:
+                    assert False, 'library has not support the v2 model for {model_type}'
             else:
                 model_cls = provider.get_model_cls(model.meta.model_type)
                 model = model_cls(model)
@@ -303,7 +310,11 @@ def reverse(model, path='', as_line=False):
         elif model.meta.model_type == ModelType.artist:
             artist = model
             fields = [artist.name_display]
+        elif model.meta.model_type == ModelType.video:
+            video = model
+            fields = [video.title_display]
         else:
+            logger.warn('The display fields are dropped during reverse')
             fields = []
 
         # strip emtpy suffix

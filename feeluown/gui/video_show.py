@@ -3,8 +3,9 @@ import logging
 from contextlib import contextmanager
 from enum import IntEnum
 
+from feeluown.utils import aio
+from feeluown.player import Metadata, MetadataFields
 from feeluown.player.mpvplayer import _mpv_set_property_string
-
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
 logger = logging.getLogger(__name__)
@@ -125,16 +126,22 @@ class VideoShowCtl:
 
         # The mv button only shows when there is a valid mv object
         mv = self._app.library.song_get_mv(song)
+        aio.run_afn(self.play_video, mv).add_done_cb(lambda f: f.result())
+
+    async def play_video(self, video):
+        metadata = Metadata({MetadataFields.title: video.title_display,
+                             MetadataFields.source: video.source})
         try:
-            media = self._app.library.video_prepare_media(
-                mv,
+            media = await aio.run_fn(
+                self._app.library.video_prepare_media,
+                video,
                 self._app.config.VIDEO_SELECT_POLICY
             )
         except MediaNotFound:
-            self._app.show_msg('MV 没有可用的播放链接')
+            self._app.show_msg('没有可用的播放链接')
         else:
             self.set_mode(Mode.normal)
-            self._app.player.play(media)
+            self._app.player.play(media, metadata=metadata)
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode
