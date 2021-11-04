@@ -17,11 +17,14 @@ Currently, there is not way to achieve this.
 """
 
 import asyncio
+import logging
 import json
 import re
 import warnings
 
 from .base import ModelType, ModelExistence
+
+logger = logging.getLogger(__name__)
 
 
 class ResolveFailed(Exception):
@@ -311,6 +314,7 @@ def reverse(model, path='', as_line=False):
             video = model
             fields = [video.title_display]
         else:
+            logger.warn('The display fields are dropped during reverse')
             fields = []
 
         # strip emtpy suffix
