@@ -1,5 +1,13 @@
 """
 Code are almost copied from asgiref.
+https://github.com/django/asgiref/blob/6689c0a1e820a5c32532f069e945da8230d808ad/asgiref/sync.py
+Lines that were changed are marked with `Note`.
+
+Changes:
+
+1. *2021-11-04*
+   As only AsyncTosync is needed, other unrelated functions/classes are removed.
+   It works well in known cases.
 """
 import asyncio.coroutines
 import functools
