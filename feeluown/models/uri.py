@@ -257,13 +257,14 @@ def resolve(line, model=None):
         if provider is None:
             model.exists = ModelExistence.no
         else:
-            if model.meta.model_type == ModelType.song \
-               and library.check_flags(
-                   model.source, model.meta.model_type, ProviderFlags.model_v2):
-                model = BriefSongModel.from_display_model(model)
-            elif model.meta.model_type == ModelType.video \
-                 and library.check_flags_by_model(model, ProviderFlags.model_v2):
-                model = BriefVideoModel.from_display_model(model)
+            if library.check_flags_by_model(model, ProviderFlags.model_v2):
+                model_type = model.meta.model_type
+                if model_type == ModelType.song:
+                    model = BriefSongModel.from_display_model(model)
+                elif model_type == ModelType.video:
+                    model = BriefVideoModel.from_display_model(model)
+                else:
+                    assert False, 'library has not support the v2 model for {model_type}'
             else:
                 model_cls = provider.get_model_cls(model.meta.model_type)
                 model = model_cls(model)

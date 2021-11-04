@@ -52,7 +52,6 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 """
 
 import time
-from enum import IntFlag
 from typing import List, Optional, Tuple, Any
 
 from pydantic import BaseModel as _BaseModel, PrivateAttr

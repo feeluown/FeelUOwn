@@ -12,9 +12,8 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ModelState, NotSupported, ModelFlags, ProviderFlags as PF
+from feeluown.library import ModelState, NotSupported, ModelFlags
 from feeluown.models import reverse, ModelType
-from feeluown.player import Metadata, MetadataFields
 
 from feeluown.gui.helpers import async_run, BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper

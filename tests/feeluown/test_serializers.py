@@ -7,6 +7,7 @@ from feeluown.serializers.app import *  # noqa
 
 def test_serialize_app(mocker):
     app = mocker.Mock(spec=App)
+    app.task_mgr = mocker.Mock()
     app.live_lyric = mocker.Mock()
     app.live_lyric.current_sentence = ''
     player = Player(Playlist(app))

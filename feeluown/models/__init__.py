@@ -33,6 +33,7 @@ __all__ = (
     'Model',
     'ModelExistence',
     'ModelStage',
+    'ModelFlags',
 
     'AlbumType',
     'SearchType',
