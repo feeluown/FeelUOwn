@@ -6,7 +6,7 @@ from enum import IntEnum
 from feeluown.utils.dispatch import Signal
 # some may import `Playlist` and `PlaybackMode` from player module
 from feeluown.player.playlist import PlaybackMode, Playlist
-from .metadata import MetadataFields, Metadata
+from .metadata import Metadata
 
 __all__ = ('Playlist',
            'AbstractPlayer',
@@ -61,7 +61,6 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: volume changed signal: (int)
         self.volume_changed = Signal()
 
-        self._playlist.song_changed_v2.connect(self._on_song_changed)
         self.media_finished.connect(self._on_media_finished)
 
     @property
@@ -211,27 +210,6 @@ class AbstractPlayer(metaclass=ABCMeta):
     @abstractmethod
     def shutdown(self):
         """shutdown player, do some clean up here"""
-
-    def _on_song_changed(self, song, media):
-        """播放列表 current_song 发生变化后的回调
-
-        判断变化后的歌曲是否有效的，有效则播放，否则将它标记为无效歌曲。
-        如果变化后的歌曲是 None，则停止播放。
-        """
-        if song is not None:
-            if media is None:
-                self._playlist.next()
-            else:
-                metadata = Metadata({
-                    MetadataFields.source: song.source,
-                    MetadataFields.title: song.title_display,
-                    # The song.artists_name should return a list of strings
-                    MetadataFields.artists: [song.artists_name_display],
-                    MetadataFields.album: song.album_name_display,
-                })
-                self.play(media, metadata=metadata)
-        else:
-            self.stop()
 
     def _on_media_finished(self):
         if self._playlist.playback_mode == PlaybackMode.one_loop:

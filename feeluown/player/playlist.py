@@ -446,6 +446,21 @@ class Playlist:
         self.song_changed.emit(song)
         self.song_changed_v2.emit(song, media)
 
+        if song is not None:
+            if media is None:
+                self.next()
+            else:
+                metadata = Metadata({
+                    MetadataFields.source: song.source,
+                    MetadataFields.title: song.title_display,
+                    # The song.artists_name should return a list of strings
+                    MetadataFields.artists: [song.artists_name_display],
+                    MetadataFields.album: song.album_name_display,
+                })
+                self._app.player.play(media, metadata=metadata)
+        else:
+            self._app.player.stop()
+
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
         if self.watch_mode is True:
