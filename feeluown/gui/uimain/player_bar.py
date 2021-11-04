@@ -311,17 +311,17 @@ class PlayerControlPanel(QFrame):
             lambda volume: setattr(self._app.player, 'volume', volume))
 
         player = self._app.player
-        playlist = player.playlist
+        playlist = self._app.playlist
         playlist.playback_mode_changed.connect(self.on_playback_mode_changed,
                                                aioqueue=True)
-        player.playlist.song_changed.connect(self.on_player_song_changed, aioqueue=True)
+        playlist.song_changed.connect(self.on_player_song_changed, aioqueue=True)
         player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
         player.media_changed.connect(self.on_player_media_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
         self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
-        self.lyric_window.play_previous_needed.connect(player.playlist.previous)
-        self.lyric_window.play_next_needed.connect(player.playlist.next)
+        self.lyric_window.play_previous_needed.connect(playlist.previous)
+        self.lyric_window.play_next_needed.connect(playlist.next)
 
         self._update_pms_btn_text()
         self._setup_ui()
@@ -398,7 +398,7 @@ class PlayerControlPanel(QFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
     def _switch_playback_mode(self):
-        playlist = self._app.player.playlist
+        playlist = self._app.playlist
         pm_total = len(self._playback_modes)
         pm_idx = self._playback_modes.index(playlist.playback_mode)
         if pm_idx < pm_total - 1:
@@ -411,7 +411,7 @@ class PlayerControlPanel(QFrame):
         self._update_pms_btn_text()
 
     def _update_pms_btn_text(self):
-        playback_mode = self._app.player.playlist.playback_mode
+        playback_mode = self._app.playlist.playback_mode
         alias = self._pm_alias_map[playback_mode]
         self.pms_btn.setText(alias)
 

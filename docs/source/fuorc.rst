@@ -29,7 +29,7 @@ feeluown 启动时，第一步就是加载并解析该配置文件。通常，�
           song_str = f'{title}-{artists_name}'
           os.system(f'notify-send "{song_str}"')
 
-  when('app.player.playlist.song_changed', notify_song_changed)
+  when('app.playlist.song_changed', notify_song_changed)
 
   # 让编辑器识别这是一个 Python 文件
   #

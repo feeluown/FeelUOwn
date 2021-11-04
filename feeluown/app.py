@@ -186,9 +186,10 @@ def attach_attrs(app):
     player_kwargs = dict(
         audio_device=bytes(app.config.MPV_AUDIO_DEVICE, 'utf-8')
     )
+    app.player = Player(**(player_kwargs or {}))
     app.playlist = Playlist(
         app, audio_select_policy=app.config.AUDIO_SELECT_POLICY)
-    app.player = Player(app.playlist, **(player_kwargs or {}))
+    app.player.set_playlist(app.playlist)
     app.plugin_mgr = PluginsManager(app)
     app.request = Request()
     app.fm = FM(app)

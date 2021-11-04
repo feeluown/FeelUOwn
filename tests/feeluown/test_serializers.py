@@ -10,9 +10,9 @@ def test_serialize_app(mocker):
     app.task_mgr = mocker.Mock()
     app.live_lyric = mocker.Mock()
     app.live_lyric.current_sentence = ''
-    player = Player(Playlist(app))
+    player = Player()
     app.player = player
-    app.playlist = player.playlist
+    app.playlist = Playlist(app)
     for format in ('plain', 'json'):
         serialize(format, app, brief=False)
         serialize(format, app, fetch=True)

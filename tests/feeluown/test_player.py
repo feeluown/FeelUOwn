@@ -118,8 +118,9 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
 
 
 def test_play_all(app_mock):
-    player = Player(Playlist(app_mock))
-    playlist = player.playlist
+    player = Player()
+    playlist = Playlist(app_mock)
+    player.set_playlist(playlist)
     playlist.mode = PlaylistMode.fm
     player.play_songs([])
     assert playlist.mode == PlaylistMode.normal
@@ -130,7 +131,8 @@ def test_change_song(app_mock, mocker, song, song1):
     pl = Playlist(app_mock)
     pl.add(song)
     pl._current_song = song
-    player = Player(pl)
+    player = Player()
+    player.set_playlist(pl)
     with mock.patch.object(Playlist, 'current_song',
                            new_callable=mock.PropertyMock) as mock_s:
         mock_s.return_value = song  # return current song

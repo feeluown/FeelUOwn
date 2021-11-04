@@ -123,7 +123,9 @@ class TestPlaylist(TestCase):
 class TestPlayerAndPlaylist(TestCase):
 
     def setUp(self):
-        self.player = MpvPlayer(Playlist(app_mock))
+        self.playlist = Playlist(app_mock)
+        self.player = MpvPlayer()
+        self.player.set_playlist(self.player)
 
     def tearDown(self):
         self.player.stop()
@@ -134,8 +136,8 @@ class TestPlayerAndPlaylist(TestCase):
     def test_remove_current_song_2(self, mock_play):
         """当播放列表只有一首歌时，移除它"""
         s1 = FakeValidSongModel()
-        self.player.playlist.current_song = s1
+        self.playlist.current_song = s1
         time.sleep(MPV_SLEEP_SECOND)  # 让 Mpv 真正的开始播放
-        self.player.playlist.remove(s1)
-        self.assertEqual(len(self.player.playlist), 0)
+        self.playlist.remove(s1)
+        self.assertEqual(len(self.playlist), 0)
         self.assertEqual(self.player.state, State.stopped)

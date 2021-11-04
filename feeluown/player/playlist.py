@@ -110,6 +110,8 @@ class Playlist:
         self.songs_removed = Signal()  # (index, count)
         self.songs_added = Signal()  # (index, count)
 
+        self._app.player.media_finished.connect(self._on_media_finished)
+
     @property
     def mode(self):
         return self._mode
@@ -345,6 +347,13 @@ class Playlist:
             return None
         else:
             return self.set_current_song(self.next_song)
+
+    def _on_media_finished(self):
+        # Play next model when current media is finished.
+        if self.playback_mode == PlaybackMode.one_loop:
+            return self.set_current_song(self.current_song)
+        else:
+            self.next()
 
     def previous(self) -> Optional[asyncio.Task]:
         """return to the previous song in playlist"""

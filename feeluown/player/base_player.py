@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import warnings
 from abc import ABCMeta, abstractmethod
 from enum import IntEnum
 
@@ -29,10 +30,13 @@ class State(IntEnum):
 class AbstractPlayer(metaclass=ABCMeta):
     """Player abstrace base class"""
 
-    def __init__(self, playlist, **kwargs):
+    def __init__(self, _=None, **kwargs):
+        """
+        :param _: keep this arg to keep backward compatibility
+        """
         self._position = 0  # seconds
         self._volume = 100  # (0, 100)
-        self._playlist = playlist
+        self._playlist = None
         self._state = State.stopped
         self._duration = None
 
@@ -61,8 +65,6 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: volume changed signal: (int)
         self.volume_changed = Signal()
 
-        self.media_finished.connect(self._on_media_finished)
-
     @property
     def state(self):
         """Player state
@@ -86,7 +88,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         return self._current_media
 
     @property
-    def current_metadata(self) -> dict:
+    def current_metadata(self) -> Metadata:
         """Metadata for the current media
 
         Check `MetadataFields` for all possible fields. Note that some fields
@@ -101,15 +103,26 @@ class AbstractPlayer(metaclass=ABCMeta):
 
         Please use playlist.current_song instead.
         """
+        warnings.warn('use playlist.current_model instead', DeprecationWarning)
         return self._playlist.current_song
 
     @property
     def playlist(self):
-        """player playlist
+        """(DEPRECATED) player playlist
+
+        Player SHOULD not know the existence of playlist. However, in the
+        very beginning, the player depends on playlist and listen playlist's
+        signal. Other programs may depends on the playlist property and
+        we keep it for backward compatibility.
+
+        TODO: maybe add a DeprecationWarning in v3.8.
 
         :return: :class:`.Playlist`
         """
         return self._playlist
+
+    def set_playlist(self, playlist):
+        self._playlist = playlist
 
     @property
     def position(self):
@@ -178,6 +191,7 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     def play_songs(self, songs):
         """(alpha) play list of songs"""
+        warnings.warn('use playlist.init_from instead', DeprecationWarning)
         self.playlist.init_from(songs)
         task = self.playlist.next()
         if task is not None:
@@ -210,9 +224,3 @@ class AbstractPlayer(metaclass=ABCMeta):
     @abstractmethod
     def shutdown(self):
         """shutdown player, do some clean up here"""
-
-    def _on_media_finished(self):
-        if self._playlist.playback_mode == PlaybackMode.one_loop:
-            self.playlist.current_song = self.playlist.current_song
-        else:
-            self._playlist.next()

@@ -39,8 +39,11 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, playlist, audio_device=b'auto', winid=None, **kwargs):
-        super().__init__(playlist=playlist, **kwargs)
+    def __init__(self, _=None, audio_device=b'auto', winid=None, **kwargs):
+        """
+        :param _: keep this arg to keep backward compatibility
+        """
+        super().__init__(**kwargs)
         # https://github.com/cosven/FeelUOwn/issues/246
         locale.setlocale(locale.LC_NUMERIC, 'C')
         mpvkwargs = {}
