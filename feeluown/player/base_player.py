@@ -98,33 +98,6 @@ class AbstractPlayer(metaclass=ABCMeta):
         return self._current_metadata
 
     @property
-    def current_song(self):
-        """(Deprecated) alias of playlist.current_song
-
-        Please use playlist.current_song instead.
-        """
-        warnings.warn('use playlist.current_model instead', DeprecationWarning)
-        return self._playlist.current_song
-
-    @property
-    def playlist(self):
-        """(DEPRECATED) player playlist
-
-        Player SHOULD not know the existence of playlist. However, in the
-        very beginning, the player depends on playlist and listen playlist's
-        signal. Other programs may depends on the playlist property and
-        we keep it for backward compatibility.
-
-        TODO: maybe add a DeprecationWarning in v3.8.
-
-        :return: :class:`.Playlist`
-        """
-        return self._playlist
-
-    def set_playlist(self, playlist):
-        self._playlist = playlist
-
-    @property
     def position(self):
         """player position, the units is seconds"""
         return self._position
@@ -169,6 +142,56 @@ class AbstractPlayer(metaclass=ABCMeta):
     def set_play_range(self, start=None, end=None):
         pass
 
+    @abstractmethod
+    def resume(self):
+        """play playback"""
+
+    @abstractmethod
+    def pause(self):
+        """pause player"""
+
+    @abstractmethod
+    def toggle(self):
+        """toggle player state"""
+
+    @abstractmethod
+    def stop(self):
+        """stop player"""
+
+    @abstractmethod
+    def shutdown(self):
+        """shutdown player, do some clean up here"""
+
+    # ------------------
+    # Deprecated methods
+    # ------------------
+    @property
+    def playlist(self):
+        """(DEPRECATED) player playlist
+
+        Player SHOULD not know the existence of playlist. However, in the
+        very beginning, the player depends on playlist and listen playlist's
+        signal. Other programs may depends on the playlist property and
+        we keep it for backward compatibility.
+
+        TODO: maybe add a DeprecationWarning in v3.8.
+
+        :return: :class:`.Playlist`
+        """
+        return self._playlist
+
+    def set_playlist(self, playlist):
+        self._playlist = playlist
+
+    @property
+    def current_song(self):
+        """(Deprecated) alias of playlist.current_song
+
+        Please use playlist.current_song instead.
+        """
+        warnings.warn('use playlist.current_model instead', DeprecationWarning)
+        return self._playlist.current_song
+
     def load_song(self, song) -> asyncio.Task:
         """加载歌曲
 
@@ -193,7 +216,7 @@ class AbstractPlayer(metaclass=ABCMeta):
             'use playlist.set_current_model instead, this will be removed in v3.8',
             DeprecationWarning
         )
-        self.load_song(song)
+        return self._playlist.set_current_song(song)
 
     def play_songs(self, songs):
         """(alpha) play list of songs"""
@@ -202,31 +225,3 @@ class AbstractPlayer(metaclass=ABCMeta):
             DeprecationWarning
         )
         self.playlist.set_models(songs, next_=True)
-
-    def _set_current_song_cb(self, future):
-        try:
-            future.result()
-        except:  # noqa
-            logger.exception('Set current song failed, callback will not be executed')
-        else:
-            self.resume()
-
-    @abstractmethod
-    def resume(self):
-        """play playback"""
-
-    @abstractmethod
-    def pause(self):
-        """pause player"""
-
-    @abstractmethod
-    def toggle(self):
-        """toggle player state"""
-
-    @abstractmethod
-    def stop(self):
-        """stop player"""
-
-    @abstractmethod
-    def shutdown(self):
-        """shutdown player, do some clean up here"""

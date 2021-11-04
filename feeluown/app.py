@@ -104,7 +104,7 @@ class App:
                                                           weak=False)
                     player.pause()
                     player.set_play_range(start=state['position'])
-                    player.load_song(song)
+                    playlist.set_current_song(song)
 
     def dump_state(self):
         logger.info("Dump app state")
