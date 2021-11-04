@@ -178,16 +178,22 @@ class AbstractPlayer(metaclass=ABCMeta):
 
         .. note::
 
-            调用方不应该直接调用 playlist.current_song = song 来切换歌曲
+            调用方应该直接调用 playlist.current_song = song 来切换歌曲
         """
         assert song is not None
+        warnings.warn(
+            'use playlist.set_current_model instead, this will be removed in v3.8',
+            DeprecationWarning
+        )
         return self._playlist.set_current_song(song)
 
     def play_song(self, song):
         """加载并播放指定歌曲"""
-        task = self.load_song(song)
-        if task is not None:
-            task.add_done_callback(self._set_current_song_cb)
+        warnings.warn(
+            'use playlist.set_current_model instead, this will be removed in v3.8',
+            DeprecationWarning
+        )
+        self.load_song(song)
 
     def play_songs(self, songs):
         """(alpha) play list of songs"""

@@ -153,7 +153,7 @@ class Playlist:
         .. versionadded: v3.7.13
         """
         self.clear()
-        self._songs = self.batch_add(models)
+        self.batch_add(models)
         if fm is False:
             self.mode = PlaylistMode.normal
         else:
@@ -502,6 +502,8 @@ class Playlist:
         """
         if model.meta.model_type is ModelType.song:
             return self.set_current_song(model)
+        if model is None:
+            self._app.player.stop()
         return self._t_scm.bind_coro(self.a_set_current_model(model))
 
     async def a_set_current_model(self, model):

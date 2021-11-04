@@ -83,6 +83,13 @@ def test_set_current_song(pl, song2):
     assert pl.list()[1] == song2
 
 
+def test_set_models(pl, song1, song2):
+    # Set a nonexisting song as current song
+    # The song should be inserted after current_song
+    pl.set_models([song1, song2])
+    assert pl.list()[1] == song2
+
+
 @pytest.mark.asyncio
 async def test_set_current_song_with_bad_song_1(
         mocker, song2, pl,

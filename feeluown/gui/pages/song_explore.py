@@ -33,7 +33,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     song = await aio.run_fn(app.library.song_upgrade, song)
 
     # bind signals
-    view.play_btn.clicked.connect(lambda: app.player.play_song(song))
+    view.play_btn.clicked.connect(lambda: app.playlist.set_current_song(song))
     if app.library.check_flags_by_model(song, PF.web_url):
         async def copy_song_web_url():
             web_url = await aio.run_fn(app.library.song_get_web_url, song)
@@ -205,7 +205,7 @@ class SongExploreView(QWidget):
         self._setup_ui()
 
         self.similar_songs_view.play_song_needed.connect(
-            lambda song: app.player.play_song(song))
+            lambda song: app.playlist.set_current_song(song))
 
     def _setup_ui(self):
         self._layout.setSpacing(0)

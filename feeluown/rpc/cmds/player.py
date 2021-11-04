@@ -68,7 +68,7 @@ class PlayerHandler(AbstractHandler):
             songs = sorted(songs, key=lambda song: score(s, repr_song(song)),
                            reverse=True)
             msg = 'select:\t{}\n'.format(show_song(songs[0], brief=True))
-            self.player.play_song(songs[0])
+            self.playlist.set_current_song(songs[0])
             lines = []
             for song in songs[1:]:
                 lines.append('\t' + show_song(song, brief=True))

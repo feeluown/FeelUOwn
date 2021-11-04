@@ -426,7 +426,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         await self._renderer.render()
 
     async def play_song(self, song):
-        self._app.player.play_song(song)
+        self._app.playlist.set_current_song(song)
 
     async def play_video(self, video):
         await aio.run_afn(self._app.ui.video_show_ctl.play_video, video)
@@ -521,7 +521,7 @@ class TableContainer(QFrame, BgTransparentMixin):
                         songs = await aio.run_fn(reader.readall)
                         self._app.playlist.clear()
                         self._app.playlist.set_models(songs)
-            self._app.player.play_song(song)
+            self._app.playlist.set_current_song(song)
         else:
             try:
                 song = await aio.run_in_executor(

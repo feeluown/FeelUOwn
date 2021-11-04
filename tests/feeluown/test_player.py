@@ -136,6 +136,6 @@ def test_change_song(app_mock, mocker, song, song1):
     with mock.patch.object(Playlist, 'current_song',
                            new_callable=mock.PropertyMock) as mock_s:
         mock_s.return_value = song  # return current song
-        player.play_song(song1)
+        pl.set_current_song(song1)
         pl.next()
         assert pl.current_song == song
