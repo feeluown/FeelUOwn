@@ -1,5 +1,5 @@
 import asyncio
-import copy
+import warnings
 import logging
 import random
 from enum import IntEnum
@@ -148,6 +148,29 @@ class Playlist:
         length = len(self._songs)
         self.songs_added.emit(length-1, 1)
 
+    def set_models(self, models, next_=False, fm=False):
+        """
+        .. versionadded: v3.7.13
+        """
+        self.clear()
+        self._songs = self.batch_add(models)
+        if fm is False:
+            self.mode = PlaylistMode.normal
+        else:
+            self.mode = PlaylistMode.fm
+        if next_ is True:
+            self.next()
+
+    def batch_add(self, models):
+        """
+        .. versionadded: v3.7.13
+        """
+        start_index = len(self._songs)
+        for model in models:
+            self._songs.append(model)
+        end_index = len(self._songs)
+        self.songs_added.emit(start_index, end_index - start_index)
+
     def add(self, song):
         """add song to playlist
 
@@ -210,27 +233,11 @@ class Playlist:
             self._bad_songs.remove(song)
 
     def init_from(self, songs):
-        """
-        THINKING: maybe we should rename this method or maybe we should
-        change mode on application level
-
-        We change playlistmode here because the `player.play_all` call this
-        method. We should check if we need to exit fm mode in `play_xxx`.
-        Currently, we have two play_xxx API: play_all and play_song.
-        1. play_all -> init_from
-        2. play_song -> current_song.setter
-
-        (alpha) temporarily, should only called by player.play_songs
-        """
-
-        if self.mode is PlaylistMode.fm:
-            self.mode = PlaylistMode.normal
-        self.clear()
-        # since we will call songs.clear method during playlist clearing,
-        # we need to deepcopy songs object here.
-        self._songs = DedupList(copy.deepcopy(songs))
-        if self._songs:
-            self.songs_added.emit(0, len(self._songs))
+        warnings.warn(
+            'use set_models instead, this will be removed in v3.8',
+            DeprecationWarning
+        )
+        self.set_models(songs, fm=False)
 
     def clear(self):
         """remove all songs from playlists"""

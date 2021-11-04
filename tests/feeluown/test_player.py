@@ -122,7 +122,7 @@ def test_play_all(app_mock):
     playlist = Playlist(app_mock)
     player.set_playlist(playlist)
     playlist.mode = PlaylistMode.fm
-    player.play_songs([])
+    playlist.set_models([], next_=True)
     assert playlist.mode == PlaylistMode.normal
 
 

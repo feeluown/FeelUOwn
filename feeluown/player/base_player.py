@@ -191,11 +191,11 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     def play_songs(self, songs):
         """(alpha) play list of songs"""
-        warnings.warn('use playlist.init_from instead', DeprecationWarning)
-        self.playlist.init_from(songs)
-        task = self.playlist.next()
-        if task is not None:
-            task.add_done_callback(self._set_current_song_cb)
+        warnings.warn(
+            'use playlist.init_from instead, this will be removed in v3.8',
+            DeprecationWarning
+        )
+        self.playlist.set_models(songs, next_=True)
 
     def _set_current_song_cb(self, future):
         try:

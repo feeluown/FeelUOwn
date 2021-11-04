@@ -438,7 +438,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         def reader_readall_cb(task):
             with suppress(ProviderIOError, asyncio.CancelledError):
                 songs = task.result()
-                self._app.player.play_songs(songs=songs)
+                self._app.playlist.set_models(songs, next_=True)
             self.toolbar.enter_state_playall_end()
 
         model = self.songs_table.model()
@@ -520,7 +520,7 @@ class TableContainer(QFrame, BgTransparentMixin):
                         reader = model.reader
                         songs = await aio.run_fn(reader.readall)
                         self._app.playlist.clear()
-                        self._app.playlist.init_from(songs)
+                        self._app.playlist.set_models(songs)
             self._app.player.play_song(song)
         else:
             try:

@@ -82,7 +82,7 @@ class App:
                     pass
                 else:
                     songs.append(song)
-            playlist.init_from(songs)
+            playlist.set_models(songs)
             if songs and self.mode & App.GuiMode:
                 self.browser.goto(page='/player_playlist')
 
