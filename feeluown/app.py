@@ -180,6 +180,7 @@ class App:
 def attach_attrs(app):
     """初始化 app 属性"""
     loop = asyncio.get_event_loop()
+    app.task_mgr = TaskManager(app, loop)
     app.library = Library(app.config.PROVIDERS_STANDBY)
     app.live_lyric = LiveLyric(app)
     player_kwargs = dict(
@@ -190,7 +191,6 @@ def attach_attrs(app):
     app.player = Player(app.playlist, **(player_kwargs or {}))
     app.plugin_mgr = PluginsManager(app)
     app.request = Request()
-    app.task_mgr = TaskManager(app, loop)
     app.fm = FM(app)
 
     if app.mode & (app.DaemonMode | app.GuiMode):

@@ -10,6 +10,7 @@ from .model_protocol import (
     BriefArtistProtocol,
     BriefAlbumProtocol,
     BriefUserProtocol,
+    SongProtocol,
 )
 from .models import ModelFlags, BaseModel, ModelType, \
     SongModel, BriefSongModel, \
@@ -19,4 +20,4 @@ from .models import ModelFlags, BaseModel, ModelType, \
     LyricModel, VideoModel, BriefVideoModel, \
     cook_artists_name
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
-    ProviderAlreadyExists, ResourceNotFound
+    ProviderAlreadyExists, ResourceNotFound, MediaNotFound
