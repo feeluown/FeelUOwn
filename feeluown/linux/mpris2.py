@@ -108,10 +108,13 @@ class Mpris2Service(dbus.service.Object):
 
     def update_song_props(self, metadata):
         if metadata:
+            # make xesam:artist a one-element list to compat with KDE
+            # KDE will not update artist field if the length>=2
+            artists = metadata.get('artists', ['Unknown'])[:1]
             self._metadata.update(dbus.Dictionary({
-                # make xesam:artist a one-element list to compat with KDE
-                # KDE will not update artist field if the length>=2
-                'xesam:artist': metadata.get('artists', ['Unknown'])[:1],
+                # If there is no artist, we give a empty string in case mpris complains
+                # 'ValueError: Unable to guess signature from an empty list'
+                'xesam:artist': artists or [''],
                 'xesam:url': '',
                 'mpris:length': dbus.Int64((self._app.player.duration or 0) * 1000),
                 'mpris:trackid': '',
@@ -123,7 +126,7 @@ class Mpris2Service(dbus.service.Object):
             self._metadata.update(dbus.Dictionary({
                 # make xesam:artist a one-element list to compat with KDE
                 # KDE will not update artist field if the length>=2
-                'xesam:artist': [],
+                'xesam:artist': [''],
                 'xesam:url': '',
                 'mpris:length': dbus.Int64(0),
                 'mpris:trackid': '',
