@@ -33,10 +33,10 @@ class ProgressSlider(QSlider):
     def set_duration(self, s):
         if not self._draging:
             if s is not None:
-                self.setRange(0, s)
+                self.setRange(0, int(s))
 
     def update_state(self, s):
         if not self._draging:
             if s is None:
                 s = 0
-            self.setValue(s)
+            self.setValue(int(s))

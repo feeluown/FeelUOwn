@@ -16,6 +16,9 @@ logger = logging.getLogger(__name__)
 COLL_LIBRARY_IDENTIFIER = 'library'
 # for backward compat, we should never change these filenames
 LIBRARY_FILENAME = f'{COLL_LIBRARY_IDENTIFIER}.fuo'
+DEPRECATED_FUO_FILENAMES = (
+    'Songs.fuo', 'Albums.fuo', 'Artists.fuo', 'Videos.fuo'
+)
 
 TOML_DELIMLF = "+++\n"
 
@@ -88,8 +91,9 @@ class Collection:
                 except ResolverNotFound:
                     logger.warning('resolver not found for line:%s', line)
                     model = None
-                except ResolveFailed:
-                    logger.warning('invalid line: %s', line)
+                except ResolveFailed as e:
+                    logger.warning('resolve failed, file:%s, line:%s, error:%s',
+                                   str(filepath), line, str(e))
                     model = None
                 if model is not None:
                     if model.exists is ModelExistence.no:
@@ -198,7 +202,7 @@ class CollectionManager:
                 if not filename.endswith('.fuo'):
                     continue
                 filepath = os.path.join(directory, filename)
-                if filename in ('Songs.fuo', 'Albums.fuo', 'Artists.fuo', 'Videos.fuo'):
+                if filename in DEPRECATED_FUO_FILENAMES:
                     default_fpaths.append(filepath)
                     continue
                 coll = Collection(filepath)
@@ -219,9 +223,7 @@ class CollectionManager:
         if os.path.exists(library_fpath):
             if default_fpaths:
                 paths_str = ','.join(default_fpaths)
-                logger.warning(f'{paths_str} and {library_fpath} '
-                               'should not exist at the same time')
-                logger.warning(f'{paths_str} are ignored')
+                logger.warning(f'{paths_str} are ignored since {library_fpath} exists')
             return library_fpath
 
         logger.info('Generating collection library')

@@ -1,7 +1,9 @@
 import argparse
 import logging
 import os
+import sys
 import textwrap
+import warnings
 
 from feeluown import logger_config, __version__ as feeluown_version
 from feeluown.app import App
@@ -119,3 +121,6 @@ def setup_logger(config):
     else:
         verbose = config.VERBOSE
     logger_config(verbose=verbose, to_file=config.LOG_TO_FILE)
+    # Show deprecation warning when user does not set it.
+    if not sys.warnoptions and verbose >= 2:
+        warnings.simplefilter('default', DeprecationWarning)
