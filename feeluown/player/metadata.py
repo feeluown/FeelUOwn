@@ -19,10 +19,17 @@ class MetadataFields(Enum):
     genre = 'genre'
     track = 'track'  # The track number on the album disc.
     source = 'source'
+    artwork = 'artwork'  # The album/video cover iamge url.
 
 
 class Metadata(MutableMapping):
     """Metadata is a dict that transform the key to MetadataFields.
+
+    >>> Metadata({'title': 'hello world'})
+    >>> Metadata['title']
+    'hello world'
+    >>> Metadata.get('notexist', 'notexist')
+    'notexist'
     """
     def __init__(self, *args, **kwargs):
         self._store = dict()
@@ -35,7 +42,16 @@ class Metadata(MutableMapping):
         return self._to_field(name) in self._store
 
     def __setitem__(self, key, value):
-        self._store[self._to_field(key)] = value
+        field = self._to_field(key)
+
+        # Validate the type of a value
+        field_type_mapping = {
+            MetadataFields.artists: list,
+        }
+        expected = field_type_mapping.get(field, str)
+        if not isinstance(value, expected):
+            raise ValueError(f'field {field} expect {expected}, acture {type(value)}')
+        self._store[field] = value
 
     def __delitem__(self, key):
         del self._store[self._to_field(key)]

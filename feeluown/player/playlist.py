@@ -466,13 +466,15 @@ class Playlist:
             if media is None:
                 self.next()
             else:
+                # Note that the value of model v1 {}_display may be None.
                 metadata = Metadata({
                     MetadataFields.source: song.source,
-                    MetadataFields.title: song.title_display,
+                    MetadataFields.title: song.title_display or '',
                     # The song.artists_name should return a list of strings
-                    MetadataFields.artists: [song.artists_name_display],
-                    MetadataFields.album: song.album_name_display,
+                    MetadataFields.artists: [song.artists_name_display or ''],
+                    MetadataFields.album: song.album_name_display or '',
                 })
+                # TODO: set artwork field
                 self._app.player.play(media, metadata=metadata)
         else:
             self._app.player.stop()
@@ -512,8 +514,8 @@ class Playlist:
 
         .. versionadded: 3.7.13
         """
-        assert model.meta.model_type is ModelType.video, \
-            "the model must be a video currently"
+        assert ModelType(model.meta.model_type) is ModelType.video, \
+            "{model.meta.model_type} is not supported, expecting a video model, "
 
         video = model
         try:
@@ -526,7 +528,8 @@ class Playlist:
             self._app.show_msg('没有可用的播放链接')
         else:
             metadata = Metadata({
-                MetadataFields.title: video.title_display,
+                # The value of model v1 title_display may be None.
+                MetadataFields.title: video.title_display or '',
                 MetadataFields.source: video.source,
             })
             self._app.player.play(media, metadata=metadata)

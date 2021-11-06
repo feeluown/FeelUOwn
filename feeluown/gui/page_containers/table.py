@@ -298,7 +298,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.songs_table.play_song_needed.connect(
             lambda song: asyncio.ensure_future(self.play_song(song)))
         self.videos_table.play_video_needed.connect(
-            lambda video: aio.create_task(self.play_video(video)))
+            self._app.playlist.set_current_model)
 
         def goto_model(model):
             self._app.browser.goto(model=model)
@@ -427,9 +427,6 @@ class TableContainer(QFrame, BgTransparentMixin):
 
     async def play_song(self, song):
         self._app.playlist.set_current_song(song)
-
-    async def play_video(self, video):
-        await aio.run_afn(self._app.ui.video_show_ctl.play_video, video)
 
     def play_all(self):
         task_name = 'play-all'

@@ -81,6 +81,7 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self._timeout = 2000  # unit: ms
         self._overlay_min_width = 360
         self._overlay_max_width = 480
+        self._enable_overlay = False
 
         self._overlay = VideoOverlay(app=app, parent=self)
         self._size_grip = SizeGrip(parent=self)
@@ -104,6 +105,12 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self.setMouseTracking(True)
         self.hide_overlay()
 
+    def enable_overlay(self):
+        self._enable_overlay = True
+
+    def disable_overlay(self):
+        self._enable_overlay = False
+
     def hide_overlay(self):
         """hide the overlay widget"""
         self._overlay.hide()
@@ -116,8 +123,9 @@ class VideoOpenGLWidget(QOpenGLWidget):
 
     def mouseMoveEvent(self, e):
         super().mouseMoveEvent(e)
-        self.show_overlay()
-        self._timer.start(self._timeout)
+        if self._enable_overlay is True:
+            self.show_overlay()
+            self._timer.start(self._timeout)
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
@@ -126,8 +134,9 @@ class VideoOpenGLWidget(QOpenGLWidget):
 
     def enterEvent(self, e):
         super().enterEvent(e)
-        self.show_overlay()
-        self._timer.start(self._timeout)
+        if self._enable_overlay is True:
+            self.show_overlay()
+            self._timer.start(self._timeout)
 
     def leaveEvent(self, e):
         super().leaveEvent(e)

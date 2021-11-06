@@ -1,10 +1,7 @@
-from feeluown.library.excs import MediaNotFound
 import logging
 from contextlib import contextmanager
 from enum import IntEnum
 
-from feeluown.utils import aio
-from feeluown.player import Metadata, MetadataFields
 from feeluown.player.mpvplayer import _mpv_set_property_string
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
@@ -14,7 +11,7 @@ logger = logging.getLogger(__name__)
 class Mode(IntEnum):
     none = 0
     normal = 1
-    pip = 2
+    pip = 2  # Picture in picture
 
 
 class VideoShowCtl:
@@ -67,6 +64,7 @@ class VideoShowCtl:
         self._ui.pc_panel.toggle_video_btn.show()
         self._ui.pc_panel.toggle_video_btn.setText('▽')
         logger.info("enter video-show normal mode")
+        self._ui.mpv_widget.disable_overlay()
         if self._parent_is_normal is False:
             with self.change_parent():
                 self._ui.mpv_widget.hide()
@@ -89,6 +87,7 @@ class VideoShowCtl:
         """enter picture in picture mode"""
         self._ui.toggle_video_btn.hide()
         logger.info("enter video-show picture in picture mode")
+        self._ui.mpv_widget.enable_overlay()
         if self._parent_is_normal is True:
             width = self._app.player._mpv.width
             height = self._app.player._mpv.height
@@ -126,22 +125,7 @@ class VideoShowCtl:
 
         # The mv button only shows when there is a valid mv object
         mv = self._app.library.song_get_mv(song)
-        aio.run_afn(self.play_video, mv).add_done_cb(lambda f: f.result())
-
-    async def play_video(self, video):
-        metadata = Metadata({MetadataFields.title: video.title_display,
-                             MetadataFields.source: video.source})
-        try:
-            media = await aio.run_fn(
-                self._app.library.video_prepare_media,
-                video,
-                self._app.config.VIDEO_SELECT_POLICY
-            )
-        except MediaNotFound:
-            self._app.show_msg('没有可用的播放链接')
-        else:
-            self.set_mode(Mode.normal)
-            self._app.player.play(media, metadata=metadata)
+        self._app.playlist.set_current_model(mv)
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode
