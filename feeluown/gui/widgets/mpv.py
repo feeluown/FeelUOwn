@@ -41,6 +41,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
                                     'opengl',
                                     opengl_init_params=params)
         self.ctx.update_cb = self.on_update
+        #self.format().setSwapInterval(0)
 
     def shutdown(self):
         if self.ctx is not None:
@@ -60,6 +61,8 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
                       'h': h,
                       'fbo': self.defaultFramebufferObject()}
         self.ctx.render(flip_y=True, opengl_fbo=opengl_fbo)
+        from PyQt5.QtGui import QPainter
+        self._danmaku_overlay.paint(QPainter(self))
 
     @pyqtSlot()
     def maybe_update(self):

@@ -6,6 +6,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
 from feeluown.player import State
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.size_grip import SizeGrip
+from feeluown.gui.widgets.danmaku import DanmakuOverlay
 from .labels import ProgressLabel, DurationLabel
 
 
@@ -83,6 +84,8 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self._overlay_max_width = 480
         self._enable_overlay = False
 
+        self._danmaku_overlay = DanmakuOverlay(app=app, parent=self)
+        self._danmaku_overlay.setGeometry(0, 0, 100, 100)
         self._overlay = VideoOverlay(app=app, parent=self)
         self._size_grip = SizeGrip(parent=self)
         self._layout = QVBoxLayout(self)
@@ -131,6 +134,8 @@ class VideoOpenGLWidget(QOpenGLWidget):
         super().resizeEvent(e)
         max_width = min(self.width() - 50, self._overlay_max_width)
         self._overlay.setMaximumWidth(max_width)
+        self._danmaku_overlay.setFixedWidth(self.width())
+        self._danmaku_overlay.setFixedHeight(self.height())
 
     def enterEvent(self, e):
         super().enterEvent(e)
