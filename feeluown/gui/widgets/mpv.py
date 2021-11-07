@@ -1,4 +1,5 @@
-from PyQt5.QtCore import QMetaObject, pyqtSlot
+from PyQt5.QtCore import QMetaObject, pyqtSlot, QRectF, Qt
+from PyQt5.QtGui import QPainter, QColor
 from PyQt5.QtOpenGL import QGLContext
 
 from mpv import MpvRenderContext, OpenGlCbGetProcAddrFn
@@ -35,6 +36,13 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         self.ctx = None
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
 
+        self._running_danmaku = [
+            (5, 10, '感觉好卡呀，为啥呢，heyheyhey？'),
+            (10, 20, '周杰伦不香么？'),
+            (17, 10, '帧数不够'),
+            (23, 10, '尴尬!'),
+        ]
+
     def initializeGL(self):
         params = {'get_proc_address': self.get_proc_addr_c}
         self.ctx = MpvRenderContext(self.mpv,
@@ -60,6 +68,31 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
                       'h': h,
                       'fbo': self.defaultFramebufferObject()}
         self.ctx.render(flip_y=True, opengl_fbo=opengl_fbo)
+
+        if self._app.player.current_media:
+            pass
+            #print(self._app.player.position)
+            #from feeluown.gui.helpers import resize_font
+            #position = self._app.player.position
+            #painter = QPainter(self)
+            #painter.save()
+            #font = painter.font()
+            #pen = painter.pen()
+            #pen.setColor(QColor('red'))
+            #painter.setPen(pen)
+            #resize_font(font, 5)
+            #painter.setFont(font)
+            #fm = painter.fontMetrics()
+            #
+            #for danmaku in self._running_danmaku:
+            #    start, end, text = danmaku
+            #    duration = 15
+            #    width = fm.horizontalAdvance(text)
+            #    if start < position < start+duration:
+            #        x = w - ((position - start) / duration * w)
+            #        print(x, position)
+            #        painter.drawText(QRectF(x, 0, width, 60), Qt.AlignLeft, text)
+            #painter.restore()
 
     @pyqtSlot()
     def maybe_update(self):
