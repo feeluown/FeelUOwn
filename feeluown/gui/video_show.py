@@ -34,9 +34,10 @@ class VideoShowCtl:
 
         self._ui.mpv_widget.show()
         self._app.initialized.connect(
-            lambda app: self._ui.mpv_widget.hide(), weak=False)
+            lambda _: self._ui.mpv_widget.hide(), weak=False)
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
-        self._app.player.media_loaded.connect(self.on_media_loaded, aioqueue=True)
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True)
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
@@ -64,7 +65,8 @@ class VideoShowCtl:
         self._ui.pc_panel.toggle_video_btn.show()
         self._ui.pc_panel.toggle_video_btn.setText('▽')
         logger.info("enter video-show normal mode")
-        self._ui.mpv_widget.disable_overlay()
+        self._ui.mpv_widget.overlay_auto_visible = False
+        self._ui.mpv_widget.keep_wh_ratio = False
         if self._parent_is_normal is False:
             with self.change_parent():
                 self._ui.mpv_widget.hide()
@@ -87,7 +89,7 @@ class VideoShowCtl:
         """enter picture in picture mode"""
         self._ui.toggle_video_btn.hide()
         logger.info("enter video-show picture in picture mode")
-        self._ui.mpv_widget.enable_overlay()
+        self._ui.mpv_widget.overlay_auto_visible = True
         if self._parent_is_normal is True:
             width = self._app.player._mpv.width
             height = self._app.player._mpv.height
@@ -101,9 +103,9 @@ class VideoShowCtl:
                 self._parent_is_normal = False
                 self._pip_container.show()
                 self._ui.mpv_widget.show()
-            proper_width = min(width, 666)
+            proper_width = max(min(width, 640), 320)
             proper_height = height * proper_width / width
-            self._ui.mpv_widget.resize(proper_width, proper_height)
+            self._pip_container.resize(proper_width, proper_height)
         else:
             self._pip_container.show()
             self._ui.mpv_widget.show()
@@ -129,7 +131,6 @@ class VideoShowCtl:
 
     def set_mode(self, mode):
         # change mode to none, exit orignal mode
-        logger.info(f"set video show mode to {mode}")
         if mode is Mode.none:
             if self._mode is Mode.normal:
                 self.exit_normal_mode()
@@ -167,10 +168,9 @@ class VideoShowCtl:
             logger.info('Media is changed to empty, set mode to none')
             self.set_mode(Mode.none)
 
-    def on_media_loaded(self):
+    def on_video_format_changed(self, video_format):
         # When video is available, show control buttons. If video
         # is unavailable, hide video and control buttons.
-        video_format = self._app.player.video_format
         if video_format is None:
             # ignore the signal if parent is changing
             if self._parent_is_changing:

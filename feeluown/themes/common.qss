@@ -100,9 +100,8 @@ LeftPanel ListViewContainer TextButton {
     border: none;
 }
 
-VideoOverlay QPushButton {
-    width: 36px;
-    height: 36px;
-    border-radius: 18px;
+VideoCtlToolbar QPushButton {
+    width: 24px;
+    height: 24px;
     outline: none;
 }
