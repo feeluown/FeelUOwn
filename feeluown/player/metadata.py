@@ -12,6 +12,8 @@ class MetadataFields(Enum):
     # setby refers to how the metadata is generated/gotten.
     setby = '__setby__'
 
+    uri = 'uri'  # uri with `fuo` scheme
+
     title = 'title'
     artists = 'artists'  # The value is a list of strings.
     album = 'album'

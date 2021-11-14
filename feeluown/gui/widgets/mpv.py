@@ -61,6 +61,9 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
                       'fbo': self.defaultFramebufferObject()}
         self.ctx.render(flip_y=True, opengl_fbo=opengl_fbo)
 
+        for gl_painter in self._gl_painters:
+            gl_painter.paint(self)
+
     @pyqtSlot()
     def maybe_update(self):
         if self.window().isMinimized():

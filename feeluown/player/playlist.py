@@ -11,6 +11,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import MediaNotFound, SongProtocol, ModelType
+from feeluown.models.uri import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -531,5 +532,6 @@ class Playlist:
                 # The value of model v1 title_display may be None.
                 MetadataFields.title: video.title_display or '',
                 MetadataFields.source: video.source,
+                MetadataFields.uri: reverse(video),
             })
             self._app.player.play(media, metadata=metadata)

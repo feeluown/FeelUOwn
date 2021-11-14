@@ -88,6 +88,8 @@ class VideoOpenGLWidget(QOpenGLWidget):
         # Define public attributes.
         self.overlay_auto_visible = True
 
+        # Define protected attributes.
+        self._gl_painters = set({})
         self._overlay_visible_timer = QTimer(self)
         self._overlay_visible_duration = 2000  # 2s
 
@@ -106,6 +108,21 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self._layout.addStretch(1)
         self._layout.addWidget(self._ctl_bar)
         self.hide_overlay()
+
+    def add_gl_painter(self, painter):
+        """Add QPainter based gl painter.
+
+        In paintGL, we invoke these painters one by one so that they can
+        paint their own contents.
+
+        :param painter: painter must impl `paint(opengl_widget)` method.
+
+        .. versionadded: 3.7.13
+        """
+        # Simple validation
+        assert hasattr(painter, 'paint'), \
+            "painter must impl `paint` method."
+        self._gl_painters.add(painter)
 
     def hide_overlay(self):
         """hide the overlay widget"""
