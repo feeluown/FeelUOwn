@@ -455,6 +455,10 @@ class PlayerControlPanel(QFrame):
             self.song_source_label.setText(default)
 
     async def update_mv_btn_status(self, song):
+        if song is None:
+            self.mv_btn.setEnabled(False)
+            return
+
         try:
             mv = await aio.run_fn(self._app.library.song_get_mv, song)
         except ProviderIOError:
