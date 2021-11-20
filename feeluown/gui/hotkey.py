@@ -1,5 +1,5 @@
 from PyQt5.QtCore import Qt, QObject, QCoreApplication, QEvent
-from PyQt5.QtGui import QKeySequence as KS
+from PyQt5.QtGui import QKeySequence as KS, QMouseEvent
 from PyQt5.QtWidgets import QShortcut
 
 
@@ -41,6 +41,9 @@ class HotkeyManager(QObject):
 
     def eventFilter(self, obj, event):
         if event.type() == QEvent.MouseButtonPress:
+            # The event can be QContextMenuEvent.
+            if not isinstance(event, QMouseEvent):
+                return False
             button = event.button()
             if button == Qt.BackButton:
                 self._app.browser.back()

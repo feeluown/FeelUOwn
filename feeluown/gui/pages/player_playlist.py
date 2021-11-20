@@ -78,10 +78,15 @@ class PlaylistTableModel(BaseSongsTableModel):
 
     def on_songs_added(self, index, count):
         self.beginInsertRows(QModelIndex(), index, index+count-1)
-        self._items = self._playlist.list().copy()
+        # Insert from tail to front.
+        while count > 0:
+            self._items.insert(index, self._playlist[index+count-1])
+            count -= 1
         self.endInsertRows()
 
     def on_songs_removed(self, index, count):
         self.beginRemoveRows(QModelIndex(), index, index+count-1)
-        self._items = self._playlist.list().copy()
+        while count > 0:
+            self._items.pop(index + count - 1)
+            count -= 1
         self.endRemoveRows()

@@ -8,10 +8,8 @@ import asyncio
 import itertools
 import random
 import sys
-import time
 import logging
 from contextlib import suppress
-from functools import wraps
 from requests.exceptions import RequestException
 
 try:
@@ -60,18 +58,6 @@ def is_macos():
     .. versionadded: v3.7.10
     """
     return sys.platform == 'darwin'
-
-
-def measure_time(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        t = time.process_time()
-        result = func(*args, **kwargs)
-        elapsed_time = time.process_time() - t
-        logger.info('function %s executed time: %f s'
-                    % (func.__name__, elapsed_time))
-        return result
-    return wrapper
 
 
 def disconnect_slots_if_has(signal):

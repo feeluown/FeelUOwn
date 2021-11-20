@@ -176,30 +176,37 @@ class PlaylistRenderer(Renderer):
         self.meta_widget.show()
         self.meta_widget.title = playlist.name
 
-        # show playlist song list
-        with suppress(ProviderIOError):
-            if playlist.meta.allow_create_songs_g:
-                reader = wrap(playlist.create_songs_g())
-            else:
-                songs = await async_run(lambda: playlist.songs)
-                reader = wrap(songs)
-            self.show_songs(reader=reader, show_count=True)
+        await self._show_songs()
 
         # show playlist cover
         if playlist.cover:
             aio.create_task(
                 self.show_cover(playlist.cover, reverse(playlist, '/cover')))
 
-        def remove_song(song):
-            playlist.remove(song.identifier)
-
-        self.songs_table.remove_song_func = remove_song
+        self.songs_table.remove_song_func = self.remove_song
         self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
 
     async def _show_desc(self):
         with suppress(ProviderIOError):
             desc = await async_run(lambda: self.playlist.desc)
             self.show_desc(desc)
+
+    async def _show_songs(self):
+        # show playlist song list
+        with suppress(ProviderIOError):
+            if self.playlist.meta.allow_create_songs_g:
+                reader = wrap(self.playlist.create_songs_g())
+            else:
+                songs = await async_run(lambda: self.playlist.songs)
+                reader = wrap(songs)
+            self.show_songs(reader=reader, show_count=True)
+
+    def remove_song(self, song):
+        if self.playlist.remove(song.identifier) is True:
+            # Re-render songs table so that user can see that the song is removed.
+            aio.run_afn(self._show_songs)
+        else:
+            self._app.show_msg('移除歌曲失败')
 
 
 class SongsCollectionRenderer(Renderer):
@@ -212,7 +219,7 @@ class SongsCollectionRenderer(Renderer):
         self.meta_widget.title = collection.name
         self.meta_widget.updated_at = collection.updated_at
         self.meta_widget.created_at = collection.created_at
-        self.songs_table.remove_song_func = collection.remove
+        self.songs_table.remove_song_func = self.remove_song
         self._show_songs()
 
         # only show tabbar if description is not empty
@@ -228,6 +235,11 @@ class SongsCollectionRenderer(Renderer):
         """filter model with other type"""
         self.show_songs(wrap([model for model in self.collection.models
                               if model.meta.model_type == ModelType.song]))
+
+    def remove_song(self, song):
+        self.collection.remove(song)
+        # Re-render songs table so that user can see that the song is removed.
+        self._show_songs()
 
 
 class AlbumsCollectionRenderer(Renderer):
