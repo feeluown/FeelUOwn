@@ -275,7 +275,8 @@ class Playlist:
         :param direction: forward if > 0 else backward
         :param loop: regard the song list as a loop
 
-        >>> pl = Playlist([1, 2, 3])
+        >>> from unittest import mock
+        >>> pl = Playlist(mock.Mock(), [1, 2, 3])
         >>> pl._get_good_song()
         1
         >>> pl._get_good_song(base=1)

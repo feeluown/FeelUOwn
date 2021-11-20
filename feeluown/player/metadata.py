@@ -27,10 +27,10 @@ class MetadataFields(Enum):
 class Metadata(MutableMapping):
     """Metadata is a dict that transform the key to MetadataFields.
 
-    >>> Metadata({'title': 'hello world'})
-    >>> Metadata['title']
+    >>> m = Metadata({'title': 'hello world'})
+    >>> m['title']
     'hello world'
-    >>> Metadata.get('notexist', 'notexist')
+    >>> m.get('notexist', 'notexist')
     'notexist'
     """
     def __init__(self, *args, **kwargs):

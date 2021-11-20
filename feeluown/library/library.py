@@ -133,7 +133,7 @@ class Library:
         >>> library.register(dummy_provider)
         Traceback (most recent call last):
             ...
-        feeluown.library.excs.ProviderAlreadyExists
+        feeluown.excs.ProviderAlreadyRegistered
         """
         if not isinstance(provider, AbstractProvider):
             raise ValueError('invalid provider instance')
