@@ -64,7 +64,6 @@ class Tray(QSystemTrayIcon):
     def initialize(self):
         self._set_icon()
         self._status_action.setIcon(self.icon())
-        self.show()
 
     def setup_ui(self):
         self._menu.addAction(self._status_action)

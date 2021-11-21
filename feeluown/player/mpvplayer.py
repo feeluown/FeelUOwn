@@ -169,7 +169,7 @@ class MpvPlayer(AbstractPlayer):
         self.state = State.stopped
         self.play(None)
         self._mpv.playlist_clear()
-        logger.info('Player stopped.')
+        logger.debug('Player stopped.')
 
     @property
     def position(self):

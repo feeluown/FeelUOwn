@@ -3,6 +3,7 @@
 import logging
 import os
 import sys
+import socket
 import time
 from collections import OrderedDict
 from copy import copy, deepcopy
@@ -13,6 +14,14 @@ from feeluown.utils.reader import wrap as reader_wrap
 
 
 logger = logging.getLogger(__name__)
+
+
+def is_port_inuse(port):
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # TODO: this may block for 2 second if port is not used on Windows
+    rv = sock.connect_ex(('127.0.0.1', port))
+    sock.close()
+    return rv == 0
 
 
 def use_mpv_old():

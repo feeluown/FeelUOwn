@@ -21,6 +21,7 @@ from feeluown.pubsub import (
 )
 
 from feeluown.utils.request import Request
+from feeluown.utils.utils import is_port_inuse
 from feeluown.rpc.server import FuoServer
 from .consts import STATE_FILE
 from .player import FM, Player
@@ -91,7 +92,10 @@ class App:
             def before_media_change(old_media, media):
                 # When the song has no media or preparing media is failed,
                 # the current_song is not the song we set.
-                if playlist.current_song != song:
+                #
+                # When user play a new media directly through player.play interface,
+                # the old media is not None.
+                if old_media is not None or playlist.current_song != song:
                     player.media_about_to_changed.disconnect(before_media_change)
                     player.set_play_range()
 
@@ -159,12 +163,13 @@ class App:
             show_msg(s + '...done')  # done
 
     def about_to_exit(self):
+        logger.info('Do graceful shutdown')
         try:
-            logger.info('Do graceful shutdown')
             self.about_to_shutdown.emit(self)
-            Signal.teardown_aio_support()
             self.player.stop()
             self.exit_player()
+            # Teardown aio support at the very end.
+            Signal.teardown_aio_support()
         except:  # noqa
             logger.exception("about-to-exit failed")
 
@@ -173,6 +178,7 @@ class App:
 
     def exit(self):
         self.about_to_exit()
+        logger.info('Shutdown event loop')
         loop = asyncio.get_event_loop()
         loop.stop()
         loop.close()
@@ -297,7 +303,7 @@ def create_app(config):
             def exit_player(self):
                 # Destroy GL context or mpv renderer
                 self.ui.mpv_widget.shutdown()
-                self.player.shutdown()
+                super().exit_player()
 
             def exit(self):
                 QApplication.exit()
@@ -329,6 +335,7 @@ def init_app(app):
         app.theme_mgr.initialize()
         if app.config.ENABLE_TRAY:
             app.tray.initialize()
+            app.tray.show()
         app.tips_mgr.show_random_tip()
         app.coll_uimgr.initialize()
         app.browser.initialize()
@@ -338,9 +345,36 @@ def init_app(app):
 def run_app(app):
     loop = asyncio.get_event_loop()
 
-    if app.mode & (App.DaemonMode | App.GuiMode):
-        loop.call_later(10, partial(loop.create_task, app.version_mgr.check_release()))
+    # Check if there will be any errors that cause start failure.
+    # If there is an error, err_msg will not be empty.
+    err_msg = ''
+    if app.mode & App.DaemonMode:
+        if is_port_inuse(app.config.RPC_PORT) or \
+           is_port_inuse(app.config.PUBSUB_PORT):
+            err_msg = (
+                'App fails to start services because '
+                f'either port {app.config.RPC_PORT} or {app.config.PUBSUB_PORT} '
+                'was already in use. '
+                'Please check if there was another FeelUOwn instance.'
+            )
 
+    if err_msg:
+        if app.mode & App.GuiMode:
+            from PyQt5.QtWidgets import QMessageBox
+            w = QMessageBox()
+            w.setText(err_msg)
+            w.finished.connect(lambda _: app.exit())
+            w.show()
+            loop.run_forever()
+        else:
+            logger.error(err_msg)
+            sys.exit(1)
+        return
+
+    if app.mode & (App.DaemonMode | App.GuiMode):
+        loop.call_later(
+            10,
+            partial(loop.create_task, app.version_mgr.check_release()))
     if app.mode & App.DaemonMode:
         if sys.platform.lower() == 'darwin':
             try:
@@ -354,17 +388,13 @@ def run_app(app):
             from feeluown.linux import run_mpris2_server
             run_mpris2_server(app)
 
-        loop.create_task(app.server.run(app.get_listen_addr()))
+        loop.create_task(app.server.run(app.get_listen_addr(), app.config.RPC_PORT))
         client_connected_cb = PubsubHandlerV1(app.pubsub_gateway).handle
         loop.create_task(asyncio.start_server(
             client_connected_cb,
             host=app.get_listen_addr(),
-            port=23334,
+            port=app.config.PUBSUB_PORT,
             loop=loop))
-
-    def handle_signal(signum, frame):
-        if signum == signal.SIGTERM:
-            app.exit()
 
     # App can exit in several ways
     #
@@ -376,6 +406,10 @@ def run_app(app):
     # Daemon mode
     # 1. Ctrl-C
     # 2. SIGTERM
+    def handle_signal(signum, _):
+        if signum == signal.SIGTERM:
+            app.exit()
+
     signal.signal(signal.SIGTERM, handle_signal)
     try:
         if not (app.config.MODE & (App.GuiMode | App.DaemonMode)):

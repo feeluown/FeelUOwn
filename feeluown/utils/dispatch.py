@@ -73,13 +73,14 @@ class Signal:
                         func = receiver()
                     else:
                         func = receiver
-                    if Signal.has_aio_support:
-                        uid = gen_id(func)
-                        aioqueue = uid in self.aioqueued_receiver_ids
-                        if aioqueue:
+                    uid = gen_id(func)
+                    aioqueue = uid in self.aioqueued_receiver_ids
+                    if aioqueue:
+                        if Signal.has_aio_support:
                             Signal.aioqueue.sync_q.put_nowait((func, args))
                         else:
-                            func(*args)
+                            logger.warning(
+                                'No aio support is available, a receiver is ignored.')
                     else:
                         func(*args)
                 else:

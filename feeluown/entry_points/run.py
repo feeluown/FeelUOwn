@@ -8,9 +8,8 @@ except ImportError:
     # FIXME: should not catch the error at here
     pass
 
-import socket  # noqa: E402
-
 # pylint: disable=wrong-import-position
+from feeluown.utils.utils import is_port_inuse  # noqa: E402
 from .base import create_config, setup_argparse  # noqa: E402
 from .run_cli import run_cli  # noqa: E402
 from .run_app import run_once, run_forever  # noqa: E402
@@ -31,11 +30,7 @@ def run():
         # if daemon is started, we send commands to daemon directly
         # we simple think the daemon is started as long as
         # the port 23333 is in use
-        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        # TODO: this may block for 2 second if port is not used on Windows
-        rv = sock.connect_ex(('127.0.0.1', 23333))
-        if rv == 0:  # port is in use
-            sock.close()
+        if is_port_inuse(23333):
             return run_cli(args)
 
         # If daemon is not started, (some) commands can be meaningless,
