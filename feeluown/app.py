@@ -172,13 +172,13 @@ class App:
             Signal.teardown_aio_support()
         except:  # noqa
             logger.exception("about-to-exit failed")
+        logger.info('Ready for shutdown')
 
     def exit_player(self):
         self.player.shutdown()  # this cause 'abort trap' on macOS
 
     def exit(self):
         self.about_to_exit()
-        logger.info('Shutdown event loop')
         loop = asyncio.get_event_loop()
         loop.stop()
         loop.close()
