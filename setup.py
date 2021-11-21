@@ -84,6 +84,7 @@ setup(
             'pytest-asyncio',
             'pytest-qt',
             'pytest-mock',
+            'pytest-benchmark>=3.4.1',
 
             # docs
             'sphinx',

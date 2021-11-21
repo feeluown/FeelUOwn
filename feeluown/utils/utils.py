@@ -130,7 +130,11 @@ def to_readall_reader(*args, **kwargs):
 
 
 class DedupList(list):
-    """ List that doesn't contain duplicate items """
+    """List that doesn't contain duplicate items
+
+    The item should properly implement __hash__ and __eq__. If items
+    are not equal to each other, they must not have same hash.
+    """
 
     def _get_index(self, index):
         """ project idx into range(len) """

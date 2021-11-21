@@ -121,9 +121,21 @@ class BaseModel(_BaseModel):
             expired_at = int(time.time()) + ttl
         self.__cache__[key] = (value, expired_at)
 
+    """
+    Implement __hash__ and __eq__ so that a model can be a dict key.
+    From the benchmark result, the cost of __hash__ is almost equal to __eq__.
+    """
     def __hash__(self):
-        id_hash = elfhash(self.identifier.encode())
+        id_hash = elfhash(f'{self.source}{self.identifier}'.encode())
         return id_hash * 1000 + id(type(self)) % 1000
+
+    def __eq__(self, other):
+        """Implement __hash__ and __eq__ so that model can be a dict key"""
+        if not isinstance(other, BaseModel):
+            return False
+        return all([other.source == self.source,
+                    str(other.identifier) == str(self.identifier),
+                    ModelType(other.meta.model_type) == self.meta.model_type])
 
     def __getattr__(self, attr):
         try:
