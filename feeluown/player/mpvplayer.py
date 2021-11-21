@@ -98,7 +98,6 @@ class MpvPlayer(AbstractPlayer):
         self.media_about_to_changed.emit(self._current_media, media)
         if media is None:
             self._mpv.playlist_clear()
-            self._current_media = None
         else:
             logger.debug("Player will play: '%s'", media)
             if isinstance(media, Media):

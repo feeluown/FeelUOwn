@@ -89,10 +89,11 @@ class App:
             song = state['song']
 
             def before_media_change(old_media, media):
-                if old_media is not None or playlist.current_song != song:
+                # When the song has no media or preparing media is failed,
+                # the current_song is not the song we set.
+                if playlist.current_song != song:
                     player.media_about_to_changed.disconnect(before_media_change)
                     player.set_play_range()
-                    player.resume()
 
             if song is not None:
                 try:
