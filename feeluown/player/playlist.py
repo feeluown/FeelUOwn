@@ -344,7 +344,7 @@ class Playlist:
             return self._get_good_song(base=-1, direction=-1)
 
         if self.playback_mode == PlaybackMode.random:
-            previous_song = self._get_good_song(direction=-1)
+            previous_song = self._get_good_song(direction=-1, random_=True)
         else:
             current_index = self._songs.index(self.current_song)
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
