@@ -52,7 +52,8 @@ macOS
 
     # macOS 11 可能不能正常安装
     # https://github.com/feeluown/FeelUOwn/issues/421
-    brew install feeluown/feeluown/feeluown --with-battery
+    brew tap feeluown/feeluown
+    brew install feeluown --with-battery # 更多选项见 `brew info feeluown`
     feeluown-genicon  # 在桌面会生成一个 FeelUOwn 图标
 
 Windows
