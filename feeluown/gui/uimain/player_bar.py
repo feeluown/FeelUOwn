@@ -317,7 +317,6 @@ class PlayerControlPanel(QFrame):
         playlist.song_changed.connect(self.on_player_song_changed, aioqueue=True)
         player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
-        player.media_changed.connect(self.on_player_media_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
         self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
         self.lyric_window.play_previous_needed.connect(playlist.previous)
@@ -419,15 +418,6 @@ class PlayerControlPanel(QFrame):
         task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
         task_spec.bind_coro(self.update_mv_btn_status(song))
 
-    def on_player_media_changed(self, media):
-        if media is not None and media.type_ == MediaType.audio:
-            props = media.props
-            if props.bitrate:
-                text = self.song_source_label.text()
-                bitrate_text = str(props.bitrate) + 'kbps'
-                self.song_source_label.setText(
-                    '{} - {}'.format(text, bitrate_text))
-
     def on_metadata_changed(self, metadata):
         if not metadata:
             self.song_source_label.setText('歌曲来源')
@@ -446,6 +436,7 @@ class PlayerControlPanel(QFrame):
         # Set source name.
         source = metadata.get('source', '')
         default = '未知来源'
+
         if source:
             source_name_map = {p.identifier: p.name
                                for p in self._app.library.list()}
@@ -453,6 +444,14 @@ class PlayerControlPanel(QFrame):
             self.song_source_label.setText(name)
         else:
             self.song_source_label.setText(default)
+
+        # Set audio bitrate info if available.
+        media = self._app.player.current_media
+        if media is not None and media.type_ == MediaType.audio:
+            props = media.props
+            if props.bitrate:
+                text = self.song_source_label.text()
+                self.song_source_label.setText(f'{text} - {props.bitrate}kbps')
 
     async def update_mv_btn_status(self, song):
         if song is None:
