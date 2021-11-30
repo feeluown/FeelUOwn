@@ -250,7 +250,7 @@ def create_app(config):
     if mode & App.GuiMode:
 
         from PyQt5.QtCore import Qt, QDir
-        from PyQt5.QtGui import QIcon, QPixmap
+        from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication
         from PyQt5.QtWidgets import QApplication, QWidget
 
         try:
@@ -271,6 +271,11 @@ def create_app(config):
 
         q_app.setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         q_app.setApplicationName('FeelUOwn')
+        QApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
+        # Set desktopFileName so that the window icon is properly shown under wayland.
+        # I don't know if this setting brings other benefits or not.
+        # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
+        QGuiApplication.setDesktopFileName('FeelUOwn')
 
         app_event_loop = QEventLoop(q_app)
         asyncio.set_event_loop(app_event_loop)
@@ -281,7 +286,6 @@ def create_app(config):
             def __init__(self):
                 super().__init__()
                 self.setObjectName('app')
-                QApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
 
             def closeEvent(self, _):
                 if not self.config.ENABLE_TRAY:
