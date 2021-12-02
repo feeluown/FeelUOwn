@@ -504,10 +504,11 @@ class Playlist:
         """
         .. versionadded: 3.7.13
         """
-        if model.meta.model_type is ModelType.song:
+        if ModelType(model.meta.model_type) is ModelType.song:
             return self.set_current_song(model)
         if model is None:
             self._app.player.stop()
+            return
         return self._t_scm.bind_coro(self.a_set_current_model(model))
 
     async def a_set_current_model(self, model):
@@ -536,3 +537,25 @@ class Playlist:
                 MetadataFields.uri: reverse(video),
             })
             self._app.player.play(media, metadata=metadata)
+
+    """
+    Sync methods.
+
+    Currently, playlist has both async and sync methods to keep backward
+    compatibility. Sync methods will be replaced by async methods in the end.
+    """
+    def play_model(self, model):
+        """Set current model and play it
+
+        .. versionadded: 3.7.14
+        """
+        task = self.set_current_model(model)
+        if task is not None:
+            def cb(future):
+                try:
+                    future.result()
+                except:  # noqa
+                    logger.exception('play model failed')
+                else:
+                    self._app.player.resume()
+            task.add_done_callback(cb)

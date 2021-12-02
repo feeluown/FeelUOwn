@@ -24,9 +24,9 @@ class CollectionContainer(QFrame):
         self.collection_toc.show_album_needed.connect(
             lambda album: aio.create_task(self.show_album(album)))
         self.collection_toc.play_song_needed.connect(
-            self._app.playlist.set_current_song)
+            self._app.playlist.play_model)
         self.collection_body.song_list_view.play_song_needed.connect(
-            self._app.playlist.set_current_song)
+            self._app.playlist.play_model)
 
         self._layout = QHBoxLayout(self)
 

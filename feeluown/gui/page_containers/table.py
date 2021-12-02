@@ -308,9 +308,9 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._tables.append(self.comments_table)
 
         self.songs_table.play_song_needed.connect(
-            lambda song: asyncio.ensure_future(self.play_song(song)))
+            lambda song: aio.run_afn(self.play_song, song))
         self.videos_table.play_video_needed.connect(
-            self._app.playlist.set_current_model)
+            self._app.playlist.play_model)
 
         def goto_model(model):
             self._app.browser.goto(model=model)
@@ -323,7 +323,8 @@ class TableContainer(QFrame, BgTransparentMixin):
                        ]:
             signal.connect(goto_model)
 
-        self.toolbar.play_all_needed.connect(self.play_all)
+        self.toolbar.play_all_needed.connect(
+            lambda: aio.run_afn(self.play_all))
         self.songs_table.add_to_playlist_needed.connect(self._add_songs_to_playlist)
         self.songs_table.about_to_show_menu.connect(self._songs_table_about_to_show_menu)
         self.songs_table.activated.connect(
@@ -438,25 +439,21 @@ class TableContainer(QFrame, BgTransparentMixin):
         await self._renderer.render()
 
     async def play_song(self, song):
-        self._app.playlist.set_current_song(song)
+        self._app.playlist.play_model(song)
 
-    def play_all(self):
+    async def play_all(self):
         task_name = 'play-all'
         task_spec = self._app.task_mgr.get_or_create(task_name)
-
-        def reader_readall_cb(task):
-            with suppress(ProviderIOError, asyncio.CancelledError):
-                songs = task.result()
-                self._app.playlist.set_models(songs, next_=True)
-            self.toolbar.enter_state_playall_end()
-
         model = self.songs_table.model()
-        # FIXME: think about a more elegant way
+        # FIXME: think about a more elegant way to get reader.
         reader = model.sourceModel().reader
         if reader is not None and reader.count is not None:
-            task = task_spec.bind_blocking_io(reader.readall)
             self.toolbar.enter_state_playall_start()
-            task.add_done_callback(reader_readall_cb)
+            with suppress(ProviderIOError, asyncio.CancelledError):
+                songs = await task_spec.bind_blocking_io(reader.readall)
+                await self._app.playlist.set_models(songs, next_=True)
+                self._app.player.resume()
+            self.toolbar.enter_state_playall_end()
             return
         assert False, 'The play_all_btn should be hide in this page'
 
@@ -530,7 +527,7 @@ class TableContainer(QFrame, BgTransparentMixin):
                         songs = await aio.run_fn(reader.readall)
                         self._app.playlist.clear()
                         self._app.playlist.set_models(songs)
-            self._app.playlist.set_current_song(song)
+            self._app.playlist.play_model(song)
         else:
             try:
                 song = await aio.run_in_executor(

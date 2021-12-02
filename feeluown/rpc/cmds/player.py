@@ -50,7 +50,7 @@ class PlayerHandler(AbstractHandler):
             model = resolve(s)
             if model is None:
                 return 'Invalid fuo uri.'
-            self._app.playlist.set_current_model(model)
+            self._app.playlist.play_model(model)
             return
         elif s.startswith('http'):
             return self.player.play(s, video=False)
@@ -68,7 +68,7 @@ class PlayerHandler(AbstractHandler):
             songs = sorted(songs, key=lambda song: score(s, repr_song(song)),
                            reverse=True)
             msg = 'select:\t{}\n'.format(show_song(songs[0], brief=True))
-            self.playlist.set_current_song(songs[0])
+            self.playlist.play_model(songs[0])
             lines = []
             for song in songs[1:]:
                 lines.append('\t' + show_song(song, brief=True))

@@ -83,6 +83,18 @@ def test_set_current_song(pl, song2):
     assert pl.list()[1] == song2
 
 
+@pytest.mark.asyncio
+async def test_play_model(pl, song, mocker):
+    mock_set = mocker.patch.object(pl, 'set_current_model')
+    f = asyncio.Future()
+    f.set_result(None)
+    mock_set.return_value = f
+    pl.play_model(song)
+    await asyncio.sleep(0.1)
+    # The player.resume method must be called.
+    assert pl._app.player.resume.called
+
+
 def test_set_models(pl, song1, song2):
     # Set a nonexisting song as current song
     # The song should be inserted after current_song
