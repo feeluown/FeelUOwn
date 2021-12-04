@@ -180,14 +180,14 @@ class CollectionManager:
     def __init__(self, app):
         self._app = app
         self._library = app.library
+        self.default_dir = COLLECTIONS_DIR
 
     def scan(self):
-        """
-        scan collections directories for valid fuo files, yield
+        """Scan collections directories for valid fuo files, yield
         Collection instance for each file.
         """
         default_fpaths = []
-        directorys = [COLLECTIONS_DIR]
+        directorys = [self.default_dir]
         if self._app.config.COLLECTIONS_DIR:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
                 directorys += self._app.config.COLLECTIONS_DIR
@@ -219,7 +219,7 @@ class CollectionManager:
         yield coll
 
     def generate_library_coll_if_needed(self, default_fpaths):
-        library_fpath = os.path.join(COLLECTIONS_DIR, LIBRARY_FILENAME)
+        library_fpath = os.path.join(self.default_dir, LIBRARY_FILENAME)
         if os.path.exists(library_fpath):
             if default_fpaths:
                 paths_str = ','.join(default_fpaths)

@@ -1,5 +1,5 @@
 from fuocore.models.uri import ResolveFailed, ResolverNotFound
-from feeluown.collection import Collection
+from feeluown.collection import Collection, CollectionManager
 
 
 def test_collection_load(tmp_path, song, mocker):
@@ -108,3 +108,26 @@ def test_load_and_write_file_with_no_metadata(song, song3, tmp_path, mocker):
     lines = f.read_text().split('\n')
     assert len(lines) == 4  # three plus two empty
     assert lines[0].startswith('fuo://fake/songs/3')
+
+
+def test_coll_mgr_generate_library_coll(app_mock, tmp_path):
+    coll_mgr = CollectionManager(app_mock)
+    directory = tmp_path / 'sub'
+    directory.mkdir()
+    coll_mgr.default_dir = str(directory)
+
+    # Simulate a fake Album.fuo file.
+    album = 'fuo://fake/albums/0'
+    f = directory / 'Albums.fuo'
+    f.touch()
+    f.write_text(f'{album}\n')
+
+    # Check if the library collection file is generated.
+    coll_mgr.generate_library_coll_if_needed([str(f)])
+    library_coll_file = directory / 'library.fuo'
+    assert library_coll_file.exists()
+
+    # Check if the album is copied to library collection.
+    with library_coll_file.open() as f:
+        content = f.read()
+    assert album in content
