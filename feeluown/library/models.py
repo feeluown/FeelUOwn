@@ -56,7 +56,7 @@ from typing import List, Optional, Tuple, Any
 
 from pydantic import BaseModel as _BaseModel, PrivateAttr
 
-from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags
+from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
 from feeluown.utils.utils import elfhash
 from .model_state import ModelState
 
@@ -279,6 +279,20 @@ class CommentModel(BaseNormalModel):
     parent: Optional[BriefCommentModel]
     #: the root comment id
     root_comment_id: Optional[str]
+
+
+class ArtistModel(BaseNormalModel):
+    meta: Any = ModelMeta.create(ModelType.comment, is_normal=True)
+    name: str
+    aliases: List[str]
+    pic_url: str
+
+
+class AlbumModel(BaseNormalModel):
+    meta: Any = ModelMeta.create(ModelType.album, is_normal=True)
+    name: str
+    cover: str
+    type_: AlbumType
 
 
 class LyricModel(BaseNormalModel):
