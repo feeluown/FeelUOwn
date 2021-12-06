@@ -61,10 +61,25 @@ from feeluown.utils.utils import elfhash
 from .model_state import ModelState
 
 
-def cook_artists_name(names):
-    # [a, b, c] -> 'a, b & c'
-    artists_name = ', '.join(names)
-    return ' & '.join(artists_name.rsplit(', ', 1))
+def fmt_artists_names(names: List[str]) -> str:
+    """Format artists names.
+
+    >>> fmt_artists_names(['a', 'b', 'c'])
+    'a, b & c'
+    >>> fmt_artists_names(['a'])
+    'a'
+    """
+    length = len(names)
+    if length == 0:
+        return ''
+    elif length == 1:
+        return names[0]
+    else:
+        return ' & '.join([', '.join(names[:-1]), names[-1]])
+
+
+def fmt_artists(artists: List['BriefArtistModel']) -> str:
+    return fmt_artists_names([artist.name for artist in artists])
 
 
 class ModelMeta:
@@ -222,6 +237,11 @@ class BriefArtistModel(BaseBriefModel):
     name: str = ''
 
 
+class BriefPlaylistModel(BaseBriefModel):
+    meta: Any = ModelMeta.create(ModelType.playlist, is_brief=True)
+    name: str = ''
+
+
 class SongModel(BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
@@ -231,14 +251,11 @@ class SongModel(BaseNormalModel):
 
     @property
     def artists_name(self):
-        # [a, b, c] -> 'a, b & c'
-        artists_name = ', '.join((artist.name
-                                  for artist in self.artists))
-        return ' & '.join(artists_name.rsplit(', ', 1))
+        return fmt_artists(self.artists)
 
     @property
     def album_name(self):
-        return self.album.name
+        return self.album.name if self.album else ''
 
     @property
     def duration_ms(self):
@@ -282,17 +299,27 @@ class CommentModel(BaseNormalModel):
 
 
 class ArtistModel(BaseNormalModel):
-    meta: Any = ModelMeta.create(ModelType.comment, is_normal=True)
+    """
+    Artist model has no `description` field and album/playlist model has,
+    because the artist's description is usually long.
+    """
+    meta: Any = ModelMeta.create(ModelType.artist, is_normal=True)
     name: str
-    aliases: List[str]
     pic_url: str
+    aliases: List[str]
 
 
 class AlbumModel(BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.album, is_normal=True)
     name: str
     cover: str
-    type_: AlbumType
+    type_: AlbumType = AlbumType.standard
+    artists: List[BriefArtistModel]
+    description: str
+
+    @property
+    def artists_name(self):
+        return fmt_artists(self.artists)
 
 
 class LyricModel(BaseNormalModel):
@@ -310,10 +337,7 @@ class VideoModel(BaseNormalModel):
 
     @property
     def artists_name(self):
-        # [a, b, c] -> 'a, b & c'
-        artists_name = ', '.join((artist.name
-                                  for artist in self.artists))
-        return ' & '.join(artists_name.rsplit(', ', 1))
+        return fmt_artists(self.artists)
 
     @property
     def duration_ms(self):
@@ -323,3 +347,10 @@ class VideoModel(BaseNormalModel):
         else:
             m, s = 0, 0
         return '{:02}:{:02}'.format(int(m), int(s))
+
+
+class PlaylistModel(BaseBriefModel):
+    meta: Any = ModelMeta.create(ModelType.playlist, is_brief=True)
+    name: str
+    cover: str
+    description: str
