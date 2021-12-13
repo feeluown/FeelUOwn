@@ -451,8 +451,11 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.toolbar.enter_state_playall_start()
             with suppress(ProviderIOError, asyncio.CancelledError):
                 songs = await task_spec.bind_blocking_io(reader.readall)
-                await self._app.playlist.set_models(songs, next_=True)
-                self._app.player.resume()
+                self._app.playlist.set_models(songs)
+                task = self._app.playlist.next()
+                if task is not None:
+                    await task
+                    self._app.player.resume()
             self.toolbar.enter_state_playall_end()
             return
         assert False, 'The play_all_btn should be hide in this page'

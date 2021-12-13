@@ -288,3 +288,15 @@ def test_change_song(app_mock, mocker, song, song1):
         pl.set_current_song(song1)
         pl.next()
         assert pl.current_song == song
+
+
+def test_playlist_next_should_call_set_current_song(app_mock, mocker, song):
+    mock_set_current_song = mocker.patch.object(Playlist, 'set_current_song')
+    pl = Playlist(app_mock)
+    pl.add(song)
+    task = pl.next()
+    # Next method should call set_current_song and return an asyncio task.
+    # Since it is complex to mock and return a asyncio.Task, we do not
+    # check the type of task object.
+    assert task is not None
+    assert mock_set_current_song.called
