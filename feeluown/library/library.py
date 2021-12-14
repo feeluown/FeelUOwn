@@ -397,10 +397,11 @@ class Library:
     def _cast_model_to_v1_impl(self, model):
         provider = self.get_or_raise(model.source)
         ModelCls = provider.get_model_cls(model.meta.model_type)
-        # The source of the default SongModel is None
+        # The source of the default SongModel is None. When ModelCls.source
+        # is None, it means that the provider does not has its own model class.
         if ModelCls.source is None:
-            raise NotSupported(
-                f'provider has no v1 model impl for {model.meta.model_type}')
+            model_type_str = str(ModelType(model.meta.model_type))
+            raise NotSupported(f'provider has no v1 model impl for {model_type_str}')
         kv = {}
         for field in ModelCls.meta.fields_display:
             kv[field] = getattr(model, field)
