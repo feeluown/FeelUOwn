@@ -184,7 +184,7 @@ class ImgListDelegate(QAbstractItemDelegate):
             source_option.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         name = index.data(Qt.DisplayRole)
         fm = QFontMetrics(painter.font())
-        elided_name = fm.elidedText(name, Qt.ElideRight, text_rect.width())
+        elided_name = fm.elidedText(name, Qt.ElideRight, int(text_rect.width()))
         source = index.data(Qt.WhatsThisRole)
         painter.drawText(text_rect, elided_name, option)
         painter.restore()

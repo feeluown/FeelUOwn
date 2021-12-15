@@ -398,7 +398,7 @@ def run_app(app):
             client_connected_cb,
             host=app.get_listen_addr(),
             port=app.config.PUBSUB_PORT,
-            loop=loop))
+        ))
 
     # App can exit in several ways
     #
