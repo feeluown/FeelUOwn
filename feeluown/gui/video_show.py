@@ -104,7 +104,7 @@ class VideoShowCtl:
                 self._pip_container.show()
                 self._ui.mpv_widget.show()
             proper_width = max(min(width, 640), 320)
-            proper_height = height * proper_width / width
+            proper_height = height * proper_width // width
             self._pip_container.resize(proper_width, proper_height)
         else:
             self._pip_container.show()
