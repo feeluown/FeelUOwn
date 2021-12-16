@@ -329,7 +329,7 @@ class LyricModel(BaseNormalModel):
 
 
 class VideoModel(BaseNormalModel):
-    meta: Any = ModelMeta.create(ModelType.video, is_brief=True)
+    meta: Any = ModelMeta.create(ModelType.video, is_normal=True)
     title: str
     artists: List[BriefArtistModel]
     duration: int
@@ -349,8 +349,13 @@ class VideoModel(BaseNormalModel):
         return '{:02}:{:02}'.format(int(m), int(s))
 
 
-class PlaylistModel(BaseBriefModel):
+class BriefPlaylistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_brief=True)
+    name: str
+
+
+class PlaylistModel(BaseBriefModel):
+    meta: Any = ModelMeta.create(ModelType.playlist, is_normal=True)
     name: str
     cover: str
     description: str

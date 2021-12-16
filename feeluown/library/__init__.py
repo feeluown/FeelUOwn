@@ -17,6 +17,7 @@ from .models import ModelFlags, BaseModel, ModelType, \
     BriefArtistModel, BriefAlbumModel, \
     BriefCommentModel, CommentModel, \
     BriefUserModel, UserModel, \
-    LyricModel, VideoModel, BriefVideoModel
+    LyricModel, VideoModel, BriefVideoModel, \
+    ArtistModel, AlbumModel, PlaylistModel, BriefPlaylistModel
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound
