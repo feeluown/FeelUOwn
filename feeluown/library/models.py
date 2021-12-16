@@ -242,6 +242,11 @@ class BriefPlaylistModel(BaseBriefModel):
     name: str = ''
 
 
+class BriefUserModel(BaseBriefModel):
+    meta: Any = ModelMeta.create(ModelType.user, is_brief=True)
+    name: str = ''
+
+
 class SongModel(BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
@@ -265,11 +270,6 @@ class SongModel(BaseNormalModel):
         else:
             m, s = 0, 0
         return '{:02}:{:02}'.format(int(m), int(s))
-
-
-class BriefUserModel(BaseBriefModel):
-    meta: Any = ModelMeta.create(ModelType.user, is_brief=True)
-    name: str = ''
 
 
 class UserModel(BaseNormalModel):
@@ -347,11 +347,6 @@ class VideoModel(BaseNormalModel):
         else:
             m, s = 0, 0
         return '{:02}:{:02}'.format(int(m), int(s))
-
-
-class BriefPlaylistModel(BaseBriefModel):
-    meta: Any = ModelMeta.create(ModelType.playlist, is_brief=True)
-    name: str
 
 
 class PlaylistModel(BaseBriefModel):
