@@ -1,23 +1,47 @@
 from feeluown.library import AbstractProvider
-from feeluown.models import SongModel, ArtistModel, \
-    AlbumModel, PlaylistModel, UserModel, SearchModel
+from feeluown.library import (
+    ModelFlags,
 
-from .base import try_cast_model_to_v1
+    BaseModel,
+    SongModel,
+    ArtistModel,
+    AlbumModel,
+    PlaylistModel,
+    UserModel,
+    BriefSongModel,
+    BriefArtistModel,
+    BriefAlbumModel,
+    BriefPlaylistModel,
+    BriefUserModel,
+)
+from feeluown.models import (
+    SongModel as SongModelV1,
+    ArtistModel as ArtistModelV1,
+    AlbumModel as AlbumModelV1,
+    PlaylistModel as PlaylistModelV1,
+    UserModel as UserModelV1,
+    SearchModel as SearchModelV1,
+
+    reverse,
+)
 
 
 class ModelSerializerMixin:
 
     def _get_items(self, model):
-        model = try_cast_model_to_v1(model)
         # initialize fields that need to be serialized
         # if as_line option is set, we always use fields_display
         if self.opt_as_line or self.opt_brief:
-            fields = model.meta.fields_display
+            if ModelFlags.v2 in model.meta.flags:
+                fields = [field for field in model.__fields__
+                          if field not in BaseModel.__fields__]
+            else:
+                fields = model.meta.fields_display
         else:
             fields = self._declared_fields
         items = [("provider", model.source),
                  ("identifier", model.identifier),
-                 ("uri", str(model))]
+                 ("uri", reverse(model))]
         if self.opt_fetch:
             for field in fields:
                 items.append((field, getattr(model, field)))
@@ -29,36 +53,36 @@ class ModelSerializerMixin:
 
 class SongSerializerMixin:
     class Meta:
-        types = (SongModel, )
+        types = (SongModel, SongModelV1, BriefSongModel)
         # since url can be too long, we put it at last
-        fields = ('title', 'duration', 'album', 'artists', 'url')
+        fields = ('title', 'duration', 'album', 'artists')
         line_fmt = '{uri:{uri_length}}\t# {title:_18} - {artists_name:_20}'
 
 
 class ArtistSerializerMixin:
     class Meta:
-        types = (ArtistModel, )
+        types = (ArtistModel, ArtistModelV1, BriefArtistModel)
         fields = ('name', 'songs')
         line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
 
 class AlbumSerializerMixin:
     class Meta:
-        types = (AlbumModel, )
+        types = (AlbumModel, AlbumModelV1, BriefAlbumModel)
         fields = ('name', 'artists', 'songs')
         line_fmt = '{uri:{uri_length}}\t# {name:_18} - {artists_name:_20}'
 
 
 class PlaylistSerializerMixin:
     class Meta:
-        types = (PlaylistModel, )
+        types = (PlaylistModel, PlaylistModelV1, BriefPlaylistModel)
         fields = ('name', )
         line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
 
 class UserSerializerMixin:
     class Meta:
-        types = (UserModel, )
+        types = (UserModel, UserModelV1, BriefUserModel)
         fields = ('name', 'playlists')
         line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
@@ -74,7 +98,7 @@ class SearchSerializerMixin:
     """
 
     class Meta:
-        types = (SearchModel, )
+        types = (SearchModelV1, )
 
     def _get_items(self, result):
         fields = ('songs', 'albums', 'artists', 'playlists',)

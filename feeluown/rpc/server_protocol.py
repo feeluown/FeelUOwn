@@ -121,7 +121,11 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                         # FIXME: 理论上最好能等待 close 结束
                         self._writer.close()
                     else:
-                        resp = self._handle_req(req)
+                        try:
+                            resp = self._handle_req(req)
+                        except Exception as e:
+                            msg = f'server error!\r\n{repr(e)}'
+                            resp = Response(ok=False, text=msg, req=req)
                         await self.write_response(resp)
         except ConnectionResetError:
             # client close the connection

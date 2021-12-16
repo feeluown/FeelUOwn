@@ -58,7 +58,6 @@ class Serializer:
 
     @classmethod
     def get_serializer_cls(cls, model):
-        model = try_cast_model_to_v1(model)
         for model_cls, serialize_cls in cls._mapping.items():
             # FIXME: remove me when model v2 has its own serializer
             if isinstance(model, model_cls):
