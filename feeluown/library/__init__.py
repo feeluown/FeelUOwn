@@ -18,6 +18,6 @@ from .models import ModelFlags, BaseModel, ModelType, \
     BriefCommentModel, CommentModel, \
     BriefUserModel, UserModel, \
     LyricModel, VideoModel, BriefVideoModel, \
-    cook_artists_name
+    ArtistModel, AlbumModel, PlaylistModel, BriefPlaylistModel
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound
