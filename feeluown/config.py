@@ -40,7 +40,15 @@ class Config:
             logger.warning('Assign to an undeclared config key.')
 
     def deffield(self, name, type_=None, default=None, desc='', warn=None):
-        """定义字段信息"""
+        """Define a configuration field
+
+        :param str name: the field name. It SHOULD be capitalized except the field
+            refers to a sub-config.
+        :param type_: feild type.
+        :param default: default value for the field.
+        :param desc: description for the field.
+        :param warn: if field is deprecated, set a warn message.
+        """
         if name not in self._fields:
             self._fields[name] = Field(name=name,
                                        type_=type_,

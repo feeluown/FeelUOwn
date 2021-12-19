@@ -5,6 +5,7 @@ import logging
 import os
 import sys
 
+from feeluown.config import Config
 from feeluown.utils.dispatch import Signal
 from .consts import USER_PLUGINS_DIR
 
@@ -17,6 +18,11 @@ class InvalidPluginError(Exception):
 
 
 class Plugin:
+    """
+    A plugin can be a Python module or package which implements
+    `enable(app)` and `disable(app)` function. It can also implements
+    `init_config(config)` and initialize its configurations.
+    """
     def __init__(self, module, alias='', version='', desc='',
                  author='', homepage='', dist_name=''):
         """插件对象
@@ -65,13 +71,32 @@ class Plugin:
                           homepage=homepage,
                           dist_name=dist_name)
 
+    def init_config(self, config: Config):
+        """Call plugin.init_config function if possible
+
+        :param config: app config instance.
+
+        .. versionadded: 3.7.15
+        """
+        # Define a subconfig(namespace) for plugin so that plugin can
+        # define its own configuration fields.
+        config.deffield(self.name,
+                        type_=Config,
+                        default=Config(),
+                        desc=f'Configurations for plugin {self.name}')
+        try:
+            fn = self._module.init_config
+        except AttributeError:
+            # The plugin does not define any config field.
+            pass
+        else:
+            fn(getattr(config, self.name))
+
     def enable(self, app):
-        """启用插件"""
         self._module.enable(app)
         self.is_enabled = True
 
     def disable(self, app):
-        """禁用插件"""
         self._module.disable(app)
         self.is_enabled = False
 
@@ -89,12 +114,10 @@ class PluginsManager:
         self._app = app
 
         self._plugins = {}
-
-    def enable(self, plugin):
-        plugin.enable(self._app)
-
-    def disable(self, plugin):
-        plugin.disable(self._app)
+        #: A plugin is about to enable.
+        # The payload is the plugin object `(Plugin)`.
+        # .. versionadded: 3.7.15
+        self.about_to_enable = Signal()
 
     def scan(self):
         """扫描并加载插件"""
@@ -104,17 +127,30 @@ class PluginsManager:
         self.scan_finished.emit(list(self._plugins.values()))
 
     def load_module(self, module):
-        """加载插件模块并启用插件"""
+        """Load module and try to load the plugin"""
         with self._app.create_action('Enabling plugin:%s' % module.__name__) as action:
+            # Try to create a new plugin.
             try:
                 plugin = Plugin.create(module)
             except InvalidPluginError as e:
                 action.failed(str(e))
+                return
+
+            # Try to init config for the plugin.
             self._plugins[plugin.name] = plugin
             try:
-                self.enable(plugin)
+                plugin.init_config(self._app.config)
             except Exception as e:
-                logger.exception('Enable plugin:{} failed'.format(plugin.alias))
+                logger.exception(f'Init config for plugin:{plugin.name} failed')
+                action.failed(str(e))
+                return
+
+            # Try to enbale the plugin.
+            self.about_to_enable.emit(plugin)
+            try:
+                plugin.enable(self._app)
+            except Exception as e:
+                logger.exception(f'Enable plugin:{plugin.name} failed')
                 action.failed(str(e))
 
     def _scan_dirs(self):
