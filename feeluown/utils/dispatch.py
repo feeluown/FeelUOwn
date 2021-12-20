@@ -37,10 +37,14 @@ class Signal:
 
         这个和 qt signal 的设计类似。
         """
-        if loop is None:
-            import asyncio
-            loop = asyncio.get_event_loop()
+        import asyncio
+        loop = asyncio.get_event_loop()
+        # FIXME: replace get_running_loop with get_event_loop
+        # to workaround https://github.com/feeluown/FeelUOwn/issues/524.
+        tmp = asyncio.get_running_loop
+        asyncio.get_running_loop = asyncio.get_event_loop
         cls.aioqueue = janus.Queue()
+        asyncio.get_running_loop = tmp
         cls.worker_task = loop.create_task(Signal.worker())
         cls.has_aio_support = True
 
