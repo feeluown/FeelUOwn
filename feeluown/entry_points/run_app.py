@@ -5,10 +5,10 @@ from feeluown.app import (
     create_app,
     init_app,
     run_app,
-    run_app_once
 )
 from feeluown.cli import oncemain
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
+from feeluown.utils import aio
 from .base import (
     ensure_dirs,
     setup_config,
@@ -53,14 +53,22 @@ def run_forever(args, config):
 def run_once(args, config):
     # ignore all warnings since it will pollute the output
     warnings.filterwarnings("ignore")
-
     fuoexec_load_rcfile(config)
     setup_config(args, config)
-    app = create_app(config)
-    fuoexec_init(app)
-    init_app(app)
-    app.initialized.emit(app)
 
-    future = oncemain(app, args)
-    if future is not None:
-        run_app_once(app, future)
+    async def inner():
+        app = create_app(config)
+        fuoexec_init(app)
+        init_app(app)
+        app.initialized.emit(app)
+        try:
+            await oncemain(app, args)
+        except KeyboardInterrupt:
+            print('keyboard event')
+            app.player.stop()
+
+    try:
+        aio.run(inner())
+    except KeyboardInterrupt:
+        # TODO(cosven): call app.exit when app.exit is compatible with asyncio.run.
+        pass

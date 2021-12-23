@@ -470,6 +470,7 @@ class Playlist:
             else:
                 # Note that the value of model v1 {}_display may be None.
                 metadata = Metadata({
+                    MetadataFields.uri: reverse(song),
                     MetadataFields.source: song.source,
                     MetadataFields.title: song.title_display or '',
                     # The song.artists_name should return a list of strings

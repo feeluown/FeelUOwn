@@ -422,12 +422,3 @@ def run_app(app):
     except KeyboardInterrupt:
         logger.info('receive keyboard interrupt')
         app.exit()
-
-
-def run_app_once(app, future):
-    loop = asyncio.get_event_loop()
-
-    try:
-        loop.run_until_complete(future)
-    except KeyboardInterrupt:
-        app.exit()

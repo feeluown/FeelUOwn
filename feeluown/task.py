@@ -79,6 +79,8 @@ class PreemptiveTaskSpec:
     def _cb(self, future):
         try:
             future.result()
+        except asyncio.CancelledError:
+            logger.warning(f'Task {self.name} is cancelled')
         except Exception as e:  # noqa
             logger.exception(f'Task {self.name} failed')
 
