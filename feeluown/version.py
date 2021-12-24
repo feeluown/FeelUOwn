@@ -16,6 +16,14 @@ class VersionManager(object):
     def __init__(self, app):
         self._app = app
 
+        self._app.initialized.connect(self.on_app_initialized)
+
+    def on_app_initialized(self):
+        loop = asyncio.get_running_loop()
+        loop.call_later(
+            10,
+            partial(loop.create_task, self.check_release()))
+
     async def check_release(self):
         loop = asyncio.get_event_loop()
 

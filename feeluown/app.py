@@ -2,7 +2,6 @@ import asyncio
 import logging
 import json
 import os
-import signal
 import sys
 from functools import partial
 from contextlib import contextmanager
@@ -50,7 +49,6 @@ class App:
         self.playlist: Playlist = None
         self.player: Player = None
 
-        self.initialized.connect(lambda _: self.load_state(), weak=False)
         self.about_to_shutdown.connect(lambda _: self.dump_state(), weak=False)
 
     def show_msg(self, msg, *args, **kwargs):
@@ -179,15 +177,11 @@ class App:
 
     def exit(self):
         self.about_to_exit()
-        loop = asyncio.get_event_loop()
-        loop.stop()
-        loop.close()
 
 
 def attach_attrs(app):
     """初始化 app 属性"""
-    loop = asyncio.get_event_loop()
-    app.task_mgr = TaskManager(app, loop)
+    app.task_mgr = TaskManager(app)
     app.library = Library(app.config.PROVIDERS_STANDBY)
     app.live_lyric = LiveLyric(app)
     player_kwargs = dict(
@@ -241,7 +235,7 @@ def attach_attrs(app):
         app.ui = Ui(app)
         if app.config.ENABLE_TRAY:
             app.tray = Tray(app)
-        app.show_msg = app.ui.toolbar.status_line.get_item('notify').widget.show_msg
+        #app.show_msg = app.ui.toolbar.status_line.get_item('notify').widget.show_msg
 
 
 def create_app(config):
@@ -261,7 +255,7 @@ def create_app(config):
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
 
-        from feeluown.utils.compat import QEventLoop
+        from feeluown.utils.compat import DefaultQEventLoopPolicy
 
         pkg_root_dir = os.path.dirname(__file__)
         icons_dir = os.path.join(pkg_root_dir, 'icons')
@@ -276,9 +270,7 @@ def create_app(config):
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
         QGuiApplication.setDesktopFileName('FeelUOwn')
-
-        app_event_loop = QEventLoop(q_app)
-        asyncio.set_event_loop(app_event_loop)
+        asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
 
         class GuiApp(QWidget):
             mode = App.GuiMode
@@ -315,8 +307,6 @@ def create_app(config):
     else:
         FApp = App
 
-    Signal.setup_aio_support()
-    Resolver.setup_aio_support()
     app = FApp(config)
     attach_attrs(app)
 
@@ -333,8 +323,10 @@ def init_app(app):
     if app.mode & app.DaemonMode:
         app.live_lyric.sentence_changed.connect(app._ll_publisher.publish)
 
+    app.task_mgr.initialize()
     app.plugin_mgr.scan()
     if app.mode & App.GuiMode:
+        app.show()
         app.hotkey_mgr.initialize()
         app.theme_mgr.initialize()
         if app.config.ENABLE_TRAY:
@@ -343,16 +335,18 @@ def init_app(app):
         app.tips_mgr.show_random_tip()
         app.coll_uimgr.initialize()
         app.browser.initialize()
-        app.show()
 
 
-def run_app(app):
-    loop = asyncio.get_event_loop()
+async def forevermain(app):
+    need_window = app.mode & App.GuiMode
+    need_server = app.mode & App.DaemonMode
 
     # Check if there will be any errors that cause start failure.
     # If there is an error, err_msg will not be empty.
     err_msg = ''
-    if app.mode & App.DaemonMode:
+
+    # Check if ports are in use.
+    if need_server:
         if is_port_inuse(app.config.RPC_PORT) or \
            is_port_inuse(app.config.PUBSUB_PORT):
             err_msg = (
@@ -364,23 +358,19 @@ def run_app(app):
 
     if err_msg:
         if app.mode & App.GuiMode:
-            from PyQt5.QtWidgets import QMessageBox
+            from PyQt5.QtWidgets import QMessageBox, QApplication
             w = QMessageBox()
             w.setText(err_msg)
-            w.finished.connect(lambda _: app.exit())
+            w.finished.connect(lambda _: QApplication.quit())
             w.show()
-            loop.run_forever()
         else:
             logger.error(err_msg)
             sys.exit(1)
         return
 
-    if app.mode & (App.DaemonMode | App.GuiMode):
-        loop.call_later(
-            10,
-            partial(loop.create_task, app.version_mgr.check_release()))
-    if app.mode & App.DaemonMode:
-        if sys.platform.lower() == 'darwin':
+    if need_server:
+        platform = sys.platform.lower()
+        if platform == 'darwin':
             try:
                 from .global_hotkey_mac import MacGlobalHotkeyManager
             except ImportError as e:
@@ -388,37 +378,19 @@ def run_app(app):
             else:
                 mac_global_hotkey_mgr = MacGlobalHotkeyManager()
                 mac_global_hotkey_mgr.start()
-        if sys.platform.lower() == 'linux':
+        elif platform == 'linux':
             from feeluown.linux import run_mpris2_server
             run_mpris2_server(app)
 
-        loop.create_task(app.server.run(app.get_listen_addr(), app.config.RPC_PORT))
-        client_connected_cb = PubsubHandlerV1(app.pubsub_gateway).handle
-        loop.create_task(asyncio.start_server(
-            client_connected_cb,
+        asyncio.create_task(app.server.run(
+            app.get_listen_addr(),
+            app.config.RPC_PORT
+        ))
+        asyncio.create_task(asyncio.start_server(
+            PubsubHandlerV1(app.pubsub_gateway).handle,
             host=app.get_listen_addr(),
             port=app.config.PUBSUB_PORT,
         ))
 
-    # App can exit in several ways
-    #
-    # GUI mode
-    # 1. user clicks the tray icon exit button, which triggers QApplication.quit.
-    # 2. SIGTERM is received.
-    # 3. QApplication.quit is called. (For example, User press CMD-Q on macOS.)
-    #
-    # Daemon mode
-    # 1. Ctrl-C
-    # 2. SIGTERM
-    def handle_signal(signum, _):
-        if signum == signal.SIGTERM:
-            app.exit()
-
-    signal.signal(signal.SIGTERM, handle_signal)
-    try:
-        if not (app.config.MODE & (App.GuiMode | App.DaemonMode)):
-            logger.warning('Fuo running with no daemon and no window')
-        loop.run_forever()
-    except KeyboardInterrupt:
-        logger.info('receive keyboard interrupt')
-        app.exit()
+    if not need_window and not need_server:
+        logger.warning('Fuo running with no daemon and no window')

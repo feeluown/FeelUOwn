@@ -58,11 +58,6 @@ class Playlist:
         """
         self._app = app
 
-        #: mainthread asyncio loop ref
-        # We know that feeluown is a asyncio-app, and we can assume
-        # that the playlist is inited in main thread.
-        self._loop = asyncio.get_event_loop()
-
         #: init playlist mode normal
         self._mode = PlaylistMode.normal
 

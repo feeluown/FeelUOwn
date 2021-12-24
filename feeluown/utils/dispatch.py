@@ -38,13 +38,8 @@ class Signal:
         这个和 qt signal 的设计类似。
         """
         import asyncio
-        loop = asyncio.get_event_loop()
-        # FIXME: replace get_running_loop with get_event_loop
-        # to workaround https://github.com/feeluown/FeelUOwn/issues/524.
-        tmp = asyncio.get_running_loop
-        asyncio.get_running_loop = asyncio.get_event_loop
+        loop = asyncio.get_running_loop()
         cls.aioqueue = janus.Queue()
-        asyncio.get_running_loop = tmp
         cls.worker_task = loop.create_task(Signal.worker())
         cls.has_aio_support = True
 
@@ -83,8 +78,7 @@ class Signal:
                         if Signal.has_aio_support:
                             Signal.aioqueue.sync_q.put_nowait((func, args))
                         else:
-                            logger.warning(
-                                'No aio support is available, a receiver is ignored.')
+                            raise RuntimeError('Signal has no asyncio support.')
                     else:
                         func(*args)
                 else:
@@ -115,8 +109,6 @@ class Signal:
         else:
             self.receivers.add(receiver)
         if aioqueue:
-            if Signal.aioqueue is None:
-                raise RuntimeError('Signal is not setuped with asyncio.')
             self.aioqueued_receiver_ids.add(gen_id(receiver))
 
     def disconnect(self, receiver):

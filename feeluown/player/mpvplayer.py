@@ -92,7 +92,10 @@ class MpvPlayer(AbstractPlayer):
         logger.debug('Player initialize finished.')
 
     def shutdown(self):
-        self._mpv.terminate()
+        # The mpv has already been terminated.
+        # The mpv can't terminate twice.
+        if self._mpv.handle is not None:
+            self._mpv.terminate()
 
     def play(self, media, video=True, metadata=None):
         self.media_about_to_changed.emit(self._current_media, media)
