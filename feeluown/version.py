@@ -18,7 +18,7 @@ class VersionManager(object):
 
         self._app.initialized.connect(self.on_app_initialized)
 
-    def on_app_initialized(self):
+    def on_app_initialized(self, *args):
         loop = asyncio.get_running_loop()
         loop.call_later(
             10,
