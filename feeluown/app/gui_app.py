@@ -22,7 +22,8 @@ from .app import App
 
 
 class GuiApp(App, QWidget):
-    def __init__(self, config):
+    def __init__(self, *args, **kwargs):
+        config = args[1]
         pkg_root_dir = os.path.dirname(__file__)
         pkg_root_dir = os.path.join(pkg_root_dir, '..')
         icons_dir = os.path.join(pkg_root_dir, 'icons')
@@ -36,7 +37,7 @@ class GuiApp(App, QWidget):
         QApplication.instance().setApplicationName('FeelUOwn')
 
         QWidget.__init__(self)
-        App.__init__(self, config)
+        App.__init__(self, *args, **kwargs)
 
         GuiApp.__q_app = QApplication.instance()
 

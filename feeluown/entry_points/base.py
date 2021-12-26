@@ -100,6 +100,8 @@ def setup_config(args, config):
 
     if args.cmd is not None:
         config.MODE = App.CliMode
+        # Always log to file in cli mode because logs may pollute the output.
+        config.LOG_TO_FILE = True
     else:
         if not args.no_window:
             try:

@@ -294,11 +294,13 @@ def climain(args):
         dispatch(args, cli)
 
 
-async def oncemain(app, args):
-    client = OnceClient(app)
-    dispatch(args, client)
+def oncemain(app):
 
-    if args.cmd == 'play':
+    client = OnceClient(app)
+    dispatch(app.args, client)
+
+    if app.args.cmd == 'play':
+
         def on_metadata_changed(metadata):
             if not metadata:
                 return
@@ -315,17 +317,20 @@ async def oncemain(app, args):
             else:
                 print(f'Playing: {text}')
 
+        def cb(future):
+            try:
+                future.result()
+            except asyncio.CancelledError:
+                # When the coroutine is requested to cancel, stop the player
+                # to cancel the task in thread pool.
+                app.player.stop()
+                app.player.shutdown()
+            else:
+                app.exit()
+
         app.player.metadata_changed.connect(on_metadata_changed, weak=False)
         # mpv wait_for_playback will wait until one song is finished,
         # if we have multiple song to play, this will not work well.
         # pylint: disable=protected-access
-        try:
-            await aio.run_fn(app.player._mpv.wait_for_playback)
-        except asyncio.CancelledError:
-            # When the coroutine is requested to cancel, stop the player
-            # to cancel the task in thread pool.
-            app.player.stop()
-            app.player.shutdown()
-        else:
-            app.player.stop()
-            app.player.shutdown()
+        future = aio.run_fn(app.player._mpv.wait_for_playback)
+        future.add_done_callback(cb)

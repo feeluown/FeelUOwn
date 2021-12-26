@@ -15,8 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class ServerApp(App):
-    def __init__(self, config):
-        super().__init__(config)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
 
         self.server = FuoServer(self)
         self.pubsub_gateway = PubsubGateway()
@@ -29,6 +29,17 @@ class ServerApp(App):
 
     def run(self):
         super().run()
+
+        asyncio.create_task(self.server.run(
+            self.get_listen_addr(),
+            self.config.RPC_PORT
+        ))
+        asyncio.create_task(asyncio.start_server(
+            PubsubHandlerV1(self.pubsub_gateway).handle,
+            host=self.get_listen_addr(),
+            port=self.config.PUBSUB_PORT,
+        ))
+
         platform = sys.platform.lower()
         # pylint: disable=import-outside-toplevel
         if platform == 'darwin':
@@ -42,13 +53,3 @@ class ServerApp(App):
         elif platform == 'linux':
             from feeluown.linux import run_mpris2_server
             run_mpris2_server(self)
-
-        asyncio.create_task(self.server.run(
-            self.get_listen_addr(),
-            self.config.RPC_PORT
-        ))
-        asyncio.create_task(asyncio.start_server(
-            PubsubHandlerV1(self.pubsub_gateway).handle,
-            host=self.get_listen_addr(),
-            port=self.config.PUBSUB_PORT,
-        ))

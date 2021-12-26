@@ -2,7 +2,7 @@ import logging
 import json
 from enum import IntFlag
 from contextlib import contextmanager
-from typing import Optional
+from typing import Optional, Type
 
 from feeluown.consts import STATE_FILE
 from feeluown.library import Library
@@ -37,10 +37,11 @@ class App:
     GuiMode = AppMode.gui.value
     CliMode = AppMode.cli.value
 
-    def __init__(self, config):
+    def __init__(self, args, config):
 
         self.mode = config.MODE  # DEPRECATED: use app.config.MODE instead
         self.config = config
+        self.args = args
         self.initialized = Signal()
         self.about_to_shutdown = Signal()
 
@@ -219,7 +220,7 @@ class App:
         self.about_to_exit()
 
 
-def create_app(config) -> App:
+def create_app(args, config) -> App:
     """App factory function.
 
     Do not add `create` function to :class:`App` because QWidget also has
@@ -228,18 +229,21 @@ def create_app(config) -> App:
     need_server = AppMode.server in AppMode(config.MODE)
     need_window = AppMode.gui in AppMode(config.MODE)
 
-    # Declare app type to pass typing check.
-    app: App
     # pylint: disable=import-outside-toplevel,cyclic-import
-    if need_server and need_window:
+    cls: Type[App]
+
+    if args.cmd is not None:
+        from feeluown.app.cli_app import CliApp
+        cls = CliApp
+    elif need_server and need_window:
         from feeluown.app.mixed_app import MixedApp
-        app = MixedApp(config)
+        cls = MixedApp
     elif need_window:
         from feeluown.app.gui_app import GuiApp
-        app = GuiApp(config)
+        cls = GuiApp
     elif need_server:
         from feeluown.app.server_app import ServerApp
-        app = ServerApp(config)
+        cls = ServerApp
     else:
-        app = App(config)
-    return app
+        cls = App
+    return cls(args, config)

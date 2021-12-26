@@ -1,14 +1,12 @@
 import argparse
 import asyncio
 import logging
-import os
 import signal
 import sys
 import warnings
 
 from feeluown.app import AppMode, create_app
 from feeluown.utils.utils import is_port_inuse
-from feeluown.cli import oncemain
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal  # noqa: E402
@@ -19,10 +17,22 @@ from .base import ensure_dirs, setup_config, setup_logger, create_config  # noqa
 logger = logging.getLogger(__name__)
 
 
-def precheck(config) -> str:
+def precheck(args, config):
     # Check if there will be any errors that cause start failure.
     # If there is an error, err_msg will not be empty.
     err_msg = ''
+
+    if AppMode.cli in AppMode(config.MODE):
+        # If daemon is not started, some commands can be meaningless,
+        # such as `status`, `toggle`, `next`, etc. However, some other
+        # commands can still be usefule. For instance, when people
+        # want to fetch a song's playable url or see the lyric of a song,
+        # they may run `fuo show fuo://xxx/songs/12345`. When people
+        # want to make an audition of some music, they run
+        # `fuo play fuo://xxx/songs/12345`. Under these circumstances,
+        # we should try to make feeluown work as they expected to.
+        if args.cmd not in ('show', 'play', 'search'):
+            err_msg = f"Run {args.cmd} failed, can't connect to fuo server."
 
     # Check if ports are in use.
     if AppMode.server in AppMode(config.MODE):
@@ -35,17 +45,23 @@ def precheck(config) -> str:
                 'Please check if there was another FeelUOwn instance.'
             )
 
-    return err_msg
+    if err_msg:
+        if AppMode.gui in AppMode(config.MODE):
+            from PyQt5.QtWidgets import QMessageBox, QApplication
+            qapp = QApplication([])
+            w = QMessageBox()
+            w.setText(err_msg)
+            # The type annotation for `finished` is wrong.
+            w.finished.connect(lambda _: QApplication.quit())  # type: ignore
+            w.show()
+            qapp.exec()
+        else:
+            print(err_msg)
+        sys.exit(1)
 
 
-def run_app(args: argparse.Namespace, adhoc=False):
+def run_app(args: argparse.Namespace):
     config = create_config()
-
-    # Initialize config.
-    #
-    # Extract config items from args and setup config object,
-    # since then, no more `args` object, only `config`.
-    setup_config(args, config)
 
     # Load rcfile.
     #
@@ -53,39 +69,31 @@ def run_app(args: argparse.Namespace, adhoc=False):
     # including monkeypatch, so we should load rcfile as early as possible
     fuoexec_load_rcfile(config)
 
+    # Initialize config.
+    #
+    # Extract config items from args and setup config object.
+    # Arg has higher priority than config. If a parameter was set both in
+    # args and config, the arg can override the value.
+    setup_config(args, config)
+
     # Precheck.
     #
     # When precheck failed, show error hint and exit.
-    if adhoc is False:
-        err_msg = precheck(config)
-        if err_msg:
-            if AppMode.gui in AppMode(config.MODE):
-                from PyQt5.QtWidgets import QMessageBox, QApplication
-                qapp = QApplication([])
-                w = QMessageBox()
-                w.setText(err_msg)
-                # The type annotation for `finished` is wrong.
-                w.finished.connect(lambda _: QApplication.quit())  # type: ignore
-                w.show()
-                qapp.exec()
-            else:
-                print(err_msg)
-            sys.exit(1)
+    precheck(args, config)
 
     # Prepare.
     #
     # Ensure requirements, raise SystemExit if failed.
-    if adhoc is False:
-        os.chdir(os.path.join(os.path.dirname(__file__), '../..'))
-        ensure_dirs()
-        setup_logger(config)
-    else:
-        # ignore all warnings since it will pollute the output
+    ensure_dirs()
+    setup_logger(config)
+    # Ignore all warnings since it will pollute the output.
+    if AppMode.cli in AppMode(config.MODE):
         warnings.filterwarnings("ignore")
 
     async def inner():
         Signal.setup_aio_support()
-        app = create_app(config)
+
+        app = create_app(args, config)
 
         # Do fuoexec initialization before app initialization.
         fuoexec_init(app)
@@ -97,34 +105,26 @@ def run_app(args: argparse.Namespace, adhoc=False):
         app.initialize()
         app.initialized.emit(app)
 
-        if adhoc is False:
-            app.load_state()
+        # Load last state.
+        app.load_state()
 
         # Handle signals.
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGTERM, app.exit)
         loop.add_signal_handler(signal.SIGINT, app.exit)
 
-        if adhoc is False:
-            sentinal: asyncio.Future = asyncio.Future()
+        sentinal: asyncio.Future = asyncio.Future()
 
-            def shutdown(_):
-                # Since about_to_shutdown signal may emit multiple times
-                # (QApplication.aboutToQuit emits multiple times),
-                # we should check if it is already done firstly.
-                if not sentinal.done():
-                    sentinal.set_result(0)
+        def shutdown(_):
+            # Since about_to_shutdown signal may emit multiple times
+            # (QApplication.aboutToQuit emits multiple times),
+            # we should check if it is already done firstly.
+            if not sentinal.done():
+                sentinal.set_result(0)
 
-            app.about_to_shutdown.connect(shutdown, weak=False)
-
-            if not app.has_gui and not app.has_server:
-                logger.warning('running with no server and no window')
-                return
-
-            app.run()
-            await sentinal
-        else:
-            await oncemain(app, args)
+        app.about_to_shutdown.connect(shutdown, weak=False)
+        app.run()
+        await sentinal
 
         Signal.teardown_aio_support()
 
