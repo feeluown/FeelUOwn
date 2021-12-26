@@ -29,7 +29,7 @@ def ensure_dirs():
             os.mkdir(d)
 
 
-def create_config():
+def create_config() -> Config:
     config = Config()
     config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
     config.deffield('VERBOSE', default=0, type_=int, desc='日志详细程度')

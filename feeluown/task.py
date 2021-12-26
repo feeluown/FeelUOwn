@@ -107,13 +107,10 @@ class TaskManager:
         self._app = app
 
         # only accessible for task instance
-        self.loop = None
+        self.loop = asyncio.get_running_loop()
 
         # store the name:taskspec mapping
         self._store = {}
-
-    def initialize(self):
-        self.loop = asyncio.get_running_loop()
 
     def get_or_create(self, name, kind=TaskKind.preemptive):
         """get task spec, it will be created if not exists

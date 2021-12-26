@@ -1,36 +1,44 @@
-import asyncio
 import logging
 import json
-import os
-import sys
-from functools import partial
+from enum import IntFlag
 from contextlib import contextmanager
+from typing import Optional
 
+from feeluown.consts import STATE_FILE
 from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
 from feeluown.models import Resolver, reverse, resolve, \
     ResolverNotFound
 from feeluown.player import PlaybackMode, Playlist
-
 from feeluown.lyric import LiveLyric
-
 from feeluown.utils.request import Request
-from feeluown.utils.utils import is_port_inuse
-from .consts import STATE_FILE
-from .player import FM, Player
-from .plugin import PluginsManager
-from .version import VersionManager
-from .task import TaskManager
+from feeluown.player import FM, Player
+from feeluown.plugin import PluginsManager
+from feeluown.version import VersionManager
+from feeluown.task import TaskManager
+
+
+logger = logging.getLogger(__name__)
+
+
+class AppMode(IntFlag):
+    server = 0x0001  # 开启 Server
+    gui = 0x0010     # 显示 GUI
+    cli = 0x0100     # 命令行模式
 
 
 class App:
     """App 基类"""
+    _instance = None
 
-    DaemonMode = 0x0001  # 开启 daemon
-    GuiMode = 0x0010     # 显示 GUI
-    CliMode = 0x0100     # 命令行模式
+    # .. deprecated:: 3.8
+    #    Use :class:`AppMode` instead.
+    DaemonMode = AppMode.server.value
+    GuiMode = AppMode.gui.value
+    CliMode = AppMode.cli.value
 
     def __init__(self, config):
+
         self.mode = config.MODE  # DEPRECATED: use app.config.MODE instead
         self.config = config
         self.initialized = Signal()
@@ -39,6 +47,7 @@ class App:
         self.plugin_mgr = PluginsManager(self)
         self.request = Request()  # TODO: rename request to http
         self.version_mgr = VersionManager(self)
+        self.task_mgr = TaskManager(self)
 
         # Library.
         self.library = Library(config.PROVIDERS_STANDBY)
@@ -46,42 +55,46 @@ class App:
         Resolver.library = self.library
 
         # Player.
-        self.playlist = Playlist(self, audio_select_policy=config.AUDIO_SELECT_POLICY)
         self.player = Player(audio_device=bytes(config.MPV_AUDIO_DEVICE, 'utf-8'))
+        self.playlist = Playlist(self, audio_select_policy=config.AUDIO_SELECT_POLICY)
         self.live_lyric = LiveLyric(self)
         self.fm = FM(self)
-
-        self.task_mgr = TaskManager(self)
 
         # TODO: initialization should be moved into initialize
         self.player.set_playlist(self.playlist)
 
         self.about_to_shutdown.connect(lambda _: self.dump_state(), weak=False)
 
-    @classmethod
-    def create(cls, config) -> 'App':
-        need_server = config.mode & cls.DaemonMode
-        need_window = config.mode & cls.GuiMode
-        if need_server and need_window:
-            from feeluown.app.mixed_app import MixedApp
-            app = MixedApp(config)
-        elif need_window:
-            from feeluown.app.gui_app import GuiApp
-            app = GuiApp(config)
-        elif need_server:
-            from feeluown.app.server_app import ServerApp
-            app = ServerApp(config)
-        else:
-            app = App(config)
-        return app
-
     def initialize(self):
         self.player.position_changed.connect(self.live_lyric.on_position_changed)
-        self.playlist.song_changed.connect(self.live_lyric.on_song_changed, aioqueue=True)
-
-        self.task_mgr.initialize()
+        self.playlist.song_changed.connect(self.live_lyric.on_song_changed,
+                                           aioqueue=True)
         self.plugin_mgr.scan()
-        self.version_mgr.initialize()
+
+    def run(self):
+        pass
+
+    @property
+    def instance(self) -> Optional['App']:
+        """App running instance.
+
+        .. versionadded:: 3.8
+        """
+        return App._instance
+
+    @property
+    def has_server(self) -> bool:
+        """
+        .. versionadded:: 3.8
+        """
+        return AppMode.server in AppMode(self.config.MODE)
+
+    @property
+    def has_gui(self) -> bool:
+        """
+        .. versionadded:: 3.8
+        """
+        return AppMode.gui in AppMode(self.config.MODE)
 
     def show_msg(self, msg, *args, **kwargs):
         """在程序中显示消息，一般是用来显示程序当前状态"""
@@ -96,7 +109,7 @@ class App:
         player = self.player
 
         try:
-            with open(STATE_FILE, 'r') as f:
+            with open(STATE_FILE, 'r', encoding='utf-8') as f:
                 state = json.load(f)
         except FileNotFoundError:
             pass
@@ -114,9 +127,6 @@ class App:
                 else:
                     songs.append(song)
             playlist.set_models(songs)
-            if songs and self.mode & App.GuiMode:
-                self.browser.goto(page='/player_playlist')
-
             song = state['song']
 
             def before_media_change(old_media, media):
@@ -158,7 +168,7 @@ class App:
             'position': player.position,
             'playlist': [reverse(song, as_line=True) for song in playlist.list()],
         }
-        with open(STATE_FILE, 'w') as f:
+        with open(STATE_FILE, 'w', encoding='utf-8') as f:
             json.dump(state, f)
 
     @contextmanager
@@ -176,7 +186,7 @@ class App:
         class Action:
             def set_progress(self, value):
                 value = int(value * 100)
-                show_msg(s + '...{}%'.format(value), timeout=-1)
+                show_msg(s + f'...{value}%', timeout=-1)
 
             def failed(self, msg=''):
                 raise ActionError(msg)
@@ -185,9 +195,9 @@ class App:
         try:
             yield Action()
         except ActionError as e:
-            show_msg(s + '...failed\t{}'.format(str(e)))
+            show_msg(s + f'...failed\t{str(e)}')
         except Exception as e:
-            show_msg(s + '...error\t{}'.format(str(e)))  # error
+            show_msg(s + f'...error\t{str(e)}')  # error
             raise
         else:
             show_msg(s + '...done')  # done
@@ -198,9 +208,7 @@ class App:
             self.about_to_shutdown.emit(self)
             self.player.stop()
             self.exit_player()
-            # Teardown aio support at the very end.
-            Signal.teardown_aio_support()
-        except:  # noqa
+        except:  # noqa, pylint: disable=bare-except
             logger.exception("about-to-exit failed")
         logger.info('Ready for shutdown')
 
@@ -209,3 +217,29 @@ class App:
 
     def exit(self):
         self.about_to_exit()
+
+
+def create_app(config) -> App:
+    """App factory function.
+
+    Do not add `create` function to :class:`App` because QWidget also has
+    a `create` function.
+    """
+    need_server = AppMode.server in AppMode(config.MODE)
+    need_window = AppMode.gui in AppMode(config.MODE)
+
+    # Declare app type to pass typing check.
+    app: App
+    # pylint: disable=import-outside-toplevel,cyclic-import
+    if need_server and need_window:
+        from feeluown.app.mixed_app import MixedApp
+        app = MixedApp(config)
+    elif need_window:
+        from feeluown.app.gui_app import GuiApp
+        app = GuiApp(config)
+    elif need_server:
+        from feeluown.app.server_app import ServerApp
+        app = ServerApp(config)
+    else:
+        app = App(config)
+    return app

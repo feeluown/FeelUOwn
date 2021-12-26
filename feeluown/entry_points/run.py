@@ -12,7 +12,7 @@ except ImportError:
 from feeluown.utils.utils import is_port_inuse  # noqa: E402
 from .base import setup_argparse  # noqa: E402
 from .run_cli import run_cli  # noqa: E402
-from .run_app import run_app
+from .run_app import run_app  # noqa: E402
 
 
 def run():
@@ -44,8 +44,8 @@ def run():
         if args.cmd not in cmds:
             raise SystemExit("can't connect to fuo daemon.")
 
-        adhoc = False
-    else:
         adhoc = True
+    else:
+        adhoc = False
 
     return run_app(args, adhoc=adhoc)

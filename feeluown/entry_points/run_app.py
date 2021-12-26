@@ -1,14 +1,12 @@
+import argparse
 import asyncio
-import sys
 import logging
-import asyncio
-import sys
 import os
-import warnings
 import signal
+import sys
+import warnings
 
-from feeluown.app import App
-from feeluown.pubsub import HandlerV1 as PubsubHandlerV1
+from feeluown.app import AppMode, create_app
 from feeluown.utils.utils import is_port_inuse
 from feeluown.cli import oncemain
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
@@ -22,14 +20,12 @@ logger = logging.getLogger(__name__)
 
 
 def precheck(config) -> str:
-    need_server = config.mode & App.DaemonMode
-
     # Check if there will be any errors that cause start failure.
     # If there is an error, err_msg will not be empty.
     err_msg = ''
 
     # Check if ports are in use.
-    if need_server:
+    if AppMode.server in AppMode(config.MODE):
         if is_port_inuse(config.RPC_PORT) or \
            is_port_inuse(config.PUBSUB_PORT):
             err_msg = (
@@ -42,7 +38,7 @@ def precheck(config) -> str:
     return err_msg
 
 
-def run_app(args, adhoc=False):
+def run_app(args: argparse.Namespace, adhoc=False):
     config = create_config()
 
     # Initialize config.
@@ -63,13 +59,15 @@ def run_app(args, adhoc=False):
     if adhoc is False:
         err_msg = precheck(config)
         if err_msg:
-            if config.mode & App.GuiMode:
+            if AppMode.gui in AppMode(config.MODE):
                 from PyQt5.QtWidgets import QMessageBox, QApplication
-                app = QApplication([])
+                qapp = QApplication([])
                 w = QMessageBox()
                 w.setText(err_msg)
-                w.finished.connect(lambda _: QApplication.quit())
+                # The type annotation for `finished` is wrong.
+                w.finished.connect(lambda _: QApplication.quit())  # type: ignore
                 w.show()
+                qapp.exec()
             else:
                 print(err_msg)
             sys.exit(1)
@@ -85,115 +83,73 @@ def run_app(args, adhoc=False):
         # ignore all warnings since it will pollute the output
         warnings.filterwarnings("ignore")
 
-
     async def inner():
-
         Signal.setup_aio_support()
-        app = App.create(config)
+        app = create_app(config)
 
-        # do fuoexec initialization before app inits
+        # Do fuoexec initialization before app initialization.
         fuoexec_init(app)
 
-        # initialize app with config
+        # Initialize app with config.
         #
         # all objects can do initialization here. some objects may emit signal,
         # some objects may connect with others signals.
         app.initialize()
+        app.initialized.emit(app)
 
         if adhoc is False:
             app.load_state()
 
-        app.initialized.emit(app)
-        if adhoc is True:
-            await forevermain(app)
+        # Handle signals.
+        loop = asyncio.get_running_loop()
+        loop.add_signal_handler(signal.SIGTERM, app.exit)
+        loop.add_signal_handler(signal.SIGINT, app.exit)
+
+        if adhoc is False:
+            sentinal: asyncio.Future = asyncio.Future()
+
+            def shutdown(_):
+                # Since about_to_shutdown signal may emit multiple times
+                # (QApplication.aboutToQuit emits multiple times),
+                # we should check if it is already done firstly.
+                if not sentinal.done():
+                    sentinal.set_result(0)
+
+            app.about_to_shutdown.connect(shutdown, weak=False)
+
+            if not app.has_gui and not app.has_server:
+                logger.warning('running with no server and no window')
+                return
+
+            app.run()
+            await sentinal
         else:
             await oncemain(app, args)
 
+        Signal.teardown_aio_support()
 
-    # App can exit in several ways
+    # Run.
     #
-    # GUI mode
-    # 1. user clicks the tray icon exit button, which triggers QApplication.quit.
+    if AppMode.gui in AppMode(config.MODE):
+        try:
+            # HELP: QtWebEngineWidgets must be imported before a
+            #   QCoreApplication instance is created.
+            # TODO: add a command line option to control this import.
+            import PyQt5.QtWebEngineWidgets  # type: ignore # noqa
+        except ImportError:
+            logger.info('import QtWebEngineWidgets failed')
+        from feeluown.utils.compat import DefaultQEventLoopPolicy
+        asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
+
+    # App can exit in several ways.
+    #
+    # GUI mode:
+    # 1. QApplication.quit. QApplication.quit can be called under several circumstances
+    #    1. User press CMD-Q on macOS.
+    #    2. User clicks the tray icon exit button.
     # 2. SIGTERM is received.
-    # 3. QApplication.quit is called. (For example, User press CMD-Q on macOS.)
     #
-    # Daemon mode
+    # Daemon mode:
     # 1. Ctrl-C
     # 2. SIGTERM
-    def handle_signal(signum, _):
-        if signum == signal.SIGTERM:
-            #app.exit()
-            pass
-
-    signal.signal(signal.SIGTERM, handle_signal)
-
-    try:
-        if config.MODE & App.GuiMode:
-
-            try:
-                # HELP: QtWebEngineWidgets must be imported before a
-                # QCoreApplication instance is created
-                # TODO: add a command line option to control this import
-                import PyQt5.QtWebEngineWidgets  # noqa
-            except ImportError:
-                logger.info('import QtWebEngineWidgets failed')
-
-            from feeluown.utils.compat import DefaultQEventLoopPolicy
-            asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
-        aio.run(inner())
-    except KeyboardInterrupt:
-        print('ctrl-c')
-        #app.exit()
-
-
-async def forever_main(app):
-
-    if not need_window and not need_server:
-        logger.warning('running with no daemon and no window')
-        return
-
-    if need_server:
-        platform = sys.platform.lower()
-        if platform == 'darwin':
-            try:
-                from .global_hotkey_mac import MacGlobalHotkeyManager
-            except ImportError as e:
-                logger.warning("Can't start mac hotkey listener: %s", str(e))
-            else:
-                mac_global_hotkey_mgr = MacGlobalHotkeyManager()
-                mac_global_hotkey_mgr.start()
-        elif platform == 'linux':
-            from feeluown.linux import run_mpris2_server
-            run_mpris2_server(app)
-
-        asyncio.create_task(app.server.run(
-            app.get_listen_addr(),
-            app.config.RPC_PORT
-        ))
-        asyncio.create_task(asyncio.start_server(
-            PubsubHandlerV1(app.pubsub_gateway).handle,
-            host=app.get_listen_addr(),
-            port=app.config.PUBSUB_PORT,
-        ))
-
-    if need_window:
-        from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication
-
-        future = asyncio.Future()
-
-        def done_future():
-            # Check if future is already done, because aboutToQuit signal
-            # emits multiple times.
-            if not future.done():
-                future.set_result(0)
-
-        QGuiApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
-        # Set desktopFileName so that the window icon is properly shown under wayland.
-        # I don't know if this setting brings other benefits or not.
-        # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
-        QGuiApplication.setDesktopFileName('FeelUOwn')
-        q_app  = QGuiApplication.instance()
-        q_app.setQuitOnLastWindowClosed(not app.config.ENABLE_TRAY)
-        q_app.setApplicationName('FeelUOwn')
-        q_app.instance().aboutToQuit.connect(done_future)
-        await future
+    aio.run(inner())
