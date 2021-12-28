@@ -5,7 +5,10 @@ import logging
 import os
 from functools import wraps
 from collections import defaultdict
+from math import sin
+from typing import Callable
 
+from feeluown.utils.dispatch import Signal
 from .consts import DEFAULT_RCFILE_PATH
 
 logger = logging.getLogger(__name__)
@@ -46,59 +49,96 @@ def fuoexec(obj):
     exec(obj, _exec_globals)
 
 
+class Signal:
+    def __init__(self, app, name):
+        self.name = name
+
+        self._app = app
+        self._slot_list: list[tuple[Callable, bool]] = []
+        self._slot_symbol_list: list[tuple[str, bool]] = []
+
+    def connect_slots(self):
+        """Connect all slots.
+        """
+        # Find signal object first.
+        signal = eval(self.name, {'app': self._app})  # pylint: disable=eval-used
+
+        # Connect slot which are not symbol.
+        # These slots are connected directly.
+        for slot, aioqueue in self._slot_list:
+            signal.connect(slot, weak=True, aioqueue=aioqueue)
+        self._slot_list.clear()
+
+        # Connect slots which are symbol currently.
+        signal.connect(self.slot_symbols_delegate, weak=False)
+
+    def slot_symbols_delegate(self, *args):
+        """
+        A delegate invoke the slots for the signal.
+
+        Signal.emit => self.slot_symbols_delegate => slots
+        """
+        for slot_symbol, aioqueue in self._slot_symbol_list:
+            func = fuoexec_F(slot_symbol)
+            # FIXME: Duplicate code. The logic has been implemented in Signal.emit.
+            if aioqueue:
+                Signal.aioqueue.sync_q.put_nowait((func, args))
+            else:
+                try:
+                    func(*args)
+                except:  # noqa, pylint: disable=bare-except
+                    logger.exception('error during calling slot:%s')
+
+
+
 class SignalsSlotsManager:
 
     def __init__(self):
         self.initialized = False
         self._app = None
-        self.signal_proxy_map = {}
-        self.signal_slots_map = defaultdict(set)
+
+        self.signals: dict[str, SignalSymbol] = {}
 
     def initialize(self, app):
+        """
+        Find each signal by signal_symbol and connect slots for them.
+        """
         if self.initialized:
             raise RuntimeError('signals slots manager already initialized')
 
         self._app = app
-        for signal_symbol in self.signal_slots_map.keys():
-            self._create_signal_proxy(signal_symbol)
+        for signal_symbol in self._signal_symbol_list:
+            signal_symbol.connect_slots()
         self.initialized = True
 
-    def add(self, signal_symbol, slot):
-        """add one slot for signal
+    def add(self, signal_symbol: str, slot: Callable, aioqueue: bool):
+        """Add one slot for the signal.
 
-        :param string signal: signal symbol
-        :param slot: slot name or slot
+        :param slot: The function or it's symbol.
         """
-        if self.initialized and signal_symbol not in self.signal_slots_map:
-            self._create_signal_proxy(signal_symbol)
-        self.signal_slots_map[signal_symbol].add(slot)
+        if signal_symbol in self.signals:
+            signal_
 
-    def remove(self, signal_symbol, slot):
-        """remove one slot for signal
+        self._slot_nonsymbols[signal_symbol].add((slot, aioqueue))
+        if self.initialized is False:
+            self.connect_for_signal_symbol(signal_symbol)
 
-        :param slot: string or function
+    def add_symbol(self, signal_symbol: str, slot_symbol: str, aioqueue: bool):
+        for pair in self._slot_symbols[signal_symbol]:
+            # The slot symbol already exists.
+            if pair[0] == slot_symbol:
+                self._slot_symbols[signal_symbol].remove(pair)
+                # The parameter aioqueue may be different.
+                self._slot_symbols[signal_symbol].add((slot_symbol, aioqueue))
+                break
+        else:
+            self._slot_symbols[signal_symbol].add((slot_symbol, aioqueue))
+            self.connect_for_signal_symbol(signal_symbol)
+
+    def remove(self, signal_symbol, slot_symbol):
+        """Remove one slot for signal.
         """
-        if slot in self.signal_slots_map[signal_symbol]:
-            self.signal_slots_map[signal_symbol].remove(slot)
-            if not self.signal_slots_map[signal_symbol]:
-                self.signal_proxy_map.pop(signal_symbol)
-
-    def _create_signal_proxy(self, signal_symbol):
-        def create(this, signal_symbol):
-            def signal_proxy(*args, **kwargs):
-                for slot in this.signal_slots_map.get(signal_symbol, []):
-                    func = fuoexec_F(slot) if isinstance(slot, str) else slot
-                    try:
-                        func(*args, **kwargs)
-                    except:  # noqa, pylint: disable=bare-except
-                        logger.exception('error during calling slot:%s')
-            return signal_proxy
-
-        # pylint: disable=eval-used
-        signal = eval(signal_symbol, {'app': self._app})
-        signal_proxy = create(self, signal_symbol)
-        signal.connect(signal_proxy, weak=True, aioqueue=True)
-        self.signal_proxy_map[signal] = signal_proxy
+        self._slot_symbols[signal_symbol].remove(slot_symbol)
 
 
 signals_slots_mgr = SignalsSlotsManager()
@@ -132,21 +172,32 @@ def source(filepath):
 
 
 @expose_to_rcfile(aliases='when')
-def add_hook(signal_symbol, func, use_symbol=False):
+def add_hook(signal_symbol, func, use_symbol=False, aioqueue=True):
     """add hook on signal
 
-    :param signal_symbol: app.{object}.{signal_name}
-    :param func: signal callback function
+    :param signal_symbol: app.{object}.{signal_name} .
+    :param func: Signal receiver.
+    :param use_symbol: Whether to connect the signal to the symbol of the receiver.
+        If this is true, the real receiver is lazy found by the symbol, and
+        the signal connects to a symbol instead of a function object.
+        If this is false, problem may occur when the rcfile is reloaded.
+        because there the signal connects to two *same* receivers.
+    :param aioqueue: This is finally passed to Signal.connect.
+
+    Check Signal.connect method for more details.
 
     >>> def func(): pass
     >>> add_hook('app.initialized', func)
+
+    .. versionadded:: 3.8
+       The *aioqueue* keyword argument.
     """
     if use_symbol:
-        signals_slots_mgr.add(signal_symbol, fuoexec_S(func))
+        signals_slots_mgr.add(signal_symbol, fuoexec_S(func), aioqueue=aioqueue)
     else:
         signals_slots_mgr.add(signal_symbol, func)
 
 
 @expose_to_rcfile()
-def rm_hook(signal_symbol, func_symbol):
+def rm_hook(signal_symbol: str, func_symbol: str):
     signals_slots_mgr.remove(signal_symbol, func_symbol)
