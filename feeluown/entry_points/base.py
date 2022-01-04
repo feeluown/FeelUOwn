@@ -11,7 +11,7 @@ from feeluown.cli import setup_cli_argparse
 from feeluown.config import Config
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
-    CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
+    CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR, CONFIG_DIR
 )
 
 logger = logging.getLogger(__name__)
@@ -24,6 +24,7 @@ def ensure_dirs():
               USER_PLUGINS_DIR,
               CACHE_DIR,
               SONG_DIR,
+              CONFIG_DIR,
               COLLECTIONS_DIR):
         if not os.path.exists(d):
             os.mkdir(d)

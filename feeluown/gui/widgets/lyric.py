@@ -1,4 +1,5 @@
 import sys
+import os, json
 
 from PyQt5.QtCore import Qt, QRectF, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
@@ -6,12 +7,14 @@ from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
 from PyQt5.QtWidgets import QLabel, QWidget,\
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
     QMenu, QAction, QFontDialog, QShortcut
+from feeluown.consts import CONFIG_DIR
 
 from feeluown.gui.helpers import resize_font
 
 
 IS_MACOS = sys.platform == 'darwin'
 
+LYRIC_CONFIG_FILE = CONFIG_DIR + '/lyric-ui.json'
 
 class Window(QWidget):
 
@@ -101,7 +104,21 @@ class Container(QWidget):
         self._size_grip.setFixedWidth(self._border_radius * 2)
 
         font = self.font()
-        font.setPointSize(24)
+        self.fontSize = 20
+        self.fontColor = {
+            'r': 0,
+            'g': 0,
+            'b': 0,
+            'alpha': 255,
+        }
+        self.bgColor = {
+            'r': 255,
+            'g': 255,
+            'b': 255,
+            'alpha': 255,
+        }
+
+        font.setPointSize(self.fontSize)
         self.label.setFont(font)
         self.label.setAlignment(Qt.AlignBaseline | Qt.AlignVCenter | Qt.AlignHCenter)
         self.label.setWordWrap(False)
@@ -113,6 +130,67 @@ class Container(QWidget):
         self._layout.addWidget(self.label)
         self._layout.addWidget(self._size_grip)
         self._layout.setAlignment(self._size_grip, Qt.AlignBottom)
+
+        self.load_config()
+
+    # 加载配置
+    def load_config(self):
+        config_file = LYRIC_CONFIG_FILE
+        if not os.path.exists(config_file):
+            return
+
+        config_data:dict = json.load(open(config_file))
+        # 字体
+        font = self.font()
+        font.setFamily(config_data.get("font", font))
+        # 字体大小
+        font.setPointSize(config_data.get("fontSize", 20))
+        self.label.setFont(font)
+
+        palette = self.palette()
+        # 背景颜色
+        bg_color = config_data.get("bgColor", self.bgColor)
+        self.bgColor = bg_color
+        bg_color = QColor.fromRgbF(
+            bg_color.get('r', 0),
+            bg_color.get('g', 0),
+            bg_color.get('b', 0),
+            bg_color.get('alpha', 255)
+        )
+        palette.setColor(QPalette.Active, QPalette.Window, bg_color)
+        palette.setColor(QPalette.Active, QPalette.Base, bg_color)
+        palette.setColor(QPalette.Inactive, QPalette.Window, bg_color)
+        palette.setColor(QPalette.Inactive, QPalette.Base, bg_color)
+        self.setPalette(palette)
+        # 字体颜色
+        font_color = config_data.get("fontColor", self.fontColor)
+        self.fontColor = font_color
+        font_color = QColor.fromRgbF(
+            font_color.get('r', 255),
+            font_color.get('g', 255),
+            font_color.get('b', 255),
+            font_color.get('alpha', 255)
+        )
+        palette.setColor(QPalette.Active, QPalette.WindowText, font_color)
+        palette.setColor(QPalette.Active, QPalette.Text, font_color)
+        palette.setColor(QPalette.Inactive, QPalette.WindowText, font_color)
+        palette.setColor(QPalette.Inactive, QPalette.Text, font_color)
+        self.label.setPalette(palette)
+
+    # 保存配置
+    def save_config(self):
+        config_file = LYRIC_CONFIG_FILE
+        f = open(config_file, "w+")
+        config_data = {
+            'font': self.label.font().family(),
+            'fontSize': self.fontSize,
+            'fontColor': self.fontColor,
+            'bgColor': self.bgColor
+        }
+        config_data_ = json.dumps(config_data, ensure_ascii=False)
+        # print(config_data_)
+        f.write(config_data_)
+        f.close()
 
     def paintEvent(self, e):
         painter = QPainter(self)
@@ -133,11 +211,23 @@ class Container(QWidget):
         def set_color(color):
             palette = self.palette()
             if bg:
+                self.bgColor = {
+                    'r': color.getRgbF()[0],
+                    'g': color.getRgbF()[1],
+                    'b': color.getRgbF()[2],
+                    'alpha': color.getRgbF()[3]
+                }
                 palette.setColor(QPalette.Active, QPalette.Window, color)
                 palette.setColor(QPalette.Active, QPalette.Base, color)
                 palette.setColor(QPalette.Inactive, QPalette.Window, color)
                 palette.setColor(QPalette.Inactive, QPalette.Base, color)
             else:
+                self.fontColor = {
+                    'r': color.getRgbF()[0],
+                    'g': color.getRgbF()[1],
+                    'b': color.getRgbF()[2],
+                    'alpha': color.getRgbF()[3]
+                }
                 palette.setColor(QPalette.Active, QPalette.WindowText, color)
                 palette.setColor(QPalette.Active, QPalette.Text, color)
                 palette.setColor(QPalette.Inactive, QPalette.WindowText, color)
@@ -170,3 +260,4 @@ class Container(QWidget):
         fg_color_action.triggered.connect(lambda: self.show_color_dialog(bg=False))
         font_action.triggered.connect(self.show_font_dialog)
         menu.exec(e.globalPos())
+        self.save_config()
