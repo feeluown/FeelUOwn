@@ -10,6 +10,7 @@ USER_THEMES_DIR = HOME_DIR + '/themes'
 CACHE_DIR = HOME_DIR + '/cache'
 SONG_DIR = HOME_DIR + '/songs'
 COLLECTIONS_DIR = HOME_DIR + '/collections'
+CONFIG_DIR = HOME_DIR + '/configs'
 
 LOG_FILE = HOME_DIR + '/stdout.log'
 STATE_FILE = os.path.join(DATA_DIR, 'state.json')
