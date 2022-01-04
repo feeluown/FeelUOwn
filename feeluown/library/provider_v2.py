@@ -1,4 +1,5 @@
 from typing import Tuple, List, Optional, cast
+from feeluown.gui.widgets import settings
 
 from feeluown.media import Media, Quality
 from feeluown.models import ModelType
@@ -133,6 +134,9 @@ class ProviderV2:
         return media, quality
 
     def _select_media(self, playable_model, policy=None):
+        if settings.FILTER_MEDIA_PROVIDER and self.identifier not in settings.FILTER_MEDIA_PROVIDER:
+            raise MediaNotFound
+
         if ModelType(playable_model.meta.model_type) is ModelType.song:
             list_quality = self.song_list_quality
             QualityCls = Quality.Audio

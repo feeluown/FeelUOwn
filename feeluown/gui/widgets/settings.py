@@ -4,6 +4,8 @@ from PyQt5.QtWidgets import QDialog, QLabel,  QWidget, QCheckBox, \
 
 from feeluown.gui.widgets.magicbox import KeySourceIn
 
+FILTER_MEDIA_PROVIDER = False
+# filter_media_provider = False
 
 class HeaderLabel(QLabel):
     def __init__(self, text, *args, **kwargs):
@@ -59,6 +61,9 @@ class SearchProvidersFilter(QWidget):
     def on_btn_clicked(self, _):
         self.checked_btn_changed.emit(self.get_checked_providers())
 
+class MediaProvider(SearchProvidersFilter):
+    def __init__(self, providers):
+        super().__init__(providers)
 
 class SettingsDialog(QDialog):
     def __init__(self, app, parent=None):
@@ -83,5 +88,21 @@ class SettingsDialog(QDialog):
         self._layout.addWidget(toolbar)
         self._layout.addStretch(0)
 
+        global FILTER_MEDIA_PROVIDER
+        if FILTER_MEDIA_PROVIDER == False:
+            FILTER_MEDIA_PROVIDER = source_in
+
+        toolbar1 = MediaProvider(self._app.library.list())
+        toolbar1.set_checked_providers(FILTER_MEDIA_PROVIDER)
+        toolbar1.checked_btn_changed.connect(self.update_media_in)
+
+        self._layout.addWidget(HeaderLabel('播放来源'))
+        self._layout.addWidget(toolbar1)
+        self._layout.addStretch(0)
+
     def update_source_in(self, source_in):
         self._app.browser.local_storage[KeySourceIn] = ','.join(source_in)
+
+    def update_media_in(self, source_in):
+        global FILTER_MEDIA_PROVIDER
+        FILTER_MEDIA_PROVIDER = source_in
