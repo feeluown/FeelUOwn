@@ -1,5 +1,6 @@
 import sys
-import os, json
+import os
+import json
 
 from PyQt5.QtCore import Qt, QRectF, QRect, QSize, pyqtSignal
 from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
@@ -15,6 +16,7 @@ from feeluown.gui.helpers import resize_font
 IS_MACOS = sys.platform == 'darwin'
 
 LYRIC_CONFIG_FILE = CONFIG_DIR + '/lyric-ui.json'
+
 
 class Window(QWidget):
 
@@ -105,18 +107,8 @@ class Container(QWidget):
 
         font = self.font()
         self.fontSize = 20
-        self.fontColor = {
-            'r': 0,
-            'g': 0,
-            'b': 0,
-            'alpha': 255,
-        }
-        self.bgColor = {
-            'r': 255,
-            'g': 255,
-            'b': 255,
-            'alpha': 255,
-        }
+        self.fontColor = [0, 0, 0, 255]
+        self.bgColor = [255, 255, 255, 255]
 
         font.setPointSize(self.fontSize)
         self.label.setFont(font)
@@ -139,7 +131,7 @@ class Container(QWidget):
         if not os.path.exists(config_file):
             return
 
-        config_data:dict = json.load(open(config_file))
+        config_data: dict = json.load(open(config_file))
         # 字体
         font = self.font()
         font.setFamily(config_data.get("font", font))
@@ -151,12 +143,7 @@ class Container(QWidget):
         # 背景颜色
         bg_color = config_data.get("bgColor", self.bgColor)
         self.bgColor = bg_color
-        bg_color = QColor.fromRgbF(
-            bg_color.get('r', 0),
-            bg_color.get('g', 0),
-            bg_color.get('b', 0),
-            bg_color.get('alpha', 255)
-        )
+        bg_color = QColor.fromRgbF(*bg_color)
         palette.setColor(QPalette.Active, QPalette.Window, bg_color)
         palette.setColor(QPalette.Active, QPalette.Base, bg_color)
         palette.setColor(QPalette.Inactive, QPalette.Window, bg_color)
@@ -165,12 +152,7 @@ class Container(QWidget):
         # 字体颜色
         font_color = config_data.get("fontColor", self.fontColor)
         self.fontColor = font_color
-        font_color = QColor.fromRgbF(
-            font_color.get('r', 255),
-            font_color.get('g', 255),
-            font_color.get('b', 255),
-            font_color.get('alpha', 255)
-        )
+        font_color = QColor.fromRgbF(*font_color)
         palette.setColor(QPalette.Active, QPalette.WindowText, font_color)
         palette.setColor(QPalette.Active, QPalette.Text, font_color)
         palette.setColor(QPalette.Inactive, QPalette.WindowText, font_color)
@@ -211,23 +193,13 @@ class Container(QWidget):
         def set_color(color):
             palette = self.palette()
             if bg:
-                self.bgColor = {
-                    'r': color.getRgbF()[0],
-                    'g': color.getRgbF()[1],
-                    'b': color.getRgbF()[2],
-                    'alpha': color.getRgbF()[3]
-                }
+                self.bgColor = color.getRgbF()
                 palette.setColor(QPalette.Active, QPalette.Window, color)
                 palette.setColor(QPalette.Active, QPalette.Base, color)
                 palette.setColor(QPalette.Inactive, QPalette.Window, color)
                 palette.setColor(QPalette.Inactive, QPalette.Base, color)
             else:
-                self.fontColor = {
-                    'r': color.getRgbF()[0],
-                    'g': color.getRgbF()[1],
-                    'b': color.getRgbF()[2],
-                    'alpha': color.getRgbF()[3]
-                }
+                self.fontColor = color.getRgbF()
                 palette.setColor(QPalette.Active, QPalette.WindowText, color)
                 palette.setColor(QPalette.Active, QPalette.Text, color)
                 palette.setColor(QPalette.Inactive, QPalette.WindowText, color)
