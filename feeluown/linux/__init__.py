@@ -21,7 +21,7 @@ def run_mpris2_server(app):
             return
 
         # set the mainloop before any dbus operation
-        dbus.mainloop.glib.DBusQtMainLoop(set_as_default=True)
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
         bus = dbus.service.BusName(BusName, session_bus)
         service = Mpris2Service(app, bus)
