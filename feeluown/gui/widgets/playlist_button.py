@@ -55,7 +55,7 @@ class PlaylistButton(QPushButton):
             painter.setPen(pen)
             font = painter.font()
             rect_h_half = line_margin // 2
-            font.setPixelSize(rect_h_half * 2)
+            font.setPixelSize(int(rect_h_half * 2))
             painter.setFont(font)
             rect = QRectF(width // 2 + rect_h_half, h3 - rect_h_half,
                           width // 2 - rect_h_half, rect_h_half * 2)
