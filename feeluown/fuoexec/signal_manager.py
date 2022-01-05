@@ -1,5 +1,5 @@
 import logging
-from typing import Callable, Optional
+from typing import Callable, Optional, List, Tuple, Dict
 
 from feeluown.utils.dispatch import Signal
 
@@ -12,8 +12,8 @@ class SignalConnector:
         self._signal: Optional[Signal] = None
         self.symbol = symbol
 
-        self._slot_list: list[tuple[Callable, dict]] = []
-        self._slot_symbol_list: list[tuple[str, dict]] = []
+        self._slot_list: List[Tuple[Callable, Dict]] = []
+        self._slot_symbol_list: List[Tuple[str, Dict]] = []
 
     def bind_signal(self, signal: Signal):
         self._signal = signal
@@ -85,7 +85,7 @@ class SignalManager:
         self.initialized = False
         self._app = None
 
-        self.signal_connectors: list[SignalConnector] = []
+        self.signal_connectors: List[SignalConnector] = []
 
     def initialize(self, app):
         """
