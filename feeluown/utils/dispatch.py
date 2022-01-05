@@ -101,6 +101,15 @@ class Signal:
         return ref(receiver)
 
     def connect(self, receiver, weak=True, aioqueue=False):
+        """Add a receiver to the sender for signal.
+
+        :param receiver: A function or an instance method that receives the signal.
+        :param weak: Whether to use weak references to the receiver.
+        :param aioqueue: Whether to put the receiver into a asyncio task queue.
+            One thing to remember, the receiver is not invoked immediately
+            if this is true. Those receivers which must be invoked in the
+            main thread can set this to true.
+        """
         if weak:
             self.receivers.add(self._ref(receiver))
         else:

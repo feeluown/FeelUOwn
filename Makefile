@@ -6,10 +6,10 @@ docs:
 	cd docs && make html
 
 pylint:
-	pylint feeluown/gui/pages/
+	pylint feeluown/gui/pages/ feeluown/fuoexec
 
 mypy:
-	mypy feeluown/library feeluown/player
+	mypy feeluown/library feeluown/player feeluown/fuoexec
 
 flake8:
 	flake8 fuocore/ feeluown/ tests/
