@@ -126,7 +126,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         self.view = parent
         # TODO: move as_circle/w_h_ratio attribute to view
         self.as_circle = True
-        self.w_h_ratio = 1
+        self.w_h_ratio = 1.0
 
     def paint(self, painter, option, index):
         painter.save()

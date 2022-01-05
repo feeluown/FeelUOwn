@@ -4,16 +4,16 @@ TODO: remove fuoexec prefix from these functions.
 
 import os
 from functools import wraps
-from typing import Callable, Any
+from typing import Callable, Any, Dict
 
 from feeluown.config import Config
 from feeluown.consts import DEFAULT_RCFILE_PATH
 
 
-_exec_globals: dict[str, Any] = {}
+_exec_globals: Dict[str, Any] = {}
 
 
-def fuoexec_get_globals() -> dict:
+def fuoexec_get_globals() -> Dict:
     return _exec_globals
 
 

@@ -78,6 +78,10 @@ setup(
             'flake8',
             'pylint',
             'mypy',
+            # pyqt5-stubs seems more accurate than the stubs packaged in PyQt5 package.
+            # For example, the stubs in PyQt5 has wrong type hint for Qt.ItemIsSelectable.
+            # Some pyqt5 package installed by system package manager may not contain stubs.
+            'pyqt5-stubs',
 
             # unittest
             'pytest>=5.4.0',
