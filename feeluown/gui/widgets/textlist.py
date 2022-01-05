@@ -101,7 +101,7 @@ class TextlistView(QListView):
         self._result_timer.timeout.connect(self.__on_timeout)
         self._results = {}  # {row: [index, True]}
 
-        self.setAttribute(Qt.WA_MacShowFocusRect, 0)
+        self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
@@ -146,6 +146,6 @@ class TextlistView(QListView):
                 text = '🙁'
             x = rect.width() - 20 + rect.x()
             # 让字垂直居中
-            y = (rect.height() + fm.ascent() - fm.descent()) / 2 + rect.y()
+            y = (rect.height() + fm.ascent() - fm.descent()) // 2 + rect.y()
             topleft = QPoint(x, y)
             painter.drawText(topleft, text)

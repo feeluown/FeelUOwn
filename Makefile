@@ -10,6 +10,7 @@ pylint:
 
 mypy:
 	mypy feeluown/library feeluown/player feeluown/fuoexec
+	mypy --check-untyped-defs feeluown/gui/widgets/textlist.py
 
 flake8:
 	flake8 fuocore/ feeluown/ tests/
