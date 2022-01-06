@@ -22,7 +22,7 @@ def print_error(*args, **kwargs):
     print('\033[0m', end='')
 
 
-def setup_cli_argparse(parser):
+def init_args_parser(parser):
     subparsers = parser.add_subparsers(dest='cmd')
 
     # generate icon

@@ -5,13 +5,13 @@ import signal
 import sys
 import warnings
 
-from feeluown.app import AppMode, create_app
+from feeluown.app import AppMode, create_app, create_config
 from feeluown.utils.utils import is_port_inuse
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal  # noqa: E402
 
-from .base import ensure_dirs, setup_config, setup_logger, create_config  # noqa: E402
+from .base import ensure_dirs, setup_config, setup_logger  # noqa: E402
 
 
 logger = logging.getLogger(__name__)
