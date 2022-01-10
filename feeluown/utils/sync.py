@@ -8,7 +8,11 @@ Changes:
 1. *2021-11-04*
    As only AsyncTosync is needed, other unrelated functions/classes are removed.
    It works well in known cases.
+2. *2022-01-10*
+   Since there can be only one QEventLoop instance, new_event_loop should
+   create other event loop.
 """
+import asyncio
 import asyncio.coroutines
 import functools
 import inspect
@@ -234,7 +238,17 @@ class AsyncToSync:
 
             if not (self.main_event_loop and self.main_event_loop.is_running()):
                 # Make our own event loop - in a new thread - and run inside that.
-                loop = asyncio.new_event_loop()
+
+                # Note(cosven): There must be only one QEventLoop instance,
+                # so we should use asyncio.DefaultEventLoopPolicy to create new
+                # event loops.
+                policy = asyncio.get_event_loop_policy()
+                try:
+                    asyncio.set_event_loop_policy(asyncio.DefaultEventLoopPolicy())
+                    loop = asyncio.new_event_loop()
+                finally:
+                    asyncio.set_event_loop_policy(policy)
+
                 loop_executor = ThreadPoolExecutor(max_workers=1)
                 loop_future = loop_executor.submit(
                     self._run_event_loop, loop, awaitable
