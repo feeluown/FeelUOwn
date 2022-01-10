@@ -472,8 +472,11 @@ class Playlist:
                     MetadataFields.artists: [song.artists_name_display or ''],
                     MetadataFields.album: song.album_name_display or '',
                 })
+                kwargs = {}
+                if not self._app.has_gui:
+                    kwargs['video'] = False
                 # TODO: set artwork field
-                self._app.player.play(media, metadata=metadata)
+                self._app.player.play(media, metadata=metadata, **kwargs)
         else:
             self._app.player.stop()
 
@@ -532,7 +535,10 @@ class Playlist:
                 MetadataFields.source: video.source,
                 MetadataFields.uri: reverse(video),
             })
-            self._app.player.play(media, metadata=metadata)
+            kwargs = {}
+            if not self._app.has_gui:
+                kwargs['video'] = False
+            self._app.player.play(media, metadata=metadata, **kwargs)
 
     """
     Sync methods.

@@ -98,6 +98,11 @@ class MpvPlayer(AbstractPlayer):
             self._mpv.terminate()
 
     def play(self, media, video=True, metadata=None):
+        if video is False:
+            _mpv_set_property_string(self._mpv.handle, b'vid', b'no')
+        else:
+            _mpv_set_property_string(self._mpv.handle, b'vid', b'auto')
+
         self.media_about_to_changed.emit(self._current_media, media)
         if media is None:
             self._mpv.playlist_clear()
@@ -126,10 +131,13 @@ class MpvPlayer(AbstractPlayer):
                     finally:
                         self.media_loaded.disconnect(add_audio)
 
-                self._mpv.play(video_url)
-                # It seems we can only add audio after the video is loaded.
-                # TODO: add method connect_once for signal
-                self.media_loaded.connect(add_audio, weak=False)
+                if video is True:
+                    self._mpv.play(video_url)
+                    # It seems we can only add audio after the video is loaded.
+                    # TODO: add method connect_once for signal
+                    self.media_loaded.connect(add_audio, weak=False)
+                else:
+                    self._mpv.play(audio_url)
             else:
                 assert False, 'Unknown manifest'
         self._current_media = media
@@ -222,7 +230,7 @@ class MpvPlayer(AbstractPlayer):
         elif event_id == MpvEventID.FILE_LOADED:
             self.media_loaded.emit()
         elif event_id == MpvEventID.METADATA_UPDATE:
-            metadata = dict(self._mpv.metadata)  # type: ignore
+            metadata = dict(self._mpv.metadata or {})  # type: ignore
             logger.debug('metadata updated to %s', metadata)
             if self._current_metadata.get('__setby__') != 'manual':
                 self._current_metadata['__setby__'] = 'automatic'

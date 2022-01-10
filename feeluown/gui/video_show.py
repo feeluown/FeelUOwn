@@ -33,8 +33,9 @@ class VideoShowCtl:
         self._ui.pc_panel.toggle_pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
 
         self._ui.mpv_widget.show()
+        # Set aioqueue=True so that mpv_widget hide after it is shown once.
         self._app.initialized.connect(
-            lambda _: self._ui.mpv_widget.hide(), weak=False)
+            lambda _: self._ui.mpv_widget.hide(), weak=False, aioqueue=True)
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
         self._app.player.video_format_changed.connect(
             self.on_video_format_changed, aioqueue=True)
