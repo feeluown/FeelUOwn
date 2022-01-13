@@ -51,7 +51,23 @@ def test_run_app_with_no_window_mode(argsparser, mocker, noqt, noharm):
     assert 'PyQt5' not in sys.modules
 
 
-def test_before_start_app_server_already_started(argsparser, mocker, noharm):
+def test_run_app_with_cli_mode(argsparser, mocker, noharm):
+    mock_load_rcfile = mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
+    mock_start_app: AsyncMock = mocker.patch('feeluown.entry_points.run_app.start_app')
+    mock_warnings = mocker.patch('feeluown.entry_points.run_app.warnings')
+
+    args = argsparser.parse_args(["play", "fuo://xxx/songs/1"])
+    # App must be in CliMode.
+    run_app(args)
+
+    # Warning should be ignore in cli mode because the warning can
+    # pollute the output.
+    mock_warnings.filterwarnings.assert_called_once_with('ignore')
+    # Precheck should pass and start_app should be called.
+    mock_start_app.assert_awaited()
+
+
+def test_server_already_started(argsparser, mocker, noharm):
     class XE(Exception):
         pass
 
