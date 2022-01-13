@@ -32,7 +32,7 @@ lint: flake8 mypy pylint
 unittest: pytest
 
 pytest:
-	TEST_ENV=travis pytest
+	TEST_ENV=travis pytest -vv
 
 integration_test:
 	./integration-tests/run.py
