@@ -1,10 +1,13 @@
+import asyncio
 import sys
 from unittest.mock import AsyncMock
 
 import pytest
 
 from feeluown.entry_points.base import setup_argparse
-from feeluown.entry_points.run_app import run_app
+from feeluown.entry_points.run_app import run_app, before_start_app, start_app
+from feeluown.app import App, AppMode
+from feeluown.app.cli_app import CliApp
 
 
 @pytest.fixture
@@ -25,11 +28,22 @@ def noharm(mocker):
     Do not write or update any file on the system.
     """
     mocker.patch('feeluown.entry_points.run_app.ensure_dirs')
+    mocker.patch.object(App, 'dump_state')
 
 
 @pytest.fixture
 def argsparser():
     return setup_argparse()
+
+
+def test_before_start_app_with_default_args(argsparser, mocker, noharm):
+    mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
+    mocker.patch('feeluown.entry_points.run_app.precheck')
+    mock_asyncio = mocker.patch('feeluown.entry_points.run_app.asyncio')
+    args = argsparser.parse_args()
+    _, config = before_start_app(args)
+    assert mock_asyncio.set_event_loop_policy.called
+    assert AppMode.gui in AppMode(config.MODE)
 
 
 def test_run_app_with_no_window_mode(argsparser, mocker, noqt, noharm):
@@ -51,20 +65,22 @@ def test_run_app_with_no_window_mode(argsparser, mocker, noqt, noharm):
     assert 'PyQt5' not in sys.modules
 
 
-def test_run_app_with_cli_mode(argsparser, mocker, noharm):
-    mock_load_rcfile = mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
-    mock_start_app: AsyncMock = mocker.patch('feeluown.entry_points.run_app.start_app')
-    mock_warnings = mocker.patch('feeluown.entry_points.run_app.warnings')
+@pytest.mark.asyncio
+async def test_start_app(argsparser, mocker, noharm):
+    mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
+    # fuoexec_init can be only called once, mock it here.
+    mocker.patch('feeluown.entry_points.run_app.fuoexec_init')
+    mocker.patch('feeluown.entry_points.run_app.warnings')
+    mock_app_run = mocker.patch.object(CliApp, 'run')
 
+    # Run app with CliMode.
     args = argsparser.parse_args(["play", "fuo://xxx/songs/1"])
-    # App must be in CliMode.
-    run_app(args)
+    args, config = before_start_app(args)
+    future = asyncio.Future()
+    future.set_result(None)
+    await start_app(args, config, future)
 
-    # Warning should be ignore in cli mode because the warning can
-    # pollute the output.
-    mock_warnings.filterwarnings.assert_called_once_with('ignore')
-    # Precheck should pass and start_app should be called.
-    mock_start_app.assert_awaited()
+    mock_app_run.assert_called_once_with()
 
 
 def test_server_already_started(argsparser, mocker, noharm):

@@ -24,8 +24,7 @@ class ServerApp(App):
 
     def initialize(self):
         super().initialize()
-        if self.mode & self.DaemonMode:
-            self.live_lyric.sentence_changed.connect(self._ll_publisher.publish)
+        self.live_lyric.sentence_changed.connect(self._ll_publisher.publish)
 
     def run(self):
         super().run()

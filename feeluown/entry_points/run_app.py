@@ -70,7 +70,10 @@ def before_start_app(args):
     return args, config
 
 
-async def start_app(args, config):
+async def start_app(args, config, sentinal=None):
+    """
+    The param sentinal is currently only used for unittest.
+    """
     Signal.setup_aio_support()
 
     app = create_app(args, config)
@@ -93,7 +96,8 @@ async def start_app(args, config):
     loop.add_signal_handler(signal.SIGTERM, app.exit)
     loop.add_signal_handler(signal.SIGINT, app.exit)
 
-    sentinal: asyncio.Future = asyncio.Future()
+    if sentinal is None:
+        sentinal: asyncio.Future = asyncio.Future()
 
     def shutdown(_):
         # Since about_to_shutdown signal may emit multiple times
