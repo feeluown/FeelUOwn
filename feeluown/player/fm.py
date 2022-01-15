@@ -42,7 +42,7 @@ class FM:
     def activate(self, fetch_songs_func, reset=True):
         """change playlist mode to fm
 
-        :param fetch_songs_func: func(minimum, *args, **kwargs): -> list
+        :param fetch_songs_func: `func(minimum, *args, **kwargs): -> list`
             please ensure that fetch_songs_func can receive keyword arguments,
             we may send some keyword args(such as timeout) in the future.
             If exception occured in fetch_songs_func, it should raise
