@@ -40,7 +40,7 @@ def test_before_start_app_with_default_args(argsparser, mocker, noharm):
     mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
     mocker.patch('feeluown.entry_points.run_app.precheck')
     mock_asyncio = mocker.patch('feeluown.entry_points.run_app.asyncio')
-    args = argsparser.parse_args()
+    args = argsparser.parse_args([])
     _, config = before_start_app(args)
     assert mock_asyncio.set_event_loop_policy.called
     assert AppMode.gui in AppMode(config.MODE)
@@ -71,6 +71,9 @@ async def test_start_app(argsparser, mocker, noharm):
     # fuoexec_init can be only called once, mock it here.
     mocker.patch('feeluown.entry_points.run_app.fuoexec_init')
     mocker.patch('feeluown.entry_points.run_app.warnings')
+    # setup_logger may set logger output to file (~/.FeelUown/stdout.log),
+    # but the directory may not exist on CI. It must be mocked.
+    mocker.patch('feeluown.entry_points.run_app.setup_logger')
     mock_app_run = mocker.patch.object(CliApp, 'run')
 
     # Run app with CliMode.
