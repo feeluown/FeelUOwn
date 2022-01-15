@@ -17,7 +17,7 @@ class ProgressSlider(QSlider):
         super().__init__(parent)
 
         self._app = app
-        self._dragging_ctx: Optional[DraggingContext]  = None
+        self._dragging_ctx: Optional[DraggingContext] = None
 
         self.setToolTip('拖动调节进度')
         self.setRange(0, 0)  # User can't drag the slider control when range is empty.
@@ -34,16 +34,13 @@ class ProgressSlider(QSlider):
         self._app.player.media_changed.connect(self.on_media_changed)
 
     def update_total(self, s):
-        if s is not None:
-            self.setRange(0, int(s))
-        else:
-            self.setRange(0, 0)
+        s = s or 0
+        self.setRange(0, int(s))
 
     def update_progress(self, s):
         # Only update progress when it is not dragging.
         if not self.is_dragging:
-            if s is None:
-                s = 0
+            s = s or 0
             self.setValue(int(s))
 
     @property

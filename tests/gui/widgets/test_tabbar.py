@@ -4,9 +4,7 @@ from tests.helpers import cannot_run_qt_test
 from feeluown.gui.widgets.tabbar import TableTabBar
 
 
-# TODO: use xvfb in travis env
-# example: https://github.com/pytest-dev/pytest-qt/blob/master/.travis.yml
-@pytest.mark.skipif(cannot_run_qt_test, reason='this is a qt testcase')
+@pytest.mark.skipif(cannot_run_qt_test, reason='')
 def test_tabbar(qtbot):
     tabbar = TableTabBar()
     qtbot.addWidget(tabbar)
