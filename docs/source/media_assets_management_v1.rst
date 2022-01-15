@@ -734,7 +734,7 @@ media 对象中包含了资源文件的元信息，对于音频文件，有 bitr
 metadata 是 ``AudioMeta`` 的实例。对于视频文件，metadata 则是 ``VideoMeta``
 （暂时未实现） 的实例。
 
-.. autoclass:: feeluown.media.AudioMeta
+.. autoclass:: feeluown.media.AudioProps
 
 
 .. _media_assets_management_usage:
