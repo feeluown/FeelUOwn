@@ -124,7 +124,8 @@ class AbstractPlayer(metaclass=ABCMeta):
 
     @duration.setter
     def duration(self, value):
-        if value is not None and value != self._duration:
+        value = value or 0
+        if value != self._duration:
             self._duration = value
             self.duration_changed.emit(value)
 
