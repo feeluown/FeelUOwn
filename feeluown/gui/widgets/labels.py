@@ -31,7 +31,7 @@ class DurationLabel(QLabel):
             self.on_duration_changed, aioqueue=True)
 
     def on_duration_changed(self, duration):
-        self.setText(format_second(duration))
+        self.setText(format_second(duration or 0))
 
 
 class ProgressLabel(QLabel):
@@ -44,6 +44,4 @@ class ProgressLabel(QLabel):
             self.on_position_changed, aioqueue=True)
 
     def on_position_changed(self, position):
-        if position is None:
-            return
-        self.setText(format_second(position))
+        self.setText(format_second(position or 0))

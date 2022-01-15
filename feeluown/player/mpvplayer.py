@@ -105,7 +105,7 @@ class MpvPlayer(AbstractPlayer):
 
         self.media_about_to_changed.emit(self._current_media, media)
         if media is None:
-            self._mpv.playlist_clear()
+            self._stop_mpv()
         else:
             logger.debug("Player will play: '%s'", media)
             if isinstance(media, Media):
@@ -113,7 +113,7 @@ class MpvPlayer(AbstractPlayer):
             else:  # media is a url(string)
                 media = Media(media)
             self._set_http_headers(media.http_headers)
-            self._mpv.playlist_clear()
+            self._stop_mpv()
             if media.manifest is None:
                 url = media.url
                 # Clear playlist before play next song,
@@ -179,7 +179,6 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.pause = True
         self.state = State.stopped
         self.play(None)
-        self._mpv.playlist_clear()
         logger.debug('Player stopped.')
 
     @property
@@ -207,6 +206,12 @@ class MpvPlayer(AbstractPlayer):
     def video_format(self, vformat):
         self._video_format = vformat
         self.video_format_changed.emit(vformat)
+
+    def _stop_mpv(self):
+        # Remove current media.
+        self._mpv.play("")
+        # Clear the playlist so that no other media will be played.
+        self._mpv.playlist_clear()
 
     def _on_position_changed(self, position):
         self._position = position
