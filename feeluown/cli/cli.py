@@ -7,9 +7,10 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from feeluown.consts import CACHE_DIR
-from feeluown.rpc.cmds.helpers import show_song
+from feeluown.library import fmt_artists_names
 from feeluown.rpc import Request, Response
 from feeluown.rpc.server import handle_request
+from feeluown.utils import aio
 
 
 OUTPUT_CACHE_FILEPATH = os.path.join(CACHE_DIR, 'cli.out')
@@ -21,7 +22,7 @@ def print_error(*args, **kwargs):
     print('\033[0m', end='')
 
 
-def setup_cli_argparse(parser):
+def init_args_parser(parser):
     subparsers = parser.add_subparsers(dest='cmd')
 
     # generate icon
@@ -293,25 +294,43 @@ def climain(args):
         dispatch(args, cli)
 
 
-def oncemain(app, args):
+def oncemain(app):
+
     client = OnceClient(app)
-    dispatch(args, client)
+    dispatch(app.args, client)
 
-    if args.cmd == 'play':
-        def on_media_changed(media):
-            song = app.player.current_song
-            if song is not None:
-                print('Playing: {}'.format(show_song(song, brief=True)))
+    if app.args.cmd == 'play':
+
+        def on_metadata_changed(metadata):
+            if not metadata:
+                return
+            uri = metadata.get('uri', '')
+            text = metadata.get('title', '')
+            artists = metadata.get('artists', [])
+            if artists:
+                text += fmt_artists_names(artists)
+            if uri:
+                if text:
+                    print(f'Playing: {uri} # {text}')
+                else:
+                    print(f'Playing: {uri}')
             else:
-                print('Playing: {}'.format(app.player.current_media))
+                print(f'Playing: {text}')
 
-        app.player.media_changed.connect(on_media_changed, weak=False)
-        loop = asyncio.get_event_loop()
+        def cb(future):
+            try:
+                future.result()
+            except asyncio.CancelledError:
+                # When the coroutine is requested to cancel, stop the player
+                # to cancel the task in thread pool.
+                app.player.stop()
+                app.player.shutdown()
+            else:
+                app.exit()
+
+        app.player.metadata_changed.connect(on_metadata_changed, weak=False)
         # mpv wait_for_playback will wait until one song is finished,
         # if we have multiple song to play, this will not work well.
-        future = loop.run_in_executor(
-            None,
-            # pylint: disable=protected-access
-            app.player._mpv.wait_for_playback)
-        return future
-    return None
+        # pylint: disable=protected-access
+        future = aio.run_fn(app.player._mpv.wait_for_playback)
+        future.add_done_callback(cb)

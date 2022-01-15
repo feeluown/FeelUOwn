@@ -9,8 +9,7 @@ from feeluown.task import TaskManager, PreemptiveTaskSpec
 
 @pytest.mark.asyncio
 async def test_task_manager(app_mock):
-    loop = asyncio.get_event_loop()
-    task_mgr = TaskManager(app_mock, loop)
+    task_mgr = TaskManager(app_mock)
     task_spec = task_mgr.get_or_create('fetch-song-standby')
 
     async def fetch_song():
@@ -26,7 +25,7 @@ async def test_task_manager(app_mock):
 @pytest.mark.asyncio
 async def test_preemptive_task_spec_bind_coro():
     mgr = mock.MagicMock()
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     mgr.loop = loop
     task_spec = PreemptiveTaskSpec(mgr, 'fetch-song-standby')
 

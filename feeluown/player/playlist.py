@@ -58,11 +58,6 @@ class Playlist:
         """
         self._app = app
 
-        #: mainthread asyncio loop ref
-        # We know that feeluown is a asyncio-app, and we can assume
-        # that the playlist is inited in main thread.
-        self._loop = asyncio.get_event_loop()
-
         #: init playlist mode normal
         self._mode = PlaylistMode.normal
 
@@ -470,14 +465,18 @@ class Playlist:
             else:
                 # Note that the value of model v1 {}_display may be None.
                 metadata = Metadata({
+                    MetadataFields.uri: reverse(song),
                     MetadataFields.source: song.source,
                     MetadataFields.title: song.title_display or '',
                     # The song.artists_name should return a list of strings
                     MetadataFields.artists: [song.artists_name_display or ''],
                     MetadataFields.album: song.album_name_display or '',
                 })
+                kwargs = {}
+                if not self._app.has_gui:
+                    kwargs['video'] = False
                 # TODO: set artwork field
-                self._app.player.play(media, metadata=metadata)
+                self._app.player.play(media, metadata=metadata, **kwargs)
         else:
             self._app.player.stop()
 
@@ -536,7 +535,10 @@ class Playlist:
                 MetadataFields.source: video.source,
                 MetadataFields.uri: reverse(video),
             })
-            self._app.player.play(media, metadata=metadata)
+            kwargs = {}
+            if not self._app.has_gui:
+                kwargs['video'] = False
+            self._app.player.play(media, metadata=metadata, **kwargs)
 
     """
     Sync methods.

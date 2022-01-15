@@ -24,10 +24,13 @@ else:
 spawn = create_task
 as_completed = asyncio.as_completed
 
+#: run is an alias of `asyncio.run`.
+run = asyncio.run
+
 
 def run_in_executor(executor, func, *args):
     """alias for loop.run_in_executor"""
-    loop = asyncio.get_event_loop()
+    loop = asyncio.get_running_loop()
     return loop.run_in_executor(executor, func, *args)
 
 

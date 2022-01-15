@@ -79,6 +79,8 @@ class PreemptiveTaskSpec:
     def _cb(self, future):
         try:
             future.result()
+        except asyncio.CancelledError:
+            logger.warning(f'Task {self.name} is cancelled')
         except Exception as e:  # noqa
             logger.exception(f'Task {self.name} failed')
 
@@ -96,7 +98,7 @@ class TaskManager:
         task_spec = task_mgr.get_or_create(task_name, TaskType.preemptive)
         task = task_spec.bind_coro(fetch_song())
     """
-    def __init__(self, app, loop):
+    def __init__(self, app):
         """
 
         :param app: feeluown app instance
@@ -105,7 +107,7 @@ class TaskManager:
         self._app = app
 
         # only accessible for task instance
-        self.loop = loop
+        self.loop = asyncio.get_running_loop()
 
         # store the name:taskspec mapping
         self._store = {}

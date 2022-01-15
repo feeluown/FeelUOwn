@@ -30,10 +30,10 @@ def test_when_playlist_fm_mode_exited(app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
-async def test_fetch_song_cancelled(event_loop, app_mock, song, mocker):
+async def test_fetch_song_cancelled(app_mock, song, mocker):
     mock_fetch = mocker.MagicMock()
     app_mock.playlist = Playlist(app_mock)
-    app_mock.task_mgr = TaskManager(app_mock, event_loop)
+    app_mock.task_mgr = TaskManager(app_mock)
     fm = FM(app_mock)
     fm.activate(mock_fetch)
     task_spec = app_mock.task_mgr.get_or_create(fm._fetch_songs_task_name)
@@ -43,11 +43,11 @@ async def test_fetch_song_cancelled(event_loop, app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
-async def test_fetch_song_failed(event_loop, app_mock, song, mocker):
+async def test_fetch_song_failed(app_mock, song, mocker):
     mock_fetch = mocker.MagicMock(side_effect=ProviderIOError)
     mock_fm_add = mocker.patch.object(Playlist, 'fm_add')
     app_mock.playlist = Playlist(app_mock)
-    app_mock.task_mgr = TaskManager(app_mock, event_loop)
+    app_mock.task_mgr = TaskManager(app_mock)
     fm = FM(app_mock)
     fm.activate(mock_fetch)
     assert fm._is_fetching_songs is True
@@ -57,11 +57,11 @@ async def test_fetch_song_failed(event_loop, app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
-async def test_multiple_eof_reached_signal(event_loop, app_mock, song, mocker):
+async def test_multiple_eof_reached_signal(app_mock, song, mocker):
     mock_fetch = mocker.MagicMock(return_value=[song] * 3)
     mock_fm_add = mocker.patch.object(Playlist, 'fm_add')
     app_mock.playlist = Playlist(app_mock)
-    app_mock.task_mgr = TaskManager(app_mock, event_loop)
+    app_mock.task_mgr = TaskManager(app_mock)
     fm = FM(app_mock)
     fm.activate(mock_fetch)
     app_mock.playlist.next()
@@ -75,12 +75,12 @@ async def test_multiple_eof_reached_signal(event_loop, app_mock, song, mocker):
 
 @pytest.mark.asyncio
 async def test_reactivate_fm_mode_after_playing_other_songs(
-        event_loop, app_mock, song, song1, mocker):
+        app_mock, song, song1, mocker):
     def f(*args, **kwargs): return [song1]
 
     def is_active(fm): return fm.is_active
 
-    app_mock.task_mgr = TaskManager(app_mock, event_loop)
+    app_mock.task_mgr = TaskManager(app_mock)
     playlist = Playlist(app_mock)
     app_mock.playlist = playlist
     fm = FM(app_mock)
