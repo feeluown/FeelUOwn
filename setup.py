@@ -17,7 +17,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     license="GPL-3.0",
-    author='Cosven',
+    author='feeluown',
     author_email='yinshaowen241@gmail.com',
     packages=find_packages(exclude=('tests*',)),
     py_modules=['mpv', 'mpv_old'],
@@ -30,12 +30,10 @@ setup(
              'themes/*.colors',
              ]
     },
-    python_requires=">=3.6",
+    python_requires=">=3.8",
     url='https://github.com/feeluown/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt5', 'Python 3'],
     classifiers=[
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
@@ -61,8 +59,6 @@ setup(
         'tomlkit',
         'packaging',
         'pydantic>=1.8.1',
-
-        'typing_extensions;python_version<"3.8"',
     ],
     extras_require={
         'battery': ['fuo-local>=0.2.1',
