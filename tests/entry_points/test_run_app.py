@@ -8,6 +8,8 @@ from feeluown.entry_points.base import setup_argparse
 from feeluown.entry_points.run_app import run_app, before_start_app, start_app
 from feeluown.app import App, AppMode
 from feeluown.app.cli_app import CliApp
+from feeluown.plugin import PluginsManager
+from feeluown.uimodels.collection import CollectionUiManager
 
 
 @pytest.fixture
@@ -29,6 +31,9 @@ def noharm(mocker):
     """
     mocker.patch('feeluown.entry_points.run_app.ensure_dirs')
     mocker.patch.object(App, 'dump_state')
+    mocker.patch.object(PluginsManager, 'scan')
+    # CollectionUiManager write library.fuo file during initialization.
+    mocker.patch.object(CollectionUiManager, 'initialize')
 
 
 @pytest.fixture
