@@ -32,7 +32,7 @@ lint: flake8 mypy pylint
 unittest: pytest
 
 pytest:
-	TEST_ENV=travis pytest -vv
+	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -vv
 
 integration_test:
 	./integration-tests/run.py
