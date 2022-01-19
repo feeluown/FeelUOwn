@@ -334,3 +334,5 @@ def oncemain(app):
         # pylint: disable=protected-access
         future = aio.run_fn(app.player._mpv.wait_for_playback)
         future.add_done_callback(cb)
+    else:
+        app.exit()
