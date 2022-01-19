@@ -57,13 +57,10 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
     def serialize(self, list_):
         if not list_:
             return []
-        item0 = list_[0]
-        serializer_cls = PythonSerializer.get_serializer_cls(item0)
-        if issubclass(serializer_cls, SearchSerializer):
-            return self.serialize_search_result_list(list_)
-        serializer = serializer_cls(brief=True, fetch=False)
         result = []
         for item in list_:
+            serializer_cls = PythonSerializer.get_serializer_cls(item)
+            serializer = serializer_cls(brief=True, fetch=False)
             result.append(serializer.serialize(item))
         return result
 
