@@ -2,6 +2,8 @@ import os
 import time
 from unittest import TestCase, skipIf, mock
 
+import pytest
+
 from tests.helpers import cannot_play_audio
 from fuocore.media import Media
 from fuocore.player import State
@@ -36,6 +38,27 @@ class FakeValidSongModel:
         return MP3_URL, _
 
 
+@pytest.fixture
+def mpvplayer():
+    player = MpvPlayer(Playlist(app_mock))
+    player.volume = 0
+    yield player
+    player.stop()
+    player.shutdown()
+
+
+@skipIf(cannot_play_audio, '')
+def test_seek(mpvplayer, mocker):
+    mock_changed_emit = mocker.patch.object(mpvplayer.position_changed, 'emit')
+    mock_seeked_emit = mocker.patch.object(mpvplayer.seeked, 'emit')
+    mpvplayer.play(MP3_URL)
+    time.sleep(MPV_SLEEP_SECOND)
+    assert not mock_seeked_emit.called
+    assert mock_changed_emit.called
+    mpvplayer.position = 100
+    mock_seeked_emit.assert_called_once_with(100)
+
+
 class TestPlayer(TestCase):
 
     def setUp(self):
@@ -57,12 +80,6 @@ class TestPlayer(TestCase):
         self.player.play(MP3_URL)
         time.sleep(MPV_SLEEP_SECOND)
         self.assertIsNotNone(self.player.duration)
-
-    @skipIf(cannot_play_audio, '')
-    def test_seek(self):
-        self.player.play(MP3_URL)
-        time.sleep(MPV_SLEEP_SECOND)
-        self.player.position = 100
 
     @skipIf(cannot_play_audio, '')
     def test_play_pause_toggle_resume_stop(self):
