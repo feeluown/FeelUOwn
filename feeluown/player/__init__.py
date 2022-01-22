@@ -5,6 +5,7 @@ from .mpvplayer import MpvPlayer as Player
 from .playlist import PlaylistMode, Playlist
 from .fm import FM
 from .radio import SongRadio
+from .lyric import LiveLyric, parse_lyric_text
 
 
 __all__ = (
@@ -20,4 +21,7 @@ __all__ = (
 
     'Metadata',
     'MetadataFields',
+
+    'LiveLyric',
+    'parse_lyric_text',
 )

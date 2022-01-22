@@ -8,7 +8,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
 
 from feeluown.models.uri import reverse, resolve
 from feeluown.library import ProviderFlags as PF, NotSupported
-from feeluown.lyric import parse
+from feeluown.player import parse_lyric_text
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
 from feeluown.gui.helpers import BgTransparentMixin, resize_font
@@ -74,7 +74,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
         logger.info('cant show lyric due to %s', str(e))
     else:
         if lyric is not None:
-            ms_sentence_map = parse(lyric.content)
+            ms_sentence_map = parse_lyric_text(lyric.content)
             sentences = []
             for _, sentence in sorted(ms_sentence_map.items(),
                                       key=lambda item: item[0]):

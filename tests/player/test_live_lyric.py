@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from feeluown.lyric import LiveLyric
+from feeluown.player import LiveLyric
 
 
 lyric = """[by:魏积分]

@@ -16,7 +16,6 @@ app 对象，我们把它们放在 feeluown 包中。另外，我们也会创建
 🔴       音乐资源模型          :py:mod:`feeluown.models`
 🔴       音乐库               :py:class:`feeluown.library.Library`
 🔴       播放器               :py:mod:`feeluown.player`
-🔴       歌词                 :py:class:`feeluown.lyric.LiveLyric`
 🔴       fuo 协议             :py:class:`feeluown.protocol.FuoProcotol`
 🔴       版本                 :py:class:`feeluown.version.VersionManager`
 🔴       小提示管理            :py:class:`feeluown.tips.TipsManager`

@@ -4,14 +4,17 @@ from contextlib import contextmanager
 from typing import Optional, Type
 
 from feeluown.consts import STATE_FILE
+from feeluown.utils.request import Request
 from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
-from feeluown.models import Resolver, reverse, resolve, \
-    ResolverNotFound
-from feeluown.player import PlaybackMode, Playlist
-from feeluown.lyric import LiveLyric
-from feeluown.utils.request import Request
-from feeluown.player import FM, Player
+from feeluown.models import (
+    Resolver, reverse, resolve,
+    ResolverNotFound,
+)
+from feeluown.player import (
+    PlaybackMode, Playlist, LiveLyric,
+    FM, Player,
+)
 from feeluown.plugin import PluginsManager
 from feeluown.version import VersionManager
 from feeluown.task import TaskManager
