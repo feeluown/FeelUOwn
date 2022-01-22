@@ -45,6 +45,7 @@ class AbstractPlayer(metaclass=ABCMeta):
 
         #: player position changed signal
         self.position_changed = Signal()
+        self.seeked = Signal()
 
         #: player state changed signal
         self.state_changed = Signal()

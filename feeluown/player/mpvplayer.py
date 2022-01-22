@@ -190,6 +190,7 @@ class MpvPlayer(AbstractPlayer):
         if self._current_media:
             self._mpv.seek(position, reference='absolute')
             self._position = position
+            self.seeked.emit(position)
         else:
             logger.warn("can't set position when current media is empty")
 
