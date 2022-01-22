@@ -29,7 +29,7 @@ def run():
         # we simple think the daemon is started as long as
         # the port 23333 is in use.
         # TODO: allow specify port in command line args.
-        if is_port_inuse(2333):
+        if is_port_inuse(23333):
             return run_cli(args)
 
     return run_app(args)
