@@ -43,12 +43,12 @@ class ServerApp(App):
         # pylint: disable=import-outside-toplevel
         if platform == 'darwin':
             try:
-                from feeluown.global_hotkey_mac import MacGlobalHotkeyManager
+                from feeluown.nowplaying.global_hotkey_mac import MacGlobalHotkeyManager
             except ImportError as e:
                 logger.warning("Can't start mac hotkey listener: %s", str(e))
             else:
                 mac_global_hotkey_mgr = MacGlobalHotkeyManager()
                 mac_global_hotkey_mgr.start()
         elif platform == 'linux':
-            from feeluown.linux import run_mpris2_server
+            from feeluown.nowplaying.linux import run_mpris2_server
             run_mpris2_server(self)
