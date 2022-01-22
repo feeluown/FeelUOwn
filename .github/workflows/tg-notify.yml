@@ -1,0 +1,23 @@
+name: telegram message
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+    branches:
+      - master
+
+jobs:
+  notify:
+    name: notify
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message on pull request opened
+        uses: appleboy/telegram-action@master
+        with:
+          to: ${{ secrets.FEELUOWN_TELEGRAM_ID }}
+          token: ${{ secrets.TELEGRAM_TOKEN }}
+          message: |
+            ${{ github.actor }} 提交了一个 PR，一起来看看吧～
+            ${{ github.event.pull_request.title }}
+            ${{ github.event.pull_request.html_url }}
