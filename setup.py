@@ -22,12 +22,12 @@ setup(
     packages=find_packages(exclude=('tests*',)),
     py_modules=['mpv', 'mpv_old'],
     package_data={
-        '': ['linux/*.xml',
-             'icons/*.png',
-             'icons/*.ico',
-             'icons/*.icns',
-             'themes/*.qss',
-             'themes/*.colors',
+        '': ['nowplaying/linux/*.xml',
+             'gui/assets/icons/*.png',
+             'gui/assets/icons/*.ico',
+             'gui/assets/icons/*.icns',
+             'gui/assets/themes/*.qss',
+             'gui/assets/themes/*.colors',
              ]
     },
     python_requires=">=3.8",

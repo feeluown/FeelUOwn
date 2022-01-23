@@ -6,7 +6,7 @@ import sys
 import pathlib
 
 HERE = pathlib.Path(__file__).resolve()
-ICONS_DIR = HERE.parent.parent / 'icons'
+ICONS_DIR = HERE.parent.parent / 'gui' / 'assets' / 'icons'
 
 mac_shell_str = """#!/bin/bash
 /usr/local/bin/feeluown --log-to-file
