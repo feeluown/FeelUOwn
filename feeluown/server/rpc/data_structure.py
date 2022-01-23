@@ -32,7 +32,7 @@ class Request:
         def escape(value):
             # if value is not furi/float/integer, than we surround the value
             # with double quotes
-            from feeluown.rpc.lexer import furi_re, integer_re, float_re
+            from feeluown.server.rpc.lexer import furi_re, integer_re, float_re
 
             regex_list = (furi_re, float_re, integer_re)
             for regex in regex_list:

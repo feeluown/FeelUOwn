@@ -21,7 +21,7 @@ def register_feeluown_serializers():
 
 def handle_request(req, app, ctx=None):
     """
-    :type req: feeluown.rpc.Request
+    :type req: feeluown.server.rpc.Request
     """
     if not _REGISTERED:
         register_feeluown_serializers()
