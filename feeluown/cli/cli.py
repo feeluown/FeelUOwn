@@ -1,12 +1,11 @@
-import argparse
 import asyncio
 import os
-import textwrap
 import sys
 from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from feeluown.consts import CACHE_DIR
+from feeluown.dsl import add_cmd_parser
 from feeluown.library import fmt_artists_names
 from feeluown.server.rpc import Request, Response
 from feeluown.server.rpc.server import handle_request
@@ -23,76 +22,7 @@ def print_error(*args, **kwargs):
 
 
 def init_args_parser(parser):
-    subparsers = parser.add_subparsers(dest='cmd')
-
-    # generate icon
-    subparsers.add_parser('genicon',
-                          description='generate desktop icon')
-
-    fmt_parser = argparse.ArgumentParser(add_help=False)
-    fmt_parser.add_argument(
-        '--format',
-        help="change command output format (default: plain)"
-    )
-
-    play_parser = subparsers.add_parser(
-        'play',
-        description=textwrap.dedent('''\
-        Example:
-            - fuo play fuo://netease/songs/3027393
-            - fuo play "in the end"
-            - fuo play 稻香-周杰伦
-        '''),
-        formatter_class=argparse.RawTextHelpFormatter
-    )
-    show_parser = subparsers.add_parser('show', parents=[fmt_parser])
-    search_parser = subparsers.add_parser(
-        'search',
-        description=textwrap.dedent('''\
-        Example:
-            - fuo search hero
-            - fuo search 李宗盛 source=xiami,type=artist
-            - fuo search 李宗盛 [source=xiami,type=artist]
-            - fuo search lizongsheng "source='xiami,qq',type=artist"
-            - fuo search 李宗盛 "[source='xiami,qq',type=artist]"
-        '''),
-        formatter_class=argparse.RawTextHelpFormatter,
-        parents=[fmt_parser],
-    )
-
-    subparsers.add_parser('pause')
-    subparsers.add_parser('resume')
-    subparsers.add_parser('toggle')
-    subparsers.add_parser('stop')
-    subparsers.add_parser('next')
-    subparsers.add_parser('previous')
-    subparsers.add_parser('list', parents=[fmt_parser])
-    subparsers.add_parser('clear')
-    subparsers.add_parser('status', parents=[fmt_parser])
-    remove_parser = subparsers.add_parser('remove')
-    add_parser = subparsers.add_parser('add')
-    exec_parser = subparsers.add_parser('exec')
-
-    play_parser.add_argument('uri', help='歌曲 uri')
-    show_parser.add_argument('uri', help='显示资源详细信息')
-    remove_parser.add_argument('uri', help='从播放列表移除歌曲')
-    add_parser.add_argument('uri', nargs='?', help='添加歌曲到播放列表')
-    search_parser.add_argument('keyword', help='搜索关键字')
-    search_parser.add_argument('options', nargs='?', help='命令选项 (e.g., type=playlist)')
-    """
-    FIXME: maybe we should redesign options argument or add another way
-           to make following examples works
-
-    1. search zjl source='artist,album'
-
-    if quote in options str, bash will remove it, the string
-    Python reads will become::
-
-      search zjl source=artist,album
-
-    though user can write this: search zjl source=\'artist,album\'.
-    """
-    exec_parser.add_argument('code', nargs='?', help='Python 代码')
+    add_cmd_parser(parser)
 
 
 cmd_handler_mapping = {}
