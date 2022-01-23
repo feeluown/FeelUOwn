@@ -3,7 +3,7 @@ import pytest
 
 from feeluown.app import init_args_parser, create_config
 from feeluown.plugin import PluginsManager
-from feeluown.uimodels.collection import CollectionUiManager
+from feeluown.gui.uimodels.collection import CollectionUiManager
 from feeluown.utils.dispatch import Signal
 
 

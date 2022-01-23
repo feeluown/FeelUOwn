@@ -11,10 +11,10 @@ from feeluown.gui.theme import ThemeManager
 from feeluown.gui.tips import TipsManager
 from feeluown.gui.ui import Ui
 from feeluown.gui.tray import Tray
-from feeluown.uimodels.provider import ProviderUiManager
-from feeluown.uimodels.playlist import PlaylistUiManager
-from feeluown.uimodels.my_music import MyMusicUiManager
-from feeluown.uimodels.collection import CollectionUiManager
+from feeluown.gui.uimodels.provider import ProviderUiManager
+from feeluown.gui.uimodels.playlist import PlaylistUiManager
+from feeluown.gui.uimodels.my_music import MyMusicUiManager
+from feeluown.gui.uimodels.collection import CollectionUiManager
 
 from feeluown.collection import CollectionManager
 
@@ -24,9 +24,8 @@ from .app import App
 class GuiApp(App, QWidget):
     def __init__(self, *args, **kwargs):
         config = args[1]
-        pkg_root_dir = os.path.dirname(__file__)
-        pkg_root_dir = os.path.join(pkg_root_dir, '..')
-        icons_dir = os.path.join(pkg_root_dir, 'icons')
+        pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
+        icons_dir = os.path.join(pkg_root_dir, 'gui/assets/icons')
         QDir.addSearchPath('icons', icons_dir)
         QGuiApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
         # Set desktopFileName so that the window icon is properly shown under wayland.

@@ -2,12 +2,12 @@ import asyncio
 import logging
 import sys
 
-from feeluown.pubsub import (
+from feeluown.server.pubsub import (
     Gateway as PubsubGateway,
     HandlerV1 as PubsubHandlerV1,
     LiveLyricPublisher
 )
-from feeluown.rpc.server import FuoServer
+from feeluown.server.rpc.server import FuoServer
 from .app import App
 
 

@@ -9,7 +9,7 @@ from feeluown.entry_points.run_app import run_app, before_start_app, start_app
 from feeluown.app import App, AppMode
 from feeluown.app.cli_app import CliApp
 from feeluown.plugin import PluginsManager
-from feeluown.uimodels.collection import CollectionUiManager
+from feeluown.gui.uimodels.collection import CollectionUiManager
 
 
 @pytest.fixture
