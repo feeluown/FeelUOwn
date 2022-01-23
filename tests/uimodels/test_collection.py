@@ -1,7 +1,7 @@
 from unittest import mock
 
 from feeluown.collection import Collection, LIBRARY_FILENAME
-from feeluown.uimodels.collection import CollectionUiManager
+from feeluown.gui.uimodels.collection import CollectionUiManager
 from feeluown.gui.widgets.collections import CollectionsModel
 
 

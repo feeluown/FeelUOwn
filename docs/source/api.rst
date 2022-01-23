@@ -74,13 +74,13 @@ GUI 相关管理模块
 .. automodule:: feeluown.gui.image
    :members:
 
-.. automodule:: feeluown.uimodels.provider
+.. automodule:: feeluown.gui.uimodels.provider
    :members:
 
-.. automodule:: feeluown.uimodels.my_music
+.. automodule:: feeluown.gui.uimodels.my_music
    :members:
 
-.. automodule:: feeluown.uimodels.playlist
+.. automodule:: feeluown.gui.uimodels.playlist
    :members:
 
 GUI 组件
