@@ -2,9 +2,8 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from fuocore.library import Library
-from fuocore import models
-from fuocore.provider import AbstractProvider
+from feeluown import models
+from feeluown.library import Library, AbstractProvider
 
 
 class FakeProvider(AbstractProvider):

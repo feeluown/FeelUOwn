@@ -1,7 +1,7 @@
 import pytest
 
 from feeluown.server.rpc.cmds.show import router
-from fuocore.provider import dummy_provider, Dummy, \
+from feeluown.library.provider import dummy_provider, Dummy, \
     DummyAlbumModel, DummyArtistModel, DummyPlaylistModel, \
     DummySongModel
 

@@ -8,7 +8,7 @@ from fuo_xiami import provider as xp
 from fuo_netease import provider as np
 
 logging.basicConfig()
-logger = logging.getLogger('fuocore')
+logger = logging.getLogger('feeluown')
 logger.setLevel(logging.DEBUG)
 
 lib = Library()

@@ -1,7 +1,7 @@
 import pytest
 from unittest import mock, TestCase
 
-from fuocore.reader import RandomReader, RandomSequentialReader, wrap
+from feeluown.utils.reader import RandomReader, RandomSequentialReader, wrap
 
 
 def test_sequential_reader():

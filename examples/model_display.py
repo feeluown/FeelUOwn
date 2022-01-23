@@ -6,7 +6,7 @@ import logging
 from fuo_netease.models import NSongModel
 
 logging.basicConfig()
-logger = logging.getLogger('fuocore')
+logger = logging.getLogger('feeluown')
 logger.setLevel(logging.DEBUG)
 
 

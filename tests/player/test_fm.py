@@ -2,8 +2,7 @@ import asyncio
 
 import pytest
 
-from fuocore.excs import ProviderIOError
-
+from feeluown.excs import ProviderIOError
 from feeluown.player import Playlist, PlaylistMode, FM
 from feeluown.task import TaskManager
 

@@ -5,10 +5,8 @@ from unittest import TestCase, skipIf, mock
 import pytest
 
 from tests.helpers import cannot_play_audio
-from fuocore.media import Media
-from fuocore.player import State
-from fuocore.playlist import Playlist, PlaybackMode  # noqa
-from fuocore.mpvplayer import MpvPlayer
+from feeluown.media import Media
+from feeluown.player import State, Playlist, PlaybackMode, Player as MpvPlayer  # noqa
 
 
 MP3_URL = os.path.join(os.path.dirname(__file__),

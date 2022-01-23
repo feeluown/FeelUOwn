@@ -1,6 +1,6 @@
 import pytest
 
-from fuocore.media import Media
+from feeluown.media import Media
 
 
 @pytest.fixture

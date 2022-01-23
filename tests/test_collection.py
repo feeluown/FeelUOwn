@@ -1,4 +1,4 @@
-from fuocore.models.uri import ResolveFailed, ResolverNotFound
+from feeluown.models.uri import ResolveFailed, ResolverNotFound
 from feeluown.collection import Collection, CollectionManager
 
 
