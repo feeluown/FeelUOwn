@@ -1,6 +1,5 @@
-from fuocore.models import BaseModel, ModelType
-from fuocore.models import resolve, Resolver, reverse
-from fuocore.provider import DummySongModel, DummyAlbumModel, DummyArtistModel
+from feeluown.models import BaseModel, ModelType, resolve, Resolver, reverse
+from feeluown.library.provider import DummySongModel, DummyAlbumModel, DummyArtistModel
 
 
 IMG_DATA = b'img data'

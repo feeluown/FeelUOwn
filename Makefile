@@ -22,7 +22,7 @@ mypy:
 	mypy --check-untyped-defs feeluown/gui/widgets/textlist.py
 
 flake8:
-	flake8 fuocore/ feeluown/ tests/
+	flake8 feeluown/ tests/
 
 # flake8 is mainly used for constrainting coding style
 # pylint is mainly used for finding obvious bugs

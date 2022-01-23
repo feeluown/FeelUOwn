@@ -1,5 +1,4 @@
-from fuocore.models import Model as Struct
-from fuocore.models import Model, ModelExistence
+from feeluown.models import Model as Struct, Model, ModelExistence
 
 
 def test_basic_usage():

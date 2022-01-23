@@ -1,6 +1,6 @@
 import pytest
 from copy import copy, deepcopy
-from fuocore.utils import DedupList
+from feeluown.utils.utils import DedupList
 
 
 class Obj:

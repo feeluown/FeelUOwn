@@ -2,8 +2,8 @@ import random
 
 import pytest
 
-from fuocore.library import Library
-from fuocore.provider import dummy_provider
+from feeluown.library import Library
+from feeluown.library.provider import dummy_provider
 from feeluown.models import SearchModel
 
 

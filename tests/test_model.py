@@ -1,7 +1,8 @@
 from collections import namedtuple
 from unittest import TestCase
 
-from fuocore.models import Model, BaseModel, display_property
+from feeluown.models import Model, BaseModel, display_property
+from feeluown.models import AlbumModel, AlbumType
 
 
 class FakeProvider:
@@ -87,3 +88,11 @@ class TestDisplayProperty(TestCase):
         a2.a_display = 'a2'
         self.assertEqual(a1.a_display, '')
         self.assertEqual(a2.a_display, 'a2')
+
+
+def test_album_model_default_type():
+    album = AlbumModel(identifier=1)
+    assert album.type == AlbumType.standard
+
+    album2 = AlbumModel.create_by_display(identifier=2)
+    assert album2.type == AlbumType.standard

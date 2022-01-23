@@ -25,7 +25,7 @@ def create_client():
 def register_dummy_provider():
     req = Request('exec', has_heredoc=True, heredoc_word='EOF')
     req.set_heredoc_body('''
-from fuocore.provider import dummy_provider
+from feeluown.library.provider import dummy_provider
 app.library.register(dummy_provider)
 ''')
     with create_client() as client:
