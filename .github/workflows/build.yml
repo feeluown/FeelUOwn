@@ -38,6 +38,7 @@ jobs:
           choco install make curl
           curl -L https://github.com/feeluown/FeelUOwn/releases/download/v3.6a0/mpv-1.dll -o C:Windows\system32\mpv-1.dll
           python -c 'import sys; print(sys.getdefaultencoding())'
+          python -c 'import locale; print(locale.getpreferredencoding(False))'
 
       - name: Install dependencies
         run: |
