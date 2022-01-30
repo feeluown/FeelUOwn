@@ -6,9 +6,9 @@ jobs:
   test:
     env:
       TEST_ENV: travis
-      # We need a encoding which can encode Chinese character
-      # while windows use cp1252 as the default encoding. For example,
-      # we have Chinese characters in feeluown help message.
+      # FeelUOwn have Chinese characters in feeluown help message.
+      # It needs an encoding which can encode Chinese character
+      # while windows use cp1252 as the default encoding.
       PYTHONIOENCODING: utf-8
 
     runs-on: ${{ matrix.os }}
@@ -41,8 +41,6 @@ jobs:
         run: |
           choco install make curl
           curl -L https://github.com/feeluown/FeelUOwn/releases/download/v3.6a0/mpv-1.dll -o C:Windows\system32\mpv-1.dll
-          python -c 'import sys; print(sys.getdefaultencoding())'
-          python -c 'import locale; print(locale.getpreferredencoding(False))'
 
       - name: Install dependencies
         run: |

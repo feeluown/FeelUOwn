@@ -42,6 +42,9 @@ def mpvplayer():
     player.volume = 0
     yield player
     player.stop()
+    # HELP: player.shutdown() causes error on Windows
+    #  Windows fatal exception: code 0xe24c4a02
+    # Ref: https://github.com/feeluown/FeelUOwn/runs/4996179558
     player.shutdown()
 
 
