@@ -6,6 +6,10 @@ jobs:
   test:
     env:
       TEST_ENV: travis
+      # We need a encoding which can encode Chinese character
+      # while windows use cp1252 as the default encoding. For example,
+      # we have Chinese characters in feeluown help message.
+      PYTHONIOENCODING: utf-8
 
     runs-on: ${{ matrix.os }}
     strategy:
