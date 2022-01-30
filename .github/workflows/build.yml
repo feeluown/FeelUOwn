@@ -25,12 +25,11 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get -y install libmpv1 python3-pyqt5 python3-pyqt5.qtopengl
+          sudo apt-get -y install libmpv1
 
       - name: Install macOS dependencies
         if: startsWith(matrix.os, 'macos')
         run: |
-          brew install pyqt
           brew install mpv
 
       - name: Install Windows dependencies
@@ -38,11 +37,11 @@ jobs:
         run: |
           choco install make curl
           curl -L https://github.com/feeluown/FeelUOwn/releases/download/v3.6a0/mpv-1.dll -o mpv-1.dll
-          pip install PyQt5
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
+          pip install pyqt5
           pip install -e .[dev]
 
       - name: Test if no syntax error
