@@ -91,10 +91,13 @@ async def start_app(args, config, sentinal=None):
     # Load last state.
     app.load_state()
 
+    def sighanlder(signum, _):
+        logger.info('Signal %d is received', signum)
+        app.exit()
+
     # Handle signals.
-    loop = asyncio.get_running_loop()
-    loop.add_signal_handler(signal.SIGTERM, app.exit)
-    loop.add_signal_handler(signal.SIGINT, app.exit)
+    signal.signal(signal.SIGTERM, sighanlder)
+    signal.signal(signal.SIGINT, sighanlder)
 
     if sentinal is None:
         sentinal: asyncio.Future = asyncio.Future()
