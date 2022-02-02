@@ -1,8 +1,10 @@
 import argparse
 import textwrap
 
+from feeluown import __version__ as feeluown_version
 
-def add_format_parser(parser: argparse.ArgumentParser):
+
+def create_fmt_parser():
     fmt_parser = argparse.ArgumentParser(add_help=False)
     fmt_parser.add_argument(
         '--format',
@@ -24,8 +26,8 @@ def add_format_parser(parser: argparse.ArgumentParser):
     return fmt_parser
 
 
-def add_rpc_parsers(subparsers: argparse._SubParsersAction,
-                    fmt_parser: argparse.ArgumentParser):
+def add_common_cmds(subparsers: argparse._SubParsersAction):
+    fmt_parser = create_fmt_parser()
     parents = [fmt_parser]
 
     # Create parsers.
@@ -87,17 +89,72 @@ def add_rpc_parsers(subparsers: argparse._SubParsersAction,
     exec_parser.add_argument('code', nargs='?', help='Python 代码')
 
 
-def add_cmd_parser(parser: argparse.ArgumentParser):
-    subparsers = parser.add_subparsers(
-        dest='cmd',
-    )
-
-    # Initialize global options.
-    fmt_parser = add_format_parser(parser)
-
+def add_cli_cmds(subparsers: argparse._SubParsersAction):
     # Generate desktop file/icon.
     subparsers.add_parser(
         'genicon',
         description='generate desktop icon'
     )
-    add_rpc_parsers(subparsers, fmt_parser)
+
+
+def add_server_cmds(subparsers: argparse._SubParsersAction):
+    fmt_parser = create_fmt_parser()
+    subparsers.add_parser(
+        'set',
+        help='设置会话参数',
+        parents=[fmt_parser],
+    )
+
+
+def create_cli_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description=textwrap.dedent('''\
+        FeelUOwn - modern music player (daemon).
+
+        Example:
+            - fuo                        # start fuo server
+            - fuo status                 # lookup server status
+            - fuo play 晴天-周杰伦       # search and play
+        '''),
+        formatter_class=argparse.RawTextHelpFormatter,
+        prog='feeluown')
+
+    parser.add_argument('-V', '--version', action='version',
+                        version='%(prog)s {}'.format(feeluown_version))
+    parser.add_argument('-ns', '--no-server', action='store_true', default=False,
+                        help='不运行 server')
+    parser.add_argument('-nw', '--no-window', action='store_true', default=False,
+                        help='不显示 GUI')
+
+    # options about log
+    parser.add_argument('-d', '--debug', action='store_true', default=False,
+                        help='开启调试模式')
+    parser.add_argument('-v', '--verbose', action='count',
+                        help='输出详细的日志')
+    parser.add_argument('--log-to-file', action='store_true', default=False,
+                        help='将日志打到文件中')
+
+    # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
+    # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
+
+    # TODO: 需要在文档中给出如何查看有哪些播放设备的方法
+    parser.add_argument(
+        '--mpv-audio-device', help='（高级选项）指定播放设备')
+
+    subparsers = parser.add_subparsers(
+        dest='cmd',
+    )
+
+    add_cli_cmds(subparsers)
+    add_common_cmds(subparsers)
+    return parser
+
+
+def create_dsl_parser():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(
+        dest='cmd',
+    )
+    add_common_cmds(subparsers)
+    add_server_cmds(subparsers)
+    return parser

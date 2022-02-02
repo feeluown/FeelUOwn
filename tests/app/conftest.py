@@ -1,7 +1,7 @@
-import argparse
 import pytest
 
-from feeluown.app import init_args_parser, create_config
+from feeluown.argparse import create_cli_parser
+from feeluown.app import create_config
 from feeluown.plugin import PluginsManager
 from feeluown.gui.uimodels.collection import CollectionUiManager
 from feeluown.utils.dispatch import Signal
@@ -17,18 +17,13 @@ async def signal_aio_support():
 
 @pytest.fixture
 def argsparser():
-    parser = argparse.ArgumentParser()
-    init_args_parser(parser)
-
-    # Simulate cli subparser.
-    subparsers = parser.add_subparsers(dest='cmd')
-    subparsers.add_parser('test')
+    parser = create_cli_parser()
     return parser
 
 
 @pytest.fixture
 def args_test(argsparser):
-    return argsparser.parse_args(args=['test'])
+    return argsparser.parse_args(args=[])
 
 
 @pytest.fixture

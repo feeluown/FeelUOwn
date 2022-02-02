@@ -9,8 +9,8 @@ except ImportError:
     pass
 
 # pylint: disable=wrong-import-position
+from feeluown.argparse import create_cli_parser  # noqa: E402
 from feeluown.utils.utils import is_port_inuse  # noqa: E402
-from .base import setup_argparse  # noqa: E402
 from .run_cli import run_cli  # noqa: E402
 from .run_app import run_app  # noqa: E402
 
@@ -19,7 +19,7 @@ def run():
     """feeluown entry point.
     """
 
-    args = setup_argparse().parse_args()
+    args = create_cli_parser().parse_args()
 
     if args.cmd is not None:  # Only need to run some commands.
         if args.cmd == 'genicon':

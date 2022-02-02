@@ -1,13 +1,10 @@
-import argparse
-import textwrap
 import logging
 import os
 import sys
 import warnings
 
 from feeluown import logger_config
-from feeluown.app import App, init_args_parser as app_init_args_parser
-from feeluown.cli import init_args_parser as cli_init_args_parser
+from feeluown.app import App
 from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
@@ -26,23 +23,6 @@ def ensure_dirs():
               COLLECTIONS_DIR):
         if not os.path.exists(d):
             os.mkdir(d)
-
-
-def setup_argparse():
-    parser = argparse.ArgumentParser(
-        description=textwrap.dedent('''\
-        FeelUOwn - modern music player (daemon).
-
-        Example:
-            - fuo                        # start fuo server
-            - fuo status                 # lookup server status
-            - fuo play 晴天-周杰伦       # search and play
-        '''),
-        formatter_class=argparse.RawTextHelpFormatter,
-        prog='feeluown')
-    app_init_args_parser(parser)
-    cli_init_args_parser(parser)
-    return parser
 
 
 def setup_config(args, config):

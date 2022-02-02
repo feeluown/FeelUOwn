@@ -1,17 +1,8 @@
-import argparse
-
-import pytest
-
-from feeluown.argparse import add_cmd_parser
+from feeluown.argparse import create_dsl_parser
 
 
-@pytest.fixture
-def parser():
-    return argparse.ArgumentParser()
-
-
-def test_rpc_parsers(parser: argparse.ArgumentParser):
-    add_cmd_parser(parser)
+def test_dsl_parsers():
+    parser = create_dsl_parser()
 
     # Test play parser.
     argv = ['play', 'fuo://xxx']
@@ -36,19 +27,3 @@ def test_rpc_parsers(parser: argparse.ArgumentParser):
     argv = ['search', 'zjl', '-t', 'xx']
     args, remain = parser.parse_known_args(argv)
     assert remain == argv[-2:]
-
-
-#def test_tokenize():
-#    tokens = tokenize('search zjl -s=xx')
-#    assert tokens == ['search', 'zjl', '-s=xx']
-#
-#
-#def test_tokenize_unquoted_source():
-#    with pytest.raises(DSLSyntaxError):
-#        tokenize("search zjl -s='xx")
-#
-#
-#def test_tokenize_source_with_heredoc():
-#    with pytest.raises(DSLSyntaxError):
-#        print(tokenize("search zjl -s='xx\n'\nx"))
-#

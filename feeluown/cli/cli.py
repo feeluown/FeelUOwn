@@ -5,7 +5,6 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from feeluown.consts import CACHE_DIR
-from feeluown.argparse import add_cmd_parser
 from feeluown.library import fmt_artists_names
 from feeluown.server.rpc import Request, Response
 from feeluown.server.rpc.server import handle_request
@@ -19,10 +18,6 @@ def print_error(*args, **kwargs):
     print('\033[0;31m', end='')
     print(*args, **kwargs)
     print('\033[0m', end='')
-
-
-def init_args_parser(parser):
-    add_cmd_parser(parser)
 
 
 cmd_handler_mapping = {}
