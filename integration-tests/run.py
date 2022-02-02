@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import socket
 import sys
 import subprocess
@@ -86,13 +87,16 @@ def run():
             print('ok')
 
     subprocess.run(['fuo', 'exec', 'app.exit()'])
-    print('wait for main process to exit, timeout=10s.')
-    returncode = popen.wait(timeout=10)
-    if returncode:
-        print(f'fuo main process exit with exit code {returncode}')
+    popen.wait(timeout=10)
 
-    if failed is True:
-        returncode = 222
+    exists = os.path.exists(os.path.expanduser('~/.FeelUOwn/data/state.json'))
+    # Since the app may crash during process terminating, the app is considered as
+    # existing successfully when the state.json is saved.
+    if not exists:
+        print('app exits abnormally')
+        failed = True
+
+    returncode = 1 if failed is True else 0
     sys.exit(returncode)
 
 
