@@ -86,7 +86,7 @@ def run():
             print('ok')
 
     subprocess.run(['fuo', 'exec', 'app.exit()'])
-    returncode = popen.wait(timeout=3)
+    returncode = popen.wait(timeout=2)
     if returncode:
         print(f'fuo main process exit with exit code {returncode}')
 
