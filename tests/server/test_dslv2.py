@@ -48,3 +48,6 @@ def test_parse_with_invalid_iohere_token():
 
     with pytest.raises(FuoSyntaxError):
         Parser("exec <<<EOF").parse()
+
+    with pytest.raises(FuoSyntaxError):
+        Parser("search EOF >").parse()
