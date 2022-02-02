@@ -2,12 +2,12 @@ import argparse
 
 import pytest
 
-from feeluown.dsl import add_cmd_parser, tokenize
+from feeluown.dsl import add_cmd_parser, tokenize, DSLSyntaxError
 
 
 @pytest.fixture
 def parser():
-    return argparse.ArgumentParser(exit_on_error=False)
+    return argparse.ArgumentParser()
 
 
 def test_rpc_parsers(parser: argparse.ArgumentParser):
@@ -41,3 +41,13 @@ def test_rpc_parsers(parser: argparse.ArgumentParser):
 def test_tokenize():
     tokens = tokenize('search zjl -s=xx')
     assert tokens == ['search', 'zjl', '-s=xx']
+
+
+def test_tokenize_unquoted_source():
+    with pytest.raises(DSLSyntaxError):
+        tokenize("search zjl -s='xx")
+
+
+def test_tokenize_source_with_heredoc():
+    with pytest.raises(DSLSyntaxError):
+        print(tokenize("search zjl -s='xx\n'\nx"))
