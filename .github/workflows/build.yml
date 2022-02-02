@@ -56,9 +56,6 @@ jobs:
           make test
 
       - name: Integration Test
-        # HELP: The integration tests always fails on windows due to the app exit
-        # with non-zero status code. https://github.com/feeluown/FeelUOwn/runs/5035911202
-        if: matrix.os != 'windows-latest'
         run: |
           make integration_test
 
