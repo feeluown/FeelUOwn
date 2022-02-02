@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import json
+import os
 import socket
 import sys
 import subprocess
@@ -51,7 +52,8 @@ def test_show_providers_with_json_format():
 
 
 def test_cmd_options():
-    subprocess.run(['fuo', 'search', 'xx', 'type=album,source=xx'])
+    p = subprocess.run(['fuo', 'search', 'xx', '--type=album', '--source=dummy'])
+    assert p.returncode == 0
 
 
 def test_sub_live_lyric():
@@ -72,6 +74,7 @@ def run():
     time.sleep(5)  # wait for fuo starting
     register_dummy_provider()
 
+    failed = False
     for case in collect():
         print('{}...'.format(case.__name__), end='')
         try:
@@ -79,11 +82,21 @@ def run():
         except Exception as e:  # noqa
             print('failed')
             traceback.print_exc()
+            failed = True
         else:
             print('ok')
 
     subprocess.run(['fuo', 'exec', 'app.exit()'])
-    returncode = popen.wait(timeout=2)
+    popen.wait(timeout=10)
+
+    exists = os.path.exists(os.path.expanduser('~/.FeelUOwn/data/state.json'))
+    # Since the app may crash during process terminating, the app is considered as
+    # existing successfully when the state.json is saved.
+    if not exists:
+        print('app exits abnormally')
+        failed = True
+
+    returncode = 1 if failed is True else 0
     sys.exit(returncode)
 
 

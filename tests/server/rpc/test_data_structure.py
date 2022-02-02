@@ -1,4 +1,4 @@
-from feeluown.server.rpc.data_structure import Request
+from feeluown.server.data_structure import Request
 
 
 def test_request():

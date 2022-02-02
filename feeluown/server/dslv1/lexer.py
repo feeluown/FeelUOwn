@@ -2,7 +2,7 @@ import re
 import sys
 from collections import namedtuple, deque
 
-from .excs import FuoSyntaxError
+from feeluown.server.excs import FuoSyntaxError
 
 
 # 注：下面很多正则都是从 jinja2/lexer.py 和 pygments/lexer.py 拷贝过来

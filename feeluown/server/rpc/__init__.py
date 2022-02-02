@@ -1,16 +1,13 @@
+from feeluown.server.excs import FuoSyntaxError
+from feeluown.server.data_structure import Request, Response
+from feeluown.server.dslv1.lexer import Lexer
+from feeluown.server.dslv1.parser import Parser
 from .server_protocol import FuoServerProtocol
-from .lexer import Lexer
-from .parser import Parser
-from .excs import FuoSyntaxError
-from .data_structure import Request, Response
 
 
 __all__ = (
     'reverse',
     'FuoServerProtocol',
-
-    'Lexer',
-    'Parser',
 
     # exceptions
     'FuoSyntaxError',
@@ -18,4 +15,8 @@ __all__ = (
     # data structure
     'Request',
     'Response',
+
+    # For compatibility.
+    'Lexer',
+    'Parser',
 )

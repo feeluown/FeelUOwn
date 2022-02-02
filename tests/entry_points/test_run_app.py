@@ -4,7 +4,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
-from feeluown.entry_points.base import setup_argparse
+from feeluown.argparse import create_cli_parser
 from feeluown.entry_points.run_app import run_app, before_start_app, start_app
 from feeluown.app import App, AppMode
 from feeluown.app.cli_app import CliApp
@@ -38,7 +38,7 @@ def noharm(mocker):
 
 @pytest.fixture
 def argsparser():
-    return setup_argparse()
+    return create_cli_parser()
 
 
 def test_before_start_app_with_default_args(argsparser, mocker, noharm):
