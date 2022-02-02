@@ -1,9 +1,9 @@
 import asyncio
 import logging
 
-from .parser import Parser
-from .excs import FuoSyntaxError
-from .data_structure import Response
+from feeluown.server.dslv1.parser import Parser
+from feeluown.server.excs import FuoSyntaxError
+from feeluown.server.data_structure import Response
 
 
 logger = logging.getLogger(__name__)

@@ -5,7 +5,7 @@ from contextlib import contextmanager
 from socket import socket, AF_INET, SOCK_STREAM
 
 from feeluown.consts import CACHE_DIR
-from feeluown.dsl import add_cmd_parser
+from feeluown.argparse import add_cmd_parser
 from feeluown.library import fmt_artists_names
 from feeluown.server.rpc import Request, Response
 from feeluown.server.rpc.server import handle_request

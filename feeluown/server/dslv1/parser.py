@@ -35,7 +35,8 @@ parse tree::
                                    'linkin park'
 """
 
-from .excs import FuoSyntaxError
+from feeluown.server.excs import FuoSyntaxError
+from feeluown.server.data_structure import Request
 from .lexer import Lexer
 from .lexer import (
     TOKEN_NAME, TOKEN_FURI, TOKEN_STRING, TOKEN_UNQUOTE_STRING,
@@ -43,7 +44,6 @@ from .lexer import (
     TOKEN_LBRACKET, TOKEN_RBRACKET, TOKEN_EQ, TOKEN_REQ_DELIMETER,
     TOKEN_HEREDOC_OP, TOKEN_HEREDOC_WORD,
 )
-from .data_structure import Request
 
 
 class _EOF(Exception):

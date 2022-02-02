@@ -7,7 +7,7 @@ docs:
 	cd docs && make html
 
 pylint:
-	pylint feeluown/gui/pages/ feeluown/fuoexec feeluown/dsl.py
+	pylint feeluown/gui/pages/ feeluown/fuoexec
 
 
 MYPY_PKGS=
@@ -15,7 +15,6 @@ MYPY_PKGS+=feeluown/library/
 MYPY_PKGS+=feeluown/player/
 MYPY_PKGS+=feeluown/app/
 MYPY_PKGS+=feeluown/entry_points/
-MYPY_PKGS+=feeluown/dsl.py
 
 mypy:
 # Add flag --check-untyped-defs.

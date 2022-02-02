@@ -1,28 +1,5 @@
-"""
-feeluown.dsl
-~~~~~~~~~~~~
-
-The DSL is used for RPC and resource definition. The syntax of the DSL is same
-as UNIX shell.
-
->>> parser = argparse.ArgumentParser()
->>> add_cmd_parser(parser)
->>> tokens = tokenize('search jaychou -s=xx')
->>> args = parser.parse_args(tokens)
->>> args.cmd, args.source, args.keyword
-('search', ['xx'], 'jaychou')
-
-"""
-
-import shlex
 import argparse
 import textwrap
-
-
-def tokenize(source):
-    s = shlex.shlex(source, punctuation_chars=True, posix=True)
-    s.whitespace_split = True
-    return list(s)
 
 
 def add_format_parser(parser: argparse.ArgumentParser):
