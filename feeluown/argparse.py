@@ -1,5 +1,6 @@
 import argparse
 import textwrap
+from functools import partial
 
 from feeluown import __version__ as feeluown_version
 
@@ -30,9 +31,11 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
     fmt_parser = create_fmt_parser()
     parents = [fmt_parser]
 
+    add_parser = partial(subparsers.add_parser, parents=parents)
+
     # Create parsers.
     #
-    play_parser = subparsers.add_parser(
+    play_parser = add_parser(
         'play',
         description=textwrap.dedent('''\
         Example:
@@ -42,12 +45,11 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
         '''),
         formatter_class=argparse.RawTextHelpFormatter,
     )
-    show_parser = subparsers.add_parser(
+    show_parser = add_parser(
         'show',
         help='显示资源详细信息',
-        parents=parents,
     )
-    search_parser = subparsers.add_parser(
+    search_parser = add_parser(
         'search',
         description=textwrap.dedent('''\
         Example:
@@ -60,25 +62,25 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
         formatter_class=argparse.RawTextHelpFormatter,
         parents=parents,
     )
-    remove_parser = subparsers.add_parser('remove', help='从播放列表移除歌曲')
-    add_parser = subparsers.add_parser('add', help='添加歌曲到播放列表')
-    exec_parser = subparsers.add_parser('exec')
-    subparsers.add_parser('pause', help='暂停播放')
-    subparsers.add_parser('resume', help='回复播放')
-    subparsers.add_parser('toggle', help='')
-    subparsers.add_parser('stop')
-    subparsers.add_parser('next')
-    subparsers.add_parser('previous')
-    subparsers.add_parser('list', parents=parents)
-    subparsers.add_parser('clear')
-    subparsers.add_parser('status', parents=parents)
+    remove_parser = add_parser('remove', help='从播放列表移除歌曲')
+    add_parser_ = add_parser('add', help='添加歌曲到播放列表')
+    exec_parser = add_parser('exec')
+    add_parser('pause', help='暂停播放')
+    add_parser('resume', help='回复播放')
+    add_parser('toggle', help='')
+    add_parser('stop')
+    add_parser('next')
+    add_parser('previous')
+    add_parser('list')
+    add_parser('clear')
+    add_parser('status')
 
     # Initialize parsers.
     #
     play_parser.add_argument('uri')
     show_parser.add_argument('uri')
     remove_parser.add_argument('uri')
-    add_parser.add_argument('uri', nargs='?')
+    add_parser_.add_argument('uri', nargs='?')
     search_parser.add_argument('keyword', help='搜索关键字')
     search_parser.add_argument('-s', '--source', action='append')
     search_parser.add_argument(
@@ -99,14 +101,22 @@ def add_cli_cmds(subparsers: argparse._SubParsersAction):
 
 def add_server_cmds(subparsers: argparse._SubParsersAction):
     fmt_parser = create_fmt_parser()
-    subparsers.add_parser(
+    set_parser = subparsers.add_parser(
         'set',
         help='设置会话参数',
         parents=[fmt_parser],
     )
+    set_parser.add_argument(
+        '-ns', '--no-server', action='store_true', default=False,
+        )
+    set_parser.add_argument(
+        '--version',
+        type=str,
+        choices=['1.0', '2.0'],
+    )
 
 
-def create_cli_parser() -> argparse.ArgumentParser:
+def _create_cli_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description=textwrap.dedent('''\
         FeelUOwn - modern music player (daemon).
@@ -140,13 +150,17 @@ def create_cli_parser() -> argparse.ArgumentParser:
     # TODO: 需要在文档中给出如何查看有哪些播放设备的方法
     parser.add_argument(
         '--mpv-audio-device', help='（高级选项）指定播放设备')
+    return parser
 
+
+def create_cli_parser() -> argparse.ArgumentParser:
+    parser = _create_cli_parser()
     subparsers = parser.add_subparsers(
         dest='cmd',
     )
 
-    add_cli_cmds(subparsers)
     add_common_cmds(subparsers)
+    add_cli_cmds(subparsers)
     return parser
 
 
