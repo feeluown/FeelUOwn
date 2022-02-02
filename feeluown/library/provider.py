@@ -116,7 +116,7 @@ class DummyProvider(AbstractProvider):
     def name(self):
         return 'Dummy'
 
-    def search(self, *args):
+    def search(self, *args, **kwargs):
         return DummySearchModel(
             q=Dummy,
             songs=[DummySongModel.get(Dummy)],

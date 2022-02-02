@@ -107,16 +107,18 @@ class HandlerWithWriteListCache(BaseHandler):
 
     def before_request(self):
         cmd = self.args.cmd
+        # Search
         if cmd == 'search':
             self._req.cmd_args = (self.args.keyword, )
-            options_str = self.args.options or ''
-            if options_str:
-                option_kv_list = options_str.split(',')
-            else:
-                option_kv_list = []
-            for option_kv in option_kv_list:
-                k, v = option_kv.split('=')
-                self._req.cmd_options[k] = v
+            source = self.args.source
+            type_ = self.args.type
+            cmd_options = {}
+            if source:
+                # FIXME: v1 does not accept list.
+                cmd_options['source'] = source[0]
+            if type_:
+                cmd_options['type'] = type_
+            self._req.cmd_options = cmd_options
 
     def process_resp(self, resp):
         if resp.code != 'OK' or not resp.text:

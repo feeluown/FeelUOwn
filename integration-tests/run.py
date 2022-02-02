@@ -51,7 +51,8 @@ def test_show_providers_with_json_format():
 
 
 def test_cmd_options():
-    subprocess.run(['fuo', 'search', 'xx', 'type=album,source=xx'])
+    p = subprocess.run(['fuo', 'search', 'xx', '--type=album', '--source=dummy'])
+    assert p.returncode == 0
 
 
 def test_sub_live_lyric():
@@ -72,6 +73,7 @@ def run():
     time.sleep(5)  # wait for fuo starting
     register_dummy_provider()
 
+    failed = False
     for case in collect():
         print('{}...'.format(case.__name__), end='')
         try:
@@ -79,11 +81,15 @@ def run():
         except Exception as e:  # noqa
             print('failed')
             traceback.print_exc()
+            failed = True
         else:
             print('ok')
 
     subprocess.run(['fuo', 'exec', 'app.exit()'])
     returncode = popen.wait(timeout=2)
+
+    if failed is True:
+        returncode = 1
     sys.exit(returncode)
 
 

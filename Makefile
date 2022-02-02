@@ -34,6 +34,7 @@ unittest: pytest
 pytest:
 	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -v
 
+integration_test: export QT_QPA_PLATFORM=offscreen
 integration_test:
 	./integration-tests/run.py
 

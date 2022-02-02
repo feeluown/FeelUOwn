@@ -54,6 +54,7 @@ jobs:
       - name: Test
         run: |
           make test
+          make integration_test
 
       - name: Coveralls
         if: matrix.os == 'ubuntu-latest' && matrix.python == '3.8' && github.repository == 'feeluown/FeelUOwn'
