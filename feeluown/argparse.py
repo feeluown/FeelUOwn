@@ -107,12 +107,34 @@ def add_server_cmds(subparsers: argparse._SubParsersAction):
         parents=[fmt_parser],
     )
     set_parser.add_argument(
-        '-ns', '--no-server', action='store_true', default=False,
-        )
+        '--version',
+        type=str,
+        choices=['1.0', '2.0'],
+    )
+
+
+def add_pubsub_cmds(subparsers: argparse._SubParsersAction):
+    fmt_parser = create_fmt_parser()
+    set_parser = subparsers.add_parser(
+        'set',
+        help='设置会话参数',
+        parents=[fmt_parser],
+    )
     set_parser.add_argument(
         '--version',
         type=str,
         choices=['1.0', '2.0'],
+    )
+
+    sub_parser = subparsers.add_parser(
+        'sub',
+        help='订阅主题消息',
+        parents=[fmt_parser],
+    )
+    sub_parser.add_argument(
+        'topics',
+        nargs='?',
+        help='主题名字',
     )
 
 
@@ -164,11 +186,15 @@ def create_cli_parser() -> argparse.ArgumentParser:
     return parser
 
 
-def create_dsl_parser():
+def create_dsl_parser(parser_cls=None):
+    """
+    FIXME: rename to create_rpc_parser
+    """
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
         dest='cmd',
     )
     add_common_cmds(subparsers)
     add_server_cmds(subparsers)
+    add_pubsub_cmds(subparsers)
     return parser

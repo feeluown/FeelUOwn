@@ -1,5 +1,6 @@
 from collections import defaultdict
 from difflib import SequenceMatcher
+from typing import Any
 
 from feeluown.models.uri import resolve
 from .base import AbstractHandler
@@ -56,7 +57,7 @@ class PlayerHandler(AbstractHandler):
             return self.player.play(s, video=False)
 
         # 取每个提供方的第一个搜索结果
-        source_song_map = defaultdict()
+        source_song_map: Any = defaultdict()
         for result in self.library.search(s):
             for song in result.songs:
                 if song.source in source_song_map:

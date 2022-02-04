@@ -3,7 +3,7 @@ from unittest import mock, TestCase
 
 import pytest
 
-from feeluown.server.rpc import FuoServerProtocol
+from feeluown.server import FuoServerProtocol
 
 
 async def coro():

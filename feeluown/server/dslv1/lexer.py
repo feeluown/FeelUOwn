@@ -1,6 +1,7 @@
 import re
 import sys
 from collections import namedtuple, deque
+from typing import Deque, Any
 
 from feeluown.server.excs import FuoSyntaxError
 
@@ -107,7 +108,7 @@ class Lexer:
         # 栈是 lexer 实现时常用的一个数据结构
         # 在处理括号是否闭合等场景十分有用，很多 lexer
         # 实现时会给 token 带上 #pop 标记，这个标记也是用来配合栈的
-        state_stack = deque()
+        state_stack: Deque[str] = deque()
         state = 'root'
         while 1:
             for rule in state_rules[state]:
@@ -115,7 +116,7 @@ class Lexer:
                 m = regex.match(source, pos)
                 if m is None:
                     continue
-                value = m.group()
+                value: Any = m.group()
                 if type_ == TOKEN_STRING:
                     value = value[1:-1]
                 elif type_ == TOKEN_INTEGER:
@@ -139,7 +140,7 @@ class Lexer:
                     state = state_stack.pop()
                 elif type_ == TOKEN_HEREDOC_OP:
                     if state not in ('root', 'req'):
-                        err("unexpected token '<<' at pos %d" % pos)
+                        err("unexpected token '<<' at pos %d" % pos, pos)
                     state = 'heredoc'
                 if token.type_ != TOKEN_WHITESPACE:
                     yield token

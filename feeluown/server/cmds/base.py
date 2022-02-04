@@ -1,3 +1,6 @@
+from typing import Any
+
+
 cmd_handler_mapping = {}
 
 
@@ -15,12 +18,18 @@ class HandlerMeta(type):
 
 
 class AbstractHandler(metaclass=HandlerMeta):
-    def __init__(self, app, library, player, playlist, live_lyric):
+    def __init__(self, app, session: Any):
+        """
+        暂时不确定 session 应该设计为什么样的结构。当前主要是为了将它看作一个
+        subscriber。
+        """
         self._app = app
-        self.library = library
-        self.player = player
-        self.playlist = playlist
-        self.live_lyric = live_lyric
+        self.session = session
+
+        self.library = app.library
+        self.player = app.player
+        self.playlist = app.playlist
+        self.live_lyric = app.live_lyric
 
     def handle(self, cmd):
         raise NotImplementedError

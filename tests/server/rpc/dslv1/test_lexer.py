@@ -1,6 +1,7 @@
 from unittest import TestCase
 
-from feeluown.server.rpc import Lexer, FuoSyntaxError
+from feeluown.server.dslv1 import Lexer
+from feeluown.server.excs import FuoSyntaxError
 
 
 lexer = Lexer()

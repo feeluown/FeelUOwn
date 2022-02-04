@@ -1,9 +1,8 @@
-from .pubsub import Gateway, HandlerV1
+from .gateway import Gateway
 from .publishers import LiveLyricPublisher
 
 
 __all__ = (
     'Gateway',
-    'HandlerV1',
     'LiveLyricPublisher',
 )

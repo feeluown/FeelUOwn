@@ -1,19 +1,37 @@
 import asyncio
 import logging
+from enum import Enum
+from typing import Optional
 
-from feeluown.server.dslv1.parser import Parser
-from feeluown.server.excs import FuoSyntaxError
-from feeluown.server.data_structure import Response
-
+from .data_structure import Response
+from .dslv2 import Parser
+from .excs import FuoSyntaxError
 
 logger = logging.getLogger(__name__)
+
+
+class ProtocolType(Enum):
+    rpc = 'rpc'
+    pubsub = 'pubsub'
 
 
 class RequestError(Exception):
     pass
 
 
-async def read_request(reader):
+class DeadSubscriber(Exception):
+    pass
+
+
+def encode(s):
+    return bytes(s, 'utf-8')
+
+
+def decode(b):
+    return b.decode('utf-8')
+
+
+async def read_request(reader, parser_cls):
     """读取一个请求
 
     读取成功时，返回 Request 对象，如果读取失败（比如客户端关闭连接），
@@ -32,7 +50,7 @@ async def read_request(reader):
         return 0
     req = None
     try:
-        req = Parser(line_text).parse()
+        req = parser_cls(line_text).parse()
     except FuoSyntaxError as e:
         raise RequestError(e.human_readabe_msg) from e
     else:
@@ -74,32 +92,50 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
 
         # StreamReader provides some convinient file-object-like methods
         # like readline, which is really useful for our implementation.
-        self._reader = None  # type: asyncio.StreamReader
-        self._writer = None
+        self._reader: Optional[asyncio.StreamReader] = None
+        self._writer: Optional[asyncio.StreamWriter] = None
 
         self._peername = None
 
+    #
+    # writer and reader property can only be used after connection is made.
+    #
+    @property
+    def writer(self):
+        assert self._writer is not None
+        return self._writer
+
+    @property
+    def reader(self):
+        assert self._reader is not None
+        return self._reader
+
     async def read_request(self):
-        return await read_request(self._reader)
+        return await read_request(self.reader, Parser)
+
+    async def write_welcome(self):
+        # TODO: use feeluown version.
+        self.writer.write(b'OK fuo 3.0\r\n')
 
     async def write_response(self, resp):
         # TODO: 区分客户端和服务端错误（比如客户端错误后面加 ! 标记）
         msg_bytes = bytes(resp.text, 'utf-8')
         response_line = ('ACK {} {}\r\n'
                          .format(resp.code, len(msg_bytes)))
-        self._writer.write(bytes(response_line, 'utf-8'))
-        self._writer.write(msg_bytes)
-        self._writer.write(b'\r\n')
-        await self._writer.drain()
+        self.writer.write(bytes(response_line, 'utf-8'))
+        self.writer.write(msg_bytes)
+        self.writer.write(b'\r\n')
+        await self.writer.drain()
 
     async def start(self):
         """connection handler"""
         # we should call drain after each write to do flow control,
         # though it is not so important in this case.
         try:
-            self._writer.write(b'OK fuo 3.0\r\n')
-            await self._writer.drain()
-            while not self._connection_lost:
+            await self.write_welcome()
+            await self.writer.drain()
+            # HELP: static checker say there is no attribute "_connection_lost".
+            while not self._connection_lost:  # type: ignore
                 try:
                     req = await self.read_request()
                 except RequestError as e:
@@ -119,10 +155,10 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                     # 用户想在读取完一个 fuo 响应后断开。
                     if req.cmd == 'quit':
                         # FIXME: 理论上最好能等待 close 结束
-                        self._writer.close()
+                        self.writer.close()
                     else:
                         try:
-                            resp = self._handle_req(req)
+                            resp = self._handle_req(req, self)
                         except Exception as e:
                             msg = f'server error!\r\n{repr(e)}'
                             resp = Response(ok=False, text=msg, req=req)
@@ -162,7 +198,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         logger.debug('%s disconnceted from fuo daemon.', self._peername)
 
     def data_received(self, data):
-        self._reader.feed_data(data)
+        self.reader.feed_data(data)
 
     def eof_received(self):
         """client has written eof
@@ -176,3 +212,31 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         send no data any more, even if the last response may not complete.
         """
         return False
+
+
+class PubsubProtocol(FuoServerProtocol):
+    def __init__(self, handle_req, loop):
+        super().__init__(handle_req, loop)
+
+    async def write_welcome(self):
+        self.writer.write(b'OK pubsub 3.0\r\n')
+
+    def write_topic_msg(self, topic, msg, version='1.0'):
+        """
+        TODO: Create a enum for version.
+        """
+        if self.writer.is_closing():
+            raise DeadSubscriber
+
+        body = encode(msg)
+        try:
+            if version >= '2.0':
+                response_line = f'MSG {topic} {len(body)}\r\n'
+                self.writer.write(encode(response_line))
+                self.writer.write(body)
+                self.writer.write(b'\r\n')
+            else:
+                self.writer.write(body)
+        except BrokenPipeError:
+            # What's happening?
+            raise DeadSubscriber

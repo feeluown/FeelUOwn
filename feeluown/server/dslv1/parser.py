@@ -35,6 +35,8 @@ parse tree::
                                    'linkin park'
 """
 
+from typing import Any
+
 from feeluown.server.excs import FuoSyntaxError
 from feeluown.server.data_structure import Request
 from .lexer import Lexer
@@ -61,7 +63,7 @@ class Parser:
         self._source = source
 
         self._end_column = len(self._source) - 1
-        self._current_token = None  # one lookahead token
+        self._current_token: Any = None  # one lookahead token
 
     def parse(self):
         cmd = self._parse_cmd()

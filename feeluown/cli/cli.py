@@ -6,8 +6,8 @@ from socket import socket, AF_INET, SOCK_STREAM
 
 from feeluown.consts import CACHE_DIR
 from feeluown.library import fmt_artists_names
-from feeluown.server.rpc import Request, Response
-from feeluown.server.rpc.server import handle_request
+from feeluown.server import Request, Response
+from feeluown.server.server import handle_request
 from feeluown.utils import aio
 
 
