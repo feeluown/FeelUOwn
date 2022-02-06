@@ -25,7 +25,7 @@ def tokenize(source):
     try:
         tokens = list(s)
     except ValueError as e:
-        raise FuoSyntaxError(str(e))
+        raise FuoSyntaxError(str(e)) from None
     else:
         if s.lineno >= 2:
             raise FuoSyntaxError("source must be only one line")
@@ -47,6 +47,7 @@ class _Parser:
 
         argparse have little public methods, so some protected methods are used.
         """
+        # pylint: disable=too-many-locals,protected-access,too-many-branches
         parser: argparse.ArgumentParser = self.argparser_factory()
         parser.error = argparser_error  # type: ignore
         tokens = tokenize(self._source)
@@ -114,3 +115,7 @@ class _Parser:
 class Parser(_Parser):
     def __init__(self, source):
         super().__init__(source, create_dsl_parser, [create_fmt_parser()])
+
+
+def unparse(request: Request):
+    pass

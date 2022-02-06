@@ -8,7 +8,6 @@ from .protocol import ProtocolType
 
 
 __all__ = (
-    'reverse',
     'FuoServer',
     'FuoServerProtocol',
 

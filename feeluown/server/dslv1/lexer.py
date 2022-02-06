@@ -84,7 +84,7 @@ state_rules = {
 def get_state_expect(state):
     if state == 'bracket':
         return ']'
-    raise ValueError('state: %s has no need' % str(state))
+    raise ValueError(f'state: {str(state)} has no need')
 
 
 class Lexer:
@@ -100,7 +100,7 @@ class Lexer:
     ['search', '哈哈', '[', 'artist', '=', '喵', ']', '#:', 'less']
     """
 
-    def tokenize(self, source):
+    def tokenize(self, source):  # pylint: disable=too-many-arguments,too-many-branches
         def err(msg, column):
             raise FuoSyntaxError(msg, text=source, column=column)
 
@@ -131,16 +131,16 @@ class Lexer:
                 elif type_ == TOKEN_REQ_DELIMETER:
                     if state != 'root':
                         expect = get_state_expect(state)
-                        err("expected token '%s' at pos %d" % (expect, pos), pos)
+                        err(f"expected token '{expect}' at pos {pos}", pos)
                     state_stack.append(state)
                     state = 'req'
                 elif type_ == TOKEN_RBRACKET:
                     if state != 'bracket':
-                        err("unexpected token ']' at pos %d" % pos, pos)
+                        err(f"unexpected token ']' at pos {pos}", pos)
                     state = state_stack.pop()
                 elif type_ == TOKEN_HEREDOC_OP:
                     if state not in ('root', 'req'):
-                        err("unexpected token '<<' at pos %d" % pos, pos)
+                        err(f"unexpected token '<<' at pos {pos}", pos)
                     state = 'heredoc'
                 if token.type_ != TOKEN_WHITESPACE:
                     yield token
@@ -150,8 +150,8 @@ class Lexer:
                 if pos == len(source):
                     if state not in ('root', 'req', 'heredoc'):
                         expect = get_state_expect(state)
-                        err("expected token '%s', but end of line reached" % expect, pos)
+                        err(f"expected token '{expect}', but end of line reached", pos)
                     else:
                         break
                 else:
-                    err("unexpected token '%s' at pos %d" % (source[pos], pos), pos)
+                    err(f"unexpected token '{source[pos]}' at pos {pos}", pos)

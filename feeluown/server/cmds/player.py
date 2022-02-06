@@ -31,7 +31,8 @@ def repr_song(song):
 class PlayerHandler(AbstractHandler):
     cmds = ('play', 'pause', 'stop', 'resume', 'toggle', )
 
-    def handle(self, cmd):
+    def handle(self, cmd):  # pylint: disable=inconsistent-return-statements
+        # pylint: disable=no-else-return
         # TODO: 支持设置是否显示视频
         if cmd.action == 'play':
             s = ' '.join(cmd.args)
@@ -46,7 +47,8 @@ class PlayerHandler(AbstractHandler):
         elif cmd.action == 'toggle':
             self.player.toggle()
 
-    def play(self, s):
+    def play(self, s):  # pylint: disable=inconsistent-return-statements
+        # pylint: disable=no-else-return
         if s.startswith('fuo://'):
             model = resolve(s)
             if model is None:
@@ -68,7 +70,7 @@ class PlayerHandler(AbstractHandler):
         if songs:
             songs = sorted(songs, key=lambda song: score(s, repr_song(song)),
                            reverse=True)
-            msg = 'select:\t{}\n'.format(show_song(songs[0], brief=True))
+            msg = f'select:\t{show_song(songs[0], brief=True)}\n'
             self.playlist.play_model(songs[0])
             lines = []
             for song in songs[1:]:

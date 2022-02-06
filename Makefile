@@ -7,7 +7,7 @@ docs:
 	cd docs && make html
 
 pylint:
-	pylint feeluown/gui/pages/ feeluown/fuoexec
+	pylint feeluown/gui/pages/ feeluown/fuoexec/ feeluown/server/
 
 
 MYPY_PKGS=

@@ -8,4 +8,6 @@ disable=
     unused-argument,  # not so critical
     no-self-use,
     fixme,
-    invalid-name
+    invalid-name,
+    logging-fstring-interpolation,
+    bare-except

@@ -3,7 +3,7 @@ from functools import partial
 from .gateway import Gateway
 
 
-class LiveLyricPublisher(object):
+class LiveLyricPublisher:
     topic = 'live_lyric'
 
     def __init__(self, gateway: Gateway):

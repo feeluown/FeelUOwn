@@ -66,8 +66,7 @@ async def read_request(reader, parser_cls):
                 stripped_line_bytes = line_bytes[:-1]
             if stripped_line_bytes == word_bytes:
                 break
-            else:
-                buf.extend(line_bytes)
+            buf.extend(line_bytes)
             if len(buf) >= 2 ** 16:
                 raise RequestError('heredoc body should be less than 64KiB')
         req.set_heredoc_body(bytes(buf).decode('utf-8'))
@@ -120,8 +119,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
     async def write_response(self, resp):
         # TODO: 区分客户端和服务端错误（比如客户端错误后面加 ! 标记）
         msg_bytes = bytes(resp.text, 'utf-8')
-        response_line = ('ACK {} {}\r\n'
-                         .format(resp.code, len(msg_bytes)))
+        response_line = f'ACK {resp.code} {len(msg_bytes)}\r\n'
         self.writer.write(bytes(response_line, 'utf-8'))
         self.writer.write(msg_bytes)
         self.writer.write(b'\r\n')
@@ -143,6 +141,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                     bad_request_resp = Response(ok=False, text=msg)
                     await self.write_response(bad_request_resp)
                 else:
+                    # pylint: disable=no-else-break
                     if req is None:  # client close the connection
                         break
                     elif req == 0:  # ignore the empty request
@@ -159,7 +158,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                     else:
                         try:
                             resp = self._handle_req(req, self)
-                        except Exception as e:
+                        except Exception as e:  # pylint: disable=broad-except
                             msg = f'server error!\r\n{repr(e)}'
                             resp = Response(ok=False, text=msg, req=req)
                         await self.write_response(resp)
@@ -215,8 +214,6 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
 
 
 class PubsubProtocol(FuoServerProtocol):
-    def __init__(self, handle_req, loop):
-        super().__init__(handle_req, loop)
 
     async def write_welcome(self):
         self.writer.write(b'OK pubsub 3.0\r\n')
@@ -239,4 +236,4 @@ class PubsubProtocol(FuoServerProtocol):
                 self.writer.write(body)
         except BrokenPipeError:
             # What's happening?
-            raise DeadSubscriber
+            raise DeadSubscriber from None

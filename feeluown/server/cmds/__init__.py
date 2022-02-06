@@ -19,12 +19,12 @@ class Cmd:
         self.options = options or {}
 
     def __str__(self):
-        return 'action:{} args:{}'.format(self.action, self.args)
+        return f'action:{self.action} args:{self.args}'
 
 
 class CmdResolver:
-    def __init__(self, cmd_handler_mapping):
-        self.cmd_handler_mapping = cmd_handler_mapping
+    def __init__(self, cmd_handler_mapping_):
+        self.cmd_handler_mapping = cmd_handler_mapping_
 
     def get_handler(self, cmd):
         return self.cmd_handler_mapping.get(cmd)
@@ -37,11 +37,12 @@ _REGISTERED = False
 
 
 def register_feeluown_serializers():
+    # pylint: disable=unused-import,import-outside-toplevel
     from feeluown.serializers.app import (  # noqa
         AppPythonSerializer,
         AppPlainSerializer
     )
-    global _REGISTERED
+    global _REGISTERED  # pylint: disable=global-statement
     _REGISTERED = True
 
 
@@ -64,15 +65,15 @@ def handle_request(req: Request, app, session=None):
             rv = handler.handle(cmd)
         except CmdException as e:
             ok, body = False, str(e)
-        except Exception:
-            logger.exception('handle cmd({}) error'.format(cmd))
+        except Exception:  # pylint: disable=broad-except
+            logger.exception(f'handle cmd({cmd}) error')
             ok, body = False, 'internal server error'
         else:
             rv = rv if rv is not None else ''
             ok, body = True, rv
-    format = req.options.get('format', None)
-    format = format or 'plain'
-    msg = serialize(format, body, brief=False)
+    fmt = req.options.get('format', None)
+    fmt = fmt or 'plain'
+    msg = serialize(fmt, body, brief=False)
     return Response(ok=ok, text=msg, req=req)
 
 
