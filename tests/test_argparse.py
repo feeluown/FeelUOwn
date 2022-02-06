@@ -1,8 +1,15 @@
-from feeluown.argparse import create_dsl_parser
+import argparse
+
+from feeluown.argparse import add_common_cmds, add_server_cmds
 
 
-def test_dsl_parsers():
-    parser = create_dsl_parser()
+def test_argparse():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(
+        dest='cmd',
+    )
+    add_common_cmds(subparsers)
+    add_server_cmds(subparsers)
 
     # Test play parser.
     argv = ['play', 'fuo://xxx']
@@ -22,7 +29,7 @@ def test_dsl_parsers():
     args = parser.parse_args(argv)
     assert args.keyword == argv[1]
     assert 'xx' in args.source and 'yy' in args.source
-    assert args.type == argv[-1]
+    assert args.type == [argv[-1]]
     # Test parse invalid args.
     argv = ['search', 'zjl', '-t', 'xx']
     args, remain = parser.parse_known_args(argv)

@@ -4,7 +4,7 @@ from enum import Enum
 from typing import Optional
 
 from .data_structure import Response
-from .dslv2 import Parser
+from .dslv2 import parse
 from .excs import FuoSyntaxError
 
 logger = logging.getLogger(__name__)
@@ -31,7 +31,7 @@ def decode(b):
     return b.decode('utf-8')
 
 
-async def read_request(reader, parser_cls):
+async def read_request(reader, parse_func):
     """读取一个请求
 
     读取成功时，返回 Request 对象，如果读取失败（比如客户端关闭连接），
@@ -50,7 +50,7 @@ async def read_request(reader, parser_cls):
         return 0
     req = None
     try:
-        req = parser_cls(line_text).parse()
+        req = parse_func(line_text)
     except FuoSyntaxError as e:
         raise RequestError(e.human_readabe_msg) from e
     else:
@@ -110,7 +110,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         return self._reader
 
     async def read_request(self):
-        return await read_request(self.reader, Parser)
+        return await read_request(self.reader, parse)
 
     async def write_welcome(self):
         # TODO: use feeluown version.

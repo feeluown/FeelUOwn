@@ -226,3 +226,7 @@ class Parser:
         else:
             assert next_token.type_ == TOKEN_HEREDOC_WORD
             return True, next_token.value
+
+
+def parse(source):
+    return Parser(source).parse()

@@ -2,19 +2,23 @@
 The DSL is used for RPC and resource definition. The syntax of the DSL is same
 as UNIX shell.
 
->>> import argparse
->>> from feeluown.argparse import create_dsl_parser
->>> tokens = tokenize("search jaychou -s=xx")
->>> args = create_dsl_parser().parse_args(tokens)
->>> args.cmd, args.source, args.keyword
-('search', ['xx'], 'jaychou')
-
+>>> req = parse("search jaychou -s=xx")
+>>> req.cmd
+'search'
+>>> req.cmd_args
+['jaychou']
 """
 
 import argparse
 import shlex
-from feeluown.argparse import create_dsl_parser, create_fmt_parser
+import itertools
 
+from feeluown.argparse import (
+    create_fmt_parser,
+    add_common_cmds,
+    add_pubsub_cmds,
+    add_server_cmds,
+)
 from feeluown.server.data_structure import Request
 from feeluown.server.excs import FuoSyntaxError
 
@@ -32,15 +36,25 @@ def tokenize(source):
         return tokens
 
 
-def argparser_error(message):
-    raise FuoSyntaxError(message)
+class ArgumentParserNoExit(argparse.ArgumentParser):
+    def error(self, message):
+        raise FuoSyntaxError(message)
 
 
-class _Parser:
-    def __init__(self, source, argparser_factory, req_option_argparsers):
+def create_dsl_parser():
+    parser = ArgumentParserNoExit()
+    subparsers = parser.add_subparsers(
+        dest='cmd',
+    )
+    add_common_cmds(subparsers)
+    add_server_cmds(subparsers)
+    add_pubsub_cmds(subparsers)
+    return parser
+
+
+class Parser:
+    def __init__(self, source):
         self._source = source
-        self.argparser_factory = argparser_factory
-        self.req_option_argparsers = req_option_argparsers
 
     def parse(self) -> Request:
         """Parse the source to a Request object.
@@ -48,8 +62,7 @@ class _Parser:
         argparse have little public methods, so some protected methods are used.
         """
         # pylint: disable=too-many-locals,protected-access,too-many-branches
-        parser: argparse.ArgumentParser = self.argparser_factory()
-        parser.error = argparser_error  # type: ignore
+        parser: ArgumentParserNoExit = create_dsl_parser()
         tokens = tokenize(self._source)
 
         # Handle io_here token.
@@ -72,13 +85,8 @@ class _Parser:
             raise FuoSyntaxError('unknown tokens')
 
         # Get cmdname from the parse result.
-        root_dest = 'cmd'
-        cmdname = getattr(args, root_dest)
-        subparser = None
-        for action in parser._actions:
-            if action.dest == root_dest:
-                subparser = action._name_parser_map[cmdname]  # type: ignore
-                break
+        cmdname = getattr(args, 'cmd')
+        subparser = get_subparser(parser, cmdname)
         assert subparser is not None, f'parser for cmd:{cmdname} not found'
 
         # Get cmd args from the parse result.
@@ -89,8 +97,8 @@ class _Parser:
         # Get req options from the parse result.
         req_options = {}
         option_names_req = []
-        for parser in self.req_option_argparsers:
-            for action in parser._actions:
+        for parser_ in [create_fmt_parser()]:
+            for action in parser_._actions:
                 name = action.dest
                 option_names_req.append(name)
                 value = getattr(args, name)
@@ -112,10 +120,59 @@ class _Parser:
                        has_heredoc=has_heredoc, heredoc_word=heredoc_word)
 
 
-class Parser(_Parser):
-    def __init__(self, source):
-        super().__init__(source, create_dsl_parser, [create_fmt_parser()])
+def get_subparser(parser, cmdname):
+    # pylint: disable=protected-access
+    # Get cmdname from the parse result.
+    root_dest = 'cmd'
+    subparser = None
+    for action in parser._actions:
+        if action.dest == root_dest:
+            subparser = action._name_parser_map[cmdname]  # type: ignore
+            break
+    return subparser
+
+
+def parse(source):
+    return Parser(source).parse()
 
 
 def unparse(request: Request):
-    pass
+    """Generate source code for the request object"""
+    # pylint: disable=protected-access,too-many-branches
+    parser = create_dsl_parser()
+    subparser = get_subparser(parser, request.cmd)
+    if subparser is None:
+        raise ValueError(f'{request.cmd}: no such cmd')
+
+    cmdline = [request.cmd]
+
+    # Unparse cmd args.
+    if request.has_heredoc:
+        cmdline.append(f'<<{request.heredoc_word}')
+    else:
+        cmdline.extend(request.cmd_args)
+
+    # Unparse cmd options.
+    for key, value in itertools.chain(
+            request.cmd_options.items(), request.options.items()):
+        for action in subparser._actions:
+            if action.dest == key:
+                if isinstance(action, argparse._StoreTrueAction):
+                    if value is True:
+                        cmdline.append(f'--{key}')
+                elif isinstance(action, argparse._AppendAction):
+                    for each in value or []:
+                        cmdline.append(f'--{key}={shlex.quote(str(each))}')
+                else:
+                    cmdline.append(f'--{key}={shlex.quote(str(value))}')
+                break
+        else:
+            raise ValueError(f'{key}: no such option')
+
+    cmdtext = ' '.join(cmdline)
+    if request.has_heredoc:
+        cmdtext += '\n'
+        cmdtext += request.cmd_args[0]
+        cmdtext += '\n'
+        cmdtext += request.heredoc_word
+    return cmdtext

@@ -85,6 +85,7 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
     search_parser.add_argument('-s', '--source', action='append')
     search_parser.add_argument(
         '--type',
+        action='append',
         type=str,
         choices=['song', 'album', 'artist', 'video', 'playlist']
     )
@@ -183,18 +184,4 @@ def create_cli_parser() -> argparse.ArgumentParser:
 
     add_common_cmds(subparsers)
     add_cli_cmds(subparsers)
-    return parser
-
-
-def create_dsl_parser(parser_cls=None):
-    """
-    FIXME: rename to create_rpc_parser
-    """
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(
-        dest='cmd',
-    )
-    add_common_cmds(subparsers)
-    add_server_cmds(subparsers)
-    add_pubsub_cmds(subparsers)
     return parser

@@ -7,6 +7,7 @@ from socket import socket, AF_INET, SOCK_STREAM
 from feeluown.consts import CACHE_DIR
 from feeluown.library import fmt_artists_names
 from feeluown.server import Request, Response
+from feeluown.server.dslv2 import unparse
 from feeluown.server.server import handle_request
 from feeluown.utils import aio
 
@@ -30,7 +31,7 @@ class Client(object):
     def send(self, req):
         rfile = self.sock.makefile('rb')
         rfile.readline()  # welcome message
-        self.sock.send(bytes(req.raw + '\n', 'utf-8'))
+        self.sock.send(bytes(unparse(req) + '\n', 'utf-8'))
         line = rfile.readline().decode('utf-8').strip()
         _, code, length = line.split(' ')
         buf = bytearray()

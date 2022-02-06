@@ -1,6 +1,7 @@
 class Request:
     """fuo 协议请求对象"""
     # pylint: disable=too-many-arguments
+    # FIXME: maybe add a property 'stdin_content' for Request.
     def __init__(self, cmd, cmd_args=None,
                  cmd_options=None, options=None,
                  has_heredoc=False, heredoc_word=None):

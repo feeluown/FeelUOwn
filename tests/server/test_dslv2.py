@@ -1,6 +1,6 @@
 import pytest
 from feeluown.server.excs import FuoSyntaxError
-from feeluown.server.dslv2 import tokenize, Parser
+from feeluown.server.dslv2 import tokenize, Parser, unparse
 
 
 def test_tokenize():
@@ -51,3 +51,9 @@ def test_parse_with_invalid_iohere_token():
 
     with pytest.raises(FuoSyntaxError):
         Parser("search EOF >").parse()
+
+
+def test_unparse():
+    req = Parser('search zjl -s=xx --format=json').parse()
+    text = unparse(req)
+    assert text == 'search zjl --source=xx --format=json'
