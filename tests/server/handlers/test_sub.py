@@ -2,7 +2,7 @@ from unittest.mock import call
 
 import pytest
 
-from feeluown.server.cmds.sub import SubHandler
+from feeluown.server.handlers.sub import SubHandler
 
 
 @pytest.fixture

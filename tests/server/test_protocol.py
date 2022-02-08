@@ -3,11 +3,38 @@ from unittest import mock, TestCase
 
 import pytest
 
-from feeluown.server import FuoServerProtocol
+from feeluown.server.protocol import FuoServerProtocol, read_request
+from feeluown.server.dslv2 import parse
 
 
 async def coro():
     return None
+
+
+@pytest.mark.asyncio
+async def test_read_request():
+    reader = asyncio.StreamReader()
+
+    # Read a valid request.
+    reader.feed_data(b'search zjl\n')
+    req = await read_request(reader, parse)
+    assert req.cmd == 'search'
+
+    # Read a new line.
+    reader.feed_data(b'\n')
+    req = await read_request(reader, parse)
+    assert req is None
+
+    # Read a request with heredoc.
+    reader.feed_data(b'exec <<EOF\n')
+    reader.feed_data(b'EOF\n')
+    req = await read_request(reader, parse)
+    assert req.has_heredoc is True
+
+    # Read an invalid request.
+    reader.feed_data(b'xx yy\n')
+    with pytest.raises(Exception):
+        await read_request(reader, parse)
 
 
 # ignore RuntimeWaarnig:

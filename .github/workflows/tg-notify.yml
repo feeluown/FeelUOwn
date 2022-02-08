@@ -18,5 +18,5 @@ jobs:
           to: ${{ secrets.FEELUOWN_TELEGRAM_ID }}
           token: ${{ secrets.TELEGRAM_TOKEN }}
           message: |
-            新 PR 来辽，一起去评审它吧！
+            新 PR 一枚，快去看看吧！
             ${{ github.event.pull_request.html_url }}

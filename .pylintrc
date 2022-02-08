@@ -10,4 +10,8 @@ disable=
     fixme,
     invalid-name,
     logging-fstring-interpolation,
-    bare-except
+    bare-except,
+    # Let flake8 check import-related code.
+    wrong-import-position,
+    unused-import,
+    cyclic-import

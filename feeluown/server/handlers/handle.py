@@ -1,69 +1,33 @@
 import logging
 
-from feeluown.serializers import serialize
 from feeluown.server.data_structure import Request, Response
-
+from feeluown.serializers import serialize
 from .base import cmd_handler_mapping
-from .excs import CmdException
+from .cmd import Cmd
+from .excs import HandlerException
 
 logger = logging.getLogger(__name__)
 
 
-class Cmd:
-    """
-    TODO: Maybe we should remove this class and use Request instead.
-    """
-    def __init__(self, action, *args, options=None):
-        self.action = action
-        self.args = args
-        self.options = options or {}
-
-    def __str__(self):
-        return f'action:{self.action} args:{self.args}'
-
-
-class CmdResolver:
-    def __init__(self, cmd_handler_mapping_):
-        self.cmd_handler_mapping = cmd_handler_mapping_
-
-    def get_handler(self, cmd):
-        return self.cmd_handler_mapping.get(cmd)
-
-
-cmd_resolver = CmdResolver(cmd_handler_mapping)
-
-
-_REGISTERED = False
-
-
-def register_feeluown_serializers():
-    # pylint: disable=unused-import,import-outside-toplevel
-    from feeluown.serializers.app import (  # noqa
-        AppPythonSerializer,
-        AppPlainSerializer
-    )
-    global _REGISTERED  # pylint: disable=global-statement
-    _REGISTERED = True
-
-
-def handle_request(req: Request, app, session=None):
+async def handle_request(req: Request, app, session=None):
     """
     :type req: feeluown.server.rpc.Request
     """
-    if not _REGISTERED:
-        register_feeluown_serializers()
-
     cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
 
     ok, body = False, ''
-    handler_cls = cmd_resolver.get_handler(cmd.action)
+    handler_cls = cmd_handler_mapping.get(cmd.action)
     if handler_cls is None:
         ok, body = False, f"handler for cmd:{req.cmd} not found"
     else:
         try:
             handler = handler_cls(app=app, session=session)
-            rv = handler.handle(cmd)
-        except CmdException as e:
+            if hasattr(handler, 'a_handle'):
+                rv = await handler.a_handle(cmd)
+            else:
+                # FIXME: handlers do blocking io should implement a_handle method.
+                rv = handler.handle(cmd)
+        except HandlerException as e:
             ok, body = False, str(e)
         except Exception:  # pylint: disable=broad-except
             logger.exception(f'handle cmd({cmd}) error')

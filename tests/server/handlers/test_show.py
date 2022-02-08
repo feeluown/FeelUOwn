@@ -1,6 +1,6 @@
 import pytest
 
-from feeluown.server.cmds.show import router
+from feeluown.server.handlers.show import router
 from feeluown.library.provider import dummy_provider, Dummy, \
     DummyAlbumModel, DummyArtistModel, DummyPlaylistModel, \
     DummySongModel

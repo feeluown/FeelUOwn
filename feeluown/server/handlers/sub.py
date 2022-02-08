@@ -1,6 +1,7 @@
 import re
 
-from . import Cmd, CmdException
+from .cmd import Cmd
+from .excs import HandlerException
 from .base import AbstractHandler
 
 
@@ -29,4 +30,4 @@ class SubHandler(AbstractHandler):
                 for each in matched_topics:
                     pubsub_gateway.link(each, self.session)
             else:
-                raise CmdException(f"{topic}: topic not found")
+                raise HandlerException(f"{topic}: topic not found")

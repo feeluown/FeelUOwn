@@ -3,7 +3,7 @@ import logging
 from enum import Enum
 from typing import Optional
 
-from .data_structure import Response
+from .data_structure import Request, Response
 from .dslv2 import parse
 from .excs import FuoSyntaxError
 
@@ -15,11 +15,16 @@ class ProtocolType(Enum):
     pubsub = 'pubsub'
 
 
+class DeadSubscriber(Exception):
+    pass
+
+
+# Internal exceptions.
 class RequestError(Exception):
     pass
 
 
-class DeadSubscriber(Exception):
+class _EOF(Exception):
     pass
 
 
@@ -31,7 +36,7 @@ def decode(b):
     return b.decode('utf-8')
 
 
-async def read_request(reader, parse_func):
+async def read_request(reader: asyncio.StreamReader, parse_func) -> Optional[Request]:
     """读取一个请求
 
     读取成功时，返回 Request 对象，如果读取失败（比如客户端关闭连接），
@@ -44,11 +49,10 @@ async def read_request(reader, parse_func):
     except ValueError as e:
         raise RequestError('request size should be less than 64KiB') from e
     if not line_bytes:  # EOF
-        return None
+        raise _EOF
     line_text = line_bytes.decode('utf-8').strip()
     if not line_text:
-        return 0
-    req = None
+        return None
     try:
         req = parse_func(line_text)
     except FuoSyntaxError as e:
@@ -140,12 +144,14 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                     msg = 'bad reqeust!\r\n' + str(e)
                     bad_request_resp = Response(ok=False, text=msg)
                     await self.write_response(bad_request_resp)
+                except _EOF:
+                    # Client closed the connection.
+                    break
                 else:
-                    # pylint: disable=no-else-break
-                    if req is None:  # client close the connection
-                        break
-                    elif req == 0:  # ignore the empty request
+                    if req is None:
+                        # Ignore the empty request.
                         continue
+
                     # 通常来说，客户端如果想断开连接，只需要自己主动关闭连接即可，
                     # 但如果客户端不方便主动断开，可以发送 quit 命令，
                     # 让服务端来主动关闭连接。
@@ -157,7 +163,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                         self.writer.close()
                     else:
                         try:
-                            resp = self._handle_req(req, self)
+                            resp = await self._handle_req(req, self)
                         except Exception as e:  # pylint: disable=broad-except
                             msg = f'server error!\r\n{repr(e)}'
                             resp = Response(ok=False, text=msg, req=req)
