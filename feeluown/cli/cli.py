@@ -24,11 +24,11 @@ def print_error(*args, **kwargs):
 cmd_handler_mapping = {}
 
 
-class Client(object):
+class Client:
     def __init__(self, sock):
         self.sock = sock
 
-    def send(self, req):
+    async def send(self, req) -> Response:
         rfile = self.sock.makefile('rb')
         rfile.readline()  # welcome message
         self.sock.send(bytes(unparse(req) + '\n', 'utf-8'))
@@ -58,6 +58,8 @@ def connect():
 
 class HandlerMeta(type):
     def __new__(cls, name, bases, attrs):
+        # pylint: disable=duplicate-code
+        # FIXME: duplicate code.
         klass = type.__new__(cls, name, bases, attrs)
         if 'cmds' in attrs:
             cmds = attrs['cmds']
@@ -125,17 +127,17 @@ class HandlerWithWriteListCache(BaseHandler):
         if resp.code != 'OK' or not resp.text:
             super().process_resp(resp)
             return
-        format = self._req.options.get('format', 'plain')
-        if format != 'plain':
+        fmt = self._req.options.get('format', 'plain')
+        if fmt != 'plain':
             print(resp.text)
             return
         lines = resp.text.split('\n')
-        with open(OUTPUT_CACHE_FILEPATH, 'w') as f:
+        with open(OUTPUT_CACHE_FILEPATH, 'w', encoding='utf-8') as f:
             padding_width = len(str(len(lines)))
-            tpl = '{:%dd} {}' % padding_width
+            tpl = '{:%dd} {}' % padding_width  # pylint: disable=consider-using-f-string
             for index, line in enumerate(lines):
                 print(tpl.format(index, line))
-                f.write('{}\n'.format(line))
+                f.write(f'{line}\n')
 
 
 class HandlerWithReadListCache(BaseHandler):
@@ -148,7 +150,7 @@ class HandlerWithReadListCache(BaseHandler):
         except ValueError:
             pass
         else:
-            with open(OUTPUT_CACHE_FILEPATH) as f:
+            with open(OUTPUT_CACHE_FILEPATH, encoding='utf-8') as f:
                 i = 0
                 for line in f:
                     if i == lineno:
@@ -189,12 +191,12 @@ class OnceClient:
     def __init__(self, app):
         self._app = app
 
-    def send(self, req):
+    async def send(self, req: Request) -> Response:
         app = self._app
-        return handle_request(req, app)
+        return await handle_request(req, app)
 
 
-def dispatch(args, client):
+async def dispatch(args, client):
     if '"' in (getattr(args, 'cli', '') or '') \
        or '"' in (getattr(args, 'code', '') or '') \
        or '"' in (getattr(args, 'keyword', '') or ''):
@@ -205,27 +207,28 @@ def dispatch(args, client):
     handler = HandlerCls(args)
     resp = handler.before_request()
     if resp is None:
-        resp = client.send(handler.get_req())
+        resp = await client.send(handler.get_req())
     handler.process_resp(resp)
 
 
-def climain(args):
+async def climain(args):
     """dispatch request"""
 
     # FIXME: move this code to somewhere else
     if args.cmd == 'genicon':
+        # pylint: disable=import-outside-toplevel
         from .install import generate_icon
         generate_icon()
         return
 
     with connect() as cli:
-        dispatch(args, cli)
+        await dispatch(args, cli)
 
 
-def oncemain(app):
+async def oncemain(app):
 
     client = OnceClient(app)
-    dispatch(app.args, client)
+    await dispatch(app.args, client)
 
     if app.args.cmd == 'play':
 
@@ -236,6 +239,7 @@ def oncemain(app):
             text = metadata.get('title', '')
             artists = metadata.get('artists', [])
             if artists:
+                text += ' - '
                 text += fmt_artists_names(artists)
             if uri:
                 if text:
@@ -245,22 +249,14 @@ def oncemain(app):
             else:
                 print(f'Playing: {text}')
 
-        def cb(future):
-            try:
-                future.result()
-            except asyncio.CancelledError:
-                # When the coroutine is requested to cancel, stop the player
-                # to cancel the task in thread pool.
-                app.player.stop()
-                app.player.shutdown()
-            else:
-                app.exit()
-
         app.player.metadata_changed.connect(on_metadata_changed, weak=False)
+        # Hack: wait for 1s so that the url is fetched and player has set
+        # the proper playback.
+        await asyncio.sleep(1)
         # mpv wait_for_playback will wait until one song is finished,
         # if we have multiple song to play, this will not work well.
         # pylint: disable=protected-access
-        future = aio.run_fn(app.player._mpv.wait_for_playback)
-        future.add_done_callback(cb)
+        await aio.run_fn(app.player._mpv.wait_for_playback)
+        app.exit()
     else:
         app.exit()

@@ -1,4 +1,5 @@
 import logging
+from typing import Optional
 
 from feeluown.server.data_structure import Request, Response
 from feeluown.server.session import SessionLike
@@ -19,14 +20,15 @@ V1_SUPPORTTED_CMDS = [
 async def handle_request(
         req: Request,
         app,
-        session: SessionLike
+        session: Optional[SessionLike] = None,
 ) -> Response:
     """
     :type req: feeluown.server.rpc.Request
     """
     cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
 
-    if session.options.rpc_version == '1.0' and \
+    if session is not None and \
+       session.options.rpc_version == '1.0' and \
        cmd.action not in V1_SUPPORTTED_CMDS:
         handler_cls = None
     else:

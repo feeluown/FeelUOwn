@@ -6,6 +6,7 @@ class SetHandler(AbstractHandler):
     cmds = ('set', )
 
     def handle(self, cmd: Cmd):
+        assert self.session is not None
         options = cmd.options
 
         for key, value in options.items():

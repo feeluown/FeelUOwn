@@ -1,4 +1,4 @@
-from typing import Dict, Type, TypeVar
+from typing import Dict, Type, TypeVar, Optional
 
 from feeluown.server.session import SessionLike
 
@@ -22,10 +22,11 @@ class HandlerMeta(type):
 class AbstractHandler(metaclass=HandlerMeta):
     support_aio_handle = False
 
-    def __init__(self, app, session: SessionLike):
+    def __init__(self, app, session: Optional[SessionLike] = None):
         """
         暂时不确定 session 应该设计为什么样的结构。当前主要是为了将它看作一个
-        subscriber。
+        subscriber。大部分 handler 不需要使用到 session 对像，目前只有 SubHandler
+        把 session 当作一个 subscriber 看待。
         """
         self._app = app
         self.session = session
