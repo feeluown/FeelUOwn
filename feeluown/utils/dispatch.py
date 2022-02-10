@@ -60,7 +60,7 @@ class Signal:
             try:
                 func(*args)
             except:  # noqa
-                logger.exception(f'run {func.__name__} with {args} failed')
+                logger.exception(f'run {func} with {args} failed')
             cls.aioqueue.async_q.task_done()
 
     def emit(self, *args):

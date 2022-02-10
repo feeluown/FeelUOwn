@@ -48,3 +48,4 @@ from .base import SerializerMeta, SimpleSerializerMixin  # noqa
 from .plain import PlainSerializer  # noqa
 from .json_ import JsonSerializer  # noqa
 from .python import PythonSerializer  # noqa
+from .objs import *  # noqa

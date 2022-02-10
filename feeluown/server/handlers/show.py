@@ -37,18 +37,21 @@ class ShowHandler(AbstractHandler):
         else:
             furi = 'fuo://'
         r = urlparse(furi)
-        path = '/{}{}'.format(r.netloc, r.path)
-        logger.debug('请求 path: {}'.format(path))
+        path = f'/{r.netloc}{r.path}'
+        logger.debug(f'请求 path: {path}')
         try:
-            rv = router.dispatch(path, {'library': self.library})
+            rv = router.dispatch(path, {'library': self.library,
+                                        'session': self.session})
         except NotFound:
-            raise CmdException(f'path {path} not found')
+            raise CmdException(f'path {path} not found') from None
         except NotSupported as e:
-            raise CmdException(str(e))
+            raise CmdException(str(e)) from None
         return rv
 
 
 def get_model_or_raise(provider, model_type, model_id):
+    # pylint: disable=redefined-outer-name
+    model = None
     ns = TYPE_NS_MAP[model_type]
     # FIXME: use library.check_flags
     if isinstance(provider, ProviderV2):
@@ -57,9 +60,9 @@ def get_model_or_raise(provider, model_type, model_id):
     else:
         model_cls = provider.get_model_cls(model_type)
         model = model_cls.get(model_id)
-        if model is None:
-            raise CmdException(
-                f'{ns}:{model_id} not found in provider:{provider.identifier}')
+    if model is None:
+        raise CmdException(
+            f'{ns}:{model_id} not found in provider:{provider.identifier}')
     return model
 
 
@@ -96,13 +99,26 @@ def list_providers(req):
     return req.ctx['library'].list()
 
 
-for ns, model_type in NS_TYPE_MAP.items():
-    create_model_handler(ns, model_type)
+@route('/server/sessions/me')
+def current_session(req):
+    """
+    Currently only used for debugging.
+    """
+    session = req.ctx['session']
+    options = session.options
+    result = []
+    result.append(f'   rpc_version: {options.rpc_version}')
+    result.append(f'pubsub_version: {options.pubsub_version}')
+    return '\n'.join(result)
+
+
+for ns_, model_type_ in NS_TYPE_MAP.items():
+    create_model_handler(ns_, model_type_)
 
 
 @route('/<provider>/songs/<sid>/lyric')
 @use_provider
-def lyric(req, provider, sid):
+def lyric_(req, provider, sid):
     song = get_model_or_raise(provider, ModelType.song, sid)
     library = req.ctx['library']
     lyric = library.song_get_lyric(song)

@@ -35,6 +35,8 @@ parse tree::
                                    'linkin park'
 """
 
+from typing import Any
+
 from feeluown.server.excs import FuoSyntaxError
 from feeluown.server.data_structure import Request
 from .lexer import Lexer
@@ -61,7 +63,7 @@ class Parser:
         self._source = source
 
         self._end_column = len(self._source) - 1
-        self._current_token = None  # one lookahead token
+        self._current_token: Any = None  # one lookahead token
 
     def parse(self):
         cmd = self._parse_cmd()
@@ -95,7 +97,7 @@ class Parser:
             try:
                 token = next(self.tokens)
             except StopIteration:
-                raise _EOF
+                raise _EOF from None
         self._current_token = None
         return token
 
@@ -108,7 +110,7 @@ class Parser:
         try:
             token = self._next_token()
         except _EOF:
-            raise FuoSyntaxError('invalid syntax: empty request')
+            raise FuoSyntaxError('invalid syntax: empty request') from None
         else:
             if token.type_ != TOKEN_NAME:
                 self._error(token.column)
@@ -166,9 +168,8 @@ class Parser:
                     elif value.lower() == 'false':
                         value = False
                     return token.value, value
-                else:
-                    self._current_token = next_token
-                    return token.value, True
+                self._current_token = next_token
+                return token.value, True
         self._current_token = token
         return None, None
 
@@ -213,7 +214,7 @@ class Parser:
             return {}
         return self._parse_options()
 
-    def _parse_heredoc(self):
+    def _parse_heredoc(self):  # pylint: disable=inconsistent-return-statements
         token = self._next_token()
         if token.type_ != TOKEN_HEREDOC_OP:
             self._current_token = token
@@ -225,3 +226,7 @@ class Parser:
         else:
             assert next_token.type_ == TOKEN_HEREDOC_WORD
             return True, next_token.value
+
+
+def parse(source):
+    return Parser(source).parse()

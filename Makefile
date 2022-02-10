@@ -7,7 +7,7 @@ docs:
 	cd docs && make html
 
 pylint:
-	pylint feeluown/gui/pages/ feeluown/fuoexec
+	pylint feeluown/gui/pages/ feeluown/fuoexec/ feeluown/server/
 
 
 MYPY_PKGS=
@@ -19,7 +19,7 @@ MYPY_PKGS+=feeluown/entry_points/
 mypy:
 # Add flag --check-untyped-defs.
 	mypy  ${MYPY_PKGS}
-	mypy --check-untyped-defs feeluown/gui/widgets/textlist.py
+	mypy --check-untyped-defs feeluown/server feeluown/gui/widgets/textlist.py
 
 flake8:
 	flake8 feeluown/ tests/
@@ -32,7 +32,7 @@ lint: flake8 mypy pylint
 unittest: pytest
 
 pytest:
-	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -v
+	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest
 
 integration_test: export QT_QPA_PLATFORM=offscreen
 integration_test:

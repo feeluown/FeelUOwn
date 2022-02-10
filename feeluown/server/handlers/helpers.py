@@ -51,8 +51,7 @@ def _fit_text(text, length, filling=True):
     remain = length - 1
     if remain in len_index_map:
         return text[:(len_index_map[remain] + 1)] + '…'
-    else:
-        return text[:(len_index_map[remain - 1] + 1)] + ' …'
+    return text[:(len_index_map[remain - 1] + 1)] + ' …'
 
 
 def show_song(song, uri_length=None, brief=False, fetch=False):
@@ -73,23 +72,20 @@ def show_song(song, uri_length=None, brief=False, fetch=False):
 
     if brief:
         artists_name = _fit_text(artists_name, 20, filling=False)
-        s = '{song}\t# {title} - {artists_name}'.format(
-            song=song_uri,
-            title=title,
-            artists_name=artists_name)
+        s = f'{song_uri}\t# {title} - {artists_name}'
         return s
 
     # XXX: 这个操作可能会产生网络请求
     album_uri = reverse(song.album)
     artists_uri = ','.join(reverse(artist) for artist in song.artists)
     msgs = (
-        'provider:     {}'.format(song.source),
-        '     uri:     {}'.format(song_uri),
-        '   title:     {}'.format(song.title),
-        'duration:     {}'.format(song.duration),
-        '     url:     {}'.format(song.url),
-        ' artists:     {}\t# {}'.format(artists_uri, artists_name),
-        '   album:     {}\t# {}'.format(album_uri, album_name),
+        f'provider:     {song.source}',
+        f'     uri:     {song_uri}'
+        f'   title:     {song.title}',
+        f'duration:     {song.duration}',
+        f'     url:     {song.url}',
+        f' artists:     {artists_uri}\t# { artists_name}',
+        f'   album:     {album_uri}\t# {album_name}',
     )
     return '\n'.join(msgs)
 
@@ -102,13 +98,12 @@ def show_songs(songs):
 
 def show_artist(artist, brief=False):
     if brief:
-        return '{uri}\t# {name}'.format(
-            uri=reverse(artist),
-            name=artist.name)
+        uri = reverse(artist)
+        return f'{uri}\t# {artist.name}'
     msgs = [
-        'provider:      {}'.format(artist.source),
-        'identifier:    {}'.format(artist.identifier),
-        'name:          {}'.format(artist.name),
+        f'provider:      {artist.source}'
+        f'identifier:    {artist.identifier}'
+        f'name:          {artist.name}',
     ]
     if artist.songs:
         songs_header = ['songs::']
@@ -120,22 +115,19 @@ def show_artist(artist, brief=False):
 
 def show_album(album, brief=False):
     if brief:
-        return '{uri}\t# {name} - {artists_name}'.format(
-            uri=reverse(album),
-            name=album.name,
-            artists_name=album.artists_name
-        )
+        uri = reverse(album)
+        return f'{uri}\t# {album.name} - {album.artists_name}'
 
     msgs = [
-        'provider:      {}'.format(album.source),
-        'identifier:    {}'.format(album.identifier),
-        'name:          {}'.format(album.name),
+        f'provider:      {album.source}',
+        f'identifier:    {album.identifier}',
+        f'name:          {album.name}',
     ]
     if album.artists is not None:
         artists = album.artists
         artists_id = ','.join([str(artist.identifier) for artist in artists])
         artists_name = ','.join([artist.name for artist in artists])
-        msgs_artists = ['artists:       {}\t#{}'.format(artists_id, artists_name)]
+        msgs_artists = [f'artists:       {artists_id}\t#{artists_name}']
         msgs += msgs_artists
     msgs_songs_header = ['songs::']
     msgs_songs = ['\t' + each for each in show_songs(album.songs).split('\n')]
@@ -146,12 +138,10 @@ def show_album(album, brief=False):
 
 def show_playlist(playlist, brief=False):
     if brief:
-        content = '{playlist}\t#{name}'.format(
-            playlist=playlist,
-            name=playlist.name)
+        content = f'{playlist}\t#{playlist.name}'
     else:
         parts = [
-            'name:        {}'.format(playlist.name),
+            f'name:        {playlist.name}',
             'songs::',
         ]
         parts += ['\t' + show_song(song, brief=True) for song in playlist.songs]
@@ -166,7 +156,7 @@ def show_playlists(playlists):
 
 def show_user(user):
     parts = [
-        'name:        {}'.format(user.name),
+        f'name:        {user.name}',
         'playlists::',
     ]
     parts += ['\t' + show_playlist(p, brief=True) for p in user.playlists]

@@ -7,7 +7,8 @@ from .base import AbstractHandler
 class PlaylistHandler(AbstractHandler):
     cmds = ('add', 'remove', 'list', 'next', 'previous', 'clear',)
 
-    def handle(self, cmd):
+    def handle(self, cmd):  # pylint: disable=inconsistent-return-statements
+        # pylint: disable=no-else-return
         if cmd.action == 'add':
             return self.add(cmd.args)
         elif cmd.action == 'remove':

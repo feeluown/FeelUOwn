@@ -8,4 +8,11 @@ disable=
     unused-argument,  # not so critical
     no-self-use,
     fixme,
-    invalid-name
+    invalid-name,
+    logging-fstring-interpolation,
+    bare-except,
+
+    # Let flake8 check import-related code.
+    wrong-import-position,
+    unused-import,
+    cyclic-import

@@ -1,5 +1,6 @@
 from unittest import TestCase
-from feeluown.server.rpc import Parser, FuoSyntaxError
+from feeluown.server.dslv1 import Parser
+from feeluown.server.excs import FuoSyntaxError
 
 
 class TestParser(TestCase):

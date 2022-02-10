@@ -85,6 +85,7 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
     search_parser.add_argument('-s', '--source', action='append')
     search_parser.add_argument(
         '--type',
+        action='append',
         type=str,
         choices=['song', 'album', 'artist', 'video', 'playlist']
     )
@@ -99,21 +100,46 @@ def add_cli_cmds(subparsers: argparse._SubParsersAction):
     )
 
 
-def add_server_cmds(subparsers: argparse._SubParsersAction):
+def add_server_cmds(subparsers: argparse._SubParsersAction, include_pubsub=True):
     fmt_parser = create_fmt_parser()
+    subparsers.add_parser(
+        'quit',
+        parents=[fmt_parser],
+    )
+    help_parser = subparsers.add_parser(
+        'help',
+        parents=[fmt_parser],
+    )
+    help_parser.add_argument('cmdname')
+    # The default value of these values should be None.
+    # See set handler for more details.
     set_parser = subparsers.add_parser(
         'set',
         help='设置会话参数',
         parents=[fmt_parser],
     )
     set_parser.add_argument(
-        '-ns', '--no-server', action='store_true', default=False,
-        )
-    set_parser.add_argument(
-        '--version',
+        '--rpc-version',
         type=str,
         choices=['1.0', '2.0'],
     )
+    set_parser.add_argument(
+        '--pubsub-version',
+        type=str,
+        choices=['1.0', '2.0'],
+    )
+
+    if include_pubsub is True:
+        sub_parser = subparsers.add_parser(
+            'sub',
+            help='订阅主题消息',
+            parents=[fmt_parser],
+        )
+        sub_parser.add_argument(
+            'topics',
+            nargs='?',
+            help='主题名字',
+        )
 
 
 def _create_cli_parser() -> argparse.ArgumentParser:
@@ -161,14 +187,4 @@ def create_cli_parser() -> argparse.ArgumentParser:
 
     add_common_cmds(subparsers)
     add_cli_cmds(subparsers)
-    return parser
-
-
-def create_dsl_parser():
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(
-        dest='cmd',
-    )
-    add_common_cmds(subparsers)
-    add_server_cmds(subparsers)
     return parser
