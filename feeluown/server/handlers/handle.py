@@ -1,5 +1,4 @@
 import logging
-from typing import Optional
 
 from feeluown.server.data_structure import Request, Response
 from feeluown.server.session import SessionLike
@@ -10,19 +9,30 @@ from .excs import HandlerException
 
 logger = logging.getLogger(__name__)
 
+V1_SUPPORTTED_CMDS = [
+    'status', 'play', 'pause', 'resume', 'toggle',
+    'stop', 'next', 'previous', 'search', 'show',
+    'list', 'clear', 'remove', 'add', 'exec',
+]
+
 
 async def handle_request(
         req: Request,
         app,
-        session: Optional[SessionLike] = None
+        session: SessionLike
 ) -> Response:
     """
     :type req: feeluown.server.rpc.Request
     """
     cmd = Cmd(req.cmd, *req.cmd_args, options=req.cmd_options)
 
+    if session.options.rpc_version == '1.0' and \
+       cmd.action not in V1_SUPPORTTED_CMDS:
+        handler_cls = None
+    else:
+        handler_cls = cmd_handler_mapping.get(cmd.action)
+
     ok, body = False, ''
-    handler_cls = cmd_handler_mapping.get(cmd.action)
     if handler_cls is None:
         ok, body = False, f"handler for cmd:{req.cmd} not found"
     else:

@@ -20,6 +20,6 @@ def req():
 async def test_handle_request(req, app_mock, mocker):
     result = []
     mocker.patch.object(SearchHandler, 'search', return_value=result)
-    resp = await handle_request(req, app_mock)
+    resp = await handle_request(req, app_mock, mocker.Mock())
     assert resp.code == 'OK'
     assert json.loads(resp.text) == result

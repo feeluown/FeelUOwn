@@ -33,4 +33,4 @@ def test_handle_help(app_mock, session_mock):
     handler.handle_help('sub')
 
     result = handler.handle_help('status')
-    assert 'usage' in result and 'options' in result
+    assert 'usage' in result
