@@ -3,6 +3,7 @@ from unittest.mock import call
 import pytest
 
 from feeluown.server.handlers.sub import SubHandler
+from feeluown.server.handlers.help import HelpHandler
 
 
 @pytest.fixture
@@ -23,3 +24,13 @@ def test_handle_sub(app_mock, session_mock):
         call(topic, session_mock)
         for topic in app_mock.pubsub_gateway.topics
     ])
+
+
+def test_handle_help(app_mock, session_mock):
+    handler = HelpHandler(app_mock, session_mock)
+    # No error should occur.
+    handler.handle_help('set')
+    handler.handle_help('sub')
+
+    result = handler.handle_help('status')
+    assert 'usage' in result and 'options' in result

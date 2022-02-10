@@ -11,6 +11,7 @@ disable=
     invalid-name,
     logging-fstring-interpolation,
     bare-except,
+
     # Let flake8 check import-related code.
     wrong-import-position,
     unused-import,

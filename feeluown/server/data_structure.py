@@ -1,3 +1,13 @@
+from dataclasses import dataclass
+
+
+@dataclass
+class SessionOptions:
+    # Always make the human-friendly protocol version as the default.
+    rpc_version: str = '2.0'     # RPC protocol version.
+    pubsub_version: str = '1.0'  # Pubsub protocol version.
+
+
 class Request:
     """fuo 协议请求对象"""
     # pylint: disable=too-many-arguments

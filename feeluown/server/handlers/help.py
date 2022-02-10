@@ -1,25 +1,20 @@
+from .cmd import Cmd
+from .excs import HandlerException
 from .base import AbstractHandler
 
 
 class HelpHandler(AbstractHandler):
     cmds = 'help'
 
-    def handle(self, cmd):
-        return """
-Available commands::
+    def handle(self, cmd: Cmd):
+        return self.handle_help(*cmd.args)
 
-    search <string>  # search songs by <string>
-    show fuo://xxx  # show xxx detail info
-    play fuo://xxx/songs/yyy  # play yyy song
-    list  # show player current playlist
-    status  # show player status
-    next  # play next song
-    previous  # play previous song
-    pause
-    resume
-    toggle
+    def handle_help(self, cmdname: str):
+        # pylint: disable=import-outside-toplevel
+        from feeluown.server.dslv2 import create_dsl_parser, get_subparser  # noqa
 
-Watch live lyric::
-
-    echo "sub topic.live_lyric" | nc host 23334
-"""
+        parser = create_dsl_parser()
+        subparser = get_subparser(parser, cmdname)
+        if subparser is None:
+            raise HandlerException(f'help: no such cmd: {cmdname}')
+        return subparser.format_help()

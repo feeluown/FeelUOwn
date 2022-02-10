@@ -1,11 +1,13 @@
-from typing import Any
+from typing import Dict, Type, TypeVar
 
+from feeluown.server.session import SessionLike
 
-cmd_handler_mapping = {}
+T = TypeVar('T', bound='HandlerMeta')
+cmd_handler_mapping: Dict[str, 'HandlerMeta'] = {}
 
 
 class HandlerMeta(type):
-    def __new__(cls, name, bases, attrs):
+    def __new__(cls: Type[T], name, bases, attrs) -> T:
         klass = type.__new__(cls, name, bases, attrs)
         if 'cmds' in attrs:
             cmds = attrs['cmds']
@@ -18,7 +20,9 @@ class HandlerMeta(type):
 
 
 class AbstractHandler(metaclass=HandlerMeta):
-    def __init__(self, app, session: Any):
+    support_aio_handle = False
+
+    def __init__(self, app, session: SessionLike):
         """
         暂时不确定 session 应该设计为什么样的结构。当前主要是为了将它看作一个
         subscriber。
@@ -32,4 +36,7 @@ class AbstractHandler(metaclass=HandlerMeta):
         self.live_lyric = app.live_lyric
 
     def handle(self, cmd):
-        raise NotImplementedError
+        ...
+
+    async def a_handle(self, cmd):
+        ...

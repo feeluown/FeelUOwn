@@ -22,4 +22,4 @@ class SignalPublisher:
         return partial(self.publish, name)
 
     def publish(self, name, *args):
-        self.gateway.publish(list(args), name, v2=True)
+        self.gateway.publish(list(args), name, need_serialize=True)

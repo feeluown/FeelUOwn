@@ -32,16 +32,16 @@ class Gateway:
             if subscriber in self._relations[topic]:
                 self._relations[topic].remove(subscriber)
 
-    def publish(self, obj, topic, v2=False):
+    def publish(self, obj, topic, need_serialize=False):
         # NOTE: use queue? maybe.
         subscribers = self._relations[topic]
         for subscriber in subscribers:
             try:
-                if v2 is True:
+                if need_serialize is True:
                     msg = serialize('json', obj, brief=False)
                 else:
-                    msg = serialize('plain', obj, brief=False)
-                subscriber.write_topic_msg(topic, msg, '2.0' if v2 else '1.0')
+                    msg = obj
+                subscriber.write_topic_msg(topic, msg)
             except DeadSubscriber:
                 # NOTE: need lock?
                 self.remove_subscriber(subscriber)

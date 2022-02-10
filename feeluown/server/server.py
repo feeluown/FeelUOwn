@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from feeluown.server import handle_request
+from feeluown.server.session import SessionLike
 from .protocol import FuoServerProtocol, ProtocolType, PubsubProtocol
 
 
@@ -38,5 +39,5 @@ class FuoServer:
         return protocol_cls(handle_req=self.handle_req,
                             loop=self._loop,)
 
-    async def handle_req(self, req, session=None):
+    async def handle_req(self, req, session: SessionLike):
         return await handle_request(req, self._app, session)

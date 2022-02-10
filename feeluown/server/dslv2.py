@@ -12,11 +12,11 @@ as UNIX shell.
 import argparse
 import shlex
 import itertools
+from typing import Optional
 
 from feeluown.argparse import (
     create_fmt_parser,
     add_common_cmds,
-    add_pubsub_cmds,
     add_server_cmds,
 )
 from feeluown.server.data_structure import Request
@@ -36,19 +36,33 @@ def tokenize(source):
         return tokens
 
 
-class ArgumentParserNoExit(argparse.ArgumentParser):
+class ArgumentParserNoExitAndPrint(argparse.ArgumentParser):
+    """
+    This customized argument parser class is design to handle two scenario
+    1. When there is an error, the parser should not exit. So the error method is
+       overrided.
+    2. When `help` action is executed, the parser should not exit and it should
+       not print help message to stdout/stderr either. So the `_print_message` and
+       `exit` method are overrided.
+    """
+    def _print_message(self, message, file=None):  # noqa
+        pass
+
+    def exit(self, status=0, message=None):  # noqa
+        pass
+
     def error(self, message):
         raise FuoSyntaxError(message)
 
 
 def create_dsl_parser():
-    parser = ArgumentParserNoExit()
+    # pylint: disable=protected-access
+    parser = ArgumentParserNoExitAndPrint(add_help=False)
     subparsers = parser.add_subparsers(
         dest='cmd',
     )
     add_common_cmds(subparsers)
     add_server_cmds(subparsers)
-    add_pubsub_cmds(subparsers)
     return parser
 
 
@@ -62,7 +76,7 @@ class Parser:
         argparse have little public methods, so some protected methods are used.
         """
         # pylint: disable=too-many-locals,protected-access,too-many-branches
-        parser: ArgumentParserNoExit = create_dsl_parser()
+        parser: ArgumentParserNoExitAndPrint = create_dsl_parser()
         tokens = tokenize(self._source)
 
         # Handle io_here token.
@@ -82,7 +96,7 @@ class Parser:
         # Parse the tokens.
         args, remain = parser.parse_known_args(tokens)
         if remain:
-            raise FuoSyntaxError('unknown tokens')
+            raise FuoSyntaxError(f'unknown tokens {tokens}')
 
         # Get cmdname from the parse result.
         cmdname = getattr(args, 'cmd')
@@ -120,7 +134,7 @@ class Parser:
                        has_heredoc=has_heredoc, heredoc_word=heredoc_word)
 
 
-def get_subparser(parser, cmdname):
+def get_subparser(parser, cmdname) -> Optional[argparse.ArgumentParser]:
     # pylint: disable=protected-access
     # Get cmdname from the parse result.
     root_dest = 'cmd'

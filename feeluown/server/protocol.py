@@ -1,10 +1,12 @@
 import asyncio
 import logging
 from enum import Enum
-from typing import Optional
+from typing import Optional, Awaitable, Callable
 
-from .data_structure import Request, Response
-from .dslv2 import parse
+from .session import SessionLike
+from .data_structure import Request, Response, SessionOptions
+from .dslv2 import parse as parse_v2
+from .dslv1 import parse as parse_v1
 from .excs import FuoSyntaxError
 
 logger = logging.getLogger(__name__)
@@ -88,10 +90,15 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
     - add request timeout: close connection if no action happens
     - add graceful shutdown: close connection before exit
     """
-    def __init__(self, handle_req, loop):
+    def __init__(
+            self,
+            handle_req: Callable[[Request, SessionLike], Awaitable[Response]],
+            loop):
         super().__init__(loop)
         self._handle_req = handle_req
         self._loop = loop
+
+        self.options: SessionOptions = SessionOptions()
 
         # StreamReader provides some convinient file-object-like methods
         # like readline, which is really useful for our implementation.
@@ -114,11 +121,15 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         return self._reader
 
     async def read_request(self):
-        return await read_request(self.reader, parse)
+        if self.options.rpc_version == '2.0':
+            parse_func = parse_v2
+        else:
+            parse_func = parse_v1
+        return await read_request(self.reader, parse_func)
 
     async def write_welcome(self):
-        # TODO: use feeluown version.
-        self.writer.write(b'OK fuo 3.0\r\n')
+        version = self.options.rpc_version
+        self.writer.write(encode(f'OK rpc {version}\r\n'))
 
     async def write_response(self, resp):
         # TODO: 区分客户端和服务端错误（比如客户端错误后面加 ! 标记）
@@ -222,9 +233,10 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
 class PubsubProtocol(FuoServerProtocol):
 
     async def write_welcome(self):
-        self.writer.write(b'OK pubsub 3.0\r\n')
+        version = self.options.pubsub_version
+        self.writer.write(encode(f'OK pubsub {version}\r\n'))
 
-    def write_topic_msg(self, topic, msg, version='1.0'):
+    def write_topic_msg(self, topic, msg):
         """
         TODO: Create a enum for version.
         """
@@ -233,7 +245,7 @@ class PubsubProtocol(FuoServerProtocol):
 
         body = encode(msg)
         try:
-            if version >= '2.0':
+            if self.options.pubsub_version == '2.0':
                 response_line = f'MSG {topic} {len(body)}\r\n'
                 self.writer.write(encode(response_line))
                 self.writer.write(body)

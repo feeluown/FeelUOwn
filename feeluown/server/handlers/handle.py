@@ -1,15 +1,21 @@
 import logging
+from typing import Optional
 
 from feeluown.server.data_structure import Request, Response
+from feeluown.server.session import SessionLike
 from feeluown.serializers import serialize
-from .base import cmd_handler_mapping
+from .base import cmd_handler_mapping, AbstractHandler
 from .cmd import Cmd
 from .excs import HandlerException
 
 logger = logging.getLogger(__name__)
 
 
-async def handle_request(req: Request, app, session=None):
+async def handle_request(
+        req: Request,
+        app,
+        session: Optional[SessionLike] = None
+) -> Response:
     """
     :type req: feeluown.server.rpc.Request
     """
@@ -21,8 +27,8 @@ async def handle_request(req: Request, app, session=None):
         ok, body = False, f"handler for cmd:{req.cmd} not found"
     else:
         try:
-            handler = handler_cls(app=app, session=session)
-            if hasattr(handler, 'a_handle'):
+            handler: AbstractHandler = handler_cls(app=app, session=session)
+            if handler.support_aio_handle is True:
                 rv = await handler.a_handle(cmd)
             else:
                 # FIXME: handlers do blocking io should implement a_handle method.
@@ -50,3 +56,4 @@ from .search import SearchHandler  # noqa
 from .show import ShowHandler  # noqa
 from .exec_ import ExecHandler  # noqa
 from .sub import SubHandler  # noqa
+from .set_ import SetHandler  # noqa

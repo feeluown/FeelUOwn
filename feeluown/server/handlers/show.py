@@ -40,7 +40,8 @@ class ShowHandler(AbstractHandler):
         path = f'/{r.netloc}{r.path}'
         logger.debug(f'请求 path: {path}')
         try:
-            rv = router.dispatch(path, {'library': self.library})
+            rv = router.dispatch(path, {'library': self.library,
+                                        'session': self.session})
         except NotFound:
             raise CmdException(f'path {path} not found') from None
         except NotSupported as e:
@@ -96,6 +97,19 @@ def create_model_handler(ns, model_type):
 @route('/')
 def list_providers(req):
     return req.ctx['library'].list()
+
+
+@route('/server/sessions/me')
+def current_session(req):
+    """
+    Currently only used for debugging.
+    """
+    session = req.ctx['session']
+    options = session.options
+    result = []
+    result.append(f'   rpc_version: {options.rpc_version}')
+    result.append(f'pubsub_version: {options.pubsub_version}')
+    return '\n'.join(result)
 
 
 for ns_, model_type_ in NS_TYPE_MAP.items():
