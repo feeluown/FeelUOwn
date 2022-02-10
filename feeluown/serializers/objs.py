@@ -4,7 +4,6 @@ serializers for feeluown objects
 TODO: too much code to define serializers for an object.
 """
 from feeluown.app import App
-from feeluown.media import Media
 from feeluown.player import PlaybackMode, State, Metadata
 from . import PlainSerializer, PythonSerializer, \
     SerializerMeta, SimpleSerializerMixin
