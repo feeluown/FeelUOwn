@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import asyncio
 import json
 import os
 import socket
@@ -30,7 +31,7 @@ from feeluown.library.provider import dummy_provider
 app.library.register(dummy_provider)
 ''')
     with create_client() as client:
-        client.send(req)
+        asyncio.run(client.send(req))
 
 
 def collect():
@@ -42,7 +43,8 @@ def collect():
 
 def test_show_providers_with_json_format():
     with create_client() as client:
-        resp = client.send(Request('show', ['fuo://'], options={'format': 'json'}))
+        resp = asyncio.run(
+            client.send(Request('show', ['fuo://'], options={'format': 'json'})))
         providers = json.loads(resp.text)
         for provider in providers:
             if provider['identifier'] == 'dummy':

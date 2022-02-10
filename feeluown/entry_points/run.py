@@ -9,7 +9,7 @@ except ImportError:
     pass
 
 # pylint: disable=wrong-import-position
-from feeluown.argparse import create_cli_parser  # noqa: E402
+from feeluown.argparser import create_cli_parser  # noqa: E402
 from feeluown.utils.utils import is_port_inuse  # noqa: E402
 from .run_cli import run_cli  # noqa: E402
 from .run_app import run_app  # noqa: E402

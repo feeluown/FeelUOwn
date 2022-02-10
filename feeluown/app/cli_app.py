@@ -1,3 +1,4 @@
+from feeluown.utils import aio
 from .app import App
 
 
@@ -17,7 +18,7 @@ class CliApp(App):
         # an common module for these cli logic, oncemain can be moved.
         from feeluown.cli import oncemain  # pylint: disable=cyclic-import
 
-        oncemain(self)
+        aio.run_afn(oncemain, self)
 
     def load_state(self):
         pass

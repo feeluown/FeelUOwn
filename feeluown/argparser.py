@@ -2,8 +2,6 @@ import argparse
 import textwrap
 from functools import partial
 
-from feeluown import __version__ as feeluown_version
-
 
 def create_fmt_parser():
     fmt_parser = argparse.ArgumentParser(add_help=False)
@@ -143,6 +141,9 @@ def add_server_cmds(subparsers: argparse._SubParsersAction, include_pubsub=True)
 
 
 def _create_cli_parser() -> argparse.ArgumentParser:
+    # pylint: disable=import-outside-toplevel
+    from feeluown import __version__ as feeluown_version
+
     parser = argparse.ArgumentParser(
         description=textwrap.dedent('''\
         FeelUOwn - modern music player (daemon).

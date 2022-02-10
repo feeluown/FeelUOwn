@@ -19,7 +19,7 @@ MYPY_PKGS+=feeluown/entry_points/
 mypy:
 # Add flag --check-untyped-defs.
 	mypy  ${MYPY_PKGS}
-	mypy --check-untyped-defs feeluown/server feeluown/gui/widgets/textlist.py
+	mypy --check-untyped-defs feeluown/server/ feeluown/cli/cli.py feeluown/gui/widgets/textlist.py
 
 flake8:
 	flake8 feeluown/ tests/

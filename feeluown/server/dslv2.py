@@ -14,7 +14,7 @@ import shlex
 import itertools
 from typing import Optional
 
-from feeluown.argparse import (
+from feeluown.argparser import (
     create_fmt_parser,
     add_common_cmds,
     add_server_cmds,

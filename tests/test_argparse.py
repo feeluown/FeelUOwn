@@ -1,6 +1,6 @@
 import argparse
 
-from feeluown.argparse import add_common_cmds, add_server_cmds
+from feeluown.argparser import add_common_cmds, add_server_cmds
 
 
 def test_argparse():

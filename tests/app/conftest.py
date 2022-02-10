@@ -1,6 +1,6 @@
 import pytest
 
-from feeluown.argparse import create_cli_parser
+from feeluown.argparser import create_cli_parser
 from feeluown.app import create_config
 from feeluown.plugin import PluginsManager
 from feeluown.gui.uimodels.collection import CollectionUiManager
