@@ -1,7 +1,6 @@
 from feeluown.app import App
 from feeluown.player import Player, Playlist
 from feeluown.serializers import serialize
-from feeluown.serializers.app import *  # noqa, register app serializer
 from feeluown.library import SongModel
 from feeluown.models import SongModel as SongModelV1
 
