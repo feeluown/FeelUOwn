@@ -240,7 +240,7 @@ class PubsubProtocol(FuoServerProtocol):
         """
         TODO: Create a enum for version.
         """
-        if self.writer.is_closing():
+        if self._connection_lost or self.writer.is_closing():  # type: ignore
             raise DeadSubscriber
 
         body = encode(msg)

@@ -29,7 +29,6 @@ class ServerApp(App):
         self.live_lyric.sentence_changed.connect(self._ll_publisher.publish)
 
         signals = [
-            (self.player.media_changed, 'player.media_changed'),
             (self.player.metadata_changed, 'player.metadata_changed'),
             (self.player.seeked, 'player.seeked'),
             (self.player.state_changed, 'player.state_changed'),

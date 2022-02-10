@@ -1,11 +1,14 @@
 import pytest
 from feeluown.server.excs import FuoSyntaxError
-from feeluown.server.dslv2 import tokenize, Parser, unparse
+from feeluown.server.dslv2 import tokenize, Parser, unparse, parse
 
 
 def test_tokenize():
     tokens = tokenize('search zjl -s=xx')
     assert tokens == ['search', 'zjl', '-s=xx']
+
+    tokens = tokenize('exec "app.exit()"')
+    assert tokens == ['exec', 'app.exit()']
 
 
 def test_tokenize_unquoted_source():
@@ -57,3 +60,7 @@ def test_unparse():
     req = Parser('search zjl -s=xx --format=json').parse()
     text = unparse(req)
     assert text == 'search zjl --source=xx --format=json'
+
+    req = parse("search 'zjl()'")
+    text = unparse(req)
+    assert text == "search 'zjl()'"

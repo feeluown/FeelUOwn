@@ -1,9 +1,11 @@
 """
 serializers for feeluown objects
-"""
 
-from feeluown.player import PlaybackMode, State
+TODO: too much code to define serializers for an object.
+"""
 from feeluown.app import App
+from feeluown.media import Media
+from feeluown.player import PlaybackMode, State, Metadata
 from . import PlainSerializer, PythonSerializer, \
     SerializerMeta, SimpleSerializerMixin
 
@@ -42,6 +44,16 @@ class AppSerializerMixin:
         return items
 
 
+class DictLikeSerializerMixin:
+    class Meta:
+        types = (Metadata, )
+
+    def _get_items(self, metadata):
+        return [(key.value, value) for key, value in metadata.items()]
+
+
+# Python serializers.
+#
 class AppPythonSerializer(PythonSerializer,
                           AppSerializerMixin,
                           SimpleSerializerMixin,
@@ -49,6 +61,15 @@ class AppPythonSerializer(PythonSerializer,
     pass
 
 
+class DictLikePythonSerializer(PythonSerializer,
+                               DictLikeSerializerMixin,
+                               SimpleSerializerMixin,
+                               metaclass=SerializerMeta):
+    pass
+
+
+# Plain serializers.
+#
 class AppPlainSerializer(PlainSerializer,
                          AppSerializerMixin,
                          SimpleSerializerMixin,

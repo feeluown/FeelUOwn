@@ -164,13 +164,17 @@ def unparse(request: Request):
     if request.has_heredoc:
         cmdline.append(f'<<{request.heredoc_word}')
     else:
-        cmdline.extend(request.cmd_args)
+        cmdline.extend([shlex.quote(each) for each in request.cmd_args])
 
     # Unparse cmd options.
     for key, value in itertools.chain(
             request.cmd_options.items(), request.options.items()):
         for action in subparser._actions:
             if action.dest == key:
+                # The option has a default value.
+                if value is None:
+                    break
+
                 if isinstance(action, argparse._StoreTrueAction):
                     if value is True:
                         cmdline.append(f'--{key}')

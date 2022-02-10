@@ -35,7 +35,7 @@ class Gateway:
     def publish(self, obj, topic, need_serialize=False):
         # NOTE: use queue? maybe.
         subscribers = self._relations[topic]
-        for subscriber in subscribers:
+        for subscriber in subscribers.copy():
             try:
                 if need_serialize is True:
                     msg = serialize('json', obj, brief=False)
