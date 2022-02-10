@@ -102,6 +102,10 @@ def add_cli_cmds(subparsers: argparse._SubParsersAction):
 
 def add_server_cmds(subparsers: argparse._SubParsersAction, include_pubsub=True):
     fmt_parser = create_fmt_parser()
+    subparsers.add_parser(
+        'quit',
+        parents=[fmt_parser],
+    )
     help_parser = subparsers.add_parser(
         'help',
         parents=[fmt_parser],
