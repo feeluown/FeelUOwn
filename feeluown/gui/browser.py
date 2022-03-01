@@ -188,7 +188,7 @@ class Browser:
         from feeluown.gui.pages.search import render as render_search
         from feeluown.gui.pages.player_playlist import render as render_player_playlist
         from feeluown.gui.pages.model import render as render_model
-        from feeluown.gui.pages.coll_library import render as render_coll_library
+        from feeluown.gui.pages.coll_mixed import render as render_coll_mixed
         from feeluown.gui.pages.song_explore import render as render_song_explore
 
         model_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
@@ -202,8 +202,7 @@ class Browser:
             (f'{model_prefix}/songs/<identifier>/similar', dummy_render),
             (f'{model_prefix}/songs/<identifier>/hot_comments', dummy_render),
             (f'{model_prefix}/songs/<identifier>/explore', render_song_explore),
-            ('/colls/library', render_coll_library),
-            ('/colls/<identifier>', self._render_coll),
+            ('/colls/<identifier>', render_coll_mixed),
             ('/search', render_search),
             ('/player_playlist', render_player_playlist),
         ]
