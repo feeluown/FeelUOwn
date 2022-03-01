@@ -1,3 +1,4 @@
+import logging
 import sys
 
 from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex, QEasingCurve
@@ -8,12 +9,12 @@ from feeluown.utils import aio
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
 
-from feeluown.collection import CollectionType
 from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
-from feeluown.gui.page_containers.collection import CollectionContainer
+
+logger = logging.getLogger(__name__)
 
 
 def add_alpha(color, alpha):
@@ -91,19 +92,15 @@ class RightPanel(QFrame):
         self._stacked_layout = QStackedLayout()
         self.scrollarea = ScrollArea(self._app, self)
         self.table_container = self.scrollarea.t
-        # TODO: collection container will be removed
-        self.collection_container = CollectionContainer(self._app, self)
         self.bottom_panel = BottomPanel(app, self)
 
         self._setup_ui()
 
     def _setup_ui(self):
         self.scrollarea.setMinimumHeight(100)
-        self.collection_container.hide()
         self._layout.addWidget(self.bottom_panel)
         self._layout.addLayout(self._stacked_layout)
         self._stacked_layout.addWidget(self.scrollarea)
-        self._stacked_layout.addWidget(self.collection_container)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
@@ -113,7 +110,6 @@ class RightPanel(QFrame):
         aio.create_task(self.table_container.show_model(model))
 
     def show_songs(self, songs):
-        self.collection_container.hide()
         self.set_body(self.scrollarea)
         self.table_container.show_songs(songs)
 
@@ -131,14 +127,13 @@ class RightPanel(QFrame):
         # remove tmp widgets
         for i in range(self._stacked_layout.count()):
             w = self._stacked_layout.widget(i)
-            if w not in (self.scrollarea,
-                         self.collection_container):
+            if w not in (self.scrollarea, ):
                 self._stacked_layout.removeWidget(w)
 
         self._stacked_layout.addWidget(widget)
         self._stacked_layout.setCurrentWidget(widget)
 
-    def show_collection(self, coll):
+    def show_collection(self, coll, model_type):
 
         def _show_pure_albums_coll(coll):
             self.set_body(self.scrollarea)
@@ -149,10 +144,6 @@ class RightPanel(QFrame):
             self.set_body(self.scrollarea)
             self.table_container.show_collection(coll)
 
-        def _show_mixed_coll(coll):
-            self.set_body(self.collection_container)
-            self.collection_container.show_collection(coll)
-
         def _show_pure_videos_coll(coll):
             from feeluown.gui.page_containers.table import VideosRenderer
 
@@ -161,28 +152,14 @@ class RightPanel(QFrame):
             renderer = VideosRenderer(reader)
             aio.create_task(self.table_container.set_renderer(renderer))
 
-        if coll.type is CollectionType.sys_library:
-            self._app.browser.goto(page='/colls/library')
-            return
-
-        types = set()
-        for model in coll.models:
-            types.add(model.meta.model_type)
-            if len(types) >= 2:
-                break
-
-        if len(types) == 1:
-            type_ = types.pop()
-            if type_ == ModelType.song:
-                _show_pure_songs_coll(coll)
-            elif type_ == ModelType.album:
-                _show_pure_albums_coll(coll)
-            elif type_ == ModelType.video:
-                _show_pure_videos_coll(coll)
-            else:
-                _show_mixed_coll(coll)
+        if model_type == ModelType.song:
+            _show_pure_songs_coll(coll)
+        elif model_type == ModelType.album:
+            _show_pure_albums_coll(coll)
+        elif model_type == ModelType.video:
+            _show_pure_videos_coll(coll)
         else:
-            _show_mixed_coll(coll)
+            logger.warning("can't render this kind of collection")
 
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
