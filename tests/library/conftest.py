@@ -34,6 +34,7 @@ class EEEProvider(AbstractProvider, ProviderV2):
                               name='0',
                               cover='',
                               description='',
+                              songs=[],
                               artists=[])
 
 

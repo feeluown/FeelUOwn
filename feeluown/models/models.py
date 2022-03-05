@@ -131,6 +131,14 @@ class AlbumModel(BaseModel):
     def artists_name(self):
         return _get_artists_name(self.artists or [])
 
+    @property
+    def description(self):  # To be compatible with AlbumModel v2.
+        return self.desc
+
+    @property
+    def type_(self):  # To be compatible with AlbumModel v2.
+        return self.type
+
 
 class LyricModel(BaseModel):
     """Lyric Model

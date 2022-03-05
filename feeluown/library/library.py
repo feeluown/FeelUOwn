@@ -2,10 +2,10 @@ import logging
 from functools import partial, lru_cache
 from typing import List, cast, Optional, Union
 
-from feeluown.utils import aio
-from feeluown.utils.dispatch import Signal
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
+from feeluown.utils import aio
+from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
@@ -571,7 +571,8 @@ class Library:
             else:
                 provider = self.getv2_or_raise(model.source)
                 if self.check_flags_by_model(model, PF.get):
-                    upgraded_model = provider.model_get(model.identifier)
+                    upgraded_model = provider.model_get(
+                        model.meta.model_type, model.identifier)
                 else:
                     raise NotSupported("provider has not flag 'get' for 'model'")
         else:

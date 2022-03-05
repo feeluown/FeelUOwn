@@ -15,7 +15,7 @@ async def render(req, **kwargs):
     model = req.ctx['model']
 
     if model.meta.model_type == ModelType.song:
-        model = await aio.run_in_executor(None, app.library.song_upgrade, model)
+        model = await aio.run_fn(app.library.song_upgrade, model)
         renderer = SongRenderer(model)
         await app.ui.table_container.set_renderer(renderer)
     elif model.meta.model_type == ModelType.artist:
@@ -25,8 +25,7 @@ async def render(req, **kwargs):
         renderer = ArtistRenderer(artist, tab_index)
         await app.ui.table_container.set_renderer(renderer)
     elif model.meta.model_type == ModelType.album:
-        # FIXME: handle NotSupported exception
-        album = app.library.cast_model_to_v1(model)
+        album = await aio.run_fn(app.library.album_upgrade, model)
         tab_index = int(req.query.get('tab_index', 1))
         renderer = AlbumRenderer(album, tab_index)
         await app.ui.table_container.set_renderer(renderer)
@@ -133,25 +132,20 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         album = self.model
         tab_index = self.tab_index
 
-        self.meta_widget.title = album.name_display
-        self.meta_widget.creator = album.artists_name_display
+        self.meta_widget.title = album.name
+        self.meta_widget.creator = album.artists_name
         self.meta_widget.show()
 
         self.render_tab_bar()
 
         if tab_index == 0:
-            aio.run_afn(self._show_desc)
+            self.show_desc(self.model.description)
         else:
-            songs = await aio.run_fn(lambda: album.songs)
-            self.meta_widget.songs_count = len(songs)
-            self.show_songs(create_reader(songs))
+            reader = create_reader(album.songs)
+            self.meta_widget.songs_count = reader.count
+            self.show_songs(reader)
 
         # fetch cover and description
-        cover = await aio.run_fn(lambda: album.cover)
+        cover = album.cover
         if cover:
             aio.run_afn(self.show_cover, cover, reverse(album, '/cover'))
-
-    async def _show_desc(self):
-        with suppress(ProviderIOError):
-            desc = await aio.run_fn(lambda: self.model.desc)
-            self.show_desc(desc)

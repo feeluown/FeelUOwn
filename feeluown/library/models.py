@@ -315,6 +315,7 @@ class AlbumModel(BaseNormalModel):
     cover: str
     type_: AlbumType = AlbumType.standard
     artists: List[BriefArtistModel]
+    songs: List[SongModel]
     description: str
 
     @property

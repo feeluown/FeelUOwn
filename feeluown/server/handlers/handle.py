@@ -47,9 +47,9 @@ async def handle_request(
                 rv = handler.handle(cmd)
         except HandlerException as e:
             ok, body = False, str(e)
-        except Exception:  # pylint: disable=broad-except
+        except Exception as e:  # pylint: disable=broad-except
             logger.exception(f'handle cmd({cmd}) error')
-            ok, body = False, 'internal server error'
+            ok, body = False, f'internal server error\n{str(e)}'
         else:
             rv = rv if rv is not None else ''
             ok, body = True, rv
