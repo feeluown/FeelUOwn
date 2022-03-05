@@ -14,13 +14,17 @@ from .excs import (
     ProviderNotFound, ModelNotFound
 )
 from .flags import Flags as PF
-from .models import ModelFlags as MF
-from .models import *  # noqa
-from .model_protocol import *  # noqa
+from .models import (
+    ModelFlags as MF, BaseModel, BriefSongModel, UserModel,
+    get_modelcls_by_type,
+)
+from .model_protocol import (
+    BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
+    LyricProtocol, VideoProtocol, BriefAlbumProtocol
+)
 
 
 logger = logging.getLogger(__name__)
-
 
 FULL_SCORE = 10
 MIN_SCORE = 5
@@ -156,7 +160,7 @@ class Library:
         else:
             self.provider_removed.emit(provider)
 
-    def get(self, identifier) -> Optional[Union[AbstractProvider,ProviderV2]]:
+    def get(self, identifier) -> Optional[Union[AbstractProvider, ProviderV2]]:
         """通过资源提供方唯一标识获取提供方实例"""
         for provider in self._providers:
             if provider.identifier == identifier:
@@ -426,11 +430,11 @@ class Library:
         return self._model_upgrade(song)  # type: ignore
 
     def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
-        provider = self.get_or_raise(song.source)
+        provider = self.getv2_or_raise(song.source)
         return provider.song_list_similar(song)
 
     def song_list_hot_comments(self, song: BriefSongProtocol):
-        provider = self.get_or_raise(song.source)
+        provider = self.getv2_or_raise(song.source)
         return provider.song_list_hot_comments(song)
 
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
@@ -483,6 +487,7 @@ class Library:
         """
         provider = self.get_or_raise(song.source)
         if self.check_flags_by_model(song, PF.mv):
+            assert isinstance(provider, ProviderV2)
             mv = provider.song_get_mv(song)
         else:
             song_v1 = self.cast_model_to_v1(song)
@@ -501,6 +506,7 @@ class Library:
         """
         provider = self.get_or_raise(song.source)
         if self.check_flags_by_model(song, PF.lyric):
+            assert isinstance(provider, ProviderV2)
             lyric = provider.song_get_lyric(song)
         else:
             song_v1 = self.cast_model_to_v1(song)
@@ -509,7 +515,7 @@ class Library:
         return lyric
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
-        provider = self.get_or_raise(song.source)
+        provider = self.getv2_or_raise(song.source)
         return provider.song_get_web_url(song)
 
     # --------
@@ -585,6 +591,7 @@ class Library:
         if video.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for video
             assert self.check_flags_by_model(video, PF.multi_quality)
+            assert isinstance(provider, ProviderV2)
             media, _ = provider.video_select_media(video, policy)
         else:
             # V1 VideoModel has attribute `media`
@@ -608,6 +615,7 @@ class Library:
         """
         provider = self.get_or_raise(source)
         if self.check_flags(source, ModelType.none, PF.current_user):
+            assert isinstance(provider, ProviderV2)
             return provider.has_current_user()
 
         try:
@@ -629,6 +637,7 @@ class Library:
         """
         provider = self.get_or_raise(source)
         if self.check_flags(source, ModelType.none, PF.current_user):
+            assert isinstance(provider, ProviderV2)
             return provider.get_current_user()
 
         user_v1 = getattr(provider, '_user', None)

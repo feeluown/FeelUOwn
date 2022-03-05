@@ -14,8 +14,8 @@ from urllib.parse import urlparse
 
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
-from feeluown.library import NotSupported, ResourceNotFound, ProviderFlags as PF
-from feeluown.models.uri import NS_TYPE_MAP, TYPE_NS_MAP
+from feeluown.library import NotSupported, ResourceNotFound
+from feeluown.models.uri import NS_TYPE_MAP
 from feeluown.models import ModelType
 
 from .base import AbstractHandler
@@ -45,15 +45,13 @@ class ShowHandler(AbstractHandler):
         except NotFound:
             raise HandlerException(f'path {path} not found') from None
         except ResourceNotFound as e:
-            raise HandlerException(str(e))
+            raise HandlerException(str(e)) from e
         except NotSupported as e:
             raise HandlerException(str(e)) from None
         return rv
 
 
 def get_model_or_raise(library, provider, model_type, model_id):
-    # pylint: disable=redefined-outer-name
-    ns = TYPE_NS_MAP[model_type]
     model = library.model_get(provider.identifier, model_type, model_id)
     return model
 
