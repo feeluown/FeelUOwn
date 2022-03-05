@@ -14,12 +14,12 @@ from urllib.parse import urlparse
 
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
-from feeluown.library import NotSupported, ProviderV2, ProviderFlags as PF
-from feeluown.models.uri import NS_TYPE_MAP, TYPE_NS_MAP
+from feeluown.library import NotSupported, ResourceNotFound
+from feeluown.models.uri import NS_TYPE_MAP
 from feeluown.models import ModelType
 
 from .base import AbstractHandler
-from .excs import CmdException
+from .excs import HandlerException
 
 logger = logging.getLogger(__name__)
 
@@ -43,26 +43,16 @@ class ShowHandler(AbstractHandler):
             rv = router.dispatch(path, {'library': self.library,
                                         'session': self.session})
         except NotFound:
-            raise CmdException(f'path {path} not found') from None
+            raise HandlerException(f'path {path} not found') from None
+        except ResourceNotFound as e:
+            raise HandlerException(str(e)) from e
         except NotSupported as e:
-            raise CmdException(str(e)) from None
+            raise HandlerException(str(e)) from None
         return rv
 
 
-def get_model_or_raise(provider, model_type, model_id):
-    # pylint: disable=redefined-outer-name
-    model = None
-    ns = TYPE_NS_MAP[model_type]
-    # FIXME: use library.check_flags
-    if isinstance(provider, ProviderV2):
-        if provider.check_flags(model_type, PF.get):
-            model = provider.model_get(model_type, model_id)
-    else:
-        model_cls = provider.get_model_cls(model_type)
-        model = model_cls.get(model_id)
-    if model is None:
-        raise CmdException(
-            f'{ns}:{model_id} not found in provider:{provider.identifier}')
+def get_model_or_raise(library, provider, model_type, model_id):
+    model = library.model_get(provider.identifier, model_type, model_id)
     return model
 
 
@@ -72,7 +62,7 @@ def use_provider(func):
         provider_id = kwargs.pop('provider')
         provider = req.ctx['library'].get(provider_id)
         if provider is None:
-            raise CmdException(f'provider:{provider_id} not found')
+            raise HandlerException(f'provider:{provider_id} not found')
         return func(req, provider, **kwargs)
     return wrapper
 
@@ -87,10 +77,11 @@ def create_model_handler(ns, model_type):
             if model_id == 'me':
                 user = getattr(provider, '_user', None)
                 if user is None:
-                    raise CmdException(
+                    raise HandlerException(
                         f'log in provider:{provider.identifier} first')
                 return user
-        model = get_model_or_raise(provider, model_type, model_id)
+        model = get_model_or_raise(
+            req.ctx['library'], provider, model_type, model_id)
         return model
 
 
@@ -119,8 +110,8 @@ for ns_, model_type_ in NS_TYPE_MAP.items():
 @route('/<provider>/songs/<sid>/lyric')
 @use_provider
 def lyric_(req, provider, sid):
-    song = get_model_or_raise(provider, ModelType.song, sid)
     library = req.ctx['library']
+    song = get_model_or_raise(library, provider, ModelType.song, sid)
     lyric = library.song_get_lyric(song)
     if lyric is None:
         return ''
@@ -130,7 +121,7 @@ def lyric_(req, provider, sid):
 @route('/<provider>/playlists/<pid>/songs')
 @use_provider
 def playlist_songs(req, provider, pid):
-    playlist = get_model_or_raise(provider, ModelType.playlist, pid)
+    playlist = get_model_or_raise(req.ctx['library'], provider, ModelType.playlist, pid)
     return to_readall_reader(playlist, 'songs').readall()
 
 
@@ -138,5 +129,5 @@ def playlist_songs(req, provider, pid):
 @use_provider
 def albums_of_artist(req, provider, aid):
     """show all albums of an artist identified by artist id"""
-    artist = get_model_or_raise(provider, ModelType.artist, aid)
+    artist = get_model_or_raise(req.ctx['library'], provider, ModelType.artist, aid)
     return to_readall_reader(artist, 'albums').readall()

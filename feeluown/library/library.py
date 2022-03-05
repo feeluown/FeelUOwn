@@ -1,6 +1,6 @@
 import logging
 from functools import partial, lru_cache
-from typing import List, cast, Optional
+from typing import List, cast, Optional, Union
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
@@ -11,20 +11,20 @@ from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
     NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
-    ProviderNotFound,
+    ProviderNotFound, ModelNotFound
 )
 from .flags import Flags as PF
 from .models import (
-    ModelFlags as MF, BaseModel, BriefSongModel, SongModel, UserModel,
+    ModelFlags as MF, BaseModel, BriefSongModel, UserModel,
+    get_modelcls_by_type,
 )
 from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
-    LyricProtocol, VideoProtocol,
+    LyricProtocol, VideoProtocol, BriefAlbumProtocol
 )
 
 
 logger = logging.getLogger(__name__)
-
 
 FULL_SCORE = 10
 MIN_SCORE = 5
@@ -107,6 +107,14 @@ def _get_display_property_or_raise(model, attr):
     return getattr(model, f'_display_store_{attr}')
 
 
+def err_provider_not_support_flag(pid, model_type, op):
+    op_str = str(op)
+    if op is PF.get:
+        op_str = 'get'
+    mtype_str = str(ModelType(model_type))
+    return NotSupported(f"provider:{pid} does't support '{op_str}' for {mtype_str}")
+
+
 class Library:
     """音乐库，管理资源提供方以及资源"""
 
@@ -152,7 +160,7 @@ class Library:
         else:
             self.provider_removed.emit(provider)
 
-    def get(self, identifier):
+    def get(self, identifier) -> Optional[Union[AbstractProvider, ProviderV2]]:
         """通过资源提供方唯一标识获取提供方实例"""
         for provider in self._providers:
             if provider.identifier == identifier:
@@ -346,13 +354,20 @@ class Library:
 
     # provider common
 
-    def get_or_raise(self, identifier) -> ProviderV2:
+    def get_or_raise(self, identifier) -> Union[AbstractProvider, ProviderV2]:
         """
         :raises ProviderNotFound:
         """
         provider = self.get(identifier)
         if provider is None:
             raise ProviderNotFound(f'provider {identifier} not found')
+        return provider
+
+    def getv2_or_raise(self, identifier) -> ProviderV2:
+        provider = self.get_or_raise(identifier)
+        # You should ensure the provider is v2 first. For example, if check_flags
+        # returns true, the provider must be a v2 instance.
+        assert isinstance(provider, ProviderV2), 'provider must be v2'
         return provider
 
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
@@ -370,6 +385,7 @@ class Library:
             return False
         if isinstance(provider, ProviderV2):
             return provider.check_flags(model_type, flags)
+        # Always return false when the provider is not a v2 instance.
         return False
 
     def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
@@ -411,29 +427,14 @@ class Library:
     # Songs
     # -----
     def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
-        if song.meta.flags & MF.v2:
-            if MF.normal in song.meta.flags:
-                upgraded_song = cast(SongProtocol, song)
-            else:
-                provider = self.get_or_raise(song.source)
-                if self.check_flags_by_model(song, PF.get):
-                    upgraded_song = provider.song_get(song.identifier)
-                else:
-                    raise NotSupported("provider has not flag 'get' for 'song'")
-        else:
-            fields = [f for f in list(SongModel.__fields__)
-                      if f not in list(BaseModel.__fields__)]
-            for field in fields:
-                getattr(song, field)
-            upgraded_song = cast(SongProtocol, song)
-        return upgraded_song
+        return self._model_upgrade(song)  # type: ignore
 
     def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
-        provider = self.get_or_raise(song.source)
+        provider = self.getv2_or_raise(song.source)
         return provider.song_list_similar(song)
 
     def song_list_hot_comments(self, song: BriefSongProtocol):
-        provider = self.get_or_raise(song.source)
+        provider = self.getv2_or_raise(song.source)
         return provider.song_list_hot_comments(song)
 
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
@@ -444,6 +445,7 @@ class Library:
         if song.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for song
             assert self.check_flags_by_model(song, PF.multi_quality)
+            assert isinstance(provider, ProviderV2)
             media, _ = provider.song_select_media(song, policy)
         else:
             if song.meta.support_multi_quality:
@@ -485,6 +487,7 @@ class Library:
         """
         provider = self.get_or_raise(song.source)
         if self.check_flags_by_model(song, PF.mv):
+            assert isinstance(provider, ProviderV2)
             mv = provider.song_get_mv(song)
         else:
             song_v1 = self.cast_model_to_v1(song)
@@ -503,6 +506,7 @@ class Library:
         """
         provider = self.get_or_raise(song.source)
         if self.check_flags_by_model(song, PF.lyric):
+            assert isinstance(provider, ProviderV2)
             lyric = provider.song_get_lyric(song)
         else:
             song_v1 = self.cast_model_to_v1(song)
@@ -511,8 +515,73 @@ class Library:
         return lyric
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
-        provider = self.get_or_raise(song.source)
+        provider = self.getv2_or_raise(song.source)
         return provider.song_get_web_url(song)
+
+    # --------
+    # Album
+    # --------
+    def album_upgrade(self, album: BriefAlbumProtocol):
+        return self._model_upgrade(album)
+
+    # -------------------------
+    # generic methods for model
+    # -------------------------
+    def model_get(self, pid, mtype, mid):
+        """Get a (normal) model instance.
+
+        :param pid: provider id
+        :param mtype: model type
+        :param mid: model id
+        :return: model
+
+        :raise NotSupported: provider has not .get for this model type
+        :raise ResourceNotFound: model does not exist
+        """
+        provider = self.get_or_raise(pid)
+        model = None
+        try_v1way = False
+        if isinstance(provider, ProviderV2):
+            if provider.check_flags(mtype, PF.model_v2):
+                if provider.check_flags(mtype, PF.get):
+                    model = provider.model_get(mtype, mid)
+                else:
+                    raise err_provider_not_support_flag(pid, mtype, PF.get)
+            else:
+                try_v1way = True
+        else:
+            try_v1way = True
+
+        # Try to use the ModelV1.get API to get the model.
+        if try_v1way:
+            assert isinstance(provider, AbstractProvider)
+            try:
+                model_cls = provider.get_model_cls(mtype)
+                model = model_cls.get(mid)
+            except AttributeError:
+                pass
+        if model is None:
+            raise ModelNotFound
+        return model
+
+    def _model_upgrade(self, model):
+        if model.meta.flags & MF.v2:
+            if MF.normal in model.meta.flags:
+                upgraded_model = model
+            else:
+                provider = self.getv2_or_raise(model.source)
+                if self.check_flags_by_model(model, PF.get):
+                    upgraded_model = provider.model_get(model.identifier)
+                else:
+                    raise NotSupported("provider has not flag 'get' for 'model'")
+        else:
+            modelcls = get_modelcls_by_type(ModelType(model.meta.model_type))
+            fields = [f for f in list(modelcls.__fields__)
+                      if f not in list(BaseModel.__fields__)]
+            for field in fields:
+                getattr(model, field)
+            upgraded_model = model
+        return upgraded_model
 
     # --------
     # Video
@@ -522,6 +591,7 @@ class Library:
         if video.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for video
             assert self.check_flags_by_model(video, PF.multi_quality)
+            assert isinstance(provider, ProviderV2)
             media, _ = provider.video_select_media(video, policy)
         else:
             # V1 VideoModel has attribute `media`
@@ -545,6 +615,7 @@ class Library:
         """
         provider = self.get_or_raise(source)
         if self.check_flags(source, ModelType.none, PF.current_user):
+            assert isinstance(provider, ProviderV2)
             return provider.has_current_user()
 
         try:
@@ -566,6 +637,7 @@ class Library:
         """
         provider = self.get_or_raise(source)
         if self.check_flags(source, ModelType.none, PF.current_user):
+            assert isinstance(provider, ProviderV2)
             return provider.get_current_user()
 
         user_v1 = getattr(provider, '_user', None)
