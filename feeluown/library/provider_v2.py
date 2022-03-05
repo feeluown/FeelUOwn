@@ -35,6 +35,8 @@ class ProviderV2:
             return self.song_get(model_id)
         elif model_type == ModelType.video:
             return self.video_get(model_id)
+        elif model_type == ModelType.album:
+            return self.album_get(model_id)
         raise NotSupported
 
     def _model_cache_get_or_fetch(self, model, cache_key):
@@ -167,3 +169,8 @@ class ProviderV2:
                     f'provider:{playable_model.source} has nonstandard implementation')
             return media, quality
         assert False, 'this should not happen'
+
+    def album_get(self, identifier):
+        """
+        :raises ModelNotFound: identifier is invalid
+        """

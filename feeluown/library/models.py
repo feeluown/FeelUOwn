@@ -354,3 +354,25 @@ class PlaylistModel(BaseBriefModel):
     name: str
     cover: str
     description: str
+
+
+_type_modelcls_mapping = {
+    ModelType.song: (SongModel, BriefSongModel),
+    ModelType.album: (AlbumModel, BriefAlbumModel),
+    ModelType.artist: (ArtistModel, BriefArtistModel),
+    ModelType.video: (VideoModel, BriefVideoModel),
+    ModelType.playlist: (PlaylistModel, BriefPlaylistModel),
+    ModelType.user: (UserModel, BriefUserModel),
+}
+
+
+def get_modelcls_by_type(model_type: ModelType, brief=False):
+    # return None when there is no brief model for them.
+    # THINKING: maybe LyricModel and CommentModel will never has
+    # a corresponding brief model.
+    if model_type in _type_modelcls_mapping:
+        modelcls, brief_modelcls = _type_modelcls_mapping[model_type]
+        if brief:
+            return brief_modelcls
+        return modelcls
+    return None

@@ -22,7 +22,19 @@ class Flags(IntFlag):
     web_url = 0x00010000
     model_v2 = 0x00004000
     """
-    provider uses ModelV2 for a specific resource
+    The provider uses ModelV2 for a specific resource.
+
+    When model_v2 is on, the way of fetching attributes is completely changed.
+    All fetching operations are performed by methods of library.
+
+    Before, if you want to get the title of a song, you should do::
+
+        title = await aio.run_fn(lambda: song.title)
+
+    Now if the provider use ModelV2, you can do::
+
+        upgraded_song = await aio.run_fn(library.song_upgrade, song)
+        title = upgrade_song.title
     """
 
     current_user = 0x00100000

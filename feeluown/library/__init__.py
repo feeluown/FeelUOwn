@@ -19,6 +19,7 @@ from .models import ModelFlags, BaseModel, ModelType, \
     BriefUserModel, UserModel, \
     LyricModel, VideoModel, BriefVideoModel, \
     ArtistModel, AlbumModel, PlaylistModel, BriefPlaylistModel, \
-    fmt_artists_names
+    fmt_artists_names, \
+    get_modelcls_by_type
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound

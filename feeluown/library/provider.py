@@ -52,6 +52,7 @@ class AbstractProvider(ABC):
         self._user = None
 
     def get_model_cls(self, model_type):
+        """Return the modelv1 class"""
         name = _TYPE_NAME_MAP[model_type]
         return getattr(self, name)
 
