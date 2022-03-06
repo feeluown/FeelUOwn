@@ -124,7 +124,7 @@ class Renderer:
         filter_model = filter_model_cls()
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = model_cls(reader,
-                          fetch_cover_wrapper(self._app.img_mgr),
+                          fetch_cover_wrapper(self._app),
                           source_name_map=source_name_map)
         filter_model.setSourceModel(model)
         table.setModel(filter_model)

@@ -564,7 +564,32 @@ class Library:
             raise ModelNotFound
         return model
 
+    def model_get_cover(self, model):
+        """Get the model cover url
+
+        :return: cover url if exists, else ''
+        """
+        cover = ''
+        if MF.v2 in model.meta.flags:
+            if MF.normal in model.meta.flags:
+                cover = model.cover
+            else:
+                # TODO: upgrade artist model.
+                if ModelType(model.meta.model_type) in (ModelType.album,
+                                                        ModelType.video):
+                    um = self._model_upgrade(model)
+                    cover = um.cover
+        else:
+            cover = model.cover
+            # Check if cover is a media object.
+            if cover and not isinstance(cover, str):
+                cover = cover.url
+        return cover
+
     def _model_upgrade(self, model):
+        """
+        Thinking: currently, the caller must catch the NotSupported error.
+        """
         if model.meta.flags & MF.v2:
             if MF.normal in model.meta.flags:
                 upgraded_model = model
