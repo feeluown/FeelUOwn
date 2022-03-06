@@ -251,7 +251,9 @@ def resolve(line, model=None):
 
     for example, line can be 'fuo://local/songs/1/cover/data'
     """
-    from feeluown.library import ProviderFlags, get_modelcls_by_type
+    from feeluown.library import (
+        ProviderFlags, get_modelcls_by_type, V2SupportedModelTypes,
+    )
 
     if model is None:
         model, path = parse_line(line)
@@ -265,7 +267,7 @@ def resolve(line, model=None):
                 model_type = ModelType(model.meta.model_type)
                 modelcls = get_modelcls_by_type(model_type, brief=True)
                 if modelcls is None or \
-                   model_type not in [ModelType.song, ModelType.video, ModelType.album]:
+                   model_type not in V2SupportedModelTypes:
                     assert False, 'library has not support the v2 model for {model_type}'
                 else:
                     model = modelcls.from_display_model(model)

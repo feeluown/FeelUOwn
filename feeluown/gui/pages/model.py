@@ -2,6 +2,7 @@ from contextlib import suppress
 from requests.exceptions import RequestException
 
 from feeluown.excs import ProviderIOError
+from feeluown.library import V2SupportedModelTypes
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
 from feeluown.models import ModelType, reverse
@@ -14,20 +15,23 @@ async def render(req, **kwargs):
     app = req.ctx['app']
     model = req.ctx['model']
 
-    if model.meta.model_type == ModelType.song:
-        model = await aio.run_fn(app.library.song_upgrade, model)
-        renderer = SongRenderer(model)
-        await app.ui.table_container.set_renderer(renderer)
+    # FIXME: handle NotSupported exception
+    if ModelType(model.meta.model_type) in V2SupportedModelTypes:
+        if model.meta.model_type == ModelType.song:
+            model = await aio.run_fn(app.library.song_upgrade, model)
+            renderer = SongRenderer(model)
+            await app.ui.table_container.set_renderer(renderer)
+        elif model.meta.model_type == ModelType.album:
+            album = await aio.run_fn(app.library.album_upgrade, model)
+            tab_index = int(req.query.get('tab_index', 1))
+            renderer = AlbumRenderer(album, tab_index)
+            await app.ui.table_container.set_renderer(renderer)
+        else:
+            assert False, "can't render this type of model"
     elif model.meta.model_type == ModelType.artist:
-        # FIXME: handle NotSupported exception
         artist = app.library.cast_model_to_v1(model)
         tab_index = int(req.query.get('tab_index', 1))
         renderer = ArtistRenderer(artist, tab_index)
-        await app.ui.table_container.set_renderer(renderer)
-    elif model.meta.model_type == ModelType.album:
-        album = await aio.run_fn(app.library.album_upgrade, model)
-        tab_index = int(req.query.get('tab_index', 1))
-        renderer = AlbumRenderer(album, tab_index)
         await app.ui.table_container.set_renderer(renderer)
     else:
         app.ui.right_panel.show_model(model)

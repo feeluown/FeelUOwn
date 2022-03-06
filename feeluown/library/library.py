@@ -16,7 +16,7 @@ from .excs import (
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel, BriefSongModel, UserModel,
-    get_modelcls_by_type,
+    get_modelcls_by_type, V2SupportedModelTypes,
 )
 from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
@@ -575,8 +575,8 @@ class Library:
                 cover = model.cover
             else:
                 # TODO: upgrade artist model.
-                if ModelType(model.meta.model_type) in (ModelType.album,
-                                                        ModelType.video):
+                # Currently supported model types: (ModelType.album, ModelType.video).
+                if ModelType(model.meta.model_type) in V2SupportedModelTypes:
                     um = self._model_upgrade(model)
                     cover = um.cover
         else:

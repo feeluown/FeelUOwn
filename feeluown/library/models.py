@@ -82,6 +82,14 @@ def fmt_artists(artists: List['BriefArtistModel']) -> str:
     return fmt_artists_names([artist.name for artist in artists])
 
 
+# When a model is fully supported (with v2 design), it means
+# the library has implemented all features(functions) for this model.
+# You can do anything with model v2 without model v1.
+#
+# Also, the corresponding v1 model is deprecated.
+V2SupportedModelTypes = (ModelType.song, ModelType.album, ModelType.video)
+
+
 class ModelMeta:
     def __init__(self, flags, model_type):
         self.flags = flags
