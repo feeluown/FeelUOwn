@@ -315,6 +315,9 @@ class AlbumModel(BaseNormalModel):
     cover: str
     type_: AlbumType = AlbumType.standard
     artists: List[BriefArtistModel]
+    # One album usually has limited songs, and many providers' album_detail API
+    # can return songs list.
+    songs: List[SongModel]
     description: str
 
     @property

@@ -2,10 +2,10 @@ import logging
 from functools import partial, lru_cache
 from typing import List, cast, Optional, Union
 
-from feeluown.utils import aio
-from feeluown.utils.dispatch import Signal
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
+from feeluown.utils import aio
+from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import log_exectime
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
@@ -564,14 +564,40 @@ class Library:
             raise ModelNotFound
         return model
 
+    def model_get_cover(self, model):
+        """Get the model cover url
+
+        :return: cover url if exists, else ''
+        """
+        cover = ''
+        if MF.v2 in model.meta.flags:
+            if MF.normal in model.meta.flags:
+                cover = model.cover
+            else:
+                # TODO: upgrade artist model.
+                if ModelType(model.meta.model_type) in (ModelType.album,
+                                                        ModelType.video):
+                    um = self._model_upgrade(model)
+                    cover = um.cover
+        else:
+            cover = model.cover
+            # Check if cover is a media object.
+            if cover and not isinstance(cover, str):
+                cover = cover.url
+        return cover
+
     def _model_upgrade(self, model):
+        """
+        Thinking: currently, the caller must catch the NotSupported error.
+        """
         if model.meta.flags & MF.v2:
             if MF.normal in model.meta.flags:
                 upgraded_model = model
             else:
                 provider = self.getv2_or_raise(model.source)
                 if self.check_flags_by_model(model, PF.get):
-                    upgraded_model = provider.model_get(model.identifier)
+                    upgraded_model = provider.model_get(
+                        model.meta.model_type, model.identifier)
                 else:
                     raise NotSupported("provider has not flag 'get' for 'model'")
         else:

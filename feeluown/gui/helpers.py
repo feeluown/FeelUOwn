@@ -23,7 +23,7 @@ except ImportError:
 
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
-from feeluown.library import ModelFlags
+from feeluown.library import NotSupported
 
 logger = logging.getLogger(__name__)
 
@@ -332,10 +332,12 @@ class ReaderFetchMoreMixin:
             self._fetch_more_cb(items)
 
 
-def fetch_cover_wrapper(img_mgr):
+def fetch_cover_wrapper(app):
     """
     Your should only use this helper within ImgListModel.
     """
+    img_mgr, library = app.img_mgr, app.library
+
     async def fetch_model_cover(model, cb, uid):
         # try get from cache first
         content = img_mgr.get_from_cache(uid)
@@ -343,20 +345,8 @@ def fetch_cover_wrapper(img_mgr):
             return cb(content)
         # FIXME: sleep random second to avoid send too many request to provider
         await asyncio.sleep(random.randrange(100) / 100)
-        with suppress(ProviderIOError, RequestException):
-            cover = None
-            if ModelFlags.v2 in model.meta.flags:
-                if ModelFlags.normal in model.meta.flags:
-                    cover = model.cover
-                # TODO: upgrade video model
-            else:
-                cover = await async_run(lambda: model.cover)
-
-            if cover:  # check if cover url is valid
-                # FIXME: we should check if cover is a media object
-                if not isinstance(cover, str):
-                    cover = cover.url
-            url = cover
+        with suppress(ProviderIOError, RequestException, NotSupported):
+            url = await aio.run_fn(library.model_get_cover, model)
             if url:
                 content = await img_mgr.get(url, uid)
                 cb(content)

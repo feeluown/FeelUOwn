@@ -2,7 +2,7 @@ import random
 
 import pytest
 
-from feeluown.library import Library, ModelType
+from feeluown.library import Library, ModelType, BriefAlbumModel
 from feeluown.library.provider import dummy_provider
 from feeluown.models import SearchModel
 
@@ -122,3 +122,10 @@ def test_library_register_should_emit_signal(library, mocker):
 def test_library_model_get(xlibrary, eee_provider):
     album = xlibrary.model_get(eee_provider.identifier, ModelType.album, '0')
     assert album.identifier == '0'
+
+
+def test_library_model_upgrade(xlibrary, eee_provider):
+    album = BriefAlbumModel(identifier='0',
+                            source=eee_provider.identifier,)
+    album = xlibrary._model_upgrade(album)
+    assert album.name == '0'
