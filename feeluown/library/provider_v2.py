@@ -2,7 +2,7 @@ from typing import Tuple, List, Optional, cast
 
 from feeluown.media import Media, Quality
 from feeluown.models import ModelType
-from .models import CommentModel
+from .models import CommentModel, V2SupportedModelTypes
 from .model_protocol import SongProtocol, LyricProtocol, VideoProtocol
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
@@ -31,12 +31,13 @@ class ProviderV2:
     check_flags = check_flags
 
     def model_get(self, model_type, model_id):
-        if model_type == ModelType.song:
-            return self.song_get(model_id)
-        elif model_type == ModelType.video:
-            return self.video_get(model_id)
-        elif model_type == ModelType.album:
-            return self.album_get(model_id)
+        if model_type in V2SupportedModelTypes:
+            if model_type == ModelType.song:
+                return self.song_get(model_id)
+            elif model_type == ModelType.video:
+                return self.video_get(model_id)
+            elif model_type == ModelType.album:
+                return self.album_get(model_id)
         raise NotSupported
 
     def _model_cache_get_or_fetch(self, model, cache_key):
