@@ -23,6 +23,8 @@
 # 1. read MPV_DYLIB_PATH from environ
 #    https://github.com/feeluown/FeelUOwn/pull/325
 #
+# 2. use API mpv_destroy since mpv_detach_destroy is deprecated since libmpv 1.29
+#    https://github.com/jaseg/python-mpv/pull/195
 
 from ctypes import *
 import ctypes.util
@@ -545,7 +547,7 @@ _mpv_create = backend.mpv_create
 _handle_func('mpv_create_client',           [c_char_p],                                 MpvHandle, notnull_errcheck)
 _handle_func('mpv_client_name',             [],                                         c_char_p, errcheck=None)
 _handle_func('mpv_initialize',              [],                                         c_int, ec_errcheck)
-_handle_func('mpv_detach_destroy',          [],                                         None, errcheck=None)
+_handle_func('mpv_destroy',                 [],                                         None, errcheck=None)
 _handle_func('mpv_terminate_destroy',       [],                                         None, errcheck=None)
 _handle_func('mpv_load_config_file',        [c_char_p],                                 c_int, ec_errcheck)
 _handle_func('mpv_get_time_us',             [],                                         c_ulonglong, errcheck=None)
@@ -892,7 +894,7 @@ class MPV(object):
                         self._message_handlers[target](*args)
 
                 if eid == MpvEventID.SHUTDOWN:
-                    _mpv_detach_destroy(self._event_handle)
+                    _mpv_destroy(self._event_handle)
                     return
 
             except Exception as e:
