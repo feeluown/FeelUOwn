@@ -97,6 +97,22 @@ class ArtistModel(BaseModel):
     def create_albums_g(self):
         pass
 
+    @property
+    def aliases(self):
+        return []
+
+    @property
+    def hot_songs(self):  # To be compatible with ArtistModel v2.
+        return self.songs
+
+    @property
+    def pic_url(self):  # To be compatible with ArtistModel v2.
+        return self.cover
+
+    @property
+    def description(self):  # To be compatible with ArtistModel v2.
+        return self.desc
+
     def __getattribute__(self, name):
         value = super().__getattribute__(name)
         if name == 'songs':

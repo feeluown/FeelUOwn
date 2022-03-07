@@ -7,6 +7,7 @@ from feeluown.models import SearchType, ModelType
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import log_exectime
+from feeluown.utils.reader import create_reader
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
@@ -20,7 +21,7 @@ from .models import (
 )
 from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
-    LyricProtocol, VideoProtocol, BriefAlbumProtocol
+    LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
 )
 
 
@@ -524,6 +525,42 @@ class Library:
     def album_upgrade(self, album: BriefAlbumProtocol):
         return self._model_upgrade(album)
 
+    # --------
+    # Artist
+    # --------
+    def artist_upgrade(self, artist: BriefArtistProtocol):
+        return self._model_upgrade(artist)
+
+    def artist_create_songs_rd(self, artist):
+        """Create songs reader for artist model.
+        """
+        provider = self.get_or_raise(artist.source)
+        if self.check_flags_by_model(artist, PF.songs_rd):
+            assert isinstance(provider, ProviderV2)
+            reader = provider.artist_create_songs_rd(artist)
+        else:
+            artist = self.cast_model_to_v1(artist)
+            if artist.meta.allow_create_songs_g:
+                reader = create_reader(artist.create_songs_g())
+            else:
+                reader = create_reader(artist.songs)
+        return reader
+
+    def artist_create_albums_rd(self, artist):
+        """Create albums reader for artist model.
+        """
+        provider = self.get_or_raise(artist.source)
+        if self.check_flags_by_model(artist, PF.albums_rd):
+            assert isinstance(provider, ProviderV2)
+            reader = provider.artist_create_albums_rd(artist)
+        else:
+            artist = self.cast_model_to_v1(artist)
+            if artist.meta.allow_create_albums_g:
+                reader = create_reader(artist.create_albums_g())
+            else:
+                raise NotSupported("can't create albums reader for artist")
+        return reader
+
     # -------------------------
     # generic methods for model
     # -------------------------
@@ -540,21 +577,15 @@ class Library:
         """
         provider = self.get_or_raise(pid)
         model = None
-        try_v1way = False
+        try_v1way = True
         if isinstance(provider, ProviderV2):
             if provider.check_flags(mtype, PF.model_v2):
                 if provider.check_flags(mtype, PF.get):
+                    try_v1way = False
                     model = provider.model_get(mtype, mid)
-                else:
-                    raise err_provider_not_support_flag(pid, mtype, PF.get)
-            else:
-                try_v1way = True
-        else:
-            try_v1way = True
 
         # Try to use the ModelV1.get API to get the model.
-        if try_v1way:
-            assert isinstance(provider, AbstractProvider)
+        if try_v1way and isinstance(provider, AbstractProvider):
             try:
                 model_cls = provider.get_model_cls(mtype)
                 model = model_cls.get(mid)
@@ -565,9 +596,10 @@ class Library:
         return model
 
     def model_get_cover(self, model):
-        """Get the model cover url
+        """Get the cover url of model
 
-        :return: cover url if exists, else ''
+        :param model: model which has a 'cover' field.
+        :return: cover url if exists, else ''.
         """
         cover = ''
         if MF.v2 in model.meta.flags:
@@ -590,23 +622,34 @@ class Library:
         """
         Thinking: currently, the caller must catch the NotSupported error.
         """
+        try_v1way = True
+        upgraded_model = None
         if model.meta.flags & MF.v2:
             if MF.normal in model.meta.flags:
                 upgraded_model = model
+                try_v1way = False
             else:
                 provider = self.getv2_or_raise(model.source)
+                # When the provider does not support 'get' for this model.
+                # Do not raise NotSupported here and try to use the v1 way.
+                #
+                # For example, provider X may support 'get' for SongModel, then
+                # the song.artists can return list of BriefArtistModel.
                 if self.check_flags_by_model(model, PF.get):
                     upgraded_model = provider.model_get(
                         model.meta.model_type, model.identifier)
-                else:
-                    raise NotSupported("provider has not flag 'get' for 'model'")
-        else:
+                    try_v1way = False
+
+        if try_v1way is True:
+            v1model = self.cast_model_to_v1(model)
             modelcls = get_modelcls_by_type(ModelType(model.meta.model_type))
             fields = [f for f in list(modelcls.__fields__)
                       if f not in list(BaseModel.__fields__)]
             for field in fields:
-                getattr(model, field)
-            upgraded_model = model
+                getattr(v1model, field)
+            upgraded_model = v1model
+        else:
+            assert upgraded_model is not None
         return upgraded_model
 
     # --------
