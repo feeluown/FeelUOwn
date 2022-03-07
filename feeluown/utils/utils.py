@@ -28,7 +28,8 @@ def use_mpv_old():
     try:
         import mpv  # noqa
     except AttributeError as e:
-        # undefined symbol: mpv_render_context_create
+        # libmpv<1.28 'undefined symbol: mpv_render_context_create'
+        # libmpv<1.29 'undefined symbol: mpv_destroy'
         msg = str(e)
         if 'undefined symbol' in msg:
             logger.info(f'use mpv old because of err: {msg}')
