@@ -96,7 +96,8 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
         cover = artist.pic_url
         if cover:
             await self.show_cover(cover,
-                                  reverse(artist, '/cover'), as_background=True)
+                                  reverse(artist) + '/cover',
+                                  as_background=True)
 
     async def _show_songs(self):
         artist = self.model

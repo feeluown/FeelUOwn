@@ -223,7 +223,9 @@ class Library:
                 logger.exception('search task failed')
                 continue
             else:
-                yield result
+                # When a provider does not implement search method, it returns None.
+                if result is not None:
+                    yield result
 
     @log_exectime
     def list_song_standby(self, song, onlyone=True):
@@ -533,6 +535,8 @@ class Library:
 
     def artist_create_songs_rd(self, artist):
         """Create songs reader for artist model.
+
+        :raises NotSupported:
         """
         provider = self.get_or_raise(artist.source)
         if self.check_flags_by_model(artist, PF.songs_rd):
@@ -610,7 +614,11 @@ class Library:
                 # Currently supported model types: (ModelType.album, ModelType.video).
                 if ModelType(model.meta.model_type) in V2SupportedModelTypes:
                     um = self._model_upgrade(model)
-                    cover = um.cover
+                    # FIXME: remove this hack lator.
+                    if ModelType(model.meta.model_type) is ModelType.artist:
+                        cover = um.pic_url
+                    else:
+                        cover = um.cover
         else:
             cover = model.cover
             # Check if cover is a media object.

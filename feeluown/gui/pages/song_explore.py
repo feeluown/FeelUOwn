@@ -83,9 +83,9 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
 
     # Show album cover in the end since it's an expensive CPU/IO operation.
     # FIXME: handle NotSupported exception
-    album = app.library.cast_model_to_v1(song.album)
-    cover = await aio.run_fn(lambda: album.cover)
-    aio.create_task(view.cover_label.show_cover(cover, reverse(album)))
+    if song.album is not None:
+        album = await aio.run_fn(app.library.album_upgrade, song.album)
+        aio.create_task(view.cover_label.show_cover(album.cover, reverse(album)))
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
