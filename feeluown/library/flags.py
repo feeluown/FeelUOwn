@@ -11,10 +11,10 @@ class Flags(IntFlag):
     batch = 0x00000002
 
     # Reader
-    songs_g = 0x00000010
-    albums_g = 0x00000020
-    artists_g = 0x00000040
-    playlist_g = 0x00000080
+    songs_rd = 0x00000010
+    albums_rd = 0x00000020
+    artists_rd = 0x00000040
+    playlists_rd = 0x00000080
 
     multi_quality = 0x0001000
     similar = 0x00002000

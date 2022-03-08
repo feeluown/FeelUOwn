@@ -279,7 +279,8 @@ def resolve(line, model=None):
     # NOTE: the path resolve logic is deprecated
     if path:
         warnings.warn('model path resolver will be removed')
-        for path_ in model.meta.paths:
+        paths = getattr(model.meta, 'paths', [])
+        for path_ in paths:
             if path_ == path:
                 method_name = 'resolve_' + path.replace('/', '_')
                 handler = getattr(model, method_name)
@@ -291,9 +292,14 @@ def resolve(line, model=None):
 
 def reverse(model, path='', as_line=False):
     if path:
-        if path not in model.meta.paths and path[1:] not in model.meta.fields:
-            raise NoReverseMatch('no-reverse-match for model:{} path:{}'
-                                 .format(model, path))
+        warnings.warn('model path resolver will be removed')
+        paths = getattr(model.meta, 'paths', [])
+        fields = getattr(model, '__fields__', None)
+        if fields is None:  # v1 model
+            fields = model.meta.fields
+        if path not in paths and path[1:] not in fields:
+            raise NoReverseMatch(f'no-reverse-match for model:{model} path:{path}')
+
     source = model.source
     ns = TYPE_NS_MAP[model.meta.model_type]
     identifier = model.identifier

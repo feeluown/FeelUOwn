@@ -305,7 +305,7 @@ class ReaderFetchMoreMixin:
                 items = list(itertools.islice(reader, step))
             except ProviderIOError:
                 logger.exception('fetch more items failed')
-                self._fetch_more_cb(None)
+                self._fetch_more_cb([])
             else:
                 self._fetch_more_cb(items)
 

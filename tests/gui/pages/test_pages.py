@@ -1,0 +1,54 @@
+import pytest
+
+from feeluown.library import BriefArtistModel, BriefAlbumModel, SongModel
+from feeluown.utils.router import Request
+from feeluown.gui.pages.model import render as render_model
+from feeluown.gui.pages.song_explore import render as render_song_explore
+from feeluown.gui.page_containers.table import TableContainer
+from feeluown.gui.uimain.page_view import RightPanel
+
+
+@pytest.fixture
+def guiapp(qtbot, app_mock, library):
+    tc = TableContainer(app_mock)
+    rp = RightPanel(app_mock)
+    app_mock.library = library
+    app_mock.ui.table_container = tc
+    app_mock.ui.right_panel = rp
+    qtbot.addWidget(tc)
+    qtbot.addWidget(rp)
+    return app_mock
+
+
+@pytest.mark.asyncio
+async def test_render_artist_v2(guiapp, ekaf_provider, ekaf_artist0, ):
+    artistv2 = BriefArtistModel(source=ekaf_provider.identifier,
+                                identifier=ekaf_artist0.identifier)
+    ctx = {'model': artistv2, 'app': guiapp}
+    req = Request('', '', {}, {}, ctx)
+    # Should render without occur.
+    await render_model(req)
+
+
+@pytest.mark.asyncio
+async def test_render_album_v2(guiapp, ekaf_provider, ekaf_album0, ):
+    albumv2 = BriefAlbumModel(source=ekaf_provider.identifier,
+                              identifier=ekaf_album0.identifier)
+    ctx = {'model': albumv2, 'app': guiapp}
+    req = Request('', '', {}, {}, ctx)
+    # Should render without occur.
+    await render_model(req)
+
+
+@pytest.mark.asyncio
+async def test_render_song_v2(guiapp, ekaf_provider):
+    song = SongModel(source=ekaf_provider.identifier,
+                     identifier='0',
+                     title='',
+                     album=None,
+                     artists=[],
+                     duration=0)
+    ctx = {'model': song, 'app': guiapp}
+    req = Request('', '', {}, {}, ctx)
+    # No error should occur.
+    await render_song_explore(req)

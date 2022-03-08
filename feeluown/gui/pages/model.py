@@ -1,7 +1,3 @@
-from contextlib import suppress
-from requests.exceptions import RequestException
-
-from feeluown.excs import ProviderIOError
 from feeluown.library import V2SupportedModelTypes
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
@@ -15,7 +11,7 @@ async def render(req, **kwargs):
     app = req.ctx['app']
     model = req.ctx['model']
 
-    # FIXME: handle NotSupported exception
+    # FIXME: handle NotSupported exception here and in renderer.
     if ModelType(model.meta.model_type) in V2SupportedModelTypes:
         if model.meta.model_type == ModelType.song:
             model = await aio.run_fn(app.library.song_upgrade, model)
@@ -26,13 +22,13 @@ async def render(req, **kwargs):
             tab_index = int(req.query.get('tab_index', 1))
             renderer = AlbumRenderer(album, tab_index)
             await app.ui.table_container.set_renderer(renderer)
+        elif model.meta.model_type == ModelType.artist:
+            artist = await aio.run_fn(app.library.artist_upgrade, model)
+            tab_index = int(req.query.get('tab_index', 1))
+            renderer = ArtistRenderer(artist, tab_index)
+            await app.ui.table_container.set_renderer(renderer)
         else:
             assert False, "can't render this type of model"
-    elif model.meta.model_type == ModelType.artist:
-        artist = app.library.cast_model_to_v1(model)
-        tab_index = int(req.query.get('tab_index', 1))
-        renderer = ArtistRenderer(artist, tab_index)
-        await app.ui.table_container.set_renderer(renderer)
     else:
         app.ui.right_panel.show_model(model)
 
@@ -83,43 +79,35 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
         self.render_tab_bar()
 
         if tab_index == 0:
-            await self._show_desc()
+            self.show_desc(self.model.description)
         elif tab_index == 1:
             await self._show_songs()
         elif tab_index == 2:
-            if artist.meta.allow_create_albums_g:
-                self.toolbar.filter_albums_needed.connect(
-                    lambda types: self.albums_table.model().filter_by_types(types))
-                self.show_albums(artist.create_albums_g())
+            self.toolbar.filter_albums_needed.connect(
+                lambda types: self.albums_table.model().filter_by_types(types))
+            reader = await aio.run_fn(self._app.library.artist_create_albums_rd, artist)
+            self.show_albums(reader)
         elif tab_index == 3:
             if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
+                # This model must be v1.
                 self.show_albums(artist.create_contributed_albums_g())
 
         # finally, we render cover
-        cover = await aio.run_fn(lambda: artist.cover)
+        cover = artist.pic_url
         if cover:
             await self.show_cover(cover,
-                                  reverse(artist, '/cover'), as_background=True)
-
-    async def _show_desc(self):
-        with suppress(ProviderIOError, RequestException):
-            desc = await aio.run_fn(lambda: self.model.desc)
-            self.show_desc(desc)
+                                  reverse(artist) + '/cover',
+                                  as_background=True)
 
     async def _show_songs(self):
         artist = self.model
-        # fetch and render songs
-        reader = None
-        if artist.meta.allow_create_songs_g:
-            reader = create_reader(artist.create_songs_g())
-            self.tabbar.show_songs_needed.connect(
-                lambda: self.show_songs(reader=create_reader(artist.create_songs_g()),
-                                        show_count=True))
-        else:
-            songs = await aio.run_fn(lambda: artist.songs)
-            reader = create_reader(songs)
-            self.tabbar.show_songs_needed.connect(
-                lambda: self.show_songs(reader=create_reader(songs), show_count=True))
+        reader = await aio.run_fn(self._app.library.artist_create_songs_rd, artist)
+
+        async def cb():
+            reader = await aio.run_fn(self._app.library.artist_create_songs_rd, artist)
+            self.show_songs(reader=reader, show_count=True)
+
+        self.tabbar.show_songs_needed.connect(lambda: aio.run_afn(cb))
         self.show_songs(reader=reader, show_count=True)
 
 

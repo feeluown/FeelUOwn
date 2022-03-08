@@ -87,7 +87,8 @@ def fmt_artists(artists: List['BriefArtistModel']) -> str:
 # You can do anything with model v2 without model v1.
 #
 # Also, the corresponding v1 model is deprecated.
-V2SupportedModelTypes = (ModelType.song, ModelType.album, ModelType.video)
+V2SupportedModelTypes = (ModelType.song, ModelType.album, ModelType.video,
+                         ModelType.artist, )
 
 
 class ModelMeta:
@@ -307,14 +308,12 @@ class CommentModel(BaseNormalModel):
 
 
 class ArtistModel(BaseNormalModel):
-    """
-    Artist model has no `description` field and album/playlist model has,
-    because the artist's description is usually long.
-    """
     meta: Any = ModelMeta.create(ModelType.artist, is_normal=True)
     name: str
     pic_url: str
     aliases: List[str]
+    hot_songs: List[SongModel]
+    description: str
 
 
 class AlbumModel(BaseNormalModel):

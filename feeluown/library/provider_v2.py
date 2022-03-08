@@ -38,6 +38,8 @@ class ProviderV2:
                 return self.video_get(model_id)
             elif model_type == ModelType.album:
                 return self.album_get(model_id)
+            elif model_type == ModelType.artist:
+                return self.artist_get(model_id)
         raise NotSupported
 
     def _model_cache_get_or_fetch(self, model, cache_key):
@@ -175,3 +177,14 @@ class ProviderV2:
         """
         :raises ModelNotFound: identifier is invalid
         """
+
+    def artist_get(self, identifier):
+        """
+        :raises ModelNotFound: identifier is invalid
+        """
+
+    def artist_create_songs_rd(self, artist):
+        ...
+
+    def artist_create_albums_rd(self, artist):
+        ...

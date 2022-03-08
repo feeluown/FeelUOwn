@@ -119,13 +119,15 @@ def test_library_register_should_emit_signal(library, mocker):
     mock_emit.assert_called_once_with(dummy_provider)
 
 
-def test_library_model_get(xlibrary, eee_provider):
-    album = xlibrary.model_get(eee_provider.identifier, ModelType.album, '0')
-    assert album.identifier == '0'
+def test_library_model_get(library, ekaf_provider, ekaf_album0):
+    album = library.model_get(ekaf_provider.identifier,
+                              ModelType.album,
+                              ekaf_album0.identifier)
+    assert album.identifier == ekaf_album0.identifier
 
 
-def test_library_model_upgrade(xlibrary, eee_provider):
-    album = BriefAlbumModel(identifier='0',
-                            source=eee_provider.identifier,)
-    album = xlibrary._model_upgrade(album)
-    assert album.name == '0'
+def test_library_model_upgrade(library, ekaf_provider, ekaf_album0):
+    album = BriefAlbumModel(identifier=ekaf_album0.identifier,
+                            source=ekaf_provider.identifier)
+    album = library._model_upgrade(album)
+    assert album.name == ekaf_album0.name
