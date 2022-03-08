@@ -88,7 +88,7 @@ def fmt_artists(artists: List['BriefArtistModel']) -> str:
 #
 # Also, the corresponding v1 model is deprecated.
 V2SupportedModelTypes = (ModelType.song, ModelType.album, ModelType.video,
-                         ModelType.artist, )
+                         ModelType.artist, ModelType.playlist)
 
 
 class ModelMeta:

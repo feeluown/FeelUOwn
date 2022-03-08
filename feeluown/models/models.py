@@ -274,6 +274,10 @@ class PlaylistModel(BaseModel):
     def create_songs_g(self):
         pass
 
+    @property
+    def description(self):  # To be compatible with ArtistModel v2.
+        return self.desc
+
 
 class SearchModel(BaseModel):
     """Search Model

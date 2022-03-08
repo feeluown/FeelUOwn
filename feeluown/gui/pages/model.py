@@ -12,12 +12,9 @@ async def render(req, **kwargs):
     model = req.ctx['model']
 
     # FIXME: handle NotSupported exception here and in renderer.
+    # FIXME: handle ProviderIOError and RequestException.
     if ModelType(model.meta.model_type) in V2SupportedModelTypes:
-        if model.meta.model_type == ModelType.song:
-            model = await aio.run_fn(app.library.song_upgrade, model)
-            renderer = SongRenderer(model)
-            await app.ui.table_container.set_renderer(renderer)
-        elif model.meta.model_type == ModelType.album:
+        if model.meta.model_type == ModelType.album:
             album = await aio.run_fn(app.library.album_upgrade, model)
             tab_index = int(req.query.get('tab_index', 1))
             renderer = AlbumRenderer(album, tab_index)
@@ -27,28 +24,15 @@ async def render(req, **kwargs):
             tab_index = int(req.query.get('tab_index', 1))
             renderer = ArtistRenderer(artist, tab_index)
             await app.ui.table_container.set_renderer(renderer)
+        elif model.meta.model_type == ModelType.playlist:
+            playlist = await aio.run_fn(app.library.playlist_upgrade, model)
+            renderer = PlaylistRenderer(playlist)
+            await app.ui.table_container.set_renderer(renderer)
         else:
-            assert False, "can't render this type of model"
+            assert False, "this should not be called"
+            await app.ui.table_container.set_renderer(None)
     else:
-        app.ui.right_panel.show_model(model)
-
-
-class SongRenderer(Renderer):
-    def __init__(self, song):
-        self._song = song
-
-    async def render(self):
-        song = self._song
-        self.meta_widget.title = f'{song.title}'
-        self.meta_widget.subtitle = f'{song.artists_name} - {song.album_name}'
-        self.meta_widget.show()
-
-        brief_album = song.album
-        # FIXME: handle NotSupported exception
-        album = self._app.library.cast_model_to_v1(brief_album)
-        cover = await aio.run_in_executor(None, lambda: album.cover)
-        if cover:
-            await self.show_cover(cover, f'{reverse(album)}/cover')
+        assert False, "can't render this type of model"
 
 
 class ModelTabBarRendererMixin(TabBarRendererMixin):
@@ -141,3 +125,38 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         cover = album.cover
         if cover:
             aio.run_afn(self.show_cover, cover, reverse(album, '/cover'))
+
+
+class PlaylistRenderer(Renderer):
+    def __init__(self, playlist):
+        self.playlist = playlist
+
+    async def render(self):
+        playlist = self.playlist
+
+        # show playlist title
+        self.meta_widget.show()
+        self.meta_widget.title = playlist.name
+
+        await self._show_songs()
+
+        # show playlist cover
+        if playlist.cover:
+            aio.create_task(
+                self.show_cover(playlist.cover,
+                                reverse(playlist) + '/cover'))
+
+        self.songs_table.remove_song_func = self.remove_song
+
+    async def _show_songs(self):
+        reader = await aio.run_fn(self._app.library.playlist_create_songs_rd,
+                                  self.playlist)
+        self.show_songs(reader=reader, show_count=True)
+
+    def remove_song(self, song):
+        # FIXME: this may block the whole app.
+        if self._app.library.playlist_remove_song(self.playlist, song) is True:
+            # Re-render songs table so that user can see that the song is removed.
+            aio.run_afn(self._show_songs)
+        else:
+            self._app.show_msg('移除歌曲失败')

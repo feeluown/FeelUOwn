@@ -102,16 +102,3 @@ class SimpleSerializerMixin(Serializer):
         """
         items = self._get_items(obj)
         return self.serialize_items(items)
-
-
-def try_cast_model_to_v1(model):
-    from feeluown.library import BaseModel
-    from feeluown.fuoexec import _exec_globals
-
-    if isinstance(model, BaseModel):
-        app = _exec_globals.get('app')
-        if app is not None:
-            # FIXME: handle NotSupported error
-            model = app.library.cast_model_to_v1(model)
-            return model
-    return model

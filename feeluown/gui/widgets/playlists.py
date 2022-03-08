@@ -93,7 +93,13 @@ class PlaylistsView(TextlistView):
         playlist = index.data(Qt.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()
-        is_success = playlist.add(song.identifier)
+        try:
+            # FIXME: this may block the app.
+            is_success = self.parent().parent()._app.\
+                library.playlist_add_song(playlist, song)
+        except:  # noqa, to avoid crash.
+            logger.exception('add song to playlist failed')
+            is_success = False
         self._results[index.row] = (index, is_success)
         self.viewport().update()
         self._result_timer.start(2000)

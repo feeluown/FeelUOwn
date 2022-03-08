@@ -104,11 +104,6 @@ class RightPanel(QFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
-    def show_model(self, model):
-        self.set_body(self.scrollarea)
-        # TODO: use PreemptiveTask
-        aio.create_task(self.table_container.show_model(model))
-
     def show_songs(self, songs):
         self.set_body(self.scrollarea)
         self.table_container.show_songs(songs)

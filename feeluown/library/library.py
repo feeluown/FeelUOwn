@@ -565,6 +565,58 @@ class Library:
                 raise NotSupported("can't create albums reader for artist")
         return reader
 
+    # --------
+    # Playlist
+    # --------
+
+    def playlist_upgrade(self, playlist):
+        return self._model_upgrade(playlist)
+
+    def playlist_create_songs_rd(self, playlist):
+        """Create songs reader for artist model.
+
+        :raises NotSupported:
+        """
+        provider = self.get_or_raise(playlist.source)
+        if self.check_flags_by_model(playlist, PF.songs_rd):
+            assert isinstance(provider, ProviderV2)
+            reader = provider.playlist_create_songs_rd(playlist)
+        else:
+            playlist = self.cast_model_to_v1(playlist)
+            if playlist.meta.allow_create_songs_g:
+                reader = create_reader(playlist.create_songs_g())
+            else:
+                reader = create_reader(playlist.songs)
+        return reader
+
+    def playlist_remove_song(self, playlist, song) -> bool:
+        """Remove a song from the playlist
+
+        :return: true if the song is not in playlist anymore.
+        """
+        provider = self.get_or_raise(playlist.source)
+        if self.check_flags_by_model(playlist, PF.remove_song):
+            assert isinstance(provider, ProviderV2)
+            ok = provider.playlist_remove_song(playlist, song)
+        else:
+            playlist = self.cast_model_to_v1(playlist)
+            ok = playlist.remove(song.identifier)
+        return ok
+
+    def playlist_add_song(self, playlist, song) -> bool:
+        """Add a song to the playlist
+
+        :return: true if the song exists in playlist.
+        """
+        provider = self.get_or_raise(playlist.source)
+        if self.check_flags_by_model(playlist, PF.remove_song):
+            assert isinstance(provider, ProviderV2)
+            ok = provider.playlist_add_song(playlist, song)
+        else:
+            playlist = self.cast_model_to_v1(playlist)
+            ok = playlist.add(song.identifier)
+        return ok
+
     # -------------------------
     # generic methods for model
     # -------------------------
