@@ -249,7 +249,7 @@ class BriefArtistModel(BaseBriefModel):
 class BriefPlaylistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_brief=True)
     name: str = ''
-    creators_name: str = ''
+    creator_name: str = ''
 
 
 class BriefUserModel(BaseBriefModel):
