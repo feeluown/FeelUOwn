@@ -11,6 +11,8 @@ async def render(req, **kwargs):
     app = req.ctx['app']
     model = req.ctx['model']
 
+    app.ui.page_view.set_body(app.ui.page_view.table_container)
+
     # FIXME: handle NotSupported exception here and in renderer.
     # FIXME: handle ProviderIOError and RequestException.
     if ModelType(model.meta.model_type) in V2SupportedModelTypes:
