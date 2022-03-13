@@ -64,3 +64,6 @@ class ServerApp(App):
         elif platform == 'linux':
             from feeluown.nowplaying.linux import run_mpris2_server
             run_mpris2_server(self)
+        elif platform == 'win32':
+            from feeluown.nowplaying.windows import run_nowplaying_server
+            run_nowplaying_server(self)

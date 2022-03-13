@@ -67,7 +67,7 @@ setup(
                     'fuo-kuwo>=0.1.1',
                     ],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
-        'win32': ['pyshortcuts'],
+        'win32': ['pyshortcuts', 'aionowplaying'],
         'webengine': ['PyQtWebEngine'],
         'dev': [
             # lint
