@@ -19,6 +19,11 @@ logger = logging.getLogger(__name__)
 
 def run_app(args: argparse.Namespace):
     args, config = before_start_app(args)
+    if sys.platform == 'win32':
+        try:
+            import aionowplaying
+        except ImportError as e:
+            logger.error("can't run now playing server: %s", str(e))
     aio.run(start_app(args, config))
 
 

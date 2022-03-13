@@ -1,4 +1,6 @@
+import asyncio
 import logging
+import sys
 
 from feeluown.app.server_app import ServerApp
 from feeluown.player import State
@@ -27,11 +29,14 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         metadata.title = meta.get('title', '')
         metadata.cover = meta.get('artwork', '')
         metadata.url = meta.get('artwork', '')
-        metadata.duration = (self._app.player.duration or 0) * 1000
+        metadata.duration = int((self._app.player.duration or 0) * 1000)
+        print(metadata)
         self.set_playback_property(aionowplaying.PlaybackPropertyName.Metadata, metadata)
 
     def update_position(self, position):
-        self.set_playback_property(aionowplaying.PlaybackPropertyName.Position, position * 1000)
+        if position is not None:
+            print(int(position * 1000))
+            self.set_playback_property(aionowplaying.PlaybackPropertyName.Position, int(position * 1000))
 
     def update_playback_status(self, state):
         if state == State.stopped:
@@ -40,6 +45,7 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
             status = aionowplaying.PlaybackStatus.Paused
         else:
             status = aionowplaying.PlaybackStatus.Playing
+        print(status)
         self.set_playback_property(aionowplaying.PlaybackPropertyName.PlaybackStatus, status)
 
     async def on_play(self):
@@ -55,10 +61,12 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         self._app.playlist.previous()
 
 
-def run_nowplaying_server(app):
+async def run_nowplaying_server(app):
     interface = FuoWindowsNowPlayingInterface('FeelUOwn', app)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanPlay, True)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanPause, True)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanGoNext, True)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanGoPrevious, True)
-    interface.start()
+    await interface.start()
+    while True:
+        await asyncio.sleep(1)
