@@ -12,10 +12,9 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ModelState, NotSupported, ModelFlags
-from feeluown.models import reverse, ModelType
+from feeluown.library import ModelState, NotSupported, ModelFlags, ModelType
 
-from feeluown.gui.helpers import async_run, BgTransparentMixin, \
+from feeluown.gui.helpers import BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.widgets.imglist import ImgListView
@@ -54,8 +53,6 @@ class Renderer:
         # pylint: disable=protected-access
         self._app = container._app
 
-        self.real_show_model = container.show_model
-
     async def render(self):
         """render contents in table container
 
@@ -91,9 +88,6 @@ class Renderer:
                 self._app.ui.right_panel.show_background_image(None)
                 self.meta_widget.set_cover_pixmap(pixmap)
             self._app.ui.table_container.updateGeometry()
-
-    def show_model(self, model):
-        aio.create_task(self.real_show_model(model))
 
     def show_albums(self, reader):
         self._show_model_with_cover(reader,
@@ -163,50 +157,6 @@ class Renderer:
         reader = wrap(comments)
         model = CommentListModel(reader)
         self.comments_table.setModel(model)
-
-
-class PlaylistRenderer(Renderer):
-    def __init__(self, playlist):
-        self.playlist = playlist
-
-    async def render(self):
-        playlist = self.playlist
-
-        # show playlist title
-        self.meta_widget.show()
-        self.meta_widget.title = playlist.name
-
-        await self._show_songs()
-
-        # show playlist cover
-        if playlist.cover:
-            aio.create_task(
-                self.show_cover(playlist.cover, reverse(playlist, '/cover')))
-
-        self.songs_table.remove_song_func = self.remove_song
-        self.tabbar.show_desc_needed.connect(lambda: aio.create_task(self._show_desc()))
-
-    async def _show_desc(self):
-        with suppress(ProviderIOError):
-            desc = await async_run(lambda: self.playlist.desc)
-            self.show_desc(desc)
-
-    async def _show_songs(self):
-        # show playlist song list
-        with suppress(ProviderIOError):
-            if self.playlist.meta.allow_create_songs_g:
-                reader = wrap(self.playlist.create_songs_g())
-            else:
-                songs = await async_run(lambda: self.playlist.songs)
-                reader = wrap(songs)
-            self.show_songs(reader=reader, show_count=True)
-
-    def remove_song(self, song):
-        if self.playlist.remove(song.identifier) is True:
-            # Re-render songs table so that user can see that the song is removed.
-            aio.run_afn(self._show_songs)
-        else:
-            self._app.show_msg('移除歌曲失败')
 
 
 class SongsCollectionRenderer(Renderer):
@@ -459,15 +409,6 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.toolbar.enter_state_playall_end()
             return
         assert False, 'The play_all_btn should be hide in this page'
-
-    async def show_model(self, model):
-        model = self._app.library.cast_model_to_v1(model)
-        model_type = ModelType(model.meta.model_type)
-        if model_type == ModelType.playlist:
-            renderer = PlaylistRenderer(model)
-        else:
-            renderer = None
-        await self.set_renderer(renderer)
 
     def show_collection(self, coll):
         renderer = SongsCollectionRenderer(coll)

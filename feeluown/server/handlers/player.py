@@ -2,9 +2,8 @@ from collections import defaultdict
 from difflib import SequenceMatcher
 from typing import Any
 
-from feeluown.models.uri import resolve
+from feeluown.models.uri import resolve, reverse
 from .base import AbstractHandler
-from .helpers import show_song
 
 
 def score(src, tar):
@@ -70,11 +69,11 @@ class PlayerHandler(AbstractHandler):
         if songs:
             songs = sorted(songs, key=lambda song: score(s, repr_song(song)),
                            reverse=True)
-            msg = f'select:\t{show_song(songs[0], brief=True)}\n'
+            msg = f'select:\t{reverse(songs[0], as_line=True)}\n'
             self.playlist.play_model(songs[0])
             lines = []
             for song in songs[1:]:
-                lines.append('\t' + show_song(song, brief=True))
+                lines.append('\t' + reverse(song, as_line=True))
             if lines:
                 msg += 'options::\n' + '\n'.join(lines)
             return msg

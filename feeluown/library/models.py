@@ -88,7 +88,7 @@ def fmt_artists(artists: List['BriefArtistModel']) -> str:
 #
 # Also, the corresponding v1 model is deprecated.
 V2SupportedModelTypes = (ModelType.song, ModelType.album, ModelType.video,
-                         ModelType.artist, )
+                         ModelType.artist, ModelType.playlist)
 
 
 class ModelMeta:
@@ -249,6 +249,7 @@ class BriefArtistModel(BaseBriefModel):
 class BriefPlaylistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_brief=True)
     name: str = ''
+    creator_name: str = ''
 
 
 class BriefUserModel(BaseBriefModel):
@@ -361,6 +362,8 @@ class VideoModel(BaseNormalModel):
 
 class PlaylistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_normal=True)
+    # Since modelv1 playlist does not have creator field, it is set to optional.
+    creator: Optional[BriefUserModel]
     name: str
     cover: str
     description: str

@@ -251,6 +251,14 @@ class PlaylistModel(BaseModel):
     def __str__(self):
         return 'fuo://{}/playlists/{}'.format(self.source, self.identifier)
 
+    @property
+    def creator(self):  # To be compatible with PlaylistModel v2.
+        return None
+
+    @property
+    def creator_name(self):  # To be compatible with PlaylistModel v2.
+        return ''
+
     def __getattribute__(self, name):
         value = super().__getattribute__(name)
         if name == 'songs':
@@ -273,6 +281,10 @@ class PlaylistModel(BaseModel):
 
     def create_songs_g(self):
         pass
+
+    @property
+    def description(self):  # To be compatible with ArtistModel v2.
+        return self.desc
 
 
 class SearchModel(BaseModel):
