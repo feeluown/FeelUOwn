@@ -67,7 +67,10 @@ setup(
                     'fuo-kuwo>=0.1.1',
                     ],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
-        'win32': ['pyshortcuts', 'aionowplaying'],
+        'win32': [
+            'pyshortcuts',
+            'aionowplaying @ git+ssh://git@github.com/BruceZhang1993/aionowplaying#egg=aionowplaying'
+        ],
         'webengine': ['PyQtWebEngine'],
         'dev': [
             # lint
