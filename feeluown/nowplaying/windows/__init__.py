@@ -30,12 +30,10 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         metadata.cover = meta.get('artwork', '')
         metadata.url = meta.get('artwork', '')
         metadata.duration = int((self._app.player.duration or 0) * 1000)
-        print(metadata)
         self.set_playback_property(aionowplaying.PlaybackPropertyName.Metadata, metadata)
 
     def update_position(self, position):
         if position is not None:
-            print(int(position * 1000))
             self.set_playback_property(aionowplaying.PlaybackPropertyName.Position, int(position * 1000))
 
     def update_playback_status(self, state):
@@ -45,7 +43,6 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
             status = aionowplaying.PlaybackStatus.Paused
         else:
             status = aionowplaying.PlaybackStatus.Playing
-        print(status)
         self.set_playback_property(aionowplaying.PlaybackPropertyName.PlaybackStatus, status)
 
     async def on_play(self):
@@ -60,13 +57,14 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
     async def on_previous(self):
         self._app.playlist.previous()
 
+    def __del__(self):
+        self.stop()
+
 
 async def run_nowplaying_server(app):
-    interface = FuoWindowsNowPlayingInterface('FeelUOwn', app)
+    interface = FuoWindowsNowPlayingInterface('FeelUOwn Player', app)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanPlay, True)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanPause, True)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanGoNext, True)
     interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanGoPrevious, True)
     await interface.start()
-    while True:
-        await asyncio.sleep(1)
