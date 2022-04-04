@@ -21,6 +21,7 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         self._app.player.position_changed.connect(self.update_position)
         self._app.player.state_changed.connect(self.update_playback_status)
         self._app.player.metadata_changed.connect(self.update_song_props)
+        self._current_meta = None
 
     def update_song_props(self, meta: dict):
         metadata = aionowplaying.PlaybackProperties.MetadataBean()
@@ -29,11 +30,17 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         metadata.title = meta.get('title', '')
         metadata.cover = meta.get('artwork', '')
         metadata.url = meta.get('artwork', '')
-        metadata.duration = int((self._app.player.duration or 0) * 1000)
+        metadata.duration = 0
+        self._current_meta = metadata
         self.set_playback_property(aionowplaying.PlaybackPropertyName.Metadata, metadata)
 
     def update_position(self, position):
         if position is not None:
+            if self._current_meta is not None and self._current_meta.duration == 0:
+                if int((self._app.player.duration or 0) * 1000) > 0:
+                    self._current_meta.duration = int((self._app.player.duration or 0) * 1000)
+                    self.set_playback_property(aionowplaying.PlaybackPropertyName.Metadata, self._current_meta)
+                    self._current_meta = None
             self.set_playback_property(aionowplaying.PlaybackPropertyName.Position, int(position * 1000))
 
     def update_playback_status(self, state):
@@ -45,16 +52,16 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
             status = aionowplaying.PlaybackStatus.Playing
         self.set_playback_property(aionowplaying.PlaybackPropertyName.PlaybackStatus, status)
 
-    async def on_play(self):
+    def on_play(self):
         self._app.player.resume()
 
-    async def on_pause(self):
+    def on_pause(self):
         self._app.player.pause()
 
-    async def on_next(self):
+    def on_next(self):
         self._app.playlist.next()
 
-    async def on_previous(self):
+    def on_previous(self):
         self._app.playlist.previous()
 
     def __del__(self):
