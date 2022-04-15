@@ -65,5 +65,9 @@ class ServerApp(App):
             from feeluown.nowplaying.linux import run_mpris2_server
             run_mpris2_server(self)
         elif platform == 'win32':
-            from feeluown.nowplaying.windows import run_nowplaying_server
-            aio.run_afn(run_nowplaying_server, self)
+            try:
+                from feeluown.nowplaying.windows import run_nowplaying_server
+            except ImportError:
+                logger.error("can't run now playing server, install aionowplaying package")
+            else:
+                aio.run_afn(run_nowplaying_server, self)

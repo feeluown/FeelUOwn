@@ -2,24 +2,20 @@ import asyncio
 import logging
 import sys
 
-from aionowplaying import LoopStatus
-
+import aionowplaying as aionp
 from feeluown.app.server_app import ServerApp
 from feeluown.player import State, PlaybackMode
 
 logger = logging.getLogger(__name__)
 
-try:
-    import aionowplaying
-except ImportError as e:
-    logger.error("can't run now playing server: %s", str(e))
-    raise e
+
+PlayProp = aionp.PlaybackPropertyName
 
 
-class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
+class FuoWindowsNowPlayingService(aionp.NowPlayingInterface):
     def __init__(self, name, app_: 'ServerApp'):
         self._app = app_
-        super(FuoWindowsNowPlayingInterface, self).__init__(name)
+        super(FuoWindowsNowPlayingService, self).__init__(name)
         self._app.player.position_changed.connect(self.update_position)
         self._app.player.state_changed.connect(self.update_playback_status)
         self._app.player.metadata_changed.connect(self.update_song_props)
@@ -31,20 +27,20 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         if mode is None:
             return
         if mode == PlaybackMode.loop:
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.LoopStatus, aionowplaying.LoopStatus.Playlist)
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.Shuffle, False)
+            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.Playlist)
+            self.set_playback_property(PlayProp.Shuffle, False)
         elif mode == PlaybackMode.one_loop:
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.LoopStatus, aionowplaying.LoopStatus.Track)
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.Shuffle, False)
+            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.Track)
+            self.set_playback_property(PlayProp.Shuffle, False)
         elif mode == PlaybackMode.random:
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.LoopStatus, aionowplaying.LoopStatus.Playlist)
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.Shuffle, True)
+            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.Playlist)
+            self.set_playback_property(PlayProp.Shuffle, True)
         else:
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.LoopStatus, aionowplaying.LoopStatus.None_)
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.Shuffle, False)
+            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.None_)
+            self.set_playback_property(PlayProp.Shuffle, False)
 
     def update_song_props(self, meta: dict):
-        metadata = aionowplaying.PlaybackProperties.MetadataBean()
+        metadata = aionp.PlaybackProperties.MetadataBean()
         metadata.artist = meta.get('artists', ['Unknown'])
         metadata.album = meta.get('album', '')
         metadata.title = meta.get('title', '')
@@ -52,25 +48,25 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
         metadata.url = meta.get('artwork', '')
         metadata.duration = 0
         self._current_meta = metadata
-        self.set_playback_property(aionowplaying.PlaybackPropertyName.Metadata, metadata)
+        self.set_playback_property(PlayProp.Metadata, metadata)
 
     def update_position(self, position):
         if position is not None:
             if self._current_meta is not None and self._current_meta.duration == 0:
                 if int((self._app.player.duration or 0) * 1000) > 0:
                     self._current_meta.duration = int((self._app.player.duration or 0) * 1000)
-                    self.set_playback_property(aionowplaying.PlaybackPropertyName.Metadata, self._current_meta)
+                    self.set_playback_property(PlayProp.Metadata, self._current_meta)
                     self._current_meta = None
-            self.set_playback_property(aionowplaying.PlaybackPropertyName.Position, int(position * 1000))
+            self.set_playback_property(PlayProp.Position, int(position * 1000))
 
     def update_playback_status(self, state):
         if state == State.stopped:
-            status = aionowplaying.PlaybackStatus.Stopped
+            status = aionp.PlaybackStatus.Stopped
         elif state == State.paused:
-            status = aionowplaying.PlaybackStatus.Paused
+            status = aionp.PlaybackStatus.Paused
         else:
-            status = aionowplaying.PlaybackStatus.Playing
-        self.set_playback_property(aionowplaying.PlaybackPropertyName.PlaybackStatus, status)
+            status = aionp.PlaybackStatus.Playing
+        self.set_playback_property(PlayProp.PlaybackStatus, status)
 
     def on_play(self):
         self._app.player.resume()
@@ -84,10 +80,10 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
     def on_previous(self):
         self._app.playlist.previous()
 
-    def on_loop_status(self, status: LoopStatus):
-        if status == LoopStatus.Playlist:
+    def on_loop_status(self, status: aionp.LoopStatus):
+        if status == aionp.LoopStatus.Playlist:
             self._app.playlist.playback_mode = PlaybackMode.loop
-        elif status == LoopStatus.Track:
+        elif status == aionp.LoopStatus.Track:
             self._app.playlist.playback_mode = PlaybackMode.one_loop
         else:
             self._app.playlist.playback_mode = PlaybackMode.sequential
@@ -106,11 +102,11 @@ class FuoWindowsNowPlayingInterface(aionowplaying.NowPlayingInterface):
 
 
 async def run_nowplaying_server(app):
-    interface = FuoWindowsNowPlayingInterface('FeelUOwn Player', app)
-    interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanPlay, True)
-    interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanPause, True)
-    interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanGoNext, True)
-    interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanGoPrevious, True)
-    interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanSeek, True)
-    interface.set_playback_property(aionowplaying.PlaybackPropertyName.CanControl, True)
+    interface = FuoWindowsNowPlayingService('FeelUOwn Player', app)
+    interface.set_playback_property(PlayProp.CanPlay, True)
+    interface.set_playback_property(PlayProp.CanPause, True)
+    interface.set_playback_property(PlayProp.CanGoNext, True)
+    interface.set_playback_property(PlayProp.CanGoPrevious, True)
+    interface.set_playback_property(PlayProp.CanSeek, True)
+    interface.set_playback_property(PlayProp.CanControl, True)
     await interface.start()
