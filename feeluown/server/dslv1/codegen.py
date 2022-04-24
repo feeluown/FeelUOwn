@@ -21,7 +21,7 @@ def unparse(request: Request):
             if regex.match(value):
                 break
         else:
-            value = '"{value}"'
+            value = f'"{value}"'
         return value
 
     # TODO: allow heredoc and args appear at the same time
