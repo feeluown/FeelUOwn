@@ -75,6 +75,9 @@ async def test_multiple_eof_reached_signal(app_mock, song, mocker):
 @pytest.mark.asyncio
 async def test_reactivate_fm_mode_after_playing_other_songs(
         app_mock, song, song1, mocker):
+
+    mocker.patch.object(Playlist, '_prepare_metadata_for_song')
+
     def f(*args, **kwargs): return [song1]
 
     def is_active(fm): return fm.is_active

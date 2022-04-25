@@ -13,6 +13,7 @@ class CoverLabel(QLabel):
     def show_pixmap(self, pixmap):
         self._pixmap = pixmap
         self.updateGeometry()
+        self.update()  # Schedule a repaint to refresh the UI ASAP.
 
     def paintEvent(self, e):
         """
