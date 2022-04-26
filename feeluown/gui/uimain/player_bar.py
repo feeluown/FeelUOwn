@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import (
     QApplication, QLabel, QFrame, QHBoxLayout, QVBoxLayout,
     QPushButton, QSizePolicy, QMenu,
 )
+from feeluown.gui.widgets.cover_label import CoverLabelV2
 
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
@@ -296,6 +297,7 @@ class PlayerControlPanel(QFrame):
         self.song_title_label.setAlignment(Qt.AlignCenter)
         self.song_source_label = SourceLabel(self._app, parent=self)
 
+        self.cover_label = CoverLabelV2(app)
         self.duration_label = DurationLabel(app, parent=self)
         self.position_label = ProgressLabel(app, parent=self)
 
@@ -326,13 +328,14 @@ class PlayerControlPanel(QFrame):
         self._setup_ui()
 
     def _setup_ui(self):
-        # set widget layout
+        self.cover_label.setFixedWidth(44)
+        self.cover_label.setMaximumHeight(44)
         self.song_source_label.setFixedHeight(20)
         self.progress_slider.setFixedHeight(20)  # half of parent height
         self.position_label.setFixedWidth(50)
         self.duration_label.setFixedWidth(50)
-        # on macOS, we should set AlignVCenter flag
-        self.position_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
+        self.position_label.setAlignment(Qt.AlignCenter)
+        self.duration_label.setAlignment(Qt.AlignCenter)
         self.like_btn.setFixedSize(15, 15)
         self.download_btn.setFixedSize(15, 15)
         self.download_btn.hide()
@@ -344,6 +347,8 @@ class PlayerControlPanel(QFrame):
                                            QSizePolicy.Preferred)
         self._sub_layout = QVBoxLayout()
         self._sub_top_layout = QHBoxLayout()
+        self._progress_v_layout = QVBoxLayout()
+        self._cover_v_layout = QVBoxLayout()
 
         # add space to make top layout align with progress slider
         self._sub_top_layout.addSpacing(3)
@@ -363,8 +368,23 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addSpacing(3)
 
         self._sub_layout.addSpacing(3)
+        self._sub_layout.addStretch(0)
         self._sub_layout.addLayout(self._sub_top_layout)
+        self._sub_layout.addStretch(0)
         self._sub_layout.addWidget(self.progress_slider)
+        self._sub_layout.addStretch(0)
+
+        self._progress_v_layout.addStretch(0)
+        self._progress_v_layout.addWidget(self.position_label)
+        self._progress_v_layout.addSpacing(3)
+        self._progress_v_layout.addWidget(self.duration_label)
+        self._progress_v_layout.addStretch(0)
+
+        # Put the cover_label in a vboxlayout and add strech around it,
+        # so that cover_label's sizehint is respected.
+        self._cover_v_layout.addStretch(0)
+        self._cover_v_layout.addWidget(self.cover_label)
+        self._cover_v_layout.addStretch(0)
 
         self._layout.addSpacing(20)
         self._layout.addWidget(self.previous_btn)
@@ -377,12 +397,12 @@ class PlayerControlPanel(QFrame):
         # 18 = 200(left_panel_width) - 4 * 30(btn) - 20 - 8 - 8 -26
         self._layout.addSpacing(18)
         self._layout.addStretch(0)
-        self._layout.addWidget(self.position_label)
+        self._layout.addLayout(self._cover_v_layout)
         self._layout.addSpacing(7)
         self._layout.addLayout(self._sub_layout)
         self._layout.setStretchFactor(self._sub_layout, 1)
         self._layout.addSpacing(7)
-        self._layout.addWidget(self.duration_label)
+        self._layout.addLayout(self._progress_v_layout)
         self._layout.addStretch(0)
         self._layout.addSpacing(18)
         self._layout.addWidget(self.pms_btn)
@@ -444,6 +464,12 @@ class PlayerControlPanel(QFrame):
             self.song_source_label.setText(name)
         else:
             self.song_source_label.setText(default)
+
+        # Set song artwork.
+        artwork = metadata.get('artwork', '')
+        artwork_uid = metadata.get('uri', artwork)
+        if artwork:
+            aio.run_afn(self.cover_label.show_cover, artwork, artwork_uid)
 
         # Set audio bitrate info if available.
         media = self._app.player.current_media

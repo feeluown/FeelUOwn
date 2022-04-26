@@ -715,6 +715,9 @@ class Library:
     # --------
     # Video
     # --------
+    def video_upgrade(self, video):
+        return self._model_upgrade(video)
+
     def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
         provider = self.get_or_raise(video.source)
         if video.meta.flags & MF.v2:
