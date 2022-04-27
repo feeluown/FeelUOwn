@@ -11,6 +11,8 @@ from PyQt5.QtGui import QGuiApplication, QPalette, QColor
 from PyQt5.QtWidgets import QApplication
 from feeluown.utils.utils import get_osx_theme
 
+from .xrdb import read_termlike_colors
+
 logger = logging.getLogger(__name__)
 
 
@@ -30,7 +32,9 @@ Groups = ['Disabled', 'Active', 'Inactive']
 def read_resource(filename):
     filepath = os.path.abspath(__file__)
     dirname = os.path.dirname(filepath)
-    qssfilepath = os.path.join(dirname, 'assets/themes/{}'.format(filename))
+    qssfilepath = os.path.join(dirname,
+                               '..',
+                               'assets/themes/{}'.format(filename))
     with open(qssfilepath, encoding='UTF-8') as f:
         s = f.read()
     return s
@@ -49,6 +53,7 @@ class ThemeManager(QObject):
     def initialize(self):
         # XXX: I don't know why we should autoload twice
         # to make it work well on Linux(GNOME)
+        return
         self.autoload()
         self._app.initialized.connect(lambda app: self.autoload(), weak=False)
         QApplication.instance().paletteChanged.connect(lambda p: self.autoload())
@@ -113,6 +118,12 @@ class ThemeManager(QObject):
         palette = load_colors(colors)
         self._app.setPalette(palette)
         QApplication.instance().paletteChanged.connect(self.autoload)
+
+    def load_termlike_colors(self, name):
+        colors = read_termlike_colors(name)
+        palette = load_colors(colors)
+        self._app.setPalette(palette)
+        #QApplication.instance().paletteChanged.connect(self.autoload)
 
     def get_pressed_color(self):
         """pressed color for button-like widget
