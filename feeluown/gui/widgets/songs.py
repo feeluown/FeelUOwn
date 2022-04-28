@@ -269,7 +269,7 @@ class BaseSongsTableModel(QAbstractTableModel):
             if index.column() == Column.index:
                 return Qt.AlignCenter | Qt.AlignVCenter
             elif index.column() == Column.source:
-                return Qt.AlignCenter | Qt.AlignBaseline
+                return Qt.AlignLeft | Qt.AlignBaseline | Qt.AlignVCenter
         elif role == Qt.EditRole:
             return 1
         elif role == Qt.UserRole:

@@ -146,7 +146,7 @@ class ItemViewNoScrollMixin:
             # inside the viewport, so we always hide the last
             # two row to ensure fetch-more will not be
             # triggered automatically
-            index = self._last_index()
+            index = self._last_visible_index()
             rect = self.visualRect(index)
             height = self.sizeHint().height() - int(rect.height() * 1.5) - self._reserved
             self.setFixedHeight(max(height, self.min_height()))
@@ -187,21 +187,26 @@ class ItemViewNoScrollMixin:
 
         height = min_height = self.min_height()
         if self.model() is not None:
-            index = self._last_index()
+            index = self._last_visible_index()
             rect = self.visualRect(index)
             height = rect.y() + rect.height() + self._reserved
             height = max(min_height, height)
         return QSize(super_size_hint.width(), height)
 
-    def _last_index(self):
+    def _last_visible_index(self):
         source_model = self.model()
-        row_count = source_model.rowCount()
+        row_index = source_model.rowCount() - 1
         if isinstance(source_model, QAbstractListModel):
-            column_count = 1
+            column_index = 0
         else:
-            column_count = source_model.columnCount()
+            column_index = source_model.columnCount() - 1
+            while column_index >= 0:
+                index = source_model.index(row_index, column_index)
+                if not self.isIndexHidden(index):
+                    break
+                column_index -= 1
         # can't use createIndex here, why?
-        return source_model.index(row_count - 1, column_count - 1)
+        return source_model.index(row_index, column_index)
 
     def min_height(self):
         default = self._row_height * self._least_row_count + self._reserved

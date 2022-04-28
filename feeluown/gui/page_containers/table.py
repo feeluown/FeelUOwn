@@ -126,24 +126,38 @@ class Renderer:
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
-    def show_songs(self, reader, show_count=False):
+    def show_songs(self, reader, show_count=False, hide_columns=None):
+        """
+        .. versionadded: v3.8.5
+           The *hide_columns* parameter.
+        """
         reader = wrap(reader)
-        self.container.current_table = self.songs_table
-        self.toolbar.show()
-
         if show_count:
             count = reader.count
             self.meta_widget.songs_count = -1 if count is None else count
-
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = SongsTableModel(
             source_name_map=source_name_map,
             reader=reader,
             parent=self.songs_table)
+        self.show_songs_by_model(model, hide_columns=hide_columns)
+
+    def show_songs_by_model(self, model, hide_columns=None):
+        self.container.current_table = self.songs_table
+        self.toolbar.show()
         filter_model = SongFilterProxyModel(self.songs_table)
         filter_model.setSourceModel(model)
         self.songs_table.setModel(filter_model)
         self.songs_table.scrollToTop()
+
+        # Show/hide columns.
+        hide_columns = hide_columns or []
+        for i in range(0, filter_model.columnCount()):
+            if i in hide_columns:
+                self.songs_table.hideColumn(i)
+            else:
+                self.songs_table.showColumn(i)
+
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
@@ -289,14 +303,21 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.desc_widget.hide()
 
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self.meta_widget)
-        self._layout.addWidget(self.toolbar)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.desc_widget)
+        self._v_layout = QVBoxLayout()
+
+        self._v_layout.addWidget(self.meta_widget)
+        self._v_layout.addWidget(self.toolbar)
+        self._v_layout.addSpacing(10)
+        self._v_layout.addWidget(self.desc_widget)
+
+        # Since QTableView has a *strange* margin on the left and right,
+        # so set the v_layout left margin to 10 to align widgets.
+        self._v_layout.setContentsMargins(10, 0, 0, 0)
+        self._layout.addLayout(self._v_layout)
         for table in self._tables:
             self._layout.addWidget(table)
         self._layout.addStretch(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setContentsMargins(20, 0, 20, 0)
         self._layout.setSpacing(0)
 
     @property
