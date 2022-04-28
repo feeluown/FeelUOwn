@@ -30,11 +30,28 @@ logger = logging.getLogger(__name__)
 
 class Column(IntEnum):
     index = 0
-    song = 2
-    source = 1
-    duration = 3
-    artist = 4
-    album = 5
+    song = 1
+    source = 5
+    duration = 4
+    artist = 2
+    album = 3
+
+
+def column_width(total, column):
+    """
+    TableView use sizeHint to control the width of each row. In order to make
+    size hint taking effects, resizeMode should be se to ResizeToContents.
+
+    """
+    width_index = 10
+    if column == 0:
+        return width_index
+    width = total - width_index
+    # Column.song is set to stetch, the column width is decided by
+    #   (total_width - other column widths).
+    # So the ratio of column.song does not take any effects actually.
+    ratios = (0.4, 0.15, 0.25, 0.05, 0.15)
+    return int(width * ratios[column - 1])
 
 
 class SongListModel(QAbstractListModel, ReaderFetchMoreMixin):
@@ -208,7 +225,7 @@ class BaseSongsTableModel(QAbstractTableModel):
         return 6
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        sections = ('', '来源', '歌曲标题', '时长', '歌手', '专辑')
+        sections = ('', '歌曲标题', '歌手', '专辑', '时长', '来源')
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
                 if section < len(sections):
@@ -218,14 +235,7 @@ class BaseSongsTableModel(QAbstractTableModel):
                 # we set height to 25 since the header can be short under macOS.
                 # HELP: set height to fixed value manually is not so elegant
                 height = 25
-                # HELP: the last column width percent should be 1-others.
-                # 0.3 may cause the header wider than the tableview
-                # (for example, under KDE Plasma 5.15.5 with QT 5.12.3),
-                # which is unacceptable. In fact, the width percent can be 0.2
-                # or even less since we have enabled StretchLastSection.
-                widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.2)
-                width = self.parent().width()
-                w = int(width * widths[section])
+                w = column_width(self.parent().width(), section)
                 return QSize(w, height)
         else:
             if role == Qt.DisplayRole:
@@ -402,8 +412,8 @@ class SongsTableDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
 
-        # draw a line under each row
-        text_color = option.palette.color(QPalette.Text)
+        # Draw a line under each row.
+        text_color = option.palette.color(QPalette.Active, QPalette.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
         else:
@@ -427,9 +437,8 @@ class SongsTableDelegate(QStyledItemDelegate):
         since we have set width for the header.
         """
         if index.isValid() and self.parent() is not None:
-            widths = (0.05, 0.1, 0.25, 0.1, 0.2, 0.3)
             width = self.parent().width()
-            w = int(width * widths[index.column()])
+            w = column_width(width, index.column())
             h = option.rect.height()
             return QSize(w, h)
         return super().sizeHint(option, index)
@@ -470,12 +479,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
     def _setup_ui(self):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        # FIXME: PyQt5 seg fault
-        # self.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
-        self.horizontalHeader().setStretchLastSection(True)
         self.verticalHeader().hide()
         self.horizontalHeader().hide()
         self.verticalHeader().setDefaultSectionSize(self._row_height)
@@ -487,6 +493,10 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setShowGrid(False)
         self.setDragEnabled(True)
         self.setDragDropMode(QAbstractItemView.DragOnly)
+
+    def setModel(self, model):
+        super().setModel(model)
+        self.horizontalHeader().setSectionResizeMode(Column.song, QHeaderView.Stretch)
 
     def show_artists_by_index(self, index):
         self.edit(index)
