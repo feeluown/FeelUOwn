@@ -61,6 +61,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
 
         # fetch and render basic metadata
         self.meta_widget.title = await aio.run_fn(lambda: artist.name)
+        self.meta_widget.source = self._get_source_alias(artist.source)
         self.meta_widget.show()
 
         self.render_tab_bar()
@@ -100,7 +101,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
     def __show_songs(self, reader):
         self.show_songs(reader=reader,
                         show_count=True,
-                        hide_columns=[Column.artist, Column.source])
+                        hide_columns=[Column.source])
 
 
 class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
@@ -118,6 +119,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
 
         self.meta_widget.title = album.name
         self.meta_widget.creator = album.artists_name
+        self.meta_widget.source = self._get_source_alias(album.source)
         self.meta_widget.show()
 
         self.render_tab_bar()
@@ -145,6 +147,7 @@ class PlaylistRenderer(Renderer):
         # show playlist title
         self.meta_widget.show()
         self.meta_widget.title = playlist.name
+        self.meta_widget.source = self._get_source_alias(playlist.source)
 
         await self._show_songs()
 

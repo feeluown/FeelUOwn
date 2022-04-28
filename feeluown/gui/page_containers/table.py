@@ -172,6 +172,10 @@ class Renderer:
         model = CommentListModel(reader)
         self.comments_table.setModel(model)
 
+    def _get_source_alias(self, source):
+        provider = self._app.library.get(source)
+        return provider.name if provider is not None else ''
+
 
 class SongsCollectionRenderer(Renderer):
     def __init__(self, collection):
@@ -311,8 +315,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._v_layout.addWidget(self.desc_widget)
 
         # Since QTableView has a margin on the left and right(see SongsTableDelegate),
-        # so set the v_layout left margin to same value(10) to align widgets.
-        self._v_layout.setContentsMargins(10, 0, 0, 0)
+        # so set the v_layout left margin to same value(0) to align widgets.
+        self._v_layout.setContentsMargins(0, 0, 0, 0)
         self._layout.addLayout(self._v_layout)
         for table in self._tables:
             self._layout.addWidget(table)
