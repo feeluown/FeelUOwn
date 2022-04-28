@@ -116,7 +116,7 @@ class SongListDelegate(QStyledItemDelegate):
         # Draw song number or play_btn when it is hovered
         no_bottom_right = QPoint(no_x, bottom)
         no_rect = QRect(option.rect.topLeft(), no_bottom_right)
-        if option.state & QStyle.State_MouseOver:
+        if option.state & QStyle.State_MouseOver:  # type: ignore
             painter.drawText(no_rect, Qt.AlignLeft | Qt.AlignVCenter, '►')
         else:
             painter.drawText(no_rect, Qt.AlignLeft | Qt.AlignVCenter,
@@ -429,13 +429,19 @@ class SongsTableDelegate(QStyledItemDelegate):
         if hovered and index.column() == Column.index:
             painter.save()
             # Override contents.
-            painter.setBrush(option.palette.color(QPalette.Active, QPalette.Base))
+            if option.state & QStyle.State_Selected:  # type: ignore
+                bgcolor = option.palette.color(QPalette.Active, QPalette.Highlight)
+                fgcolor = option.palette.color(QPalette.Active, QPalette.HighlightedText)
+            else:
+                bgcolor = option.palette.color(QPalette.Active, QPalette.Base)
+                fgcolor = option.palette.color(QPalette.Active, QPalette.Text)
+            painter.setBrush(bgcolor)
             painter.setPen(Qt.NoPen)
             painter.drawRect(option.rect)
             # Draw play button.
             triangle_edge = 12
             triangle_height = 10
-            painter.setBrush(option.palette.color(QPalette.Link))
+            painter.setBrush(fgcolor)
             # Move the triangle right 2px and it looks better.
             painter.translate(
                 2 + option.rect.x() + (option.rect.width() - triangle_height)//2,
@@ -450,12 +456,8 @@ class SongsTableDelegate(QStyledItemDelegate):
         # Draw a line under each row. If it is hovered, highlight the line.
         painter.save()
         pen = QPen()
-        if not hovered:
-            line_color = option.palette.color(QPalette.Active, QPalette.Text)
-            line_color.setAlpha(30)
-        else:
-            line_color = option.palette.color(QPalette.Active, QPalette.Link)
-            line_color.setAlpha(150)
+        line_color = option.palette.color(QPalette.Active, QPalette.Text)
+        line_color.setAlpha(30)
         pen.setColor(line_color)
         painter.setPen(pen)
         bottom_left = option.rect.bottomLeft()
@@ -466,6 +468,16 @@ class SongsTableDelegate(QStyledItemDelegate):
             bottom_left = QPoint(bottom_left.x(), bottom_right.y())
         painter.drawLine(bottom_left, bottom_right)
         painter.restore()
+
+        # Draw the mask over the row.
+        if hovered:
+            painter.save()
+            mask_color = option.palette.color(QPalette.Active, QPalette.Text)
+            mask_color.setAlpha(20)
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(mask_color)
+            painter.drawRect(option.rect)
+            painter.restore()
 
     def sizeHint(self, option, index):
         """set proper width for each column
