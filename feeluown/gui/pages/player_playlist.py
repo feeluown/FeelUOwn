@@ -2,9 +2,8 @@ from PyQt5.QtCore import Qt, QModelIndex
 
 from feeluown.utils import aio
 from feeluown.gui.widgets import TextButton
-from feeluown.gui.helpers import disconnect_slots_if_has
 from feeluown.gui.page_containers.table import Renderer
-from feeluown.gui.widgets.songs import BaseSongsTableModel, Column, SongFilterProxyModel
+from feeluown.gui.widgets.songs import BaseSongsTableModel, Column
 
 
 async def render(req, **kwargs):
@@ -23,24 +22,18 @@ class PlayerPlaylistRenderer(Renderer):
         self.meta_widget.title = '当前播放列表'
         self.meta_widget.show()
 
-        self.container.current_table = self.songs_table
         self.songs_table.remove_song_func = self._app.playlist.remove
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = PlaylistTableModel(self._app.playlist, source_name_map)
-        filter_model = SongFilterProxyModel(self.songs_table)
-        filter_model.setSourceModel(model)
-        self.songs_table.setModel(filter_model)
-        disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
-        self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
+        self.show_songs_by_model(model)
 
         # TODO(cosven): the toolbar is useless, and we should remove it lator.
-        self.toolbar.show()
         self.toolbar.manual_mode()
         btn = TextButton('清空', self.toolbar)
         btn.clicked.connect(lambda *args: aio.create_task(self.clear_playlist()))
         self.toolbar.add_tmp_button(btn)
 
-        # scroll to current song
+        # Scroll to current song.
         current_song = self._app.playlist.current_song
         if current_song is not None:
             row = self._app.playlist.list().index(current_song)

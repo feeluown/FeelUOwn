@@ -5,6 +5,7 @@ from feeluown.models import ModelType, reverse
 
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer
+from feeluown.gui.widgets.songs import Column
 
 
 async def render(req, **kwargs):
@@ -60,6 +61,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
 
         # fetch and render basic metadata
         self.meta_widget.title = await aio.run_fn(lambda: artist.name)
+        self.meta_widget.source = self._get_source_alias(artist.source)
         self.meta_widget.show()
 
         self.render_tab_bar()
@@ -91,10 +93,15 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
 
         async def cb():
             reader = await aio.run_fn(self._app.library.artist_create_songs_rd, artist)
-            self.show_songs(reader=reader, show_count=True)
+            self.__show_songs(reader)
 
         self.tabbar.show_songs_needed.connect(lambda: aio.run_afn(cb))
-        self.show_songs(reader=reader, show_count=True)
+        self.__show_songs(reader)
+
+    def __show_songs(self, reader):
+        self.show_songs(reader=reader,
+                        show_count=True,
+                        hide_columns=[Column.source])
 
 
 class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
@@ -112,6 +119,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
 
         self.meta_widget.title = album.name
         self.meta_widget.creator = album.artists_name
+        self.meta_widget.source = self._get_source_alias(album.source)
         self.meta_widget.show()
 
         self.render_tab_bar()
@@ -121,7 +129,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         else:
             reader = create_reader(album.songs)
             self.meta_widget.songs_count = reader.count
-            self.show_songs(reader)
+            self.show_songs(reader, hide_columns=[Column.album, Column.source])
 
         # fetch cover and description
         cover = album.cover
@@ -139,6 +147,7 @@ class PlaylistRenderer(Renderer):
         # show playlist title
         self.meta_widget.show()
         self.meta_widget.title = playlist.name
+        self.meta_widget.source = self._get_source_alias(playlist.source)
 
         await self._show_songs()
 

@@ -187,6 +187,12 @@ class RightPanel(QFrame):
         scrolled = self.scrollarea.verticalScrollBar().value()
         max_scroll_height = draw_height - self.bottom_panel.height()
 
+        # Draw the whole background with QPalette.Base color.
+        painter.save()
+        painter.setBrush(self.palette().brush(QPalette.Base))
+        painter.drawRect(self.rect())
+        painter.restore()
+
         # Do not draw the pixmap when it is not shown.
         if scrolled >= max_scroll_height:
             painter.save()
