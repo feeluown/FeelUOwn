@@ -89,7 +89,7 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.setSpacing(5)
 
         # left margin is same as toolbar left margin
-        self.layout().setContentsMargins(30, 0, 30, 0)
+        self.layout().setContentsMargins(0, 0, 30, 0)
         self.layout().setSpacing(0)
 
     def add_tabbar(self, tabbar):
