@@ -310,8 +310,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._v_layout.addSpacing(10)
         self._v_layout.addWidget(self.desc_widget)
 
-        # Since QTableView has a *strange* margin on the left and right,
-        # so set the v_layout left margin to 10 to align widgets.
+        # Since QTableView has a margin on the left and right(see SongsTableDelegate),
+        # so set the v_layout left margin to same value(10) to align widgets.
         self._v_layout.setContentsMargins(10, 0, 0, 0)
         self._layout.addLayout(self._v_layout)
         for table in self._tables:
