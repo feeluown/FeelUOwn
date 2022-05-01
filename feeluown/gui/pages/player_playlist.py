@@ -3,7 +3,7 @@ from PyQt5.QtCore import Qt, QModelIndex
 from feeluown.utils import aio
 from feeluown.gui.widgets import TextButton
 from feeluown.gui.page_containers.table import Renderer
-from feeluown.gui.widgets.songs import BaseSongsTableModel, Column
+from feeluown.gui.widgets.songs import BaseSongsTableModel, Column, ColumnsMode
 
 
 async def render(req, **kwargs):
@@ -25,7 +25,7 @@ class PlayerPlaylistRenderer(Renderer):
         self.songs_table.remove_song_func = self._app.playlist.remove
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = PlaylistTableModel(self._app.playlist, source_name_map)
-        self.show_songs_by_model(model)
+        self.show_songs_by_model(model, columns_mode=ColumnsMode.playlist)
 
         # TODO(cosven): the toolbar is useless, and we should remove it lator.
         self.toolbar.manual_mode()

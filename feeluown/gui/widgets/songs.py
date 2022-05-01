@@ -1,6 +1,6 @@
 import logging
 
-from enum import IntEnum
+from enum import IntEnum, Enum
 from functools import partial
 
 from PyQt5.QtCore import (
@@ -28,6 +28,16 @@ from feeluown.gui.helpers import ItemViewNoScrollMixin, ReaderFetchMoreMixin
 logger = logging.getLogger(__name__)
 
 
+class ColumnsMode(Enum):
+    """
+    Different mode show different columns.
+    """
+    normal = 'normal'
+    album = 'album'
+    artist = 'artist'
+    playlist = 'playlist'
+
+
 class Column(IntEnum):
     index = 0
     song = 1
@@ -37,21 +47,50 @@ class Column(IntEnum):
     album = 3
 
 
-def column_width(total, column):
+class ColumnsConfig:
     """
     TableView use sizeHint to control the width of each row. In order to make
     size hint taking effects, resizeMode should be se to ResizeToContents.
-
     """
-    width_index = 10
-    if column == 0:
-        return width_index
-    width = total - width_index
-    # Column.song is set to stetch, the column width is decided by
-    #   (total_width - other column widths).
-    # So the ratio of column.song does not take any effects actually.
-    ratios = (0.4, 0.15, 0.25, 0.05, 0.15)
-    return int(width * ratios[column - 1])
+
+    def __init__(self, widths):
+        self._widths = widths
+
+    def set_width_ratio(self, column, ratio):
+        self._widths[column] = ratio
+
+    def get_width(self, column, table_width):
+        width_index = 10
+        if column == Column.index:
+            return width_index
+        width = table_width - width_index
+        # Column.song is always set to stetch, the column width is decided by
+        #   (total_width - other column widths).
+        # So the ratio of column.song does not take any effects actually.
+        ratio = self._widths[column]
+        return int(width * ratio)
+
+    @classmethod
+    def default(cls):
+        widths = {
+            Column.song: 0.4,
+            Column.artist: 0.15,
+            Column.album: 0.25,
+            Column.duration: 0.05,
+            Column.source: 0.15,
+        }
+        return cls(widths=widths)
+
+
+def get_column_name(column):
+    return {
+        Column.index: '',
+        Column.song: '歌曲标题',
+        Column.artist: '歌手',
+        Column.album: '专辑',
+        Column.duration: '时长',
+        Column.source: '来源',
+    }[column]
 
 
 class SongListModel(QAbstractListModel, ReaderFetchMoreMixin):
@@ -175,8 +214,15 @@ class BaseSongsTableModel(QAbstractTableModel):
     def __init__(self, source_name_map=None, parent=None):
         super().__init__(parent)
 
+        self.columns_config = ColumnsConfig.default()
         self._items = []
         self._source_name_map = source_name_map or {}
+
+    def update_columns_config(self, columns_config):
+        """
+        :param columns: see `create_columns` result.
+        """
+        self.columns_config = columns_config
 
     def removeRows(self, row, count, parent=QModelIndex()):
         self.beginRemoveRows(parent, row, row + count - 1)
@@ -225,17 +271,14 @@ class BaseSongsTableModel(QAbstractTableModel):
         return 6
 
     def headerData(self, section, orientation, role=Qt.DisplayRole):
-        sections = ('', '歌曲标题', '歌手', '专辑', '时长', '来源')
         if orientation == Qt.Horizontal:
             if role == Qt.DisplayRole:
-                if section < len(sections):
-                    return sections[section]
-                return ''
+                return get_column_name(section)
             elif role == Qt.SizeHintRole and self.parent() is not None:
                 # we set height to 25 since the header can be short under macOS.
                 # HELP: set height to fixed value manually is not so elegant
                 height = 25
-                w = column_width(self.parent().width(), section)
+                w = self.columns_config.get_width(section, self.parent().width())
                 return QSize(w, height)
         else:
             if role == Qt.DisplayRole:
@@ -293,13 +336,13 @@ class BaseSongsTableModel(QAbstractTableModel):
 
 
 class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
-    def __init__(self, source_name_map=None, reader=None, parent=None):
+    def __init__(self, reader, **kwargs):
         """
 
         :param songs: 歌曲列表
         :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
         """
-        super().__init__(source_name_map, parent)
+        super().__init__(**kwargs)
         self._reader = reader
         self._fetch_more_step = 30
         self._is_fetching = False
@@ -378,7 +421,6 @@ class SongsTableDelegate(QStyledItemDelegate):
     def __init__(self, parent):
         super().__init__(parent)
         self.view = parent
-
         self.row_hovered = None  # A valid row_id if hovered.
         self.pressed_cell = None  # (row, column) if pressed.
 
@@ -487,8 +529,9 @@ class SongsTableDelegate(QStyledItemDelegate):
         since we have set width for the header.
         """
         if index.isValid() and self.parent() is not None:
-            width = self.parent().width()
-            w = column_width(width, index.column())
+            # The way getting the sourceModel seems a little strange.
+            w = index.model().sourceModel().columns_config.get_width(
+                index.column(), self.parent().width())
             h = option.rect.height()
             return QSize(w, h)
         return super().sizeHint(option, index)
@@ -561,6 +604,27 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
     def setModel(self, model):
         super().setModel(model)
         self.horizontalHeader().setSectionResizeMode(Column.song, QHeaderView.Stretch)
+
+    def set_columns_mode(self, mode):
+        mode = ColumnsMode(mode)
+        columns_config = ColumnsConfig.default()
+        if mode is ColumnsMode.normal:
+            hide_columns = []
+        elif mode is ColumnsMode.album:
+            hide_columns = [Column.album, Column.source]
+            columns_config.set_width_ratio(Column.artist, 0.25)
+            columns_config.set_width_ratio(Column.duration, 0.1)
+        else:  # artist/playlist mode.
+            hide_columns = [Column.source]
+            columns_config.set_width_ratio(Column.artist, 0.2)
+            columns_config.set_width_ratio(Column.album, 0.3)
+        self.model().sourceModel().update_columns_config(columns_config)
+
+        for i in range(0, self.model().columnCount()):
+            if i in hide_columns:
+                self.hideColumn(i)
+            else:
+                self.showColumn(i)
 
     def show_artists_by_index(self, index):
         self.edit(index)

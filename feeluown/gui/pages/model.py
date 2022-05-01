@@ -5,7 +5,7 @@ from feeluown.models import ModelType, reverse
 
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer
-from feeluown.gui.widgets.songs import Column
+from feeluown.gui.widgets.songs import ColumnsMode
 
 
 async def render(req, **kwargs):
@@ -101,7 +101,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
     def __show_songs(self, reader):
         self.show_songs(reader=reader,
                         show_count=True,
-                        hide_columns=[Column.source])
+                        columns_mode=ColumnsMode.artist)
 
 
 class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
@@ -129,7 +129,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         else:
             reader = create_reader(album.songs)
             self.meta_widget.songs_count = reader.count
-            self.show_songs(reader, hide_columns=[Column.album, Column.source])
+            self.show_songs(reader, columns_mode=ColumnsMode.album)
 
         # fetch cover and description
         cover = album.cover
