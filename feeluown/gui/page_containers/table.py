@@ -26,7 +26,7 @@ from feeluown.gui.widgets.video_list import VideoListModel, VideoListView, \
     VideoFilterProxyModel
 from feeluown.gui.widgets.playlist import PlaylistListModel, PlaylistListView, \
     PlaylistFilterProxyModel
-from feeluown.gui.widgets.songs import SongsTableModel, SongsTableView, \
+from feeluown.gui.widgets.songs import ColumnsMode, SongsTableModel, SongsTableView, \
     SongFilterProxyModel
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.meta import TableMetaWidget
@@ -126,7 +126,7 @@ class Renderer:
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
-    def show_songs(self, reader, show_count=False, hide_columns=None):
+    def show_songs(self, reader, show_count=False, columns_mode=ColumnsMode.normal):
         """
         .. versionadded: v3.8.5
            The *hide_columns* parameter.
@@ -139,25 +139,18 @@ class Renderer:
         model = SongsTableModel(
             source_name_map=source_name_map,
             reader=reader,
-            parent=self.songs_table)
-        self.show_songs_by_model(model, hide_columns=hide_columns)
+            parent=self.songs_table,
+        )
+        self.show_songs_by_model(model, columns_mode=columns_mode)
 
-    def show_songs_by_model(self, model, hide_columns=None):
+    def show_songs_by_model(self, model, columns_mode=ColumnsMode.normal):
         self.container.current_table = self.songs_table
         self.toolbar.show()
         filter_model = SongFilterProxyModel(self.songs_table)
         filter_model.setSourceModel(model)
         self.songs_table.setModel(filter_model)
         self.songs_table.scrollToTop()
-
-        # Show/hide columns.
-        hide_columns = hide_columns or []
-        for i in range(0, filter_model.columnCount()):
-            if i in hide_columns:
-                self.songs_table.hideColumn(i)
-            else:
-                self.songs_table.showColumn(i)
-
+        self.songs_table.set_columns_mode(columns_mode)
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
