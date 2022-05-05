@@ -79,6 +79,7 @@ class PlayerPlaylistRenderer(Renderer, TabBarRendererMixin):
         for i, tab in enumerate(self.tabs):
             if tab[1] == tab_name:
                 return i
+        return 0
 
 
 class PlaylistTableModel(BaseSongsTableModel):
