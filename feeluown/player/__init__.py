@@ -6,6 +6,7 @@ from .playlist import PlaylistMode, Playlist
 from .fm import FM
 from .radio import SongRadio
 from .lyric import LiveLyric, parse_lyric_text
+from .recently_played import RecentlyPlayed
 
 
 __all__ = (
@@ -24,4 +25,6 @@ __all__ = (
 
     'LiveLyric',
     'parse_lyric_text',
+
+    'RecentlyPlayed',
 )
