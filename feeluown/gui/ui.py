@@ -51,7 +51,8 @@ class Ui:
         self.pc_panel.playlist_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/player_playlist'))
         self.toolbar.settings_btn.clicked.connect(
-            self.open_settings_dialog)
+            self._open_settings_dialog)
+        self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
 
@@ -80,6 +81,12 @@ class Ui:
 
         self._app.resize(880, 600)
 
-    def open_settings_dialog(self):
+    def _open_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)
         dialog.exec()
+
+    def _toggle_sidebar(self):
+        if self.sidebar.isVisible():
+            self.sidebar.hide()
+        else:
+            self.sidebar.show()
