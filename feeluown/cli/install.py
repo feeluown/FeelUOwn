@@ -9,7 +9,8 @@ HERE = pathlib.Path(__file__).resolve()
 ICONS_DIR = HERE.parent.parent / 'gui' / 'assets' / 'icons'
 
 mac_shell_str = """#!/bin/bash
-$(brew --prefix)/bin/feeluown --log-to-file
+export PATH=$PATH:/usr/local/bin/:/opt/homebrew/bin/
+feeluown --log-to-file
 """
 
 mac_plist_str = """<?xml version="1.0" encoding="UTF-8"?>

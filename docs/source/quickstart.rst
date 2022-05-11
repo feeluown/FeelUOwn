@@ -50,7 +50,7 @@ macOS
 
 .. sourcecode:: sh
 
-    # Montery实测可以安装 注：macOS 11 可能不能正常安装(https://github.com/feeluown/FeelUOwn/issues/421)
+    # Montery 实测可以安装 注：macOS 11 可能不能正常安装(https://github.com/feeluown/FeelUOwn/issues/421)
     brew tap feeluown/feeluown
     brew install feeluown --with-battery # 更多选项见 `brew info feeluown`
     feeluown genicon  # 在桌面会生成一个 FeelUOwn 图标
