@@ -498,6 +498,8 @@ class Playlist:
         except NotSupported:
             # The song or the album can't be upgraded.
             pass
+        except:  # noqa
+            logger.exception(f"prepare metadata for song '{str(song)}' failed")
         else:
             if artwork:
                 metadata[MetadataFields.artwork] = artwork
