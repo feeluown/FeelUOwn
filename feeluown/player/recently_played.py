@@ -25,6 +25,8 @@ class RecentlyPlayed:
 
     def _on_song_played(self, song, _):
         # Remove the song and place the song at the very first if it already exists.
+        if song is None:
+            return
         if song in self._songs:
             self._songs.remove(song)
         if len(self._songs) >= 100:
