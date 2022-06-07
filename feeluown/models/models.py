@@ -173,7 +173,7 @@ class MvModel(BaseModel, MultiQualityMixin):
 
     class Meta:
         model_type = ModelType.video.value
-        fields = ['name', 'media', 'desc', 'cover', 'artist']
+        fields = ['name', 'media', 'desc', 'cover', 'artists', 'duration']
         support_multi_quality = False
         fields_display = ['name']
 
@@ -183,6 +183,10 @@ class MvModel(BaseModel, MultiQualityMixin):
         V2 VideoModel use `title` instead of `name`.
         """
         return self.name
+
+    @title.setter
+    def title(self, value):
+        self.name = value
 
     @property
     def title_display(self):
