@@ -7,6 +7,7 @@ from .model_protocol import SongProtocol, LyricProtocol, VideoProtocol
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
     NotSupported  # noqa
+from .provider_protocol import FlagProtocolMapping
 
 
 def check_flags(provider, model_type: ModelType, flags: Flags):
@@ -19,6 +20,10 @@ def check_flags(provider, model_type: ModelType, flags: Flags):
            None: [Flags.current_user]  # flags that is not related to any model
         }
     """
+    # TODO: also check other types with protocol.
+    if model_type is ModelType.song and flags is not Flags.model_v2:
+        protocol_cls = FlagProtocolMapping[(model_type, flags)]
+        return isinstance(provider, protocol_cls)
     return provider.meta.flags.get(model_type, Flags.none) & flags
 
 
