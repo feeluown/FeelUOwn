@@ -7,7 +7,7 @@ from .model_protocol import SongProtocol, LyricProtocol, VideoProtocol
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
     NotSupported  # noqa
-from .provider_protocol import FlagProtocolMapping
+from .provider_protocol import check_flag as check_flag_by_protocol
 
 
 def check_flags(provider, model_type: ModelType, flags: Flags):
@@ -22,8 +22,7 @@ def check_flags(provider, model_type: ModelType, flags: Flags):
     """
     # TODO: also check other types with protocol.
     if model_type is ModelType.song and flags is not Flags.model_v2:
-        protocol_cls = FlagProtocolMapping[(model_type, flags)]
-        return isinstance(provider, protocol_cls)
+        return check_flag_by_protocol(provider, model_type, flags)
     return provider.meta.flags.get(model_type, Flags.none) & flags
 
 
@@ -60,38 +59,6 @@ class ProviderV2:
             model.cache_set(cache_key, value)
         return value
 
-    def has_current_user(self) -> bool:
-        """Check if there is a logged in user."""
-
-    def get_current_user(self):
-        """Get current logged in user
-
-        :raises NoUserLoggedIn: there is no logged in user.
-        """
-
-    """methods for different models
-    """
-    def song_get(self, identifier) -> SongProtocol:
-        """
-        :raises ModelNotFound: identifier is invalid
-        """
-
-    def song_list_similar(self, song):
-        """List similar songs
-
-        flag: (ModelType.song, Flags.similar_song)
-        """
-
-    def song_get_media(self, song, quality) -> Optional[Media]:
-        """
-        :return: when quality is not valid, return None
-        """
-
-    def song_list_quality(self, song) -> List[Quality.Audio]:
-        """
-        """
-        raise NotImplementedError
-
     def song_select_media(self, song, policy=None) -> Tuple[Media, Quality.Audio]:
         """
         :raises: MediaNotFound
@@ -99,40 +66,6 @@ class ProviderV2:
         media, quality = self._select_media(song, policy)
         assert isinstance(quality, Quality.Audio)
         return media, quality
-
-    def song_list_hot_comments(self, song) -> List[CommentModel]:
-        """
-        """
-
-    def song_get_web_url(self, song) -> str:
-        pass
-
-    def song_get_lyric(self, song) -> Optional[LyricProtocol]:
-        """
-        Provider has Flags.lyric must implemente this interface.
-        """
-
-    def song_get_mv(self, song) -> Optional[VideoProtocol]:
-        """
-        Provider has Flags.mv must implement this interface.
-        """
-
-    def video_get(self, identifier) -> VideoProtocol:
-        """
-        :raises ModelNotFound: identifier is invalid
-        """
-
-    def video_get_media(self, video, quality) -> Optional[Media]:
-        """
-        Provider has Flags.multi_quality must implemente this interface.
-
-        :return: when quality is not valid, return None
-        """
-
-    def video_list_quality(self, video) -> List[Quality.Video]:
-        """
-        Provider has Flags.multi_quality must implemente this interface.
-        """
 
     def video_select_media(self, video, policy=None) -> Tuple[Media, Quality.Video]:
         """
@@ -177,31 +110,3 @@ class ProviderV2:
                     f'provider:{playable_model.source} has nonstandard implementation')
             return media, quality
         assert False, 'this should not happen'
-
-    def album_get(self, identifier):
-        """
-        :raises ModelNotFound: identifier is invalid
-        """
-
-    def artist_get(self, identifier):
-        """
-        :raises ModelNotFound: identifier is invalid
-        """
-
-    def artist_create_songs_rd(self, artist):
-        ...
-
-    def artist_create_albums_rd(self, artist):
-        ...
-
-    def playlist_get(self, identifier):
-        ...
-
-    def playlist_create_songs_rd(self, playlist):
-        ...
-
-    def playlist_remove_song(self, playlist, song) -> bool:
-        ...
-
-    def playlist_add_song(self, playlist, song) -> bool:
-        ...
