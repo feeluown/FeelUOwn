@@ -1,13 +1,15 @@
-from typing import runtime_checkable, Protocol, List, Tuple, Optional, Dict, Any
+from typing import runtime_checkable, Protocol, List, Tuple, Optional, Dict
 from abc import abstractmethod
 
 from feeluown.media import Quality, Media
 from .models import (
-    LyricModel, SongModel, VideoModel, AlbumModel, ArtistModel, PlaylistModel,
-    UserModel, ModelType,
+    BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
+    PlaylistModel, UserModel, ModelType,
 )
 from .model_protocol import (
-    BriefArtistProtocol, BriefSongProtocol, BriefUserProtocol, BriefVideoProtocol,
+    BriefArtistProtocol, BriefSongProtocol,
+    BriefVideoProtocol, VideoProtocol,
+    LyricProtocol,
 )
 from .flags import Flags as PF
 
@@ -20,11 +22,6 @@ def check_flag(provider, model_type: ModelType, flag: PF) -> bool:
     """Check if provider supports X"""
     protocol_cls = _FlagProtocolMapping[(model_type, flag)]
     return isinstance(provider, protocol_cls)
-
-
-def is_supported(provider, protocol):
-    """Check if provider supports X"""
-    return isinstance(provider, protocol)
 
 
 def eq(model_type: ModelType, flag: PF):
@@ -45,7 +42,8 @@ class SupportsSongGet(Protocol):
     @abstractmethod
     def song_get(self, identifier: ID) -> SongModel:
         """
-        :raises ModelNotFound: identifier is invalid
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
         """
         raise NotImplementedError
 
@@ -54,7 +52,7 @@ class SupportsSongGet(Protocol):
 @runtime_checkable
 class SupportsSongSimilar(Protocol):
     @abstractmethod
-    def song_list_similar(self, identifier: ID) -> List[BriefSongProtocol]:
+    def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
         """List similar songs
         """
         raise NotImplementedError
@@ -64,17 +62,31 @@ class SupportsSongSimilar(Protocol):
 @runtime_checkable
 class SupportsSongMultiQuality(Protocol):
     @abstractmethod
-    def song_list_quality(self, identifier: ID) -> List[Quality.Audio]:
-        raise NotImplementedError
+    def song_list_quality(self, song: BriefSongProtocol) -> List[Quality.Audio]:
+        """List all possible qualities
 
-    @abstractmethod
-    def song_select_media(self, identifier: ID) -> Tuple[Media, Quality.Audio]:
-        raise NotImplementedError
-
-    @abstractmethod
-    def song_get_media(self, identifier: ID) -> Optional[Media]:
+        Please ensure all the qualities are valid. `song_get_media(song, quality)`
+        must not return None with a valid quality.
         """
-        :return: when quality is not valid, return None
+        raise NotImplementedError
+
+    @abstractmethod
+    def song_select_media(
+        self, song: BriefSongProtocol, policy=None
+    ) -> Tuple[Media, Quality.Audio]:
+        """Select a media by the quality sorting policy
+
+        If the song has some valid medias, this method can always return one of them.
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def song_get_media(
+        self, song: BriefVideoProtocol, quality: Quality.Audio
+    ) -> Optional[Media]:
+        """Get song's media by a specified quality
+
+        :return: when quality is invalid, return None
         """
         raise NotImplementedError
 
@@ -82,28 +94,33 @@ class SupportsSongMultiQuality(Protocol):
 @eq(ModelType.song, PF.hot_comments)
 @runtime_checkable
 class SupportsSongHotComments(Protocol):
-    def song_list_hot_comments(self, song) -> List[SongModel]:
+    def song_list_hot_comments(self, song: BriefSongProtocol) -> List[BriefCommentModel]:
         raise NotImplementedError
 
 
 @eq(ModelType.song, PF.web_url)
 @runtime_checkable
 class SupportsSongWebUrl(Protocol):
-    def song_get_web_url(self, song) -> str:
+    def song_get_web_url(self, song: BriefSongProtocol) -> str:
         raise NotImplementedError
 
 
 @eq(ModelType.song, PF.lyric)
 @runtime_checkable
 class SupportsSongLyric(Protocol):
-    def song_get_lyric(self, song) -> Optional[LyricModel]:
+    def song_get_lyric(self, song: BriefSongProtocol) -> Optional[LyricProtocol]:
+        """Get music video of the song
+        """
         raise NotImplementedError
 
 
 @eq(ModelType.song, PF.mv)
 @runtime_checkable
 class SupportsSongMV(Protocol):
-    def song_get_mv(self, song) -> Optional[VideoModel]:
+    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
+        """Get music video of the song
+
+        """
         raise NotImplementedError
 
 
@@ -116,6 +133,10 @@ class SupportsSongMV(Protocol):
 class SupportsAlbumGet(Protocol):
     @abstractmethod
     def album_get(self, identifier: ID) -> AlbumModel:
+        """
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
+        """
         raise NotImplementedError
 
 
@@ -128,6 +149,10 @@ class SupportsAlbumGet(Protocol):
 class SupportsArtistGet(Protocol):
     @abstractmethod
     def artist_get(self, identifier: ID) -> ArtistModel:
+        """
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
+        """
         raise NotImplementedError
 
 
@@ -136,6 +161,8 @@ class SupportsArtistGet(Protocol):
 class SupportsArtistSongsReader(Protocol):
     @abstractmethod
     def artist_create_songs_rd(self, artist: BriefArtistProtocol):
+        """Create songs reader of the artist
+        """
         raise NotImplementedError
 
 
@@ -144,6 +171,8 @@ class SupportsArtistSongsReader(Protocol):
 class SupportsArtistAlbumsReader(Protocol):
     @abstractmethod
     def artist_create_albums_rd(self, artist: BriefArtistProtocol):
+        """Create albums reader of the artist
+        """
         raise NotImplementedError
 
 
@@ -156,6 +185,10 @@ class SupportsArtistAlbumsReader(Protocol):
 class SupportsVideoGet(Protocol):
     @abstractmethod
     def video_get(self, identifier: ID) -> VideoModel:
+        """
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
+        """
         raise NotImplementedError
 
 
@@ -185,6 +218,10 @@ class SupportsVideoMultiQuality(Protocol):
 class SupportsPlaylistGet(Protocol):
     @abstractmethod
     def playlist_get(self, identifier: ID) -> PlaylistModel:
+        """
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
+        """
         raise NotImplementedError
 
 

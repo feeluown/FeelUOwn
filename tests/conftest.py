@@ -48,6 +48,12 @@ class EkafProvider(AbstractProvider, ProviderV2):
     def name(self):
         return 'EKAF'
 
+    def song_list_quality(self, song):
+        return []
+
+    def song_get_media(self, song, quality):
+        return []
+
     def album_get(self, identifier):
         if identifier == _ekaf_album0.identifier:
             return _ekaf_album0

@@ -1,9 +1,8 @@
-from typing import Tuple, List, Optional, cast
+from typing import Tuple, cast
 
 from feeluown.media import Media, Quality
 from feeluown.models import ModelType
-from .models import CommentModel, V2SupportedModelTypes
-from .model_protocol import SongProtocol, LyricProtocol, VideoProtocol
+from .models import V2SupportedModelTypes
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
     NotSupported  # noqa
