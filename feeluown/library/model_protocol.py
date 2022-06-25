@@ -1,17 +1,17 @@
-from typing import Optional, List, Any
+from typing import runtime_checkable, Optional, List, Any
 
 from feeluown.utils.typing_ import Protocol
-from .model_state import ModelState
 
 
+@runtime_checkable
 class ModelProtocol(Protocol):
     """Protocol are used for typing"""
     identifier: str
     source: str
-    state: ModelState
     meta: Any
 
 
+@runtime_checkable
 class BriefSongProtocol(ModelProtocol, Protocol):
     """
     We want to have such kind of check in code::
@@ -47,6 +47,7 @@ class BriefSongProtocol(ModelProtocol, Protocol):
     duration_ms: str
 
 
+@runtime_checkable
 class BriefVideoProtocol(ModelProtocol, Protocol):
     """
     MvModel is also a kind of VideoModel. There is no MvModel anymore.
@@ -58,6 +59,7 @@ class BriefVideoProtocol(ModelProtocol, Protocol):
     duration_ms: str = ''
 
 
+@runtime_checkable
 class BriefArtistProtocol(ModelProtocol, Protocol):
     """
     Note that the concept `artist` may be used in radio/mv/video model.
@@ -66,25 +68,30 @@ class BriefArtistProtocol(ModelProtocol, Protocol):
     name: str
 
 
+@runtime_checkable
 class BriefAlbumProtocol(ModelProtocol, Protocol):
     name: str
     artists_name: str
 
 
+@runtime_checkable
 class BriefUserProtocol(ModelProtocol, Protocol):
     name: str = ''
 
 
+@runtime_checkable
 class UserProtocol(BriefUserProtocol, Protocol):
     avatar_url: str = ''
 
 
+@runtime_checkable
 class SongProtocol(BriefSongProtocol, Protocol):
     album: Optional[BriefAlbumProtocol]
     artists: List[BriefArtistProtocol]
     duration: int
 
 
+@runtime_checkable
 class VideoProtocol(BriefVideoProtocol, Protocol):
     artists: List[BriefArtistProtocol]
     # Old VideoModel/MvModel does't have this field, so we give it
@@ -93,6 +100,7 @@ class VideoProtocol(BriefVideoProtocol, Protocol):
     cover: str
 
 
+@runtime_checkable
 class LyricProtocol(ModelProtocol, Protocol):
     """
     Comparing to v1 LyricModel, LyricProtocol does't have `song` field
