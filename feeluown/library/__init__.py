@@ -24,3 +24,4 @@ from .models import ModelFlags, BaseModel, ModelType, \
     V2SupportedModelTypes
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound
+from .provider_protocol import *

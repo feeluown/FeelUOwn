@@ -14,6 +14,33 @@ from .model_protocol import (
 from .flags import Flags as PF
 
 
+__all__ = (
+    'SupportsAlbumGet',
+
+    'SupportsArtistAlbumsReader',
+    'SupportsArtistGet',
+    'SupportsArtistSongsReader',
+
+    'SupportsCurrentUser',
+
+    'SupportsPlaylistAddSong',
+    'SupportsPlaylistGet',
+    'SupportsPlaylistRemoveSong',
+    'SupportsPlaylistSongsReader',
+
+    'SupportsSongGet',
+    'SupportsSongHotComments',
+    'SupportsSongLyric',
+    'SupportsSongMV',
+    'SupportsSongMultiQuality',
+    'SupportsSongSimilar',
+    'SupportsSongWebUrl',
+
+    'SupportsVideoGet',
+    'SupportsVideoMultiQuality',
+)
+
+
 ID = str
 _FlagProtocolMapping: Dict[Tuple[ModelType, PF], type] = {}
 

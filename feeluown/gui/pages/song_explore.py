@@ -6,8 +6,12 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
+from feeluown.excs import ProviderNotFound
+from feeluown.library import (
+    SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
+    NotSupported
+)
 from feeluown.models.uri import reverse, resolve
-from feeluown.library import ProviderFlags as PF, NotSupported
 from feeluown.player import parse_lyric_text
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
@@ -24,6 +28,14 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     app = req.ctx['app']
     song = req.ctx['model']
 
+    try:
+        provider = app.library.get_or_raise(song.source)
+    except ProviderNotFound as e:
+        view = InlineErrorMessageView()
+        view.show_msg(f'无法展示歌曲详情：{repr(e)}')
+        app.ui.right_panel.set_body(view)
+        return
+
     # TODO: Initialize the view with song object, and it should reduce
     # the code complexity.
     view = SongExploreView(app=app)
@@ -34,11 +46,11 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
 
     # bind signals
     view.play_btn.clicked.connect(lambda: app.playlist.play_model(song))
-    if app.library.check_flags_by_model(song, PF.web_url):
+    if isinstance(provider, SupportsSongWebUrl):
         async def copy_song_web_url():
-            web_url = await aio.run_fn(app.library.song_get_web_url, song)
-            app.show_msg(f'已经复制：{web_url}')
+            web_url = await aio.run_fn(provider.song_get_web_url, song)
             QGuiApplication.clipboard().setText(web_url)
+            app.show_msg(f'已经复制：{web_url}')
 
         view.copy_web_url_btn.clicked.connect(lambda: aio.run_afn(copy_song_web_url))
         # TODO: Open url in browser when alt key is pressed. Use
@@ -54,15 +66,15 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     view.header_label.setText(f'<h1>{song.title}</h1>')
     aio.create_task(view.album_info_label.show_song(song))
 
-    if app.library.check_flags_by_model(song, PF.similar):
-        songs = await aio.run_fn(app.library.song_list_similar, song)
+    if isinstance(provider, SupportsSongSimilar):
+        songs = await aio.run_fn(provider.song_list_similar, song)
         model = SongListModel(create_reader(songs))
         view.similar_songs_view.setModel(model)
     else:
         view.similar_songs_header.setText('<span>该提供方暂不支持查看相似歌曲，555</span>')
 
-    if app.library.check_flags_by_model(song, PF.hot_comments):
-        comments = await aio.run_fn(app.library.song_list_hot_comments, song)
+    if isinstance(provider, SupportsSongHotComments):
+        comments = await aio.run_fn(provider.song_list_hot_comments, song)
         comments_reader = create_reader(comments)
         view.comments_view.setModel(CommentListModel(comments_reader))
     else:
@@ -236,3 +248,14 @@ class SongExploreView(QWidget):
         self._right_layout.addWidget(self.lyric_header)
         self._right_layout.addWidget(self._lyric_scrollarea)
         # self._right_layout.addStretch(0)
+
+
+class InlineErrorMessageView(QLabel):
+    """Error message view
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setAlignment(Qt.AlignCenter)
+
+    def show_msg(self, msg):
+        self.setText(msg)

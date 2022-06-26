@@ -1,6 +1,7 @@
 import logging
+import warnings
 from functools import partial, lru_cache
-from typing import List, cast, Optional, Union
+from typing import cast, Optional, Union
 
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
@@ -24,10 +25,12 @@ from .model_protocol import (
     LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
 )
 from .provider_protocol import (
+    check_flag,
     SupportsCurrentUser,
-    SupportsSongSimilar, SupportsSongHotComments,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsPlaylistRemoveSong, SupportsPlaylistAddSong,
+    SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
+    SupportsArtistSongsReader, SupportsArtistAlbumsReader,
+    SupportsVideoMultiQuality,
 )
 
 
@@ -404,6 +407,7 @@ class Library:
 
     def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
         """Alias for check_flags"""
+        warnings.warn('please use isintance(provider, protocol_cls)')
         return self.check_flags(model.source,
                                 ModelType(model.meta.model_type),
                                 flags)
@@ -442,18 +446,6 @@ class Library:
     # -----
     def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
         return self._model_upgrade(song)  # type: ignore
-
-    def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
-        provider = self.getv2_or_raise(song.source)
-        support_or_raise(provider, SupportsSongSimilar)
-        provider = cast(SupportsSongSimilar, provider)
-        return provider.song_list_similar(song)
-
-    def song_list_hot_comments(self, song: BriefSongProtocol):
-        provider = self.getv2_or_raise(song.source)
-        support_or_raise(provider, SupportsSongHotComments)
-        provider = cast(SupportsSongHotComments, provider)
-        return provider.song_list_hot_comments(song)
 
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
         provider = self.get(song.source)
@@ -551,8 +543,7 @@ class Library:
         :raises NotSupported:
         """
         provider = self.get_or_raise(artist.source)
-        if self.check_flags_by_model(artist, PF.songs_rd):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsArtistSongsReader):
             reader = provider.artist_create_songs_rd(artist)
         else:
             artist = self.cast_model_to_v1(artist)
@@ -566,8 +557,7 @@ class Library:
         """Create albums reader for artist model.
         """
         provider = self.get_or_raise(artist.source)
-        if self.check_flags_by_model(artist, PF.albums_rd):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsArtistAlbumsReader):
             reader = provider.artist_create_albums_rd(artist)
         else:
             artist = self.cast_model_to_v1(artist)
@@ -590,8 +580,7 @@ class Library:
         :raises NotSupported:
         """
         provider = self.get_or_raise(playlist.source)
-        if self.check_flags_by_model(playlist, PF.songs_rd):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsPlaylistSongsReader):
             reader = provider.playlist_create_songs_rd(playlist)
         else:
             playlist = self.cast_model_to_v1(playlist)
@@ -705,7 +694,7 @@ class Library:
                 #
                 # For example, provider X may support 'get' for SongModel, then
                 # the song.artists can return list of BriefArtistModel.
-                if self.check_flags_by_model(model, PF.get):
+                if check_flag(provider, ModelType(model.meta.model_type), PF.get):
                     upgraded_model = provider.model_get(
                         model.meta.model_type, model.identifier)
                     try_v1way = False
@@ -732,8 +721,7 @@ class Library:
         provider = self.get_or_raise(video.source)
         if video.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for video
-            assert self.check_flags_by_model(video, PF.multi_quality)
-            assert isinstance(provider, ProviderV2)
+            assert isinstance(provider, SupportsVideoMultiQuality)
             media, _ = provider.video_select_media(video, policy)
         else:
             # V1 VideoModel has attribute `media`
