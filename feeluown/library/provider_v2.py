@@ -26,6 +26,8 @@ def check_flags(provider, model_type: ModelType, flags: Flags):
 
 
 class ProviderV2:
+    """Base class for provider v2"""
+
     class meta:
         identifier: str = ''
         name: str = ''

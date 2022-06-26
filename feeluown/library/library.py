@@ -1,6 +1,6 @@
 import logging
 from functools import partial, lru_cache
-from typing import List, cast, Optional, Union
+from typing import cast, Optional, Union
 
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
@@ -25,7 +25,6 @@ from .model_protocol import (
 )
 from .provider_protocol import (
     SupportsCurrentUser,
-    SupportsSongSimilar, SupportsSongHotComments,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsPlaylistRemoveSong, SupportsPlaylistAddSong,
 )
@@ -442,18 +441,6 @@ class Library:
     # -----
     def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
         return self._model_upgrade(song)  # type: ignore
-
-    def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
-        provider = self.getv2_or_raise(song.source)
-        support_or_raise(provider, SupportsSongSimilar)
-        provider = cast(SupportsSongSimilar, provider)
-        return provider.song_list_similar(song)
-
-    def song_list_hot_comments(self, song: BriefSongProtocol):
-        provider = self.getv2_or_raise(song.source)
-        support_or_raise(provider, SupportsSongHotComments)
-        provider = cast(SupportsSongHotComments, provider)
-        return provider.song_list_hot_comments(song)
 
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
         provider = self.get(song.source)
