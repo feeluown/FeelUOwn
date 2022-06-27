@@ -39,8 +39,7 @@ feeluown genicon                     # 在桌面生成 FeelUOwn 图标
 
 Gentoo, NixOS, Debian 等 Linux 发行版也支持使用其系统包管理器安装！
 Windows 可以直接下载预打包好的二进制。详情可以参考文档：https://feeluown.readthedocs.io/ 。
-
-开发者/用户[交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)
+也欢迎加入开发者/用户[交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)。
 
 ### 免责声明
 
