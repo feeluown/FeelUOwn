@@ -18,9 +18,21 @@ FeelUOwn 是一个稳定、用户友好以及高度可定制的音乐播放器�
 - 类似 `.vimrc` 和 `.emacs` 的配置文件 `.fuorc`
 - 有友善的开发上手文档，核心模块有较好的文档和测试覆盖
 
-### 文档
+### 快速上手
 
-详细文档请看：https://feeluown.readthedocs.io/
+使用系统包管理器安装 FeelUOwn（及其扩展），以 Arch Linux 和 macOS 为例：
+```sh
+# Arch Linux
+yay -Sy feeluown  # or 'yay -S feeluown-git'
+yay -Sy feeluown-netease feeluown-qqmusic feeluown-kuwo
+
+# macOS
+brew tap feeluown/feeluown
+brew install feeluown --with-battery # 更多选项见 `brew info feeluown`
+feeluown genicon  # 在桌面会生成一个 FeelUOwn 图标
+```
+
+其它系统安装可以参考详细文档：https://feeluown.readthedocs.io/
 
 开发者/用户[交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)
 
