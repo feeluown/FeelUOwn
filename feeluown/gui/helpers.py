@@ -219,8 +219,10 @@ class ItemViewNoScrollMixin:
         self._min_height = height
 
 
-def elided_text(text, width):
-    font_metrics = QFontMetrics(QApplication.font())
+def elided_text(text, width, font=None):
+    if font is None:
+        font = QApplication.font()
+    font_metrics = QFontMetrics(font)
     return font_metrics.elidedText(text, Qt.ElideRight, width)
 
 
