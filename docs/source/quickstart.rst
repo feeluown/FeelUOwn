@@ -24,6 +24,7 @@ Ubuntu
     # 安装 PyQt5
     sudo apt-get install python3-pyqt5
     sudo apt-get install python3-pyqt5.qtopengl
+    sudo apt-get install python3-pyqt5.qtsvg
 
     # 安装 dbus-python
     sudo apt-get install python3-dbus
@@ -58,6 +59,9 @@ macOS
 
 Windows
 ~~~~~~~
+
+你可以从 `发布页 <https://github.com/feeluown/distribution/releases>`_ 直接下载打包好的压缩包。
+也可以按照如下步骤手动进行安装：
 
 1. 安装 Python 3，参考 `链接 <https://www.python.org/downloads/windows/>` （请勿从应用商店安装）
 2. 下载 `mpv-1.dll <https://github.com/feeluown/FeelUOwn/releases/latest>`_ ，
