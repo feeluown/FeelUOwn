@@ -1,8 +1,7 @@
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
 from feeluown.gui.widgets.magicbox import MagicBox
-from feeluown.gui.widgets.statusline import StatusLine, StatusLineItem
-from feeluown.gui.widgets.statusline_items import NotifyStatus
+from feeluown.gui.widgets.statusline import StatusLine
 
 
 class ToolbarButton(QPushButton):
@@ -31,7 +30,6 @@ class BottomPanel(QWidget):
         self.settings_btn.setToolTip('配置')
 
         # initialize widgets
-        self.status_line.add_item(StatusLineItem('notify', NotifyStatus(self._app)))
         self.back_btn.setEnabled(False)
         self.forward_btn.setEnabled(False)
 
