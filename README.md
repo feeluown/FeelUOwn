@@ -20,15 +20,16 @@ FeelUOwn 是一个稳定、用户友好以及高度可定制的音乐播放器�
 
 ### 快速试用
 
-通常来说，你都使用系统包管理器一键安装 FeelUOwn 及其扩展。举个例子，对于
-Arch Linux 和 macOS，你可以分别使用如下两种方式安装：
+使用系统包管理器一键安装 FeelUOwn 及其扩展吧！
+
+对于 Arch Linux 和 macOS，你可以分别使用如下方式安装：
 ```sh
 # Arch Linux
-yay -Sy feeluown          # 安装稳定版，最新版的包名为 feeluown-git
-yay -Sy feeluown-netease  # 按需安装其它扩展
-yay -Sy feeluown-kuwo
-yay -Sy feeluown-qqmusic
-yay -Sy feeluown-local
+yay -S feeluown          # 安装稳定版，最新版的包名为 feeluown-git
+yay -S feeluown-netease  # 按需安装其它扩展
+yay -S feeluown-kuwo
+yay -S feeluown-qqmusic
+yay -S feeluown-local
 
 # macOS
 brew tap feeluown/feeluown
@@ -36,7 +37,7 @@ brew install feeluown --with-battery # 安装 FeelUOwn 以及扩展
 feeluown genicon                     # 在桌面生成 FeelUOwn 图标
 ```
 
-Gentoo, NixOS, Debian 等也支持使用系统包管理器安装。Windows 可以直接下载预打包好的二进制包。
+Gentoo, NixOS, Debian 等也支持使用系统包管理器安装！Windows 可以直接下载预打包好的二进制。
 详情可以参考文档：https://feeluown.readthedocs.io/ 。
 
 开发者/用户[交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)
