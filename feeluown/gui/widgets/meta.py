@@ -3,9 +3,11 @@ all metadata related widgets, for example: cover, and so on.
 """
 
 from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QFrame, QSizePolicy
 
+from feeluown.gui.helpers import elided_text
 from .cover_label import CoverLabel
 
 
@@ -63,15 +65,21 @@ class TableMetaWidget(MetaWidget):
         # it's  width and height is not so important, we set them to 0
         self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.title_label.setTextFormat(Qt.RichText)
+        # self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)
 
         self._setup_ui()
         self._refresh()
 
     def _setup_ui(self):
+        font = self.font()
+        font.setPixelSize(20)
+        font.setWeight(QFont.DemiBold)
+
         self.cover_label.setMinimumWidth(150)
         self.cover_label.setMaximumWidth(200)
+        self.title_label.setFont(font)
+
         self._v_layout = QVBoxLayout(self)
         self._h_layout = QHBoxLayout()
         self._right_layout = QVBoxLayout()
@@ -157,7 +165,12 @@ class TableMetaWidget(MetaWidget):
     def _refresh_title(self):
         if self.title:
             self.title_label.show()
-            self.title_label.setText('<h2>{}</h2>'.format(self.title))
+            self.title_label.setToolTip(self.title)
+            # Please refresh when the widget is resized.
+            title = elided_text(self.title,
+                                self.title_label.width(),
+                                self.title_label.font())
+            self.title_label.setText(title)
         else:
             self.title_label.hide()
 
@@ -177,6 +190,7 @@ class TableMetaWidget(MetaWidget):
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
+        self._refresh_title()
         # HELP: think about a more elegant way
         # Currently, right panel draw background image on meta widget
         # and bottom panel, when meta widget is resized, the background
