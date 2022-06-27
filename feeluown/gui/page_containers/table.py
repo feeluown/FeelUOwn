@@ -253,7 +253,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.toolbar = SongsTableToolbar()
         self.tabbar = TableTabBarV2()
         self.meta_widget = TableMetaWidget(parent=self)
-        self.songs_table = SongsTableView(parent=self)
+        self.songs_table = SongsTableView(app=self._app, parent=self)
         self.albums_table = AlbumListView(parent=self)
         self.artists_table = ArtistListView(parent=self)
         self.videos_table = VideoListView(parent=self)

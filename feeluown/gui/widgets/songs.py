@@ -418,8 +418,9 @@ class ArtistsSelectionView(QListView):
 
 
 class SongsTableDelegate(QStyledItemDelegate):
-    def __init__(self, parent):
+    def __init__(self, app, parent):
         super().__init__(parent)
+        self._app = app
         self.view = parent
         self.row_hovered = None  # A valid row_id if hovered.
         self.pressed_cell = None  # (row, column) if pressed.
@@ -440,9 +441,10 @@ class SongsTableDelegate(QStyledItemDelegate):
 
         def cb(future):
             try:
-                artists = future.result()
+                song = future.result()
+                artists = song.artists
             except:  # noqa
-                logger.error('song.artists failed')
+                logger.exception('get song.artists failed')
             else:
                 model = ArtistsModel(artists)
                 editor.setModel(model)
@@ -450,7 +452,7 @@ class SongsTableDelegate(QStyledItemDelegate):
 
         if index.column() == Column.artist:
             song = index.data(role=Qt.UserRole)
-            future = aio.run_in_executor(None, lambda: song.artists)
+            future = aio.run_fn(self._app.library.song_upgrade, song)
             future.add_done_callback(cb)
 
     def setModelData(self, editor, model, index):
@@ -564,9 +566,11 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
     row_hovered = pyqtSignal([object])  # None when not hovered, row id when hovered.
 
-    def __init__(self, parent=None):
+    def __init__(self, app, parent=None):
         super().__init__(parent)
         QTableView.__init__(self, parent)
+
+        self._app = app
 
         # override ItemViewNoScrollMixin variables
         self._least_row_count = 6
@@ -575,7 +579,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         # slot functions
         self.remove_song_func = None
 
-        self.delegate = SongsTableDelegate(self)
+        self.delegate = SongsTableDelegate(app, self)
         self.setItemDelegate(self.delegate)
         self.about_to_show_menu = Signal()
         self._setup_ui()
