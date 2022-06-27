@@ -203,12 +203,12 @@ class App:
         class Action:
             def set_progress(self, value):
                 value = int(value * 100)
-                show_msg(s + f'...{value}%', timeout=-1)
+                show_msg(s + f'...{value}%', timeout=5000)
 
             def failed(self, msg=''):
                 raise ActionError(msg)
 
-        show_msg(s + '...', timeout=-1)  # doing
+        show_msg(s + '...', timeout=5000)  # doing
         try:
             yield Action()
         except ActionError as e:
