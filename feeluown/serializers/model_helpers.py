@@ -45,7 +45,7 @@ class ModelSerializerMixin:
         else:
             fields = self._declared_fields
         items = [("provider", model.source),
-                 ("identifier", model.identifier),
+                 ("identifier", str(model.identifier)),
                  ("uri", reverse(model))]
         if self.opt_fetch:
             for field in fields:

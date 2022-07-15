@@ -1,6 +1,7 @@
 import logging
+import warnings
 from functools import partial, lru_cache
-from typing import List, cast, Optional, Union
+from typing import cast, Optional, Union
 
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
@@ -23,12 +24,25 @@ from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
     LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
 )
+from .provider_protocol import (
+    check_flag,
+    SupportsCurrentUser,
+    SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
+    SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
+    SupportsArtistSongsReader, SupportsArtistAlbumsReader,
+    SupportsVideoMultiQuality,
+)
 
 
 logger = logging.getLogger(__name__)
 
 FULL_SCORE = 10
 MIN_SCORE = 5
+
+
+def support_or_raise(provider, protocol_cls):
+    if not isinstance(provider, protocol_cls):
+        raise NotSupported(f'{provider} not support {protocol_cls}') from None
 
 
 def default_score_fn(origin, standby):
@@ -161,7 +175,7 @@ class Library:
         else:
             self.provider_removed.emit(provider)
 
-    def get(self, identifier) -> Optional[Union[AbstractProvider, ProviderV2]]:
+    def get(self, identifier):
         """通过资源提供方唯一标识获取提供方实例"""
         for provider in self._providers:
             if provider.identifier == identifier:
@@ -366,7 +380,7 @@ class Library:
             raise ProviderNotFound(f'provider {identifier} not found')
         return provider
 
-    def getv2_or_raise(self, identifier) -> ProviderV2:
+    def getv2_or_raise(self, identifier):
         provider = self.get_or_raise(identifier)
         # You should ensure the provider is v2 first. For example, if check_flags
         # returns true, the provider must be a v2 instance.
@@ -393,6 +407,7 @@ class Library:
 
     def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
         """Alias for check_flags"""
+        warnings.warn('please use isintance(provider, protocol_cls)')
         return self.check_flags(model.source,
                                 ModelType(model.meta.model_type),
                                 flags)
@@ -432,23 +447,14 @@ class Library:
     def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
         return self._model_upgrade(song)  # type: ignore
 
-    def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
-        provider = self.getv2_or_raise(song.source)
-        return provider.song_list_similar(song)
-
-    def song_list_hot_comments(self, song: BriefSongProtocol):
-        provider = self.getv2_or_raise(song.source)
-        return provider.song_list_hot_comments(song)
-
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
             # FIXME: raise ProviderNotfound
             raise MediaNotFound(f'provider:{song.source} not found')
         if song.meta.flags & MF.v2:
-            # provider MUST has multi_quality flag for song
-            assert self.check_flags_by_model(song, PF.multi_quality)
-            assert isinstance(provider, ProviderV2)
+            support_or_raise(provider, SupportsSongMultiQuality)
+            provider = cast(SupportsSongMultiQuality, provider)
             media, _ = provider.song_select_media(song, policy)
         else:
             if song.meta.support_multi_quality:
@@ -489,8 +495,7 @@ class Library:
         :raises ProviderNotFound:
         """
         provider = self.get_or_raise(song.source)
-        if self.check_flags_by_model(song, PF.mv):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsSongMV):
             mv = provider.song_get_mv(song)
         else:
             song_v1 = self.cast_model_to_v1(song)
@@ -508,13 +513,12 @@ class Library:
         :raises ProviderNotFound:
         """
         provider = self.get_or_raise(song.source)
-        if self.check_flags_by_model(song, PF.lyric):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsSongLyric):
             lyric = provider.song_get_lyric(song)
         else:
             song_v1 = self.cast_model_to_v1(song)
-            lyric_v1 = song_v1.lyric
-            lyric = cast(Optional[LyricProtocol], lyric_v1)
+            lyric = song_v1.lyric
+            lyric = cast(Optional[LyricProtocol], lyric)
         return lyric
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
@@ -539,8 +543,7 @@ class Library:
         :raises NotSupported:
         """
         provider = self.get_or_raise(artist.source)
-        if self.check_flags_by_model(artist, PF.songs_rd):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsArtistSongsReader):
             reader = provider.artist_create_songs_rd(artist)
         else:
             artist = self.cast_model_to_v1(artist)
@@ -554,8 +557,7 @@ class Library:
         """Create albums reader for artist model.
         """
         provider = self.get_or_raise(artist.source)
-        if self.check_flags_by_model(artist, PF.albums_rd):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsArtistAlbumsReader):
             reader = provider.artist_create_albums_rd(artist)
         else:
             artist = self.cast_model_to_v1(artist)
@@ -578,8 +580,7 @@ class Library:
         :raises NotSupported:
         """
         provider = self.get_or_raise(playlist.source)
-        if self.check_flags_by_model(playlist, PF.songs_rd):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsPlaylistSongsReader):
             reader = provider.playlist_create_songs_rd(playlist)
         else:
             playlist = self.cast_model_to_v1(playlist)
@@ -595,8 +596,7 @@ class Library:
         :return: true if the song is not in playlist anymore.
         """
         provider = self.get_or_raise(playlist.source)
-        if self.check_flags_by_model(playlist, PF.remove_song):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsPlaylistRemoveSong):
             ok = provider.playlist_remove_song(playlist, song)
         else:
             playlist = self.cast_model_to_v1(playlist)
@@ -609,8 +609,7 @@ class Library:
         :return: true if the song exists in playlist.
         """
         provider = self.get_or_raise(playlist.source)
-        if self.check_flags_by_model(playlist, PF.remove_song):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsPlaylistAddSong):
             ok = provider.playlist_add_song(playlist, song)
         else:
             playlist = self.cast_model_to_v1(playlist)
@@ -695,7 +694,7 @@ class Library:
                 #
                 # For example, provider X may support 'get' for SongModel, then
                 # the song.artists can return list of BriefArtistModel.
-                if self.check_flags_by_model(model, PF.get):
+                if check_flag(provider, ModelType(model.meta.model_type), PF.get):
                     upgraded_model = provider.model_get(
                         model.meta.model_type, model.identifier)
                     try_v1way = False
@@ -715,12 +714,14 @@ class Library:
     # --------
     # Video
     # --------
+    def video_upgrade(self, video):
+        return self._model_upgrade(video)
+
     def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
         provider = self.get_or_raise(video.source)
         if video.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for video
-            assert self.check_flags_by_model(video, PF.multi_quality)
-            assert isinstance(provider, ProviderV2)
+            assert isinstance(provider, SupportsVideoMultiQuality)
             media, _ = provider.video_select_media(video, policy)
         else:
             # V1 VideoModel has attribute `media`
@@ -743,8 +744,7 @@ class Library:
         .. versionadded:: 3.7.6
         """
         provider = self.get_or_raise(source)
-        if self.check_flags(source, ModelType.none, PF.current_user):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsCurrentUser):
             return provider.has_current_user()
 
         try:
@@ -765,8 +765,7 @@ class Library:
         .. versionadded:: 3.7.6
         """
         provider = self.get_or_raise(source)
-        if self.check_flags(source, ModelType.none, PF.current_user):
-            assert isinstance(provider, ProviderV2)
+        if isinstance(provider, SupportsCurrentUser):
             return provider.get_current_user()
 
         user_v1 = getattr(provider, '_user', None)

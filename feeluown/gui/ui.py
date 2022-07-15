@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QSizePolicy, QSplitter, QVBoxLayout
 from feeluown.utils.utils import use_mpv_old
 from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.settings import SettingsDialog
+from feeluown.gui.widgets.messageline import MessageLine
 
 if use_mpv_old():
     from feeluown.gui.widgets.mpv_old import MpvOpenGLWidget
@@ -29,6 +30,7 @@ class Ui:
 
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
+        self._message_line = MessageLine()
         self.top_panel = TopPanel(app, app)
         self.sidebar = self._left_panel_con = LeftPanel(self._app,)
         self.left_panel = self._left_panel_con.p
@@ -51,7 +53,8 @@ class Ui:
         self.pc_panel.playlist_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/player_playlist'))
         self.toolbar.settings_btn.clicked.connect(
-            self.open_settings_dialog)
+            self._open_settings_dialog)
+        self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
 
@@ -64,12 +67,14 @@ class Ui:
         self._splitter.setHandleWidth(0)
         self._splitter.addWidget(self._left_panel_con)
         self._splitter.addWidget(self.right_panel)
+        self._message_line.hide()
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
         # self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.mpv_widget)
+        self._layout.addWidget(self._message_line)
         self._layout.addWidget(self._top_separator)
         self._layout.addWidget(self.top_panel)
 
@@ -80,6 +85,12 @@ class Ui:
 
         self._app.resize(880, 600)
 
-    def open_settings_dialog(self):
+    def _open_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)
         dialog.exec()
+
+    def _toggle_sidebar(self):
+        if self.sidebar.isVisible():
+            self.sidebar.hide()
+        else:
+            self.sidebar.show()

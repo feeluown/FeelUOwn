@@ -59,7 +59,7 @@ class GuiApp(App, QWidget):
         self.ui = Ui(self)
         if self.config.ENABLE_TRAY:
             self.tray = Tray(self)
-        self.show_msg = self.ui.toolbar.status_line.get_item('notify').widget.show_msg
+        self.show_msg = self.ui._message_line.show_msg
 
     def initialize(self):
         super().initialize()

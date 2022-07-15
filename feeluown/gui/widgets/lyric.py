@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QLabel, QWidget,\
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
     QMenu, QAction, QFontDialog, QShortcut
 
-from feeluown.gui.helpers import resize_font
+from feeluown.gui.helpers import resize_font, elided_text
 
 
 IS_MACOS = sys.platform == 'darwin'
@@ -53,7 +53,11 @@ class Window(QWidget):
 
     def set_sentence(self, text):
         if self.isVisible():
-            self.c.label.setText(text)
+            t2 = elided_text(text,
+                             self.c.label.width(),
+                             self.c.label.font())
+            self.c.label.setText(t2)
+            self.c.label.setToolTip(text)
 
     def mousePressEvent(self, e):
         self._old_pos = e.globalPos()

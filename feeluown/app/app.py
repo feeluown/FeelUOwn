@@ -13,7 +13,7 @@ from feeluown.models import (
 )
 from feeluown.player import (
     PlaybackMode, Playlist, LiveLyric,
-    FM, Player,
+    FM, Player, RecentlyPlayed
 )
 from feeluown.plugin import PluginsManager
 from feeluown.version import VersionManager
@@ -58,6 +58,7 @@ class App:
         self.playlist = Playlist(self, audio_select_policy=config.AUDIO_SELECT_POLICY)
         self.live_lyric = LiveLyric(self)
         self.fm = FM(self)
+        self.recently_played = RecentlyPlayed(self.playlist)
 
         # TODO: initialization should be moved into initialize
         self.player.set_playlist(self.playlist)
@@ -106,6 +107,7 @@ class App:
     def load_state(self):
         playlist = self.playlist
         player = self.player
+        recently_played = self.recently_played
 
         try:
             with open(STATE_FILE, 'r', encoding='utf-8') as f:
@@ -116,6 +118,19 @@ class App:
             logger.exception('invalid state file')
         else:
             player.volume = state['volume']
+
+            # Restore recently_played states.
+            recently_played_models = []
+            for model in state.get('recently_played', []):
+                try:
+                    model = resolve(model)
+                except ResolverNotFound:
+                    pass
+                else:
+                    recently_played_models.append(model)
+            recently_played.init_from_models(recently_played_models)
+
+            # Restore playlist states.
             playlist.playback_mode = PlaybackMode(state['playback_mode'])
             songs = []
             for song in state['playlist']:
@@ -154,6 +169,7 @@ class App:
         logger.info("Dump app state")
         playlist = self.playlist
         player = self.player
+        recently_played = self.recently_played
 
         song = self.player.current_song
         if song is not None:
@@ -166,6 +182,8 @@ class App:
             'song': song,
             'position': player.position,
             'playlist': [reverse(song, as_line=True) for song in playlist.list()],
+            'recently_played': [reverse(song, as_line=True)
+                                for song in recently_played.list_songs()]
         }
         with open(STATE_FILE, 'w', encoding='utf-8') as f:
             json.dump(state, f)
@@ -185,12 +203,12 @@ class App:
         class Action:
             def set_progress(self, value):
                 value = int(value * 100)
-                show_msg(s + f'...{value}%', timeout=-1)
+                show_msg(s + f'...{value}%', timeout=5000)
 
             def failed(self, msg=''):
                 raise ActionError(msg)
 
-        show_msg(s + '...', timeout=-1)  # doing
+        show_msg(s + '...', timeout=5000)  # doing
         try:
             yield Action()
         except ActionError as e:

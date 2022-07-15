@@ -10,7 +10,7 @@ from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
-from feeluown.library import MediaNotFound, SongProtocol, ModelType
+from feeluown.library import MediaNotFound, SongProtocol, ModelType, NotSupported
 from feeluown.models.uri import reverse
 
 logger = logging.getLogger(__name__)
@@ -388,7 +388,7 @@ class Playlist:
            The method is added to replace current_song.setter.
         """
         if song is None:
-            self.pure_set_current_song(None, None)
+            self.pure_set_current_song(None, None, None)
             return None
 
         if self.mode is PlaylistMode.fm and song not in self._songs:
@@ -399,7 +399,14 @@ class Playlist:
         return self._t_scm.bind_coro(self.a_set_current_song(song))
 
     async def a_set_current_song(self, song):
+        """Set the `song` as the current song.
+
+        If the song is bad, then this will try to use a standby in Playlist.normal mode.
+        """
         song_str = f'{song.source}:{song.title_display} - {song.artists_name_display}'
+
+        target_song = song  # The song to be set.
+        media = None        # The corresponding media to be set.
 
         try:
             media = await self._prepare_media(song)
@@ -409,44 +416,44 @@ class Playlist:
 
             # if mode is fm mode, do not find standby song,
             # just skip the song
-            if self.mode is not PlaylistMode.fm:
-                self._app.show_msg(f'{song_str} is invalid, try to find standby')
-                logger.info(f'try to find standby for {song_str}')
-                standby_candidates = await self._app.library.a_list_song_standby_v2(
-                    song,
-                    self.audio_select_policy
-                )
-                if standby_candidates:
-                    standby, media = standby_candidates[0]
-                    self._app.show_msg(f'Song standby was found in {standby.source} ✅')
-                    # Insert the standby song after the song
-                    if song in self._songs and standby not in self._songs:
-                        index = self._songs.index(song)
-                        self._songs.insert(index + 1, standby)
-                        self.songs_added.emit(index + 1, 1)
-                    # NOTE: a_list_song_standby ensure that the song.url is not empty
-                    # FIXME: maybe a_list_song_standby should return media directly
-                    self.pure_set_current_song(standby, media)
-                else:
-                    self._app.show_msg('Song standby not found')
-                    self.pure_set_current_song(song, None)
-            else:
+            if self.mode is PlaylistMode.fm:
                 self.next()
+                return
+
+            self._app.show_msg(f'{song_str} is invalid, try to find standby')
+            logger.info(f'try to find standby for {song_str}')
+            standby_candidates = await self._app.library.a_list_song_standby_v2(
+                song,
+                self.audio_select_policy
+            )
+            if standby_candidates:
+                standby, media = standby_candidates[0]
+                self._app.show_msg(f'Song standby was found in {standby.source} ✅')
+                # Insert the standby song after the song
+                if song in self._songs and standby not in self._songs:
+                    index = self._songs.index(song)
+                    self._songs.insert(index + 1, standby)
+                    self.songs_added.emit(index + 1, 1)
+                target_song = standby
+            else:
+                self._app.show_msg('Song standby not found')
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
             logger.error(f'prepare media failed: {e}, try next song')
-            self.pure_set_current_song(song, None)
         except:  # noqa
             # When the exception is unknown, we mark the song as bad.
             logger.exception('prepare media failed due to unknown error, '
                              'so we mark the song as a bad one')
             self.mark_as_bad(song)
             self.next()
+            return
         else:
             assert media, "media must not be empty"
-            self.pure_set_current_song(song, media)
 
-    def pure_set_current_song(self, song, media):
+        metadata = await self._prepare_metadata_for_song(target_song)
+        self.pure_set_current_song(target_song, media, metadata)
+
+    def pure_set_current_song(self, song, media, metadata=None):
         if song is None:
             self._current_song = None
         else:
@@ -464,14 +471,6 @@ class Playlist:
                 self.next()
             else:
                 # Note that the value of model v1 {}_display may be None.
-                metadata = Metadata({
-                    MetadataFields.uri: reverse(song),
-                    MetadataFields.source: song.source,
-                    MetadataFields.title: song.title_display or '',
-                    # The song.artists_name should return a list of strings
-                    MetadataFields.artists: [song.artists_name_display or ''],
-                    MetadataFields.album: song.album_name_display or '',
-                })
                 kwargs = {}
                 if not self._app.has_gui:
                     kwargs['video'] = False
@@ -479,6 +478,47 @@ class Playlist:
                 self._app.player.play(media, metadata=metadata, **kwargs)
         else:
             self._app.player.stop()
+
+    async def _prepare_metadata_for_song(self, song):
+        metadata = Metadata({
+            MetadataFields.uri: reverse(song),
+            MetadataFields.source: song.source,
+            MetadataFields.title: song.title_display or '',
+            # The song.artists_name should return a list of strings
+            MetadataFields.artists: [song.artists_name_display or ''],
+            MetadataFields.album: song.album_name_display or '',
+        })
+        try:
+            song = await aio.run_fn(self._app.library.song_upgrade, song)
+            if song.album is not None:
+                album = self._app.library.album_upgrade(song.album)
+                artwork = album.cover
+            else:
+                artwork = ''
+        except NotSupported:
+            # The song or the album can't be upgraded.
+            pass
+        except:  # noqa
+            logger.exception(f"prepare metadata for song '{str(song)}' failed")
+        else:
+            if artwork:
+                metadata[MetadataFields.artwork] = artwork
+        return metadata
+
+    async def _prepare_metadata_for_video(self, video):
+        metadata = Metadata({
+            # The value of model v1 title_display may be None.
+            MetadataFields.title: video.title_display or '',
+            MetadataFields.source: video.source,
+            MetadataFields.uri: reverse(video),
+        })
+        try:
+            video = await aio.run_fn(self._app.library.video_upgrade, video)
+        except NotSupported as e:
+            logger.warning(f"can't get cover of video due to {str(e)}")
+        else:
+            metadata[MetadataFields.artwork] = video.cover
+        return metadata
 
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
@@ -529,12 +569,7 @@ class Playlist:
         except MediaNotFound:
             self._app.show_msg('没有可用的播放链接')
         else:
-            metadata = Metadata({
-                # The value of model v1 title_display may be None.
-                MetadataFields.title: video.title_display or '',
-                MetadataFields.source: video.source,
-                MetadataFields.uri: reverse(video),
-            })
+            metadata = await self._prepare_metadata_for_video(video)
             kwargs = {}
             if not self._app.has_gui:
                 kwargs['video'] = False

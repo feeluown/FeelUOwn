@@ -3,9 +3,11 @@ all metadata related widgets, for example: cover, and so on.
 """
 
 from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QFrame, QSizePolicy
 
+from feeluown.gui.helpers import elided_text
 from .cover_label import CoverLabel
 
 
@@ -29,6 +31,7 @@ class MetaWidget(QFrame):
     def clear(self):
         self.title = None
         self.subtitle = None
+        self.source = None
         self.cover = None
         self.created_at = None
         self.updated_at = None
@@ -41,6 +44,7 @@ class MetaWidget(QFrame):
     # TODO: use metaclass
     title = getset_property('title')
     subtitle = getset_property('subtitle')
+    source = getset_property('source')
     cover = getset_property('cover')
     created_at = getset_property('created_at')
     updated_at = getset_property('updated_at')
@@ -61,15 +65,21 @@ class TableMetaWidget(MetaWidget):
         # it's  width and height is not so important, we set them to 0
         self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
 
-        self.title_label.setTextFormat(Qt.RichText)
+        # self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)
 
         self._setup_ui()
         self._refresh()
 
     def _setup_ui(self):
+        font = self.font()
+        font.setPixelSize(20)
+        font.setWeight(QFont.DemiBold)
+
         self.cover_label.setMinimumWidth(150)
         self.cover_label.setMaximumWidth(200)
+        self.title_label.setFont(font)
+
         self._v_layout = QVBoxLayout(self)
         self._h_layout = QHBoxLayout()
         self._right_layout = QVBoxLayout()
@@ -89,7 +99,7 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.setSpacing(5)
 
         # left margin is same as toolbar left margin
-        self.layout().setContentsMargins(30, 0, 30, 0)
+        self.layout().setContentsMargins(0, 0, 30, 0)
         self.layout().setSpacing(0)
 
     def add_tabbar(self, tabbar):
@@ -104,7 +114,7 @@ class TableMetaWidget(MetaWidget):
         self.updateGeometry()
 
     def on_property_updated(self, name):
-        if name in ('created_at', 'updated_at', 'songs_count', 'creator'):
+        if name in ('created_at', 'updated_at', 'songs_count', 'creator', 'source'):
             self._refresh_meta_label()
         elif name in ('title', 'subtitle'):
             self._refresh_title()
@@ -115,7 +125,9 @@ class TableMetaWidget(MetaWidget):
         creator = self.creator
         # icon: 👤
         creator_part = creator if creator else ''
-        created_part = updated_part = songs_count_part = ''
+        created_part = updated_part = songs_count_part = source_part = ''
+        if self.source:
+            source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
             updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'\
                 .format(self.updated_at.strftime('%Y-%m-%d'))
@@ -124,13 +136,18 @@ class TableMetaWidget(MetaWidget):
                 .format(self.created_at.strftime('%Y-%m-%d'))
         if self.songs_count is not None:
             text = self.songs_count if self.songs_count != -1 else '未知'
-            songs_count_part = '<code style="font-size: small">{}</code> 首歌曲'\
-                .format(text)
+            songs_count_part = f'<code style="font-size: small">{text}</code> 首歌曲'
         if creator_part or updated_part or created_part or songs_count_part:
-            parts = [creator_part, created_part, updated_part, songs_count_part]
+            parts = [
+                creator_part,
+                created_part,
+                updated_part,
+                songs_count_part,
+                source_part,
+            ]
             valid_parts = [p for p in parts if p]
             content = ' • '.join(valid_parts)
-            text = '<span>{}</span>'.format(content)
+            text = f'<span>{content}</span>'
             # TODO: add linkActivated callback for meta_label
             self.meta_label.setText(text)
             self.meta_label.show()
@@ -148,7 +165,12 @@ class TableMetaWidget(MetaWidget):
     def _refresh_title(self):
         if self.title:
             self.title_label.show()
-            self.title_label.setText('<h2>{}</h2>'.format(self.title))
+            self.title_label.setToolTip(self.title)
+            # Please refresh when the widget is resized.
+            title = elided_text(self.title,
+                                self.title_label.width(),
+                                self.title_label.font())
+            self.title_label.setText(title)
         else:
             self.title_label.hide()
 
@@ -168,6 +190,7 @@ class TableMetaWidget(MetaWidget):
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
+        self._refresh_title()
         # HELP: think about a more elegant way
         # Currently, right panel draw background image on meta widget
         # and bottom panel, when meta widget is resized, the background

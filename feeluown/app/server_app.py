@@ -32,6 +32,8 @@ class ServerApp(App):
             (self.player.metadata_changed, 'player.metadata_changed'),
             (self.player.seeked, 'player.seeked'),
             (self.player.state_changed, 'player.state_changed'),
+            (self.player.duration_changed, 'player.duration_changed'),
+            (self.live_lyric.sentence_changed, 'live_lyric.sentence_changed'),
         ]
         for signal, name in signals:
             self.pubsub_gateway.add_topic(name)

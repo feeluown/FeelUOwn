@@ -26,7 +26,7 @@ from feeluown.gui.widgets.video_list import VideoListModel, VideoListView, \
     VideoFilterProxyModel
 from feeluown.gui.widgets.playlist import PlaylistListModel, PlaylistListView, \
     PlaylistFilterProxyModel
-from feeluown.gui.widgets.songs import SongsTableModel, SongsTableView, \
+from feeluown.gui.widgets.songs import ColumnsMode, SongsTableModel, SongsTableView, \
     SongFilterProxyModel
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.meta import TableMetaWidget
@@ -126,24 +126,31 @@ class Renderer:
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
-    def show_songs(self, reader, show_count=False):
+    def show_songs(self, reader, show_count=False, columns_mode=ColumnsMode.normal):
+        """
+        .. versionadded: v3.8.5
+           The *hide_columns* parameter.
+        """
         reader = wrap(reader)
-        self.container.current_table = self.songs_table
-        self.toolbar.show()
-
         if show_count:
             count = reader.count
             self.meta_widget.songs_count = -1 if count is None else count
-
         source_name_map = {p.identifier: p.name for p in self._app.library.list()}
         model = SongsTableModel(
             source_name_map=source_name_map,
             reader=reader,
-            parent=self.songs_table)
+            parent=self.songs_table,
+        )
+        self.show_songs_by_model(model, columns_mode=columns_mode)
+
+    def show_songs_by_model(self, model, columns_mode=ColumnsMode.normal):
+        self.container.current_table = self.songs_table
+        self.toolbar.show()
         filter_model = SongFilterProxyModel(self.songs_table)
         filter_model.setSourceModel(model)
         self.songs_table.setModel(filter_model)
         self.songs_table.scrollToTop()
+        self.songs_table.set_columns_mode(columns_mode)
         disconnect_slots_if_has(self._app.ui.magicbox.filter_text_changed)
         self._app.ui.magicbox.filter_text_changed.connect(filter_model.filter_by_text)
 
@@ -157,6 +164,10 @@ class Renderer:
         reader = wrap(comments)
         model = CommentListModel(reader)
         self.comments_table.setModel(model)
+
+    def _get_source_alias(self, source):
+        provider = self._app.library.get(source)
+        return provider.name if provider is not None else ''
 
 
 class SongsCollectionRenderer(Renderer):
@@ -242,7 +253,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.toolbar = SongsTableToolbar()
         self.tabbar = TableTabBarV2()
         self.meta_widget = TableMetaWidget(parent=self)
-        self.songs_table = SongsTableView(parent=self)
+        self.songs_table = SongsTableView(app=self._app, parent=self)
         self.albums_table = AlbumListView(parent=self)
         self.artists_table = ArtistListView(parent=self)
         self.videos_table = VideoListView(parent=self)
@@ -289,14 +300,21 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.desc_widget.hide()
 
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self.meta_widget)
-        self._layout.addWidget(self.toolbar)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.desc_widget)
+        self._v_layout = QVBoxLayout()
+
+        self._v_layout.addWidget(self.meta_widget)
+        self._v_layout.addWidget(self.toolbar)
+        self._v_layout.addSpacing(10)
+        self._v_layout.addWidget(self.desc_widget)
+
+        # Since QTableView has a margin on the left and right(see SongsTableDelegate),
+        # so set the v_layout left margin to same value(0) to align widgets.
+        self._v_layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addLayout(self._v_layout)
         for table in self._tables:
             self._layout.addWidget(table)
         self._layout.addStretch(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setContentsMargins(20, 0, 20, 0)
         self._layout.setSpacing(0)
 
     @property

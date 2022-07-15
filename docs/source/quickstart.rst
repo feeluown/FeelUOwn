@@ -24,6 +24,7 @@ Ubuntu
     # 安装 PyQt5
     sudo apt-get install python3-pyqt5
     sudo apt-get install python3-pyqt5.qtopengl
+    sudo apt-get install python3-pyqt5.qtsvg
 
     # 安装 dbus-python
     sudo apt-get install python3-dbus
@@ -50,14 +51,17 @@ macOS
 
 .. sourcecode:: sh
 
-    # macOS 11 可能不能正常安装
-    # https://github.com/feeluown/FeelUOwn/issues/421
+    # macOS Monterey（版本12）实测可以安装，版本 11 可能不能正常安装
+    # (https://github.com/feeluown/FeelUOwn/issues/421)
     brew tap feeluown/feeluown
     brew install feeluown --with-battery # 更多选项见 `brew info feeluown`
-    feeluown-genicon  # 在桌面会生成一个 FeelUOwn 图标
+    feeluown genicon  # 在桌面会生成一个 FeelUOwn 图标
 
 Windows
 ~~~~~~~
+
+你可以从 `发布页 <https://github.com/feeluown/distribution/releases>`_ 直接下载打包好的压缩包。
+也可以按照如下步骤手动进行安装：
 
 1. 安装 Python 3，参考 `链接 <https://www.python.org/downloads/windows/>` （请勿从应用商店安装）
 2. 下载 `mpv-1.dll <https://github.com/feeluown/FeelUOwn/releases/latest>`_ ，

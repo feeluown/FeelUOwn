@@ -1,6 +1,6 @@
 from collections import deque
 
-from feeluown.library import ProviderFlags as PF
+from feeluown.library import SupportsSongSimilar
 
 
 def calc_song_similarity(base, song):
@@ -16,9 +16,10 @@ class SongRadio:
 
     @classmethod
     def create(cls, app, song):
-        if not app.library.check_flags_by_model(song, PF.similar):
-            raise ValueError('the provider must support list similar song')
-        return cls(app, song)
+        provider = app.library.get(song.source)
+        if provider is not None and isinstance(provider, SupportsSongSimilar):
+            return cls(app, song)
+        raise ValueError('the provider must support list similar song')
 
     def fetch_songs_func(self, number):
         """implement fm.fetch_songs_func
@@ -39,7 +40,10 @@ class SongRadio:
             if not self._stack:
                 break
             song = self._stack.popleft()
-            songs = self._app.library.song_list_similar(song)
+            provider = self._app.library.get(song.source)
+            # Provider is ensure to SupportsSongsimilar during creating.
+            assert isinstance(provider, SupportsSongSimilar)
+            songs = provider.song_list_similar(song)
             for song in songs:
                 if song not in self._songs_set:
                     valid_songs.append(song)
