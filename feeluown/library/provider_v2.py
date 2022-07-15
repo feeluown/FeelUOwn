@@ -45,6 +45,8 @@ class ProviderV2:
                 return self.album_get(model_id)
             elif model_type == ModelType.artist:
                 return self.artist_get(model_id)
+            elif model_type == ModelType.playlist:
+                return self.playlist_get(model_id)
         raise NotSupported
 
     def _model_cache_get_or_fetch(self, model, cache_key):
