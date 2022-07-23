@@ -131,3 +131,8 @@ def test_library_model_upgrade(library, ekaf_provider, ekaf_album0):
                             source=ekaf_provider.identifier)
     album = library._model_upgrade(album)
     assert album.name == ekaf_album0.name
+
+
+def test_prepare_mv_media(library, ekaf_brief_song0):
+    media = library.song_prepare_mv_media(ekaf_brief_song0, '<<<')
+    assert media.url != ''  # media url is valid(not empty)

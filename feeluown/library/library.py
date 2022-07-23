@@ -474,19 +474,11 @@ class Library:
 
         .. versionadded:: 3.7.5
         """
-        song_v1 = self.cast_model_to_v1(song)
-        mv = song_v1.mv
-        if mv.meta.support_multi_quality:
-            media, _ = mv.select_media(policy)
-        else:
-            media = mv.media
-            if media:
-                media = Media(media)
-            else:
-                media = None
-        if not media:
-            raise MediaNotFound
-        return media
+        mv = self.song_get_mv(song)
+        if mv is not None:
+            media = self.video_prepare_media(mv, policy)
+            return media
+        raise MediaNotFound
 
     def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
         """
@@ -718,6 +710,10 @@ class Library:
         return self._model_upgrade(video)
 
     def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
+        """Prepare media for video.
+
+        :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
+        """
         provider = self.get_or_raise(video.source)
         if video.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for video
