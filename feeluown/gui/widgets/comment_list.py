@@ -2,8 +2,9 @@ from datetime import datetime
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
     QPoint, QRect
-from PyQt5.QtGui import QPalette, QPen, QFont
-from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame
+from PyQt5.QtGui import QPalette, QPen, QFont, QFontMetrics
+from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame, \
+    QApplication
 
 from feeluown.gui.helpers import ItemViewNoScrollMixin, Paddings, Margins
 
@@ -50,7 +51,7 @@ class CommentListDelegate(QStyledItemDelegate):
         self._margin_h = 0
         self._margin_v = 10
         self._name_content_margin = 5
-        self._name_height = 15
+        self._name_height = QFontMetrics(QApplication.font()).height()
         self._parent_comment_paddings = Paddings(8, 3, 8, 3)
         self._parent_comment_margins = Margins(20, 5, 10, 5)
 
