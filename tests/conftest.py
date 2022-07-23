@@ -4,14 +4,15 @@ import pytest
 from feeluown import models
 from feeluown.library import (
     AbstractProvider, ProviderV2, ModelType, ProviderFlags as PF,
-    AlbumModel, ArtistModel,
+    AlbumModel, ArtistModel, BriefVideoModel, BriefSongModel,
     Library,
 )
+from feeluown.media import Quality, Media, MediaType
 from feeluown.utils.reader import create_reader
 
 
-FakeSource = 'fake'
-EkafSource = 'ekaf'
+FakeSource = 'fake'  # v1 provider
+EkafSource = 'ekaf'  # v2 provider
 
 
 class FakeProvider(AbstractProvider):
@@ -54,6 +55,10 @@ class EkafProvider(AbstractProvider, ProviderV2):
     def song_get_media(self, song, quality):
         return []
 
+    def song_get_mv(self, song):
+        if song.identifier == _ekaf_brief_song0.identifier:
+            return _ekaf_brief_mv0
+
     def album_get(self, identifier):
         if identifier == _ekaf_album0.identifier:
             return _ekaf_album0
@@ -64,6 +69,17 @@ class EkafProvider(AbstractProvider, ProviderV2):
 
     def artist_create_songs_rd(self, _):
         return create_reader([])
+
+    def video_list_quality(self, video):
+        if video.identifier == _ekaf_brief_mv0.identifier:
+            return [Quality.Video.hd]
+
+    def video_get_media(self, video, quality):
+        if video.identifier == _ekaf_brief_mv0.identifier \
+           and quality is Quality.Video.hd:
+            return Media('http://ekaf.org/mv0.mp4',
+                         type_=MediaType.video,)
+        return None
 
 
 _fake_provider = FakeProvider()
@@ -92,12 +108,16 @@ class FakeSearchModel(models.SearchModel):
 _song1 = FakeSongModel(identifier=1, url='1.mp3')
 _song2 = FakeSongModel(identifier=2, url='2.mp3')
 _song3 = FakeSongModel(identifier=3)
+_ekaf_brief_song0 = BriefSongModel(source=EkafSource,
+                                   identifier='0')
 _ekaf_album0 = AlbumModel(source=EkafSource,
                           identifier='0', name='0', cover='',
                           description='', songs=[], artists=[])
 _ekaf_artist0 = ArtistModel(source=EkafSource,
                             identifier='0', name='0', pic_url='',
                             description='', hot_songs=[], aliases=[])
+_ekaf_brief_mv0 = BriefVideoModel(source=EkafSource,
+                                  identifier='0', title='')
 
 
 @pytest.fixture
@@ -108,6 +128,11 @@ def artist():
 @pytest.fixture
 def album():
     return FakeAlbumModel(identifier=0, name='blue and green')
+
+
+@pytest.fixture
+def ekaf_brief_song0():
+    return _ekaf_brief_song0
 
 
 @pytest.fixture
