@@ -710,6 +710,10 @@ class Library:
         return self._model_upgrade(video)
 
     def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
+        """Prepare media for video.
+
+        :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
+        """
         provider = self.get_or_raise(video.source)
         if video.meta.flags & MF.v2:
             # provider MUST has multi_quality flag for video
