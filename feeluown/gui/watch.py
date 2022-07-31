@@ -133,9 +133,10 @@ class WatchManager:
         self._app.playlist.set_current_model(mv)
 
     def set_mode(self, mode):
-        print(self._mode, mode)
         self._is_visible_before = self._app.ui.mpv_widget.isVisible()
 
+        # So that user can call set_mode(0/1/2) in REPL.
+        mode = Mode(mode)
         # change mode to none, exit orignal mode
         if mode is Mode.none:
             if self._mode is Mode.normal:
