@@ -290,8 +290,6 @@ class PlayerControlPanel(QFrame):
         self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
         self.pp_btn.setCheckable(True)
         self.download_btn.setCheckable(True)
-        self.toggle_video_btn.hide()
-        self.toggle_pip_btn.hide()
 
         self.song_title_label = SongBriefLabel(self._app)
         self.song_title_label.setAlignment(Qt.AlignCenter)
