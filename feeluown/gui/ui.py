@@ -15,7 +15,6 @@ from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
 
-from feeluown.gui.video_show import VideoShowCtl
 
 logger = logging.getLogger(__name__)
 
@@ -57,9 +56,6 @@ class Ui:
         self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
-
-        # ui controllers
-        self.video_show_ctl = VideoShowCtl(self._app, self)
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
