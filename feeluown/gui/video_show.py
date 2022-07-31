@@ -24,31 +24,31 @@ class VideoShowCtl:
         self._app = app
         self._ui = ui
         self._pip_container = ResizableFramelessContainer()
+
         self._mode = Mode.none
+        # Otherwise, the parent of mpv widget is pip container.
         self._parent_is_normal = True
         self._parent_is_changing = False
 
-        self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
-        self._ui.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
-        self._ui.pc_panel.toggle_pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
+        self._initialize_mpv_video_renderring()
 
-        self._ui.mpv_widget.show()
-        # Set aioqueue=True so that mpv_widget hide after it is shown once.
-        self._app.initialized.connect(
-            lambda _: self._ui.mpv_widget.hide(), weak=False, aioqueue=True)
+        self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
+        self._ui.pc_panel.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))  # noqa
+        self._ui.pc_panel.toggle_pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
-        self._app.player.video_format_changed.connect(
-            self.on_video_format_changed, aioqueue=True)
+        self._app.player.media_loaded.connect(self.on_media_loaded, aioqueue=True)
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
+        self._ui.pc_panel.toggle_video_btn.hide()
+        self._ui.pc_panel.toggle_pip_btn.hide()
 
     def show_ctl_btns(self):
-        self._ui.toggle_video_btn.show()
+        self._ui.pc_panel.toggle_video_btn.show()
         self._ui.pc_panel.toggle_pip_btn.show()
 
     def hide_ctl_btns(self):
-        self._ui.toggle_video_btn.hide()
+        self._ui.pc_panel.toggle_video_btn.hide()
         self._ui.pc_panel.toggle_pip_btn.hide()
 
     @contextmanager
@@ -88,7 +88,6 @@ class VideoShowCtl:
 
     def enter_pip_mode(self):
         """enter picture in picture mode"""
-        self._ui.toggle_video_btn.hide()
         logger.info("enter video-show picture in picture mode")
         self._ui.mpv_widget.overlay_auto_visible = True
         if self._parent_is_normal is True:
@@ -166,17 +165,17 @@ class VideoShowCtl:
 
     def on_media_changed(self, media):
         if not media:
-            logger.info('Media is changed to empty, set mode to none')
+            logger.info('No media is played, set mode to none')
             self.set_mode(Mode.none)
 
-    def on_video_format_changed(self, video_format):
-        # When video is available, show control buttons. If video
-        # is unavailable, hide video and control buttons.
-        if video_format is None:
-            # ignore the signal if parent is changing
+    def on_media_loaded(self):
+        # If video is available, show control buttons.
+        # If video is unavailable, hide video and control buttons.
+        if self._app.player.video_format is None:
+            # ignore the signal if parent is changing.
             if self._parent_is_changing:
                 return
-            logger.info('Media is changed to audio, set mode to none')
+            logger.info('Media has no video, mode to none')
             self.set_mode(Mode.none)
         else:
             self.show_ctl_btns()
@@ -184,6 +183,14 @@ class VideoShowCtl:
     #
     # private methods
     #
+    def _initialize_mpv_video_renderring(self):
+        # HACK: Show mpv_widget once to initialize mpv video renderring correctly.
+        # Remember to set aioqueue to true so that mpv_widget is hidden after the
+        # app(Qt) event loop is started.
+        self._ui.mpv_widget.show()
+        self._app.initialized.connect(
+            lambda _: self._ui.mpv_widget.hide(), weak=False, aioqueue=True)
+
     def _before_change_mpv_widget_parent(self):
         """
         According to Qt docs, reparenting an OpenGLWidget will destory the GL context.

@@ -124,7 +124,7 @@ class Signal:
         return False
 
     def _is_alive(self, r):
-        return not(isinstance(r, weakref.ReferenceType) and r() is None)
+        return not (isinstance(r, weakref.ReferenceType) and r() is None)
 
     def _clear_dead_receivers(self):
         self.receivers = set([r for r in self.receivers if self._is_alive(r)])
