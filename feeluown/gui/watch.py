@@ -9,34 +9,37 @@ logger = logging.getLogger(__name__)
 
 
 class Mode(IntEnum):
-    none = 0
-    normal = 1
-    pip = 2  # Picture in picture
+    none = 0    # Hide all video related widgets, including controller buttons.
+    normal = 1  # Show video widget inside the main window.
+    pip = 2     # Show video widget in a detached container (picture in picture).
 
 
-class VideoShowCtl:
-    def __init__(self, app, ui):
-        """video show controller
+class WatchManager:
+    def __init__(self, app):
+        """video view controller
 
         :type app: feeluown.app.App
         :type ui: feeluown.ui.Ui
         """
         self._app = app
-        self._ui = ui
         self._pip_container = ResizableFramelessContainer()
 
         self._mode = Mode.none
         # Otherwise, the parent of mpv widget is pip container.
         self._parent_is_normal = True
         self._parent_is_changing = False
+        #: Is the video widget visible before.
+        self._is_visible_before = False
 
+    def initialize(self):
         self._initialize_mpv_video_renderring()
 
+        self._ui = self._app.ui
         self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.pc_panel.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))  # noqa
         self._ui.pc_panel.toggle_pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
-        self._app.player.media_loaded.connect(self.on_media_loaded, aioqueue=True)
+        self._app.player.video_format_changed.connect(self.on_video_format_changed, aioqueue=True)  # noqa
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
@@ -44,12 +47,12 @@ class VideoShowCtl:
         self._ui.pc_panel.toggle_pip_btn.hide()
 
     def show_ctl_btns(self):
-        self._ui.pc_panel.toggle_video_btn.show()
-        self._ui.pc_panel.toggle_pip_btn.show()
+        self._app.ui.pc_panel.toggle_video_btn.show()
+        self._app.ui.pc_panel.toggle_pip_btn.show()
 
     def hide_ctl_btns(self):
-        self._ui.pc_panel.toggle_video_btn.hide()
-        self._ui.pc_panel.toggle_pip_btn.hide()
+        self._app.ui.pc_panel.toggle_video_btn.hide()
+        self._app.ui.pc_panel.toggle_pip_btn.hide()
 
     @contextmanager
     def change_parent(self):
@@ -61,59 +64,59 @@ class VideoShowCtl:
 
     def enter_normal_mode(self):
         """enter normal mode"""
-        self._ui.bottom_panel.hide()
-        self._ui._splitter.hide()
-        self._ui.pc_panel.toggle_video_btn.show()
-        self._ui.pc_panel.toggle_video_btn.setText('▽')
+        self._app.ui.bottom_panel.hide()
+        self._app.ui._splitter.hide()
+        self._app.ui.pc_panel.toggle_video_btn.show()
+        self._app.ui.pc_panel.toggle_video_btn.setText('▽')
         logger.info("enter video-show normal mode")
-        self._ui.mpv_widget.overlay_auto_visible = False
-        self._ui.mpv_widget.keep_wh_ratio = False
+        self._app.ui.mpv_widget.overlay_auto_visible = False
+        self._app.ui.mpv_widget.keep_wh_ratio = False
         if self._parent_is_normal is False:
             with self.change_parent():
-                self._ui.mpv_widget.hide()
-                self._ui.mpv_widget.shutdown()
+                self._app.ui.mpv_widget.hide()
+                self._app.ui.mpv_widget.shutdown()
                 self._pip_container.detach()
-                self._app.layout().insertWidget(1, self._ui.mpv_widget)
+                self._app.layout().insertWidget(1, self._app.ui.mpv_widget)
                 self._parent_is_normal = True
-                self._ui.mpv_widget.show()
+                self._app.ui.mpv_widget.show()
         else:
-            self._ui.mpv_widget.show()
+            self._app.ui.mpv_widget.show()
 
     def exit_normal_mode(self):
-        self._ui.mpv_widget.hide()
-        self._ui._splitter.show()
-        self._ui.bottom_panel.show()
-        self._ui.pc_panel.toggle_video_btn.setText('△')
+        self._app.ui.mpv_widget.hide()
+        self._app.ui._splitter.show()
+        self._app.ui.bottom_panel.show()
+        self._app.ui.pc_panel.toggle_video_btn.setText('△')
         logger.info("exit video-show normal mode")
 
     def enter_pip_mode(self):
         """enter picture in picture mode"""
         logger.info("enter video-show picture in picture mode")
-        self._ui.mpv_widget.overlay_auto_visible = True
+        self._app.ui.mpv_widget.overlay_auto_visible = True
         if self._parent_is_normal is True:
             width = self._app.player._mpv.width
             height = self._app.player._mpv.height
             with self.change_parent():
-                self._ui.mpv_widget.hide()
-                self._ui.mpv_widget.shutdown()
-                self._ui._splitter.show()
-                self._ui.bottom_panel.show()
-                self._app.layout().removeWidget(self._ui.mpv_widget)
-                self._pip_container.attach_widget(self._ui.mpv_widget)
+                self._app.ui.mpv_widget.hide()
+                self._app.ui.mpv_widget.shutdown()
+                self._app.ui._splitter.show()
+                self._app.ui.bottom_panel.show()
+                self._app.layout().removeWidget(self._app.ui.mpv_widget)
+                self._pip_container.attach_widget(self._app.ui.mpv_widget)
                 self._parent_is_normal = False
                 self._pip_container.show()
-                self._ui.mpv_widget.show()
+                self._app.ui.mpv_widget.show()
             proper_width = max(min(width, 640), 320)
             proper_height = height * proper_width // width
             self._pip_container.resize(proper_width, proper_height)
         else:
             self._pip_container.show()
-            self._ui.mpv_widget.show()
+            self._app.ui.mpv_widget.show()
 
     def exit_pip_mode(self):
         """exit picture in picture mode"""
         self._pip_container.hide()
-        self._ui.mpv_widget.hide()
+        self._app.ui.mpv_widget.hide()
         logger.info("exit video-show picture in picture mode")
 
     #
@@ -130,6 +133,9 @@ class VideoShowCtl:
         self._app.playlist.set_current_model(mv)
 
     def set_mode(self, mode):
+        print(self._mode, mode)
+        self._is_visible_before = self._app.ui.mpv_widget.isVisible()
+
         # change mode to none, exit orignal mode
         if mode is Mode.none:
             if self._mode is Mode.normal:
@@ -168,17 +174,18 @@ class VideoShowCtl:
             logger.info('No media is played, set mode to none')
             self.set_mode(Mode.none)
 
-    def on_media_loaded(self):
-        # If video is available, show control buttons.
-        # If video is unavailable, hide video and control buttons.
+    def on_video_format_changed(self, video_format):
         if self._app.player.video_format is None:
-            # ignore the signal if parent is changing.
+            # Ignore the signal if parent is changing to prevent unexpected problem.
             if self._parent_is_changing:
                 return
             logger.info('Media has no video, mode to none')
             self.set_mode(Mode.none)
         else:
             self.show_ctl_btns()
+            if self._is_visible_before is True:
+                mode = Mode.normal if self._parent_is_normal is True else Mode.pip
+                self.set_mode(mode)
 
     #
     # private methods
@@ -187,9 +194,9 @@ class VideoShowCtl:
         # HACK: Show mpv_widget once to initialize mpv video renderring correctly.
         # Remember to set aioqueue to true so that mpv_widget is hidden after the
         # app(Qt) event loop is started.
-        self._ui.mpv_widget.show()
+        self._app.ui.mpv_widget.show()
         self._app.initialized.connect(
-            lambda _: self._ui.mpv_widget.hide(), weak=False, aioqueue=True)
+            lambda _: self._app.ui.mpv_widget.hide(), weak=False, aioqueue=True)
 
     def _before_change_mpv_widget_parent(self):
         """

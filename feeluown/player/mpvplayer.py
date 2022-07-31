@@ -206,6 +206,9 @@ class MpvPlayer(AbstractPlayer):
     @video_format.setter
     def video_format(self, vformat):
         self._video_format = vformat
+        # Note, in current implementation, the video format is changed to None
+        # when switching media. So when invoking self.play(video), video_format is
+        # firstly changed to None, and then changed to the real format.
         self.video_format_changed.emit(vformat)
 
     def _stop_mpv(self):
@@ -234,6 +237,7 @@ class MpvPlayer(AbstractPlayer):
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
                 self.media_finished.emit()
         elif event_id == MpvEventID.FILE_LOADED:
+            # If the media is a live streaming, this event may not be received.
             self.media_loaded.emit()
         elif event_id == MpvEventID.METADATA_UPDATE:
             metadata = dict(self._mpv.metadata or {})  # type: ignore

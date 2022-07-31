@@ -9,6 +9,7 @@ from feeluown.gui.hotkey import HotkeyManager
 from feeluown.gui.image import ImgManager
 from feeluown.gui.theme import ThemeManager
 from feeluown.gui.tips import TipsManager
+from feeluown.gui.watch import WatchManager
 from feeluown.gui.ui import Ui
 from feeluown.gui.tray import Tray
 from feeluown.gui.uimodels.provider import ProviderUiManager
@@ -48,6 +49,7 @@ class GuiApp(App, QWidget):
         self.tips_mgr = TipsManager(self)
         self.hotkey_mgr = HotkeyManager(self)
         self.img_mgr = ImgManager(self)
+        self.watch_mgr = WatchManager(self)
 
         # GUI 组件的数据管理模块
         self.pvd_uimgr = ProviderUiManager(self)
@@ -71,6 +73,7 @@ class GuiApp(App, QWidget):
             self.tray.show()
         self.tips_mgr.show_random_tip()
         self.coll_uimgr.initialize()
+        self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
 
