@@ -60,7 +60,10 @@ class ColumnsConfig:
         self._widths[column] = ratio
 
     def get_width(self, column, table_width):
-        width_index = 10
+        # Note(cosven): On macOS, 36px is available to show three number.
+        # On KDE, even if we set the width to 10px, it does not ellipse the text.
+        # In conclusion, I think 36px is good for macOS and KDE.
+        width_index = 36
         if column == Column.index:
             return width_index
         width = table_width - width_index
@@ -76,7 +79,10 @@ class ColumnsConfig:
             Column.song: 0.4,
             Column.artist: 0.15,
             Column.album: 0.25,
-            Column.duration: 0.05,
+            # Note(cosven): Generally, the duration text is about 5 char, like 00:00.
+            # On macOS with default font, I found the width of such text is about 55px.
+            # The songs table width is about 600px, so set duration ratio to 0.1.
+            Column.duration: 0.1,
             Column.source: 0.15,
         }
         return cls(widths=widths)
@@ -297,7 +303,7 @@ class BaseSongsTableModel(QAbstractTableModel):
         if role in (Qt.DisplayRole, Qt.ToolTipRole):
             # Only show tooltip for song/artist/album fields.
             if role == Qt.ToolTipRole and index.column() not in \
-               (Column.song, Column.artist, Column.album):
+               (Column.song, Column.artist, Column.album, Column.duration):
                 return QVariant()
             if index.column() == Column.index:
                 return index.row() + 1
