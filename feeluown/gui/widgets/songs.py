@@ -244,17 +244,14 @@ class BaseSongsTableModel(QAbstractTableModel):
         if index.column() in (Column.source, Column.index, Column.duration):
             return no_item_flags
 
-        # default flags
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
-        if index.column() == Column.song:
-            flags |= Qt.ItemIsDragEnabled
-
+        # Default flags.
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
         song = index.data(Qt.UserRole)
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
         incomplete = False
         if ModelFlags.v2 & song.meta.flags:
-            if song.state is (ModelState.not_exists, ModelState.cant_upgrade):
+            if song.state in (ModelState.not_exists, ModelState.cant_upgrade):
                 incomplete = True
         else:
             if song and song.exists == ModelExistence.no:
@@ -330,15 +327,15 @@ class BaseSongsTableModel(QAbstractTableModel):
         return QVariant()
 
     def mimeData(self, indexes):
-        if len(indexes) == 1:
+        # When the selection behaviour is set to QAbstractItemView.SelectRows,
+        # len(indexes) is equal to length of items which have ItemIsDragEnabled flag.
+        indexes = list(indexes)  # Make typing checkers happy.
+        if len(indexes) > 1:
+            # UserRole data of all indexes should be the same,
+            # so just use the a random one.
             index = indexes[0]
-            model = song = index.data(Qt.UserRole)
-            if index.column() == Column.album:
-                try:
-                    model = song.album
-                except (ProviderIOError, Exception):
-                    model = None
-            return ModelMimeData(model)
+            song = index.data(Qt.UserRole)
+            return ModelMimeData(song)
 
 
 class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
@@ -606,6 +603,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.SelectedClicked)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        # Note that the selection behavior affects drop behavior.
+        # You may need to to change the Model.flags and mimeData methods
+        # if you want to change this behavior.
         self.setSelectionBehavior(QAbstractItemView.SelectRows)
         self.setShowGrid(False)
         self.setDragEnabled(True)
