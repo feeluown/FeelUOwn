@@ -11,6 +11,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import MediaNotFound, SongProtocol, ModelType, NotSupported
+from feeluown.media import Media
 from feeluown.models.uri import reverse
 
 logger = logging.getLogger(__name__)
@@ -491,8 +492,13 @@ class Playlist:
         try:
             song = await aio.run_fn(self._app.library.song_upgrade, song)
             if song.album is not None:
-                album = self._app.library.album_upgrade(song.album)
+                album = await aio.run_fn(self._app.library.album_upgrade, song.album)
                 artwork = album.cover
+                # For model v1, the cover can be a Media object.
+                # For example, in fuo_local plugin, the album.cover is a Media
+                # object with url set to fuo://local/songs/{identifier}/data/cover.
+                if isinstance(artwork, Media):
+                    artwork = artwork.url
             else:
                 artwork = ''
         except NotSupported:

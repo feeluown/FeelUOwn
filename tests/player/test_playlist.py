@@ -4,6 +4,7 @@ from unittest import mock
 import pytest
 
 from feeluown.library.excs import MediaNotFound
+from feeluown.media import Media
 from feeluown.player import Playlist, PlaylistMode, Player, PlaybackMode
 from feeluown.utils.dispatch import Signal
 
@@ -305,3 +306,15 @@ def test_playlist_next_should_call_set_current_song(app_mock, mocker, song):
     # check the type of task object.
     assert task is not None
     assert mock_set_current_song.called
+
+
+@pytest.mark.asyncio
+async def test_playlist_prepare_metadata_for_song(app_mock, pl, ekaf_brief_song0):
+    class Album:
+        cover = Media('fuo://')
+    album = Album()
+    f = asyncio.Future()
+    f.set_result(album)
+    app_mock.library.album_upgrade.return_value = album
+    # When cover is a media object, prepare_metadata should also succeed.
+    await pl._prepare_metadata_for_song(ekaf_brief_song0)
