@@ -224,7 +224,7 @@ class display_property:
     def __get__(self, instance, _=None):
         if instance is None:
             return self
-        if instance.stage >= ModelStage.inited:
+        if instance.stage >= ModelStage.gotten:
             return getattr(instance, self.name_real)
         return getattr(instance, self.store_pname, '')
 
