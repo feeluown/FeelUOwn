@@ -25,7 +25,7 @@ from .model_protocol import (
     LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
 )
 from .provider_protocol import (
-    check_flag,
+    check_flag as check_flag_impl,
     SupportsCurrentUser,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
@@ -400,10 +400,13 @@ class Library:
         provider = self.get(source)
         if provider is None:
             return False
-        if isinstance(provider, ProviderV2):
-            return provider.check_flags(model_type, flags)
-        # Always return false when the provider is not a v2 instance.
-        return False
+
+        # Check each flag.
+        for value in PF.__members__.values():
+            if value in PF(flags):
+                if check_flag_impl(provider, model_type, flags) is False:
+                    return False
+        return True
 
     def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
         """Alias for check_flags"""
@@ -626,8 +629,8 @@ class Library:
         model = None
         try_v1way = True
         if isinstance(provider, ProviderV2):
-            if provider.check_flags(mtype, PF.model_v2):
-                if provider.check_flags(mtype, PF.get):
+            if provider.use_model_v2(mtype):
+                if self.check_flags(pid, mtype, PF.get):
                     try_v1way = False
                     model = provider.model_get(mtype, mid)
 
@@ -686,7 +689,7 @@ class Library:
                 #
                 # For example, provider X may support 'get' for SongModel, then
                 # the song.artists can return list of BriefArtistModel.
-                if check_flag(provider, ModelType(model.meta.model_type), PF.get):
+                if check_flag_impl(provider, ModelType(model.meta.model_type), PF.get):
                     upgraded_model = provider.model_get(
                         model.meta.model_type, model.identifier)
                     try_v1way = False

@@ -47,6 +47,16 @@ _FlagProtocolMapping: Dict[Tuple[ModelType, PF], type] = {}
 
 def check_flag(provider, model_type: ModelType, flag: PF) -> bool:
     """Check if provider supports X"""
+
+    # A provider should declare explicitly whether it uses model v2 or not.
+    if flag is PF.model_v2:
+        try:
+            use_model_v2 = provider.use_model_v2(model_type)
+        except AttributeError:  # noqa
+            # The provider may not implement the `use_model_v2` interface.
+            return False
+        return use_model_v2
+
     protocol_cls = _FlagProtocolMapping[(model_type, flag)]
     return isinstance(provider, protocol_cls)
 
@@ -57,43 +67,6 @@ def eq(model_type: ModelType, flag: PF):
         _FlagProtocolMapping[(model_type, flag)] = cls
         return cls
     return wrapper
-
-
-@runtime_checkable
-class SupportsModelVersionCheck(Protocol):
-    @abstractmethod
-    def use_model_v2(self, model_type: ModelType) -> bool:
-        """Check whether model v2 is used for the specified model_type.
-
-        For feeluown developer, there are three things you should know.
-
-        1. Both v2 model and v1 model implement BriefXProtocol, which means
-           model.{attirbute}_display works for both models. For exmample,
-           SongModel(v2), BriefSongModel(v2) and SongModel(v1) all implement
-           BriefSongProtocol. So no matter which version the `song` is, it is
-           always safe to access `song.title_display`.
-
-        2. When model v2 is used, it means the way of accessing model's attributes
-           becomes different. So you should always check which version
-           the model is before accessing some attributes.
-
-           For model v1, you can access all model's attributes by {model}.{attribute},
-           and IO(network) operations may be performed implicitly. For example,
-           the code `song.url` *may* trigger a network request to fetch the
-           url when `song.url` is currently None. Tips: you can check the
-           `BaseModel.__getattribute__` implementation in `feeluown.models` package
-           for more details.
-
-           For model v2, everything are explicit. Basic attributes of model can be
-           accessed by {model}.{attribute} and there will be no IO operations.
-           Other attributes can only be accessed with methods of library. For example,
-           you can access song url/media info by `library.song_prepare_media`.
-
-        3. When deserializing model from a text line, the model version is important.
-           If provider does not declare it uses model v2, feeluown just use model v1
-           to do deserialization to keep backward compatibility.
-        """
-        raise NotImplementedError
 
 
 #
