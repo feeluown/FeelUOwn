@@ -47,6 +47,16 @@ _FlagProtocolMapping: Dict[Tuple[ModelType, PF], type] = {}
 
 def check_flag(provider, model_type: ModelType, flag: PF) -> bool:
     """Check if provider supports X"""
+
+    # A provider should declare explicitly whether it uses model v2 or not.
+    if flag is PF.model_v2:
+        try:
+            use_model_v2 = provider.use_model_v2(model_type)
+        except AttributeError:  # noqa
+            # The provider may not implement the `use_model_v2` interface.
+            return False
+        return use_model_v2
+
     protocol_cls = _FlagProtocolMapping[(model_type, flag)]
     return isinstance(provider, protocol_cls)
 
