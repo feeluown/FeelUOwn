@@ -3,9 +3,6 @@ import os
 import logging
 from functools import partial
 
-from .patch import patch_mutagen
-patch_mutagen()
-
 from feeluown.utils import aio  # noqa
 from .provider import provider  # noqa
 

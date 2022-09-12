@@ -59,6 +59,7 @@ setup(
         'tomlkit',
         'packaging',
         'pydantic>=1.8.1',
+        'mutagen>=1.37',
     ],
     extras_require={
         'battery': ['fuo-netease>=0.4.2',
