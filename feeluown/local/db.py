@@ -20,6 +20,7 @@ from feeluown.library import BriefAlbumModel, BriefArtistModel, BriefSongModel
 from feeluown.models.uri import reverse
 
 from .schemas import EasyMP3Model, APEModel, FLACModel
+from .schemas import DEFAULT_ALBUM_NAME
 
 
 logger = logging.getLogger(__name__)
@@ -93,16 +94,12 @@ def create_album(identifier, name, cover):
     return album
 
 
-def add_song(fpath,
-             g_songs, g_artists, g_albums,
-             g_file_song,
-             can_convert_chinese=False,
-             lans='auto', delimiter='', expand_artist_songs=False):
-    """
-    parse music file metadata with Easymp3 and return a song
-    model.
-    """
+def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Optional[dict]:
+    """Read metadata, like id3tag, from audio file.
 
+    Return a dict if succeed. Return None when failed, no exception is raised.
+    The dict schema is `schemas.Common`.
+    """
     try:
         if fpath.endswith('mp3') or fpath.endswith('ogg') or fpath.endswith('wma'):
             metadata = EasyMP3(fpath)
@@ -113,29 +110,44 @@ def add_song(fpath,
         elif fpath.endswith('ape'):
             metadata = APEv2(fpath)
         elif fpath.endswith('wav'):
-            metadata = dict()
+            metadata = None
+        else:  # This branch is actually impossible to reach.
+            metadata = None
     except MutagenError as e:
         logger.warning(
             'Mutagen parse metadata failed, ignore.\n'
             'file: {}, exception: {}'.format(fpath, str(e)))
-        return None
+        return
 
-    metadata_dict = dict(metadata)
-    for key in metadata.keys():
-        if can_convert_chinese:
-            metadata_dict[key] = convert_chinese(metadata_dict[key][0], lans)
+    # For example::
+    #
+    #   {
+    #    'album': ['Beyond Live 1991 生命接触演唱会'],
+    #    'title': ['再见理想'],
+    #    'artist': ['BEYOND'],
+    #    'genre': ['Blues']
+    #   }
+    metadata_dict = dict(metadata or {})
+    metadata_dict = {k: v[0] for k, v in metadata_dict.items()}
+
+    # Get title and artists name from filename when metadata is empty.
+    if metadata is not None:
+        filename = os.path.split(fpath)[-1].split('.')[0]
+        parts = filename.split(' - ', 1)
+        if len(parts) == 2:
+            title, artists_name = parts
+            metadata_dict['artists_name'] = artists_name
         else:
-            metadata_dict[key] = metadata_dict[key][0]
-    if 'title' not in metadata_dict:
-        title = os.path.split(fpath)[-1].split('.')[0]
-        if can_convert_chinese:
-            metadata_dict['title'] = convert_chinese(title, lans)
-        else:
-            metadata_dict['title'] = title
-    metadata_dict.update(dict(
-        url=fpath,
-        duration=metadata.info.length * 1000  # milesecond
-    ))
+            title = parts[0]
+        metadata_dict['title'] = title
+        metadata_dict['duration'] = 0
+    else:
+        # milesecond
+        metadata_dict['duration'] = metadata_dict.get('duration', 0) * 1000
+
+    # Convert simplified to traditional, or reverse.
+    if can_convert_chinese:
+        metadata_dict = {k: convert_chinese(v, lang) for k, v in metadata_dict.items()}
 
     try:
         if fpath.endswith('flac'):
@@ -147,7 +159,20 @@ def add_song(fpath,
         else:
             data = EasyMP3Model(**metadata_dict).dict()
     except ValidationError:
-        logger.exception('解析音乐文件({}) 元数据失败'.format(fpath))
+        logger.exception(f'parse audio file metadata ({fpath}) failed')
+        return
+    return data
+
+
+def add_song(fpath, g_songs, g_artists, g_albums, g_file_song,
+             can_convert_chinese=False, lang='auto',
+             delimiter='', expand_artist_songs=False):
+    """
+    parse music file metadata with Easymp3 and return a song
+    model.
+    """
+    data = read_audio_metadata(fpath, can_convert_chinese, lang)
+    if data is None:
         return
 
     # NOTE: use {title}-{artists_name}-{album_name} as song identifier
@@ -162,7 +187,7 @@ def add_song(fpath,
 
     # 如果专辑歌手名字是 unknown，并且歌曲的歌手里面有一个非 unknown 的，
     # 就用它作为专辑歌手名字。因为这种情况很可能是元数据不规范造成的。
-    if album_artist_name == 'Unknown':
+    if album_artist_name == DEFAULT_ALBUM_NAME:
         if artist_name_list:
             for each in artist_name_list:
                 if each != 'Unknown':
@@ -180,9 +205,8 @@ def add_song(fpath,
                          title=title,
                          duration=duration,
                          genre=data['genre'],
-                         # cover=data['cover'],
-                         # date=data['date'],
-                         # desc=data['desc'],
+                         # TODO: maybe get year from date field?
+                         # year=data['date'],
                          disc=data['disc'],
                          track=data['track'])
         g_file_song[fpath] = song_id
@@ -235,7 +259,7 @@ def add_song(fpath,
             artist.hot_songs.append(song)
 
         # 处理歌曲歌手的参与作品信息(不与前面的重复)
-        # TODO(this_pr)
+        # TODO: contributed_albums is not supported currently in model v2.
         # if album not in artist.albums and album not in artist.contributed_albums:
         #     artist.contributed_albums.append(album)
 
@@ -288,7 +312,6 @@ class DB:
         self._songs = {}          # {song_id: song}
         self._albums = {}         # {album_id: album)
         self._artists = {}        # {artist_id: artist)
-        self._artist_albums = {}  # {artist_id: [album...])
 
     def flush(self):
         """flush the changes into db file"""
@@ -307,9 +330,6 @@ class DB:
 
     def add(self, fpath):
         """add media file to database"""
-        add_song(fpath,
-                 self._songs, self._artists, self._albums,
-                 self._file_song)
 
     def remove(self, fpath):
         """add media file to database"""
@@ -349,46 +369,27 @@ class DB:
         logger.info(f'scanning finished, {len(media_files)} files in total')
 
         is_cn_convert_enabled = can_convert_chinese()
-
         for fpath in media_files:
-            add_song(fpath, self._songs, self._artists, self._albums,
-                     self._file_song,
-                     is_cn_convert_enabled,
-                     config.CORE_LANGUAGE,
-                     config.IDENTIFIER_DELIMITER,
-                     config.EXPAND_ARTIST_SONGS)
+            add_song(fpath, self._songs, self._artists, self._albums, self._file_song,
+                     is_cn_convert_enabled, config.CORE_LANGUAGE,
+                     config.IDENTIFIER_DELIMITER, config.EXPAND_ARTIST_SONGS)
         logger.info('录入本地音乐库完毕')
 
     def after_scan(self):
-        """
-        歌曲扫描完成后，对信息进行一些加工，比如
-        1. 给专辑歌曲排序
-        2. 给专辑和歌手加封面
-        """
-        def sort_album_func(album):
-            if album.songs:
-                return (album.songs[0].year != 0, album.songs[0].year)
-            return (False, '0')
-
+        # Sort the songs in a album.
         for album in self._albums.values():
             try:
                 album.songs.sort(key=lambda x: (int(x.disc.split('/')[0]),
                                                 int(x.track.split('/')[0])))
-                if album.name != 'Unknown':
+                if album.name != DEFAULT_ALBUM_NAME:
                     cover = gen_cover_url(album.songs[0])
                     album.cover = cover
             except:  # noqa
                 logger.exception('Sort album songs failed.')
 
+        # Select a pic_url for the artist.
         for artist in self._artists.values():
-            # if artist.albums:
-            #     artist.albums.sort(key=sort_album_func, reverse=True)
-            #     artist.cover = artist.albums[0].cover
-            # if artist.contributed_albums:
-            #     artist.contributed_albums.sort(key=sort_album_func, reverse=True)
             if artist.hot_songs:
-                # sort artist.hot_songs
-                artist.hot_songs.sort(key=lambda x: x.title)
                 # use song cover as artist cover
                 # https://github.com/feeluown/feeluown-local/pull/3/files#r362126996
                 songs_with_unknown_album = [song for song in artist.hot_songs
@@ -399,4 +400,5 @@ class DB:
                     artist.pic_url = gen_cover_url(song)
                     break
 
+        # Cache the {song_id:fpath} mapping.
         self._song_file = {v: k for k, v in self._file_song.items()}

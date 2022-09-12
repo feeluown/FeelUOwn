@@ -10,7 +10,6 @@ class Common(BaseModel):
         allow_population_by_field_name = True
         extra = Extra.ignore
 
-    url: str
     duration: float
     title: str = DEFAULT_TITLE
 
