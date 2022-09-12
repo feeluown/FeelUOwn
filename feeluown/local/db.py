@@ -14,11 +14,11 @@ from mutagen.apev2 import APEv2
 
 from feeluown.serializers import serialize
 from feeluown.utils.utils import elfhash, log_exectime
+from feeluown.utils.lang import can_convert_chinese, convert_chinese
 from feeluown.library import SongModel, AlbumModel, ArtistModel, AlbumType
 from feeluown.library import BriefAlbumModel, BriefArtistModel, BriefSongModel
 from feeluown.models.uri import reverse
 
-from .lans_helpers import core_lans
 from .schemas import EasyMP3Model, APEModel, FLACModel
 
 
@@ -96,6 +96,7 @@ def create_album(identifier, name, cover):
 def add_song(fpath,
              g_songs, g_artists, g_albums,
              g_file_song,
+             can_convert_chinese=False,
              lans='auto', delimiter='', expand_artist_songs=False):
     """
     parse music file metadata with Easymp3 and return a song
@@ -121,10 +122,16 @@ def add_song(fpath,
 
     metadata_dict = dict(metadata)
     for key in metadata.keys():
-        metadata_dict[key] = core_lans(metadata_dict[key][0], lans)
+        if can_convert_chinese:
+            metadata_dict[key] = convert_chinese(metadata_dict[key][0], lans)
+        else:
+            metadata_dict[key] = metadata_dict[key][0]
     if 'title' not in metadata_dict:
         title = os.path.split(fpath)[-1].split('.')[0]
-        metadata_dict['title'] = core_lans(title, lans)
+        if can_convert_chinese:
+            metadata_dict['title'] = convert_chinese(title, lans)
+        else:
+            metadata_dict['title'] = title
     metadata_dict.update(dict(
         url=fpath,
         duration=metadata.info.length * 1000  # milesecond
@@ -341,9 +348,12 @@ class DB:
             media_files.extend(scan_directory(directory, exts, depth))
         logger.info(f'scanning finished, {len(media_files)} files in total')
 
+        is_cn_convert_enabled = can_convert_chinese()
+
         for fpath in media_files:
             add_song(fpath, self._songs, self._artists, self._albums,
                      self._file_song,
+                     is_cn_convert_enabled,
                      config.CORE_LANGUAGE,
                      config.IDENTIFIER_DELIMITER,
                      config.EXPAND_ARTIST_SONGS)
