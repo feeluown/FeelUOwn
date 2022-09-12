@@ -101,7 +101,7 @@ setup(
             # "feeluown-update=feeluown.install:update"
         ],
         'fuo.plugins_v1': [
-            'local = feeluown.library.local',
+            'local = feeluown.local',
         ]
     },
 )

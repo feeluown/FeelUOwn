@@ -14,8 +14,8 @@ from feeluown.media import Media, Quality
 from feeluown.library import AbstractProvider, ProviderV2, ModelType, SimpleSearchResult
 from feeluown.utils.reader import create_reader
 from feeluown.utils.utils import log_exectime
+from feeluown.utils.audio import read_audio_cover
 
-from .utils import read_audio_cover
 
 logger = logging.getLogger(__name__)
 SOURCE = 'local'

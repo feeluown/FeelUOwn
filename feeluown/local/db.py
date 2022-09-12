@@ -19,11 +19,8 @@ from feeluown.library import BriefAlbumModel, BriefArtistModel, BriefSongModel
 from feeluown.models.uri import reverse
 
 from .lans_helpers import core_lans
-from .schemas import (
-    EasyMP3MetadataSongSchema,
-    FLACMetadataSongSchema,
-    APEMetadataSongSchema,
-)
+from .schemas import EasyMP3Model, APEModel, FLACModel
+
 
 logger = logging.getLogger(__name__)
 SOURCE = 'local'
@@ -135,11 +132,13 @@ def add_song(fpath,
 
     try:
         if fpath.endswith('flac'):
-            data = FLACMetadataSongSchema().load(metadata_dict)
+            data = FLACModel(**metadata_dict).dict()
+            data['track'] = f"{data['track_number']}/{data['track_total']}"
+            data['disc'] = f"{data['disc_number']}/{data['disc_total']}"
         elif fpath.endswith('ape'):
-            data = APEMetadataSongSchema().load(metadata_dict)
+            data = APEModel(**metadata_dict).dict()
         else:
-            data = EasyMP3MetadataSongSchema().load(metadata_dict)
+            data = EasyMP3Model(**metadata_dict).dict()
     except ValidationError:
         logger.exception('解析音乐文件({}) 元数据失败'.format(fpath))
         return
