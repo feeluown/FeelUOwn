@@ -202,7 +202,8 @@ class SongModel(BaseModel, MultiQualityMixin):
     class Meta:
         model_type = ModelType.song.value
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
-                  'duration', 'mv', 'media']
+                  'duration', 'mv', 'media',
+                  'disc', 'genre', 'year', 'track',]
         fields_display = ['title', 'artists_name', 'album_name', 'duration_ms']
 
         support_multi_quality = False

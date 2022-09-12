@@ -264,6 +264,11 @@ class SongModel(BaseNormalModel):
     artists: List[BriefArtistModel]
     duration: int  # milliseconds
 
+    genre: str = ''
+    year: int = 0
+    track: str = '1/1'  # The number of the track on the album.
+    disc: str = '1/1'
+
     @property
     def artists_name(self):
         return fmt_artists(self.artists)
@@ -367,6 +372,15 @@ class PlaylistModel(BaseBriefModel):
     name: str
     cover: str
     description: str
+
+
+class SimpleSearchResult(_BaseModel):
+    q: str
+    songs: List[BriefSongModel] = []
+    albums: List[BriefAlbumModel] = []
+    artists: List[BriefAlbumModel] = []
+    playlists: List[BriefPlaylistModel] = []
+    videos: List[BriefVideoModel] = []
 
 
 _type_modelcls_mapping = {

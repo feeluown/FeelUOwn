@@ -36,7 +36,8 @@ class Plugin:
         :param dist_name: 插件发行版名字
         """
         self.alias = alias
-        self.name = module.__name__
+        # FIXME(cosven): use entry point name as plugin name, instead of the module name.
+        self.name = module.__name__.split('.')[-1]
         self._module = module
         self.version = version
         self.desc = desc

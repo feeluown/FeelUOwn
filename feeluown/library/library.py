@@ -492,10 +492,12 @@ class Library:
         provider = self.get_or_raise(song.source)
         if isinstance(provider, SupportsSongMV):
             mv = provider.song_get_mv(song)
-        else:
+        elif not self.check_flags(song.source, song.meta.model_type, PF.model_v2):
             song_v1 = self.cast_model_to_v1(song)
             mv = song_v1.mv
             mv = cast(Optional[VideoProtocol], mv)
+        else:
+            mv = None
         return mv
 
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
@@ -689,9 +691,10 @@ class Library:
                 #
                 # For example, provider X may support 'get' for SongModel, then
                 # the song.artists can return list of BriefArtistModel.
-                if check_flag_impl(provider, ModelType(model.meta.model_type), PF.get):
-                    upgraded_model = provider.model_get(
-                        model.meta.model_type, model.identifier)
+                model_type = ModelType(model.meta.model_type)
+                is_support = check_flag_impl(provider, model_type, PF.get)
+                if is_support:
+                    upgraded_model = provider.model_get(model_type, model.identifier)
                     try_v1way = False
 
         if try_v1way is True:

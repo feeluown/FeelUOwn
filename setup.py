@@ -99,6 +99,9 @@ setup(
             "fuo=feeluown.__main__:main",
             "feeluown-genicon=feeluown.cli.install:generate_icon",
             # "feeluown-update=feeluown.install:update"
+        ],
+        'fuo.plugins_v1': [
+            'local = feeluown.library.local',
         ]
     },
 )
