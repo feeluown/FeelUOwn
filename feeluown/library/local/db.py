@@ -390,5 +390,4 @@ class DB:
                     artist.pic_url = gen_cover_url(song)
                     break
 
-
         self._song_file = {v: k for k, v in self._file_song.items()}

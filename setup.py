@@ -61,8 +61,7 @@ setup(
         'pydantic>=1.8.1',
     ],
     extras_require={
-        'battery': ['fuo-local>=0.2.1',
-                    'fuo-netease>=0.4.2',
+        'battery': ['fuo-netease>=0.4.2',
                     'fuo-qqmusic>=0.2',
                     'fuo-kuwo>=0.1.1',
                     ],

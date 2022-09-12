@@ -6,7 +6,6 @@ TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐�
 """
 
 import logging
-import os
 import re
 
 from fuzzywuzzy import process
@@ -26,7 +25,6 @@ class LocalProvider(AbstractProvider, ProviderV2):
     class meta:
         identifier = SOURCE
         name = '本地音乐'
-        flags = {}
 
     def __init__(self):
         super().__init__()

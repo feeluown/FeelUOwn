@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
+import os
 import logging
 from functools import partial
-
-from feeluown.utils import aio
 
 from .patch import patch_mutagen
 patch_mutagen()
 
-from .consts import DEFAULT_MUSIC_FOLDER, DEFAULT_MUSIC_EXTS
-from .provider import provider
+from feeluown.utils import aio  # noqa
+from .provider import provider  # noqa
 
+DEFAULT_MUSIC_FOLDER = os.path.expanduser('~') + '/Music'
+DEFAULT_MUSIC_EXTS = ['mp3', 'ogg', 'wma', 'm4a', 'm4v']
 
 __alias__ = '本地音乐'
 __feeluown_version__ = '1.1.0'
