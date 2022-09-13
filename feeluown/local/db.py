@@ -88,9 +88,9 @@ def create_album(identifier, name, cover):
     #   2. '(single)'   6+2=8
     #   3. '（single）'  6+2=8
     if 'single' in name[-9:].lower():
-        album.type = AlbumType.single
+        album.type_ = AlbumType.single
     if 'ep' in name[-5:].lower():
-        album.type = AlbumType.ep
+        album.type_ = AlbumType.ep
     return album
 
 
@@ -131,7 +131,7 @@ def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Option
     metadata_dict = {k: v[0] for k, v in metadata_dict.items()}
 
     # Get title and artists name from filename when metadata is empty.
-    if metadata is not None:
+    if metadata is None:
         filename = os.path.split(fpath)[-1].split('.')[0]
         parts = filename.split(' - ', 1)
         if len(parts) == 2:
