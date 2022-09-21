@@ -143,7 +143,7 @@ def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Option
         metadata_dict['duration'] = 0
     else:
         # milesecond
-        metadata_dict['duration'] = metadata_dict.get('duration', 0) * 1000
+        metadata_dict['duration'] = metadata.info.length * 1000
 
     # Convert simplified to traditional, or reverse.
     if can_convert_chinese:
@@ -205,8 +205,7 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song,
                          title=title,
                          duration=duration,
                          genre=data['genre'],
-                         # TODO: maybe get year from date field?
-                         # year=data['date'],
+                         date=data['date'],
                          disc=data['disc'],
                          track=data['track'])
         g_file_song[fpath] = song_id
@@ -395,7 +394,7 @@ class DB:
                 songs_with_unknown_album = [song for song in artist.hot_songs
                                             if song.album_name == 'Unknown']
                 for song in sorted(songs_with_unknown_album,
-                                   key=lambda x: (x.year != 0, x.year),
+                                   key=lambda x: (x.date != '', x.date),
                                    reverse=True):
                     artist.pic_url = gen_cover_url(song)
                     break

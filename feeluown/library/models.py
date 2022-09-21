@@ -265,7 +265,7 @@ class SongModel(BaseNormalModel):
     duration: int  # milliseconds
 
     genre: str = ''
-    year: int = 0
+    date: str = ''  # For example: 2020-12-11 00:00:00, 2020-12-11T00:00:00Z
     track: str = '1/1'  # The number of the track on the album.
     disc: str = '1/1'
 

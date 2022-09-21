@@ -24,7 +24,7 @@ from feeluown.gui.widgets.songs import SongListView, SongListModel
 logger = logging.getLogger(__name__)
 
 
-async def render(req, **kwargs):  # pylint: disable=too-many-locals
+async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
     app = req.ctx['app']
     song = req.ctx['model']
 
@@ -97,7 +97,8 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     # FIXME: handle NotSupported exception
     if song.album is not None:
         album = await aio.run_fn(app.library.album_upgrade, song.album)
-        aio.create_task(view.cover_label.show_cover(album.cover, reverse(album)))
+        if album.cover:
+            aio.create_task(view.cover_label.show_cover(album.cover, reverse(album)))
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
