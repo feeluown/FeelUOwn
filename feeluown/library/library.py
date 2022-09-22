@@ -653,20 +653,16 @@ class Library:
         :param model: model which has a 'cover' field.
         :return: cover url if exists, else ''.
         """
-        cover = ''
         if MF.v2 in model.meta.flags:
-            if MF.normal in model.meta.flags:
-                cover = model.cover
+            if MF.normal not in model.meta.flags:
+                um = self._model_upgrade(model)
             else:
-                # TODO: upgrade artist model.
-                # Currently supported model types: (ModelType.album, ModelType.video).
-                if ModelType(model.meta.model_type) in V2SupportedModelTypes:
-                    um = self._model_upgrade(model)
-                    # FIXME: remove this hack lator.
-                    if ModelType(model.meta.model_type) is ModelType.artist:
-                        cover = um.pic_url
-                    else:
-                        cover = um.cover
+                um = model
+            # FIXME: remove this hack lator.
+            if ModelType(model.meta.model_type) is ModelType.artist:
+                cover = um.pic_url
+            else:
+                cover = um.cover
         else:
             cover = model.cover
             # Check if cover is a media object.
