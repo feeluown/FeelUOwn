@@ -18,7 +18,7 @@ from .excs import (
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel, BriefSongModel, UserModel,
-    get_modelcls_by_type, V2SupportedModelTypes,
+    get_modelcls_by_type,
 )
 from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,

@@ -185,14 +185,6 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song,
     duration = data['duration']
     album_artist_name = data['album_artist_name']
 
-    # 如果专辑歌手名字是 unknown，并且歌曲的歌手里面有一个非 unknown 的，
-    # 就用它作为专辑歌手名字。因为这种情况很可能是元数据不规范造成的。
-    if album_artist_name == DEFAULT_ALBUM_NAME:
-        if artist_name_list:
-            for each in artist_name_list:
-                if each != 'Unknown':
-                    album_artist_name = each
-
     # 生成 song model
     # 用来生成 id 的字符串应该尽量减少无用信息，这样或许能减少 id 冲突概率
     # 加入分隔符'-'在一定概率上更能确保不发生哈希值重复
@@ -385,19 +377,6 @@ class DB:
                     album.cover = cover
             except:  # noqa
                 logger.exception('Sort album songs failed.')
-
-        # Select a pic_url for the artist.
-        for artist in self._artists.values():
-            if artist.hot_songs:
-                # use song cover as artist cover
-                # https://github.com/feeluown/feeluown-local/pull/3/files#r362126996
-                songs_with_unknown_album = [song for song in artist.hot_songs
-                                            if song.album_name == 'Unknown']
-                for song in sorted(songs_with_unknown_album,
-                                   key=lambda x: (x.date != '', x.date),
-                                   reverse=True):
-                    artist.pic_url = gen_cover_url(song)
-                    break
 
         # Cache the {song_id:fpath} mapping.
         self._song_file = {v: k for k, v in self._file_song.items()}
