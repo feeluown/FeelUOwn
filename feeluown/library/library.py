@@ -30,7 +30,7 @@ from .provider_protocol import (
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
     SupportsArtistSongsReader, SupportsArtistAlbumsReader,
-    SupportsVideoMultiQuality,
+    SupportsVideoMultiQuality, SupportsArtistContributedAlbumsReader,
 )
 
 
@@ -550,18 +550,30 @@ class Library:
                 reader = create_reader(artist.songs)
         return reader
 
-    def artist_create_albums_rd(self, artist):
+    def artist_create_albums_rd(self, artist, contributed=False):
         """Create albums reader for artist model.
         """
         provider = self.get_or_raise(artist.source)
-        if isinstance(provider, SupportsArtistAlbumsReader):
-            reader = provider.artist_create_albums_rd(artist)
-        else:
-            artist = self.cast_model_to_v1(artist)
-            if artist.meta.allow_create_albums_g:
-                reader = create_reader(artist.create_albums_g())
+        if contributed is False:
+            if isinstance(provider, SupportsArtistAlbumsReader):
+                reader = provider.artist_create_albums_rd(artist)
             else:
-                raise NotSupported("can't create albums reader for artist")
+                artist = self.cast_model_to_v1(artist)
+                if artist.meta.allow_create_albums_g:
+                    reader = create_reader(artist.create_albums_g())
+                else:
+                    raise NotSupported("can't create albums reader for artist")
+        else:
+            if isinstance(provider, SupportsArtistContributedAlbumsReader):
+                reader = provider.artist_create_contributed_albums_rd(artist)
+            else:
+                artist = self.cast_model_to_v1(artist)
+                # Old code check if provider supports contributed_albums in this way.
+                if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
+                    reader = create_reader(artist.create_contributed_albums_g())
+                else:
+                    raise NotSupported(
+                        "can't create contributed albums reader for artist")
         return reader
 
     # --------

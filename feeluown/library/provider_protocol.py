@@ -203,12 +203,21 @@ class SupportsArtistSongsReader(Protocol):
         raise NotImplementedError
 
 
-@eq(ModelType.artist, PF.songs_rd)
+@eq(ModelType.artist, PF.albums_rd)
 @runtime_checkable
 class SupportsArtistAlbumsReader(Protocol):
     @abstractmethod
     def artist_create_albums_rd(self, artist: BriefArtistProtocol):
         """Create albums reader of the artist
+        """
+        raise NotImplementedError
+
+
+@runtime_checkable
+class SupportsArtistContributedAlbumsReader(Protocol):
+    @abstractmethod
+    def artist_create_contributed_albums_rd(self, artist: BriefArtistProtocol):
+        """Create contributed albums reader of the artist
         """
         raise NotImplementedError
 

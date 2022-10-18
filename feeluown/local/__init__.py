@@ -7,7 +7,7 @@ from feeluown.utils import aio  # noqa
 from .provider import provider  # noqa
 
 DEFAULT_MUSIC_FOLDER = os.path.expanduser('~') + '/Music'
-DEFAULT_MUSIC_EXTS = ['mp3', 'ogg', 'wma', 'm4a', 'm4v']
+DEFAULT_MUSIC_EXTS = ['mp3', 'ogg', 'wma', 'm4a', 'm4v', 'mp4', 'flac', 'ape', 'wav']
 
 __alias__ = '本地音乐'
 __feeluown_version__ = '1.1.0'

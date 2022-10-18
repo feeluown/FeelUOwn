@@ -70,15 +70,13 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
             self.show_desc(self.model.description)
         elif tab_index == 1:
             await self._show_songs()
-        elif tab_index == 2:
+        elif tab_index in (2, 3):
+            contributed = tab_index == 3
             self.toolbar.filter_albums_needed.connect(
                 lambda types: self.albums_table.model().filter_by_types(types))
-            reader = await aio.run_fn(self._app.library.artist_create_albums_rd, artist)
+            reader = await aio.run_fn(
+                self._app.library.artist_create_albums_rd, artist, contributed)
             self.show_albums(reader)
-        elif tab_index == 3:
-            if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
-                # This model must be v1.
-                self.show_albums(artist.create_contributed_albums_g())
 
         # finally, we render cover
         cover = artist.pic_url

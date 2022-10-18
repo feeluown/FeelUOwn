@@ -10,7 +10,7 @@ from mutagen import MutagenError
 from mutagen.mp3 import EasyMP3
 from mutagen.easymp4 import EasyMP4
 from mutagen.flac import FLAC
-from mutagen.apev2 import APEv2
+from mutagen.apev2 import APEv2File
 
 from feeluown.serializers import serialize
 from feeluown.utils.utils import elfhash, log_exectime
@@ -108,7 +108,7 @@ def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Option
         elif fpath.endswith('flac'):
             metadata = FLAC(fpath)
         elif fpath.endswith('ape'):
-            metadata = APEv2(fpath)
+            metadata = APEv2File(fpath)
         elif fpath.endswith('wav'):
             metadata = None
         else:  # This branch is actually impossible to reach.
@@ -164,7 +164,7 @@ def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Option
     return data
 
 
-def add_song(fpath, g_songs, g_artists, g_albums, g_file_song,
+def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contributors,
              can_convert_chinese=False, lang='auto',
              delimiter='', expand_artist_songs=False):
     """
@@ -222,6 +222,7 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song,
     if album_id not in g_albums:
         album = create_album(album_id, album_name, cover)
         g_albums[album_id] = album
+        g_album_contributors[album_id] = []
     else:
         album = g_albums[album_id]
 
@@ -250,17 +251,16 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song,
             artist.hot_songs.append(song)
 
         # 处理歌曲歌手的参与作品信息(不与前面的重复)
-        # TODO: contributed_albums is not supported currently in model v2.
-        # if album not in artist.albums and album not in artist.contributed_albums:
-        #     artist.contributed_albums.append(album)
+        if artist_id != album_artist_id \
+           and artist_id not in g_album_contributors[album_id]:
+            g_album_contributors[album_id].append(artist_id)
 
     # 处理专辑歌手的歌曲信息: 有些作词人出合辑很少出现在歌曲歌手里(可选)
     if expand_artist_songs and song not in album_artist.hot_songs:
         album_artist.hot_songs.append(song)
 
 
-def scan_directory(directory, exts=None, depth=2):
-    exts = exts or ['mp3', 'fuo']
+def scan_directory(directory, exts, depth=2):
     if depth < 0:
         return []
 
@@ -298,11 +298,12 @@ class DB:
         self._fileset = set()  # media files
         self._fpath = fpath
 
-        self._file_song = {}      # {fpath: song_id}
-        self._song_file = {}      # {song_id: fpath}
-        self._songs = {}          # {song_id: song}
-        self._albums = {}         # {album_id: album)
-        self._artists = {}        # {artist_id: artist)
+        self._file_song = {}           # {fpath: song_id}
+        self._song_file = {}           # {song_id: fpath}
+        self._songs = {}               # {song_id: song}
+        self._albums = {}              # {album_id: album)
+        self._artists = {}             # {artist_id: artist)
+        self._album_contributors = {}  # {album_id: [artist_id]}
 
     def flush(self):
         """flush the changes into db file"""
@@ -333,6 +334,14 @@ class DB:
     def list_albums(self):
         return list(self._albums.values())
 
+    def list_albums_by_contributor(self, artist_id):
+        albums = []
+        for album_id, artists in self._album_contributors.items():
+            if artist_id in artists:
+                album = self.get_album(album_id)
+                albums.append(album)
+        return albums
+
     def list_artists(self):
         return list(self._artists.values())
 
@@ -361,7 +370,8 @@ class DB:
 
         is_cn_convert_enabled = can_convert_chinese()
         for fpath in media_files:
-            add_song(fpath, self._songs, self._artists, self._albums, self._file_song,
+            add_song(fpath, self._songs, self._artists,
+                     self._albums, self._file_song, self._album_contributors,
                      is_cn_convert_enabled, config.CORE_LANGUAGE,
                      config.IDENTIFIER_DELIMITER, config.EXPAND_ARTIST_SONGS)
         logger.info('录入本地音乐库完毕')
