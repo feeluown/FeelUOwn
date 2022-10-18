@@ -5,7 +5,7 @@ import os
 import re
 from typing import Optional
 
-from marshmallow.exceptions import ValidationError
+from pydantic import ValidationError
 from mutagen import MutagenError
 from mutagen.mp3 import EasyMP3
 from mutagen.easymp4 import EasyMP4
