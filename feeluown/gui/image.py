@@ -5,7 +5,6 @@ import os
 import time
 from hashlib import md5
 
-from feeluown.models import resolve
 from feeluown.consts import CACHE_DIR
 
 
@@ -31,8 +30,14 @@ class ImgManager(object):
         return None
 
     async def get(self, img_url, img_name):
-        if img_url.startswith('fuo://'):
-            return resolve(img_url)
+        if img_url.startswith('fuo://local'):
+            # Before, `models.uri.resolve` is uesd to handle these non-std paths,
+            # and it is not elegant in fact :(
+            # HACK(cosven): please think about a better way in the future.
+            provider = self._app.library.get('local')
+            if provider is None:
+                return None
+            return provider.handle_with_path(img_url[11:])
         fpath = self.cache.get(img_name)
         if fpath is not None:
             logger.info('read image:%s from cache', img_name)

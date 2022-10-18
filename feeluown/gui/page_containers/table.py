@@ -494,9 +494,9 @@ class TableContainer(QFrame, BgTransparentMixin):
             try:
                 song = await aio.run_in_executor(
                     None, self._app.library.song_upgrade, song)
-            except NotSupported:
+            except NotSupported as e:
                 assert ModelFlags.v2 & song.meta.flags
-                self._app.show_msg('资源提供放不支持该功能')
+                self._app.show_msg(f'资源提供方不支持该功能: {str(e)}')
                 logger.info(f'provider:{song.source} does not support song_get')
                 song.state = ModelState.cant_upgrade
             except (ProviderIOError, RequestException) as e:

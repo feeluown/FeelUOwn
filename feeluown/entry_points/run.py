@@ -1,5 +1,6 @@
-from feeluown.utils.patch import patch_janus, patch_qeventloop
+from feeluown.utils.patch import patch_janus, patch_qeventloop, patch_mutagen
 patch_janus()
+patch_mutagen()
 
 try:
     patch_qeventloop()

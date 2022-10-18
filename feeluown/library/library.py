@@ -18,7 +18,7 @@ from .excs import (
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel, BriefSongModel, UserModel,
-    get_modelcls_by_type, V2SupportedModelTypes,
+    get_modelcls_by_type,
 )
 from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
@@ -30,7 +30,7 @@ from .provider_protocol import (
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
     SupportsArtistSongsReader, SupportsArtistAlbumsReader,
-    SupportsVideoMultiQuality,
+    SupportsVideoMultiQuality, SupportsArtistContributedAlbumsReader,
 )
 
 
@@ -492,10 +492,12 @@ class Library:
         provider = self.get_or_raise(song.source)
         if isinstance(provider, SupportsSongMV):
             mv = provider.song_get_mv(song)
-        else:
+        elif not self.check_flags(song.source, song.meta.model_type, PF.model_v2):
             song_v1 = self.cast_model_to_v1(song)
             mv = song_v1.mv
             mv = cast(Optional[VideoProtocol], mv)
+        else:
+            mv = None
         return mv
 
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
@@ -548,18 +550,30 @@ class Library:
                 reader = create_reader(artist.songs)
         return reader
 
-    def artist_create_albums_rd(self, artist):
+    def artist_create_albums_rd(self, artist, contributed=False):
         """Create albums reader for artist model.
         """
         provider = self.get_or_raise(artist.source)
-        if isinstance(provider, SupportsArtistAlbumsReader):
-            reader = provider.artist_create_albums_rd(artist)
-        else:
-            artist = self.cast_model_to_v1(artist)
-            if artist.meta.allow_create_albums_g:
-                reader = create_reader(artist.create_albums_g())
+        if contributed is False:
+            if isinstance(provider, SupportsArtistAlbumsReader):
+                reader = provider.artist_create_albums_rd(artist)
             else:
-                raise NotSupported("can't create albums reader for artist")
+                artist = self.cast_model_to_v1(artist)
+                if artist.meta.allow_create_albums_g:
+                    reader = create_reader(artist.create_albums_g())
+                else:
+                    raise NotSupported("can't create albums reader for artist")
+        else:
+            if isinstance(provider, SupportsArtistContributedAlbumsReader):
+                reader = provider.artist_create_contributed_albums_rd(artist)
+            else:
+                artist = self.cast_model_to_v1(artist)
+                # Old code check if provider supports contributed_albums in this way.
+                if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
+                    reader = create_reader(artist.create_contributed_albums_g())
+                else:
+                    raise NotSupported(
+                        "can't create contributed albums reader for artist")
         return reader
 
     # --------
@@ -651,20 +665,16 @@ class Library:
         :param model: model which has a 'cover' field.
         :return: cover url if exists, else ''.
         """
-        cover = ''
         if MF.v2 in model.meta.flags:
-            if MF.normal in model.meta.flags:
-                cover = model.cover
+            if MF.normal not in model.meta.flags:
+                um = self._model_upgrade(model)
             else:
-                # TODO: upgrade artist model.
-                # Currently supported model types: (ModelType.album, ModelType.video).
-                if ModelType(model.meta.model_type) in V2SupportedModelTypes:
-                    um = self._model_upgrade(model)
-                    # FIXME: remove this hack lator.
-                    if ModelType(model.meta.model_type) is ModelType.artist:
-                        cover = um.pic_url
-                    else:
-                        cover = um.cover
+                um = model
+            # FIXME: remove this hack lator.
+            if ModelType(model.meta.model_type) is ModelType.artist:
+                cover = um.pic_url
+            else:
+                cover = um.cover
         else:
             cover = model.cover
             # Check if cover is a media object.
@@ -689,9 +699,10 @@ class Library:
                 #
                 # For example, provider X may support 'get' for SongModel, then
                 # the song.artists can return list of BriefArtistModel.
-                if check_flag_impl(provider, ModelType(model.meta.model_type), PF.get):
-                    upgraded_model = provider.model_get(
-                        model.meta.model_type, model.identifier)
+                model_type = ModelType(model.meta.model_type)
+                is_support = check_flag_impl(provider, model_type, PF.get)
+                if is_support:
+                    upgraded_model = provider.model_get(model_type, model.identifier)
                     try_v1way = False
 
         if try_v1way is True:

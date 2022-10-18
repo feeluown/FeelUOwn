@@ -85,10 +85,14 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
 
     def _fetch_image_callback(self, item):
         def cb(content):
+            uri = reverse(item)
+            if content is None:
+                self.pixmaps[uri] = None
+                return
+
             img = QImage()
             img.loadFromData(content)
             pixmap = QPixmap(img)
-            uri = reverse(item)
             self.pixmaps[uri] = pixmap
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)

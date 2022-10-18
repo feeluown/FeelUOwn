@@ -59,10 +59,10 @@ setup(
         'tomlkit',
         'packaging',
         'pydantic>=1.8.1',
+        'mutagen>=1.37',
     ],
     extras_require={
-        'battery': ['fuo-local>=0.2.1',
-                    'fuo-netease>=0.4.2',
+        'battery': ['fuo-netease>=0.4.2',
                     'fuo-qqmusic>=0.2',
                     'fuo-kuwo>=0.1.1',
                     ],
@@ -99,6 +99,9 @@ setup(
             "fuo=feeluown.__main__:main",
             "feeluown-genicon=feeluown.cli.install:generate_icon",
             # "feeluown-update=feeluown.install:update"
+        ],
+        'fuo.plugins_v1': [
+            'local = feeluown.local',
         ]
     },
 )
