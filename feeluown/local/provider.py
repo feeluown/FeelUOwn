@@ -5,13 +5,12 @@ TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐�
 这些小部分理论都可以从中拆除。
 """
 
+import difflib
 import logging
 import re
 import threading
-
 from functools import wraps
 
-from fuzzywuzzy import process
 from feeluown.excs import ProviderIOError
 
 from feeluown.media import Media, Quality
@@ -162,7 +161,8 @@ class LocalProvider(AbstractProvider, ProviderV2):
             repr_song_map[key] = song
         choices = repr_song_map.keys()
         if choices:
-            result = process.extract(keyword, choices, limit=limit)
+            # TODO: maybe use a more reasonable algorithm.
+            result = difflib.get_close_matches(keyword, choices, n=limit, cutoff=0)
         else:
             result = []
         result_songs = []
