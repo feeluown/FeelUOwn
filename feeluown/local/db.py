@@ -377,6 +377,11 @@ class DB:
         logger.info('录入本地音乐库完毕')
 
     def after_scan(self):
+        def sort_album_func(album):
+            if album.songs:
+                return (album.songs[0].date != '', album.songs[0].date)
+            return (False, '0')
+
         # Sort the songs in a album.
         for album in self._albums.values():
             try:
@@ -387,6 +392,34 @@ class DB:
                     album.cover = cover
             except:  # noqa
                 logger.exception('Sort album songs failed.')
+
+        # Select a pic_url for the artist
+        for artist in self._artists.values():
+            albums = []
+            for album in self._albums.values():
+                for artist_ in album.artists:
+                    if artist_.identifier == artist.identifier:
+                        albums.append(album)
+                        continue
+            if albums:
+                sorted_albums = sorted(albums,
+                                       key=lambda x: (not x.songs, x.songs[0].date != '', x.songs[0].date),
+                                       reverse=True)
+                if sorted_albums:
+                    artist.pic_url = sorted_albums[0].cover
+
+            if artist.hot_songs:
+                # sort artist songs
+                sorted_hot_songs = sorted(artist.hot_songs, key=lambda x: x.title)
+                # use song cover as artist cover
+                # https://github.com/feeluown/feeluown-local/pull/3/files#r362126996
+                songs_with_unknown_album = [song for song in sorted_hot_songs
+                                            if song.album_name == DEFAULT_ALBUM_NAME]
+                for song in sorted(songs_with_unknown_album,
+                                   key=lambda x: (x.date != '', x.date),
+                                   reverse=True):
+                    artist.pic_url = gen_cover_url(song)
+                    break
 
         # Cache the {song_id:fpath} mapping.
         self._song_file = {v: k for k, v in self._file_song.items()}

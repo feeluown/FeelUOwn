@@ -119,7 +119,8 @@ class LocalProvider(AbstractProvider, ProviderV2):
     def artist_create_songs_rd(self, artist):
         """Implement SupportsArtistSongsReader protocol."""
         artist = self.model_get(artist.meta.model_type, artist.identifier)
-        return create_reader(artist.hot_songs)
+        sorted_hot_songs = sorted(artist.hot_songs, key=lambda x: x.title)
+        return create_reader(sorted_hot_songs)
 
     @wait_for_scan
     def artist_create_albums_rd(self, artist):
@@ -130,12 +131,18 @@ class LocalProvider(AbstractProvider, ProviderV2):
                 if artist_.identifier == artist.identifier:
                     albums.append(album)
                     continue
-        return create_reader(albums)
+        sorted_albums = sorted(albums,
+                               key=lambda x: (not x.songs, x.songs[0].date != '', x.songs[0].date),
+                               reverse=True)
+        return create_reader(sorted_albums)
 
     @wait_for_scan
     def artist_create_contributed_albums_rd(self, artist):
         albums = self.db.list_albums_by_contributor(artist.identifier)
-        return create_reader(albums)
+        sorted_albums = sorted(albums,
+                               key=lambda x: (not x.songs, x.songs[0].date != '', x.songs[0].date),
+                               reverse=True)
+        return create_reader(sorted_albums)
 
     @property
     def songs(self):
