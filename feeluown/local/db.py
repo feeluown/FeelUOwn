@@ -377,11 +377,6 @@ class DB:
         logger.info('录入本地音乐库完毕')
 
     def after_scan(self):
-        def sort_album_func(album):
-            if album.songs:
-                return (album.songs[0].date != '', album.songs[0].date)
-            return (False, '0')
-
         # Sort the songs in a album.
         for album in self._albums.values():
             try:
