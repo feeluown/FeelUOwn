@@ -6,10 +6,12 @@ from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
 from feeluown.player import State
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.size_grip import SizeGrip
+from feeluown.gui.widgets.textbtn import TextButton
 from .labels import ProgressLabel, DurationLabel
 
 
 class VideoPlayerCtlBar(QWidget):
+
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
 
@@ -20,6 +22,8 @@ class VideoPlayerCtlBar(QWidget):
         self._progress_slider = ProgressSlider(app)
         self._progress_label = ProgressLabel(app, self)
         self._duration_label = DurationLabel(app, self)
+        #: Toggle fullscreen button.
+        self._fullscreen_btn = TextButton("全屏")
         self._size_grip = SizeGrip(parent=self)
         self._layout = QVBoxLayout(self)
         self._bottom_layout = QHBoxLayout()
@@ -32,7 +36,7 @@ class VideoPlayerCtlBar(QWidget):
             lambda x: self._toggle_btn.setChecked(x == State.playing),
             weak=False,
             aioqueue=True)
-        self._toggle_btn.clicked.connect(self._app.player.toggle)
+        self._fullscreen_btn.clicked.connect(self._app.watch_mgr.toggle_pip_fullscreen)
 
     def _setup_ui(self):
         self.setAutoFillBackground(True)
@@ -56,16 +60,20 @@ class VideoPlayerCtlBar(QWidget):
         self._bottom_layout.addSpacing(2)
         self._bottom_layout.addWidget(self._duration_label)
         self._bottom_layout.addStretch(1)
+        self._bottom_layout.addWidget(self._fullscreen_btn)
+        self._bottom_layout.addSpacing(8)
         self._bottom_layout.addWidget(self._size_grip)
 
         # Setup widgets size.
         self._size_grip.setFixedSize(20, 20)
+        self._fullscreen_btn.setFixedHeight(20)
         # Button size should be same as the value defined in style sheet.
         self._toggle_btn.setFixedSize(24, 24)
 
         # Customize the palette.
         palette = self.palette()
         palette.setColor(QPalette.Text, QColor('white'))
+        palette.setColor(QPalette.ButtonText, QColor('white'))
         palette.setColor(QPalette.WindowText, QColor('white'))
         bg_color = QColor('black')
         bg_color.setAlpha(180)  # Make it semi-transparent.

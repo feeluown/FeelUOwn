@@ -2,6 +2,8 @@ import logging
 from contextlib import contextmanager
 from enum import IntEnum
 
+from PyQt5.QtCore import Qt
+
 from feeluown.player.mpvplayer import _mpv_set_property_string
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
@@ -119,9 +121,9 @@ class WatchManager:
         self._app.ui.mpv_widget.hide()
         logger.info("exit video-show picture in picture mode")
 
-    #
-    # signal callbacks
-    #
+    def toggle_pip_fullscreen(self):
+        self._pip_container.setWindowState(
+            self._pip_container.windowState() ^ Qt.WindowFullScreen)
 
     def play_mv(self):
         song = self._app.player.current_song
