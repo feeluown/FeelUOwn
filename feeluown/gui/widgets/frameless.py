@@ -28,7 +28,8 @@ class ResizableFramelessContainer(QWidget):
 
         self.setMouseTracking(True)
 
-        QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
+        QShortcut(QKeySequence.Cancel, self).activated.connect(
+            self.on_cancel_key_pressed)
 
     def attach_widget(self, widget):
         """set inner widget"""
@@ -57,6 +58,12 @@ class ResizableFramelessContainer(QWidget):
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
+
+    def on_cancel_key_pressed(self):
+        if Qt.WindowFullScreen & self.windowState():
+            self.setWindowState(self.windowState() ^ Qt.WindowFullScreen)
+        else:
+            self.hide()
 
 
 if __name__ == '__main__':
