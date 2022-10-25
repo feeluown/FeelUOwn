@@ -36,6 +36,7 @@ class VideoPlayerCtlBar(QWidget):
             lambda x: self._toggle_btn.setChecked(x == State.playing),
             weak=False,
             aioqueue=True)
+        self._toggle_btn.clicked.connect(self._app.player.toggle)
         self._fullscreen_btn.clicked.connect(self._app.watch_mgr.toggle_pip_fullscreen)
 
     def _setup_ui(self):
