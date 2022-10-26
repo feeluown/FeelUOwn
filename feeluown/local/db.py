@@ -278,6 +278,12 @@ def scan_directory(directory, exts, depth=2):
     return media_files
 
 
+def sort_album_func(album):
+    if album.songs:
+        return album.songs[0].date is not None, album.songs[0].date
+    return False, '0'
+
+
 class DB:
     """
     DB manages a fileset and their corresponding models
@@ -397,18 +403,16 @@ class DB:
                         albums.append(album)
                         continue
             if albums:
-                sorted_albums = sorted(albums,
-                                       key=lambda x: (not x.songs, x.songs[0].date != '', x.songs[0].date),
-                                       reverse=True)
-                if sorted_albums:
-                    artist.pic_url = sorted_albums[0].cover
+                albums.sort(key=sort_album_func, reverse=True)
+                if albums:
+                    artist.pic_url = albums[0].cover
 
             if artist.hot_songs:
-                # sort artist songs
-                sorted_hot_songs = sorted(artist.hot_songs, key=lambda x: x.title)
-                # use song cover as artist cover
+                # sort the artist hot_songs.
+                artist.hot_songs.sort(key=lambda x: x.title)
+                # Use a song's cover as artist cover.
                 # https://github.com/feeluown/feeluown-local/pull/3/files#r362126996
-                songs_with_unknown_album = [song for song in sorted_hot_songs
+                songs_with_unknown_album = [song for song in artist.hot_songs
                                             if song.album_name == DEFAULT_ALBUM_NAME]
                 for song in sorted(songs_with_unknown_album,
                                    key=lambda x: (x.date != '', x.date),
