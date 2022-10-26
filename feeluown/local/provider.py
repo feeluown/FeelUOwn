@@ -18,6 +18,7 @@ from feeluown.library import AbstractProvider, ProviderV2, ModelType, SimpleSear
 from feeluown.utils.reader import create_reader
 from feeluown.utils.utils import log_exectime
 from feeluown.utils.audio import read_audio_cover
+from .db import sort_album_func
 
 
 logger = logging.getLogger(__name__)
@@ -130,11 +131,13 @@ class LocalProvider(AbstractProvider, ProviderV2):
                 if artist_.identifier == artist.identifier:
                     albums.append(album)
                     continue
+        albums.sort(key=sort_album_func, reverse=True)
         return create_reader(albums)
 
     @wait_for_scan
     def artist_create_contributed_albums_rd(self, artist):
         albums = self.db.list_albums_by_contributor(artist.identifier)
+        albums.sort(key=sort_album_func, reverse=True)
         return create_reader(albums)
 
     @property
