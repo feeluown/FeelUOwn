@@ -1,3 +1,4 @@
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
 from feeluown.gui.widgets.magicbox import MagicBox
@@ -57,11 +58,12 @@ class BottomPanel(QWidget):
         self._layout.addWidget(self.settings_btn)
 
         # assume the magicbox height is about 30
-        h_margin, v_margin = 5, 10
+        h_margin, v_margin = 5, 7
         height = self.magicbox.height()
 
-        self.setFixedHeight(height + v_margin * 2 + 10)
+        self.setFixedHeight(height + v_margin * 2 + 8)
         self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
+        self._layout.setAlignment(self._stacked_widget, Qt.AlignVCenter)
         self._layout.setSpacing(0)
 
     def _show_next_stacked_widget(self):

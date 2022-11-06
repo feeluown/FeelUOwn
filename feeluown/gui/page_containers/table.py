@@ -4,7 +4,7 @@ import warnings
 from contextlib import suppress
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage, QPixmap
+from PyQt5.QtGui import QImage, QPixmap, QPalette
 from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication
 from requests.exceptions import RequestException
 
@@ -238,6 +238,8 @@ class DescLabel(QLabel):
         self.setContentsMargins(30, 15, 30, 10)
         self.setWordWrap(True)
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+
+        self.palette().setColor(QPalette.Background, self.palette().color(QPalette.Base))
 
 
 class TableContainer(QFrame, BgTransparentMixin):

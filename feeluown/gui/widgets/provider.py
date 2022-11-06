@@ -49,8 +49,8 @@ class ProvidersDelegate(QStyledItemDelegate):
         super().__init__(parent)
         self._library = library
 
-        self._radius = 22
-        self._padding = 6
+        self._radius = 21
+        self._padding = 5
 
         self.__body_radius = self._radius - self._padding
         self.__text_rect_x = self.__body_radius - self.__body_radius / math.sqrt(2)
