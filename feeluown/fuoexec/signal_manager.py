@@ -26,8 +26,8 @@ class SignalConnector:
 
         # Connect slot which are not symbol.
         # These slots are connected directly.
-        for slot, aioqueue in self._slot_list:
-            self._signal.connect(slot, weak=True, aioqueue=aioqueue)
+        for slot, kwargs in self._slot_list:
+            self._signal.connect(slot, **kwargs)
         self._slot_list.clear()
 
         # Connect slots which are symbol currently.
