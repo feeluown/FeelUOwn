@@ -79,7 +79,7 @@ class LeftPanel(QScrollArea):
 
     def sizeHint(self):
         size = super().sizeHint()
-        width = min(self._app.width() // 4, 240)
+        width = min(self._app.width() * 22 // 100, 240)
         return QSize(width, size.height())
 
 
