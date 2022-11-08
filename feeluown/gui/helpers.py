@@ -142,7 +142,7 @@ class ItemViewNoScrollMixin:
             return
 
         if self.model().canFetchMore(QModelIndex()):
-            if self._fixed_row_count ==0:
+            if self._fixed_row_count == 0:
                 # according to QAbstractItemView source code,
                 # qt will trigger fetchMore when the last row is
                 # inside the viewport, so we always hide the last
@@ -150,7 +150,8 @@ class ItemViewNoScrollMixin:
                 # triggered automatically
                 index = self._last_visible_index()
                 rect = self.visualRect(index)
-                height = self.sizeHint().height() - int(rect.height() * 1.5) - self._reserved
+                height = self.sizeHint().height() - int(rect.height() * 1.5) - \
+                    self._reserved
                 self.setFixedHeight(max(height, self.min_height()))
             else:
                 self.setFixedHeight(self._row_height * self._fixed_row_count)
