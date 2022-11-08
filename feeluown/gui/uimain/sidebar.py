@@ -123,7 +123,7 @@ class _LeftPanel(QFrame):
         self._layout = QVBoxLayout(self)
 
         self._layout.setSpacing(0)
-        self._layout.setContentsMargins(10, 4, 10, 0)
+        self._layout.setContentsMargins(16, 16, 16, 0)
         self._layout.addWidget(self.providers_con)
         self._layout.addWidget(self.collections_con)
         self._layout.addWidget(self.my_music_con)

@@ -1,6 +1,6 @@
 {
     "Disabled": {
-        "AlternateBase": "#989898",
+        "AlternateBase": "#292929",
         "Background": "#323232",
         "Base": "#323232",
         "BrightText": "#373737",
@@ -25,7 +25,7 @@
         "WindowText": "#ffffff"
     },
     "Active": {
-        "AlternateBase": "#989898",
+        "AlternateBase": "#292929",
         "Background": "#323232",
         "Base": "#1e1e1e",
         "BrightText": "#373737",
@@ -50,7 +50,7 @@
         "WindowText": "#ffffff"
     },
     "Inactive": {
-        "AlternateBase": "#989898",
+        "AlternateBase": "#292929",
         "Background": "#323232",
         "Base": "#1e1e1e",
         "BrightText": "#373737",
