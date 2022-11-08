@@ -105,7 +105,7 @@ class ItemViewNoScrollMixin:
     The itemview with no_scroll_v=True is usually used with an outside ScrollArea.
     """
     def __init__(self, *args, no_scroll_v=True, row_height=0, least_row_count=0,
-                 reserved=30, **kwargs):
+                 fixed_row_count=0, reserved=30, **kwargs):
         """
         :params no_scroll_v: enable on no_scroll_v feature or not
 
@@ -113,6 +113,7 @@ class ItemViewNoScrollMixin:
            The *row_height*, *least_row_count*, *reserved* parameter were added.
         """
         self._least_row_count = least_row_count
+        self._fixed_row_count = fixed_row_count
         self._row_height = row_height
         self._reserved = reserved
 
@@ -141,15 +142,19 @@ class ItemViewNoScrollMixin:
             return
 
         if self.model().canFetchMore(QModelIndex()):
-            # according to QAbstractItemView source code,
-            # qt will trigger fetchMore when the last row is
-            # inside the viewport, so we always hide the last
-            # two row to ensure fetch-more will not be
-            # triggered automatically
-            index = self._last_visible_index()
-            rect = self.visualRect(index)
-            height = self.sizeHint().height() - int(rect.height() * 1.5) - self._reserved
-            self.setFixedHeight(max(height, self.min_height()))
+            if self._fixed_row_count == 0:
+                # according to QAbstractItemView source code,
+                # qt will trigger fetchMore when the last row is
+                # inside the viewport, so we always hide the last
+                # two row to ensure fetch-more will not be
+                # triggered automatically
+                index = self._last_visible_index()
+                rect = self.visualRect(index)
+                height = self.sizeHint().height() - int(rect.height() * 1.5) - \
+                    self._reserved
+                self.setFixedHeight(max(height, self.min_height()))
+            else:
+                self.setFixedHeight(self._row_height * self._fixed_row_count)
         else:
             height = self.sizeHint().height()
             self.setFixedHeight(height)
@@ -187,10 +192,13 @@ class ItemViewNoScrollMixin:
 
         height = min_height = self.min_height()
         if self.model() is not None:
-            index = self._last_visible_index()
-            rect = self.visualRect(index)
-            height = rect.y() + rect.height() + self._reserved
-            height = max(min_height, height)
+            if self._fixed_row_count == 0:
+                index = self._last_visible_index()
+                rect = self.visualRect(index)
+                height = rect.y() + rect.height() + self._reserved
+                height = max(min_height, height)
+            else:
+                height = self._row_height * self._fixed_row_count
         return QSize(super_size_hint.width(), height)
 
     def _last_visible_index(self):
