@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QStyledItemDelegate, QListView
 from PyQt5.QtSvg import QSvgRenderer
 
 from feeluown.library import ModelType, ProviderFlags as PF
-from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font, SOLARIZED_COLORS
+from feeluown.gui.helpers import ItemViewNoScrollMixin, SOLARIZED_COLORS
 from .textlist import TextlistModel
 
 
