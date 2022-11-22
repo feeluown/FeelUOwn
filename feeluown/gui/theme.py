@@ -62,8 +62,8 @@ class ThemeManager(QObject):
                     theme = LIGHT
             else:
                 theme = self.guess_system_theme()
-                if theme == Dark:
-                    theme = MacOSDark
+                if theme == DARK:
+                    theme = Dark
         else:  # user settings have highest priority
             theme = self._app.config.THEME
         self.load_theme(theme)

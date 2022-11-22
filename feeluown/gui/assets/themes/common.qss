@@ -8,19 +8,23 @@ LeftPanel QLabel {
     padding-top: 3px;
     padding-bottom: 3px;
     font-size: 12px;
-    font-weight: bold;
+    color: #888;
 }
 
-LeftPanel QListView {
-    margin-left: 5px;
+LeftPanel ListViewContainer TextButton {
+    padding: 0px 2px;
+    border: none;
+    font-size: 12px;
+    color: #888;
+}
+
+LeftPanel ListViewContainer TextButton:hover {
+    color: palette(text);
+    border: none;
 }
 
 LeftPanel QListView, QSplitter::handle {
     background-color: transparent;
-}
-
-DescLabel {
-    background-color: palette(base);
 }
 
 MagicBox {
@@ -93,11 +97,6 @@ TextButton:checked {
 }
 #toggle_video_btn, #toggle_pip_btn {
     padding: 0px 3px;
-}
-
-LeftPanel ListViewContainer TextButton {
-    padding: 0px 2px;
-    border: none;
 }
 
 VideoCtlToolbar QPushButton {

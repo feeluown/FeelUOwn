@@ -4,7 +4,6 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout
 
-from feeluown.gui.helpers import use_mac_theme
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.widgets.provider import ProvidersView
 from feeluown.gui.widgets.collections import CollectionsView
@@ -23,22 +22,27 @@ class ListViewContainer(QFrame):
         self._view = view
         self._toggle_btn = TextButton(self.btn_text_hide, self)
 
+        self._toggle_btn.clicked.connect(self.toggle_view)
+        self.setup_ui()
+
+    def setup_ui(self):
+        self._label.setFixedHeight(25)
+
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self._h_layout = QHBoxLayout()
-        label.setFixedHeight(25)
-        self._h_layout.addWidget(label)
-        self._h_layout.addStretch(0)
-        self._h_layout.addWidget(self._toggle_btn)
-        self._h_layout.addSpacing(10)
-        self._layout.addLayout(self._h_layout)
-        self._layout.addWidget(view)
-        self._layout.addStretch(0)
+
+        self._t_h_layout = QHBoxLayout()
+        self._b_h_layout = QHBoxLayout()
+        self._t_h_layout.addWidget(self._label)
+        self._t_h_layout.addStretch(0)
+        self._t_h_layout.addWidget(self._toggle_btn)
+        self._b_h_layout.addWidget(self._view)
+
+        self._layout.addLayout(self._t_h_layout)
+        self._layout.addLayout(self._b_h_layout)
         # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
-
-        self._toggle_btn.clicked.connect(self.toggle_view)
 
     def toggle_view(self):
         if self._view.isVisible():
@@ -75,7 +79,7 @@ class LeftPanel(QScrollArea):
 
     def sizeHint(self):
         size = super().sizeHint()
-        width = min(self._app.width() // 4, 240)
+        width = min(self._app.width() * 22 // 100, 240)
         return QSize(width, size.height())
 
 
@@ -118,9 +122,8 @@ class _LeftPanel(QFrame):
 
         self._layout = QVBoxLayout(self)
 
-        if use_mac_theme():
-            self._layout.setSpacing(0)
-            self._layout.setContentsMargins(6, 4, 0, 0)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(16, 16, 16, 0)
         self._layout.addWidget(self.providers_con)
         self._layout.addWidget(self.collections_con)
         self._layout.addWidget(self.my_music_con)

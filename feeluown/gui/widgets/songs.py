@@ -8,11 +8,11 @@ from PyQt5.QtCore import (
     QAbstractTableModel, QAbstractListModel, QModelIndex,
     QSize, QRect, QPoint, QPointF, QSortFilterProxyModel,
 )
-from PyQt5.QtGui import QPainter, QPalette, QPen, QMouseEvent, QPolygonF
+from PyQt5.QtGui import QPainter, QPalette, QMouseEvent, QPolygonF
 from PyQt5.QtWidgets import (
     QAction, QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
     QPushButton, QTableView, QWidget, QMenu, QListView,
-    QStyle, QSizePolicy, QStyledItemDelegate,
+    QStyle, QSizePolicy, QStyledItemDelegate
 )
 
 from feeluown.utils import aio
@@ -239,8 +239,8 @@ class BaseSongsTableModel(QAbstractTableModel):
 
     def flags(self, index):
         # Qt.NoItemFlags is ItemFlag and we should return ItemFlags
-        no_item_flags = Qt.ItemIsSelectable
-        if index.column() in (Column.source, Column.index, Column.duration):
+        no_item_flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        if index.column() in (Column.index, Column.source, Column.duration):
             return no_item_flags
 
         # Default flags.
@@ -467,27 +467,29 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-
         painter.setRenderHint(QPainter.Antialiasing)
         hovered = index.row() == self.row_hovered
 
         # Draw play button on Column.index when the row is hovered.
         if hovered and index.column() == Column.index:
             painter.save()
-            # Override contents.
-            if option.state & QStyle.State_Selected:  # type: ignore
-                bgcolor = option.palette.color(QPalette.Active, QPalette.Highlight)
-                fgcolor = option.palette.color(QPalette.Active, QPalette.HighlightedText)
-            else:
-                bgcolor = option.palette.color(QPalette.Active, QPalette.Base)
-                fgcolor = option.palette.color(QPalette.Active, QPalette.Text)
-            painter.setBrush(bgcolor)
+            # Override the content drawed by super().paint.
             painter.setPen(Qt.NoPen)
+            # HELP(cosven): when an item was hovered, super().paint may draw
+            # a semi-transparent rect over the item or draw a different color
+            # for the text. The rect/text color may not be in the palette.
+            # I checked the qt source code, and I think this behaviour is
+            # platform indenpent.It is drawed by something like KDE, kvantum.
+            # We have no way to draw a similar look (or please help find a way).
+            if index.row() % 2 == 0:
+                painter.setBrush(option.palette.color(QPalette.Base))
+            else:
+                painter.setBrush(option.palette.color(QPalette.AlternateBase))
             painter.drawRect(option.rect)
             # Draw play button.
+            painter.setBrush(option.palette.color(QPalette.Text))
             triangle_edge = 12
             triangle_height = 10
-            painter.setBrush(fgcolor)
             # Move the triangle right 2px and it looks better.
             painter.translate(
                 2 + option.rect.x() + (option.rect.width() - triangle_height)//2,
@@ -499,23 +501,7 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.drawPolygon(triangle)
             painter.restore()
 
-        # Draw a line under each row. If it is hovered, highlight the line.
-        painter.save()
-        pen = QPen()
-        line_color = option.palette.color(QPalette.Active, QPalette.Text)
-        line_color.setAlpha(30)
-        pen.setColor(line_color)
-        painter.setPen(pen)
-        bottom_left = option.rect.bottomLeft()
-        bottom_right = option.rect.bottomRight()
-        if index.model().columnCount() - 1 == index.column():
-            bottom_right = QPoint(bottom_right.x(), bottom_right.y())
-        if index.column() == 0:
-            bottom_left = QPoint(bottom_left.x(), bottom_right.y())
-        painter.drawLine(bottom_left, bottom_right)
-        painter.restore()
-
-        # Draw the mask over the row.
+        # Since the selection behaviour is SelectRows, so draw the mask over the row.
         if hovered:
             painter.save()
             mask_color = option.palette.color(QPalette.Active, QPalette.Text)
@@ -576,7 +562,6 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
         # override ItemViewNoScrollMixin variables
         self._least_row_count = 6
-        self._row_height = 40
 
         # slot functions
         self.remove_song_func = None
@@ -594,9 +579,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.NoFrame)
+        self.setAlternatingRowColors(True)
         self.verticalHeader().hide()
         self.horizontalHeader().hide()
-        self.verticalHeader().setDefaultSectionSize(self._row_height)
         self.setWordWrap(False)
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)

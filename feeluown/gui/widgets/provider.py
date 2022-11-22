@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QStyledItemDelegate, QListView
 from PyQt5.QtSvg import QSvgRenderer
 
 from feeluown.library import ModelType, ProviderFlags as PF
-from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font, SOLARIZED_COLORS
+from feeluown.gui.helpers import ItemViewNoScrollMixin, SOLARIZED_COLORS
 from .textlist import TextlistModel
 
 
@@ -49,8 +49,8 @@ class ProvidersDelegate(QStyledItemDelegate):
         super().__init__(parent)
         self._library = library
 
-        self._radius = 22
-        self._padding = 6
+        self._radius = 24
+        self._padding = 7
 
         self.__body_radius = self._radius - self._padding
         self.__text_rect_x = self.__body_radius - self.__body_radius / math.sqrt(2)
@@ -87,7 +87,7 @@ class ProvidersDelegate(QStyledItemDelegate):
 
             painter.save()
             font = painter.font()
-            resize_font(font, -3)
+            font.setPixelSize(10)
             painter.setFont(font)
             text_option = QTextOption()
             text_option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)

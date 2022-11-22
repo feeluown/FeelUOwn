@@ -79,7 +79,7 @@ class Ui:
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
-        self._app.resize(880, 600)
+        self._app.resize(960, 600)
 
     def _open_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)

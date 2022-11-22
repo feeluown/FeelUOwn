@@ -42,16 +42,6 @@ class ActionError(Exception):
     pass
 
 
-def use_mac_theme():
-    """判断是否需要使用 mac 主题
-
-    目前只是简单为 mac 做一些定制，但如果真的要引入 theme 这个概念，
-    单这一个函数是不够的。
-    """
-    return True
-    return sys.platform == 'darwin'
-
-
 def is_macos():
     """Check if operating system is macOS
 
