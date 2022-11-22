@@ -5,22 +5,16 @@ QWidget {
 }
 
 LeftPanel QLabel {
+    color: #888;
+}
+
+LeftPanel QLabel {
     padding-top: 3px;
     padding-bottom: 3px;
-    font-size: 12px;
-    color: #888;
 }
 
-LeftPanel ListViewContainer TextButton {
-    padding: 0px 2px;
-    border: none;
+LeftPanel QLabel, LeftPanel ListViewContainer TextButton {
     font-size: 12px;
-    color: #888;
-}
-
-LeftPanel ListViewContainer TextButton:hover {
-    color: palette(text);
-    border: none;
 }
 
 LeftPanel QListView, QSplitter::handle {
@@ -86,6 +80,20 @@ TextButton:checked {
     border: 1px solid #d75a4a;  /* same as like_btn red color */
     color: #d75a4a;
 }
+
+LeftPanel ListViewContainer TextButton, ClickableHeader TextButton {
+    border: none;
+    color: #888;
+}
+LeftPanel ListViewContainer TextButton:hover, ClickableHeader TextButton:hover {
+    color: palette(text);
+    border: none;
+}
+ClickableHeader TextButton:checked {
+    color: palette(text);
+    border: none;
+}
+
 #mv_btn, #toggle_lyric_btn {
     font-size: 9px;
 }

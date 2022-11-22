@@ -174,10 +174,13 @@ class RightPanel(QFrame):
 
         # calculate available size
         draw_width = self.width()
-        draw_height = 10  # spacing defined in table container
-        draw_height += self.bottom_panel.height()
+        draw_height = self.bottom_panel.height()
         if self.table_container.meta_widget.isVisible():
             draw_height += self.table_container.meta_widget.height()
+        else:
+            if hasattr(self._stacked_layout.currentWidget(), 'page_overlay_height'):
+                draw_height += self._stacked_layout.currentWidget().page_overlay_height()
+
         extra = self.table_container.current_extra
         if extra is not None and extra.isVisible():
             draw_height += extra.height()

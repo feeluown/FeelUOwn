@@ -523,6 +523,7 @@ class SongsTableDelegate(QStyledItemDelegate):
             w = index.model().sourceModel().columns_config.get_width(
                 index.column(), self.parent().width())
             h = option.rect.height()
+            h = self.parent()._row_height
             return QSize(w, h)
         return super().sizeHint(option, index)
 
