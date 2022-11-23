@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
 from feeluown.models import SearchType
 from feeluown.gui.page_containers.table import TableContainer, Renderer
@@ -6,6 +6,7 @@ from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.widgets.imglist import ImgListView
 from feeluown.gui.widgets.songs import SongsTableView
 from feeluown.gui.base_renderer import TabBarRendererMixin
+from feeluown.gui.helpers import BgTransparentMixin
 from feeluown.gui.widgets.magicbox import KeySourceIn, KeyType
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.accordion import Accordion
@@ -109,7 +110,7 @@ class Body(ScrollArea):
         return 30 + self.widget().title.height() + 10
 
 
-class View(QWidget):
+class View(QFrame, BgTransparentMixin):
     def __init__(self, app, q):
         super().__init__()
 

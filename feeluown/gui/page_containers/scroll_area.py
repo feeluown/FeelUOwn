@@ -3,8 +3,10 @@ import sys
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QScrollArea, QFrame
 
+from feeluown.gui.helpers import BgTransparentMixin
 
-class ScrollArea(QScrollArea):
+
+class ScrollArea(QScrollArea, BgTransparentMixin):
     """
     ScrollArea is designed to be used as a container for page_body.
     Be careful when you use it as a container for other widgets.
