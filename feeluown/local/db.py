@@ -172,7 +172,8 @@ def gen_artist_name_list(artists_name, splitter, splitter_ignorance):
     if splitter_ignorance is None:
         splitter_ignorance = []
     if splitter_ignorance:
-        artists_name = re.split(r'({})'.format('|'.join(splitter_ignorance)), artists_name)
+        artists_name = re.split(r'({})'.format('|'.join(splitter_ignorance)),
+                                artists_name)
     else:
         artists_name = [artists_name]
     artist_name_list = []
@@ -180,8 +181,10 @@ def gen_artist_name_list(artists_name, splitter, splitter_ignorance):
         if artist_name in splitter_ignorance:
             artist_name_list.append(artist_name)
         else:
-            artist_name_list.extend(re.split(r'{}'.format('|'.join(splitter)), artist_name))
-    return [artist_name.strip() for artist_name in artist_name_list if artist_name.strip()]
+            artist_name_list.extend(re.split(r'{}'.format('|'.join(splitter)),
+                                             artist_name))
+    return [artist_name.strip()
+            for artist_name in artist_name_list if artist_name.strip()]
 
 
 def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contributors,
@@ -200,7 +203,8 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
     # NOTE: use {title}-{artists_name}-{album_name} as song identifier
     title = data['title']
     album_name = data['album_name']
-    artist_name_list = gen_artist_name_list(data['artists_name'], artist_splitter, artist_splitter_ignorance)
+    artist_name_list = gen_artist_name_list(
+        data['artists_name'], artist_splitter, artist_splitter_ignorance)
     artists_name = ','.join(artist_name_list)
     duration = data['duration']
     album_artist_name = data['album_artist_name']
@@ -229,7 +233,8 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
 
     # 生成 album artist model
     if split_album_artist_name:
-        album_artist_name_list = gen_artist_name_list(album_artist_name, artist_splitter, artist_splitter_ignorance)
+        album_artist_name_list = gen_artist_name_list(
+            album_artist_name, artist_splitter, artist_splitter_ignorance)
     else:
         album_artist_name_list = [album_artist_name]
 
