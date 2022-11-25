@@ -23,6 +23,9 @@ def init_config(config):
     config.deffield('CORE_LANGUAGE', type_=str, default='auto', desc='')
     config.deffield('IDENTIFIER_DELIMITER', type_=str, default='', desc='')
     config.deffield('EXPAND_ARTIST_SONGS', type_=bool, default=False, desc='')
+    config.deffield('ARTIST_SPLITTER', type_=list, default=[',', '&'], desc='')
+    config.deffield('ARTIST_SPLITTER_IGNORANCE', type_=list, default=None, desc='')
+    config.deffield('SPLIT_ALBUM_ARTIST_NAME', type_=bool, default=False, desc='')
 
 
 async def autoload(app):

@@ -169,9 +169,13 @@ class LocalProvider(AbstractProvider, ProviderV2):
         else:
             result = []
         result_songs = []
-        for each, score in result:
-            # if score > 80, keyword is almost included in song key
-            if score > 80:
+        if False:
+            for each, score in result:
+                # if score > 80, keyword is almost included in song key
+                if score > 80:
+                    result_songs.append(repr_song_map[each])
+        else:
+            for each in result:
                 result_songs.append(repr_song_map[each])
         return SimpleSearchResult(
             q=keyword,
