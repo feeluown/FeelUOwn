@@ -445,7 +445,7 @@ class DB:
                 if albums:
                     artist.pic_url = albums[0].cover
 
-            if artist.hot_songs:
+            if not artist.pic_url and artist.hot_songs:
                 # sort the artist hot_songs.
                 artist.hot_songs.sort(key=lambda x: x.title)
                 # Use a song's cover as artist cover.
