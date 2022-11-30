@@ -169,6 +169,7 @@ def gen_artist_name_list(artists_name, splitter, splitter_ignorance):
     # artists_name: 'Years & Years & Jess Glynne'
     # splitter: [',', '&']
     # splitter_ignorance: ['Years & Years']
+    # return: ['Years & Years', 'Jess Glynne']
     if splitter_ignorance is None:
         splitter_ignorance = []
     if splitter_ignorance:
