@@ -169,7 +169,7 @@ class LocalProvider(AbstractProvider, ProviderV2):
         else:
             result = []
         result_songs = [repr_song_map[each] for each in result]
-        
+
         return SimpleSearchResult(
             q=keyword,
             songs=[to_brief_song(song) for song in result_songs]
