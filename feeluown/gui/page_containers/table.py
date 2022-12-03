@@ -306,7 +306,6 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         self._v_layout.addWidget(self.meta_widget)
         self._v_layout.addWidget(self.toolbar)
-        self._v_layout.addSpacing(10)
         self._v_layout.addWidget(self.desc_widget)
 
         # Since QTableView has a margin on the left and right(see SongsTableDelegate),

@@ -1,3 +1,6 @@
+from abc import abstractmethod
+from typing import runtime_checkable, Protocol
+
 from feeluown.gui.widgets.tabbar import Tab, TabBar
 
 
@@ -59,4 +62,18 @@ class TabBarRendererMixin:
         tab_bar.tabBarClicked.connect(self.render_by_tab_index)
 
     def render_by_tab_index(self, tab_index):
+        raise NotImplementedError
+
+
+@runtime_checkable
+class VFillableBg(Protocol):
+    """Protocol for widgets which has vertical fillable background
+
+    This protocol indicates the background of the widget is transparent. The parent
+    widget can fill color for the widget.
+
+    .. versionadded:: 3.8.9
+    """
+    @abstractmethod
+    def fillable_bg_height(self) -> int:
         raise NotImplementedError

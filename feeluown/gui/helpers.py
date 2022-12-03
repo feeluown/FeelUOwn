@@ -98,9 +98,13 @@ class ItemViewNoScrollMixin:
                  fixed_row_count=0, reserved=30, **kwargs):
         """
         :params no_scroll_v: enable on no_scroll_v feature or not
+        :params fixed_row_count: set row_height when fixed_row_count is set
 
         .. versionadded:: 3.7.8
            The *row_height*, *least_row_count*, *reserved* parameter were added.
+
+        .. versionadded:: 3.8.9
+           The *fixed_row_count* parameter was added.
         """
         self._least_row_count = least_row_count
         self._fixed_row_count = fixed_row_count

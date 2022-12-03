@@ -13,6 +13,7 @@ from feeluown.gui.theme import Light
 from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
+from feeluown.gui.base_renderer import VFillableBg
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +80,18 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
         if table_container.desc_widget.isVisible():
             table_proper_height -= table_container.desc_widget.height()
         return table_proper_height
+
+    def fillable_bg_height(self):
+        height = 0
+        table_container = self.t
+        if table_container.meta_widget.isVisible():
+            height += table_container.meta_widget.height()
+        extra = table_container.current_extra
+        if extra is not None and extra.isVisible():
+            height += extra.height()
+        if table_container.toolbar.isVisible():
+            height += table_container.toolbar.height()
+        return height
 
 
 class RightPanel(QFrame):
@@ -174,15 +187,9 @@ class RightPanel(QFrame):
 
         # calculate available size
         draw_width = self.width()
-        draw_height = 10  # spacing defined in table container
-        draw_height += self.bottom_panel.height()
-        if self.table_container.meta_widget.isVisible():
-            draw_height += self.table_container.meta_widget.height()
-        extra = self.table_container.current_extra
-        if extra is not None and extra.isVisible():
-            draw_height += extra.height()
-        if self.table_container.toolbar.isVisible():
-            draw_height += self.table_container.toolbar.height()
+        draw_height = self.bottom_panel.height()
+        if isinstance(self._stacked_layout.currentWidget(), VFillableBg):
+            draw_height += self._stacked_layout.currentWidget().fillable_bg_height()
 
         scrolled = self.scrollarea.verticalScrollBar().value()
         max_scroll_height = draw_height - self.bottom_panel.height()
@@ -193,8 +200,8 @@ class RightPanel(QFrame):
         painter.drawRect(self.rect())
         painter.restore()
 
-        # Do not draw the pixmap when it is not shown.
-        if scrolled >= max_scroll_height:
+        # Do not draw the pixmap or overlay when it scrolled a lot.
+        if scrolled > max_scroll_height:
             painter.save()
             painter.setBrush(self.palette().brush(QPalette.Window))
             painter.drawRect(self.bottom_panel.rect())
