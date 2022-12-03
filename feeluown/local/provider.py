@@ -168,15 +168,8 @@ class LocalProvider(AbstractProvider, ProviderV2):
             result = difflib.get_close_matches(keyword, choices, n=limit, cutoff=0)
         else:
             result = []
-        result_songs = []
-        if False:
-            for each, score in result:
-                # if score > 80, keyword is almost included in song key
-                if score > 80:
-                    result_songs.append(repr_song_map[each])
-        else:
-            for each in result:
-                result_songs.append(repr_song_map[each])
+        result_songs = [repr_song_map[each] for each in result]
+        
         return SimpleSearchResult(
             q=keyword,
             songs=[to_brief_song(song) for song in result_songs]
