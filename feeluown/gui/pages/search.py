@@ -12,6 +12,12 @@ from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.accordion import Accordion
 from feeluown.utils.reader import create_reader
 
+Tabs = [('歌曲', SearchType.so),
+        ('专辑', SearchType.al),
+        ('歌手', SearchType.ar),
+        ('歌单', SearchType.pl),
+        ('视频', SearchType.vi)]
+
 
 async def render(req, **kwargs):  # pylint: disable=too-many-locals
     """/search handler
@@ -36,13 +42,9 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     body.setWidget(view)
     app.ui.right_panel.set_body(body)
 
-    search_type = [SearchType.so,
-                   SearchType.al,
-                   SearchType.ar,
-                   SearchType.pl,
-                   SearchType.vi][tab_index]
+    search_type = Tabs[tab_index][1]
 
-    is_first = True
+    is_first = True  # Is first search result.
     async for result in app.library.a_search(q, type_in=search_type):
         if result is not None:
             table_container = TableContainer(app, view.accordion)
@@ -85,11 +87,11 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
         self.source_in = source_in
 
         self.tabs = [
-            ('歌曲', SearchType.so, 'songs', self.show_songs),
-            ('专辑', SearchType.al, 'albums', self.show_albums),
-            ('歌手', SearchType.ar, 'artists', self.show_artists),
-            ('歌单', SearchType.pl, 'playlists', self.show_playlists),
-            ('视频', SearchType.vi, 'videos', self.show_videos),
+            (*Tabs[0], 'songs', self.show_songs),
+            (*Tabs[1], 'albums', self.show_albums),
+            (*Tabs[2], 'artists', self.show_artists),
+            (*Tabs[3], 'playlists', self.show_playlists),
+            (*Tabs[4], 'videos', self.show_videos),
         ]
 
     async def render(self):
@@ -106,8 +108,9 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
 
 
 class Body(ScrollArea):
-    def page_overlay_height(self):
-        return 30 + self.widget().title.height() + 10
+    def fillable_bg_height(self):
+        """Implement VFillableBg protocol"""
+        return self.widget().height() - self.widget().accordion.height()
 
 
 class View(QFrame, BgTransparentMixin):
