@@ -201,7 +201,6 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
 
 if __name__ == '__main__':
     import time
-    from PyQt5.QtWidgets import QApplication
     from feeluown.utils.reader import wrap
     from feeluown.library.models import CommentModel, BriefUserModel, BriefCommentModel
 
