@@ -4,7 +4,7 @@ from feeluown.models import SearchType
 from feeluown.gui.page_containers.table import TableContainer, Renderer
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.widgets.imglist import ImgListView
-from feeluown.gui.widgets.songs import SongsTableView
+from feeluown.gui.widgets.songs import SongsTableView, ColumnsMode
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.helpers import BgTransparentMixin
 from feeluown.gui.widgets.magicbox import KeySourceIn, KeyType
@@ -45,7 +45,8 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     search_type = Tabs[tab_index][1]
 
     is_first = True  # Is first search result.
-    async for result in app.library.a_search(q, type_in=search_type):
+    async for result in app.library.a_search(
+            q, type_in=search_type, source_in=source_in):
         if result is not None:
             table_container = TableContainer(app, view.accordion)
 
@@ -66,7 +67,10 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
 
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
             objects = getattr(result, attrname) or []
-            show_handler(create_reader(objects))
+            if search_type is SearchType.so:
+                show_handler(create_reader(objects), columns_mode=ColumnsMode.playlist)
+            else:
+                show_handler(create_reader(objects))
 
             if is_first is False:
                 table_container.hide()
