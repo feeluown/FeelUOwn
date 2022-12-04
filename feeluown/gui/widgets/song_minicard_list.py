@@ -47,7 +47,6 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
         self.fetch_image = fetch_image
         self.colors = []
         self.pixmaps = {}  # {uri: pixmap}
-        self.album_song = {}  # {cover_model_id: item}
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
@@ -68,19 +67,12 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
         self.colors.extend(colors)
         self.on_items_fetched(items)
         for item in items:
-            album = item.album
-            if album is None:
-                continue
-            album_id = reverse(album)
-            self.album_song[album_id] = item
-            aio.create_task(self.fetch_image(
-                album,
-                self._fetch_image_callback(album),
-                uid=album_id + '/cover'))
+            aio.run_afn(self.fetch_image, item, self._fetch_image_callback(item))
 
-    def _fetch_image_callback(self, album):
+    def _fetch_image_callback(self, item):
+        # TODO: duplicate code with ImgListModel
         def cb(content):
-            uri = reverse(album)
+            uri = reverse(item)
             if content is None:
                 self.pixmaps[uri] = None
                 return
@@ -88,9 +80,8 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
             img = QImage()
             img.loadFromData(content)
             pixmap = QPixmap(img)
-            song = self.album_song[uri]
-            self.pixmaps[reverse(song)] = pixmap
-            row = self._items.index(song)
+            self.pixmaps[uri] = pixmap
+            row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
             self.dataChanged.emit(top_left, bottom_right)

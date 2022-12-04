@@ -5,6 +5,7 @@ from feeluown.utils.utils import use_mpv_old
 from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.settings import SettingsDialog
 from feeluown.gui.widgets.messageline import MessageLine
+from feeluown.gui.widgets.playlist_overlay import PlaylistOverlay
 
 if use_mpv_old():
     from feeluown.gui.widgets.mpv_old import MpvOpenGLWidget
@@ -31,12 +32,14 @@ class Ui:
         # 给其添加任何功能性的函数
         self._message_line = MessageLine()
         self.top_panel = TopPanel(app, app)
-        self.sidebar = self._left_panel_con = LeftPanel(self._app,)
+        self.sidebar = self._left_panel_con = LeftPanel(self._app)
         self.left_panel = self._left_panel_con.p
         self.page_view = self.right_panel = RightPanel(self._app, self._splitter)
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.frameless_container = None
+        self.playlist_overlay = PlaylistOverlay(app)
+        self.playlist_overlay.hide()
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -49,13 +52,26 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.pc_panel.playlist_btn.clicked.connect(
-            lambda: self._app.browser.goto(page='/player_playlist'))
+        self.pc_panel.playlist_btn.clicked.connect(self.toggle_playlist_view)
+        # self.pc_panel.playlist_btn.clicked.connect(
+        #     lambda: self._app.browser.goto(page='/player_playlist'))
         self.toolbar.settings_btn.clicked.connect(
             self._open_settings_dialog)
         self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
+
+    def toggle_playlist_view(self):
+        if not self.playlist_overlay.isVisible():
+            width = 360
+            height = self._app.height() - self.player_bar.height() - self._top_separator.height()
+            height = self._app.height()
+            self.playlist_overlay.setGeometry(self._app.width() - width, 0, width, height)
+            self.playlist_overlay.show()
+            self.playlist_overlay.setFocus()
+            self.playlist_overlay.raise_()
+        else:
+            self.playlist_overlay.hide()
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
