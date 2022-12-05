@@ -164,9 +164,35 @@ def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Option
     return data
 
 
+def gen_artist_name_list(artists_name, splitter, splitter_ignorance):
+    # For example::
+    # artists_name: 'Years & Years & Jess Glynne'
+    # splitter: [',', '&']
+    # splitter_ignorance: ['Years & Years']
+    # return: ['Years & Years', 'Jess Glynne']
+    if splitter_ignorance is None:
+        splitter_ignorance = []
+    if splitter_ignorance:
+        artists_name = re.split(r'({})'.format('|'.join(splitter_ignorance)),
+                                artists_name)
+    else:
+        artists_name = [artists_name]
+    artist_name_list = []
+    for artist_name in artists_name:
+        if artist_name in splitter_ignorance:
+            artist_name_list.append(artist_name)
+        else:
+            artist_name_list.extend(re.split(r'{}'.format('|'.join(splitter)),
+                                             artist_name))
+    return [artist_name.strip()
+            for artist_name in artist_name_list if artist_name.strip()]
+
+
 def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contributors,
              can_convert_chinese=False, lang='auto',
-             delimiter='', expand_artist_songs=False):
+             delimiter='', expand_artist_songs=False,
+             artist_splitter=[',', '&'], artist_splitter_ignorance=None,
+             split_album_artist_name=False):
     """
     parse music file metadata with Easymp3 and return a song
     model.
@@ -178,9 +204,8 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
     # NOTE: use {title}-{artists_name}-{album_name} as song identifier
     title = data['title']
     album_name = data['album_name']
-    artist_name_list = [
-        name.strip()
-        for name in re.split(r'[,&]', data['artists_name'])]
+    artist_name_list = gen_artist_name_list(
+        data['artists_name'], artist_splitter, artist_splitter_ignorance)
     artists_name = ','.join(artist_name_list)
     duration = data['duration']
     album_artist_name = data['album_artist_name']
@@ -208,12 +233,22 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
         return
 
     # 生成 album artist model
-    album_artist_id = gen_id(album_artist_name)
-    if album_artist_id not in g_artists:
-        album_artist = create_artist(album_artist_id, album_artist_name)
-        g_artists[album_artist_id] = album_artist
+    if split_album_artist_name:
+        album_artist_name_list = gen_artist_name_list(
+            album_artist_name, artist_splitter, artist_splitter_ignorance)
     else:
-        album_artist = g_artists[album_artist_id]
+        album_artist_name_list = [album_artist_name]
+
+    album_artist_id_list, album_artist_list = [], []
+    for artist_name in album_artist_name_list:
+        artist_id = gen_id(artist_name)
+        if artist_id not in g_artists:
+            album_artist = create_artist(artist_id, artist_name)
+            g_artists[artist_id] = album_artist
+        else:
+            album_artist = g_artists[artist_id]
+        album_artist_id_list.append(artist_id)
+        album_artist_list.append(album_artist)
 
     # 生成 album model
     album_id_str = delimiter.join([album_name, album_artist_name])
@@ -227,11 +262,12 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
         album = g_albums[album_id]
 
     # 处理专辑的歌手信息和歌曲信息，专辑歌手的专辑列表信息
-    for artist in album.artists:
-        if album_artist.identifier == artist.identifier:
-            break
-    else:
-        album.artists.append(to_brief_artist(album_artist))
+    for album_artist in album_artist_list:
+        for artist in album.artists:
+            if album_artist.identifier == artist.identifier:
+                break
+        else:
+            album.artists.append(to_brief_artist(album_artist))
 
     if song not in album.songs:
         album.songs.append(song)
@@ -251,13 +287,14 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
             artist.hot_songs.append(song)
 
         # 处理歌曲歌手的参与作品信息(不与前面的重复)
-        if artist_id != album_artist_id \
-           and artist_id not in g_album_contributors[album_id]:
+        if artist_id not in album_artist_id_list \
+                and artist_id not in g_album_contributors[album_id]:
             g_album_contributors[album_id].append(artist_id)
 
     # 处理专辑歌手的歌曲信息: 有些作词人出合辑很少出现在歌曲歌手里(可选)
-    if expand_artist_songs and song not in album_artist.hot_songs:
-        album_artist.hot_songs.append(song)
+    for album_artist_ in album_artist_list:
+        if expand_artist_songs and song not in album_artist_.hot_songs:
+            album_artist_.hot_songs.append(song)
 
 
 def scan_directory(directory, exts, depth=2):
@@ -379,7 +416,9 @@ class DB:
             add_song(fpath, self._songs, self._artists,
                      self._albums, self._file_song, self._album_contributors,
                      is_cn_convert_enabled, config.CORE_LANGUAGE,
-                     config.IDENTIFIER_DELIMITER, config.EXPAND_ARTIST_SONGS)
+                     config.IDENTIFIER_DELIMITER, config.EXPAND_ARTIST_SONGS,
+                     config.ARTIST_SPLITTER, config.ARTIST_SPLITTER_IGNORANCE,
+                     config.SPLIT_ALBUM_ARTIST_NAME)
         logger.info('录入本地音乐库完毕')
 
     def after_scan(self):
@@ -407,7 +446,7 @@ class DB:
                 if albums:
                     artist.pic_url = albums[0].cover
 
-            if artist.hot_songs:
+            if not artist.pic_url and artist.hot_songs:
                 # sort the artist hot_songs.
                 artist.hot_songs.sort(key=lambda x: x.title)
                 # Use a song's cover as artist cover.
