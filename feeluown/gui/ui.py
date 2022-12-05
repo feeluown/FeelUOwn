@@ -39,7 +39,6 @@ class Ui:
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.frameless_container = None
         self.playlist_overlay = PlaylistOverlay(app)
-        self.playlist_overlay.hide()
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -52,7 +51,7 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.pc_panel.playlist_btn.clicked.connect(self.toggle_playlist_view)
+        self.pc_panel.playlist_btn.clicked.connect(self.raise_playlist_view)
         # self.pc_panel.playlist_btn.clicked.connect(
         #     lambda: self._app.browser.goto(page='/player_playlist'))
         self.toolbar.settings_btn.clicked.connect(
@@ -61,17 +60,15 @@ class Ui:
 
         self._setup_ui()
 
-    def toggle_playlist_view(self):
+    def raise_playlist_view(self):
         if not self.playlist_overlay.isVisible():
-            width = 360
+            width = max(self._app.width() // 4, 330)
             height = self._app.height() - self.player_bar.height() - self._top_separator.height()
             height = self._app.height()
             self.playlist_overlay.setGeometry(self._app.width() - width, 0, width, height)
             self.playlist_overlay.show()
             self.playlist_overlay.setFocus()
             self.playlist_overlay.raise_()
-        else:
-            self.playlist_overlay.hide()
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -80,6 +77,7 @@ class Ui:
         self._splitter.addWidget(self._left_panel_con)
         self._splitter.addWidget(self.right_panel)
         self._message_line.hide()
+        self.playlist_overlay.hide()
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 

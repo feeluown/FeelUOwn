@@ -33,6 +33,7 @@ COLORS = {
     'cyan':      '#2aa198',
     'green':     '#859900',
 }
+Fetching = object()
 
 
 class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
@@ -66,8 +67,6 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
         colors = [random.choice(list(COLORS.values())) for _ in range(0, items_len)]
         self.colors.extend(colors)
         self.on_items_fetched(items)
-        for item in items:
-            aio.run_afn(self.fetch_image, item, self._fetch_image_callback(item))
 
     def _fetch_image_callback(self, item):
         # TODO: duplicate code with ImgListModel
@@ -87,6 +86,19 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
             self.dataChanged.emit(top_left, bottom_right)
         return cb
 
+    def get_pixmap_unblocking(self, song):
+        """
+        :return: None means the song has no pixmap or the pixmap is currently not feched.
+        """
+        uri = reverse(song)
+        if uri in self.pixmaps:
+            pixmap = self.pixmaps[uri]
+            if pixmap is Fetching:
+                return None
+            return pixmap
+        aio.run_afn(self.fetch_image, song, self._fetch_image_callback(song))
+        self.pixmaps[uri] = Fetching
+
     def data(self, index, role=Qt.DisplayRole):
         offset = index.row()
         if not index.isValid() or offset >= len(self._items):
@@ -96,8 +108,7 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
             return self._items[offset].title_display
         elif role == Qt.UserRole:
             song = self._items[offset]
-            uri = reverse(item)
-            pixmap = self.pixmaps.get(uri)
+            pixmap = self.get_pixmap_unblocking(song)
             if pixmap is not None:
                 return (song, pixmap)
             color_str = self.colors[offset]
@@ -114,7 +125,8 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         card_min_width=200,
         card_height=40,
         card_h_spacing=20,
-        card_v_spacing=5,
+        card_v_spacing=6,
+        card_left_padding=3,
     ):
         super().__init__(parent=view)
 
@@ -123,6 +135,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.card_height = card_height
         self.card_h_spacing = card_h_spacing
         self.card_v_spacing = card_v_spacing
+        self.card_left_padding = card_left_padding
 
     def card_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
@@ -143,6 +156,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
     def paint(self, painter, option, index):
         card_v_spacing = self.card_v_spacing
         card_height = self.card_height
+        card_left_padding = self.card_left_padding
 
         rect = option.rect
         cover_height = card_height
@@ -151,6 +165,15 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         if obj is None:
             return
 
+        if option.state & QStyle.State_MouseOver:
+            painter.save()
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(option.palette.color(QPalette.Window))
+            painter.drawRoundedRect(rect, 3, 3)
+            painter.restore()
+
+        painter.save()
+        painter.translate(card_left_padding, 0)
         self.paint_pixmap(painter, option, obj, cover_width, cover_height, card_v_spacing)
 
         text_color = option.palette.color(QPalette.Text)
@@ -165,7 +188,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         text_width = option.rect.width() - cover_width - 5
         text_x = rect.topRight().x() - text_width
         text_height = self.card_height // 2
-        painter.translate(text_x, rect.y() + card_v_spacing)
+        painter.translate(text_x, rect.y() + card_v_spacing // 2)
         text_rect = QRectF(0, 0, text_width, text_height)
         fm = QFontMetrics(painter.font())
         title = index.data(Qt.DisplayRole)
@@ -190,6 +213,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         painter.setPen(non_text_color)
         painter.drawText(text_rect, elided_title, text_option)
         painter.restore()
+        painter.restore()
 
     def paint_pixmap(self, painter, option, decoration, width, height, v_spacing):
         rect = option.rect
@@ -202,7 +226,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
 
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
-        painter.translate(rect.x(), rect.y() + v_spacing)
+        painter.translate(rect.x(), rect.y() + v_spacing // 2)
         pen = painter.pen()
         pen.setColor(non_text_color)
         painter.setPen(pen)

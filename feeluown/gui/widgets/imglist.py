@@ -78,10 +78,7 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
         self.colors.extend(colors)
         self.on_items_fetched(items)
         for item in items:
-            aio.create_task(self.fetch_image(
-                item,
-                self._fetch_image_callback(item),
-                uid=reverse(item) + '/cover'))
+            aio.create_task(self.fetch_image(item, self._fetch_image_callback(item)))
 
     def _fetch_image_callback(self, item):
         def cb(content):
