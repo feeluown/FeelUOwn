@@ -119,47 +119,60 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
 
 
 class SongMiniCardListDelegate(QStyledItemDelegate):
+    img_padding = 2
+
     def __init__(
         self,
         view,
         card_min_width=200,
         card_height=40,
-        card_h_spacing=20,
-        card_v_spacing=6,
-        card_left_padding=3,
+        card_right_spacing=10,
+        card_padding=(3, 3, 3, 0),
     ):
+        """
+        QListView.setSpacing set spacing around the item, however, sometimes
+        the left spacing is unneeded. `card_left_padding` is used to customize
+        the behaviour.
+        """
         super().__init__(parent=view)
 
         self.view = view
         self.card_min_width = card_min_width
         self.card_height = card_height
-        self.card_h_spacing = card_h_spacing
-        self.card_v_spacing = card_v_spacing
-        self.card_left_padding = card_left_padding
+        self.card_right_spacing = card_right_spacing
+        self.card_top_padding = card_padding[1]
+        self.card_bottom_padding = card_padding[3]
+        self.card_left_padding = card_padding[0]
 
-    def card_sizehint(self) -> tuple:
+    def item_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
         width = max(self.view.width() - 20, self.card_min_width)
 
         # according to our algorithm, when the widget width is:
-        #   2(card_min_width + card_h_spacing) + card_h_spacing - 1,
+        #   2(card_min_width + card_right_spacing) + card_right_spacing - 1,
         # the card width can take the maximum width, it will be:
-        #   CardMaxWidth = 2 * card_min_width + card_h_spacing - 1
+        #   CardMaxWidth = 2 * card_min_width + card_right_spacing - 1
 
         # calculate max column count
-        count = (width - self.card_h_spacing) // (self.card_min_width + self.card_h_spacing)
+        count = (width - self.card_right_spacing) // (self.card_min_width + self.card_right_spacing)
         count = max(count, 1)
-        card_width = (width - ((count + 1) * self.card_h_spacing)) // count
-        card_height = self.card_height + self.card_v_spacing
-        return card_width, card_height
+        item_width = (width - ((count + 1) * self.card_right_spacing)) // count
+        return (item_width,
+                self.card_height + self.card_top_padding + self.card_bottom_padding)
 
     def paint(self, painter, option, index):
-        card_v_spacing = self.card_v_spacing
+        card_top_padding = self.card_top_padding
+        card_right_spacing = self.card_right_spacing
         card_height = self.card_height
         card_left_padding = self.card_left_padding
+        border_radius = 3
 
         rect = option.rect
-        cover_height = card_height
+        # HACK(cosven): from the QFontMetrics doc, there is usually a small spacing
+        # between a character and the font rect highest/lowest position.
+        # Assume the spacing is 2px here.
+        img_padding = self.img_padding
+        cover_height = card_height - 2 * img_padding
         cover_width = cover_height
         song, obj = index.data(Qt.UserRole)
         if obj is None:
@@ -169,12 +182,18 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             painter.save()
             painter.setPen(Qt.NoPen)
             painter.setBrush(option.palette.color(QPalette.Window))
-            painter.drawRoundedRect(rect, 3, 3)
+            painter.drawRect(rect)
             painter.restore()
 
         painter.save()
-        painter.translate(card_left_padding, 0)
-        self.paint_pixmap(painter, option, obj, cover_width, cover_height, card_v_spacing)
+        painter.translate(rect.x() + card_left_padding,  rect.y() + card_top_padding)
+
+        # Draw image.
+        painter.save()
+        painter.translate(0, img_padding)
+        self.paint_pixmap(painter, option, obj,
+                          cover_width, cover_height, border_radius)
+        painter.restore()
 
         text_color = option.palette.color(QPalette.Text)
         if text_color.lightness() > 150:
@@ -183,40 +202,42 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             non_text_color = text_color.lighter(150)
         non_text_color.setAlpha(100)
 
-        # Draw title
+        # Draw text.
         painter.save()
-        text_width = option.rect.width() - cover_width - 5
-        text_x = rect.topRight().x() - text_width
-        text_height = self.card_height // 2
-        painter.translate(text_x, rect.y() + card_v_spacing // 2)
-        text_rect = QRectF(0, 0, text_width, text_height)
-        fm = QFontMetrics(painter.font())
+        text_width = rect.width() - cover_width - card_left_padding * 2 - card_right_spacing
+        painter.translate(cover_width + card_left_padding, 0)
         title = index.data(Qt.DisplayRole)
-        text_option = QTextOption()
-        text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        elided_title = fm.elidedText(title, Qt.ElideRight, int(text_rect.width()))
-        painter.drawText(text_rect, elided_title, text_option)
+        subtitle = f'{song.artists_name_display} • {song.album_name_display}'
+        self.paint_text(painter, title, subtitle, non_text_color, text_width, card_height)
+        painter.restore()
 
-        # Draw artists_name * album
-        painter.translate(0, text_height)
-        text_rect = QRectF(0, 0, text_width, text_height)
-        fm = QFontMetrics(painter.font())
+        painter.restore()
+
+    def paint_text(self, painter, title, subtitle, non_text_color, text_width, text_height):
+        each_height = text_height//2
         text_option = QTextOption()
         text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        text = f'{song.artists_name_display} • {song.album_name_display}'
-        elided_title = fm.elidedText(text, Qt.ElideRight, int(text_rect.width()))
+
+        # Draw title.
+        title_rect = QRectF(0, 0, text_width, each_height)
+        fm = QFontMetrics(painter.font())
+        elided_title = fm.elidedText(title, Qt.ElideRight, int(text_width))
+        painter.drawText(title_rect, elided_title, text_option)
+
+        # Draw subtitle.
+        painter.translate(0, each_height)
+        subtitle_rect = QRectF(0, 0, text_width, each_height)
+        elided_title = fm.elidedText(subtitle, Qt.ElideRight, int(text_width))
         pen = painter.pen()
         font = painter.font()
         resize_font(font, -1)
         painter.setFont(font)
+        fm = QFontMetrics(font)
         pen.setColor(non_text_color)
         painter.setPen(non_text_color)
-        painter.drawText(text_rect, elided_title, text_option)
-        painter.restore()
-        painter.restore()
+        painter.drawText(subtitle_rect, elided_title, text_option)
 
-    def paint_pixmap(self, painter, option, decoration, width, height, v_spacing):
-        rect = option.rect
+    def paint_pixmap(self, painter, option, decoration, width, height, border_radius):
         text_color = option.palette.color(QPalette.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
@@ -224,9 +245,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             non_text_color = text_color.lighter(150)
         non_text_color.setAlpha(100)
 
-        painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
-        painter.translate(rect.x(), rect.y() + v_spacing // 2)
         pen = painter.pen()
         pen.setColor(non_text_color)
         painter.setPen(pen)
@@ -241,15 +260,13 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
                 pixmap = decoration.scaledToWidth(width, Qt.SmoothTransformation)
             brush = QBrush(pixmap)
             painter.setBrush(brush)
-        border_radius = 3
         cover_rect = QRect(0, 0, width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
-        painter.restore()
 
     def sizeHint(self, option, index):
         size = super().sizeHint(option, index)
         if index.isValid():
-            return QSize(*self.card_sizehint())
+            return QSize(*self.item_sizehint())
         return size
 
 

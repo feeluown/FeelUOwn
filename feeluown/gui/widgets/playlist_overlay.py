@@ -60,7 +60,7 @@ class PlaylistOverlay(QWidget):
         self._layout.addWidget(self._tabbar)
         self._layout.addLayout(self._h_layout)
 
-        self._h_layout.addSpacing(10)
+        self._h_layout.addSpacing(0)
         self._h_layout.addWidget(self._scroll_area)
 
     def paintEvent(self, e):
@@ -121,8 +121,8 @@ class PlaylistOverlay(QWidget):
             view,
             card_min_width=self.width() - self.width()//6,
             card_height=40,
-            card_v_spacing=10,
-            card_left_padding=5,
+            card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
+            card_right_spacing=10,
         ))
         view.setModel(model)
         self._scroll_area.setWidget(view)
