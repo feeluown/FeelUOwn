@@ -9,8 +9,6 @@ import itertools
 import random
 import sys
 import logging
-from contextlib import suppress
-from requests.exceptions import RequestException
 
 try:
     # helper module should work in no-window mode

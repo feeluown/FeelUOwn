@@ -52,8 +52,6 @@ class Ui:
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
         self.pc_panel.playlist_btn.clicked.connect(self.raise_playlist_view)
-        # self.pc_panel.playlist_btn.clicked.connect(
-        #     lambda: self._app.browser.goto(page='/player_playlist'))
         self.toolbar.settings_btn.clicked.connect(
             self._open_settings_dialog)
         self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
@@ -63,9 +61,11 @@ class Ui:
     def raise_playlist_view(self):
         if not self.playlist_overlay.isVisible():
             width = max(self._app.width() // 4, 330)
-            height = self._app.height() - self.player_bar.height() - self._top_separator.height()
+            height = self._app.height() - \
+                self.player_bar.height() - self._top_separator.height()
             height = self._app.height()
-            self.playlist_overlay.setGeometry(self._app.width() - width, 0, width, height)
+            self.playlist_overlay.setGeometry(
+                self._app.width() - width, 0, width, height)
             self.playlist_overlay.show()
             self.playlist_overlay.setFocus()
             self.playlist_overlay.raise_()

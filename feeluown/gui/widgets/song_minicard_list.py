@@ -2,23 +2,21 @@ import logging
 import random
 
 from PyQt5.QtCore import (
-    pyqtSignal, Qt, QEvent,
+    pyqtSignal, Qt, QSize, QRect, QRectF,
     QAbstractListModel, QModelIndex,
-    QSize, QRect, QPoint, QRectF
 )
 from PyQt5.QtGui import (
-    QPainter, QMouseEvent, QPixmap, QImage, QColor, QPalette, QBrush,
+    QPainter, QPixmap, QImage, QColor, QPalette, QBrush,
     QFontMetrics, QTextOption,
 )
 from PyQt5.QtWidgets import (
-    QFrame, QListView, QStyle, QSizePolicy, QStyledItemDelegate
+    QFrame, QListView, QStyle, QStyledItemDelegate
 )
 
 from feeluown.utils import aio
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, ReaderFetchMoreMixin, fetch_cover_wrapper,
-    resize_font
+    ItemViewNoScrollMixin, ReaderFetchMoreMixin, resize_font
 )
 
 
@@ -36,18 +34,13 @@ COLORS = {
 Fetching = object()
 
 
-class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
-    def __init__(self, reader, fetch_image, parent=None):
+class BaseSongMiniCardListModel(QAbstractListModel):
+    def __init__(self, fetch_image, parent=None):
         super().__init__(parent)
 
-        self._reader = reader
-        self._fetch_more_step = 10
         self._items = []
-        self._is_fetching = False
-
         self.fetch_image = fetch_image
-        self.colors = []
-        self.pixmaps = {}  # {uri: pixmap}
+        self.pixmaps = {}  # {uri: (Option<pixmap>, Option<color>)}
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
@@ -58,28 +51,18 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
         return flags
 
-    def _fetch_more_cb(self, items):
-        self._is_fetching = False
-        if items is not None and not items:
-            self.no_more_item.emit()
-            return
-        items_len = len(items)
-        colors = [random.choice(list(COLORS.values())) for _ in range(0, items_len)]
-        self.colors.extend(colors)
-        self.on_items_fetched(items)
-
     def _fetch_image_callback(self, item):
         # TODO: duplicate code with ImgListModel
         def cb(content):
             uri = reverse(item)
             if content is None:
-                self.pixmaps[uri] = None
+                self.pixmaps[uri] = (self.pixmaps[uri][1], None)
                 return
 
             img = QImage()
             img.loadFromData(content)
             pixmap = QPixmap(img)
-            self.pixmaps[uri] = pixmap
+            self.pixmaps[uri] = (pixmap, None)
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -88,34 +71,40 @@ class SongMiniCardListModel(QAbstractListModel, ReaderFetchMoreMixin):
 
     def get_pixmap_unblocking(self, song):
         """
-        :return: None means the song has no pixmap or the pixmap is currently not feched.
+        return QColor means the song has no pixmap or the pixmap is currently not feched.
         """
         uri = reverse(song)
         if uri in self.pixmaps:
-            pixmap = self.pixmaps[uri]
+            pixmap, color = self.pixmaps[uri]
             if pixmap is Fetching:
-                return None
+                return color
             return pixmap
         aio.run_afn(self.fetch_image, song, self._fetch_image_callback(song))
-        self.pixmaps[uri] = Fetching
+        color = QColor(random.choice(list(COLORS.values())))
+        color.setAlphaF(0.8)
+        self.pixmaps[uri] = (Fetching, color)
+        return color
 
     def data(self, index, role=Qt.DisplayRole):
         offset = index.row()
         if not index.isValid() or offset >= len(self._items):
             return None
-        item = self._items[offset]
         if role == Qt.DisplayRole:
             return self._items[offset].title_display
         elif role == Qt.UserRole:
             song = self._items[offset]
             pixmap = self.get_pixmap_unblocking(song)
-            if pixmap is not None:
-                return (song, pixmap)
-            color_str = self.colors[offset]
-            color = QColor(color_str)
-            color.setAlphaF(0.8)
-            return (song, color)
+            return (song, pixmap)
         return None
+
+
+class SongMiniCardListModel(BaseSongMiniCardListModel, ReaderFetchMoreMixin):
+    def __init__(self, reader, fetch_image, parent=None):
+        super().__init__(fetch_image, parent)
+
+        self._reader = reader
+        self._fetch_more_step = 10
+        self._is_fetching = False
 
 
 class SongMiniCardListDelegate(QStyledItemDelegate):
@@ -154,7 +143,8 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         #   CardMaxWidth = 2 * card_min_width + card_right_spacing - 1
 
         # calculate max column count
-        count = (width - self.card_right_spacing) // (self.card_min_width + self.card_right_spacing)
+        count = (width - self.card_right_spacing) // \
+            (self.card_min_width + self.card_right_spacing)
         count = max(count, 1)
         item_width = (width - ((count + 1) * self.card_right_spacing)) // count
         return (item_width,
@@ -188,13 +178,6 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         painter.save()
         painter.translate(rect.x() + card_left_padding,  rect.y() + card_top_padding)
 
-        # Draw image.
-        painter.save()
-        painter.translate(0, img_padding)
-        self.paint_pixmap(painter, option, obj,
-                          cover_width, cover_height, border_radius)
-        painter.restore()
-
         text_color = option.palette.color(QPalette.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
@@ -202,18 +185,32 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             non_text_color = text_color.lighter(150)
         non_text_color.setAlpha(100)
 
+        # Draw image.
+        painter.save()
+        painter.translate(0, img_padding)
+        self.paint_pixmap(painter, non_text_color, obj,
+                          cover_width, cover_height, border_radius)
+        painter.restore()
+
         # Draw text.
         painter.save()
-        text_width = rect.width() - cover_width - card_left_padding * 2 - card_right_spacing
+        text_width = rect.width() - cover_width - \
+            card_left_padding * 2 - card_right_spacing
         painter.translate(cover_width + card_left_padding, 0)
         title = index.data(Qt.DisplayRole)
         subtitle = f'{song.artists_name_display} • {song.album_name_display}'
-        self.paint_text(painter, title, subtitle, non_text_color, text_width, card_height)
+        # Note this is not a bool object.
+        is_enabled = option.state & QStyle.State_Enabled
+        self.paint_text(
+            painter, is_enabled, title, subtitle, text_color, non_text_color,
+            text_width, card_height
+        )
         painter.restore()
 
         painter.restore()
 
-    def paint_text(self, painter, title, subtitle, non_text_color, text_width, text_height):
+    def paint_text(self, painter, is_enabled, title, subtitle,
+                   text_color, non_text_color, text_width, text_height):
         each_height = text_height//2
         text_option = QTextOption()
         text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
@@ -221,6 +218,10 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         # Draw title.
         title_rect = QRectF(0, 0, text_width, each_height)
         fm = QFontMetrics(painter.font())
+        if is_enabled:
+            painter.setPen(text_color)
+        else:
+            painter.setPen(non_text_color)
         elided_title = fm.elidedText(title, Qt.ElideRight, int(text_width))
         painter.drawText(title_rect, elided_title, text_option)
 
@@ -228,26 +229,18 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         painter.translate(0, each_height)
         subtitle_rect = QRectF(0, 0, text_width, each_height)
         elided_title = fm.elidedText(subtitle, Qt.ElideRight, int(text_width))
-        pen = painter.pen()
         font = painter.font()
         resize_font(font, -1)
         painter.setFont(font)
         fm = QFontMetrics(font)
-        pen.setColor(non_text_color)
         painter.setPen(non_text_color)
         painter.drawText(subtitle_rect, elided_title, text_option)
 
-    def paint_pixmap(self, painter, option, decoration, width, height, border_radius):
-        text_color = option.palette.color(QPalette.Text)
-        if text_color.lightness() > 150:
-            non_text_color = text_color.darker(140)
-        else:
-            non_text_color = text_color.lighter(150)
-        non_text_color.setAlpha(100)
-
+    def paint_pixmap(self, painter, border_color, decoration,
+                     width, height, border_radius):
         painter.setRenderHint(QPainter.Antialiasing)
         pen = painter.pen()
-        pen.setColor(non_text_color)
+        pen.setColor(border_color)
         painter.setPen(pen)
         if isinstance(decoration, QColor):
             color = decoration
@@ -268,7 +261,6 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         if index.isValid():
             return QSize(*self.item_sizehint())
         return size
-
 
 
 class SongMiniCardListView(ItemViewNoScrollMixin, QListView):

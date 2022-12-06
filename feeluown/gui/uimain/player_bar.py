@@ -12,7 +12,7 @@ from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
-from feeluown.player import PlaybackMode, State
+from feeluown.player import State
 from feeluown.gui.widgets.lyric import Window as LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import resize_font
@@ -237,13 +237,6 @@ class PlayerControlPanel(QFrame):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
 
-        self._playback_modes = list(PlaybackMode.__members__.values())
-        self._pm_alias_map = {
-            PlaybackMode.one_loop: '单曲循环',
-            PlaybackMode.sequential: '顺序播放',
-            PlaybackMode.loop: '循环播放',
-            PlaybackMode.random: '随机播放',
-        }
         self.lyric_window = LyricWindow()
         self.lyric_window.hide()
 
@@ -253,8 +246,6 @@ class PlayerControlPanel(QFrame):
         self.pp_btn = IconButton(self)
         self.next_btn = IconButton(self)
 
-        #: playback mode switch button
-        self.pms_btn = TextButton(self)
         self.volume_btn = VolumeButton(self)
         self.playlist_btn = PlaylistButton(self._app, self)
         #: mark song as favorite button
@@ -272,7 +263,6 @@ class PlayerControlPanel(QFrame):
         self.next_btn.setObjectName('next_btn')
         self.playlist_btn.setObjectName('playlist_btn')
         self.volume_btn.setObjectName('volume_btn')
-        self.pms_btn.setObjectName('pms_btn')
         self.download_btn.setObjectName('download_btn')
         self.like_btn.setObjectName('like_btn')
         self.mv_btn.setObjectName('mv_btn')
@@ -282,7 +272,6 @@ class PlayerControlPanel(QFrame):
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
-        self.pms_btn.setToolTip('修改播放模式')
         self.volume_btn.setToolTip('调整音量')
         self.playlist_btn.setToolTip('显示当前播放列表')
 
@@ -306,14 +295,11 @@ class PlayerControlPanel(QFrame):
         self.next_btn.clicked.connect(self._app.playlist.next)
         self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
-        self.pms_btn.clicked.connect(self._switch_playback_mode)
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
 
         player = self._app.player
         playlist = self._app.playlist
-        playlist.playback_mode_changed.connect(self.on_playback_mode_changed,
-                                               aioqueue=True)
         playlist.song_changed.connect(self.on_player_song_changed, aioqueue=True)
         player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
@@ -322,7 +308,6 @@ class PlayerControlPanel(QFrame):
         self.lyric_window.play_previous_needed.connect(playlist.previous)
         self.lyric_window.play_next_needed.connect(playlist.next)
 
-        self._update_pms_btn_text()
         self._setup_ui()
 
     def _setup_ui(self):
@@ -403,8 +388,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addLayout(self._progress_v_layout)
         self._layout.addStretch(0)
         self._layout.addSpacing(18)
-        self._layout.addWidget(self.pms_btn)
-        self._layout.addSpacing(8)
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.toggle_video_btn)
@@ -413,24 +396,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addSpacing(18)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
-
-    def _switch_playback_mode(self):
-        playlist = self._app.playlist
-        pm_total = len(self._playback_modes)
-        pm_idx = self._playback_modes.index(playlist.playback_mode)
-        if pm_idx < pm_total - 1:
-            pm_idx += 1
-        else:
-            pm_idx = 0
-        playlist.playback_mode = self._playback_modes[pm_idx]
-
-    def on_playback_mode_changed(self, _):
-        self._update_pms_btn_text()
-
-    def _update_pms_btn_text(self):
-        playback_mode = self._app.playlist.playback_mode
-        alias = self._pm_alias_map[playback_mode]
-        self.pms_btn.setText(alias)
 
     def on_player_song_changed(self, song):
         task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
