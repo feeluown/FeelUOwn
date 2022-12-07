@@ -51,8 +51,9 @@ class PlaylistOverlay(QWidget):
             fetch_cover_wrapper(self._app),
         )
 
+        # AutoFillBackground should be disabled for PlaylistOverlay so that shadow
+        # effects can be simulated. AutoFillBackground should be enabled for tabbar.
         self._tabbar.setAutoFillBackground(True)
-        self.setWindowFlags(Qt.SubWindow | Qt.CustomizeWindowHint)
 
         self._clear_playlist_btn.clicked.connect(self._app.playlist.clear)
         QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
