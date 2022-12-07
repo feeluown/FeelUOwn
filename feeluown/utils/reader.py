@@ -212,7 +212,7 @@ class RandomReader(Reader):
         # TODO: make this method thread safe
         assert start <= end, "start should less than end"
         try:
-            logger.info('trigger read_func(%d, %d)', start, end)
+            logger.debug('trigger read_func(%d, %d)', start, end)
             objs = self._read_func(start, end)
         except:  # noqa: E722
             raise ReadFailed('read_func raise error')
