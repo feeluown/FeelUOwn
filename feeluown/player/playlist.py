@@ -441,8 +441,9 @@ class Playlist:
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
             logger.error(f'prepare media failed: {e}, try next song')
-        except:  # noqa
+        except Exception as e:  # noqa
             # When the exception is unknown, we mark the song as bad.
+            self._app.show_msg(f'prepare media failed due to unknown error: {e}')
             logger.exception('prepare media failed due to unknown error, '
                              'so we mark the song as a bad one')
             self.mark_as_bad(song)

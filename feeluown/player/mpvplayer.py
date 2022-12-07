@@ -1,31 +1,19 @@
 import locale
 import logging
 
-from feeluown.utils.utils import use_mpv_old
-from .metadata import MetadataFields, Metadata
-
-if use_mpv_old():
-    from mpv_old import (  # type: ignore
-        MPV,
-        MpvEventID,
-        MpvEventEndFile,
-        _mpv_set_property_string,
-        _mpv_set_option_string,
-        _mpv_client_api_version,
-    )
-else:
-    from mpv import (  # type: ignore
-        MPV,
-        MpvEventID,
-        MpvEventEndFile,
-        _mpv_set_property_string,
-        _mpv_set_option_string,
-        _mpv_client_api_version,
-    )
+from mpv import (  # type: ignore
+    MPV,
+    MpvEventID,
+    MpvEventEndFile,
+    _mpv_set_property_string,
+    _mpv_set_option_string,
+    _mpv_client_api_version,
+)
 
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
+from .metadata import MetadataFields, Metadata
 
 
 logger = logging.getLogger(__name__)
