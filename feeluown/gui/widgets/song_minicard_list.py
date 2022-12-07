@@ -16,21 +16,11 @@ from PyQt5.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, ReaderFetchMoreMixin, resize_font
+    ItemViewNoScrollMixin, ReaderFetchMoreMixin, resize_font, SOLARIZED_COLORS
 )
 
 
 logger = logging.getLogger(__name__)
-COLORS = {
-    'yellow':    '#b58900',
-    'orange':    '#cb4b16',
-    'red':       '#dc322f',
-    'magenta':   '#d33682',
-    'violet':    '#6c71c4',
-    'blue':      '#268bd2',
-    'cyan':      '#2aa198',
-    'green':     '#859900',
-}
 Fetching = object()
 
 
@@ -80,7 +70,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
                 return color
             return pixmap
         aio.run_afn(self.fetch_image, song, self._fetch_image_callback(song))
-        color = QColor(random.choice(list(COLORS.values())))
+        color = QColor(random.choice(list(SOLARIZED_COLORS.values())))
         color.setAlphaF(0.8)
         self.pixmaps[uri] = (Fetching, color)
         return color
