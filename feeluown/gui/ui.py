@@ -5,7 +5,6 @@ from feeluown.utils.utils import use_mpv_old
 from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.settings import SettingsDialog
 from feeluown.gui.widgets.messageline import MessageLine
-from feeluown.gui.widgets.playlist_overlay import PlaylistOverlay
 
 if use_mpv_old():
     from feeluown.gui.widgets.mpv_old import MpvOpenGLWidget
@@ -15,6 +14,7 @@ else:
 from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
+from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 
 
 logger = logging.getLogger(__name__)
@@ -38,7 +38,7 @@ class Ui:
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.frameless_container = None
-        self.playlist_overlay = PlaylistOverlay(app)
+        self.playlist_overlay = PlaylistOverlay(app, parent=app)
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -61,13 +61,12 @@ class Ui:
     def raise_playlist_view(self):
         if not self.playlist_overlay.isVisible():
             width = max(self._app.width() // 4, 330)
-            height = self._app.height() - \
-                self.player_bar.height() - self._top_separator.height()
+            x = self._app.width() - width
             height = self._app.height()
-            self.playlist_overlay.setGeometry(
-                self._app.width() - width, 0, width, height)
+            self.playlist_overlay.setGeometry(x, 0, width, height)
             self.playlist_overlay.show()
             self.playlist_overlay.setFocus()
+            # Put the widget on top.
             self.playlist_overlay.raise_()
 
     def _setup_ui(self):

@@ -38,7 +38,7 @@ def acolor(s, a):
 
 class PlaylistOverlay(QWidget):
     def __init__(self, app, *args, **kwargs):
-        super().__init__(*args, parent=app, **kwargs)
+        super().__init__(*args, **kwargs)
 
         self._app = app
         self._tabbar = TabBar(self)
