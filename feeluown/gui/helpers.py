@@ -9,8 +9,6 @@ import itertools
 import random
 import sys
 import logging
-from contextlib import suppress
-from requests.exceptions import RequestException
 
 try:
     # helper module should work in no-window mode
@@ -23,7 +21,8 @@ except ImportError:
 
 from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
-from feeluown.library import NotSupported
+from feeluown.library import NotSupported, ModelType, BaseModel
+from feeluown.models.uri import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -343,22 +342,70 @@ class ReaderFetchMoreMixin:
 
 def fetch_cover_wrapper(app):
     """
-    Your should only use this helper within ImgListModel.
+    Your should only use this helper within ImgListModel and SongMiniCardListModel.
     """
     img_mgr, library = app.img_mgr, app.library
 
-    async def fetch_model_cover(model, cb, uid):
-        # try get from cache first
-        content = img_mgr.get_from_cache(uid)
+    async def fetch_model_cover(model, cb):
+        # Get image unique id.
+        model_is_song = False
+        song_is_v2 = False
+        upgraded_song = None
+        if ModelType(model.meta.model_type) is ModelType.song:
+            model_is_song = True
+            if isinstance(model, BaseModel):
+                song_is_v2 = True
+                img_uid, _ = model.cache_get('album_uid')
+            else:
+                img_uid = None
+        else:
+            img_uid = reverse(model) + '/cover'
+        if img_uid is None:
+            assert model_is_song
+            try:
+                upgraded_song = await aio.run_fn(library.song_upgrade, model)
+                album = upgraded_song.album
+            except NotSupported:
+                album = None
+            if album is None:
+                cb(None)
+                return
+
+            img_uid = reverse(album) + '/cover'
+            if song_is_v2:
+                model.cache_set('album_uid', img_uid)
+
+        # Check image cache with image unique ID.
+        content = img_mgr.get_from_cache(img_uid)
         if content is not None:
-            return cb(content)
-        # FIXME: sleep random second to avoid send too many request to provider
-        await asyncio.sleep(random.randrange(100) / 100)
-        with suppress(ProviderIOError, RequestException, NotSupported):
-            url = await aio.run_fn(library.model_get_cover, model)
-            if url:
-                content = await img_mgr.get(url, uid)
-                cb(content)
+            cb(content)
+            return
+
+        # Get image url.
+        img_url = None
+        if model_is_song and song_is_v2:
+            img_url, _ = model.cache_get('album_cover')
+        if img_url is None:
+            if model_is_song:
+                model_with_img = upgraded_song.album
+            else:
+                model_with_img = model
+            try:
+                img_url = await aio.run_fn(library.model_get_cover, model_with_img)
+            except NotSupported:
+                img_url = ''
+            if model_is_song:
+                model.cache_set('album_cover', img_url)
+
+        # Fetch image by url and invoke cb.
+        if img_url:
+            # FIXME: sleep random second to avoid send too many request to provider
+            await asyncio.sleep(random.randrange(100) / 100)
+            content = await img_mgr.get(img_url, img_uid)
+            cb(content)
+        else:
+            cb(None)
+
     return fetch_model_cover
 
 

@@ -83,7 +83,9 @@ class GuiApp(App, QWidget):
 
     def load_state(self):
         super().load_state()
-        self.browser.goto(page='/player_playlist')
+        coll_library = self.coll_uimgr.get_coll_library()
+        coll_id = self.coll_uimgr.get_coll_id(coll_library)
+        self.browser.goto(page=f'/colls/{coll_id}')
 
     def closeEvent(self, _):
         if not self.config.ENABLE_TRAY:

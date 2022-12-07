@@ -14,6 +14,7 @@ else:
 from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
+from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 
 
 logger = logging.getLogger(__name__)
@@ -31,12 +32,13 @@ class Ui:
         # 给其添加任何功能性的函数
         self._message_line = MessageLine()
         self.top_panel = TopPanel(app, app)
-        self.sidebar = self._left_panel_con = LeftPanel(self._app,)
+        self.sidebar = self._left_panel_con = LeftPanel(self._app)
         self.left_panel = self._left_panel_con.p
         self.page_view = self.right_panel = RightPanel(self._app, self._splitter)
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.frameless_container = None
+        self.playlist_overlay = PlaylistOverlay(app, parent=app)
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -49,13 +51,23 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.pc_panel.playlist_btn.clicked.connect(
-            lambda: self._app.browser.goto(page='/player_playlist'))
+        self.pc_panel.playlist_btn.clicked.connect(self.raise_playlist_view)
         self.toolbar.settings_btn.clicked.connect(
             self._open_settings_dialog)
         self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
+
+    def raise_playlist_view(self):
+        if not self.playlist_overlay.isVisible():
+            width = max(self._app.width() // 4, 330)
+            x = self._app.width() - width
+            height = self._app.height()
+            self.playlist_overlay.setGeometry(x, 0, width, height)
+            self.playlist_overlay.show()
+            self.playlist_overlay.setFocus()
+            # Put the widget on top.
+            self.playlist_overlay.raise_()
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -64,6 +76,7 @@ class Ui:
         self._splitter.addWidget(self._left_panel_con)
         self._splitter.addWidget(self.right_panel)
         self._message_line.hide()
+        self.playlist_overlay.hide()
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
