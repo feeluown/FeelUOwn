@@ -98,9 +98,11 @@ class PlaylistOverlay(QWidget):
 
         view_options = dict(row_height=60, no_scroll_v=False)
         if index == 0:
+            self._show_btns()
             view = PlayerPlaylistView(self._app, **view_options)
             view.setModel(self._player_playlist_model)
         else:
+            self._hide_btns()
             model = SongMiniCardListModel(
                 create_reader(self._app.recently_played.list_songs()),
                 fetch_cover_wrapper(self._app)
@@ -119,6 +121,14 @@ class PlaylistOverlay(QWidget):
         view.play_song_needed.connect(self._app.playlist.play_model)
         self._stacked_layout.addWidget(view)
         self._stacked_layout.setCurrentWidget(view)
+
+    def _hide_btns(self):
+        self._clear_playlist_btn.hide()
+        self._playback_mode_switch.hide()
+
+    def _show_btns(self):
+        self._clear_playlist_btn.show()
+        self._playback_mode_switch.show()
 
     def paintEvent(self, e):
         super().paintEvent(e)
