@@ -19,7 +19,7 @@ Tabs = [('歌曲', SearchType.so),
         ('视频', SearchType.vi)]
 
 
-async def render(req, **kwargs):  # pylint: disable=too-many-locals
+async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
     """/search handler
 
     :type app: feeluown.app.App
@@ -28,8 +28,8 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     if not q:
         return
 
-    tab_index = int(req.query.get('tab_index', 0))
     source_in = req.query.get('source_in', None)
+    search_type = SearchType(req.query.get('type', SearchType.so.value))
     if source_in is not None:
         source_in = source_in.split(',')
     else:
@@ -42,13 +42,18 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
     body.setWidget(view)
     app.ui.right_panel.set_body(body)
 
-    search_type = Tabs[tab_index][1]
+    tab_index = 0
+    for i, tab in enumerate(Tabs):
+        if tab[1] == search_type:
+            tab_index = i
+            break
 
     is_first = True  # Is first search result.
     async for result in app.library.a_search(
             q, type_in=search_type, source_in=source_in):
         if result is not None:
             table_container = TableContainer(app, view.accordion)
+            table_container.layout().setContentsMargins(0, 0, 0, 0)
 
             # HACK: set fixed row for tables.
             # pylint: disable=protected-access
@@ -60,27 +65,25 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals
                     table._fixed_row_count = 8
                     table._row_height = table.verticalHeader().defaultSectionSize()
 
-            table_container.layout().setContentsMargins(0, 0, 0, 0)
-
             renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
             await table_container.set_renderer(renderer)
-
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
             objects = getattr(result, attrname) or []
+            if not objects:  # Result is empty.
+                continue
+
             if search_type is SearchType.so:
                 show_handler(create_reader(objects), columns_mode=ColumnsMode.playlist)
             else:
                 show_handler(create_reader(objects))
-
+            source = objects[0].source
+            provider = app.library.get(source)
+            provider_name = provider.name
             if is_first is False:
                 table_container.hide()
-
+            view.accordion.add_section(MidHeader(provider_name), table_container, 6, 12)
             renderer.meta_widget.hide()
             renderer.toolbar.hide()
-
-            provider = app.library.get(result.source)
-            provider_name = result.source if provider is None else provider.name
-            view.accordion.add_section(MidHeader(provider_name), table_container, 6, 12)
             is_first = False
 
 
@@ -104,7 +107,7 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
     def render_by_tab_index(self, tab_index):
         search_type = self.tabs[tab_index][1]
         self._app.browser.local_storage[KeyType] = search_type.value
-        query = {'q': self.q, 'tab_index': tab_index}
+        query = {'q': self.q, 'type': search_type.value}
         source_in = self._app.browser.local_storage.get(KeySourceIn, None)
         if source_in is not None:
             query['source_in'] = source_in
