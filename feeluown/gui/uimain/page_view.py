@@ -1,16 +1,16 @@
 import logging
 import sys
 
-from PyQt5.QtCore import Qt, QRect, QSize, QModelIndex, QEasingCurve
+from PyQt5.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent
 from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QScrollArea, QStackedLayout
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QStackedLayout
 
 from feeluown.utils import aio
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
 
 from feeluown.gui.theme import Light
-from feeluown.gui.helpers import BgTransparentMixin, ItemViewNoScrollMixin
+from feeluown.gui.helpers import BgTransparentMixin, ScrollAreaForNoScrollItemView
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
 from feeluown.gui.base_renderer import VFillableBg
@@ -24,13 +24,7 @@ def add_alpha(color, alpha):
     return new_color
 
 
-class ScrollArea(QScrollArea, BgTransparentMixin):
-    """
-    该 ScrollArea 和 TableContainer 是紧密耦合的一个组件，
-    目标是为了让整个 Table 内容都处于一个滚动的窗口内。
-
-    TODO: 给这个 ScrollArea 添加更多注释，对它进行一些重构
-    """
+class ScrollArea(ScrollAreaForNoScrollItemView, BgTransparentMixin):
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app
@@ -40,48 +34,38 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
 
         self.t = TableContainer(app, self)
         self.setWidget(self.t)
+        #: widgets that may affect the itemview height
+        self._other_widgets = [self.t.meta_widget, self.t.toolbar]
+        for w in self._other_widgets:
+            w.installEventFilter(self)
 
-        self.verticalScrollBar().valueChanged.connect(self.on_v_scrollbar_value_changed)
         # As far as I know, KDE and GNOME can't auto hide the scrollbar,
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
         if sys.platform.lower() != 'darwin':
             self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
 
-    def on_v_scrollbar_value_changed(self, value):
-        maximum = self.verticalScrollBar().maximum()
-        if maximum == value:
-            table = self.t.current_table
-            if table is None:
-                return
-            model = table.model()
-            if model is not None and model.canFetchMore(QModelIndex()):
-                model.fetchMore(QModelIndex())
+    def get_itemview(self):
+        return self.t.current_table
+
+    def height_for_itemview(self):
+        height = self.height()
+        for w in self._other_widgets:
+            if w.isVisible():
+                height -= w.height()
+        return height
 
     def wheelEvent(self, e):
         super().wheelEvent(e)
         self._app.ui.bottom_panel.update()
 
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
-        table = self.t.current_table
-        if table is not None and isinstance(table, ItemViewNoScrollMixin):
-            table.suggest_min_height(self.height_for_table())
-
-    def height_for_table(self):
-        """a proper height for the table widget"""
-        # spacing is 10
-        table_container = self.t
-        table_proper_height = self.height() - 10
-        if table_container.meta_widget.isVisible():
-            table_proper_height -= table_container.meta_widget.height()
-        if table_container.toolbar.isVisible():
-            table_proper_height -= table_container.toolbar.height()
-        if table_container.desc_widget.isVisible():
-            table_proper_height -= table_container.desc_widget.height()
-        return table_proper_height
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Resize:
+            self.maybe_resize_itemview()
+        return False
 
     def fillable_bg_height(self):
+        """Implement VFillableBg protocol"""
         height = 0
         table_container = self.t
         if table_container.meta_widget.isVisible():
