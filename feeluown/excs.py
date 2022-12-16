@@ -67,6 +67,13 @@ class ModelNotFound(ResourceNotFound):
     """
 
 
+class ModelCannotUpgrade(LibraryException):
+    """Model cannot be upgraded
+
+    .. versionadded:: 3.8.9
+    """
+
+
 class NotSupported(LibraryException):
     """Provider does not support the operation
     """
