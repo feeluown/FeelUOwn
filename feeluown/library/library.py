@@ -3,6 +3,7 @@ import warnings
 from functools import partial, lru_cache
 from typing import cast, Optional, Union
 
+from feeluown.excs import ModelCannotUpgrade
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
 from feeluown.utils import aio
@@ -24,6 +25,7 @@ from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
     LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
 )
+from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
     SupportsCurrentUser,
@@ -667,7 +669,10 @@ class Library:
         """
         if MF.v2 in model.meta.flags:
             if MF.normal not in model.meta.flags:
-                um = self._model_upgrade(model)
+                try:
+                    um = self._model_upgrade(model)
+                except (ModelCannotUpgrade, NotSupported):
+                    return ''
             else:
                 um = model
             # FIXME: remove this hack lator.
@@ -684,38 +689,42 @@ class Library:
 
     def _model_upgrade(self, model):
         """
-        Thinking: currently, the caller must catch the NotSupported error.
+        :raises NotSupported: provider does't impl SupportGetProtocol for the model type
+        :raises CannotUpgrade: the model can't be upgraded
         """
-        try_v1way = True
-        upgraded_model = None
-        if model.meta.flags & MF.v2:
-            if MF.normal in model.meta.flags:
-                upgraded_model = model
-                try_v1way = False
-            else:
-                provider = self.getv2_or_raise(model.source)
-                # When the provider does not support 'get' for this model.
-                # Do not raise NotSupported here and try to use the v1 way.
-                #
-                # For example, provider X may support 'get' for SongModel, then
-                # the song.artists can return list of BriefArtistModel.
-                model_type = ModelType(model.meta.model_type)
-                is_support = check_flag_impl(provider, model_type, PF.get)
-                if is_support:
-                    upgraded_model = provider.model_get(model_type, model.identifier)
-                    try_v1way = False
+        # Upgrade model in v1 way if it is a v1 model.
+        if MF.v2 not in model.meta.flags:
+            return self._model_upgrade_in_v1_way(model)
 
-        if try_v1way is True:
-            v1model = self.cast_model_to_v1(model)
-            modelcls = get_modelcls_by_type(ModelType(model.meta.model_type))
-            fields = [f for f in list(modelcls.__fields__)
-                      if f not in list(BaseModel.__fields__)]
-            for field in fields:
-                getattr(v1model, field)
-            upgraded_model = v1model
-        else:
-            assert upgraded_model is not None
-        return upgraded_model
+        # Return model directly if it is already a normal model.
+        if MF.normal in model.meta.flags:
+            return model
+
+        provider = self.getv2_or_raise(model.source)
+        model_type = ModelType(model.meta.model_type)
+        is_support = check_flag_impl(provider, model_type, PF.get)
+        if is_support:
+            upgraded_model = provider.model_get(model_type, model.identifier)
+            if upgraded_model is None:
+                model.state = ModelState.not_exists
+                raise ModelCannotUpgrade('model does not exist')
+            return upgraded_model
+
+        # Fallback to v1 way if the provider does not support PF.get.
+        # For example, provider X may support 'get' for SongModel and it
+        # does not support 'get' for ArtistModel temporarily. It returns
+        # a SongModel and the song.artists returns list of BriefArtistModel,
+        # in this condition, BriefArtistModel should be upgraded in v1 way.
+        return self._model_upgrade_in_v1_way(model)
+
+    def _model_upgrade_in_v1_way(self, model):
+        v1model = self.cast_model_to_v1(model)
+        modelcls = get_modelcls_by_type(ModelType(model.meta.model_type))
+        fields = [f for f in list(modelcls.__fields__)
+                  if f not in list(BaseModel.__fields__)]
+        for field in fields:
+            getattr(v1model, field)
+        return v1model
 
     # --------
     # Video
