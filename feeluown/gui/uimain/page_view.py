@@ -10,7 +10,7 @@ from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
 
 from feeluown.gui.theme import Light
-from feeluown.gui.helpers import BgTransparentMixin, ScrollAreaForNoScrollItemView
+from feeluown.gui.helpers import BgTransparentMixin, BaseScrollAreaForNoScrollItemView
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
 from feeluown.gui.base_renderer import VFillableBg
@@ -24,7 +24,7 @@ def add_alpha(color, alpha):
     return new_color
 
 
-class ScrollArea(ScrollAreaForNoScrollItemView, BgTransparentMixin):
+class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
         self._app = app

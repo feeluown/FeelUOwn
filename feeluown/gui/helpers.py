@@ -85,7 +85,7 @@ class BgTransparentMixin:
         self.setPalette(palette)
 
 
-class ScrollAreaForNoScrollItemView(QScrollArea):
+class BaseScrollAreaForNoScrollItemView(QScrollArea):
     """A scroll area base class for itemview with no_scroll_v=True
 
     Subclass must implement the following methods:
