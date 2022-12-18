@@ -15,7 +15,7 @@ try:
     from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
         QAbstractListModel
     from PyQt5.QtGui import QPalette, QFontMetrics
-    from PyQt5.QtWidgets import QApplication
+    from PyQt5.QtWidgets import QApplication, QScrollArea
 except ImportError:
     pass
 
@@ -83,6 +83,58 @@ class BgTransparentMixin:
         palette = self.palette()
         palette_set_bg_color(palette, Qt.transparent)
         self.setPalette(palette)
+
+
+class BaseScrollAreaForNoScrollItemView(QScrollArea):
+    """A scroll area base class for itemview with no_scroll_v=True
+
+    Subclass must implement the following methods:
+    * itemview
+    * height_for_itemview
+    Also note the API is not stable.
+
+    .. versionadded:: 3.8.9
+    """
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.verticalScrollBar().valueChanged.connect(self.on_v_scrollbar_value_changed)
+
+    def get_itemview(self):
+        raise NotImplementedError
+
+    def height_for_itemview(self):
+        raise NotImplementedError
+
+    def resizeEvent(self, e):
+        super().resizeEvent(e)
+        self.maybe_resize_itemview()
+
+    def maybe_resize_itemview(self):
+        """Resize itemview to make sure it has a chance to fetch more items
+
+        When the itemview has no more items, do not need to resize it.
+        """
+        itemview = self.get_itemview()
+        if itemview is not None:
+            model = itemview.model()
+            if model is not None and model.canFetchMore(QModelIndex()):
+                # +1 to make sure user can scroll, then user has a change to
+                # trigger itemview fetch more.
+                itemview.suggest_min_height(self.height_for_itemview() + 1)
+                itemview.adjust_height()
+
+    def maybe_trigger_itemview_fetch_more(self):
+        itemview = self.get_itemview()
+        if itemview is not None:
+            model = itemview.model()
+            if model is not None and model.canFetchMore(QModelIndex()):
+                model.fetchMore(QModelIndex())
+
+    def on_v_scrollbar_value_changed(self, value):
+        maximum = self.verticalScrollBar().maximum()
+        if maximum == value:
+            self.maybe_trigger_itemview_fetch_more()
 
 
 class ItemViewNoScrollMixin:
