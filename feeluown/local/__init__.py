@@ -30,7 +30,7 @@ def init_config(config):
                     desc='将专辑艺术家的专辑中歌曲加入到该艺术家的歌曲中')
     config.deffield('ARTIST_SPLITTER', type_=list, default=[',', '&'],
                     desc='歌曲艺术家的分隔符')
-    config.deffield('ARTIST_SPLITTER_IGNORANCE', type_=list, default=None,
+    config.deffield('ARTIST_SPLITTER_IGNORANCE', type_=list, default=[],
                     desc='对艺术家信息使用分隔符时需要进行保护的字符串')
     config.deffield('SPLIT_ALBUM_ARTIST_NAME', type_=bool, default=False,
                     desc='支持使用分隔符分隔专辑艺术家')

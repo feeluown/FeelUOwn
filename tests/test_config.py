@@ -23,11 +23,27 @@ def test_config_set_unknown_field(config):
         config.hey
 
 
+def test_config_set_value_to_a_different_type(config):
+    """Set field to unexpected type should not change the value"""
+    config.VERBOSE = '2'
+    assert config.VERBOSE == 1
+
+
+def test_config_deffield_with_invalid_type(config):
+    with pytest.raises(ValueError):
+        config.deffield('hey', type_=int, default='x')
+
+
+def test_config_deffield_with_invalid_default_value(config):
+    with pytest.raises(ValueError):
+        config.deffield('hey', type_=2, default=2)
+
+
 def test_config_set_subconfig(config):
     """Field is a config object and it should just works"""
-    config.deffield('nowplaying', type_=Config)
+    config.deffield('nowplaying', type_=Config, default=Config())
     config.nowplaying = Config()
-    config.nowplaying.deffield('control', type_=True, default=False)
+    config.nowplaying.deffield('control', type_=bool, default=False)
     assert config.nowplaying.control is False
     config.nowplaying.control = True
     assert config.nowplaying.control is True
