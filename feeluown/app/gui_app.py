@@ -1,7 +1,8 @@
 import os
+import sys
 
 from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication
+from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication, QFont
 from PyQt5.QtWidgets import QApplication, QWidget
 
 from feeluown.gui.browser import Browser
@@ -35,6 +36,26 @@ class GuiApp(App, QWidget):
         QApplication.setDesktopFileName('FeelUOwn')
         QApplication.instance().setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         QApplication.instance().setApplicationName('FeelUOwn')
+
+        if sys.platform == 'win32':
+            font = QApplication.font()
+            # By default, it uses SimSun(宋体) on windows, which is a little ugly.
+            # "Segoe UI Symbol" is used to render charactor symbols.
+            # "Microsoft Yahei" is used to render chinese (and english).
+            # Choose a default sans-serif font when the first two fonts do not work,
+            font.setFamilies(['Segoe UI Symbol', 'Microsoft YaHei', 'sans-serif'])
+
+            # When a HiDPI screen is used, users need to set both font DPI and
+            # screen scale factor to make it working properly when pointSize is used.
+            # It's hard for most users to set them right.
+            # When using pixelSize, users only need to set screen scale factor.
+            # In other words, only QT_AUTO_SCREEN_SCALE_FACTOR=1 is needed to set
+            # and feeluown can works properly in HiDPI environment.
+            #
+            # Based on past experience, 13px is the default font size for all platform,
+            # including windows, linux and macOS.
+            font.setPixelSize(13)
+            QApplication.instance().setFont(font)
 
         QWidget.__init__(self)
         App.__init__(self, *args, **kwargs)
