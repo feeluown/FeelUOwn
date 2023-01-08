@@ -2,7 +2,7 @@ import os
 import sys
 
 from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication, QFont
+from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication
 from PyQt5.QtWidgets import QApplication, QWidget
 
 from feeluown.gui.browser import Browser
