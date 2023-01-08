@@ -1,6 +1,7 @@
 import argparse
 import asyncio
 import logging
+import os
 import signal
 import sys
 import warnings
@@ -58,6 +59,9 @@ def before_start_app(args):
     # Run.
     #
     if AppMode.gui in AppMode(config.MODE):
+        # Enable auto scale by default so that it can work well with HiDPI display.
+        if sys.platform == 'win32':
+            os.environ.setdefault('QT_AUTO_SCREEN_SCALE_FACTOR', '1')
         try:
             # HELP: QtWebEngineWidgets must be imported before a
             #   QCoreApplication instance is created.
