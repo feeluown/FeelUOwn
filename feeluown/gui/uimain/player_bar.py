@@ -428,6 +428,11 @@ class PlayerControlPanel(QFrame):
         else:
             self.song_source_label.setText(default)
 
+        released = metadata.get('released', '')
+        if released:
+            self.cover_label.setToolTip(f'专辑发行日期：{released}')
+        else:
+            self.cover_label.setToolTip('')
         # Set song artwork.
         artwork = metadata.get('artwork', '')
         artwork_uid = metadata.get('uri', artwork)

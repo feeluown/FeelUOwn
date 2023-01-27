@@ -115,6 +115,9 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         album = self.model
         tab_index = self.tab_index
 
+        if album.released:
+            self.meta_widget.released_at = album.released
+
         self.meta_widget.title = album.name
         self.meta_widget.creator = album.artists_name
         self.meta_widget.source = self._get_source_alias(album.source)

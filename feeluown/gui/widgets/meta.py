@@ -37,6 +37,7 @@ class MetaWidget(QFrame):
         self.updated_at = None
         self.creator = None
         self.songs_count = None
+        self.released_at = None
 
     def on_property_updated(self, name):
         pass
@@ -46,10 +47,11 @@ class MetaWidget(QFrame):
     subtitle = getset_property('subtitle')
     source = getset_property('source')
     cover = getset_property('cover')
-    created_at = getset_property('created_at')
-    updated_at = getset_property('updated_at')
+    created_at = getset_property('created_at')  # datetime
+    updated_at = getset_property('updated_at')  # datetime
     songs_count = getset_property('songs_count')
     creator = getset_property('creator')
+    released_at = getset_property('released_at')  # str
 
 
 class TableMetaWidget(MetaWidget):
@@ -114,7 +116,8 @@ class TableMetaWidget(MetaWidget):
         self.updateGeometry()
 
     def on_property_updated(self, name):
-        if name in ('created_at', 'updated_at', 'songs_count', 'creator', 'source'):
+        if name in ('created_at', 'updated_at', 'songs_count', 'creator',
+                    'source', 'released_at'):
             self._refresh_meta_label()
         elif name in ('title', 'subtitle'):
             self._refresh_title()
@@ -125,7 +128,7 @@ class TableMetaWidget(MetaWidget):
         creator = self.creator
         # icon: 👤
         creator_part = creator if creator else ''
-        created_part = updated_part = songs_count_part = source_part = ''
+        released_part = created_part = updated_part = songs_count_part = source_part = ''
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
@@ -134,18 +137,21 @@ class TableMetaWidget(MetaWidget):
         if self.created_at:
             created_part = '🕛 创建于 <code style="font-size: small">{}</code>'\
                 .format(self.created_at.strftime('%Y-%m-%d'))
+        if self.released_at:
+            released_part = f'🕛 发布于 <code style="font-size: small">{self.released_at}</code>'  # noqa
         if self.songs_count is not None:
             text = self.songs_count if self.songs_count != -1 else '未知'
             songs_count_part = f'<code style="font-size: small">{text}</code> 首歌曲'
-        if creator_part or updated_part or created_part or songs_count_part:
-            parts = [
-                creator_part,
-                created_part,
-                updated_part,
-                songs_count_part,
-                source_part,
-            ]
-            valid_parts = [p for p in parts if p]
+        parts = [
+            creator_part,
+            created_part,
+            updated_part,
+            songs_count_part,
+            released_part,
+            source_part,
+        ]
+        valid_parts = [p for p in parts if p]
+        if valid_parts:
             content = ' • '.join(valid_parts)
             text = f'<span>{content}</span>'
             # TODO: add linkActivated callback for meta_label

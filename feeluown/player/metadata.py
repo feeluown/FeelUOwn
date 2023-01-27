@@ -22,6 +22,7 @@ class MetadataFields(Enum):
     track = 'track'  # The track number on the album disc.
     source = 'source'
     artwork = 'artwork'  # The album/video cover iamge url.
+    released = 'released'  # The released date of the song or it's album.
 
 
 class Metadata(MutableMapping):

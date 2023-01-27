@@ -495,6 +495,7 @@ class Playlist:
             if song.album is not None:
                 album = await aio.run_fn(self._app.library.album_upgrade, song.album)
                 artwork = album.cover
+                released = album.released
                 # For model v1, the cover can be a Media object.
                 # For example, in fuo_local plugin, the album.cover is a Media
                 # object with url set to fuo://local/songs/{identifier}/data/cover.
@@ -502,6 +503,7 @@ class Playlist:
                     artwork = artwork.url
             else:
                 artwork = ''
+                released = ''
         except NotSupported:
             # The song or the album can't be upgraded.
             pass
@@ -510,6 +512,8 @@ class Playlist:
         else:
             if artwork:
                 metadata[MetadataFields.artwork] = artwork
+            if released:
+                metadata[MetadataFields.released] = released
         return metadata
 
     async def _prepare_metadata_for_video(self, video):

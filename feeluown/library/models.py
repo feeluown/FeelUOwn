@@ -332,6 +332,7 @@ class AlbumModel(BaseNormalModel):
     # can return songs list.
     songs: List[SongModel]
     description: str
+    released: str = ''  # format: 2000-12-27.
 
     @property
     def artists_name(self):
