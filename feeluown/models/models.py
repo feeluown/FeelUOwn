@@ -155,6 +155,10 @@ class AlbumModel(BaseModel):
     def type_(self):  # To be compatible with AlbumModel v2.
         return self.type
 
+    @property
+    def released(self):  # To be compatible with AlbumModel v2.
+        return ''
+
 
 class LyricModel(BaseModel):
     """Lyric Model
