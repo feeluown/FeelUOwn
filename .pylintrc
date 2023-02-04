@@ -18,4 +18,5 @@ disable=
 
     # Enable following in the future.
     no-else-raise,
-    bad-mcs-classmethod-argument
+    bad-mcs-classmethod-argument,
+    no-else-return
