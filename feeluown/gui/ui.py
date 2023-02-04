@@ -21,7 +21,7 @@ class Ui:
     def __init__(self, app):
         self._app = app
         self._layout = QVBoxLayout(app)
-        self._top_separator = Separator(parent=app)
+        self._top_separator = Separator(app)
         self._splitter = QSplitter(app)
 
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
