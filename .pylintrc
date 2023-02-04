@@ -14,4 +14,9 @@ disable=
     # Let flake8 check import-related code.
     wrong-import-position,
     unused-import,
-    cyclic-import
+    cyclic-import,
+
+    # Enable following in the future.
+    no-else-raise,
+    bad-mcs-classmethod-argument,
+    no-else-return

@@ -12,10 +12,10 @@ QFrame[frameShape="5"]
 
 
 class Separator(QFrame):
-    def __init__(self, orientation='horizontal', parent=None):
-        super().__init__(parent)
+    def __init__(self, app, orientation='horizontal'):
+        super().__init__(parent=None)
 
-        self._app = parent
+        self._app = app
 
         if orientation == 'horizontal':
             self.setFrameShape(QFrame.HLine)

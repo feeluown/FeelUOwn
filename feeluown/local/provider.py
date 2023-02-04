@@ -175,8 +175,5 @@ class LocalProvider(AbstractProvider, ProviderV2):
             songs=[to_brief_song(song) for song in result_songs]
         )
 
-    def song_get_lyric(self, song):
-        return None
-
 
 provider = LocalProvider()
