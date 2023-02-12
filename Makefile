@@ -40,6 +40,14 @@ integration_test:
 
 test: lint unittest
 
+# Please install pyinstaller manually.
+bundle:
+	pyinstaller -w feeluown/pyinstaller/main.py \
+		--icon feeluown/gui/assets/icons/feeluown.ico \
+		--name FeelUOwn \
+		-w \
+		--noconfirm
+
 clean:
 	find . -name "*~" -exec rm -f {} \;
 	find . -name "*.pyc" -exec rm -f {} \;
