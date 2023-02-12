@@ -102,6 +102,10 @@ setup(
         ],
         'fuo.plugins_v1': [
             'local = feeluown.local',
-        ]
+        ],
+        # https://pyinstaller.org/en/stable/hooks.html
+        'pyinstaller40': [
+            'hook-dirs = feeluown.pyinstaller.hook:get_hook_dirs',
+        ],
     },
 )
