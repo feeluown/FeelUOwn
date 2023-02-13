@@ -65,6 +65,8 @@ setup(
         'battery': ['fuo-netease>=0.4.2',
                     'fuo-qqmusic>=0.2',
                     'fuo-kuwo>=0.1.1',
+                    # https://github.com/BruceZhang1993/feeluown-bilibili
+                    'feeluown-bilibili',
                     ],
         'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
         'win32': ['pyshortcuts'],
