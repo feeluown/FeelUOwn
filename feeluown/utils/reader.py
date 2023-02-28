@@ -3,7 +3,6 @@ from abc import ABCMeta, abstractmethod
 from collections.abc import Iterable, Sequence, AsyncIterable
 from typing import List, Generic, TypeVar, Optional
 
-from feeluown.excs import ReadFailed, ProviderIOError
 
 logger = logging.getLogger(__name__)
 
@@ -57,6 +56,10 @@ class Reader(Generic[T], metaclass=ABCMeta):
         """Read all objects.
 
         :raises CantReadAll:
+
+        .. versionchanged:: 3.8.10
+           Raise CantReadAll instead of ReadFailed exception. ReadFailed inherits
+           from ProviderIOError, but Reader and ProviderIOError should not be coupled.
         """
 
     @abstractmethod
@@ -67,6 +70,12 @@ class Reader(Generic[T], metaclass=ABCMeta):
         return self
 
     def __next__(self) -> T:
+        """
+
+        .. versionchanged:: 3.8.10
+           Do not handle any exception here. The caller should be responsible to
+           handle exceptions.
+        """
         return self._read_next()
 
 
@@ -137,7 +146,7 @@ class SequentialReader(Reader[T]):
 
     def readall(self):
         if self.count is None:
-            raise ReadFailed("can't readall when count is unknown")
+            raise CantReadAll("can't readall when count is unknown")
         list(self)
         return self._objects
 
@@ -227,15 +236,11 @@ class RandomSequentialReader(Reader[T]):
     def _read_range(self, start, end):
         # TODO: make this method thread safe
         assert start <= end, "start should less than end"
-        try:
-            logger.debug('trigger read_func(%d, %d)', start, end)
-            objs = self._read_func(start, end)
-        except:  # noqa: E722
-            raise ReadFailed('read_func raise error')
-        else:
-            actual = len(objs)
-            self._objects[start:start+actual] = objs
-            self._refresh_ranges()
+        logger.debug('trigger read_func(%d, %d)', start, end)
+        objs = self._read_func(start, end)
+        actual = len(objs)
+        self._objects[start:start+actual] = objs
+        self._refresh_ranges()
 
     def _has_index(self, index):
         has_been_read = False
@@ -323,7 +328,7 @@ class AsyncSequentialReader(AsyncReader):
 
     async def a_readall(self):
         if self.count is None:
-            raise ReadFailed("can't readall when count is unknown")
+            raise CantReadAll("can't readall when count is unknown")
         async for _ in self:
             pass
         return self._objects
@@ -350,9 +355,6 @@ class AsyncSequentialReader(AsyncReader):
             return await self.a_read_next()
         except StopAsyncIteration:
             raise
-        # TODO: caller should not crash when reader raise other exception
-        except Exception as e:
-            raise ProviderIOError('read next obj failed') from e
 
 
 def wrap(iterable):
