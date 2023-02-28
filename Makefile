@@ -15,6 +15,7 @@ MYPY_PKGS+=feeluown/library/
 MYPY_PKGS+=feeluown/player/
 MYPY_PKGS+=feeluown/app/
 MYPY_PKGS+=feeluown/entry_points/
+MYPY_PKGS+=feeluown/utils/reader.py
 
 mypy:
 # Add flag --check-untyped-defs.

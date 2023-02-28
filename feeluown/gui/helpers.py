@@ -5,7 +5,6 @@ feeluown.gui.helpers
 和应用逻辑相关的一些工具函数
 """
 import asyncio
-import itertools
 import random
 import sys
 import logging
@@ -20,6 +19,7 @@ except ImportError:
     pass
 
 from feeluown.utils import aio
+from feeluown.utils.reader import AsyncReader
 from feeluown.excs import ProviderIOError
 from feeluown.library import NotSupported, ModelType, BaseModel
 from feeluown.models.uri import reverse
@@ -348,7 +348,7 @@ class ReaderFetchMoreMixin:
         reader = self._reader
         step = self._fetch_more_step
 
-        if reader.is_async:
+        if isinstance(reader, AsyncReader):
             async def fetch():
                 items = []
                 count = 0
@@ -362,7 +362,7 @@ class ReaderFetchMoreMixin:
             future.add_done_callback(self._async_fetch_cb)
         else:
             try:
-                items = list(itertools.islice(reader, step))
+                items = reader.read_range(self.rowCount(), step + self.rowCount())
             except ProviderIOError:
                 logger.exception('fetch more items failed')
                 self._fetch_more_cb([])
