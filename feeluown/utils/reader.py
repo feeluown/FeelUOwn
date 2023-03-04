@@ -1,30 +1,22 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from typing import (
-    List,
-    Generic,
-    TypeVar,
-    Optional,
-    Callable,
-    Tuple,
-    Iterable,
-    cast,
-    Sequence,
-    AsyncIterable,
+    List, Generic, TypeVar, Optional, Callable, Tuple,
+    Iterable, cast, Sequence, AsyncIterable,
 )
 
 
 logger = logging.getLogger(__name__)
 
 __all__ = (
-    "create_reader",
-    "SequentialReader",
-    "RandomSequentialReader",
-    "Reader",
-    "AsyncReader",
+    'create_reader',
+    'SequentialReader',
+    'RandomSequentialReader',
+    'Reader',
+    'AsyncReader',
     # Below are deprecated.
-    "RandomReader",
-    "wrap",
+    'RandomReader',
+    'wrap',
 )
 
 
@@ -184,9 +176,10 @@ class SequentialReader(Reader[T]):
 
 
 class RandomSequentialReader(Reader[T]):
-    def __init__(
-        self, count, read_func: Callable[[int, int], Iterable[T]], max_per_read=100
-    ):
+    def __init__(self,
+                 count,
+                 read_func: Callable[[int, int], Iterable[T]],
+                 max_per_read=100):
         """random reader constructor
 
         :param int count: total number of objects
@@ -199,7 +192,7 @@ class RandomSequentialReader(Reader[T]):
         self._objects: List[Optional[T]] = [None] * count
         self._read_func = read_func
 
-        assert max_per_read > 0, "max_per_read must big than 0"
+        assert max_per_read > 0, 'max_per_read must big than 0'
         self._max_per_read = max_per_read
 
     def _read(self, index):
@@ -246,11 +239,11 @@ class RandomSequentialReader(Reader[T]):
 
     def _read_range(self, start, end):
         # TODO: make this method thread safe
-        assert start <= end, "start should less than end"
-        logger.debug("trigger read_func(%d, %d)", start, end)
+        assert start <= end, 'start should less than end'
+        logger.debug('trigger read_func(%d, %d)', start, end)
         objs = list(self._read_func(start, end))
         actual = len(objs)
-        self._objects[start : start + actual] = objs
+        self._objects[start:start+actual] = objs
         self._refresh_ranges()
 
     def _has_index(self, index):
@@ -369,19 +362,7 @@ class AsyncSequentialReader(AsyncReader):
 
 
 def wrap(iterable):
-    """create a reader from an iterable
-
-    >>> reader = wrap([1, 2])
-    >>> isinstance(reader, RandomSequentialReader)
-    True
-    >>> reader.readall()
-    [1, 2]
-    >>> isinstance(wrap(iter([])), SequentialReader)
-    True
-    >>> wrap(None)
-    Traceback (most recent call last):
-        ...
-    TypeError: must be a Iterable, got <class 'NoneType'>
+    """
 
     .. versionadded:: 3.4
     .. deprecated:: 3.7.7
@@ -396,7 +377,7 @@ def wrap(iterable):
         return AsyncSequentialReader(iterable, count=None)
 
     if not isinstance(iterable, Iterable):
-        raise TypeError("must be a Iterable, got {}".format(type(iterable)))
+        raise TypeError(f'must be a Iterable, got {type(iterable)}')
     if isinstance(iterable, Sequence):
         count = len(iterable)
         return RandomSequentialReader(
@@ -407,7 +388,20 @@ def wrap(iterable):
 
 
 def create_reader(iterable):
-    """
+    """Create a reader from an iterable.
+
+    >>> reader = wrap([1, 2])
+    >>> isinstance(reader, RandomSequentialReader)
+    True
+    >>> reader.readall()
+    [1, 2]
+    >>> isinstance(wrap(iter([])), SequentialReader)
+    True
+    >>> wrap(None)
+    Traceback (most recent call last):
+        ...
+    TypeError: must be a Iterable, got <class 'NoneType'>
+
     .. versionadded:: 3.7.7
     """
     return wrap(iterable)
