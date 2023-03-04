@@ -1,10 +1,17 @@
 import logging
 from abc import ABCMeta, abstractmethod
 from typing import (
-    List, Generic, TypeVar, Optional, Callable, Tuple,
-    Iterable, cast, Sequence, AsyncIterable,
+    List,
+    Generic,
+    TypeVar,
+    Optional,
+    Callable,
+    Tuple,
+    Iterable,
+    cast,
+    Sequence,
+    AsyncIterable,
 )
-
 
 logger = logging.getLogger(__name__)
 
@@ -18,7 +25,6 @@ __all__ = (
     'RandomReader',
     'wrap',
 )
-
 
 T = TypeVar("T")
 
@@ -176,6 +182,7 @@ class SequentialReader(Reader[T]):
 
 
 class RandomSequentialReader(Reader[T]):
+
     def __init__(self,
                  count,
                  read_func: Callable[[int, int], Iterable[T]],
@@ -243,7 +250,7 @@ class RandomSequentialReader(Reader[T]):
         logger.debug('trigger read_func(%d, %d)', start, end)
         objs = list(self._read_func(start, end))
         actual = len(objs)
-        self._objects[start:start+actual] = objs
+        self._objects[start:start + actual] = objs
         self._refresh_ranges()
 
     def _has_index(self, index):
@@ -316,6 +323,7 @@ class AsyncReader:
 
 
 class AsyncSequentialReader(AsyncReader):
+
     def __init__(self, g, count, offset=0):
         """init
 
@@ -380,9 +388,9 @@ def wrap(iterable):
         raise TypeError(f'must be a Iterable, got {type(iterable)}')
     if isinstance(iterable, Sequence):
         count = len(iterable)
-        return RandomSequentialReader(
-            count, lambda start, end: iterable[start:end], max_per_read=max(count, 1)
-        )
+        return RandomSequentialReader(count,
+                                      lambda start, end: iterable[start:end],
+                                      max_per_read=max(count, 1))
     # maybe a generator/iterator
     return SequentialReader(iterable, count=None)
 
