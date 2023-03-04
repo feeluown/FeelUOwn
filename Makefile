@@ -9,17 +9,22 @@ docs:
 pylint:
 	pylint feeluown/gui/pages/ feeluown/fuoexec/ feeluown/server/
 
-
+# Packages need to check currently.
+# All packages are supposed to be checked in the future.
 MYPY_PKGS=
 MYPY_PKGS+=feeluown/library/
 MYPY_PKGS+=feeluown/player/
 MYPY_PKGS+=feeluown/app/
 MYPY_PKGS+=feeluown/entry_points/
-
+MYPY_STRICT_PKGS=
+MYPY_STRICT_PKGS+=feeluown/utils/reader.py
+MYPY_STRICT_PKGS+=feeluown/server/
+MYPY_STRICT_PKGS+=feeluown/cli/cli.py
+MYPY_STRICT_PKGS+=feeluown/gui/widgets/textlist.py
 mypy:
 # Add flag --check-untyped-defs.
 	mypy  ${MYPY_PKGS}
-	mypy --check-untyped-defs feeluown/server/ feeluown/cli/cli.py feeluown/gui/widgets/textlist.py
+	mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
 	flake8 feeluown/ tests/
