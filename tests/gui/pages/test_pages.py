@@ -56,6 +56,26 @@ async def test_render_song_v2(guiapp, ekaf_provider):
 
 
 @pytest.mark.asyncio
+async def test_render_song_v2_with_non_exists_album(guiapp, ekaf_provider):
+    """
+    When the album does not exist, the rendering process should succeed.
+    This test case tests that every exceptions, which raised by library, should
+    be correctly catched.
+    """
+    song = SongModel(source=ekaf_provider.identifier,
+                     identifier='0',
+                     title='',
+                     album=BriefAlbumModel(source=ekaf_provider.identifier,
+                                           identifier='not_exist'),
+                     artists=[],
+                     duration=0)
+    ctx = {'model': song, 'app': guiapp}
+    req = Request('', '', {}, {}, ctx)
+    # No error should occur.
+    await render_song_explore(req)
+
+
+@pytest.mark.asyncio
 async def test_render_playlist_v2(guiapp, ekaf_provider):
     playlist = PlaylistModel(
         source=ekaf_provider.identifier,
