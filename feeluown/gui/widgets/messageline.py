@@ -2,7 +2,7 @@ from PyQt5.QtCore import QTimer, Qt
 from PyQt5.QtGui import QPalette
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
 
-from feeluown.gui.helpers import BgTransparentMixin
+from feeluown.gui.helpers import BgTransparentMixin, elided_text
 
 
 class MessageLine(QWidget, BgTransparentMixin):
@@ -36,6 +36,6 @@ class MessageLine(QWidget, BgTransparentMixin):
         self._layout.setSpacing(0)
 
     def show_msg(self, msg, timeout=1300, **kwargs):
-        self._label.setText(msg)
+        self._label.setText(elided_text(msg, self.width(), self.font()))
         self.show()
         self._timer.start(timeout)
