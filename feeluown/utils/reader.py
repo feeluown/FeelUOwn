@@ -54,9 +54,21 @@ class Reader(Generic[T], metaclass=ABCMeta):
     supposed.
     """
 
+    @property
+    @abstractmethod
+    def count(self) -> int:
+        """Total number of objects reader can read."""
+
     @abstractmethod
     def read_range(self, start: int, end: int) -> List[T]:
         """Read objects in range [start, end)."""
+
+    @abstractmethod
+    def read(self, index) -> T:
+        """Read object by index.
+
+        :raises IndexError:
+        """
 
     @abstractmethod
     def readall(self) -> List[T]:
@@ -147,12 +159,16 @@ class SequentialReader(Reader[T]):
         """
         super().__init__()
         self._g = g
-        self.count = count
+        self._count = count
         self.offset = offset
         self._objects: List[T] = []
 
+    @property
+    def count(self):
+        return self._count
+
     def readall(self) -> List[T]:
-        if self.count is None:
+        if self._count is None:
             raise CantReadAll("can't readall when count is unknown")
         list(self)
         return self._objects
@@ -166,13 +182,17 @@ class SequentialReader(Reader[T]):
                 break
         return self._objects[start:end]
 
+    def read(self, index):
+        self.read_range(index, index+1)
+        return self._objects[index]
+
     def _read_next(self) -> T:
-        if self.count is None or self.offset < self.count:
+        if self._count is None or self.offset < self.count:
             try:
                 obj = next(self._g)
             except StopIteration:
-                if self.count is None:
-                    self.count = self.offset + 1
+                if self._count is None:
+                    self._count = self.offset + 1
                 raise
         else:
             raise StopIteration
@@ -194,7 +214,7 @@ class RandomSequentialReader(Reader[T]):
         :param int max_per_read: max count per read, it must big than 0
         """
         self.offset = 0
-        self.count = count
+        self._count = count
         self._ranges: List[Tuple[int, int]] = []  # list of tuple
         self._objects: List[Optional[T]] = [None] * count
         self._read_func = read_func
@@ -202,7 +222,11 @@ class RandomSequentialReader(Reader[T]):
         assert max_per_read > 0, 'max_per_read must big than 0'
         self._max_per_read = max_per_read
 
-    def _read(self, index):
+    @property
+    def count(self):
+        return self._count
+
+    def read(self, index):
         """read object by index
 
         If the object is not already read, this method may trigger IO operation.
@@ -220,12 +244,12 @@ class RandomSequentialReader(Reader[T]):
         :raises ReadFailed:
         """
         # all objects have been read
-        if len(self._ranges) == 1 and self._ranges[0] == (0, self.count):
+        if len(self._ranges) == 1 and self._ranges[0] == (0, self._count):
             return cast(List[T], self._objects)
 
         start = 0
         end = 0
-        count = self.count
+        count = self._count
         while end < count:
             end = min(count, end + self._max_per_read)
             self._read_range(start, end)
@@ -233,10 +257,10 @@ class RandomSequentialReader(Reader[T]):
         return cast(List[T], self._objects)
 
     # def explain_readall(self):
-    #     read_times = self.count / self._max_per_read
-    #     if self.count % self._max_per_read > 0:
+    #     read_times = self._count / self._max_per_read
+    #     if self._count % self._max_per_read > 0:
     #         read_times += 1
-    #     return {'count': self.count,
+    #     return {'count': self._count,
     #             'max_per_read': self._max_per_read,
     #             'read_times': read_times}
 
@@ -278,14 +302,14 @@ class RandomSequentialReader(Reader[T]):
             else:
                 gt_index = end
         else:
-            # default read range [index, min(index + max_per_read, self.count))
+            # default read range [index, min(index + max_per_read, self._count))
             left_index = index
-            right_index = min(index + self._max_per_read, self.count)
+            right_index = min(index + self._max_per_read, self._count)
             # trick: read as much as possible at a time to improve performance
             if gt_index is not None:
-                if self.count - gt_index < self._max_per_read:
+                if self._count - gt_index < self._max_per_read:
                     left_index = gt_index
-                    right_index = self.count
+                    right_index = self._count
         return has_been_read, (left_index, right_index)
 
     def _refresh_ranges(self):
@@ -303,9 +327,9 @@ class RandomSequentialReader(Reader[T]):
         self._ranges = ranges
 
     def _read_next(self):
-        if self.offset >= self.count:
+        if self.offset >= self._count:
             raise StopIteration
-        obj = self._read(self.offset)
+        obj = self.read(self.offset)
         self.offset += 1
         return obj
 
@@ -334,24 +358,28 @@ class AsyncSequentialReader(AsyncReader):
                       CAREFUL to use list(reader).
         """
         self._g = g
-        self.count = count
+        self._count = count
         self.offset = offset
         self._objects = []
 
+    @property
+    def count(self):
+        return self._count
+
     async def a_readall(self):
-        if self.count is None:
+        if self._count is None:
             raise CantReadAll("can't readall when count is unknown")
         async for _ in self:
             pass
         return self._objects
 
     async def a_read_next(self):
-        if self.count is None or self.offset < self.count:
+        if self._count is None or self.offset < self.count:
             try:
                 obj = await self._g.asend(None)
             except StopAsyncIteration:
-                if self.count is None:
-                    self.count = self.offset + 1
+                if self._count is None:
+                    self._count = self.offset + 1
                 raise
         else:
             raise StopAsyncIteration

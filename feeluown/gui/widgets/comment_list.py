@@ -4,9 +4,11 @@ from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
     QPoint, QRect
 from PyQt5.QtGui import QPalette, QPen, QFont, QFontMetrics
 from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame, \
-    QApplication
+    QApplication, QWidget
 
 from feeluown.gui.helpers import ItemViewNoScrollMixin, Paddings, Margins
+from feeluown.library import CommentModel
+from feeluown.utils.reader import Reader
 
 
 def human_readable_number_v1(n):
@@ -16,12 +18,11 @@ def human_readable_number_v1(n):
         if n > value:
             first, second = n // value, (n % value) // (value // 10)
             return f'{first}.{second}{unit}'
-    else:
-        return str(n)
+    return str(n)
 
 
 class CommentListModel(QAbstractListModel):
-    def __init__(self, reader, parent=None):
+    def __init__(self, reader: Reader[CommentModel], parent=None):
         super().__init__(parent)
 
         self._reader = reader
@@ -45,7 +46,7 @@ class CommentListModel(QAbstractListModel):
 
 
 class CommentListDelegate(QStyledItemDelegate):
-    def __init__(self, parent):
+    def __init__(self, parent: QWidget):
         super().__init__(parent=parent)
 
         self._margin_h = 0
@@ -56,6 +57,7 @@ class CommentListDelegate(QStyledItemDelegate):
         self._parent_comment_margins = Margins(20, 5, 10, 5)
 
     def paint(self, painter, option, index):
+        # pylint: disable=too-many-locals,too-many-statements
         painter.save()
         comment = index.data(Qt.UserRole)
         fm = option.fontMetrics
@@ -145,7 +147,7 @@ class CommentListDelegate(QStyledItemDelegate):
 
     def sizeHint(self, option, index):
         super_size_hint = super().sizeHint(option, index)
-        parent_width = self.parent().width()
+        parent_width = self.parent().width()  # type: ignore
         fm = option.fontMetrics
         comment = index.data(Qt.UserRole)
         content_width = parent_width - 2 * self._margin_h
@@ -197,35 +199,3 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
             row_count -= 1
             height += self.sizeHintForRow(row_count)
         return height
-
-
-if __name__ == '__main__':
-    import time
-    from feeluown.utils.reader import wrap
-    from feeluown.library.models import CommentModel, BriefUserModel, BriefCommentModel
-
-    user = BriefUserModel(identifier='fuo-bot',
-                          source='fuo',
-                          name='随风而去')
-    content = ('有没有一首歌会让你很想念，有没有一首歌你会假装听不见，'
-               '听了又掉眼泪，却按不下停止健')
-    brief_comment = BriefCommentModel(identifier='ouf',
-                                      user_name='world',
-                                      content='有没有人曾告诉你')
-    comment = CommentModel(identifier='fuo',
-                           source='fuo',
-                           user=user,
-                           liked_count=1,
-                           content=content,
-                           time=int(time.time()),
-                           parent=brief_comment,)
-    comment2 = comment.copy()
-    comment2.content = 'hello world'
-
-    app = QApplication([])
-    reader = wrap([comment, comment2, comment])
-    model = CommentListModel(reader)
-    widget = CommentListView()
-    widget.setModel(model)
-    widget.show()
-    app.exec()

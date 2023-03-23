@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 from feeluown.utils import aio
-from feeluown.utils.reader import AsyncReader
+from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.excs import ProviderIOError
 from feeluown.library import NotSupported, ModelType, BaseModel
 from feeluown.models.uri import reverse
@@ -332,7 +332,7 @@ class ReaderFetchMoreMixin:
             self.fetch_more_impl()
 
     def can_fetch_more(self, _=None):
-        reader = self._reader
+        reader: Reader = self._reader
 
         count = reader.count
         if count is not None:
@@ -361,6 +361,7 @@ class ReaderFetchMoreMixin:
             future = aio.create_task(fetch())
             future.add_done_callback(self._async_fetch_cb)
         else:
+            assert isinstance(reader, Reader)
             try:
                 items = reader.read_range(self.rowCount(), step + self.rowCount())
             except ProviderIOError:
