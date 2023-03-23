@@ -49,8 +49,8 @@ class TestRandomReader(TestCase):
         mock_read_func.return_value = list(range(20, 30))
         self.p._read_func = mock_read_func
 
-        self.p._read(30)
-        obj = self.p._read(25)
+        self.p.read(30)
+        obj = self.p.read(25)
         self.assertEqual(obj, 25)
         mock_read_func.assert_called_once_with(20, 30)
 
