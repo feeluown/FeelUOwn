@@ -12,6 +12,7 @@ resized, the cover width and the margin should make a few adjustment.
 # pylint: disable=unused-argument
 import logging
 import random
+from typing import TypeVar, Optional, List, cast, Generic
 
 from PyQt5.QtCore import (
     QAbstractListModel, QModelIndex, Qt,
@@ -28,9 +29,13 @@ from PyQt5.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.models.uri import reverse
-from feeluown.gui.helpers import ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin
+from feeluown.gui.helpers import (
+    ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin,
+    ModelUsingReader
+)
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
 
 
 COLORS = {
@@ -45,7 +50,7 @@ COLORS = {
 }
 
 
-class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
+class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
@@ -57,7 +62,7 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
 
         self.reader = self._reader = wrap(reader)
         self._fetch_more_step = 10
-        self._items = []
+        self._items: List[T] = []
         self._is_fetching = False
 
         self.source_name_map = source_name_map or {}
@@ -65,11 +70,14 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin):
         self.colors = []
         self.pixmaps = {}  # {uri: QPixmap}
 
-    def rowCount(self, parent=QModelIndex()):
+    def rowCount(self, _=QModelIndex()):
         return len(self._items)
 
-    def _fetch_more_cb(self, items):
+    def _fetch_more_cb(self, items: Optional[List[T]]):
         self._is_fetching = False
+        # None means an error occured.
+        if items is None:
+            return
         if items is not None and not items:
             self.no_more_item.emit()
             return
@@ -220,7 +228,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
 
     def filterAcceptsRow(self, source_row, source_parent):
         accepted = True
-        source_model = self.sourceModel()
+        source_model = cast(ImgListModel, self.sourceModel())
         index = source_model.index(source_row, parent=source_parent)
         artist = index.data(Qt.UserRole)
         if self.text:
@@ -228,7 +236,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
         return accepted
 
 
-class ImgListView(ItemViewNoScrollMixin, QListView):
+class ImgListView(QListView, ItemViewNoScrollMixin):
     """
     .. versionadded:: 3.7.7
        The *img_min_width*, *img_spacing*, *img_text_height* parameter were added.

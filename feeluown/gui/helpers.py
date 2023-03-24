@@ -8,23 +8,26 @@ import asyncio
 import random
 import sys
 import logging
+from typing import TypeVar, List, Optional, Generic, Union, cast, TypeAlias
 
 try:
     # helper module should work in no-window mode
     from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
-        QAbstractListModel
+        QAbstractListModel, QAbstractItemModel, QRect
     from PyQt5.QtGui import QPalette, QFontMetrics
-    from PyQt5.QtWidgets import QApplication, QScrollArea
+    from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QAbstractItemView
 except ImportError:
     pass
 
 from feeluown.utils import aio
 from feeluown.utils.reader import AsyncReader, Reader
+from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError
-from feeluown.library import NotSupported, ModelType, BaseModel
+from feeluown.library import NotSupported, ModelType, BaseModel, SongProtocol
 from feeluown.models.uri import reverse
 
 logger = logging.getLogger(__name__)
+T = TypeVar("T")
 
 
 async def async_run(func, loop=None, executor=None):
@@ -79,7 +82,7 @@ def palette_set_bg_color(palette, color):
 
 
 class BgTransparentMixin:
-    def __init__(self, *args, **kwargs):
+    def __init__(self: QWidget, *args, **kwargs):  # type: ignore[misc]
         palette = self.palette()
         palette_set_bg_color(palette, Qt.transparent)
         self.setPalette(palette)
@@ -312,7 +315,27 @@ class Paddings(tuple):
 Margins = Paddings
 
 
-class ReaderFetchMoreMixin:
+# HELP(cosven): please help remove duplicate code between ReaderFetchMoreMixin
+# and this class.
+class ModelUsingReader(Protocol[T]):
+    _reader: Union[Reader[T], AsyncReader]
+    _items: List[T]
+    _fetch_more_step: int
+    _is_fetching: bool
+
+    def rowCount(self) -> int: ...
+    def beginInsertRows(self, _, __, ___): ...
+    def endInsertRows(self): ...
+    def canFetchMore(self, _) -> bool: ...
+    def fetchMore(self, _): ...
+    def can_fetch_more(self, _=None) -> bool: ...
+    def fetch_more_impl(self): ...
+    def on_items_fetched(self, items: List[T]): ...
+    def _fetch_more_cb(self, items: Optional[List[T]]): ...
+    def _async_fetch_cb(self, future): ...
+
+
+class ReaderFetchMoreMixin(QAbstractItemModel, Generic[T]):
     """
     The class should implement
 
@@ -323,17 +346,16 @@ class ReaderFetchMoreMixin:
     """
     no_more_item = pyqtSignal()
 
-    def canFetchMore(self, _=None):
+    def canFetchMore(self: ModelUsingReader[T], _):
         return self.can_fetch_more()
 
-    def fetchMore(self, _=None):
+    def fetchMore(self: ModelUsingReader[T], _):
         if self._is_fetching is False:
             self._is_fetching = True
             self.fetch_more_impl()
 
-    def can_fetch_more(self, _=None):
-        reader: Reader = self._reader
-
+    def can_fetch_more(self: ModelUsingReader[T], _=None):
+        reader = cast(Reader, self._reader)
         count = reader.count
         if count is not None:
             return count > self.rowCount()
@@ -342,7 +364,7 @@ class ReaderFetchMoreMixin:
         # so it is safe to return True here
         return True
 
-    def fetch_more_impl(self):
+    def fetch_more_impl(self: ModelUsingReader[T]):
         """fetch more items from reader
         """
         reader = self._reader
@@ -352,7 +374,7 @@ class ReaderFetchMoreMixin:
             async def fetch():
                 items = []
                 count = 0
-                async for item in reader:
+                async for item in reader:  # type: ignore
                     items.append(item)
                     count += 1
                     if count == step:
@@ -366,24 +388,23 @@ class ReaderFetchMoreMixin:
                 items = reader.read_range(self.rowCount(), step + self.rowCount())
             except ProviderIOError:
                 logger.exception('fetch more items failed')
-                self._fetch_more_cb([])
+                self._fetch_more_cb(None)
             else:
                 self._fetch_more_cb(items)
 
-    def on_items_fetched(self, items):
+    def on_items_fetched(self: ModelUsingReader[T], items: List[T]):
         begin = len(self._items)
         end = begin + len(items) - 1
         self.beginInsertRows(QModelIndex(), begin, end)
         self._items.extend(items)
         self.endInsertRows()
 
-    def _fetch_more_cb(self, items):
+    def _fetch_more_cb(self: ModelUsingReader[T], items: Optional[List[T]]):
         self._is_fetching = False
-        if items is None:
-            return
-        self.on_items_fetched(items)
+        if items is not None:
+            self.on_items_fetched(items)
 
-    def _async_fetch_cb(self, future):
+    def _async_fetch_cb(self: ModelUsingReader[T], future):
         try:
             items = future.result()
         except:  # noqa
@@ -440,6 +461,7 @@ def fetch_cover_wrapper(app):
             img_url, _ = model.cache_get('album_cover')
         if img_url is None:
             if model_is_song:
+                upgraded_song = cast(SongProtocol, upgraded_song)
                 model_with_img = upgraded_song.album
             else:
                 model_with_img = model
