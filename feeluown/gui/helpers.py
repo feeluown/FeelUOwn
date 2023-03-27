@@ -1,4 +1,21 @@
 # mypy: disable-error-code=attr-defined
+#
+# HELP: Disable mypy check(attr-defined) since there is no good way to
+# typing a Mixin class like ItemViewNoScroll: https://github.com/python/typing/issues/213
+#
+# TODO(cosven): Such mixin class(like ItemViewNoScrollMixin) has little reable and
+# it's hard to typing. I think we can split it into a delegate and a mixin to solve
+# this problem.
+#
+# For example::
+#
+#     class ItemViewNoScrollManager: ...
+#     class ItemViewNoScrollMixin: ...
+#     class ListView(ItemViewNoScrollMixin, QListView):
+#         def __init__(self):
+#             self.no_scroll_manager = ItemViewNoScrollManager(self)
+#     class NoScrollableItemView(Protocol):
+#         no_scroll_manager: ItemViewNoScrollManager
 
 import asyncio
 import random
@@ -21,6 +38,7 @@ from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError
 from feeluown.library import NotSupported, ModelType, BaseModel, SongProtocol
 from feeluown.models.uri import reverse
+
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")

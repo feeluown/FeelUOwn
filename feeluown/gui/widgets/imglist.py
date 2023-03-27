@@ -31,7 +31,6 @@ from feeluown.utils.reader import wrap
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import (
     ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin,
-    ModelUsingReader
 )
 
 logger = logging.getLogger(__name__)
