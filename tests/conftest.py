@@ -5,7 +5,7 @@ from feeluown import models
 from feeluown.library import (
     AbstractProvider, ProviderV2, ModelType, ProviderFlags as PF,
     AlbumModel, ArtistModel, BriefVideoModel, BriefSongModel,
-    Library,
+    Library, SongModel, BriefAlbumModel, BriefArtistModel
 )
 from feeluown.media import Quality, Media, MediaType
 from feeluown.utils.reader import create_reader
@@ -48,6 +48,10 @@ class EkafProvider(AbstractProvider, ProviderV2):
     @property
     def name(self):
         return 'EKAF'
+
+    def song_get(self, identifier):
+        if identifier == _ekaf_song0.identifier:
+            return _ekaf_song0
 
     def song_list_quality(self, song):
         return []
@@ -110,6 +114,10 @@ _song2 = FakeSongModel(identifier=2, url='2.mp3')
 _song3 = FakeSongModel(identifier=3)
 _ekaf_brief_song0 = BriefSongModel(source=EkafSource,
                                    identifier='0')
+_ekaf_brief_album0 = BriefAlbumModel(source=EkafSource,
+                                     identifier='0')
+_ekaf_brief_artist0 = BriefArtistModel(source=EkafSource,
+                                       identifier='0')
 _ekaf_album0 = AlbumModel(source=EkafSource,
                           identifier='0', name='0', cover='',
                           description='', songs=[], artists=[])
@@ -118,6 +126,9 @@ _ekaf_artist0 = ArtistModel(source=EkafSource,
                             description='', hot_songs=[], aliases=[])
 _ekaf_brief_mv0 = BriefVideoModel(source=EkafSource,
                                   identifier='0', title='')
+_ekaf_song0 = SongModel(source=EkafSource,
+                        identifier='0', title='0', album=_ekaf_brief_album0,
+                        artists=[_ekaf_brief_artist0], duration=0)
 
 
 @pytest.fixture
@@ -133,6 +144,11 @@ def album():
 @pytest.fixture
 def ekaf_brief_song0():
     return _ekaf_brief_song0
+
+
+@pytest.fixture
+def ekaf_song0():
+    return _ekaf_song0
 
 
 @pytest.fixture
