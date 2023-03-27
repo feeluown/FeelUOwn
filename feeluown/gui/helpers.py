@@ -1,9 +1,5 @@
-"""
-feeluown.gui.helpers
-~~~~~~~~~~~~~~~~
+# mypy: disable-error-code=attr-defined
 
-和应用逻辑相关的一些工具函数
-"""
 import asyncio
 import random
 import sys
@@ -147,6 +143,14 @@ class ItemViewNoScrollMixin:
     automatically adjueted.
 
     The itemview with no_scroll_v=True is usually used with an outside ScrollArea.
+
+    Python Notes::
+
+        ItemViewNoScrollMixin follows the "cooperative multi-inheritance" pattern.
+        Since ItemViewNoScrollMixin use some QObject API, subclass should consider
+        the MRO order. In other words, ItemViewNoScrollMixin should be the parent
+        class of QObject. XWidget(ItemViewNoScrollMixin, QObject) is a good choice,
+        and XWidget(QObject, ItemViewNoScrollMixin) is not.
     """
     def __init__(self, *args, no_scroll_v=True, row_height=0, least_row_count=0,
                  fixed_row_count=0, reserved=30, **kwargs):
@@ -160,6 +164,7 @@ class ItemViewNoScrollMixin:
         .. versionadded:: 3.8.9
            The *fixed_row_count* parameter was added.
         """
+        super().__init__(**kwargs)  # Cooperative multi-inheritance.
         self._least_row_count = least_row_count
         self._fixed_row_count = fixed_row_count
         self._row_height = row_height
@@ -213,7 +218,7 @@ class ItemViewNoScrollMixin:
             self.adjust_height()
 
     def setModel(self, model):
-        super().setModel(model)
+        super().setModel(model)  # type: ignore[misc]
         if model is None:
             return
         model.rowsInserted.connect(self.on_rows_changed)
@@ -231,10 +236,10 @@ class ItemViewNoScrollMixin:
             else:
                 e.ignore()  # let parents handle it
         else:
-            super().wheelEvent(e)
+            super().wheelEvent(e)  # type: ignore[misc]
 
     def sizeHint(self):
-        super_size_hint = super().sizeHint()
+        super_size_hint = super().sizeHint()  # type: ignore[misc]
         if self._no_scroll_v is False:
             return super_size_hint
 
@@ -335,7 +340,7 @@ class ModelUsingReader(Protocol[T]):
     def _async_fetch_cb(self, future): ...
 
 
-class ReaderFetchMoreMixin(QAbstractItemModel, Generic[T]):
+class ReaderFetchMoreMixin(Generic[T]):
     """
     The class should implement
 

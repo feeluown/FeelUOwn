@@ -174,8 +174,7 @@ class CommentListDelegate(QStyledItemDelegate):
 class CommentListView(ItemViewNoScrollMixin, QListView):
 
     def __init__(self, parent=None, **kwargs):
-        super().__init__(parent, **kwargs)
-        QListView.__init__(self, parent)
+        super().__init__(parent=parent, **kwargs)
 
         self._delegate = CommentListDelegate(self)
         self.setItemDelegate(self._delegate)

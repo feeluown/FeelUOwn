@@ -125,8 +125,7 @@ class ProvidersDelegate(QStyledItemDelegate):
 
 class ProvidersView(ItemViewNoScrollMixin, QListView):
     def __init__(self, parent, library):
-        super().__init__(parent)
-        QListView.__init__(self, parent=parent)
+        super().__init__(parent=parent)
         self._library = library
 
         self._reserved = 10

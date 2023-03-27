@@ -199,8 +199,7 @@ class SongListView(ItemViewNoScrollMixin, QListView):
     play_song_needed = pyqtSignal([object])
 
     def __init__(self, parent=None, **kwargs):
-        super().__init__(parent, **kwargs)
-        QListView.__init__(self, parent)
+        super().__init__(parent=parent, **kwargs)
 
         self.delegate = SongListDelegate(self)
         self.setItemDelegate(self.delegate)
@@ -555,8 +554,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
     row_hovered = pyqtSignal([object])  # None when not hovered, row id when hovered.
 
     def __init__(self, app, parent=None):
-        super().__init__(parent)
-        QTableView.__init__(self, parent)
+        super().__init__(parent=parent)
 
         self._app = app
 

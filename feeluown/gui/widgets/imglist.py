@@ -244,8 +244,7 @@ class ImgListView(QListView, ItemViewNoScrollMixin):
     def __init__(self, parent=None,
                  img_min_width=150, img_spacing=20, img_text_height=40,
                  **kwargs):
-        super().__init__(**kwargs)
-        QListView.__init__(self, parent=parent)
+        super().__init__(parent=parent, **kwargs)
 
         self.img_min_width = img_min_width
         self.img_spacing = img_spacing
