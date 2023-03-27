@@ -158,7 +158,14 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         if obj is None:
             return
 
-        if option.state & QStyle.State_MouseOver:
+        selected = option.state & QStyle.State_Selected
+        if selected:
+            painter.save()
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(option.palette.color(QPalette.Highlight))
+            painter.drawRect(rect)
+            painter.restore()
+        elif option.state & QStyle.State_MouseOver:
             painter.save()
             painter.setPen(Qt.NoPen)
             painter.setBrush(option.palette.color(QPalette.Window))
@@ -168,12 +175,17 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         painter.save()
         painter.translate(rect.x() + card_left_padding,  rect.y() + card_top_padding)
 
-        text_color = option.palette.color(QPalette.Text)
-        if text_color.lightness() > 150:
-            non_text_color = text_color.darker(140)
+        if selected:
+            text_color = option.palette.color(QPalette.HighlightedText)
+            non_text_color = QColor(text_color)
+            non_text_color.setAlpha(200)
         else:
-            non_text_color = text_color.lighter(150)
-        non_text_color.setAlpha(100)
+            text_color = option.palette.color(QPalette.Text)
+            if text_color.lightness() > 150:
+                non_text_color = text_color.darker(140)
+            else:
+                non_text_color = text_color.lighter(150)
+            non_text_color.setAlpha(100)
 
         # Draw image.
         painter.save()

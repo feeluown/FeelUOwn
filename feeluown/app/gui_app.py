@@ -55,7 +55,7 @@ class GuiApp(App, QWidget):
             # Based on past experience, 13px is the default font size for all platform,
             # including windows, linux and macOS.
             font.setPixelSize(13)
-            QApplication.instance().setFont(font)
+            QApplication.setFont(font)
 
         QWidget.__init__(self)
         App.__init__(self, *args, **kwargs)
