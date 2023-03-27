@@ -54,6 +54,7 @@ class ProgressSlider(QSlider):
 
     def on_released(self):
         # Only set position if the player has a valid media and the media is changed.
+        assert self._dragging_ctx is not None
         if not self._dragging_ctx.is_media_changed:
             self.maybe_update_player_position(self.value())
         self._dragging_ctx = None

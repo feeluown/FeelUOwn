@@ -46,7 +46,7 @@ class CookiesLoginDialog(LoginDialog):
     One usage example: feeluown-qqmusic.
     """
 
-    def __init__(self, uri: str = None, required_cookies_fields=None):
+    def __init__(self, uri=None, required_cookies_fields=None):
         if has_webengine and uri and required_cookies_fields:
             use_webview = True
             flags = Qt.Window
@@ -112,7 +112,7 @@ class CookiesLoginDialog(LoginDialog):
         """
         cookies: uid=111; userAction=222;
         """
-        cookie = SimpleCookie()
+        cookie = SimpleCookie()  # type: ignore[var-annotated]
         cookie.load(text)
         cookie_dict = {}
         for _, morsel in cookie.items():

@@ -182,7 +182,9 @@ class SongListDelegate(QStyledItemDelegate):
                     self.play_btn_pressed = True
                 if event.type() == QEvent.MouseButtonRelease:
                     if self.play_btn_pressed is True:
-                        self.parent().play_song_needed.emit(index.data(Qt.UserRole))
+                        parent = self.parent()
+                        assert isinstance(parent, SongListView)
+                        parent.play_song_needed.emit(index.data(Qt.UserRole))
             if event.type() == QEvent.MouseButtonRelease:
                 self.play_btn_pressed = False
         return super().editorEvent(event, model, option, index)
@@ -199,8 +201,7 @@ class SongListView(ItemViewNoScrollMixin, QListView):
     play_song_needed = pyqtSignal([object])
 
     def __init__(self, parent=None, **kwargs):
-        super().__init__(parent, **kwargs)
-        QListView.__init__(self, parent)
+        super().__init__(parent=parent, **kwargs)
 
         self.delegate = SongListDelegate(self)
         self.setItemDelegate(self.delegate)
@@ -280,7 +281,9 @@ class BaseSongsTableModel(QAbstractTableModel):
                 # we set height to 25 since the header can be short under macOS.
                 # HELP: set height to fixed value manually is not so elegant
                 height = 25
-                w = self.columns_config.get_width(section, self.parent().width())
+                parent = self.parent()
+                assert isinstance(parent, QWidget)
+                w = self.columns_config.get_width(section, parent.width())
                 return QSize(w, height)
         else:
             if role == Qt.DisplayRole:
@@ -520,8 +523,10 @@ class SongsTableDelegate(QStyledItemDelegate):
         """
         if index.isValid() and self.parent() is not None:
             # The way getting the sourceModel seems a little strange.
+            parent = self.parent()
+            assert isinstance(parent, QWidget)
             w = index.model().sourceModel().columns_config.get_width(
-                index.column(), self.parent().width())
+                index.column(), parent.width())
             h = option.rect.height()
             return QSize(w, h)
         return super().sizeHint(option, index)
@@ -534,7 +539,9 @@ class SongsTableDelegate(QStyledItemDelegate):
                 self.pressed_cell = cell
             elif etype == QEvent.MouseButtonRelease:
                 if cell == self.pressed_cell and cell[1] == Column.index:
-                    self.parent().play_song_needed.emit(index.data(Qt.UserRole))
+                    parent = self.parent()
+                    assert isinstance(parent, SongsTableView)
+                    parent.play_song_needed.emit(index.data(Qt.UserRole))
                 self.pressed_cell = None
 
         return super().editorEvent(event, model, option, index)
@@ -555,8 +562,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
     row_hovered = pyqtSignal([object])  # None when not hovered, row id when hovered.
 
     def __init__(self, app, parent=None):
-        super().__init__(parent)
-        QTableView.__init__(self, parent)
+        super().__init__(parent=parent)
 
         self._app = app
 
@@ -612,9 +618,14 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
             hide_columns = [Column.source]
             columns_config.set_width_ratio(Column.artist, 0.2)
             columns_config.set_width_ratio(Column.album, 0.3)
-        self.model().sourceModel().update_columns_config(columns_config)
 
-        for i in range(0, self.model().columnCount()):
+        model = self.model()
+        assert isinstance(model, SongFilterProxyModel)
+        source = model.sourceModel()
+        assert isinstance(source, SongsTableModel)
+        source.update_columns_config(columns_config)
+
+        for i in range(0, model.columnCount()):
             if i in hide_columns:
                 self.hideColumn(i)
             else:
@@ -678,6 +689,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
             if song not in songs_to_remove:
                 songs_to_remove.append(song)
         for song in songs_to_remove:
+            assert callable(self.remove_song_func)
             self.remove_song_func(song)
 
     def viewportEvent(self, event):

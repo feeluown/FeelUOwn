@@ -34,7 +34,7 @@ class MagicBox(QLineEdit):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedHeight(32)
         self.setFrame(False)
-        self.setAttribute(Qt.WA_MacShowFocusRect, 0)
+        self.setAttribute(Qt.WA_MacShowFocusRect, False)
         self.setTextMargins(5, 0, 0, 0)
 
         self._timer = QTimer(self)

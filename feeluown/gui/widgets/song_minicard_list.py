@@ -258,8 +258,7 @@ class SongMiniCardListView(ItemViewNoScrollMixin, QListView):
     play_song_needed = pyqtSignal([object])
 
     def __init__(self, parent=None, **kwargs):
-        super().__init__(parent, **kwargs)
-        QListView.__init__(self, parent)
+        super().__init__(parent=parent, **kwargs)
 
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)

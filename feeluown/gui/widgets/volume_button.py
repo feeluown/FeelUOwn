@@ -48,6 +48,7 @@ class _Slider(QWidget):
         # In general, the widget itself do not care about its position
         parent = self.parent()
         if parent:
+            assert isinstance(parent, QWidget)
             pgeom = parent.geometry()
             geom = self.geometry()
             x = (pgeom.width() - geom.width())//2
@@ -67,10 +68,10 @@ class VolumeButton(QPushButton):
         # TODO: let slider have orientation?
         super().__init__(parent)
 
-        self.icons = icons
-        if self.icons:
-            self.icon = VolumeButton.UNMUTED_ICON
-            self.setIcon(self.icons['unmuted'])
+        self._icons = icons
+        if self._icons:
+            self._icon = VolumeButton.UNMUTED_ICON
+            self.setIcon(self._icons['unmuted'])
 
         self.slider = _Slider(self)
         self.slider.hide()
@@ -95,11 +96,11 @@ class VolumeButton(QPushButton):
         self.change_volume_needed.emit(value)
 
         # update button icon
-        if not self.icons:
+        if not self._icons:
             return
         if self.slider.is_mute():
-            self.setIcon(self.icons['muted'])
-            self.icon = VolumeButton.MUTED_ICON
-        elif self.icon == VolumeButton.MUTED_ICON:
-            self.setIcon(self.icons['unmuted'])
-            self.icon = VolumeButton.UNMUTED_ICON
+            self.setIcon(self._icons['muted'])
+            self._icon = VolumeButton.MUTED_ICON
+        elif self._icon == VolumeButton.MUTED_ICON:
+            self.setIcon(self._icons['unmuted'])
+            self._icon = VolumeButton.UNMUTED_ICON

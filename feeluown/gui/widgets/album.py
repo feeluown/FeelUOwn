@@ -34,6 +34,7 @@ class AlbumFilterProxyModel(ImgFilterProxyModel):
     def filterAcceptsRow(self, source_row, source_parent):
         accepted = super().filterAcceptsRow(source_row, source_parent)
         source_model = self.sourceModel()
+        assert isinstance(source_model, AlbumListModel)
         index = source_model.index(source_row, parent=source_parent)
         album = index.data(Qt.UserRole)
         if accepted and self.types:
