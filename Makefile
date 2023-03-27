@@ -20,9 +20,7 @@ MYPY_STRICT_PKGS=
 MYPY_STRICT_PKGS+=feeluown/utils/reader.py
 MYPY_STRICT_PKGS+=feeluown/server/
 MYPY_STRICT_PKGS+=feeluown/cli/cli.py
-MYPY_STRICT_PKGS+=feeluown/gui/widgets/textlist.py
-MYPY_STRICT_PKGS+=feeluown/gui/widgets/comment_list.py
-MYPY_STRICT_PKGS+=feeluown/gui/widgets/imglist.py
+MYPY_STRICT_PKGS+=feeluown/gui/widgets/
 MYPY_STRICT_PKGS+=feeluown/gui/helpers.py
 mypy:
 # Add flag --check-untyped-defs.

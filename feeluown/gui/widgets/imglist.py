@@ -12,7 +12,7 @@ resized, the cover width and the margin should make a few adjustment.
 # pylint: disable=unused-argument
 import logging
 import random
-from typing import TypeVar, Optional, List, cast, Generic
+from typing import TypeVar, Optional, List, cast
 
 from PyQt5.QtCore import (
     QAbstractListModel, QModelIndex, Qt,
@@ -235,7 +235,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
         return accepted
 
 
-class ImgListView(QListView, ItemViewNoScrollMixin):
+class ImgListView(ItemViewNoScrollMixin, QListView):
     """
     .. versionadded:: 3.7.7
        The *img_min_width*, *img_spacing*, *img_text_height* parameter were added.

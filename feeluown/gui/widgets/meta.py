@@ -106,7 +106,7 @@ class TableMetaWidget(MetaWidget):
 
     def add_tabbar(self, tabbar):
         self._right_layout.addWidget(tabbar)
-        self._right_layout.setAlignment(self.parent().tabbar, Qt.AlignLeft)
+        self._right_layout.setAlignment(tabbar, Qt.AlignLeft)
 
     def set_cover_pixmap(self, pixmap):
         if pixmap is not None:
@@ -203,7 +203,9 @@ class TableMetaWidget(MetaWidget):
         # image will also be scaled, so we need to repaint on bottom panel
         # and meta widget. However, by default, qt will only repaint
         # meta widget in this case, so we trigger bottom panel update manually
-        self.parent()._app.ui.bottom_panel.update()
+        #
+        # type ignore: parent should be TableContainer.
+        self.parent()._app.ui.bottom_panel.update()  # type: ignore[attr-defined]
 
 
 class CollectionToolbar(QWidget):

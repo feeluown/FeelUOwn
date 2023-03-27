@@ -38,6 +38,7 @@ class ResizableFramelessContainer(QWidget):
         self._layout.insertWidget(0, self._widget)
 
     def detach(self):
+        assert self._widget is not None
         self._layout.removeWidget(self._widget)
         self._widget = None
 

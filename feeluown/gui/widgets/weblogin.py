@@ -36,7 +36,7 @@ class WebLoginView(QWebEngineView):
         cookie_store.deleteAllCookies()
         cookie_store.cookieAdded.connect(self.cookie_added)
         cookie_store.cookieRemoved.connect(self.cookie_removed)
-        self.saved_cookies = dict()
+        self.saved_cookies = dict()  # type: ignore
         self.required_cookies = required_cookies
         self.setPage(NoOutputWebPage(self))
         self.load(QUrl(uri))
@@ -61,7 +61,9 @@ class WebLoginView(QWebEngineView):
         """
         cookie_domain = cookie.domain().lstrip('.')
         urisegs = urlparse(self.init_uri)
-        return urisegs.hostname.endswith(cookie_domain)
+        if urisegs.hostname is not None:
+            return urisegs.hostname.endswith(cookie_domain)
+        return False
 
     def cookie_added(self, cookie: QNetworkCookie):
         if self.check_cookie_domain(cookie):

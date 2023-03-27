@@ -21,14 +21,14 @@ import asyncio
 import random
 import sys
 import logging
-from typing import TypeVar, List, Optional, Generic, Union, cast, TypeAlias
+from typing import TypeVar, List, Optional, Generic, Union, cast
 
 try:
     # helper module should work in no-window mode
     from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
-        QAbstractListModel, QAbstractItemModel, QRect
+        QAbstractListModel
     from PyQt5.QtGui import QPalette, QFontMetrics
-    from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QAbstractItemView
+    from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
 except ImportError:
     pass
 

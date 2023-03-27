@@ -52,6 +52,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         # old version (<= v5.15.2)
         if self.ctx is None:
             self.initializeGL()
+            assert self.ctx is not None
         # compatible with HiDPI display
         ratio = self._app.devicePixelRatio()
         w = int(self.width() * ratio)
