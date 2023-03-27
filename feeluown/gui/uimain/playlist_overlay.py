@@ -1,7 +1,7 @@
-from PyQt5.QtCore import Qt, QRect, QEvent, QModelIndex
+from PyQt5.QtCore import Qt, QRect, QEvent, QModelIndex, QItemSelectionModel
 from PyQt5.QtWidgets import (
     QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout, QMenu,
-    QApplication, QShortcut
+    QApplication, QShortcut, QAbstractItemView
 )
 from PyQt5.QtGui import (
     QColor, QLinearGradient, QPalette, QPainter, QKeySequence,
@@ -44,6 +44,11 @@ class PlaylistOverlay(QWidget):
         self._tabbar = TabBar(self)
         self._clear_playlist_btn = TextButton('清空播放队列')
         self._playback_mode_switch = PlaybackModeSwitch(app)
+        self._goto_current_song_btn = TextButton('跳转到当前歌曲')
+        # Please update the list when you add new buttons.
+        self._btns = [self._clear_playlist_btn,
+                      self._playback_mode_switch,
+                      self._goto_current_song_btn]
         self._stacked_layout = QStackedLayout()
         self._shadow_width = 15
         self._player_playlist_model = PlayerPlaylistModel(
@@ -56,8 +61,12 @@ class PlaylistOverlay(QWidget):
         self._tabbar.setAutoFillBackground(True)
 
         self._clear_playlist_btn.clicked.connect(self._app.playlist.clear)
+        self._goto_current_song_btn.clicked.connect(self.goto_current_song)
         QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
-        QApplication.instance().focusChanged.connect(self.on_focus_changed)
+        q_app = QApplication.instance()
+        assert q_app is not None  # make type checker happy.
+        # type ignore: q_app has focusChanged signal, but type checker can't find it.
+        q_app.focusChanged.connect(self.on_focus_changed)  # type: ignore
         self._app.installEventFilter(self)
         self._tabbar.currentChanged.connect(self.show_tab)
         self.setup_ui()
@@ -79,6 +88,7 @@ class PlaylistOverlay(QWidget):
 
         self._btn_layout.addWidget(self._clear_playlist_btn)
         self._btn_layout.addWidget(self._playback_mode_switch)
+        self._btn_layout.addWidget(self._goto_current_song_btn)
         self._btn_layout.addStretch(0)
 
     def on_focus_changed(self, _, new):
@@ -92,6 +102,11 @@ class PlaylistOverlay(QWidget):
             return
         self.hide()
 
+    def goto_current_song(self):
+        view = self._stacked_layout.currentWidget()
+        assert isinstance(view, PlayerPlaylistView)
+        view.scroll_to_current_song()
+
     def show_tab(self, index):
         if not self.isVisible():
             return
@@ -99,7 +114,7 @@ class PlaylistOverlay(QWidget):
         view_options = dict(row_height=60, no_scroll_v=False)
         if index == 0:
             self._show_btns()
-            view = PlayerPlaylistView(self._app, **view_options)
+            view: SongMiniCardListView = PlayerPlaylistView(self._app, **view_options)
             view.setModel(self._player_playlist_model)
         else:
             self._hide_btns()
@@ -123,12 +138,12 @@ class PlaylistOverlay(QWidget):
         self._stacked_layout.setCurrentWidget(view)
 
     def _hide_btns(self):
-        self._clear_playlist_btn.hide()
-        self._playback_mode_switch.hide()
+        for btn in self._btns:
+            btn.hide()
 
     def _show_btns(self):
-        self._clear_playlist_btn.show()
-        self._playback_mode_switch.show()
+        for btn in self._btns:
+            btn.show()
 
     def paintEvent(self, e):
         super().paintEvent(e)
@@ -218,6 +233,18 @@ class PlayerPlaylistView(SongMiniCardListView):
 
         action.triggered.connect(lambda: self._app.playlist.remove(song))
         menu.exec_(e.globalPos())
+
+    def scroll_to_current_song(self):
+        """Scroll to the current song, and select it to highlight it."""
+        current_song = self._app.playlist.current_song
+        songs = self._app.playlist.list()
+        if current_song is not None:
+            model = self.model()
+            row = songs.index(current_song)
+            index = model.index(row, 0)
+            # In order to highlight the current song.
+            self.selectionModel().select(index, QItemSelectionModel.SelectCurrent)
+            self.scrollTo(index, QAbstractItemView.PositionAtCenter)
 
 
 class PlaybackModeSwitch(TextButton):
