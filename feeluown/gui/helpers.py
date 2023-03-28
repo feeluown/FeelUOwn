@@ -17,11 +17,12 @@
 #     class NoScrollableItemView(Protocol):
 #         no_scroll_manager: ItemViewNoScrollManager
 
+from __future__ import annotations
 import asyncio
 import random
 import sys
 import logging
-from typing import TypeVar, List, Optional, Generic, Union, cast
+from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
 try:
     # helper module should work in no-window mode
@@ -38,6 +39,10 @@ from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import NotSupported, ModelType, BaseModel
 from feeluown.models.uri import reverse
+
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 
 logger = logging.getLogger(__name__)
@@ -437,7 +442,7 @@ class ReaderFetchMoreMixin(Generic[T]):
             self._fetch_more_cb(items)
 
 
-def fetch_cover_wrapper(app):
+def fetch_cover_wrapper(app: GuiApp):
     """
     Your should only use this helper within ImgListModel and SongMiniCardListModel.
     """
