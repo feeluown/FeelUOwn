@@ -23,5 +23,5 @@ from .models import ModelFlags, BaseModel, ModelType, \
     get_modelcls_by_type, \
     V2SupportedModelTypes
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
-    ProviderAlreadyExists, ResourceNotFound, MediaNotFound
+    ProviderAlreadyExists, ResourceNotFound, MediaNotFound, ModelCannotUpgrade
 from .provider_protocol import *

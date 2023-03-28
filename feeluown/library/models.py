@@ -258,6 +258,10 @@ class BriefUserModel(BaseBriefModel):
 
 
 class SongModel(BaseNormalModel):
+    """
+    ..versionadded: 3.8.11
+        The `pic_url` field.
+    """
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
     album: Optional[BriefAlbumModel]
@@ -268,6 +272,12 @@ class SongModel(BaseNormalModel):
     date: str = ''  # For example: 2020-12-11 00:00:00, 2020-12-11T00:00:00Z
     track: str = '1/1'  # The number of the track on the album.
     disc: str = '1/1'
+    # Before the field pic_url is added, user needs to fetch a AlbumModel
+    # to get the image url of the song, which means that there needs another
+    # IO request. However, for almost every music providers, the pic url of the song
+    # can be fetched in get_song_detail API. So one IO request can be saved
+    # to fetch a image url of the song.
+    pic_url: str = ''
 
     @property
     def artists_name(self):

@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
 from feeluown.excs import ProviderNotFound, ModelCannotUpgrade
 from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
-    NotSupported, SupportsSongLyric
+    NotSupported, SupportsSongLyric, ModelFlags
 )
 from feeluown.models.uri import reverse, resolve
 from feeluown.player import parse_lyric_text
@@ -81,9 +81,12 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
     await view.show_song_wiki(song, album)
     await view.maybe_show_song_similar(provider, song)
-    await view.maybe_show_song_hot_comments(provider, song)
+    try:
+        await view.maybe_show_song_hot_comments(provider, song)
+    except:  # noqa
+        logger.exception('show song hot comments failed')
     await view.maybe_show_song_lyric(song)
-    await view.maybe_show_album_cover(upgraded_album)
+    await view.maybe_show_song_pic(upgraded_song, upgraded_album)
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
@@ -138,7 +141,12 @@ class SongWikiLabel(QLabel):
             )
         artists_str = ' / '.join(artists_str_list)
         # Only show the date, like yyyy-mm-dd. Do not show hour/minutes/seconds.
-        date = song.date or album.released
+        if song.date:
+            date = song.date
+        elif ModelFlags.normal in album.meta.flags:
+            date = album.released
+        else:
+            date = ''
         date_fmted = date[:10] if date else ''
         kvs = [
             ('歌手', artists_str),
@@ -310,11 +318,16 @@ class SongExploreView(QWidget):
                 lyric = '<br>'.join(sentences)
                 self.lyric_label.setText(f'<p style="line-height: 120%">{lyric}</p>')
 
-    async def maybe_show_album_cover(self, album):
+    async def maybe_show_song_pic(self, song, album):
         if album:
             aio.run_afn(self.cover_label.show_cover,
                         album.cover,
-                        reverse(album))
+                        reverse(album) + '/cover')
+        else:
+            if ModelFlags.v2 in song.meta.flags:
+                aio.run_afn(self.cover_label.show_cover,
+                            song.pic_url,
+                            reverse(song) + '/pic_url')
 
 
 class InlineErrorMessageView(QLabel):

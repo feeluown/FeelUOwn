@@ -10,7 +10,9 @@ from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
-from feeluown.library import MediaNotFound, SongProtocol, ModelType, NotSupported
+from feeluown.library import (
+    MediaNotFound, SongProtocol, ModelType, NotSupported, ModelCannotUpgrade
+)
 from feeluown.media import Media
 from feeluown.models.uri import reverse
 
@@ -492,8 +494,22 @@ class Playlist:
         })
         try:
             song = await aio.run_fn(self._app.library.song_upgrade, song)
-            if song.album is not None:
+        except (NotSupported, ModelCannotUpgrade):
+            return metadata
+        except:  # noqa
+            logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
+            return metadata
+
+        if song.album is not None:
+            try:
                 album = await aio.run_fn(self._app.library.album_upgrade, song.album)
+            except (NotSupported, ModelCannotUpgrade):
+                artwork = ''
+                released = ''
+            except:  # noqa
+                logger.exception(
+                    f"fetching song's album meta failed, song:'{song.title_display}'")
+            else:
                 artwork = album.cover
                 released = album.released
                 # For model v1, the cover can be a Media object.
@@ -501,19 +517,17 @@ class Playlist:
                 # object with url set to fuo://local/songs/{identifier}/data/cover.
                 if isinstance(artwork, Media):
                     artwork = artwork.url
-            else:
-                artwork = ''
-                released = ''
-        except NotSupported:
-            # The song or the album can't be upgraded.
-            pass
-        except:  # noqa
-            logger.exception(f"prepare metadata for song '{str(song)}' failed")
         else:
-            if artwork:
-                metadata[MetadataFields.artwork] = artwork
-            if released:
-                metadata[MetadataFields.released] = released
+            artwork = ''
+            released = ''
+
+        # Try to use album meta first.
+        if artwork and released:
+            metadata[MetadataFields.artwork] = artwork
+            metadata[MetadataFields.released] = released
+        else:
+            metadata[MetadataFields.artwork] = song.pic_url or artwork
+            metadata[MetadataFields.released] = song.date or released
         return metadata
 
     async def _prepare_metadata_for_video(self, video):

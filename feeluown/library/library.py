@@ -690,7 +690,7 @@ class Library:
     def _model_upgrade(self, model):
         """
         :raises NotSupported: provider does't impl SupportGetProtocol for the model type
-        :raises CannotUpgrade: the model can't be upgraded
+        :raises ModelCannotUpgrade: the model can't be upgraded
         """
         # Upgrade model in v1 way if it is a v1 model.
         if MF.v2 not in model.meta.flags:

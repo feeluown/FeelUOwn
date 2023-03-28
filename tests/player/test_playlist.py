@@ -312,6 +312,7 @@ def test_playlist_next_should_call_set_current_song(app_mock, mocker, song):
 async def test_playlist_prepare_metadata_for_song(app_mock, pl, ekaf_brief_song0):
     class Album:
         cover = Media('fuo://')
+        released = '2018-01-01'
     album = Album()
     f = asyncio.Future()
     f.set_result(album)

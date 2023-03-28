@@ -35,8 +35,8 @@ except ImportError:
 from feeluown.utils import aio
 from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
-from feeluown.excs import ProviderIOError
-from feeluown.library import NotSupported, ModelType, BaseModel, SongProtocol
+from feeluown.excs import ProviderIOError, ModelCannotUpgrade
+from feeluown.library import NotSupported, ModelType, BaseModel
 from feeluown.models.uri import reverse
 
 
@@ -443,58 +443,7 @@ def fetch_cover_wrapper(app):
     """
     img_mgr, library = app.img_mgr, app.library
 
-    async def fetch_model_cover(model, cb):
-        # Get image unique id.
-        model_is_song = False
-        song_is_v2 = False
-        upgraded_song = None
-        if ModelType(model.meta.model_type) is ModelType.song:
-            model_is_song = True
-            if isinstance(model, BaseModel):
-                song_is_v2 = True
-                img_uid, _ = model.cache_get('album_uid')
-            else:
-                img_uid = None
-        else:
-            img_uid = reverse(model) + '/cover'
-        if img_uid is None:
-            assert model_is_song
-            try:
-                upgraded_song = await aio.run_fn(library.song_upgrade, model)
-                album = upgraded_song.album
-            except NotSupported:
-                album = None
-            if album is None:
-                cb(None)
-                return
-
-            img_uid = reverse(album) + '/cover'
-            if song_is_v2:
-                model.cache_set('album_uid', img_uid)
-
-        # Check image cache with image unique ID.
-        content = img_mgr.get_from_cache(img_uid)
-        if content is not None:
-            cb(content)
-            return
-
-        # Get image url.
-        img_url = None
-        if model_is_song and song_is_v2:
-            img_url, _ = model.cache_get('album_cover')
-        if img_url is None:
-            if model_is_song:
-                upgraded_song = cast(SongProtocol, upgraded_song)
-                model_with_img = upgraded_song.album
-            else:
-                model_with_img = model
-            try:
-                img_url = await aio.run_fn(library.model_get_cover, model_with_img)
-            except NotSupported:
-                img_url = ''
-            if model_is_song:
-                model.cache_set('album_cover', img_url)
-
+    async def fetch_image_with_cb(img_uid, img_url, cb):
         # Fetch image by url and invoke cb.
         if img_url:
             # FIXME: sleep random second to avoid send too many request to provider
@@ -503,6 +452,78 @@ def fetch_cover_wrapper(app):
             cb(content)
         else:
             cb(None)
+
+    async def fetch_song_pic_from_album(album, cb):
+        if album is not None:
+            await fetch_other_model_cover(album, cb)
+        else:
+            cb(None)
+
+    async def fetch_song_pic_url(model, cb):
+        """
+        The song may be a v2 brief model or a v1 model.
+        """
+        is_v2_model = isinstance(model, BaseModel)
+
+        # If the song is a v1 model, just fallback to use its album cover.
+        if not is_v2_model:
+            try:
+                upgraded_song = await aio.run_fn(library.song_upgrade, model)
+            except NotSupported:
+                cb(None)
+            else:
+                await fetch_song_pic_from_album(upgraded_song.album, cb)
+            return
+
+        # v2 song model has its own image(pic_url), check if it is in cache first.
+        cache_key = 'album_cover_uid'
+        song_img_uid = reverse(model) + '/pic_url'
+        album_img_uid, _ = model.cache_get(cache_key)
+        for img_uid in (song_img_uid, album_img_uid):
+            if img_uid:
+                content = img_mgr.get_from_cache(img_uid)
+                if content is not None:
+                    cb(content)
+                    return
+
+        # Image is not in cache.
+        try:
+            upgraded_song = await aio.run_fn(library.song_upgrade, model)
+        except (NotSupported, ModelCannotUpgrade):
+            cb(None)
+        else:
+            # Try to fetch with pic_url first.
+            # Note that some providers may not provide pic_url for songs.
+            if upgraded_song.pic_url:
+                img_uid = reverse(model) + '/pic_url'
+                img_url = upgraded_song.pic_url
+                return await fetch_image_with_cb(img_uid, img_url, cb)
+
+            album = upgraded_song.album
+            album_img_uid = reverse(album) + '/cover'
+            model.cache_set(cache_key, album_img_uid)
+            return await fetch_song_pic_from_album(album, cb)
+
+    async def fetch_other_model_cover(model, cb):
+        img_uid = reverse(model) + '/cover'
+
+        # Check image cache with image unique ID.
+        content = img_mgr.get_from_cache(img_uid)
+        if content is not None:
+            cb(content)
+            return
+
+        try:
+            img_url = await aio.run_fn(library.model_get_cover, model)
+        except NotSupported:
+            img_url = ''
+
+        return await fetch_image_with_cb(img_uid, img_url, cb)
+
+    async def fetch_model_cover(model, cb):
+        if ModelType(model.meta.model_type) is ModelType.song:
+            return await fetch_song_pic_url(model, cb)
+        return await fetch_other_model_cover(model, cb)
 
     return fetch_model_cover
 
