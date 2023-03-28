@@ -35,7 +35,7 @@ except ImportError:
 from feeluown.utils import aio
 from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
-from feeluown.excs import ProviderIOError, ModelCannotUpgrade
+from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import NotSupported, ModelType, BaseModel
 from feeluown.models.uri import reverse
 
@@ -489,7 +489,7 @@ def fetch_cover_wrapper(app):
         # Image is not in cache.
         try:
             upgraded_song = await aio.run_fn(library.song_upgrade, model)
-        except (NotSupported, ModelCannotUpgrade):
+        except (NotSupported, ResourceNotFound):
             cb(None)
         else:
             # Try to fetch with pic_url first.

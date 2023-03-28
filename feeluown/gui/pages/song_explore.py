@@ -6,7 +6,7 @@ from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
-from feeluown.excs import ProviderNotFound, ModelCannotUpgrade
+from feeluown.excs import ProviderNotFound, ResourceNotFound
 from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
     NotSupported, SupportsSongLyric, ModelFlags
@@ -55,7 +55,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
     try:
         upgraded_song = await aio.run_fn(app.library.song_upgrade, song)
-    except (NotSupported, ModelCannotUpgrade):
+    except (NotSupported, ResourceNotFound):
         upgraded_song = None
     if upgraded_song is not None:
         song = upgraded_song
@@ -72,7 +72,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     if album is not None:
         try:
             upgraded_album = await aio.run_fn(app.library.album_upgrade, song.album)
-        except (NotSupported, ModelCannotUpgrade):
+        except (NotSupported, ResourceNotFound):
             upgraded_album = None
     else:
         upgraded_album = None
