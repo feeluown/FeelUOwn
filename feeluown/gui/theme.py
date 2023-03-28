@@ -1,15 +1,20 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import annotations
 import logging
 import json
 import os
 import sys
 from collections import defaultdict
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
-from PyQt5.QtWidgets import QApplication
 from feeluown.utils.utils import get_osx_theme
+from feeluown.gui.helpers import get_qapp
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +46,7 @@ class ThemeManager(QObject):
 
     theme_changed = pyqtSignal(str)
 
-    def __init__(self, app):
+    def __init__(self, app: GuiApp):
         super().__init__(parent=app)
         self._app = app
         self.theme = None
@@ -51,7 +56,7 @@ class ThemeManager(QObject):
         # to make it work well on Linux(GNOME)
         self.autoload()
         self._app.initialized.connect(lambda app: self.autoload(), weak=False)
-        QApplication.instance().paletteChanged.connect(lambda p: self.autoload())
+        get_qapp().paletteChanged.connect(lambda p: self.autoload())
 
     def autoload(self):
         if self._app.config.THEME == 'auto':
@@ -88,12 +93,12 @@ class ThemeManager(QObject):
     def load_light(self):
         common = read_resource('common.qss')
         light = read_resource('light.qss')
-        QApplication.instance().setStyleSheet(common + light)
+        get_qapp().setStyleSheet(common + light)
 
     def load_dark(self):
         common = read_resource('common.qss')
         dark = read_resource('dark.qss')
-        QApplication.instance().setStyleSheet(common + dark)
+        get_qapp().setStyleSheet(common + dark)
 
     def load_macos_dark(self):
         """
@@ -107,12 +112,12 @@ class ThemeManager(QObject):
         content = read_resource('macos_dark.colors')
         colors = json.loads(content)
         try:
-            QApplication.instance().paletteChanged.disconnect(self.autoload)
+            get_qapp().paletteChanged.disconnect(self.autoload)
         except TypeError:
             pass
         palette = load_colors(colors)
         self._app.setPalette(palette)
-        QApplication.instance().paletteChanged.connect(self.autoload)
+        get_qapp().paletteChanged.connect(self.autoload)
 
     def get_pressed_color(self):
         """pressed color for button-like widget
@@ -139,7 +144,7 @@ class ThemeManager(QObject):
 
 
 def dump_colors():
-    json_ = defaultdict(dict)
+    json_ = defaultdict(dict)  # type: ignore[var-annotated]
     palette = QGuiApplication.palette()
     for group_attr in Groups:
         group = getattr(QPalette, group_attr)

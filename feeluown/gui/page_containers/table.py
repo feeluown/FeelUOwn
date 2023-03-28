@@ -2,11 +2,12 @@ import asyncio
 import logging
 import warnings
 from contextlib import suppress
+from typing import List
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QImage, QPixmap, QPalette
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication
-from requests.exceptions import RequestException
+from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication, QWidget
+from requests.exceptions import RequestException  # type: ignore[import]
 
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
@@ -249,7 +250,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._app = app
         self._renderer = None
         self._table = None  # current visible table
-        self._tables = []
+        self._tables: List[QWidget] = []
 
         self._extra = None
         self.toolbar = SongsTableToolbar()
@@ -414,8 +415,11 @@ class TableContainer(QFrame, BgTransparentMixin):
         task_name = 'play-all'
         task_spec = self._app.task_mgr.get_or_create(task_name)
         model = self.songs_table.model()
+        assert isinstance(model, SongFilterProxyModel)
+        source_model = model.sourceModel()
+        assert isinstance(source_model, SongsTableModel)
         # FIXME: think about a more elegant way to get reader.
-        reader = model.sourceModel().reader
+        reader = source_model.reader
         if reader is not None and reader.count is not None:
             self.toolbar.enter_state_playall_start()
             with suppress(ProviderIOError, asyncio.CancelledError):
@@ -452,10 +456,6 @@ class TableContainer(QFrame, BgTransparentMixin):
     def show_artists_coll(self, artists_g):
         warnings.warn('use readerer.show_artists please')
         aio.create_task(self.set_renderer(ArtistsCollectionRenderer(artists_g)))
-
-    def search(self, text):
-        if self.isVisible() and self.songs_table is not None:
-            self.songs_table.filter_row(text)
 
     def _add_songs_to_playlist(self, songs):
         for song in songs:

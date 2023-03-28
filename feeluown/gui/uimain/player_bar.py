@@ -87,13 +87,13 @@ class WatchButton(TextButton):
 
 
 class LyricButton(TextButton):
-    def __init__(self, app, parent):
+    def __init__(self, app, parent: 'PlayerControlPanel'):
         super().__init__('词', parent=parent)
         self._app = app
 
         self.setCheckable(True)
         self.clicked.connect(self._toggle_lyric_window)
-        self.parent().lyric_window.installEventFilter(self)  # hack
+        parent.lyric_window.installEventFilter(self)  # hack
 
     def _toggle_lyric_window(self):
         lyric_window = self._app.ui.player_bar.lyric_window
@@ -131,7 +131,7 @@ class SongBriefLabel(QLabel):
         self._timer.timeout.connect(self.change_text_position)
 
     def change_text_position(self):
-        if not self.parent().isVisible():
+        if not self.parent().isVisible():  # type: ignore
             self._timer.stop()
             self._pos = 0
             return
@@ -176,7 +176,7 @@ class SongBriefLabel(QLabel):
             QRect(self._pos, 0, self.width() - self._pos, self.height()),
             Qt.AlignLeft | Qt.AlignVCenter,
             self._txt
-        )
+        )  # type: ignore[call-overload]
 
     def contextMenuEvent(self, e):
         song = self._app.playlist.current_song

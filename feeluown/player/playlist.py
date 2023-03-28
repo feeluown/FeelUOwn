@@ -11,7 +11,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import (
-    MediaNotFound, SongProtocol, ModelType, NotSupported, ModelCannotUpgrade
+    MediaNotFound, SongProtocol, ModelType, NotSupported, ResourceNotFound
 )
 from feeluown.media import Media
 from feeluown.models.uri import reverse
@@ -494,7 +494,7 @@ class Playlist:
         })
         try:
             song = await aio.run_fn(self._app.library.song_upgrade, song)
-        except (NotSupported, ModelCannotUpgrade):
+        except (NotSupported, ResourceNotFound):
             return metadata
         except:  # noqa
             logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
@@ -503,7 +503,7 @@ class Playlist:
         if song.album is not None:
             try:
                 album = await aio.run_fn(self._app.library.album_upgrade, song.album)
-            except (NotSupported, ModelCannotUpgrade):
+            except (NotSupported, ResourceNotFound):
                 artwork = ''
                 released = ''
             except:  # noqa

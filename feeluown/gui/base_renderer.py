@@ -1,3 +1,6 @@
+# mypy: disable-error-code=attr-defined
+# HELP: No good way to type mixin class, see feeluown.gui.helpers docstring for details.
+
 from abc import abstractmethod
 from typing import runtime_checkable, Protocol
 

@@ -20,17 +20,17 @@ async def render(req, **kwargs):
         if model.meta.model_type == ModelType.album:
             album = await aio.run_fn(app.library.album_upgrade, model)
             tab_index = int(req.query.get('tab_index', 1))
-            renderer = AlbumRenderer(album, tab_index)
-            await app.ui.table_container.set_renderer(renderer)
+            al_renderer = AlbumRenderer(album, tab_index)
+            await app.ui.table_container.set_renderer(al_renderer)
         elif model.meta.model_type == ModelType.artist:
             artist = await aio.run_fn(app.library.artist_upgrade, model)
             tab_index = int(req.query.get('tab_index', 1))
-            renderer = ArtistRenderer(artist, tab_index)
-            await app.ui.table_container.set_renderer(renderer)
+            ar_renderer = ArtistRenderer(artist, tab_index)
+            await app.ui.table_container.set_renderer(ar_renderer)
         elif model.meta.model_type == ModelType.playlist:
             playlist = await aio.run_fn(app.library.playlist_upgrade, model)
-            renderer = PlaylistRenderer(playlist)
-            await app.ui.table_container.set_renderer(renderer)
+            pl_renderer = PlaylistRenderer(playlist)
+            await app.ui.table_container.set_renderer(pl_renderer)
         else:
             assert False, "this should not be called"
             await app.ui.table_container.set_renderer(None)
@@ -40,7 +40,7 @@ async def render(req, **kwargs):
 
 class ModelTabBarRendererMixin(TabBarRendererMixin):
     def render_by_tab_index(self, tab_index):
-        self._app.browser.goto(model=self.model,
+        self._app.browser.goto(model=self.model,  # type: ignore[attr-defined]
                                query={'tab_index': tab_index})
 
 

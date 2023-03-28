@@ -1,12 +1,14 @@
+from __future__ import annotations
 import logging
 import sys
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QGuiApplication
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
-from feeluown.excs import ProviderNotFound, ModelCannotUpgrade
+from feeluown.excs import ProviderNotFound, ResourceNotFound
 from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
     NotSupported, SupportsSongLyric, ModelFlags
@@ -24,6 +26,9 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate, SongMiniCardListModel, SongMiniCardListView
 )
 
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
+
 logger = logging.getLogger(__name__)
 
 # Error message template for NotSupported
@@ -37,15 +42,15 @@ def or_unknown(x):
 
 
 async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
-    app = req.ctx['app']
+    app: GuiApp = req.ctx['app']
     song = req.ctx['model']
 
     try:
         provider = app.library.get_or_raise(song.source)
     except ProviderNotFound as e:
-        view = InlineErrorMessageView()
-        view.show_msg(f'无法展示歌曲详情：{repr(e)}')
-        app.ui.right_panel.set_body(view)
+        err_view = InlineErrorMessageView()
+        err_view.show_msg(f'无法展示歌曲详情：{repr(e)}')
+        app.ui.right_panel.set_body(err_view)
         return
 
     # TODO: Initialize the view with song object, and it should reduce
@@ -55,7 +60,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
     try:
         upgraded_song = await aio.run_fn(app.library.song_upgrade, song)
-    except (NotSupported, ModelCannotUpgrade):
+    except (NotSupported, ResourceNotFound):
         upgraded_song = None
     if upgraded_song is not None:
         song = upgraded_song
@@ -72,7 +77,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     if album is not None:
         try:
             upgraded_album = await aio.run_fn(app.library.album_upgrade, song.album)
-        except (NotSupported, ModelCannotUpgrade):
+        except (NotSupported, ResourceNotFound):
             upgraded_album = None
     else:
         upgraded_album = None
@@ -90,7 +95,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
-    def __init__(self, app, parent=None):
+    def __init__(self, app: GuiApp, parent=None):
         super().__init__(parent=parent)
 
         self._app = app
@@ -125,7 +130,7 @@ class LyricLabel(QLabel, BgTransparentMixin):
 
 
 class SongWikiLabel(QLabel):
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, app: GuiApp, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
         self.setTextFormat(Qt.RichText)

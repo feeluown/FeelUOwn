@@ -9,5 +9,4 @@ from feeluown.excs import (  # noqa
     NotSupported,
     NoUserLoggedIn,
     MediaNotFound,
-    ModelCannotUpgrade,
 )  # noqa

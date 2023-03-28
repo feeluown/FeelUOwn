@@ -73,9 +73,10 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
                 continue
 
             if search_type is SearchType.so:
-                show_handler(create_reader(objects), columns_mode=ColumnsMode.playlist)
+                show_handler(  # type: ignore[operator]
+                    create_reader(objects), columns_mode=ColumnsMode.playlist)
             else:
-                show_handler(create_reader(objects))
+                show_handler(create_reader(objects))  # type: ignore[operator]
             source = objects[0].source
             provider = app.library.get(source)
             provider_name = provider.name
@@ -117,7 +118,9 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
 class Body(ScrollArea):
     def fillable_bg_height(self):
         """Implement VFillableBg protocol"""
-        return self.widget().height() - self.widget().accordion.height()
+        view = self.widget()
+        assert isinstance(view, View)  # make type chckign happy.
+        return view.height() - view.accordion.height()
 
 
 class View(QFrame, BgTransparentMixin):

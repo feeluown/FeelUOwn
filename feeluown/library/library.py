@@ -3,7 +3,6 @@ import warnings
 from functools import partial, lru_cache
 from typing import cast, Optional, Union
 
-from feeluown.excs import ModelCannotUpgrade
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
 from feeluown.utils import aio
@@ -14,7 +13,7 @@ from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
     NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
-    ProviderNotFound, ModelNotFound
+    ProviderNotFound, ModelNotFound, ResourceNotFound
 )
 from .flags import Flags as PF
 from .models import (
@@ -486,7 +485,7 @@ class Library:
         raise MediaNotFound
 
     def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
-        """
+        """Get the MV model of a song.
 
         :raises NotSupported:
         :raises ProviderNotFound:
@@ -503,7 +502,7 @@ class Library:
         return mv
 
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
-        """
+        """Get the lyric model of a song.
 
         Return None when lyric does not exist instead of raising exceptions,
         because it is predictable.
@@ -671,7 +670,7 @@ class Library:
             if MF.normal not in model.meta.flags:
                 try:
                     um = self._model_upgrade(model)
-                except (ModelCannotUpgrade, NotSupported):
+                except (ResourceNotFound, NotSupported):
                     return ''
             else:
                 um = model
@@ -688,9 +687,17 @@ class Library:
         return cover
 
     def _model_upgrade(self, model):
-        """
+        """Upgrade a model to normal model.
+
         :raises NotSupported: provider does't impl SupportGetProtocol for the model type
-        :raises ModelCannotUpgrade: the model can't be upgraded
+        :raises ModelNotFound: the model does not exist
+        :raises ProviderNotFound: the provider does not exist
+
+        Note you may catch ResourceNotFound exception to simplify your code.
+
+        .. versionchanged:: 3.8.11
+            Raise ModelNotFound if the model does not exist.
+            Before ModelCannotUpgrade was raised.
         """
         # Upgrade model in v1 way if it is a v1 model.
         if MF.v2 not in model.meta.flags:
@@ -704,11 +711,19 @@ class Library:
         model_type = ModelType(model.meta.model_type)
         is_support = check_flag_impl(provider, model_type, PF.get)
         if is_support:
-            upgraded_model = provider.model_get(model_type, model.identifier)
-            if upgraded_model is None:
+            try:
+                upgraded_model = provider.model_get(model_type, model.identifier)
+            except ModelNotFound:
                 model.state = ModelState.not_exists
-                raise ModelCannotUpgrade('model does not exist')
-            return upgraded_model
+                raise
+            else:
+                # Provider should raise ModelNotFound when the mode does not exist.
+                # Some providers does not follow the protocol, and they may return None.
+                # Keep this logic to keep backward compatibility.
+                if upgraded_model is None:
+                    model.state = ModelState.not_exists
+                    raise ModelNotFound(f'provider:{provider} return an empty model')
+                return upgraded_model
 
         # Fallback to v1 way if the provider does not support PF.get.
         # For example, provider X may support 'get' for SongModel and it

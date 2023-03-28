@@ -17,11 +17,12 @@
 #     class NoScrollableItemView(Protocol):
 #         no_scroll_manager: ItemViewNoScrollManager
 
+from __future__ import annotations
 import asyncio
 import random
 import sys
 import logging
-from typing import TypeVar, List, Optional, Generic, Union, cast
+from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
 try:
     # helper module should work in no-window mode
@@ -35,9 +36,13 @@ except ImportError:
 from feeluown.utils import aio
 from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
-from feeluown.excs import ProviderIOError, ModelCannotUpgrade
+from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import NotSupported, ModelType, BaseModel
 from feeluown.models.uri import reverse
+
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 
 logger = logging.getLogger(__name__)
@@ -56,6 +61,10 @@ async def async_run(func, loop=None, executor=None):
 
 class ActionError(Exception):
     pass
+
+
+def get_qapp() -> QApplication:
+    return cast(QApplication, QApplication.instance())
 
 
 def is_macos():
@@ -437,7 +446,7 @@ class ReaderFetchMoreMixin(Generic[T]):
             self._fetch_more_cb(items)
 
 
-def fetch_cover_wrapper(app):
+def fetch_cover_wrapper(app: GuiApp):
     """
     Your should only use this helper within ImgListModel and SongMiniCardListModel.
     """
@@ -489,7 +498,7 @@ def fetch_cover_wrapper(app):
         # Image is not in cache.
         try:
             upgraded_song = await aio.run_fn(library.song_upgrade, model)
-        except (NotSupported, ModelCannotUpgrade):
+        except (NotSupported, ResourceNotFound):
             cb(None)
         else:
             # Try to fetch with pic_url first.

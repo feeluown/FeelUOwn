@@ -3,7 +3,7 @@ from unittest import mock
 import pytest
 
 from feeluown.models import reverse
-from feeluown.library import ModelCannotUpgrade
+from feeluown.library import ModelNotFound
 from feeluown.gui.helpers import fetch_cover_wrapper
 
 
@@ -60,7 +60,7 @@ async def test_fetch_cover_wrapper(app_mock, library,
     # case 5: song can not be upgraded
     mock_upgrad_song = mock.MagicMock()
     app_mock.library.song_upgrade = mock_upgrad_song
-    mock_upgrad_song.side_effect = ModelCannotUpgrade
+    mock_upgrad_song.side_effect = ModelNotFound
     cb = mock.MagicMock()
     coro = fetch_cover_wrapper(app_mock)
     await coro(ekaf_brief_song0, cb)
