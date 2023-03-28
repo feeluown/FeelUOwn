@@ -1,12 +1,13 @@
 import logging
 import sys
+from typing import Optional
 
 from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu, QApplication
+from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu
 
 from feeluown.player import State
-from feeluown.gui.helpers import elided_text
+from feeluown.gui.helpers import elided_text, get_qapp
 
 
 TOGGLE_APP_TEXT = ('激活主窗口', '隐藏主窗口')
@@ -38,8 +39,10 @@ class Tray(QSystemTrayIcon):
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
         if IS_MACOS:
-            self._toggle_app_action = QAction(QIcon.fromTheme('window'),
-                                              TOGGLE_APP_TEXT[1])
+            self._toggle_app_action: Optional[QAction] = QAction(
+                QIcon.fromTheme('window'),
+                TOGGLE_APP_TEXT[1]
+            )
         else:
             self._toggle_app_action = None
             self.activated.connect(self._on_activated) # noqa
@@ -54,8 +57,7 @@ class Tray(QSystemTrayIcon):
         self._app.player.state_changed.connect(self.on_player_state_changed)
         self._app.playlist.song_changed.connect(self.on_player_song_changed)
         self._app.theme_mgr.theme_changed.connect(self.on_theme_changed)
-        q_app = QApplication.instance()
-        q_app.applicationStateChanged.connect(self.on_app_state_changed)
+        get_qapp().applicationStateChanged.connect(self.on_app_state_changed)
 
         self._app.installEventFilter(self)
         self.setContextMenu(self._menu)

@@ -60,6 +60,6 @@ class ProviderUiManager:
             name = uiitem
         if name in self._items:
             self.model.remove(name)
-            self._items.remove(name)
+            self._items.pop(name)
             return True
         return False

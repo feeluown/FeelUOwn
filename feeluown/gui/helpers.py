@@ -63,6 +63,10 @@ class ActionError(Exception):
     pass
 
 
+def get_qapp() -> QApplication:
+    return cast(QApplication, QApplication.instance())
+
+
 def is_macos():
     """Check if operating system is macOS
 

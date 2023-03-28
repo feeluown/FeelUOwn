@@ -172,8 +172,9 @@ class RightPanel(QFrame):
         # calculate available size
         draw_width = self.width()
         draw_height = self.bottom_panel.height()
-        if isinstance(self._stacked_layout.currentWidget(), VFillableBg):
-            draw_height += self._stacked_layout.currentWidget().fillable_bg_height()
+        current_widget = self._stacked_layout.currentWidget()
+        if isinstance(current_widget, VFillableBg):
+            draw_height += current_widget.fillable_bg_height()
 
         scrolled = self.scrollarea.verticalScrollBar().value()
         max_scroll_height = draw_height - self.bottom_panel.height()
@@ -265,6 +266,7 @@ class RightPanel(QFrame):
 
     def _draw_pixmap(self, painter, draw_width, draw_height, scrolled):
         # scale pixmap
+        assert self._pixmap is not None
         scaled_pixmap = self._pixmap.scaledToWidth(
             draw_width,
             mode=Qt.SmoothTransformation)

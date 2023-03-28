@@ -1,3 +1,5 @@
+from typing import cast
+
 from PyQt5.QtCore import Qt, QObject, QCoreApplication, QEvent
 from PyQt5.QtGui import QKeySequence as KS, QMouseEvent
 from PyQt5.QtWidgets import QShortcut
@@ -36,7 +38,7 @@ class HotkeyManager(QObject):
         QShortcut(KS.Forward, app).activated.connect(app.browser.forward)
 
         # install event filter on app
-        q_app = QCoreApplication.instance()
+        q_app = cast(QCoreApplication, QCoreApplication.instance())
         q_app.installEventFilter(self)
 
     def eventFilter(self, obj, event):

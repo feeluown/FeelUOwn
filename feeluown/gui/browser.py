@@ -3,7 +3,7 @@ import inspect
 import warnings
 from collections import deque
 from urllib.parse import urlencode
-from typing import Optional
+from typing import Optional, Deque
 
 from feeluown.utils import aio
 from feeluown.utils.router import Router, NotFound
@@ -28,8 +28,8 @@ class Browser:
         # TODO: Currently, browser only save the whole page path in history, and the
         # related data such as model is not cached. Caching the data should improve
         # performance.
-        self._back_stack = deque(maxlen=10)
-        self._forward_stack = deque(maxlen=10)
+        self._back_stack: Deque[str] = deque(maxlen=10)
+        self._forward_stack: Deque[str] = deque(maxlen=10)
         self.router = Router()  # alpha
 
         self._last_page: Optional[str] = None
@@ -98,6 +98,7 @@ class Browser:
             logger.warning("Can't go back.")
         else:
             self._goto_page(page=page)
+            assert self._last_page is not None
             self._forward_stack.append(self._last_page)
             self.on_history_changed()
 
@@ -108,6 +109,7 @@ class Browser:
             logger.warning("Can't go forward.")
         else:
             self._goto_page(page=page)
+            assert self._last_page is not None
             self._back_stack.append(self._last_page)
             self.on_history_changed()
 
