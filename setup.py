@@ -66,7 +66,11 @@ setup(
                     'fuo-qqmusic>=0.2',
                     'fuo-kuwo>=0.1.1',
                     ],
-        'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
+        'macOS': [
+            'pyobjc-framework-Cocoa',
+            'pyobjc-framework-Quartz',
+            'aionowplaying @ git+ssh://git@github.com/BruceZhang1993/aionowplaying#egg=aionowplaying'
+        ],
         'win32': [
             'pyshortcuts',
             'aionowplaying @ git+ssh://git@github.com/BruceZhang1993/aionowplaying#egg=aionowplaying'

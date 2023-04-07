@@ -1,8 +1,7 @@
-import asyncio
 import logging
-import sys
 
 import aionowplaying as aionp
+
 from feeluown.app.server_app import ServerApp
 from feeluown.player import State, PlaybackMode
 
@@ -102,11 +101,11 @@ class FuoWindowsNowPlayingService(aionp.NowPlayingInterface):
 
 
 async def run_nowplaying_server(app):
-    interface = FuoWindowsNowPlayingService('FeelUOwn Player', app)
-    interface.set_playback_property(PlayProp.CanPlay, True)
-    interface.set_playback_property(PlayProp.CanPause, True)
-    interface.set_playback_property(PlayProp.CanGoNext, True)
-    interface.set_playback_property(PlayProp.CanGoPrevious, True)
-    interface.set_playback_property(PlayProp.CanSeek, True)
-    interface.set_playback_property(PlayProp.CanControl, True)
-    await interface.start()
+    service = FuoWindowsNowPlayingService('FeelUOwn Player', app)
+    service.set_playback_property(PlayProp.CanPlay, True)
+    service.set_playback_property(PlayProp.CanPause, True)
+    service.set_playback_property(PlayProp.CanGoNext, True)
+    service.set_playback_property(PlayProp.CanGoPrevious, True)
+    service.set_playback_property(PlayProp.CanSeek, True)
+    service.set_playback_property(PlayProp.CanControl, True)
+    await service.start()

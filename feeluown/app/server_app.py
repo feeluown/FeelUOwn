@@ -63,12 +63,18 @@ class ServerApp(App):
             else:
                 mac_global_hotkey_mgr = MacGlobalHotkeyManager()
                 mac_global_hotkey_mgr.start()
+            try:
+                from feeluown.nowplaying.common import run_nowplaying_server
+            except ImportError:
+                logger.error("can't run now playing server, install aionowplaying package")
+            else:
+                aio.run_afn(run_nowplaying_server, self)
         elif platform == 'linux':
             from feeluown.nowplaying.linux import run_mpris2_server
             run_mpris2_server(self)
         elif platform == 'win32':
             try:
-                from feeluown.nowplaying.windows import run_nowplaying_server
+                from feeluown.nowplaying.common import run_nowplaying_server
             except ImportError:
                 logger.error("can't run now playing server, install aionowplaying package")
             else:
