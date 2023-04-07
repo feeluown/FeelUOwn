@@ -53,7 +53,9 @@ class FuoWindowsNowPlayingService(aionp.NowPlayingInterface):
         if position is not None:
             if self._current_meta is not None and self._current_meta.duration == 0:
                 if int((self._app.player.duration or 0) * 1000) > 0:
-                    self._current_meta.duration = int((self._app.player.duration or 0) * 1000)
+                    self._current_meta.duration = int(
+                        (self._app.player.duration or 0) * 1000
+                    )
                     self.set_playback_property(PlayProp.Metadata, self._current_meta)
                     self._current_meta = None
             self.set_playback_property(PlayProp.Position, int(position * 1000))

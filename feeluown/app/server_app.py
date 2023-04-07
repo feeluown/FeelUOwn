@@ -66,7 +66,7 @@ class ServerApp(App):
             try:
                 from feeluown.nowplaying.common import run_nowplaying_server
             except ImportError:
-                logger.error("can't run now playing server, install aionowplaying package")
+                logger.error("can't run now playing server, install aionowplaying")
             else:
                 aio.run_afn(run_nowplaying_server, self)
         elif platform == 'linux':
@@ -76,6 +76,6 @@ class ServerApp(App):
             try:
                 from feeluown.nowplaying.common import run_nowplaying_server
             except ImportError:
-                logger.error("can't run now playing server, install aionowplaying package")
+                logger.error("can't run now playing server, install aionowplaying")
             else:
                 aio.run_afn(run_nowplaying_server, self)

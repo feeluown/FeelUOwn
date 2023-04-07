@@ -21,8 +21,9 @@ def run_app(args: argparse.Namespace):
     args, config = before_start_app(args)
     if sys.platform == 'win32':
         try:
-            # note: on windows, this package needs to be imported before any qt components
-            import aionowplaying
+            # note: on windows, this package needs to be imported
+            # before any qt components
+            import aionowplaying  # noqa: F401
         except ImportError as e:
             logger.error("can't run now playing server: %s", str(e))
     aio.run(start_app(args, config))
