@@ -23,7 +23,7 @@ def run_app(args: argparse.Namespace):
         try:
             # note: on windows, this package needs to be imported
             # before any qt components
-            import aionowplaying  # noqa: F401
+            import aionowplaying  # type: ignore # noqa: F401
         except ImportError as e:
             logger.error("can't run now playing server: %s", str(e))
     aio.run(start_app(args, config))
