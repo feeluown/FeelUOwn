@@ -68,12 +68,11 @@ setup(
                     ],
         'macOS': [
             'pyobjc-framework-Cocoa',
-            'pyobjc-framework-Quartz',
-            'aionowplaying @ git+ssh://git@github.com/BruceZhang1993/aionowplaying#egg=aionowplaying'
+            'pyobjc-framework-Quartz'
         ],
         'win32': [
             'pyshortcuts',
-            'aionowplaying @ git+ssh://git@github.com/BruceZhang1993/aionowplaying#egg=aionowplaying'
+            'aionowplaying>=0.9.3'
         ],
         'webengine': ['PyQtWebEngine'],
         'dev': [

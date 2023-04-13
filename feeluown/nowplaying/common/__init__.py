@@ -25,18 +25,15 @@ class FuoWindowsNowPlayingService(aionp.NowPlayingInterface):
     def update_playback_mode(self, mode: PlaybackMode):
         if mode is None:
             return
-        if mode == PlaybackMode.loop:
-            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.Playlist)
-            self.set_playback_property(PlayProp.Shuffle, False)
-        elif mode == PlaybackMode.one_loop:
-            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.Track)
-            self.set_playback_property(PlayProp.Shuffle, False)
-        elif mode == PlaybackMode.random:
-            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.Playlist)
-            self.set_playback_property(PlayProp.Shuffle, True)
-        else:
-            self.set_playback_property(PlayProp.LoopStatus, aionp.LoopStatus.None_)
-            self.set_playback_property(PlayProp.Shuffle, False)
+        mode_mapping = {
+            PlaybackMode.loop: (aionp.LoopStatus.Playlist, False),
+            PlaybackMode.one_loop: (aionp.LoopStatus.Track, False),
+            PlaybackMode.random: (aionp.LoopStatus.Playlist, True),
+            PlaybackMode.sequential: (aionp.LoopStatus.None_, False),
+        }
+        mode_value = mode_mapping.get(mode)
+        self.set_playback_property(PlayProp.LoopStatus, mode_value[0])
+        self.set_playback_property(PlayProp.Shuffle, mode_value[1])
 
     def update_song_props(self, meta: dict):
         metadata = aionp.PlaybackProperties.MetadataBean()
