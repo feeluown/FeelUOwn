@@ -50,6 +50,7 @@ class Collection:
 
     def load(self):
         """解析文件，初始化自己"""
+        # pylint: disable=too-many-branches
         self.models = []
         filepath = Path(self.fpath)
         name = filepath.stem
@@ -66,20 +67,19 @@ class Collection:
             first = f.readline()
             lines = []
             if first == TOML_DELIMLF:
-                is_valid = True
+                is_valid = False
                 for line in f:
                     if line == TOML_DELIMLF:
+                        is_valid = True
                         break
-                    else:
-                        lines.append(line)
-                else:
-                    logger.warning('the metadata is invalid, will ignore it')
-                    is_valid = False
+                    lines.append(line)
                 if is_valid is True:
                     toml_str = ''.join(lines)
                     metadata = tomlkit.parse(toml_str)
                     self._loads_metadata(metadata)
                     lines = []
+                else:
+                    logger.warning('the metadata is invalid, will ignore it')
             else:
                 lines.append(first)
 
@@ -198,7 +198,7 @@ class CollectionManager:
         for directory in directorys:
             directory = os.path.expanduser(directory)
             if not os.path.exists(directory):
-                logger.warning('Collection Dir:{} does not exist.'.format(directory))
+                logger.warning(f'Collection Dir:{directory} does not exist.')
                 continue
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):
