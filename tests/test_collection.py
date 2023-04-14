@@ -1,4 +1,4 @@
-from feeluown.models.uri import ResolveFailed, ResolverNotFound
+from feeluown.models.uri import ResolveFailed, ResolverNotFound, reverse
 from feeluown.collection import Collection, CollectionManager
 
 
@@ -31,7 +31,7 @@ def test_collection_load_invalid_file(tmp_path, mocker):
     assert len(coll.models) == 0
 
 
-def test_collection_add(album, artist, song, tmp_path):
+def test_collection_add_and_remove(album, artist, song, tmp_path):
     directory = tmp_path / 'sub'
     directory.mkdir()
     f = directory / 'test.fuo'
@@ -56,6 +56,11 @@ def test_collection_add(album, artist, song, tmp_path):
     expected = ('fuo://fake/songs/0\t# hello world'
                 ' - mary - blue and green - 10:00\n') + expected
     assert text == expected
+
+    # test remove song
+    coll.remove(song)
+    assert reverse(song) not in f.read_text()
+    assert song not in coll.models
 
 
 def test_load_and_write_file_with_metadata(song, tmp_path, mocker):
@@ -83,7 +88,9 @@ fuo://fake/songs/0
 
     coll.add(song)
     text = f.read_text().strip()
-    line = text.split('\n')[-1]
+    lines = text.split('\n')
+    assert len(lines) == 6
+    line = lines[-1]
     assert line.startswith('fuo://fake/songs/0')
 
 

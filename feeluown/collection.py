@@ -170,9 +170,11 @@ class Collection:
         # write metadata only if it had before
         if self._metadata:
             self.updated_at = self._metadata['updated'] = datetime.now()
+            s = tomlkit.dumps(self._metadata)
             f.write(TOML_DELIMLF)
-            f.write(tomlkit.dumps(self._metadata))
-            f.write('\n')
+            f.write(s)
+            if not s.endswith('\n'):
+                f.write('\n')
             f.write(TOML_DELIMLF)
 
 
@@ -211,20 +213,25 @@ class CollectionManager:
                 self._app.library.provider_removed.connect(coll.on_provider_removed)
                 yield coll
 
-        fpath = self.generate_library_coll_if_needed(default_fpaths)
-        coll = Collection(fpath)
-        coll.load()
-        self._app.library.provider_added.connect(coll.on_provider_added)
-        self._app.library.provider_removed.connect(coll.on_provider_removed)
-        yield coll
+        fpath, generated = self.generate_library_coll_if_needed(default_fpaths)
+        # Avoid to yield a duplicated collection.
+        if generated is True:
+            coll = Collection(fpath)
+            coll.load()
+            self._app.library.provider_added.connect(coll.on_provider_added)
+            self._app.library.provider_removed.connect(coll.on_provider_removed)
+            yield coll
 
     def generate_library_coll_if_needed(self, default_fpaths):
+        """
+        :return: (library file path, generated)
+        """
         library_fpath = os.path.join(self.default_dir, LIBRARY_FILENAME)
         if os.path.exists(library_fpath):
             if default_fpaths:
                 paths_str = ','.join(default_fpaths)
                 logger.warning(f'{paths_str} are ignored since {library_fpath} exists')
-            return library_fpath
+            return library_fpath, False
 
         logger.info('Generating collection library')
         lines = [TOML_DELIMLF,
@@ -247,4 +254,4 @@ class CollectionManager:
             new_fpath = os.path.join(dirname, filename)
             logger.info(f'Rename {fpath} to {new_fpath}')
             os.rename(fpath, new_fpath)
-        return library_fpath
+        return library_fpath, True

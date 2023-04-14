@@ -1,3 +1,4 @@
+from feeluown.app.gui_app import GuiApp
 from feeluown.collection import CollectionType
 from feeluown.models import ModelType
 from feeluown.utils.reader import wrap
@@ -7,7 +8,7 @@ from feeluown.gui.base_renderer import TabBarRendererMixin
 
 
 async def render(req, identifier, **kwargs):
-    app = req.ctx['app']
+    app: GuiApp = req.ctx['app']
     ui = app.ui
     tab_index = int(req.query.get('tab_index', 0))
 
@@ -66,14 +67,28 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
         else:
             self.meta_widget.title = coll.name
         self.render_tab_bar()
+        self.render_models()
 
-        _, mtype, show_handler = self.tabs[self.tab_index]
-        models = [model for model in coll.models
-                  if model.meta.model_type == mtype]
-        reader = wrap(models)
-        show_handler(reader)
+        def remove_song(model):
+            # TODO(cosven): the whole UI is refreshed after a model is removed,
+            # ideally, only part of the UI is refreshed. For example, a user scroll
+            # to the bottom of the list view, when the last model is removed,
+            # the UI is refreshed and the the user needs to scroll to the bottom again.
+            self._coll.remove(model)
+            self.render_models()
+            self._app.show_msg('移除歌曲成功')
+
+        if self.tabs[self.tab_index][1] is ModelType.song:
+            self.songs_table.remove_song_func = remove_song
 
     def render_by_tab_index(self, tab_index):
         coll_id = self._app.coll_uimgr.get_coll_id(self._coll)
         self._app.browser.goto(page=f'/colls/{coll_id}',
                                query={'tab_index': tab_index})
+
+    def render_models(self):
+        _, mtype, show_handler = self.tabs[self.tab_index]
+        models = [model for model in self._coll.models
+                  if model.meta.model_type == mtype]
+        reader = wrap(models)
+        show_handler(reader)
