@@ -9,7 +9,7 @@ from feeluown.server.pubsub import (
 from feeluown.server.pubsub.publishers import SignalPublisher
 from feeluown.server import FuoServer, ProtocolType
 from .app import App
-
+from ..utils import aio
 
 logger = logging.getLogger(__name__)
 
@@ -66,3 +66,10 @@ class ServerApp(App):
         elif platform == 'linux':
             from feeluown.nowplaying.linux import run_mpris2_server
             run_mpris2_server(self)
+        elif platform == 'win32':
+            try:
+                from feeluown.nowplaying.common import run_nowplaying_server
+            except ImportError:
+                logger.error("can't run now playing server, install aionowplaying")
+            else:
+                aio.run_afn(run_nowplaying_server, self)

@@ -68,8 +68,14 @@ setup(
                     # https://github.com/BruceZhang1993/feeluown-bilibili
                     'feeluown-bilibili',
                     ],
-        'macOS': ['pyobjc-framework-Cocoa', 'pyobjc-framework-Quartz'],
-        'win32': ['pyshortcuts'],
+        'macOS': [
+            'pyobjc-framework-Cocoa',
+            'pyobjc-framework-Quartz'
+        ],
+        'win32': [
+            'pyshortcuts',
+            'aionowplaying>=0.9.3'
+        ],
         'webengine': ['PyQtWebEngine'],
         'dev': [
             # lint
