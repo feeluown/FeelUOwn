@@ -4,6 +4,8 @@
 .iml
 .settings
 
+# pyinstaller
+/FeelUOwn.spec
 
 *.mp3
 

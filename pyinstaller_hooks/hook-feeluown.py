@@ -5,6 +5,12 @@ from PyInstaller.utils.hooks import collect_data_files, collect_entry_point
 
 datas, hiddenimports = collect_entry_point('fuo.plugins_v1')
 
+# aionowplaying is conditionally imported.
+if os.name == 'nt':
+    hiddenimports.append('aionowplaying')
+    # pyinstaller can't detect 'aionowplaying.interface.windows' is imported.
+    hiddenimports.append('aionowplaying.interface.windows')
+
 # Collect feeluown's resource files, like icons, qss files, etc.
 # Collect plugins' resource files.
 datas += collect_data_files('feeluown')
