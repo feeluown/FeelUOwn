@@ -50,6 +50,7 @@ class Collection:
 
     def load(self):
         """解析文件，初始化自己"""
+        # pylint: disable=too-many-branches
         self.models = []
         filepath = Path(self.fpath)
         name = filepath.stem
@@ -66,20 +67,19 @@ class Collection:
             first = f.readline()
             lines = []
             if first == TOML_DELIMLF:
-                is_valid = True
+                is_valid = False
                 for line in f:
                     if line == TOML_DELIMLF:
+                        is_valid = True
                         break
-                    else:
-                        lines.append(line)
-                else:
-                    logger.warning('the metadata is invalid, will ignore it')
-                    is_valid = False
+                    lines.append(line)
                 if is_valid is True:
                     toml_str = ''.join(lines)
                     metadata = tomlkit.parse(toml_str)
                     self._loads_metadata(metadata)
                     lines = []
+                else:
+                    logger.warning('the metadata is invalid, will ignore it')
             else:
                 lines.append(first)
 
@@ -170,9 +170,11 @@ class Collection:
         # write metadata only if it had before
         if self._metadata:
             self.updated_at = self._metadata['updated'] = datetime.now()
+            s = tomlkit.dumps(self._metadata)
             f.write(TOML_DELIMLF)
-            f.write(tomlkit.dumps(self._metadata))
-            f.write('\n')
+            f.write(s)
+            if not s.endswith('\n'):
+                f.write('\n')
             f.write(TOML_DELIMLF)
 
 
@@ -196,7 +198,7 @@ class CollectionManager:
         for directory in directorys:
             directory = os.path.expanduser(directory)
             if not os.path.exists(directory):
-                logger.warning('Collection Dir:{} does not exist.'.format(directory))
+                logger.warning(f'Collection Dir:{directory} does not exist.')
                 continue
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):
@@ -211,20 +213,25 @@ class CollectionManager:
                 self._app.library.provider_removed.connect(coll.on_provider_removed)
                 yield coll
 
-        fpath = self.generate_library_coll_if_needed(default_fpaths)
-        coll = Collection(fpath)
-        coll.load()
-        self._app.library.provider_added.connect(coll.on_provider_added)
-        self._app.library.provider_removed.connect(coll.on_provider_removed)
-        yield coll
+        fpath, generated = self.generate_library_coll_if_needed(default_fpaths)
+        # Avoid to yield a duplicated collection.
+        if generated is True:
+            coll = Collection(fpath)
+            coll.load()
+            self._app.library.provider_added.connect(coll.on_provider_added)
+            self._app.library.provider_removed.connect(coll.on_provider_removed)
+            yield coll
 
     def generate_library_coll_if_needed(self, default_fpaths):
+        """
+        :return: (library file path, generated)
+        """
         library_fpath = os.path.join(self.default_dir, LIBRARY_FILENAME)
         if os.path.exists(library_fpath):
             if default_fpaths:
                 paths_str = ','.join(default_fpaths)
                 logger.warning(f'{paths_str} are ignored since {library_fpath} exists')
-            return library_fpath
+            return library_fpath, False
 
         logger.info('Generating collection library')
         lines = [TOML_DELIMLF,
@@ -247,4 +254,4 @@ class CollectionManager:
             new_fpath = os.path.join(dirname, filename)
             logger.info(f'Rename {fpath} to {new_fpath}')
             os.rename(fpath, new_fpath)
-        return library_fpath
+        return library_fpath, True

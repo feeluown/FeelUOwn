@@ -42,8 +42,6 @@ async def autoload(app):
                      app.config.local.MUSIC_FOLDERS)
 
     app.show_msg('本地音乐扫描完毕')
-    if app.mode & app.GuiMode:
-        app.coll_uimgr.refresh()
 
 
 def show_provider(req):

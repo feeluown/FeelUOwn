@@ -14,6 +14,7 @@ class ProviderUiItem:
     """
 
     def __init__(self, name, text, symbol, desc, colorful_svg=None, provider=None):
+        # pylint: disable=too-many-arguments
         # 如果需要，可以支持右键弹出菜单
         self._name = name
         self.text = text
@@ -39,6 +40,7 @@ class ProviderUiManager:
 
     def create_item(self, name, text, symbol='♬ ', desc='',
                     colorful_svg=None):
+        # pylint: disable=too-many-arguments
         provider = self._app.library.get(name)
         return ProviderUiItem(name, text, symbol, desc,
                               colorful_svg=colorful_svg,

@@ -20,7 +20,6 @@ class PlaylistUiItem(PlaylistModel):
     这些操作对各平台的播放列表、歌单来说，语义都是一致的，
     所以 PlaylistUiItem 暂时不提供 clicked 等操作信号。
     """
-    pass
 
 
 class PlaylistUiManager:

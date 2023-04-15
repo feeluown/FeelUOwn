@@ -6,8 +6,14 @@ all: unittest
 docs:
 	cd docs && make html
 
+PYLINT_PKGS=
+PYLINT_PKGS+=feeluown/gui/pages/
+PYLINT_PKGS+=feeluown/gui/uimodels/
+PYLINT_PKGS+=feeluown/fuoexec/
+PYLINT_PKGS+=feeluown/server/
+PYLINT_PKGS+=feeluown/collection.py
 pylint:
-	pylint feeluown/gui/pages/ feeluown/fuoexec/ feeluown/server/
+	pylint ${PYLINT_PKGS}
 
 # Packages need to check currently.
 # All packages are supposed to be checked in the future.
@@ -17,6 +23,7 @@ MYPY_PKGS+=feeluown/player/
 MYPY_PKGS+=feeluown/app/
 MYPY_PKGS+=feeluown/entry_points/
 MYPY_STRICT_PKGS=
+MYPY_STRICT_PKGS+=feeluown/collection.py
 MYPY_STRICT_PKGS+=feeluown/utils/reader.py
 MYPY_STRICT_PKGS+=feeluown/server/
 MYPY_STRICT_PKGS+=feeluown/cli/cli.py

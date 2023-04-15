@@ -2,7 +2,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.gui.widgets.my_music import MyMusicModel
 
 
-class MyMusicItem(object):
+class MyMusicItem:
     def __init__(self, text):
         self.text = text
         self.clicked = Signal()
