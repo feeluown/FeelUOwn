@@ -32,7 +32,7 @@ class CollectionUiManager:
         for coll in self._id_coll_mapping.values():
             if coll.type == CollectionType.sys_library:
                 return coll
-        raise Exception('collection library not found')
+        assert False, "collection 'library' must exists."
 
     def add(self, collection):
         coll_id = self.get_coll_id(collection)
