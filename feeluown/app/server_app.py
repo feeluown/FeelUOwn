@@ -67,6 +67,7 @@ class ServerApp(App):
             from feeluown.nowplaying.linux import run_mpris2_server
             run_mpris2_server(self)
         elif platform == 'win32':
+            return
             try:
                 from feeluown.nowplaying.common import run_nowplaying_server
             except ImportError:

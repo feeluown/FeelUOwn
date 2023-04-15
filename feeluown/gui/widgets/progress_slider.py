@@ -27,10 +27,8 @@ class ProgressSlider(QSlider):
         self.sliderReleased.connect(self.on_released)
         self.actionTriggered.connect(self.on_action_triggered)
 
-        self._app.player.duration_changed.connect(
-            self.update_total, aioqueue=True)
-        self._app.player.position_changed.connect(
-            self.update_progress, aioqueue=True)
+        self._app.player.duration_changed.connect(self.update_total, aioqueue=True)
+        self._app.player_pos_per300ms.changed.connect(self.update_progress)
         self._app.player.media_changed.connect(self.on_media_changed)
 
     def update_total(self, s):

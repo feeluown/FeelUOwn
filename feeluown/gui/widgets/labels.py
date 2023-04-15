@@ -40,8 +40,7 @@ class ProgressLabel(QLabel):
         self._app = app
 
         self.setAlignment(Qt.AlignCenter)
-        self._app.player.position_changed.connect(
-            self.on_position_changed, aioqueue=True)
+        self._app.player_pos_per300ms.changed.connect(self.on_position_changed)
 
     def on_position_changed(self, position):
         self.setText(format_second(position or 0))
