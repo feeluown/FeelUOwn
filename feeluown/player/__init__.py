@@ -7,6 +7,7 @@ from .fm import FM
 from .radio import SongRadio
 from .lyric import LiveLyric, parse_lyric_text
 from .recently_played import RecentlyPlayed
+from .delegate import PlayerPositionDelegate
 
 
 __all__ = (
@@ -19,6 +20,7 @@ __all__ = (
 
     'Player',
     'Playlist',
+    'PlayerPositionDelegate',
 
     'Metadata',
     'MetadataFields',

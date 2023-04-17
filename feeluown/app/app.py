@@ -13,7 +13,7 @@ from feeluown.models import (
 )
 from feeluown.player import (
     PlaybackMode, Playlist, LiveLyric,
-    FM, Player, RecentlyPlayed
+    FM, Player, RecentlyPlayed, PlayerPositionDelegate
 )
 from feeluown.plugin import PluginsManager
 from feeluown.version import VersionManager
@@ -55,6 +55,14 @@ class App:
 
         # Player.
         self.player = Player(audio_device=bytes(config.MPV_AUDIO_DEVICE, 'utf-8'))
+        # Theoretically, each caller maintain its own position delegate.
+        # For simplicity, this delegate is created for common use cases and
+        #
+        # For progress slider and label in player bar, user may only see the difference
+        # when it is greater than 1s. There are usually only one or two lines of lyrics
+        # in one second. Considering the use cases and performance, I guess 300ms is
+        # a reasonable interval.
+        self.player_pos_per300ms = PlayerPositionDelegate(self.player, interval=300)
         self.playlist = Playlist(self, audio_select_policy=config.AUDIO_SELECT_POLICY)
         self.live_lyric = LiveLyric(self)
         self.fm = FM(self)
@@ -66,7 +74,8 @@ class App:
         self.about_to_shutdown.connect(lambda _: self.dump_state(), weak=False)
 
     def initialize(self):
-        self.player.position_changed.connect(self.live_lyric.on_position_changed)
+        self.player_pos_per300ms.initialize()
+        self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(self.live_lyric.on_song_changed,
                                            aioqueue=True)
         self.plugin_mgr.scan()
@@ -223,6 +232,7 @@ class App:
         logger.info('Do graceful shutdown')
         try:
             self.about_to_shutdown.emit(self)
+            self.player_pos_per300ms.stop()
             self.player.stop()
             self.exit_player()
         except:  # noqa, pylint: disable=bare-except

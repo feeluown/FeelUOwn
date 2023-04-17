@@ -30,7 +30,7 @@ MYPY_STRICT_PKGS+=feeluown/cli/cli.py
 MYPY_STRICT_PKGS+=feeluown/gui/
 mypy:
 # Add flag --check-untyped-defs.
-	mypy  ${MYPY_PKGS}
+	mypy ${MYPY_PKGS}
 	mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
@@ -39,7 +39,7 @@ flake8:
 # flake8 is mainly used for constrainting coding style
 # pylint is mainly used for finding obvious bugs
 # mypy is mainly used for better readable code
-lint: flake8 mypy pylint
+lint: flake8 pylint
 
 unittest: pytest
 

@@ -18,5 +18,5 @@ async def test_server_app_initialize(signal_aio_support, args, config, mocker,
 
     # live lyric should be initialized properly.
     assert mock_connect_1.called
-    assert mock_connect_2.called
+    assert not mock_connect_2.called
     assert mock_connect_3.called
