@@ -15,7 +15,7 @@ class FuoWindowsNowPlayingService(aionp.NowPlayingInterface):
     def __init__(self, name, app_: 'ServerApp'):
         self._app = app_
         super(FuoWindowsNowPlayingService, self).__init__(name)
-        self._app.player.position_changed.connect(self.update_position)
+        self._app.player.seeked.connect(self.update_position)
         self._app.player.state_changed.connect(self.update_playback_status)
         self._app.player.metadata_changed.connect(self.update_song_props)
         self._app.playlist.playback_mode_changed.connect(self.update_playback_mode)
