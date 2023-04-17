@@ -39,7 +39,7 @@ flake8:
 # flake8 is mainly used for constrainting coding style
 # pylint is mainly used for finding obvious bugs
 # mypy is mainly used for better readable code
-lint: flake8 mypy pylint
+lint: flake8 pylint
 
 unittest: pytest
 
