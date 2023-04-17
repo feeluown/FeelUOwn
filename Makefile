@@ -30,7 +30,7 @@ MYPY_STRICT_PKGS+=feeluown/cli/cli.py
 MYPY_STRICT_PKGS+=feeluown/gui/
 mypy:
 # Add flag --check-untyped-defs.
-	mypy  ${MYPY_PKGS}
+	mypy ${MYPY_PKGS}
 	mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
