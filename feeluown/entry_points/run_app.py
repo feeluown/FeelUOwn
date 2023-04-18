@@ -78,7 +78,7 @@ def before_start_app(args):
             import PyQt5.QtWebEngineWidgets  # type: ignore # noqa
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
-        from feeluown.utils.compat import DefaultQEventLoopPolicy, EventLoopPolicy
+        from feeluown.utils.compat import DefaultQEventLoopPolicy
         asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
     return args, config
 

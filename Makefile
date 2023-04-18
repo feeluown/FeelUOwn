@@ -30,8 +30,11 @@ MYPY_STRICT_PKGS+=feeluown/cli/cli.py
 MYPY_STRICT_PKGS+=feeluown/gui/
 mypy:
 # Add flag --check-untyped-defs.
-	mypy ${MYPY_PKGS}
-	mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
+# On GitHub Actions environment, there maybe another mypy executable.
+# To prevent unexpected behavior, use 'python -m mypy' to ensure
+# the right mypy is used.
+	python -m mypy ${MYPY_PKGS}
+	python -m mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
 	flake8 feeluown/ tests/
@@ -39,7 +42,7 @@ flake8:
 # flake8 is mainly used for constrainting coding style
 # pylint is mainly used for finding obvious bugs
 # mypy is mainly used for better readable code
-lint: flake8 pylint
+lint: flake8 mypy pylint
 
 unittest: pytest
 
