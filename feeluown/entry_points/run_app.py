@@ -20,7 +20,16 @@ logger = logging.getLogger(__name__)
 
 def run_app(args: argparse.Namespace):
     args, config = before_start_app(args)
-    aio.run(start_app(args, config))
+    # FIXME: qasync does not work with 'python3.11'.
+    # https://github.com/CabbageDevelopment/qasync/issues/68
+    if sys.version_info.major == 3 and sys.version_info.minor >= 11:
+        runner = asyncio.runners.Runner()
+        try:
+            runner.run(start_app(args, config))
+        finally:
+            runner.close()
+    else:
+        aio.run(start_app(args, config))
 
 
 def before_start_app(args):
@@ -69,7 +78,7 @@ def before_start_app(args):
             import PyQt5.QtWebEngineWidgets  # type: ignore # noqa
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
-        from feeluown.utils.compat import DefaultQEventLoopPolicy
+        from feeluown.utils.compat import DefaultQEventLoopPolicy, EventLoopPolicy
         asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
     return args, config
 
