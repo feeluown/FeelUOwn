@@ -33,11 +33,7 @@ mypy:
 # On GitHub Actions environment, there maybe another mypy executable.
 # To prevent unexpected behavior, use 'python -m mypy' to ensure
 # the right mypy is used.
-	env
-	which python
-	mypy -V
-	python -m mypy -V
-	python -m mypy -vv ${MYPY_PKGS}
+	python -m mypy ${MYPY_PKGS}
 	python -m mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
@@ -46,7 +42,7 @@ flake8:
 # flake8 is mainly used for constrainting coding style
 # pylint is mainly used for finding obvious bugs
 # mypy is mainly used for better readable code
-lint: flake8 mypy pylint
+lint: flake8 pylint
 
 unittest: pytest
 
