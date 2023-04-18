@@ -36,7 +36,7 @@ mypy:
 	which python
 	mypy -V
 	python -m mypy -V
-	python -m mypy ${MYPY_PKGS}
+	python -m mypy -v ${MYPY_PKGS}
 	python -m mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
