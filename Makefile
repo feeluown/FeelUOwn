@@ -33,6 +33,7 @@ mypy:
 # On GitHub Actions environment, there maybe another mypy executable.
 # To prevent unexpected behavior, use 'python -m mypy' to ensure
 # the right mypy is used.
+	env
 	which python
 	mypy -V
 	python -m mypy -V
