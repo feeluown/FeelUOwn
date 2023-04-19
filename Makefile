@@ -11,6 +11,7 @@ PYLINT_PKGS+=feeluown/gui/pages/
 PYLINT_PKGS+=feeluown/gui/uimodels/
 PYLINT_PKGS+=feeluown/fuoexec/
 PYLINT_PKGS+=feeluown/server/
+PYLINT_PKGS+=feeluown/nowplaying/
 PYLINT_PKGS+=feeluown/collection.py
 pylint:
 	pylint ${PYLINT_PKGS}

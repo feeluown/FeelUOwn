@@ -69,8 +69,7 @@ setup(
                     'feeluown-bilibili',
                     ],
         'macOS': [
-            'pyobjc-framework-Cocoa',
-            'pyobjc-framework-Quartz'
+            'aionowplaying>=0.9.3'
         ],
         'win32': [
             'pyshortcuts',
