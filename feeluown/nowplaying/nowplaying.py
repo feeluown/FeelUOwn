@@ -33,6 +33,7 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self._app.player.duration_changed.connect(self.update_duration)
         self._app.player.state_changed.connect(self.update_playback_status)
         self._app.player.metadata_changed.connect(self.update_song_props)
+        self._app.player.media_changed.connect(self.on_player_media_changed)
         self._app.playlist.playback_mode_changed.connect(self.update_playback_mode)
         self._app.initialized.connect(
             lambda: self.update_playback_mode(self._app.playlist.playback_mode))
@@ -114,3 +115,8 @@ class NowPlayingService(aionp.NowPlayingInterface):
             return 1.0
         else:
             raise ValueError('unknown key')
+
+    def on_player_media_changed(self, _):
+        # As seeked signal is not emitted when media is changed,
+        # update position explicitly.
+        self.set_playback_property(PlayProp.Position, 0)
