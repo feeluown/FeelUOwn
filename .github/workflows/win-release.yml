@@ -35,10 +35,10 @@ jobs:
         ls dist/
         powershell Compress-Archive dist/FeelUOwn dist/FeelUOwn-windows.zip
     - name: Upload artifact
-      uses: actions/upload-artifact@master
+      uses: actions/upload-artifact@v3
       with:
         name: FeelUOwn-windows.zip
-        path: dist/FeelUOwn
+        path: dist/FeelUOwn-windows.zip
     - name: Upload to release page
       if: startsWith(github.ref, 'refs/tags/v')
       uses: softprops/action-gh-release@v1
