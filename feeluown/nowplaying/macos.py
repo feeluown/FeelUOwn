@@ -1,3 +1,4 @@
+# pylint: disable=import-error
 from AppKit import NSImage, NSMakeRect, NSCompositingOperationSourceOver
 from Foundation import NSMutableDictionary
 from MediaPlayer import (
