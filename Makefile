@@ -53,18 +53,30 @@ integration_test:
 
 test: lint unittest
 
+BUNDLE_FLAGS=
+ifeq ($(OS),Windows_NT)
+	BUNDLE_FLAGS += --name FeelUOwn
+else
+# macOS: since apfs is not case-sensitive, we use FeelUOwnX instead of FeelUOwn
+	BUNDLE_FLAGS += --name FeelUOwnX --osx-bundle-identifier org.feeluown.FeelUOwnX
+endif
 # Please install pyinstaller manually.
 bundle:
 	pyinstaller -w feeluown/pyinstaller/main.py \
-		--icon feeluown/gui/assets/icons/feeluown.ico \
-		--name FeelUOwn \
+		--icon feeluown/gui/assets/icons/feeluown.icns \
+		${BUNDLE_FLAGS} \
 		-w \
 		--noconfirm
 
-clean:
-	find . -name "*~" -exec rm -f {} \;
+clean: clean_py clean_emacs
+
+clean_py:
 	find . -name "*.pyc" -exec rm -f {} \;
+	find . -name __pycache__ -delete
+	find . -name .mypy_cache/ -delete
+
+clean_emacs:
+	find . -name "*~" -exec rm -f {} \;
 	find . -name "*flymake.py" -exec rm -f {} \;
 	find . -name "\#*.py\#" -exec rm -f {} \;
 	find . -name ".\#*.py\#" -exec rm -f {} \;
-	find . -name __pycache__ -delete
