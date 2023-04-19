@@ -6,6 +6,7 @@
 
 # pyinstaller
 /FeelUOwn.spec
+/FeelUOwnX.spec
 
 *.mp3
 
