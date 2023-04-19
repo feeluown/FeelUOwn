@@ -85,7 +85,7 @@ def test_sub_live_lyric():
 
 
 def run():
-    popen = subprocess.Popen(['fuo'])
+    popen = subprocess.Popen(['fuo', '-v'])
 
     assert wait_until_23333_service_ok(timeout=10)
     register_dummy_provider()
