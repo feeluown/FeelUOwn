@@ -4,6 +4,7 @@ logger = logging.getLogger(__name__)
 
 
 def run_mpris2_server(app):
+    # pylint: disable=import-outside-toplevel
     try:
         import dbus
         import dbus.service
@@ -16,8 +17,8 @@ def run_mpris2_server(app):
         # check if a mainloop was already set
         mainloop = dbus.get_default_main_loop()
         if mainloop is not None:
-            logger.warn("mpris2 service already enabled? "
-                        "maybe you should remove feeluown-mpris2-plugin")
+            logger.warning("mpris2 service already enabled? "
+                           "maybe you should remove feeluown-mpris2-plugin")
             return
 
         # set the mainloop before any dbus operation

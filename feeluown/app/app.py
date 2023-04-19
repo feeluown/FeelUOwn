@@ -237,7 +237,7 @@ class App:
             self.exit_player()
         except:  # noqa, pylint: disable=bare-except
             logger.exception("about-to-exit failed")
-        logger.info('Ready for shutdown')
+        logger.info('Ready for shutdown, or crash :)')
 
     def exit_player(self):
         self.player.shutdown()  # this cause 'abort trap' on macOS

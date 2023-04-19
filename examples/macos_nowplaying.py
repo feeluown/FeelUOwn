@@ -2,7 +2,8 @@ from Foundation import NSRunLoop, NSMutableDictionary, NSObject
 from MediaPlayer import MPRemoteCommandCenter, MPNowPlayingInfoCenter
 from MediaPlayer import (
     MPMediaItemPropertyTitle, MPMediaItemPropertyArtist,
-    MPMusicPlaybackState, MPMusicPlaybackStatePlaying, MPMusicPlaybackStatePaused
+    MPMusicPlaybackState, MPMusicPlaybackStatePlaying, MPMusicPlaybackStatePaused,
+    MPNowPlayingInfoPropertyElapsedPlaybackTime, MPMediaItemPropertyPlaybackDuration
 )
 
 
@@ -26,6 +27,8 @@ class NowPlaying:
         nowplaying_info = NSMutableDictionary.dictionary()
         nowplaying_info[MPMediaItemPropertyTitle] = "title"
         nowplaying_info[MPMediaItemPropertyArtist] = "artist"
+        nowplaying_info[MPNowPlayingInfoPropertyElapsedPlaybackTime] = 0
+        nowplaying_info[MPMediaItemPropertyPlaybackDuration] = 100
         self.info_center.setNowPlayingInfo_(nowplaying_info)
         self.info_center.setPlaybackState_(MPMusicPlaybackStatePlaying)
 

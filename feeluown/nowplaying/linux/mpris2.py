@@ -1,3 +1,4 @@
+# pylint: disable=import-error
 import logging
 import os
 
@@ -62,11 +63,12 @@ def to_dbus_playback_status(state):
 
 
 def to_track_id(model):
-    return '/com/feeluown/{}/songs/{}'.format(
-        model.source, model.identifier)
+    return f'/com/feeluown/{model.source}/songs/{model.identifier}'
 
 
 class Mpris2Service(dbus.service.Object):
+    # pylint: disable=too-many-public-methods
+
     def __init__(self, app, bus):
         super().__init__(bus, ObjectPath)
         self._app = app
@@ -223,8 +225,7 @@ class Mpris2Service(dbus.service.Object):
             return AppProperties
         raise dbus.exceptions.DBusException(
             'com.example.UnknownInterface',
-            'The Foo object does not implement the %s interface'
-            % interface
+            f'The Foo object does not implement the {interface} interface'
         )
 
     @dbus.service.method(AppInterface, in_signature='', out_signature='')
@@ -234,6 +235,7 @@ class Mpris2Service(dbus.service.Object):
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE, in_signature='', out_signature='s')
     def Introspect(self):
         current_dir_name = os.path.dirname(os.path.realpath(__file__))
-        with open(os.path.join(current_dir_name, 'introspect.xml'), 'r') as f:
+        xml = os.path.join(current_dir_name, 'introspect.xml')
+        with open(xml, 'r', encoding='utf-8') as f:
             contents = f.read()
         return contents

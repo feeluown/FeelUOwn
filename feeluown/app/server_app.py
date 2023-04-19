@@ -1,6 +1,5 @@
 import asyncio
 import logging
-import sys
 
 from feeluown.server.pubsub import (
     Gateway as PubsubGateway,
@@ -8,8 +7,8 @@ from feeluown.server.pubsub import (
 )
 from feeluown.server.pubsub.publishers import SignalPublisher
 from feeluown.server import FuoServer, ProtocolType
+from feeluown.nowplaying import run_nowplaying_server
 from .app import App
-from ..utils import aio
 
 logger = logging.getLogger(__name__)
 
@@ -52,24 +51,4 @@ class ServerApp(App):
             self.get_listen_addr(),
             self.config.PUBSUB_PORT,
         ))
-
-        platform = sys.platform.lower()
-        # pylint: disable=import-outside-toplevel
-        if platform == 'darwin':
-            try:
-                from feeluown.nowplaying.global_hotkey_mac import MacGlobalHotkeyManager
-            except ImportError as e:
-                logger.warning("Can't start mac hotkey listener: %s", str(e))
-            else:
-                mac_global_hotkey_mgr = MacGlobalHotkeyManager()
-                mac_global_hotkey_mgr.start()
-        elif platform == 'linux':
-            from feeluown.nowplaying.linux import run_mpris2_server
-            run_mpris2_server(self)
-        elif platform == 'win32':
-            try:
-                from feeluown.nowplaying.common import run_nowplaying_server
-            except ImportError:
-                logger.error("can't run now playing server, install aionowplaying")
-            else:
-                aio.run_afn(run_nowplaying_server, self)
+        asyncio.create_task(run_nowplaying_server(self))

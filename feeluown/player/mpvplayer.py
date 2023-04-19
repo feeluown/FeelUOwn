@@ -143,10 +143,12 @@ class MpvPlayer(AbstractPlayer):
             start_default, end_default = 'none', 'none'
         else:
             start_default, end_default = '0%', '100%'
-        start = str(start) if start is not None else start_default
-        end = str(end) if end is not None else end_default
-        _mpv_set_option_string(self._mpv.handle, b'start', bytes(start, 'utf-8'))
-        _mpv_set_option_string(self._mpv.handle, b'end', bytes(end, 'utf-8'))
+        start_str = str(start) if start is not None else start_default
+        end_str = str(end) if end is not None else end_default
+        _mpv_set_option_string(self._mpv.handle, b'start', bytes(start_str, 'utf-8'))
+        if start is not None:
+            self.seeked.emit(start)
+        _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
     def resume(self):
         self._mpv.pause = False
@@ -206,7 +208,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.playlist_clear()
 
     def _on_position_changed(self, position):
-        self._position = position
+        self._position = max(0, position or 0)
         self.position_changed.emit(position)
 
     def _on_duration_changed(self, duration):

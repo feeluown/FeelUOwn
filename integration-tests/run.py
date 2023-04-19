@@ -24,6 +24,19 @@ def create_client():
         client.close()
 
 
+def wait_until_23333_service_ok(timeout):
+    i = 0
+    while i < timeout:
+        try:
+            with create_client() as client:
+                pass
+        except ConnectionRefusedError:
+            time.sleep(1)
+            i += 1
+        else:
+            return True
+    return False
+
 def register_dummy_provider():
     req = Request('exec', has_heredoc=True, heredoc_word='EOF')
     req.set_heredoc_body('''
@@ -72,8 +85,9 @@ def test_sub_live_lyric():
 
 
 def run():
-    popen = subprocess.Popen(['fuo'])
-    time.sleep(5)  # wait for fuo starting
+    popen = subprocess.Popen(['fuo', '-v'])
+
+    assert wait_until_23333_service_ok(timeout=10)
     register_dummy_provider()
 
     failed = False

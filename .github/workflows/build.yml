@@ -13,6 +13,8 @@ jobs:
 
     runs-on: ${{ matrix.os }}
     strategy:
+      # Allow some jobs fail.
+      fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python: ['3.8', '3.10', '3.11']
@@ -25,24 +27,24 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
-      - name: Install Ubuntu OS dependencies
+      - name: Install Ubuntu dependencies
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get -y install libmpv1
 
-      - name: Install macOS dependencies
+      - name: Install macOS Dependencies
         if: startsWith(matrix.os, 'macos')
         run: |
           brew install mpv
 
-      - name: Install Windows dependencies
+      - name: Install Windows Dependencies
         if: startsWith(matrix.os, 'windows')
         run: |
           choco install make curl
           curl -L https://github.com/feeluown/FeelUOwn/releases/download/v3.6a0/mpv-1.dll -o C:Windows\system32\mpv-1.dll
 
-      - name: Install dependencies
+      - name: Install Python Dependencies
         run: |
           pip install --upgrade pip
           pip install pyqt5
