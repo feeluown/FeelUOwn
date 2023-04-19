@@ -1,3 +1,4 @@
+# pylint: disable=import-error
 import logging
 
 import aionowplaying as aionp

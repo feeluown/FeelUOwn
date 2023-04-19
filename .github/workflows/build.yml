@@ -27,13 +27,6 @@ jobs:
         with:
           python-version: ${{ matrix.python }}
 
-      - name: Install Python Dependencies
-        run: |
-          pip install --upgrade pip
-          pip install pyqt5
-          pip install "pytest<7.2"
-          pip install -e .[dev]
-
       - name: Install Ubuntu dependencies
         if: startsWith(matrix.os, 'ubuntu')
         run: |
@@ -44,14 +37,19 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: |
           brew install mpv
-          pip install -e .[macos]
 
       - name: Install Windows Dependencies
         if: startsWith(matrix.os, 'windows')
         run: |
           choco install make curl
           curl -L https://github.com/feeluown/FeelUOwn/releases/download/v3.6a0/mpv-1.dll -o C:Windows\system32\mpv-1.dll
-          pip install -e .[win32]
+
+      - name: Install Python Dependencies
+        run: |
+          pip install --upgrade pip
+          pip install pyqt5
+          pip install "pytest<7.2"
+          pip install -e .[dev]
 
       - name: Test if no syntax error
         run: feeluown -h
