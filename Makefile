@@ -30,11 +30,8 @@ MYPY_STRICT_PKGS+=feeluown/cli/cli.py
 MYPY_STRICT_PKGS+=feeluown/gui/
 mypy:
 # Add flag --check-untyped-defs.
-# On GitHub Actions environment, there maybe another mypy executable.
-# To prevent unexpected behavior, use 'python -m mypy' to ensure
-# the right mypy is used.
-	python -m mypy ${MYPY_PKGS}
-	python -m mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
+	mypy ${MYPY_PKGS}
+	mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
 flake8:
 	flake8 feeluown/ tests/
