@@ -10,7 +10,7 @@ with open(path.join(current_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # TODO: aionowplaying does not support py3.11 temporarily.
-dep_aionowplaying = \
+aionowplaying = \
     'aionowplaying @ git+https://github.com/cosven/aionowplaying.git@macos#egg=aionowplaying'  # noqa
 
 setup(
@@ -72,11 +72,11 @@ setup(
                     'feeluown-bilibili',
                     ],
         'macOS': [
-            dep_aionowplaying,
+            aionowplaying,
         ],
         'win32': [
             'pyshortcuts',
-            dep_aionowplaying,
+            aionowplaying,
         ],
         'webengine': ['PyQtWebEngine'],
         'dev': [
