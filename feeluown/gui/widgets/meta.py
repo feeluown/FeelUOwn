@@ -4,11 +4,11 @@ all metadata related widgets, for example: cover, and so on.
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QLabel, QWidget, QHBoxLayout, QVBoxLayout, \
+from PyQt5.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QFrame, QSizePolicy
 
 from feeluown.gui.helpers import elided_text
-from .cover_label import CoverLabel
+from .cover_label import CoverLabelV2
 
 
 class getset_property:
@@ -59,7 +59,7 @@ class TableMetaWidget(MetaWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.cover_label = CoverLabel(self)
+        self.cover_label = CoverLabelV2(self)
         # these three widgets are in right layout
         self.title_label = QLabel(self)
         self.meta_label = QLabel(self)
@@ -108,11 +108,11 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addWidget(tabbar)
         self._right_layout.setAlignment(tabbar, Qt.AlignLeft)
 
-    def set_cover_pixmap(self, pixmap):
-        if pixmap is not None:
+    def set_cover_image(self, image):
+        if image is not None:
             self.cover_label.show()
             self._right_layout.addItem(self.text_spacer)
-        self.cover_label.show_pixmap(pixmap)
+        self.cover_label.show_img(image)
         self.updateGeometry()
 
     def on_property_updated(self, name):
@@ -206,92 +206,3 @@ class TableMetaWidget(MetaWidget):
         #
         # type ignore: parent should be TableContainer.
         self.parent()._app.ui.bottom_panel.update()  # type: ignore[attr-defined]
-
-
-class CollectionToolbar(QWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-    def songs_mode(self):
-        pass
-
-    def artists_mode(self):
-        pass
-
-
-class CollMetaWidget(MetaWidget):
-    def __init__(self, parent=None):
-        super().__init__(parent=parent)
-
-        self.toolbar = CollectionToolbar(self)
-
-        self._title_label = QLabel(self)
-        self._cover_label = QLabel(self)
-        self._meta_label = QLabel(self)
-
-        self._title_label.setTextFormat(Qt.RichText)
-        self._meta_label.setTextFormat(Qt.RichText)
-        self._top_mid_spacer = QSpacerItem(25, 0)
-
-        self._layout = QVBoxLayout(self)
-        self._top_layout = QHBoxLayout()
-        self._top_right_layout = QVBoxLayout()
-        self._bottom_layout = QHBoxLayout()
-
-        self._setup_ui()
-
-    def _setup_ui(self):
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
-        self._cover_label.setFixedWidth(150)
-        self.setMaximumHeight(200)
-
-        # top right layout
-        self._top_right_layout.addStretch(0)
-        self._top_right_layout.addWidget(self._title_label)
-        self._top_right_layout.addSpacing(20)
-        self._top_right_layout.addWidget(self._meta_label)
-        self._top_right_layout.addStretch(0)
-
-        self._top_layout.setContentsMargins(20, 20, 20, 20)
-        self._top_layout.addWidget(self._cover_label)
-        self._top_layout.addSpacerItem(self._top_mid_spacer)
-        self._top_layout.addLayout(self._top_right_layout)
-
-        self._layout.addLayout(self._top_layout)
-        self._layout.addLayout(self._bottom_layout)
-
-    def on_property_updated(self, name):
-        if name in ('title', 'subtitle'):
-            self._title_label.setText('<h2>{}</h2>'.format(self.title))
-        elif name in ('created_at', 'updated_at', 'songs_count', 'creator'):
-            parts = []
-            if self.creator is not None:
-                part = self.creator
-                parts.append(part)
-            if self.songs_count is not None:
-                part = '{} 首歌曲'.format(self.songs_count)
-                parts.append(part)
-            if self.created_at is not None:
-                part = '🕛 创建于 <code style="font-size: small">{}</code>'\
-                    .format(self.created_at.strftime('%Y-%m-%d'))
-                parts.append(part)
-            if self.updated_at:
-                part = '🕒 更新于 <code style="font-size: small">{}</code>'\
-                    .format(self.updated_at.strftime('%Y-%m-%d'))
-                parts.append(part)
-
-            s = ' • '.join(parts)
-            self._meta_label.setText(s)
-        elif name == 'cover':
-            if self.cover is None:
-                self._cover_label.hide()
-            else:
-                self._cover_label.show()
-
-    def set_cover_pixmap(self, pixmap):
-        self._cover_label.show()
-        self._cover_label.setPixmap(
-            pixmap.scaledToWidth(self._cover_label.width(),
-                                 mode=Qt.SmoothTransformation))

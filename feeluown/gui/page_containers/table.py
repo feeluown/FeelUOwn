@@ -83,11 +83,11 @@ class Renderer:
         pixmap = QPixmap(img)
         if not pixmap.isNull():
             if as_background:
-                self.meta_widget.set_cover_pixmap(None)
+                self.meta_widget.set_cover_image(None)
                 self._app.ui.right_panel.show_background_image(pixmap)
             else:
                 self._app.ui.right_panel.show_background_image(None)
-                self.meta_widget.set_cover_pixmap(pixmap)
+                self.meta_widget.set_cover_image(img)
             self._app.ui.table_container.updateGeometry()
 
     def show_albums(self, reader):
