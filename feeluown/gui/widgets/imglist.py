@@ -19,7 +19,7 @@ from PyQt5.QtCore import (
     QRectF, QRect, QSize, QSortFilterProxyModel
 )
 from PyQt5.QtGui import (
-    QImage, QPixmap, QColor,
+    QImage, QColor,
     QBrush, QPainter, QTextOption, QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
@@ -67,7 +67,7 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.source_name_map = source_name_map or {}
         self.fetch_image = fetch_image
         self.colors = []
-        self.pixmaps = {}  # {uri: QPixmap}
+        self.images = {}  # {uri: QImage}
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
@@ -91,13 +91,12 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         def cb(content):
             uri = reverse(item)
             if content is None:
-                self.pixmaps[uri] = None
+                self.images[uri] = None
                 return
 
             img = QImage()
             img.loadFromData(content)
-            pixmap = QPixmap(img)
-            self.pixmaps[uri] = pixmap
+            self.images[uri] = img
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -111,9 +110,9 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         item = self._items[offset]
         if role == Qt.DecorationRole:
             uri = reverse(item)
-            pixmap = self.pixmaps.get(uri)
-            if pixmap is not None:
-                return pixmap
+            image = self.images.get(uri)
+            if image is not None:
+                return image
             color_str = self.colors[offset]
             color = QColor(color_str)
             color.setAlphaF(0.8)
@@ -171,10 +170,10 @@ class ImgListDelegate(QAbstractItemDelegate):
             painter.setBrush(brush)
         else:
             if obj.height() < obj.width():
-                pixmap = obj.scaledToHeight(cover_height, Qt.SmoothTransformation)
+                img = obj.scaledToHeight(cover_height, Qt.SmoothTransformation)
             else:
-                pixmap = obj.scaledToWidth(cover_width, Qt.SmoothTransformation)
-            brush = QBrush(pixmap)
+                img = obj.scaledToWidth(cover_width, Qt.SmoothTransformation)
+            brush = QBrush(img)
             painter.setBrush(brush)
         border_radius = 3
         if self.as_circle:
