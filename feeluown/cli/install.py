@@ -111,7 +111,7 @@ def gen_for_win32():
     #   will tell user it has no priviledge to run this program
     pyexe = os.path.join(os.path.dirname(sys.executable), 'pythonw')
     command = '{} -m feeluown'.format(pyexe)
-    ico = HERE.parent.parent / 'icons' / 'feeluown.ico'
+    ico = HERE.parent.parent / 'gui' / 'assets' / 'icons' / 'feeluown.ico'
     name = 'FeelUOwn'
     make_shortcut(command, name=name, icon=str(ico), terminal=False)
 

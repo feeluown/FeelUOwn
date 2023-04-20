@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import importlib
 import logging
 import os
@@ -35,6 +33,8 @@ class Plugin:
         :param homepage: 插件主页
         :param dist_name: 插件发行版名字
         """
+        # pylint: disable=too-many-arguments
+
         self.alias = alias
         # FIXME(cosven): use entry point name as plugin name, instead of the module name.
         self.name = module.__name__.split('.')[-1]
@@ -57,13 +57,13 @@ class Plugin:
             # alias, desc, version 为必需字段
             alias = module.__alias__
             desc = module.__desc__
-            version = module.__version__  # noqa
+            _ = module.__version__  # noqa
 
             author = getattr(module, '__author__', '')
             homepage = getattr(module, '__homepage__', '')
             dist_name = getattr(module, '__dist_name__', '')
         except AttributeError as e:
-            raise InvalidPluginError(str(e))
+            raise InvalidPluginError(str(e)) from None
         else:
             return Plugin(module,
                           alias=alias,
@@ -129,30 +129,28 @@ class PluginsManager:
 
     def load_module(self, module):
         """Load module and try to load the plugin"""
-        with self._app.create_action('Enabling plugin:%s' % module.__name__) as action:
-            # Try to create a new plugin.
-            try:
-                plugin = Plugin.create(module)
-            except InvalidPluginError as e:
-                action.failed(str(e))
-                return
+        logger.info('Try to load plugin from module: %s', module.__name__)
 
-            # Try to init config for the plugin.
-            self._plugins[plugin.name] = plugin
-            try:
-                plugin.init_config(self._app.config)
-            except Exception as e:
-                logger.exception(f'Init config for plugin:{plugin.name} failed')
-                action.failed(str(e))
-                return
+        # Try to create a new plugin.
+        try:
+            plugin = Plugin.create(module)
+        except InvalidPluginError:
+            return
 
-            # Try to enbale the plugin.
-            self.about_to_enable.emit(plugin)
-            try:
-                plugin.enable(self._app)
-            except Exception as e:
-                logger.exception(f'Enable plugin:{plugin.name} failed')
-                action.failed(str(e))
+        # Try to init config for the plugin.
+        self._plugins[plugin.name] = plugin
+        try:
+            plugin.init_config(self._app.config)
+        except Exception:  # noqa
+            logger.exception(f'Init config for plugin:{plugin.name} failed')
+            return
+
+        # Try to enbale the plugin.
+        self.about_to_enable.emit(plugin)
+        try:
+            plugin.enable(self._app)
+        except Exception:  # noqa
+            logger.exception(f'Enable plugin:{plugin.name} failed')
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""
@@ -178,7 +176,7 @@ class PluginsManager:
         https://packaging.python.org/guides/creating-and-discovering-plugins/
         """
         try:
-            import importlib.metadata
+            import importlib.metadata  # pylint: disable=redefined-outer-name
             entry_points = importlib.metadata.entry_points().get('fuo.plugins_v1', [])
         except ImportError:
             import pkg_resources
@@ -186,7 +184,7 @@ class PluginsManager:
         for entry_point in entry_points:
             try:
                 module = entry_point.load()
-            except Exception as e:  # noqa
+            except Exception:  # noqa
                 logger.exception('Failed to load module %s', entry_point.name)
             else:
                 self.load_module(module)

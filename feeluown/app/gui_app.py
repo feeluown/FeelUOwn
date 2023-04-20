@@ -99,8 +99,8 @@ class GuiApp(App, QWidget):
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
 
     def run(self):
-        super().run()
         self.show()
+        super().run()
 
     def load_state(self):
         super().load_state()

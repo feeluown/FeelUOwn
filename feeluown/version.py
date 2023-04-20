@@ -16,9 +16,9 @@ class VersionManager(object):
     def __init__(self, app):
         self._app = app
 
-        self._app.initialized.connect(self.on_app_initialized)
+        self._app.started.connect(self.on_app_started)
 
-    def on_app_initialized(self, *args):
+    def on_app_started(self, *args):
         loop = asyncio.get_running_loop()
         loop.call_later(
             10,
@@ -48,7 +48,7 @@ class VersionManager(object):
             else:
                 logger.info('当前已经是最新版本')
                 if self._app.mode & self._app.GuiMode:
-                    self._app.show_msg('当前已经是最新版本')
+                    self._app.show_msg(f'当前已经是最新版本: {latest}')
 
 
 if __name__ == '__main__':

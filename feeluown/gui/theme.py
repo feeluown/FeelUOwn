@@ -55,7 +55,7 @@ class ThemeManager(QObject):
         # XXX: I don't know why we should autoload twice
         # to make it work well on Linux(GNOME)
         self.autoload()
-        self._app.initialized.connect(lambda app: self.autoload(), weak=False)
+        self._app.started.connect(lambda app: self.autoload(), weak=False)
         get_qapp().paletteChanged.connect(lambda p: self.autoload())
 
     def autoload(self):

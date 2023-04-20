@@ -35,7 +35,7 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self._app.player.metadata_changed.connect(self.update_song_props)
         self._app.player.media_changed.connect(self.on_player_media_changed)
         self._app.playlist.playback_mode_changed.connect(self.update_playback_mode)
-        self._app.initialized.connect(
+        self._app.started.connect(
             lambda: self.update_playback_mode(self._app.playlist.playback_mode))
 
         self.set_playback_property(PlayProp.CanPlay, True)

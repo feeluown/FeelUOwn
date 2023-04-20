@@ -13,6 +13,7 @@ PYLINT_PKGS+=feeluown/fuoexec/
 PYLINT_PKGS+=feeluown/server/
 PYLINT_PKGS+=feeluown/nowplaying/
 PYLINT_PKGS+=feeluown/collection.py
+PYLINT_PKGS+=feeluown/plugin.py
 pylint:
 	pylint ${PYLINT_PKGS}
 
@@ -45,7 +46,9 @@ lint: flake8 pylint
 unittest: pytest
 
 pytest:
-	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest
+# Disable faulthandler plugin, because it cause verbose output on windows.
+# Besides, the fault currently cause no side effects.
+	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -p no:faulthandler
 
 integration_test: export QT_QPA_PLATFORM=offscreen
 integration_test:

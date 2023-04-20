@@ -198,8 +198,7 @@ class WatchManager:
         # Remember to set aioqueue to true so that mpv_widget is hidden after the
         # app(Qt) event loop is started.
         self._app.ui.mpv_widget.show()
-        self._app.initialized.connect(
-            lambda _: self._app.ui.mpv_widget.hide(), weak=False, aioqueue=True)
+        self._app.started.connect(lambda *_: self._app.ui.mpv_widget.hide(), weak=False)
 
     def _before_change_mpv_widget_parent(self):
         """
