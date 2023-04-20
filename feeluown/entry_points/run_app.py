@@ -7,13 +7,12 @@ import sys
 import warnings
 
 from feeluown.app import AppMode, create_app, create_config
-from feeluown.utils.utils import is_port_inuse
+from feeluown.utils.utils import is_port_inuse, win32_is_port_binded
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal  # noqa: E402
 
 from .base import ensure_dirs, setup_config, setup_logger  # noqa: E402
-
 
 logger = logging.getLogger(__name__)
 
@@ -93,6 +92,7 @@ async def start_app(args, config, sentinal=None):
     """
     Signal.setup_aio_support()
 
+    # create_app takes about 300ms.
     app = create_app(args, config)
 
     # Do fuoexec initialization before app initialization.
@@ -103,10 +103,8 @@ async def start_app(args, config, sentinal=None):
     # all objects can do initialization here. some objects may emit signal,
     # some objects may connect with others signals.
     app.initialize()
-    app.initialized.emit(app)
 
-    # Load last state.
-    app.load_state()
+    app.initialized.emit(app)
 
     def sighanlder(signum, _):
         logger.info('Signal %d is received', signum)
@@ -140,6 +138,11 @@ async def start_app(args, config, sentinal=None):
     # 1. Ctrl-C
     # 2. SIGTERM
     app.run()
+    app.started.emit(app)
+
+    # Load last state.
+    app.load_state()
+
     await sentinal
 
     Signal.teardown_aio_support()
@@ -164,8 +167,14 @@ def precheck(args, config):
 
     # Check if ports are in use.
     if AppMode.server in AppMode(config.MODE):
-        if is_port_inuse(config.RPC_PORT) or \
-           is_port_inuse(config.PUBSUB_PORT):
+        if sys.platform == 'win32':
+            host = '0.0.0.0' if config.ALLOW_LAN_CONNECT else '127.0.0.1'
+            used = win32_is_port_binded(host, config.RPC_PORT) or \
+                win32_is_port_binded(host, config.PUBSUB_PORT)
+        else:
+            # Maybe use the same checking method as windows on other platforms.
+            used = is_port_inuse(config.RPC_PORT) or is_port_inuse(config.PUBSUB_PORT)
+        if used:
             err_msg = (
                 'App fails to start services because '
                 f'either port {config.RPC_PORT} or {config.PUBSUB_PORT} '

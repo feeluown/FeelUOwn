@@ -10,13 +10,16 @@ disable=
     invalid-name,
     logging-fstring-interpolation,
     bare-except,
+    import-outside-toplevel,  # too verbose
 
     # Let flake8 check import-related code.
     wrong-import-position,
     unused-import,
     cyclic-import,
+    broad-exception-caught,
 
     # Enable following in the future.
+
     no-else-raise,
     bad-mcs-classmethod-argument,
     no-else-return

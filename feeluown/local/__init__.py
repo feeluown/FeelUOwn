@@ -66,8 +66,8 @@ def enable(app):
     app.library.register(provider)
     provider.initialize(app)
 
-    app.initialized.connect(lambda *args: aio.create_task(autoload(*args)),
-                            weak=False, aioqueue=False)
+    app.started.connect(lambda *args: aio.create_task(autoload(*args)),
+                        weak=False, aioqueue=False)
     if app.mode & app.GuiMode:
         app.browser.route('/local')(show_provider)
         pm = app.pvd_uimgr.create_item(

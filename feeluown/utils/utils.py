@@ -16,9 +16,30 @@ from feeluown.utils.reader import wrap as reader_wrap
 logger = logging.getLogger(__name__)
 
 
+def win32_is_port_binded(host, port):
+    """
+    sock.connect_ex may block for 2 second if port is not used on Windows.
+    This may be the fastest way to check if a port is bined on Windows.
+    Remember that (127.0.0.1, port) and (0.0.0.0, port) are different for `sock.bind`.
+    """
+    import errno  # pylint: disable=import-outside-toplevel
+
+    inuse = False
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    try:
+        sock.bind((host, port))
+    except socket.error as e:
+        if e.errno == errno.EADDRINUSE:
+            inuse = True
+        else:
+            raise
+    finally:
+        sock.close()
+    return inuse
+
+
 def is_port_inuse(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    # TODO: this may block for 2 second if port is not used on Windows
     rv = sock.connect_ex(('127.0.0.1', port))
     sock.close()
     return rv == 0

@@ -35,12 +35,14 @@ class App:
     GuiMode = AppMode.gui.value
     CliMode = AppMode.cli.value
 
-    def __init__(self, args, config):
-
+    def __init__(self, args, config, **kwargs):
         self.mode = config.MODE  # DEPRECATED: use app.config.MODE instead
         self.config = config
         self.args = args
         self.initialized = Signal()
+        # .. versionadded:: 3.8.11
+        #    App started signal. Maybe the initialized signal can be removed?
+        self.started = Signal()  # App is ready to use, for example, UI is available.
         self.about_to_shutdown = Signal()
 
         self.plugin_mgr = PluginsManager(self)
