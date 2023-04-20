@@ -5,7 +5,7 @@ from .mpvplayer import MpvPlayer as Player
 from .playlist import PlaylistMode, Playlist
 from .fm import FM
 from .radio import SongRadio
-from .lyric import LiveLyric, parse_lyric_text
+from .lyric import LiveLyric, parse_lyric_text, Line as LyricLine
 from .recently_played import RecentlyPlayed
 from .delegate import PlayerPositionDelegate
 
@@ -27,6 +27,7 @@ __all__ = (
 
     'LiveLyric',
     'parse_lyric_text',
+    'LyricLine',
 
     'RecentlyPlayed',
 )

@@ -126,6 +126,9 @@ async def start_app(args, config, sentinal=None):
 
     app.about_to_shutdown.connect(shutdown, weak=False)
 
+    # GUI state must be load before running app, otherwise, it does not take effects.
+    app.load_and_apply_state()
+
     # App can exit in several ways.
     #
     # GUI mode:
@@ -139,9 +142,6 @@ async def start_app(args, config, sentinal=None):
     # 2. SIGTERM
     app.run()
     app.started.emit(app)
-
-    # Load last state.
-    app.load_state()
 
     await sentinal
 

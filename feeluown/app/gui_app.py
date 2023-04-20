@@ -92,7 +92,6 @@ class GuiApp(App, QWidget):
         if self.config.ENABLE_TRAY:
             self.tray.initialize()
             self.tray.show()
-        self.tips_mgr.show_random_tip()
         self.coll_uimgr.initialize()
         self.watch_mgr.initialize()
         self.browser.initialize()
@@ -102,11 +101,20 @@ class GuiApp(App, QWidget):
         self.show()
         super().run()
 
-    def load_state(self):
-        super().load_state()
+    def apply_state(self, state):
+        super().apply_state(state)
         coll_library = self.coll_uimgr.get_coll_library()
         coll_id = self.coll_uimgr.get_coll_id(coll_library)
         self.browser.goto(page=f'/colls/{coll_id}')
+
+        gui = state.get('gui', {})
+        lyric = gui.get('lyric', {})
+        self.ui.player_bar.lyric_window.apply_state(lyric)
+
+    def dump_state(self):
+        state = super().dump_state()
+        state['gui'] = {'lyric': self.ui.player_bar.lyric_window.dump_state()}
+        return state
 
     def closeEvent(self, _):
         if not self.config.ENABLE_TRAY:

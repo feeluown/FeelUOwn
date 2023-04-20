@@ -13,7 +13,7 @@ from feeluown.utils import aio
 from feeluown.excs import ProviderIOError
 from feeluown.media import MediaType
 from feeluown.player import State
-from feeluown.gui.widgets.lyric import Window as LyricWindow
+from feeluown.gui.widgets.lyric import LyricWindow
 from feeluown.gui.widgets.menu import SongMenuInitializer
 from feeluown.gui.helpers import resize_font
 from feeluown.gui.widgets import TextButton
@@ -237,7 +237,7 @@ class PlayerControlPanel(QFrame):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
 
-        self.lyric_window = LyricWindow()
+        self.lyric_window = LyricWindow(self._app)
         self.lyric_window.hide()
 
         # initialize sub widgets
@@ -304,7 +304,7 @@ class PlayerControlPanel(QFrame):
         player.state_changed.connect(self._on_player_state_changed, aioqueue=True)
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
-        self._app.live_lyric.sentence_changed.connect(self.lyric_window.set_sentence)
+        self._app.live_lyric.line_changed.connect(self.lyric_window.set_line)
         self.lyric_window.play_previous_needed.connect(playlist.previous)
         self.lyric_window.play_next_needed.connect(playlist.next)
 

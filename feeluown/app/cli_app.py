@@ -19,9 +19,3 @@ class CliApp(App):
         from feeluown.cli import oncemain  # pylint: disable=cyclic-import
 
         aio.run_afn(oncemain, self)
-
-    def load_state(self):
-        pass
-
-    def dump_state(self):
-        pass
