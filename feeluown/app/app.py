@@ -36,6 +36,7 @@ class App:
     CliMode = AppMode.cli.value
 
     def __init__(self, args, config, **kwargs):
+        App._instance = self
         self.mode = config.MODE  # DEPRECATED: use app.config.MODE instead
         self.config = config
         self.args = args
@@ -54,7 +55,6 @@ class App:
         self.library = Library(config.PROVIDERS_STANDBY)
         # TODO: initialization should be moved into initialize
         Resolver.library = self.library
-
         # Player.
         self.player = Player(audio_device=bytes(config.MPV_AUDIO_DEVICE, 'utf-8'))
         # Theoretically, each caller maintain its own position delegate.
@@ -84,14 +84,6 @@ class App:
 
     def run(self):
         pass
-
-    @property
-    def instance(self) -> Optional['App']:
-        """App running instance.
-
-        .. versionadded:: 3.8
-        """
-        return App._instance
 
     @property
     def has_server(self) -> bool:
@@ -246,6 +238,13 @@ class App:
 
     def exit(self):
         self.about_to_exit()
+
+
+def get_app() -> Optional['App']:
+    """
+    .. versionadded:: 3.8.11
+    """
+    return App._instance
 
 
 def create_app(args, config) -> App:

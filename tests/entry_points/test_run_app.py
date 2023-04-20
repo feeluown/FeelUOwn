@@ -6,7 +6,7 @@ import pytest
 
 from feeluown.argparser import create_cli_parser
 from feeluown.entry_points.run_app import run_app, before_start_app, start_app
-from feeluown.app import App, AppMode
+from feeluown.app import App, AppMode, get_app
 from feeluown.app.cli_app import CliApp
 from feeluown.plugin import PluginsManager
 from feeluown.gui.uimodels.collection import CollectionUiManager
@@ -87,6 +87,7 @@ async def test_start_app(argsparser, mocker, noharm):
     future = asyncio.Future()
     future.set_result(None)
     await start_app(args, config, future)
+    get_app().exit()
 
     mock_app_run.assert_called_once_with()
 

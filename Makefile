@@ -46,7 +46,9 @@ lint: flake8 pylint
 unittest: pytest
 
 pytest:
-	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest
+# Disable faulthandler plugin, because it cause verbose output on windows.
+# Besides, the fault currently cause no side effects.
+	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -p no:faulthandler -v
 
 integration_test: export QT_QPA_PLATFORM=offscreen
 integration_test:
