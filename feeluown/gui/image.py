@@ -1,9 +1,14 @@
 import asyncio
-from functools import partial
 import logging
 import os
+import tempfile
 import time
+import uuid
+from functools import partial
 from hashlib import md5
+
+from PyQt5.QtCore import QUrl
+from PyQt5.QtGui import QDesktopServices, QImage
 
 from feeluown.consts import CACHE_DIR
 
@@ -136,3 +141,12 @@ class _ImgCache(object):
 
     def _get_path(self, fname):
         return os.path.join(CACHE_DIR, fname)
+
+
+def open_image(img: QImage):
+    tmpdir = tempfile.gettempdir()
+    uid = str(uuid.uuid1())
+    name = f'feeluown-img-{uid}.png'
+    filepath = os.path.join(tmpdir, name)
+    if img.save(filepath):
+        QDesktopServices.openUrl(QUrl.fromLocalFile(filepath))

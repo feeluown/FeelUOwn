@@ -2,7 +2,9 @@ import warnings
 
 from PyQt5.QtCore import Qt, QSize, QRect
 from PyQt5.QtGui import QPainter, QBrush, QImage, QPixmap
-from PyQt5.QtWidgets import QLabel, QSizePolicy
+from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu
+
+from feeluown.gui.image import open_image
 
 
 class CoverLabel(QLabel):
@@ -61,6 +63,14 @@ class CoverLabel(QLabel):
         painter.drawRoundedRect(rect, radius, radius)
         painter.restore()
         painter.end()
+
+    def contextMenuEvent(self, e):
+        if self._img is None:
+            return
+        menu = QMenu()
+        action = menu.addAction('查看原图')
+        action.triggered.connect(lambda: open_image(self._img))
+        menu.exec(e.globalPos())
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
