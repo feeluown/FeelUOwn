@@ -109,11 +109,11 @@ class GuiApp(App, QWidget):
 
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})
-        self.ui.player_bar.lyric_window.apply_state(lyric)
+        self.ui.lyric_window.apply_state(lyric)
 
     def dump_state(self):
         state = super().dump_state()
-        state['gui'] = {'lyric': self.ui.player_bar.lyric_window.dump_state()}
+        state['gui'] = {'lyric': self.ui.lyric_window.dump_state()}
         return state
 
     def closeEvent(self, _):
