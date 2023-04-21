@@ -1,14 +1,44 @@
 import re
 import logging
 from typing import Dict, Optional
-from collections import namedtuple
+from collections import namedtuple, OrderedDict
 
 from feeluown.library import LyricModel
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from feeluown.utils.utils import find_previous
 
 logger = logging.getLogger(__name__)
+
+
+def find_previous(element, list_):
+    """
+    find previous element in a sorted list
+
+    >>> find_previous(0, [0])
+    (0, 0)
+    >>> find_previous(2, [1, 1, 3])
+    (1, 1)
+    >>> find_previous(0, [1, 2])
+    (None, None)
+    >>> find_previous(1.5, [1, 2])
+    (1, 0)
+    >>> find_previous(3, [1, 2])
+    (2, 1)
+    """
+    length = len(list_)
+    for index, current in enumerate(list_):
+        # current is the last element
+        if length - 1 == index:
+            return current, index
+
+        # current is the first element
+        if index == 0:
+            if element < current:
+                return None, None
+
+        if current <= element < list_[index+1]:
+            return current, index
+    return None, None
 
 
 def parse_lyric_text(content: str) -> Dict[int, str]:
@@ -16,9 +46,9 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
     Reference: https://github.com/osdlyrics/osdlyrics/blob/master/python/lrc.py
 
     >>> parse_lyric_text("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
-    {0: ' 作曲 : 周杰伦', 1000: ' 作词 : 周杰伦'}
+    OrderedDict([(0, ' 作曲 : 周杰伦'), (1000, ' 作词 : 周杰伦')])
     """
-    ms_sentence_map = {}
+    ms_sentence_map = OrderedDict()
     sentence_pattern = re.compile(r'\[(\d+(:\d+){0,2}(\.\d+)?)\]')
     lines = content.splitlines()
     for line in lines:
@@ -41,26 +71,35 @@ Line = namedtuple('Line', ['origin', 'trans', 'has_trans'])
 
 
 class Lyric:
-    def __init__(self, pos_s_map):
+    def __init__(self, pos_s_map: OrderedDict):
         self._pos_s_map = pos_s_map
-        self._pos_list = sorted(list(self._pos_s_map.keys()))
+        self._pos_list = list(self._pos_s_map.keys())
         self._pos = 0
+        self._index: Optional[int] = None
         self._current_s = ''
+
+    @property
+    def lines(self):
+        return list(self._pos_s_map.values())
 
     @classmethod
     def from_content(cls, content):
         return cls(parse_lyric_text(content))
 
     @property
+    def current_index(self) -> Optional[int]:
+        return self._index
+
+    @property
     def current_s(self):
         return self._current_s
 
     def update_position(self, pos):
-        # TODO: performance optimization?
-        pos = find_previous(pos*1000 + 300, self._pos_list)
+        pos, index = find_previous(pos*1000 + 300, self._pos_list)
         if pos is not None and pos != self._pos:
             self._current_s = self._pos_s_map[pos]
             self._pos = pos
+            self._index = index
             return self._current_s, True
         return self._current_s, False
 
@@ -94,12 +133,19 @@ class LiveLyric:
 
         self._lyric: Optional[Lyric] = None
         self._trans_lyric: Optional[Lyric] = None
+        self.lyrics_changed = Signal()  # (lyric, trans_lyric, ...)
 
         self._current_sentence = ''
         self.sentence_changed = Signal()
 
         self._current_line: Line = Line('', '', False)
         self.line_changed = Signal()
+
+    @property
+    def current_lyrics(self):
+        # Note that more lyric may be return in the future, for example, KTV lyric.
+        # Maybe use a namedtuple like Line in the future.
+        return (self._lyric, self._trans_lyric, )
 
     @property
     def current_sentence(self):
@@ -160,3 +206,4 @@ class LiveLyric:
             self._lyric = Lyric.from_content(model.content)
             self._trans_lyric = Lyric.from_content(model.trans_content) \
                 if model.trans_content else None
+        self.lyrics_changed.emit(self._lyric, self._trans_lyric)

@@ -11,10 +11,9 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
 from feeluown.excs import ProviderNotFound, ResourceNotFound
 from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
-    NotSupported, SupportsSongLyric, ModelFlags
+    NotSupported, ModelFlags
 )
 from feeluown.models.uri import reverse, resolve
-from feeluown.player import parse_lyric_text
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
 from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, resize_font
@@ -22,6 +21,7 @@ from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
+from feeluown.gui.widgets.lyric import LyricView
 from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate, SongMiniCardListModel, SongMiniCardListView
 )
@@ -179,7 +179,7 @@ class LeftCon(QWidget, BgTransparentMixin):
 class RightCon(QWidget):
     def sizeHint(self):
         size_hint = super().sizeHint()
-        return QSize(100, size_hint.height())
+        return QSize(130, size_hint.height())
 
 
 class SongExploreView(QWidget):
@@ -190,7 +190,7 @@ class SongExploreView(QWidget):
         self.title_label = LargeHeader()
         self.similar_songs_header = MidHeader('相似歌曲')
         self.comments_header = MidHeader('热门评论')
-        self.lyric_label = LyricLabel()
+        self.lyric_view = LyricView(parent=self)
         self.play_btn = TextButton('播放')
         self.copy_web_url_btn = TextButton('复制网页地址')
         self.cover_label = CoverLabelV2(app=app)
@@ -206,16 +206,14 @@ class SongExploreView(QWidget):
         )
         self.similar_songs_view.setItemDelegate(delegate)
 
-        self._lyric_scrollarea = ScrollArea(self._app)
-        self._lyric_scrollarea.setWidget(self.lyric_label)
         self._setup_ui()
 
         self.similar_songs_view.play_song_needed.connect(
             app.playlist.play_model)
 
     def _setup_ui(self):
-        self.lyric_label.setSizePolicy(QSizePolicy.Preferred,
-                                       QSizePolicy.Expanding)
+        self.lyric_view.setSizePolicy(QSizePolicy.Preferred,
+                                      QSizePolicy.Expanding)
         self.cover_label.setFixedSize(160, 160)
         self.cover_label.setSizePolicy(QSizePolicy.Preferred,
                                        QSizePolicy.Preferred)
@@ -262,7 +260,7 @@ class SongExploreView(QWidget):
         self._btns_layout.addWidget(self.copy_web_url_btn)
         self._btns_layout.addStretch(0)
 
-        self._right_layout.addWidget(self._lyric_scrollarea)
+        self._right_layout.addWidget(self.lyric_view)
 
     async def maybe_show_web_url_btn(self, provider, song):
         if isinstance(provider, SupportsSongWebUrl):
@@ -307,21 +305,10 @@ class SongExploreView(QWidget):
             self.comments_header.setText(msg)
 
     async def maybe_show_song_lyric(self, song):
-        try:
-            lyric = self._app.library.song_get_lyric(song)
-        except NotSupported:
-            msg = err_msg_tpl.format(feature='查看歌曲歌词',
-                                     interface=SupportsSongLyric.__name__)
-            self.lyric_label.setText(msg)
-        else:
-            if lyric is not None:
-                ms_sentence_map = parse_lyric_text(lyric.content)
-                sentences = []
-                for _, sentence in sorted(ms_sentence_map.items(),
-                                          key=lambda item: item[0]):
-                    sentences.append(sentence)
-                lyric = '<br>'.join(sentences)
-                self.lyric_label.setText(f'<p style="line-height: 120%">{lyric}</p>')
+        lyric = self._app.live_lyric.current_lyrics[0]
+        self.lyric_view.set_lyric(lyric)
+        self._app.live_lyric.line_changed.connect(
+            self.lyric_view.on_line_changed, weak=True)
 
     async def maybe_show_song_pic(self, song, album):
         if album:

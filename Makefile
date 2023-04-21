@@ -9,6 +9,7 @@ docs:
 PYLINT_PKGS=
 PYLINT_PKGS+=feeluown/gui/pages/
 PYLINT_PKGS+=feeluown/gui/uimodels/
+PYLINT_PKGS+=feeluown/gui/widgets/lyric.py
 PYLINT_PKGS+=feeluown/fuoexec/
 PYLINT_PKGS+=feeluown/server/
 PYLINT_PKGS+=feeluown/nowplaying/
