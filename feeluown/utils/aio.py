@@ -24,6 +24,9 @@ else:
 spawn = create_task
 as_completed = asyncio.as_completed
 
+#: sleep is an alias of `asyncio.sleep`.
+sleep = asyncio.sleep
+
 #: run is an alias of `asyncio.run`.
 run = asyncio.run
 

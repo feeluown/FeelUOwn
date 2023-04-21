@@ -4,9 +4,9 @@ from PyQt5.QtWidgets import QSizePolicy, QSplitter, QVBoxLayout
 from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.settings import SettingsDialog
 from feeluown.gui.widgets.messageline import MessageLine
-
 from feeluown.gui.widgets.mpv import MpvOpenGLWidget
 
+from feeluown.gui.uimain.lyric import LyricWindow
 from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
@@ -20,9 +20,15 @@ class Ui:
 
     def __init__(self, app):
         self._app = app
+        # Let the following widgets access ui object during init.
+        self._app.ui = self
         self._layout = QVBoxLayout(app)
         self._top_separator = Separator(app)
         self._splitter = QSplitter(app)
+
+        # Create widgets that don't rely on other widgets first.
+        self.lyric_window = LyricWindow(self._app)
+        self.lyric_window.hide()
 
         # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
         # 给其添加任何功能性的函数
@@ -33,7 +39,6 @@ class Ui:
         self.page_view = self.right_panel = RightPanel(self._app, self._splitter)
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
-        self.frameless_container = None
         self.playlist_overlay = PlaylistOverlay(app, parent=app)
 
         # alias

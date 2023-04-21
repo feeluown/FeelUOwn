@@ -2,6 +2,7 @@ import asyncio
 import pytest
 
 from feeluown.player import LiveLyric
+from feeluown.library import LyricModel
 
 
 lyric = """[by:魏积分]
@@ -41,6 +42,27 @@ lyric = """[by:魏积分]
 [04:36.31]このTragedy Night
 """
 
+SomeoneLikeYou = """
+[00:00.000] 作词 : Adele Adkins/Dan Wilson
+[00:01.000] 作曲 : Adele Adkins/Dan Wilson
+[00:12.737]I heard
+[00:16.478]That you are settled down
+[00:21.789]That you found a girl
+[00:23.557]And you are married now
+[00:28.728]I heard
+[00:31.590]That your dreams came true
+"""
+
+SomeoneLikeYouTrans = """
+[by:baekhyun_josae]
+[00:12.737]听说
+[00:16.478]你心有所属
+[00:21.789]你遇到了她
+[00:23.557]已经步入婚姻殿堂
+[00:28.728]听说
+[00:31.590]你美梦成真
+"""
+
 
 class FakeLyric(object):
     def __init__(self):
@@ -56,3 +78,31 @@ async def test_no_song_changed(app_mock):
     await asyncio.sleep(0.1)
     live_lyric.on_position_changed(60)
     assert live_lyric.current_sentence == '互いのすべてを　知りつくすまでが'
+
+
+def test_live_lyric_with_trans(app_mock):
+    model = LyricModel(identifier=1,
+                       source='local',
+                       content=SomeoneLikeYou,
+                       trans_content=SomeoneLikeYouTrans)
+    live_lyric = LiveLyric(app_mock)
+    live_lyric.set_lyric(model)
+
+    live_lyric.on_position_changed(3)
+    assert live_lyric.current_sentence == ' 作曲 : Adele Adkins/Dan Wilson'
+    current_line = live_lyric.current_line
+    assert current_line[0] == live_lyric.current_sentence
+    assert current_line[2]
+    assert current_line[1] == ''
+
+    live_lyric.on_position_changed(29)
+    assert live_lyric.current_sentence == 'I heard'
+    current_line = live_lyric.current_line
+    assert current_line[0] == live_lyric.current_sentence
+    assert current_line[1] == '听说'
+    assert current_line[2]
+
+    live_lyric.set_lyric(None)
+    assert live_lyric.current_sentence == ''
+    assert live_lyric.current_line[0] == ''
+    assert live_lyric.current_line[2] is False

@@ -83,35 +83,6 @@ def elfhash(s):
     return (hash & 0x7FFFFFFF)
 
 
-def find_previous(element, list_):
-    """
-    find previous element in a sorted list
-
-    >>> find_previous(0, [0])
-    0
-    >>> find_previous(2, [1, 1, 3])
-    1
-    >>> find_previous(0, [1, 2])
-    >>> find_previous(1.5, [1, 2])
-    1
-    >>> find_previous(3, [1, 2])
-    2
-    """
-    length = len(list_)
-    for index, current in enumerate(list_):
-        # current is the last element
-        if length - 1 == index:
-            return current
-
-        # current is the first element
-        if index == 0:
-            if element < current:
-                return None
-
-        if current <= element < list_[index+1]:
-            return current
-
-
 def get_osx_theme():
     """1 for dark, -1 for light"""
     with os.popen('defaults read -g AppleInterfaceStyle') as pipe:

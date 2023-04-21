@@ -73,7 +73,7 @@ class App:
         # TODO: initialization should be moved into initialize
         self.player.set_playlist(self.playlist)
 
-        self.about_to_shutdown.connect(lambda _: self.dump_state(), weak=False)
+        self.about_to_shutdown.connect(lambda _: self.dump_and_save_state(), weak=False)
 
     def initialize(self):
         self.player_pos_per300ms.initialize()
@@ -107,19 +107,12 @@ class App:
     def get_listen_addr(self):
         return '0.0.0.0' if self.config.ALLOW_LAN_CONNECT else '127.0.0.1'
 
-    def load_state(self):
+    def apply_state(self, state):
         playlist = self.playlist
         player = self.player
         recently_played = self.recently_played
 
-        try:
-            with open(STATE_FILE, 'r', encoding='utf-8') as f:
-                state = json.load(f)
-        except FileNotFoundError:
-            pass
-        except json.decoder.JSONDecodeError:
-            logger.exception('invalid state file')
-        else:
+        if state:
             player.volume = state['volume']
 
             # Restore recently_played states.
@@ -168,8 +161,22 @@ class App:
                     player.set_play_range(start=state['position'])
                     playlist.set_current_song(song)
 
+    def load_state(self):
+        try:
+            with open(STATE_FILE, 'r', encoding='utf-8') as f:
+                state = json.load(f)
+        except FileNotFoundError:
+            return {}
+        except json.decoder.JSONDecodeError:
+            logger.exception('invalid state file')
+            return {}
+        return state
+
+    def load_and_apply_state(self):
+        state = self.load_state()
+        self.apply_state(state)
+
     def dump_state(self):
-        logger.info("Dump app state")
         playlist = self.playlist
         player = self.player
         recently_played = self.recently_played
@@ -188,6 +195,11 @@ class App:
             'recently_played': [reverse(song, as_line=True)
                                 for song in recently_played.list_songs()]
         }
+        return state
+
+    def dump_and_save_state(self):
+        logger.info("Dump and save app state")
+        state = self.dump_state()
         with open(STATE_FILE, 'w', encoding='utf-8') as f:
             json.dump(state, f)
 

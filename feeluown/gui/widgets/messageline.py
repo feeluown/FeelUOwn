@@ -35,7 +35,7 @@ class MessageLine(QWidget, BgTransparentMixin):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
-    def show_msg(self, msg, timeout=1300, **kwargs):
+    def show_msg(self, msg, timeout=1500, **kwargs):
         self._label.setText(elided_text(msg, self.width(), self.font()))
         self.show()
         self._timer.start(timeout)
