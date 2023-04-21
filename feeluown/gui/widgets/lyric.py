@@ -20,6 +20,7 @@ class LyricView(QListWidget):
         self.setFrameShape(QFrame.NoFrame)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWordWrap(True)
 
         self.currentItemChanged.connect(self.on_item_changed)
 

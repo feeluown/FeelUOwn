@@ -13,6 +13,7 @@ from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
     NotSupported, ModelFlags
 )
+from feeluown.player import Lyric
 from feeluown.models.uri import reverse, resolve
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
@@ -183,7 +184,7 @@ class RightCon(QWidget):
 
 
 class SongExploreView(QWidget):
-    def __init__(self, app):
+    def __init__(self, app: GuiApp):
         super().__init__(parent=None)
         self._app = app
 
@@ -305,10 +306,21 @@ class SongExploreView(QWidget):
             self.comments_header.setText(msg)
 
     async def maybe_show_song_lyric(self, song):
-        lyric = self._app.live_lyric.current_lyrics[0]
-        self.lyric_view.set_lyric(lyric)
-        self._app.live_lyric.line_changed.connect(
-            self.lyric_view.on_line_changed, weak=True)
+        if self._app.playlist.current_song == song:
+            lyric = self._app.live_lyric.current_lyrics[0]
+            self.lyric_view.set_lyric(lyric)
+            self._app.live_lyric.line_changed.connect(
+                self.lyric_view.on_line_changed, weak=True)
+            return
+
+        try:
+            lyric_model = self._app.library.song_get_lyric(song)
+        except NotSupported:
+            pass
+        else:
+            if lyric_model is None:
+                return
+            self.lyric_view.set_lyric(Lyric.from_content(lyric_model.content))
 
     async def maybe_show_song_pic(self, song, album):
         if album:
