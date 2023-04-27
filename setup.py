@@ -10,8 +10,7 @@ with open(path.join(current_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 # TODO: aionowplaying does not support py3.11 temporarily.
-aionowplaying = \
-    'aionowplaying @ git+https://github.com/cosven/aionowplaying.git@macos#egg=aionowplaying'  # noqa
+aionowplaying = 'aionowplaying>=0.9.4'
 
 setup(
     name='feeluown',
