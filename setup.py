@@ -9,9 +9,6 @@ current_directory = path.abspath(path.dirname(__file__))
 with open(path.join(current_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
-# TODO: aionowplaying does not support py3.11 temporarily.
-aionowplaying = 'aionowplaying>=0.9.4'
-
 setup(
     name='feeluown',
     version=feeluown.__version__,
@@ -71,11 +68,11 @@ setup(
                     'feeluown-bilibili',
                     ],
         'macOS': [
-            aionowplaying,
+            'aionowplaying>=0.9.4',
         ],
         'win32': [
             'pyshortcuts',
-            aionowplaying,
+            'aionowplaying>=0.9.4',
         ],
         'webengine': ['PyQtWebEngine'],
         'dev': [
