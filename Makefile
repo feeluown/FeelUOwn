@@ -61,14 +61,15 @@ test: lint unittest
 BUNDLE_FLAGS=
 ifeq ($(OS),Windows_NT)
 	BUNDLE_FLAGS += --name FeelUOwn
+	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.ico
 else
 # macOS: since apfs is not case-sensitive, we use FeelUOwnX instead of FeelUOwn
 	BUNDLE_FLAGS += --name FeelUOwnX --osx-bundle-identifier org.feeluown.FeelUOwnX
+	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.icns
 endif
 # Please install pyinstaller manually.
 bundle:
 	pyinstaller -w feeluown/pyinstaller/main.py \
-		--icon feeluown/gui/assets/icons/feeluown.icns \
 		${BUNDLE_FLAGS} \
 		-w \
 		--noconfirm
