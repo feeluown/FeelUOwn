@@ -58,9 +58,13 @@ class CommentListDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         # pylint: disable=too-many-locals,too-many-statements
+        # Explicitly set the font to the same font, so that the content
+        # height is always correct. Otherwise, the height maybe incorrect.
+        painter.setFont(QApplication.font())
+        fm = QFontMetrics(QApplication.font())
+
         painter.save()
         comment = index.data(Qt.UserRole)
-        fm = option.fontMetrics
 
         # size for render comment
         body_width = option.rect.width() - self._margin_h * 2
@@ -148,7 +152,7 @@ class CommentListDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         super_size_hint = super().sizeHint(option, index)
         parent_width = self.parent().width()  # type: ignore
-        fm = option.fontMetrics
+        fm = QFontMetrics(QApplication.font())
         comment = index.data(Qt.UserRole)
         content_width = parent_width - 2 * self._margin_h
         content_height = self._get_text_height(fm, content_width, comment.content)
@@ -165,8 +169,8 @@ class CommentListDelegate(QStyledItemDelegate):
 
     def _get_text_height(self, fm, width, text):
         return fm.boundingRect(
-            0, 0, width, 0,
-            Qt.AlignVCenter | Qt.TextWordWrap,
+            QRect(0, 0, width, 0),
+            Qt.TextWordWrap,
             text
         ).height()
 
