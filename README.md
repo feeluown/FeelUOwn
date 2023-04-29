@@ -8,15 +8,19 @@
 
 FeelUOwn 是一个稳定、用户友好以及高度可定制的音乐播放器。
 
-[![macOS 效果预览](https://user-images.githubusercontent.com/4962134/73344241-fa5e7280-42bc-11ea-95bf-28eac8180d0e.png)](https://www.bilibili.com/video/av46787694/)
+[![macOS 效果预览](https://user-images.githubusercontent.com/4962134/235288158-39e6e01d-74f4-4f14-b942-7af924fc6a90.png)](https://www.bilibili.com/video/av46787694/)
 
 ### 特性
 
-- 安装简单，新手友好，默认提供国内各音乐平台插件（网易云、虾米、QQ）
-- 基于文本的歌单，方便与朋友分享、设备之间同步
-- 提供基于 TCP 的交互控制协议
-- 类似 `.vimrc` 和 `.emacs` 的配置文件 `.fuorc`
-- 有友善的开发上手文档，核心模块有较好的文档和测试覆盖
+- 稳定、易用：
+  - 一键安装，各流行平台均有打包（如 Arch Linux, Windows, macOS 等）
+  - 有各媒体资源平台的插件，充分且合理的利用全网免费资源（如网易云、QQ、Bilibili 等）
+  - 基础功能完善，桌面歌词、资源智能替换、多音质选择、nowplaying 协议等
+  - 核心模块有较好的测试覆盖、核心接口保持较好的向后兼容
+- 可玩性强：
+  - 提供基于 TCP 的交互控制协议
+  - 基于文本的歌单，方便与朋友分享、设备之间同步
+  - 支持基于 Python 的配置文件 `.fuorc`，类似 `.vimrc` 和 `.emacs`
 
 ### 快速试用
 
@@ -28,17 +32,17 @@ FeelUOwn 是一个稳定、用户友好以及高度可定制的音乐播放器�
 yay -S feeluown          # 安装稳定版，最新版的包名为 feeluown-git
 yay -S feeluown-netease  # 按需安装其它扩展
 yay -S feeluown-kuwo
-yay -S feeluown-qqmusic
-yay -S feeluown-local
+yay -S feeluown-bilibili
 
-# macOS
+# macOS（也可以下载打包好的二进制）
 brew tap feeluown/feeluown
 brew install feeluown --with-battery # 安装 FeelUOwn 以及扩展
 feeluown genicon                     # 在桌面生成 FeelUOwn 图标
 ```
 
+Windows 用户可以在 Release 页面下载预打包好的二进制。
 Gentoo, NixOS, Debian 等 Linux 发行版也支持使用其系统包管理器安装！
-Windows 可以直接下载预打包好的二进制。详情可以参考文档：https://feeluown.readthedocs.io/ ，
+详情可以参考文档：https://feeluown.readthedocs.io/ ，
 也欢迎你加入开发者/用户[交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)。
 
 ### 免责声明
