@@ -26,7 +26,7 @@ AppProperties = dbus.Dictionary({
     'DesktopEntry': 'FeelUOwn',
     'Identity': 'feeluown',
     'CanQuit': False,
-    'CanRaise': True,
+    'CanRaise': False,
     'HasTrackList': False,
     'SupportedUriSchemes': ['http', 'file', 'fuo'],
     'SupportedMimeTypes': SupportedMimeTypes,
@@ -231,10 +231,6 @@ class Mpris2Service(dbus.service.Object):
     @dbus.service.method(AppInterface, in_signature='', out_signature='')
     def Quit(self):
         pass
-
-    @dbus.service.method(AppInterface, in_signature='', out_signature='')
-    def Raise(self):
-        self._app.raise_()
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE, in_signature='', out_signature='s')
     def Introspect(self):
