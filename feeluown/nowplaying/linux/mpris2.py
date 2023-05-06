@@ -26,9 +26,9 @@ AppProperties = dbus.Dictionary({
     'DesktopEntry': 'FeelUOwn',
     'Identity': 'feeluown',
     'CanQuit': False,
-    'CanRaise': False,
+    'CanRaise': True,
     'HasTrackList': False,
-    'SupportedUriSchemes': ['http', 'file', 'smb'],
+    'SupportedUriSchemes': ['http', 'file', 'fuo'],
     'SupportedMimeTypes': SupportedMimeTypes,
 }, signature='sv')
 
@@ -117,7 +117,7 @@ class Mpris2Service(dbus.service.Object):
                 # If there is no artist, we give a empty string in case mpris complains
                 # 'ValueError: Unable to guess signature from an empty list'
                 'xesam:artist': artists or [''],
-                'xesam:url': '',
+                'xesam:url': metadata.get('uri', ''),
                 'mpris:length': dbus.Int64((self._app.player.duration or 0) * 1000),
                 'mpris:trackid': '',
                 'mpris:artUrl': metadata.get('artwork', ''),
@@ -231,6 +231,10 @@ class Mpris2Service(dbus.service.Object):
     @dbus.service.method(AppInterface, in_signature='', out_signature='')
     def Quit(self):
         pass
+
+    @dbus.service.method(AppInterface, in_signature='', out_signature='')
+    def Raise(self):
+        self._app.raise_()
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE, in_signature='', out_signature='s')
     def Introspect(self):
