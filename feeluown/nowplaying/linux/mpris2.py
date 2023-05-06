@@ -28,7 +28,7 @@ AppProperties = dbus.Dictionary({
     'CanQuit': False,
     'CanRaise': False,
     'HasTrackList': False,
-    'SupportedUriSchemes': ['http', 'file', 'smb'],
+    'SupportedUriSchemes': ['http', 'file', 'fuo'],
     'SupportedMimeTypes': SupportedMimeTypes,
 }, signature='sv')
 
@@ -117,7 +117,7 @@ class Mpris2Service(dbus.service.Object):
                 # If there is no artist, we give a empty string in case mpris complains
                 # 'ValueError: Unable to guess signature from an empty list'
                 'xesam:artist': artists or [''],
-                'xesam:url': '',
+                'xesam:url': metadata.get('uri', ''),
                 'mpris:length': dbus.Int64((self._app.player.duration or 0) * 1000),
                 'mpris:trackid': '',
                 'mpris:artUrl': metadata.get('artwork', ''),
@@ -151,7 +151,7 @@ class Mpris2Service(dbus.service.Object):
             'CanSeek': True,
             'CanPause': True,
             'CanPlay': True,
-            'Position': self._old_position,
+            'Position': to_dbus_position(self._app.player.position or 0),
             # 'LoopStatus': 'Playlist',
             'PlaybackStatus': to_dbus_playback_status(self._app.player.state),
             'Volume': to_dbus_volume(self._app.player.volume),
