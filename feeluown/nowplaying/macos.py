@@ -10,8 +10,8 @@ from feeluown.utils import aio
 
 class MacosMixin:
 
-    def update_song_props(self, meta):
-        super().update_song_props(meta)
+    def update_song_metadata(self, meta):
+        super().update_song_metadata(meta)
 
         artwork = meta.get('artwork', '')
         artwork_uid = meta.get('uri', artwork)
