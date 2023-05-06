@@ -13,7 +13,10 @@ StatePlaybackStatusMapping = {
     State.paused: aionp.PlaybackStatus.Paused,
     State.playing: aionp.PlaybackStatus.Playing,
 }
-PlaybackStatusStateMapping = {v: k for k, v in StatePlaybackStatusMapping.items()}
+PlaybackStatusStateMapping = {
+    v: k
+    for k, v in StatePlaybackStatusMapping.items()
+}
 
 
 def to_aionp_time(t):
@@ -30,14 +33,19 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self._app = app
 
         self._app.player.seeked.connect(self.update_position)
-        self._app.player.media_loaded.connect(self.on_player_media_loaded, aioqueue=True)
-        self._app.player.duration_changed.connect(self.update_duration, aioqueue=True)
+        self._app.player.media_loaded.connect(self.on_player_media_loaded,
+                                              aioqueue=True)
+        self._app.player.duration_changed.connect(self.update_duration,
+                                                  aioqueue=True)
         self._app.player.state_changed.connect(self.update_playback_status)
-        self._app.player.metadata_changed.connect(self.update_song_metadata, aioqueue=True)
-        self._app.player.media_changed.connect(self.on_player_media_changed, aioqueue=True)
-        self._app.playlist.playback_mode_changed.connect(self.update_playback_mode)
-        self._app.started.connect(
-            lambda: self.update_playback_mode(self._app.playlist.playback_mode))
+        self._app.player.metadata_changed.connect(self.update_song_metadata,
+                                                  aioqueue=True)
+        self._app.player.media_changed.connect(self.on_player_media_changed,
+                                               aioqueue=True)
+        self._app.playlist.playback_mode_changed.connect(
+            self.update_playback_mode)
+        self._app.started.connect(lambda: self.update_playback_mode(
+            self._app.playlist.playback_mode))
 
         self.set_playback_property(PlayProp.CanPlay, True)
         self.set_playback_property(PlayProp.CanPause, True)
