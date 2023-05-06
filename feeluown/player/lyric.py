@@ -1,11 +1,15 @@
+from __future__ import annotations
 import re
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, TYPE_CHECKING
 from collections import namedtuple, OrderedDict
 
-from feeluown.library import LyricModel
+from feeluown.library import LyricModel, NotSupported
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
+
+if TYPE_CHECKING:
+    from feeluown.app import App
 
 logger = logging.getLogger(__name__)
 
@@ -116,7 +120,7 @@ class LiveLyric:
         player.song_changed.connect(live_lyric.on_song_changed)
         player.position_change.connect(live_lyric.on_position_changed)
     """
-    def __init__(self, app):
+    def __init__(self, app: App):
         """
 
         :type app: feeluown.app.App
@@ -191,6 +195,8 @@ class LiveLyric:
         def cb(future):
             try:
                 lyric = future.result()
+            except NotSupported:
+                lyric = None
             except:  # noqa
                 logger.exception('get lyric failed')
                 lyric = None

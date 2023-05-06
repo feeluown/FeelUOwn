@@ -13,7 +13,10 @@ StatePlaybackStatusMapping = {
     State.paused: aionp.PlaybackStatus.Paused,
     State.playing: aionp.PlaybackStatus.Playing,
 }
-PlaybackStatusStateMapping = {v: k for k, v in StatePlaybackStatusMapping.items()}
+PlaybackStatusStateMapping = {
+    v: k
+    for k, v in StatePlaybackStatusMapping.items()
+}
 
 
 def to_aionp_time(t):
@@ -30,13 +33,19 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self._app = app
 
         self._app.player.seeked.connect(self.update_position)
-        self._app.player.duration_changed.connect(self.update_duration)
+        self._app.player.media_loaded.connect(self.on_player_media_loaded,
+                                              aioqueue=True)
+        self._app.player.duration_changed.connect(self.update_duration,
+                                                  aioqueue=True)
         self._app.player.state_changed.connect(self.update_playback_status)
-        self._app.player.metadata_changed.connect(self.update_song_props)
-        self._app.player.media_changed.connect(self.on_player_media_changed)
-        self._app.playlist.playback_mode_changed.connect(self.update_playback_mode)
-        self._app.started.connect(
-            lambda: self.update_playback_mode(self._app.playlist.playback_mode))
+        self._app.player.metadata_changed.connect(self.update_song_metadata,
+                                                  aioqueue=True)
+        self._app.player.media_changed.connect(self.on_player_media_changed,
+                                               aioqueue=True)
+        self._app.playlist.playback_mode_changed.connect(
+            self.update_playback_mode)
+        self._app.started.connect(lambda: self.update_playback_mode(
+            self._app.playlist.playback_mode))
 
         self.set_playback_property(PlayProp.CanPlay, True)
         self.set_playback_property(PlayProp.CanPause, True)
@@ -56,7 +65,7 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self.set_playback_property(PlayProp.LoopStatus, mode_value[0])
         self.set_playback_property(PlayProp.Shuffle, mode_value[1])
 
-    def update_song_props(self, meta: dict):
+    def update_song_metadata(self, meta: dict):
         metadata = aionp.PlaybackProperties.MetadataBean()
         metadata.artist = meta.get('artists', ['Unknown'])
         metadata.album = meta.get('album', '')
@@ -117,6 +126,11 @@ class NowPlayingService(aionp.NowPlayingInterface):
             raise ValueError('unknown key')
 
     def on_player_media_changed(self, _):
+        # Update position when media is changed, so that some nowplaying servers
+        # can update its UI immediately.
+        self.set_playback_property(PlayProp.Position, 0)
+
+    def on_player_media_loaded(self):
         # As seeked signal is not emitted when media is changed,
         # update position explicitly.
         self.set_playback_property(PlayProp.Position, 0)

@@ -28,7 +28,11 @@ class State(IntEnum):
 
 
 class AbstractPlayer(metaclass=ABCMeta):
-    """Player abstrace base class"""
+    """Player abstrace base class.
+
+    Note that signals may be emitted from different thread. You should
+    take care of race condition.
+    """
 
     def __init__(self, _=None, **kwargs):
         """
@@ -50,18 +54,16 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: player state changed signal
         self.state_changed = Signal()
 
-        #: current media finished signal
-        self.media_finished = Signal()
-
         #: duration changed signal
         self.duration_changed = Signal()
 
         #: media about to change: (old_media, media)
         self.media_about_to_changed = Signal()
-        #: media changed signal
-        self.media_changed = Signal()
-        self.media_loaded = Signal()
+        self.media_changed = Signal()  # Media source is changed (not loaded yet).
+        self.media_loaded = Signal()  # Start to play the media.
+        # Metadata is changed, and it may be changed during playing.
         self.metadata_changed = Signal()
+        self.media_finished = Signal()  # Finish to play the media.
 
         #: volume changed signal: (int)
         self.volume_changed = Signal()

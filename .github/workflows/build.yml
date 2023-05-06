@@ -51,6 +51,16 @@ jobs:
           pip install "pytest<7.2"
           pip install -e .[dev]
 
+      - name: Install Python(macOS) Dependencies
+        if: startsWith(matrix.os, 'macos')
+        run: |
+          pip install -e .[macos]
+
+      - name: Install Python(windows) Dependencies
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          pip install -e .[win32]
+
       - name: Test if no syntax error
         run: feeluown -h
 
