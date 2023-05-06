@@ -151,7 +151,7 @@ class Mpris2Service(dbus.service.Object):
             'CanSeek': True,
             'CanPause': True,
             'CanPlay': True,
-            'Position': self._old_position,
+            'Position': to_dbus_position(self._app.player.position or 0),
             # 'LoopStatus': 'Playlist',
             'PlaybackStatus': to_dbus_playback_status(self._app.player.state),
             'Volume': to_dbus_volume(self._app.player.volume),
