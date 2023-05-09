@@ -2,7 +2,7 @@ import asyncio
 import warnings
 import logging
 import random
-from enum import IntEnum
+from enum import IntEnum, Enum
 from typing import Optional
 
 from feeluown.excs import ProviderIOError
@@ -22,11 +22,28 @@ logger = logging.getLogger(__name__)
 class PlaybackMode(IntEnum):
     """
     Playlist playback mode.
+
+    .. versiondeprecated:: 3.8.12
+        Please use PlaylistRepeatMode and PlaylistShuffleMode instead.
     """
     one_loop = 0  #: One Loop
     sequential = 1  #: Sequential
     loop = 2  #: Loop
     random = 3  #: Random
+
+
+class PlaylistRepeatMode(Enum):
+    none = 'none'
+    one = 'one'
+    all = 'all'
+
+
+class PlaylistShuffleMode(Enum):
+    """
+    Windows and macOS has multiple shuffle modes.
+    """
+    off = 'off'
+    songs = 'songs'
 
 
 class PlaylistMode(IntEnum):
@@ -125,6 +142,37 @@ class Playlist:
             self._mode = mode
             self.mode_changed.emit(mode)
             logger.info('playlist mode changed to %s', mode)
+
+    @property
+    def repeat_mode(self):
+        if self.playback_mode in (PlaybackMode.loop, PlaybackMode.random):
+            return PlaylistRepeatMode.all
+        elif self.playback_mode is PlaybackMode.one_loop:
+            return PlaylistRepeatMode.one
+        return PlaylistRepeatMode.none
+
+    @repeat_mode.setter
+    def repeat_mode(self, mode):
+        if mode is PlaylistRepeatMode.all:
+            if self.playback_mode not in (PlaybackMode.loop, PlaybackMode.random):
+                self.playback_mode = PlaybackMode.loop
+        elif mode is PlaylistRepeatMode.one:
+            self.playback_mode = PlaybackMode.one_loop
+        else:
+            self.playback_mode = PlaybackMode.sequential
+
+    @property
+    def shuffle_mode(self):
+        if self.playback_mode is PlaybackMode.random:
+            return PlaylistShuffleMode.songs
+        return PlaylistShuffleMode.off
+
+    @shuffle_mode.setter
+    def shuffle_mode(self, mode):
+        if mode is PlaylistShuffleMode.songs:
+            self.playback_mode = PlaybackMode.random
+        else:
+            self.playback_mode = PlaybackMode.loop
 
     def __len__(self):
         return len(self._songs)

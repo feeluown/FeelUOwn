@@ -5,7 +5,10 @@ import pytest
 
 from feeluown.library.excs import MediaNotFound
 from feeluown.media import Media
-from feeluown.player import Playlist, PlaylistMode, Player, PlaybackMode
+from feeluown.player import (
+    Playlist, PlaylistMode, Player, PlaybackMode,
+    PlaylistRepeatMode, PlaylistShuffleMode,
+)
 from feeluown.utils.dispatch import Signal
 
 
@@ -177,6 +180,20 @@ async def test_playlist_change_mode(app_mock, mocker):
     # from fm to normal
     pl.mode = PlaylistMode.normal
     assert pl.mode is PlaylistMode.normal
+
+
+@pytest.mark.asyncio
+async def test_playlist_change_repeat_shuffle_mode(app_mock):
+    pl = Playlist(app_mock)
+    pl.playback_mode = PlaybackMode.random
+    assert pl.shuffle_mode is not PlaylistShuffleMode.off
+    assert pl.repeat_mode is PlaylistRepeatMode.all
+
+    pl.repeat_mode = PlaylistRepeatMode.none
+    assert pl.shuffle_mode is PlaylistShuffleMode.off
+
+    pl.shuffle_mode = PlaylistShuffleMode.songs
+    assert pl.repeat_mode is PlaylistRepeatMode.all
 
 
 @pytest.mark.asyncio
