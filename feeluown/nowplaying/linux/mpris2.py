@@ -5,7 +5,8 @@ import os
 import dbus
 import dbus.service
 
-from feeluown.player import State
+from feeluown.app import App
+from feeluown.player import State, PlaylistShuffleMode, PlaylistRepeatMode
 
 
 SupportedMimeTypes = ['audio/aac',
@@ -25,12 +26,18 @@ PlayerInterface = 'org.mpris.MediaPlayer2.Player'
 AppProperties = dbus.Dictionary({
     'DesktopEntry': 'FeelUOwn',
     'Identity': 'feeluown',
-    'CanQuit': False,
-    'CanRaise': False,
+    'CanQuit': True,
+    'CanRaise': True,
     'HasTrackList': False,
     'SupportedUriSchemes': ['http', 'file', 'fuo'],
     'SupportedMimeTypes': SupportedMimeTypes,
 }, signature='sv')
+RepeatModeLoopStatusMapping = {
+    PlaylistRepeatMode.all: 'Playlist',
+    PlaylistRepeatMode.one: 'Track',
+    PlaylistRepeatMode.none: 'None',
+}
+LoopStatusRepeatModeMapping = {v: k for k, v in RepeatModeLoopStatusMapping.items()}
 
 
 logger = logging.getLogger(__name__)
@@ -66,18 +73,42 @@ def to_track_id(model):
     return f'/com/feeluown/{model.source}/songs/{model.identifier}'
 
 
+def to_dbus_metadata(metadata):
+    if metadata:
+        artists = metadata.get('artists', ['Unknown'])[:1]
+    else:
+        # make xesam:artist a one-element list to compat with KDE
+        # KDE will not update artist field if the length>=1
+        artists = ['']
+    return dbus.Dictionary({
+        # If there is no artist, we give a empty string in case mpris complains
+        # 'ValueError: Unable to guess signature from an empty list'
+        'xesam:artist': artists or [''],
+        'xesam:url': metadata.get('uri', ''),
+        'mpris:trackid': '',
+        'mpris:artUrl': metadata.get('artwork', ''),
+        'xesam:album': metadata.get('album', ''),
+        'xesam:title': metadata.get('title', ''),
+    }, signature='sv')
+
+
 class Mpris2Service(dbus.service.Object):
     # pylint: disable=too-many-public-methods
 
-    def __init__(self, app, bus):
+    def __init__(self, app: App, bus):
         super().__init__(bus, ObjectPath)
         self._app = app
-        self._metadata = dbus.Dictionary({}, signature='sv', variant_level=1)
-        self._old_position = dbus.Int64(0)
 
     def enable(self):
-        self._app.player.position_changed.connect(self.update_position)
+        # 根据 mpris2 规范, position 变化时，不需要发送 PropertiesChanged 信号。
+        # audacious 的一个 issue 也证明了这个观点:
+        #   https://redmine.audacious-media-player.org/issues/849
+        #   这个 issue 主要是说频繁发送 PropertiesChanged 信号会导致
+        #   GNOME 桌面消耗大量 CPU。
+        self._app.player.seeked.connect(self.update_position)
+        self._app.player.duration_changed.connect(self.update_duration)
         self._app.player.state_changed.connect(self.update_playback_status)
+        self._app.playlist.playback_mode_changed.connect(self.update_playback_mode)
         self._app.player.metadata_changed.connect(self.update_song_props)
 
     def disable(self):
@@ -88,60 +119,32 @@ class Mpris2Service(dbus.service.Object):
         self.PropertiesChanged(PlayerInterface,
                                {'PlaybackStatus': status}, [])
 
-    def update_position(self, position):
-        # 根据 mpris2 规范, position 变化时，不需要发送 PropertiesChanged 信号。
-        # audacious 的一个 issue 也证明了这个观点:
-        #
-        #   https://redmine.audacious-media-player.org/issues/849
-        #   这个 issue 主要是说频繁发送 PropertiesChanged 信号会导致
-        #   GNOME 桌面消耗大量 CPU。
-        #
-        # TODO: 由于目前 feeluown 播放器并没有提供 seeked 相关的信号，
-        # 所以我们这里通过一个 HACK 来决定是否发送 seeked 信号。
-        if position is None:
-            return
-        old_position = self._old_position
-        self._old_position = dbus_position = to_dbus_position(position)
+    def update_playback_mode(self, _):
+        props = {
+            'LoopStatus': RepeatModeLoopStatusMapping[self._app.playlist.repeat_mode],
+            'Shuffle': self._app.playlist.shuffle_mode is not PlaylistShuffleMode.off,
+        }
+        self.PropertiesChanged(PlayerInterface, props, [])
 
-        # 如果时间差 1s 以上，我们认为这个 position 变化是由用户手动 seek 产生的
-        # 根据目前观察，正常情况下，position 的变化差值是几百毫秒
-        if abs(dbus_position - old_position) >= 1 * 1000 * 1000:
-            self.Seeked(dbus_position)
+    def update_position(self, position):
+        self.Seeked(to_dbus_position(position))
+
+    def update_duration(self, duration):
+        if duration <= 0:  # Duration can be 0 when media is changed.
+            return
+        length = to_dbus_position(duration or 0)
+        metadata = to_dbus_metadata(self._app.player.current_metadata)
+        metadata['mpris:length'] = length
+        props = dbus.Dictionary({'Metadata': metadata})
+        self.PropertiesChanged(PlayerInterface, props, [])
 
     def update_song_props(self, metadata):
-        if metadata:
-            # make xesam:artist a one-element list to compat with KDE
-            # KDE will not update artist field if the length>=2
-            artists = metadata.get('artists', ['Unknown'])[:1]
-            self._metadata.update(dbus.Dictionary({
-                # If there is no artist, we give a empty string in case mpris complains
-                # 'ValueError: Unable to guess signature from an empty list'
-                'xesam:artist': artists or [''],
-                'xesam:url': metadata.get('uri', ''),
-                'mpris:length': dbus.Int64((self._app.player.duration or 0) * 1000),
-                'mpris:trackid': '',
-                'mpris:artUrl': metadata.get('artwork', ''),
-                'xesam:album': metadata.get('album', ''),
-                'xesam:title': metadata.get('title', ''),
-            }, signature='sv'))
-        else:
-            self._metadata.update(dbus.Dictionary({
-                # make xesam:artist a one-element list to compat with KDE
-                # KDE will not update artist field if the length>=2
-                'xesam:artist': [''],
-                'xesam:url': '',
-                'mpris:length': dbus.Int64(0),
-                'mpris:trackid': '',
-                'mpris:artUrl': '',
-                'xesam:album': '',
-                'xesam:title': '',
-            }, signature='sv'))
-        changed_properties = dbus.Dictionary({'Metadata': self._metadata})
-        self.PropertiesChanged(PlayerInterface, changed_properties, [])
+        props = dbus.Dictionary({'Metadata': to_dbus_metadata(metadata)})
+        self.PropertiesChanged(PlayerInterface, props, [])
 
     def get_player_properties(self):
         return dbus.Dictionary({
-            'Metadata': self._metadata,
+            'Metadata': to_dbus_metadata(self._app.player.current_metadata),
             'Rate': 1.0,
             'MinimumRate': 1.0,
             'MaximumRate': 1.0,
@@ -152,7 +155,8 @@ class Mpris2Service(dbus.service.Object):
             'CanPause': True,
             'CanPlay': True,
             'Position': to_dbus_position(self._app.player.position or 0),
-            # 'LoopStatus': 'Playlist',
+            'LoopStatus': RepeatModeLoopStatusMapping[self._app.playlist.repeat_mode],
+            'Shuffle': self._app.playlist.shuffle_mode is not PlaylistShuffleMode.off,
             'PlaybackStatus': to_dbus_playback_status(self._app.player.state),
             'Volume': to_dbus_volume(self._app.player.volume),
         }, signature='sv', variant_level=2)
@@ -213,6 +217,12 @@ class Mpris2Service(dbus.service.Object):
     def Set(self, interface, prop, value):
         if prop == 'Volume':
             self._app.player.volume = to_fuo_volume(value)
+        elif prop == 'LoopStatus':
+            self._app.playlist.repeat_mode = LoopStatusRepeatModeMapping[value]
+        elif prop == 'Shuffle':
+            shuffle_mode = PlaylistShuffleMode.songs if value else \
+                PlaylistShuffleMode.off
+            self._app.playlist.shuffle_mode = shuffle_mode
         else:
             logger.info("mpris wants to set %s to %s", prop, value)
 
@@ -230,10 +240,15 @@ class Mpris2Service(dbus.service.Object):
 
     @dbus.service.method(AppInterface, in_signature='', out_signature='')
     def Quit(self):
-        pass
+        self._app.exit()
+
+    @dbus.service.method(AppInterface, in_signature='', out_signature='')
+    def Raise(self):
+        if self._app.has_gui:
+            self._app.raise_()
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE, in_signature='', out_signature='s')
-    def Introspect(self):
+    def Introspect(self, *args, **kwargs):
         current_dir_name = os.path.dirname(os.path.realpath(__file__))
         xml = os.path.join(current_dir_name, 'introspect.xml')
         with open(xml, 'r', encoding='utf-8') as f:

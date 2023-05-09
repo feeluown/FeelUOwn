@@ -9,7 +9,9 @@ async def run_nowplaying_server(app):
     try:
         await run_nowplaying_server_internal(app)
     except ImportError as e:
-        logger.warning(f"run nowplaying server failed: '{e}'")
+        logger.warning(f"run nowplaying service failed: '{e}'")
+    except:  # noqa
+        logger.exception('run nowplaying service error')
 
 
 def get_service_cls():
