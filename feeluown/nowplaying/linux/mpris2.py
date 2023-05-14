@@ -69,10 +69,6 @@ def to_dbus_playback_status(state):
     return status
 
 
-def to_track_id(model):
-    return f'/com/feeluown/{model.source}/songs/{model.identifier}'
-
-
 def to_dbus_metadata(metadata):
     if metadata:
         artists = metadata.get('artists', ['Unknown'])[:1]
@@ -80,12 +76,14 @@ def to_dbus_metadata(metadata):
         # make xesam:artist a one-element list to compat with KDE
         # KDE will not update artist field if the length>=1
         artists = ['']
+    uri = metadata.get('uri', 'fuo://unknown/unknown/unknown')
     return dbus.Dictionary({
         # If there is no artist, we give a empty string in case mpris complains
         # 'ValueError: Unable to guess signature from an empty list'
         'xesam:artist': artists or [''],
-        'xesam:url': metadata.get('uri', ''),
-        'mpris:trackid': '',
+        'xesam:url': uri,
+        # trackid must be provided to make 'Seek' work.
+        'mpris:trackid': f'/org/feeluown/FeelUOwn/{uri[6:]}',
         'mpris:artUrl': metadata.get('artwork', ''),
         'xesam:album': metadata.get('album', ''),
         'xesam:title': metadata.get('title', ''),
@@ -248,7 +246,7 @@ class Mpris2Service(dbus.service.Object):
             self._app.raise_()
 
     @dbus.service.method(dbus.INTROSPECTABLE_IFACE, in_signature='', out_signature='s')
-    def Introspect(self, *args, **kwargs):
+    def Introspect(self):  # pylint: disable=arguments-differ
         current_dir_name = os.path.dirname(os.path.realpath(__file__))
         xml = os.path.join(current_dir_name, 'introspect.xml')
         with open(xml, 'r', encoding='utf-8') as f:
