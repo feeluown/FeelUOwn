@@ -325,6 +325,8 @@ class InnerLyricWindow(QWidget):
             self.setPalette(palette)
 
         dialog = QColorDialog(self)
+        # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
+        dialog.setAttribute(Qt.WA_DeleteOnClose)
         if bg:
             color = self.palette().color(QPalette.Window)
         else:
@@ -333,13 +335,19 @@ class InnerLyricWindow(QWidget):
         dialog.currentColorChanged.connect(set_color)
         dialog.colorSelected.connect(set_color)
         dialog.setOption(QColorDialog.ShowAlphaChannel, True)
-        dialog.exec()
+        # On KDE(with Xorg), if the dialog is in modal state,
+        # the window is dimming.
+        if sys.platform == 'linux':
+            dialog.show()
+        else:
+            dialog.open()
 
     def show_font_dialog(self):
-        dialog = QFontDialog(self.font(), self)
+        dialog = QFontDialog(self.font())
+        dialog.setAttribute(Qt.WA_DeleteOnClose)
         dialog.currentFontChanged.connect(self.setFont)
         dialog.fontSelected.connect(self.setFont)
-        dialog.exec()
+        dialog.open()
 
     def toggle_auto_resize(self):
         self._auto_resize = not self._auto_resize
