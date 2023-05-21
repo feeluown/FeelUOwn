@@ -39,6 +39,6 @@ def config():
 @pytest.fixture
 def noharm(mocker):
     mocker.patch('feeluown.app.app.Player')
-    mocker.patch.object(PluginsManager, 'scan')
+    mocker.patch.object(PluginsManager, 'enable_plugins')
     # CollectionUiManager write library.fuo file during initialization.
     mocker.patch.object(CollectionUiManager, 'initialize')

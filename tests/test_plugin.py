@@ -36,8 +36,8 @@ def foo_plugin(foo_module):
 
 
 @pytest.fixture
-def plugin_mgr(app_mock):
-    return PluginsManager(app_mock)
+def plugin_mgr():
+    return PluginsManager()
 
 
 def test_plugin_init_config(foo_plugin):
@@ -47,10 +47,12 @@ def test_plugin_init_config(foo_plugin):
     assert config.foo.VERBOSE == 0
 
 
-def test_plugin_manager_load_module(plugin_mgr, foo_module, mocker):
+def test_plugin_manager_enable_plugin(plugin_mgr, foo_module, app_mock, mocker):
     mock_init_config = mocker.patch.object(Plugin, 'init_config')
     mock_enable = mocker.patch.object(Plugin, 'enable')
-    plugin_mgr.load_module(foo_module)
+    plugin_mgr.load_plugin_from_module(foo_module)
+    plugin_mgr.init_plugins_config(Config())
+    plugin_mgr.enable_plugins(app_mock)
     # The `init_config` and `enable` function should be called.
     assert mock_init_config.called
     assert mock_enable.called
