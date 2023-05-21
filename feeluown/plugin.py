@@ -177,6 +177,9 @@ class PluginsManager:
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""
+        if not os.path.exists(USER_PLUGINS_DIR):
+            return
+
         module_name_list = []
         for fname in os.listdir(USER_PLUGINS_DIR):
             if os.path.isdir(os.path.join(USER_PLUGINS_DIR, fname)):
