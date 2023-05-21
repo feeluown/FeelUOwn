@@ -52,13 +52,17 @@ class ImgManager(object):
             return content
         event_loop = asyncio.get_event_loop()
         action_msg = 'Downloading image from {}'.format(img_url)
-        with self._app.create_action(action_msg) as action:
+        self._app.show_msg(action_msg)
+        try:
+            # May return None.
             res = await event_loop.run_in_executor(
                 None,
                 partial(self._app.request.get, img_url))
-            if res is None:
-                action.failed()
-                return None
+        except:  # noqa
+            res = None
+            logger.error(f'Download image failed, url:{img_url}')
+        if res is None:
+            return
         fpath = self.cache.create(img_name)
         self.save(fpath, res.content)
         return res.content

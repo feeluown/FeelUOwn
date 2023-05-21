@@ -223,7 +223,9 @@ class VideoAudioManifest(MediaManifest):
 
 class Media:
 
-    def __init__(self, obj, type_=MediaType.audio, http_headers=None,
+    def __init__(self, obj, type_=MediaType.audio,
+                 http_headers=None,
+                 http_proxy=None,
                  **kwargs):
         if isinstance(obj, Media):
             self._copy(obj)
@@ -240,6 +242,8 @@ class Media:
         self._props = metacls(**kwargs)
         # network options
         self.http_headers = http_headers or {}
+        # Example: http://127.0.0.1:7890
+        self.http_proxy = http_proxy or ''
 
     def _copy(self, media):
         self.url = media.url

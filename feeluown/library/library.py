@@ -438,8 +438,9 @@ class Library:
         # The source of the default SongModel is None. When ModelCls.source
         # is None, it means that the provider does not has its own model class.
         if ModelCls.source is None:
-            model_type_str = str(ModelType(model.meta.model_type))
-            raise NotSupported(f'provider has no v1 model impl for {model_type_str}')
+            model_type_str = repr(ModelType(model.meta.model_type))
+            emsg = f'provider:{model.source} has no v1 model impl for {model_type_str}'
+            raise NotSupported(emsg)
         kv = {}
         for field in ModelCls.meta.fields_display:
             kv[field] = getattr(model, field)
