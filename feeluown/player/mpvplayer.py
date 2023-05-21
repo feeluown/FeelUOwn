@@ -101,6 +101,7 @@ class MpvPlayer(AbstractPlayer):
             else:  # media is a url(string)
                 media = Media(media)
             self._set_http_headers(media.http_headers)
+            self._set_http_proxy(media.http_proxy)
             self._stop_mpv()
             if media.manifest is None:
                 url = media.url
@@ -258,6 +259,10 @@ class MpvPlayer(AbstractPlayer):
         else:
             _mpv_set_option_string(self._mpv.handle, b'http-header-fields',
                                    b'')
+
+    def _set_http_proxy(self, http_proxy):
+        _mpv_set_option_string(
+            self._mpv.handle, b'http-proxy', bytes(http_proxy, 'utf-8'))
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))

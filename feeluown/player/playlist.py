@@ -548,15 +548,16 @@ class Playlist:
             logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
             return metadata
 
+        artwork = ''
+        released = ''
         if song.album is not None:
             try:
                 album = await aio.run_fn(self._app.library.album_upgrade, song.album)
             except (NotSupported, ResourceNotFound):
-                artwork = ''
-                released = ''
+                pass
             except:  # noqa
-                logger.exception(
-                    f"fetching song's album meta failed, song:'{song.title_display}'")
+                logger.warning(
+                    f"fetching song's album meta failed, song:{song.title_display}")
             else:
                 artwork = album.cover
                 released = album.released
@@ -565,9 +566,6 @@ class Playlist:
                 # object with url set to fuo://local/songs/{identifier}/data/cover.
                 if isinstance(artwork, Media):
                     artwork = artwork.url
-        else:
-            artwork = ''
-            released = ''
 
         # Try to use album meta first.
         if artwork and released:
