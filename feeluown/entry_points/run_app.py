@@ -7,6 +7,7 @@ import sys
 import warnings
 
 from feeluown.app import AppMode, create_app, create_config
+from feeluown.plugin import plugins_mgr
 from feeluown.utils.utils import is_port_inuse, win32_is_port_binded
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
 from feeluown.utils import aio
@@ -36,6 +37,10 @@ def before_start_app(args):
     Prepare things that app depends on and initialize things which don't depend on app.
     """
     config = create_config()
+
+    # Light scan plugins, they may define some configurations.
+    plugins_mgr.light_scan()
+    plugins_mgr.init_plugins_config(config)
 
     # Load rcfile.
     #

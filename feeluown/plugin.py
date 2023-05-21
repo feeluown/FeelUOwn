@@ -1,11 +1,22 @@
+from __future__ import annotations
 import importlib
 import logging
 import os
 import sys
+from typing import TYPE_CHECKING
 
 from feeluown.config import Config
 from feeluown.utils.dispatch import Signal
 from .consts import USER_PLUGINS_DIR
+
+if TYPE_CHECKING:
+    from feeluown.app import App
+
+
+__all__ = (
+    'plugins_mgr',
+    'Plugin',
+)
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -79,19 +90,30 @@ class Plugin:
 
         .. versionadded: 3.7.15
         """
+        myconfig = Config()
+
+        names = [self.name]
+        # Currently, plugin name looks like fuo_xxx and xxx is the real name.
+        # User maye want to define config like app.xxx.X=Y,
+        # instead of app.fuo_xxx.X=Y.
+        if self.name.startswith('fuo_'):
+            names.append(self.name[4:])
+
         # Define a subconfig(namespace) for plugin so that plugin can
         # define its own configuration fields.
-        config.deffield(self.name,
-                        type_=Config,
-                        default=Config(),
-                        desc=f'Configurations for plugin {self.name}')
+        for name in names:
+            config.deffield(name,
+                            type_=Config,
+                            default=myconfig,
+                            desc=f'Configurations for plugin {self.name}')
+
         try:
             fn = self._module.init_config
         except AttributeError:
             # The plugin does not define any config field.
             pass
         else:
-            fn(getattr(config, self.name))
+            fn(myconfig)
 
     def enable(self, app):
         self._module.enable(app)
@@ -103,31 +125,46 @@ class Plugin:
 
 
 class PluginsManager:
-    """在 App 初始化完成之后，加载插件
-
-    TODO: 以后可能需要支持在 App 初始化完成之前加载插件
-    """
-
-    scan_finished = Signal()
-
-    def __init__(self, app):
-        super().__init__()
-        self._app = app
-
+    def __init__(self):
         self._plugins = {}
         #: A plugin is about to enable.
         # The payload is the plugin object `(Plugin)`.
         # .. versionadded: 3.7.15
         self.about_to_enable = Signal()
+        # scan_finished means all found plugins are enabled.
+        # TODO: maybe rename scan_finished to plugins_enabled?
+        self.scan_finished = Signal()
 
-    def scan(self):
-        """扫描并加载插件"""
-        with self._app.create_action('Scaning plugins'):
-            self._scan_dirs()
-            self._scan_entry_points()
+    def light_scan(self):
+        """Scan plugins without enabling them."""
+        logger.info('Light scan plugins.')
+        self._scan_dirs()
+        self._scan_entry_points()
+
+    def init_plugins_config(self, config):
+        """Try to init config for the plugin.
+
+        Plugin can declare their configuration items.
+        """
+        for plugin in self._plugins.values():
+            try:
+                plugin.init_config(config)
+            except Exception:  # noqa
+                logger.exception(f'Init config for plugin:{plugin.name} failed')
+                return
+
+    def enable_plugins(self, app: App):
+        logger.info(f'Enable plugins that are scaned. total: {len(self._plugins)} ')
+        for plugin in self._plugins.values():
+            # Try to enbale the plugin.
+            self.about_to_enable.emit(plugin)
+            try:
+                plugin.enable(app)
+            except Exception:  # noqa
+                logger.exception(f'Enable plugin:{plugin.name} failed')
         self.scan_finished.emit(list(self._plugins.values()))
 
-    def load_module(self, module):
+    def load_plugin_from_module(self, module):
         """Load module and try to load the plugin"""
         logger.info('Try to load plugin from module: %s', module.__name__)
 
@@ -136,21 +173,7 @@ class PluginsManager:
             plugin = Plugin.create(module)
         except InvalidPluginError:
             return
-
-        # Try to init config for the plugin.
         self._plugins[plugin.name] = plugin
-        try:
-            plugin.init_config(self._app.config)
-        except Exception:  # noqa
-            logger.exception(f'Init config for plugin:{plugin.name} failed')
-            return
-
-        # Try to enbale the plugin.
-        self.about_to_enable.emit(plugin)
-        try:
-            plugin.enable(self._app)
-        except Exception:  # noqa
-            logger.exception(f'Enable plugin:{plugin.name} failed')
 
     def _scan_dirs(self):
         """扫描插件目录中的插件"""
@@ -168,7 +191,7 @@ class PluginsManager:
             except Exception:  # noqa
                 logger.exception('Failed to import module %s', module_name)
             else:
-                self.load_module(module)
+                self.load_plugin_from_module(module)
 
     def _scan_entry_points(self):
         """扫描通过 setuptools 机制注册的插件
@@ -187,4 +210,7 @@ class PluginsManager:
             except Exception:  # noqa
                 logger.exception('Failed to load module %s', entry_point.name)
             else:
-                self.load_module(module)
+                self.load_plugin_from_module(module)
+
+
+plugins_mgr = PluginsManager()

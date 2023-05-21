@@ -9,13 +9,13 @@ from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
 from feeluown.models import (
     Resolver, reverse, resolve,
-    ResolverNotFound,
+    ResolverNotFound, ResolveFailed,
 )
 from feeluown.player import (
     PlaybackMode, Playlist, LiveLyric,
     FM, Player, RecentlyPlayed, PlayerPositionDelegate
 )
-from feeluown.plugin import PluginsManager
+from feeluown.plugin import plugins_mgr
 from feeluown.version import VersionManager
 from feeluown.task import TaskManager
 
@@ -40,13 +40,14 @@ class App:
         self.mode = config.MODE  # DEPRECATED: use app.config.MODE instead
         self.config = config
         self.args = args
+        self.plugin_mgr = plugins_mgr
+
         self.initialized = Signal()
         # .. versionadded:: 3.8.11
         #    App started signal. Maybe the initialized signal can be removed?
         self.started = Signal()  # App is ready to use, for example, UI is available.
         self.about_to_shutdown = Signal()
 
-        self.plugin_mgr = PluginsManager(self)
         self.request = Request()  # TODO: rename request to http
         self.version_mgr = VersionManager(self)
         self.task_mgr = TaskManager(self)
@@ -80,7 +81,7 @@ class App:
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(self.live_lyric.on_song_changed,
                                            aioqueue=True)
-        self.plugin_mgr.scan()
+        self.plugin_mgr.enable_plugins(self)
 
     def run(self):
         pass
@@ -122,6 +123,8 @@ class App:
                     model = resolve(model)
                 except ResolverNotFound:
                     pass
+                except ResolveFailed as e:
+                    logger.warning('resolve failed, {e}')
                 else:
                     recently_played_models.append(model)
             recently_played.init_from_models(recently_played_models)
