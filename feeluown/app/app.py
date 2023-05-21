@@ -81,6 +81,8 @@ class App:
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(self.live_lyric.on_song_changed,
                                            aioqueue=True)
+        self.player.media_loading_failed.connect(
+            lambda *args: self.show_msg('播放器加载资源失败'), weak=False, aioqueue=True)
         self.plugin_mgr.enable_plugins(self)
 
     def run(self):

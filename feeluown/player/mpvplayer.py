@@ -8,6 +8,7 @@ from mpv import (  # type: ignore
     _mpv_set_property_string,
     _mpv_set_option_string,
     _mpv_client_api_version,
+    ErrorCode,
 )
 
 from feeluown.utils.dispatch import Signal
@@ -227,6 +228,10 @@ class MpvPlayer(AbstractPlayer):
             logger.debug('Current song finished. reason: %d' % reason)
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
                 self.media_finished.emit()
+                if reason == MpvEventEndFile.ERROR \
+                    and event['event']['error'] == ErrorCode.LOADING_FAILED:
+                    self.media_loading_failed.emit()
+
         elif event_id == MpvEventID.FILE_LOADED:
             # If the media is a live streaming, this event may not be received.
             self.media_loaded.emit()

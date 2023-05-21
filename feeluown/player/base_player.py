@@ -64,6 +64,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         # Metadata is changed, and it may be changed during playing.
         self.metadata_changed = Signal()
         self.media_finished = Signal()  # Finish to play the media.
+        self.media_loading_failed = Signal()
 
         #: volume changed signal: (int)
         self.volume_changed = Signal()
