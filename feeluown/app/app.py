@@ -124,7 +124,7 @@ class App:
                 except ResolverNotFound:
                     pass
                 except ResolveFailed as e:
-                    logger.warning('resolve failed, {e}')
+                    logger.warning(f'resolve failed, {e}')
                 else:
                     recently_played_models.append(model)
             recently_played.init_from_models(recently_played_models)

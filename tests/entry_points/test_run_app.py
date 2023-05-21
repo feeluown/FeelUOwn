@@ -31,7 +31,7 @@ def noharm(mocker):
     """
     mocker.patch('feeluown.entry_points.run_app.ensure_dirs')
     mocker.patch.object(App, 'dump_state')
-    mocker.patch.object(PluginsManager, 'scan')
+    mocker.patch.object(PluginsManager, 'enable_plugins')
     # CollectionUiManager write library.fuo file during initialization.
     mocker.patch.object(CollectionUiManager, 'initialize')
 
