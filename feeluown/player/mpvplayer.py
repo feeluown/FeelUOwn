@@ -229,7 +229,7 @@ class MpvPlayer(AbstractPlayer):
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
                 self.media_finished.emit()
                 if reason == MpvEventEndFile.ERROR \
-                    and event['event']['error'] == ErrorCode.LOADING_FAILED:
+                        and event['event']['error'] == ErrorCode.LOADING_FAILED:
                     self.media_loading_failed.emit()
 
         elif event_id == MpvEventID.FILE_LOADED:
