@@ -411,7 +411,7 @@ class Library:
 
     def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
         """Alias for check_flags"""
-        warnings.warn('please use isintance(provider, protocol_cls)')
+        warnings.warn('please use isinstance(provider, protocol_cls)')
         return self.check_flags(model.source,
                                 ModelType(model.meta.model_type),
                                 flags)
