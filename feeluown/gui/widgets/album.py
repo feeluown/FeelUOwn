@@ -1,5 +1,6 @@
 from PyQt5.QtCore import Qt, pyqtSignal
 
+from feeluown.library import AlbumModel
 from feeluown.models import AlbumType
 from .imglist import (
     ImgListModel, ImgListDelegate, ImgListView,
@@ -8,7 +9,18 @@ from .imglist import (
 
 
 class AlbumListModel(ImgListModel):
-    pass
+    def data(self, index, role):
+        offset = index.row()
+        if not index.isValid() or offset >= len(self._items):
+            return None
+
+        album = self._items[offset]
+        if role == Qt.WhatsThisRole:
+            print('album', type(album), album)
+            if isinstance(album, AlbumModel):
+                return album.released
+            return ''
+        return super().data(index, role)
 
 
 class AlbumListDelegate(ImgListDelegate):
