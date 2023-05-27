@@ -16,8 +16,9 @@ class AlbumListModel(ImgListModel):
 
         album = self._items[offset]
         if role == Qt.WhatsThisRole:
-            print('album', type(album), album)
             if isinstance(album, AlbumModel):
+                if album.song_count >= 0:
+                    return f'{album.released} {album.song_count}首'
                 return album.released
             return ''
         return super().data(index, role)

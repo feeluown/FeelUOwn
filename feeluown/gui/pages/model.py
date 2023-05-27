@@ -1,4 +1,4 @@
-from feeluown.library import V2SupportedModelTypes
+from feeluown.library import V2SupportedModelTypes, AlbumModel
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
 from feeluown.models import ModelType, reverse
@@ -112,7 +112,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         ]
 
     async def render(self):
-        album = self.model
+        album: AlbumModel = self.model
         tab_index = self.tab_index
 
         if album.released:
@@ -128,7 +128,10 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         if tab_index == 0:
             self.show_desc(self.model.description)
         else:
-            reader = create_reader(album.songs)
+            if album.song_count != -1:
+                reader = create_reader(album.songs)
+            else:
+                reader = await aio.run_fn(self._app.library.album_create_songs_rd, album)
             self.meta_widget.songs_count = reader.count
             self.show_songs(reader, columns_mode=ColumnsMode.album)
 

@@ -27,7 +27,7 @@ from .model_protocol import (
 from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
-    SupportsCurrentUser,
+    SupportsCurrentUser, SupportsAlbumSongsReader,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
     SupportsArtistSongsReader, SupportsArtistAlbumsReader,
@@ -529,6 +529,19 @@ class Library:
     # --------
     def album_upgrade(self, album: BriefAlbumProtocol):
         return self._model_upgrade(album)
+
+    def album_create_songs_rd(self, album: BriefAlbumProtocol):
+        """Create songs reader for album model.
+
+        :raises NotSupported:
+        """
+        provider = self.get_or_raise(album.source)
+        if isinstance(provider, SupportsAlbumSongsReader):
+            reader = provider.album_create_songs_rd(album)
+        else:
+            album = self.cast_model_to_v1(album)
+            reader = create_reader(album.songs)
+        return reader
 
     # --------
     # Artist

@@ -7,7 +7,7 @@ from .models import (
     PlaylistModel, UserModel, ModelType,
 )
 from .model_protocol import (
-    BriefArtistProtocol, BriefSongProtocol,
+    BriefArtistProtocol, BriefSongProtocol, SongProtocol,
     BriefVideoProtocol, VideoProtocol,
     LyricProtocol,
 )
@@ -174,6 +174,14 @@ class SupportsAlbumGet(Protocol):
         :raises ModelNotFound: model not found by the identifier
         :raises ProviderIOError:
         """
+        raise NotImplementedError
+
+
+@eq(ModelType.album, PF.songs_rd)
+@runtime_checkable
+class SupportsAlbumSongsReader(Protocol):
+    @abstractmethod
+    def album_create_songs_rd(self, album) -> List[SongProtocol]:
         raise NotImplementedError
 
 
