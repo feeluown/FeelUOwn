@@ -1,4 +1,4 @@
-from feeluown.library import V2SupportedModelTypes, AlbumModel
+from feeluown.library import V2SupportedModelTypes, AlbumModel, NotSupported
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
 from feeluown.models import ModelType, reverse
@@ -76,6 +76,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
                 lambda types: self.albums_table.model().filter_by_types(types))
             reader = await aio.run_fn(
                 self._app.library.artist_create_albums_rd, artist, contributed)
+            self.toolbar.show()
             self.show_albums(reader)
 
         # finally, we render cover
@@ -128,10 +129,18 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         if tab_index == 0:
             self.show_desc(self.model.description)
         else:
-            if album.song_count != -1:
+            if album.songs:
                 reader = create_reader(album.songs)
             else:
-                reader = await aio.run_fn(self._app.library.album_create_songs_rd, album)
+                if album.song_count == 0:
+                    reader = create_reader([])
+                else:
+                    try:
+                        reader = await aio.run_fn(
+                            self._app.library.album_create_songs_rd, album)
+                    except NotSupported as e:
+                        self._app.show_msg(str(e))
+                        reader = create_reader([])
             self.meta_widget.songs_count = reader.count
             self.show_songs(reader, columns_mode=ColumnsMode.album)
 

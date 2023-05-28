@@ -18,9 +18,9 @@ class AlbumListModel(ImgListModel):
         if role == Qt.WhatsThisRole:
             if isinstance(album, AlbumModel):
                 if album.song_count >= 0:
+                    # Like: 1991-01-01 10首
                     return f'{album.released} {album.song_count}首'
                 return album.released
-            return ''
         return super().data(index, role)
 
 

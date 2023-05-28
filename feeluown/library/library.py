@@ -419,27 +419,34 @@ class Library:
     # ---------------------------
     # Methods for backward compat
     # ---------------------------
-    def cast_model_to_v1(self, model):
+    def cast_model_to_v1(self, model, to_support=None):
         """Cast a v1/v2 model to v1
 
         During the model migration from v1 to v2, v2 may lack some ability.
         Cast the model to v1 to acquire such ability.
 
+        :to_support: A protocol class, for example, SupportsSongsGet.
         :raises NotSupported: provider doesn't support v1 model
+
+        .. versionadded:: 3.8.12
+            The `to_support` parameter was added.
         """
         if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
-            return self._cast_model_to_v1_impl(model)
+            return self._cast_model_to_v1_impl(model, to_support)
         return model
 
     @lru_cache(maxsize=1024)
-    def _cast_model_to_v1_impl(self, model):
+    def _cast_model_to_v1_impl(self, model, to_support=None):
         provider = self.get_or_raise(model.source)
         ModelCls = provider.get_model_cls(model.meta.model_type)
         # The source of the default SongModel is None. When ModelCls.source
         # is None, it means that the provider does not has its own model class.
         if ModelCls.source is None:
             model_type_str = repr(ModelType(model.meta.model_type))
-            emsg = f'provider:{model.source} has no v1 model impl for {model_type_str}'
+            if to_support:
+                emsg = f'provider:{model.source} does not support {to_support.__name__}'
+            else:
+                emsg = f'provider:{model.source} has no v1 model for {model_type_str}'
             raise NotSupported(emsg)
         kv = {}
         for field in ModelCls.meta.fields_display:
@@ -539,7 +546,7 @@ class Library:
         if isinstance(provider, SupportsAlbumSongsReader):
             reader = provider.album_create_songs_rd(album)
         else:
-            album = self.cast_model_to_v1(album)
+            album = self.cast_model_to_v1(album, SupportsAlbumSongsReader)
             reader = create_reader(album.songs)
         return reader
 
