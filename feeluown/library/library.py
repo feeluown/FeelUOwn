@@ -1,7 +1,8 @@
+# mypy: disable-error-code=type-abstract
 import logging
 import warnings
 from functools import partial, lru_cache
-from typing import cast, Optional, Union
+from typing import cast, Optional, Union, TypeVar, Type, Callable, Any
 
 from feeluown.media import Media
 from feeluown.models import SearchType, ModelType
@@ -39,6 +40,7 @@ logger = logging.getLogger(__name__)
 
 FULL_SCORE = 10
 MIN_SCORE = 5
+T_p = TypeVar('T_p')
 
 
 def support_or_raise(provider, protocol_cls):
@@ -419,35 +421,29 @@ class Library:
     # ---------------------------
     # Methods for backward compat
     # ---------------------------
-    def cast_model_to_v1(self, model, to_support=None):
-        """Cast a v1/v2 model to v1
+    def cast_model_to_v1(self, model):
+        """Cast a v1/v2 model to v1 (for protocol)
 
         During the model migration from v1 to v2, v2 may lack some ability.
         Cast the model to v1 to acquire such ability.
 
-        :to_support: A protocol class, for example, SupportsSongsGet.
         :raises NotSupported: provider doesn't support v1 model
-
-        .. versionadded:: 3.8.12
-            The `to_support` parameter was added.
         """
         if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
-            return self._cast_model_to_v1_impl(model, to_support)
+            return self._cast_model_to_v1_impl(model)
         return model
 
     @lru_cache(maxsize=1024)
-    def _cast_model_to_v1_impl(self, model, to_support=None):
+    def _cast_model_to_v1_impl(self, model):
         provider = self.get_or_raise(model.source)
         ModelCls = provider.get_model_cls(model.meta.model_type)
         # The source of the default SongModel is None. When ModelCls.source
         # is None, it means that the provider does not has its own model class.
         if ModelCls.source is None:
             model_type_str = repr(ModelType(model.meta.model_type))
-            if to_support:
-                emsg = f'provider:{model.source} does not support {to_support.__name__}'
-            else:
-                emsg = f'provider:{model.source} has no v1 model for {model_type_str}'
-            raise NotSupported(emsg)
+            emsg = f'provider:{model.source} has no v1 model for {model_type_str}'
+            e = NotSupported(emsg, provider=provider)
+            raise e
         kv = {}
         for field in ModelCls.meta.fields_display:
             kv[field] = getattr(model, field)
@@ -538,17 +534,38 @@ class Library:
         return self._model_upgrade(album)
 
     def album_create_songs_rd(self, album: BriefAlbumProtocol):
-        """Create songs reader for album model.
+        """Create songs reader for album model."""
+        return self._handle_protocol_with_model(
+            SupportsAlbumSongsReader,
+            lambda p, m: p.album_create_songs_rd(m),
+            lambda v1_m: create_reader(v1_m.songs),  # type: ignore
+            album,
+        )
 
+    def _handle_protocol_with_model(self,
+                                    protocol_cls: Type[T_p],
+                                    v2_handler: Callable[[T_p, Any], Any],
+                                    v1_handler: Callable[[Any], Any],
+                                    model: ModelProtocol):
+        """A handler helper (experimental).
+
+        :raises ProviderNotFound:
         :raises NotSupported:
         """
-        provider = self.get_or_raise(album.source)
-        if isinstance(provider, SupportsAlbumSongsReader):
-            reader = provider.album_create_songs_rd(album)
-        else:
-            album = self.cast_model_to_v1(album, SupportsAlbumSongsReader)
-            reader = create_reader(album.songs)
-        return reader
+        provider = self.get_or_raise(model.source)
+        if isinstance(provider, protocol_cls):
+            return v2_handler(provider, model)
+
+        try:
+            v1model = self.cast_model_to_v1(model)
+        except NotSupported as e:
+            # Make the error message more informative.
+            if e.provider is not None:
+                pid = e.provider.identifier
+                msg = f'provider:{pid} does not support {protocol_cls.__name__}'
+                raise NotSupported(msg)
+            raise  # This branch should not be reached.
+        return v1_handler(v1model)
 
     # --------
     # Artist

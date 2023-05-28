@@ -146,8 +146,10 @@ class ImgListDelegate(QAbstractItemDelegate):
         cover_height = rect.height() - img_text_height
         cover_width = rect.width()
         text_rect = QRectF(rect.x(), text_y, rect.width(), text_rect_height)
-        source_rect = QRectF(rect.x(), text_y + text_rect_height - 5,
-                             rect.width(), source_rect_height + 5)
+        whats_this_rect = QRectF(
+            rect.x(), text_y + text_rect_height - 5,
+            rect.width(), source_rect_height + 5
+        )
         obj = index.data(Qt.DecorationRole)
         if obj is None:
             painter.restore()
@@ -196,7 +198,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.restore()
 
         # Draw WhatsThis.
-        source = index.data(Qt.WhatsThisRole)
+        whats_this = index.data(Qt.WhatsThisRole)
         painter.save()
         pen = painter.pen()
         font = painter.font()
@@ -204,7 +206,7 @@ class ImgListDelegate(QAbstractItemDelegate):
         painter.setFont(font)
         pen.setColor(non_text_color)
         painter.setPen(non_text_color)
-        painter.drawText(source_rect, source, source_option)
+        painter.drawText(whats_this_rect, whats_this, source_option)
         painter.restore()
 
     def sizeHint(self, option, index):

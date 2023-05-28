@@ -71,6 +71,9 @@ class NotSupported(LibraryException):
     """Provider does not support the operation
     """
 
+    def __init__(self, *args, provider=None, **kwargs):
+        self.provider = provider
+
 
 class MediaNotFound(ResourceNotFound):
     pass
