@@ -71,6 +71,20 @@ class NotSupported(LibraryException):
     """Provider does not support the operation
     """
 
+    def __init__(self, *args, provider=None, **kwargs):
+        self.provider = provider
+
+    @classmethod
+    def create_by_p_p(cls, provider, protocol_cls):
+        if isinstance(provider, str):
+            pid = provider
+        else:
+            if hasattr(provider, 'meta'):
+                pid = provider.meta.identifier
+            else:
+                pid = provider.identifier
+        return cls(f'provider:{pid} does not support {protocol_cls.__name__}')
+
 
 class MediaNotFound(ResourceNotFound):
     pass

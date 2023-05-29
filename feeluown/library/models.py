@@ -333,14 +333,28 @@ class ArtistModel(BaseNormalModel):
 
 
 class AlbumModel(BaseNormalModel):
+    """
+    .. versionadded:: 3.8.12
+        The `song_count` field.
+    """
     meta: Any = ModelMeta.create(ModelType.album, is_normal=True)
     name: str
     cover: str
     type_: AlbumType = AlbumType.standard
     artists: List[BriefArtistModel]
     # One album usually has limited songs, and many providers' album_detail API
-    # can return songs list.
+    # can return songs list. UPDATE(3.8.12): However, we found that albums
+    # return by list_artist_album API usually has all fields except songs field.
+    # To solve this problem, we add a song_count field to AlbumModel.
+    #
+    # The song_count field should be checked first, -1 means that the count is
+    # unknown. The album may has songs or not. 0 means that the album has no songs.
+    # And a positive number means that the album has exact number of songs.
+    # If it is unknown, the songs field shuold be checked. If it is not empty,
+    # just use it (to keep backward compatibility). If it is empty,
+    # check if the provider supports SupportAlbumSongsReader protocol.
     songs: List[SongModel]
+    song_count: int = -1
     description: str
     released: str = ''  # format: 2000-12-27.
 
