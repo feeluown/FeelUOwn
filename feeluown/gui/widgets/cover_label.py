@@ -69,7 +69,7 @@ class CoverLabel(QLabel):
             return
         menu = QMenu()
         action = menu.addAction('查看原图')
-        action.triggered.connect(lambda: open_image(self._img))
+        action.triggered.connect(lambda: open_image(self._img))  # type: ignore
         menu.exec(e.globalPos())
 
     def resizeEvent(self, e):

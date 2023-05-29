@@ -509,6 +509,10 @@ def fetch_cover_wrapper(app: GuiApp):
                 return await fetch_image_with_cb(img_uid, img_url, cb)
 
             album = upgraded_song.album
+            if album is None:
+                cb(None)
+                return
+
             album_img_uid = reverse(album) + '/cover'
             model.cache_set(cache_key, album_img_uid)
             return await fetch_song_pic_from_album(album, cb)
