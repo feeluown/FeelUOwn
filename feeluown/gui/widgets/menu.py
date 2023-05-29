@@ -39,9 +39,9 @@ class SongMenuInitializer:
             app.browser.goto(model=song, path='/explore')
 
         async def goto_song_album(song):
-            song: SongProtocol = await aio.run_fn(self._app.library.song_upgrade, song)
-            if song.album is not None:
-                self._app.browser.goto(model=song.album)
+            usong: SongProtocol = await aio.run_fn(self._app.library.song_upgrade, song)
+            if usong.album is not None:
+                self._app.browser.goto(model=usong.album)
             else:
                 self._app.show_msg('该歌曲没有专辑信息')
 

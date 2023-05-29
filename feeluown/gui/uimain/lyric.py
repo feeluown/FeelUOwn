@@ -260,8 +260,8 @@ class InnerLyricWindow(QWidget):
         if self._auto_resize:
             self_size = QSize(size.width(), size.height())
             self.resize(self_size)
-            self.parent().resize(self_size)
-            self.parent().updateGeometry()
+            self.parent().resize(self_size)  # type: ignore
+            self.parent().updateGeometry()   # type: ignore
         self.line_label.set_line(line)
 
     def zoomin(self):
