@@ -43,6 +43,10 @@ MIN_SCORE = 5
 T_p = TypeVar('T_p')
 
 
+def raise_(e):
+    raise e
+
+
 def support_or_raise(provider, protocol_cls):
     if not isinstance(provider, protocol_cls):
         raise NotSupported(f'{provider} not support {protocol_cls}') from None
@@ -574,46 +578,42 @@ class Library:
         return self._model_upgrade(artist)
 
     def artist_create_songs_rd(self, artist):
-        """Create songs reader for artist model.
-
-        :raises NotSupported:
-        """
-        provider = self.get_or_raise(artist.source)
-        if isinstance(provider, SupportsArtistSongsReader):
-            reader = provider.artist_create_songs_rd(artist)
-        else:
-            artist = self.cast_model_to_v1(artist)
-            if artist.meta.allow_create_songs_g:
-                reader = create_reader(artist.create_songs_g())
-            else:
-                reader = create_reader(artist.songs)
-        return reader
+        """Create songs reader for artist model."""
+        return self._handle_protocol_with_model(
+            SupportsArtistSongsReader,
+            lambda p, m: p.artist_create_songs_rd(m),
+            lambda v1_m: (create_reader(v1_m.create_songs_g())
+                          if v1_m.meta.allow_create_songs_g else
+                          create_reader(v1_m.songs)),
+            artist,
+        )
 
     def artist_create_albums_rd(self, artist, contributed=False):
-        """Create albums reader for artist model.
-        """
-        provider = self.get_or_raise(artist.source)
+        """Create albums reader for artist model."""
+        source = artist.source
         if contributed is False:
-            if isinstance(provider, SupportsArtistAlbumsReader):
-                reader = provider.artist_create_albums_rd(artist)
-            else:
-                artist = self.cast_model_to_v1(artist)
-                if artist.meta.allow_create_albums_g:
-                    reader = create_reader(artist.create_albums_g())
-                else:
-                    raise NotSupported("can't create albums reader for artist")
-        else:
-            if isinstance(provider, SupportsArtistContributedAlbumsReader):
-                reader = provider.artist_create_contributed_albums_rd(artist)
-            else:
-                artist = self.cast_model_to_v1(artist)
-                # Old code check if provider supports contributed_albums in this way.
-                if hasattr(artist, 'contributed_albums') and artist.contributed_albums:
-                    reader = create_reader(artist.create_contributed_albums_g())
-                else:
-                    raise NotSupported(
-                        "can't create contributed albums reader for artist")
-        return reader
+            protocol_cls = SupportsArtistAlbumsReader
+            return self._handle_protocol_with_model(
+                protocol_cls,
+                lambda p, m: p.artist_create_albums_rd(m),
+                lambda v1_m: (create_reader(v1_m.create_albums_g())
+                              if v1_m.meta.allow_create_albums_g else
+                              raise_(NotSupported.create_by_p_p(source, protocol_cls))),
+                artist
+            )
+        protocol_cls = SupportsArtistContributedAlbumsReader
+        return self._handle_protocol_with_model(
+            protocol_cls,
+            lambda p, m: p.artist_create_contributed_albums_rd(m),
+            # Old code check if provider supports contributed_albums in this way,
+            # have to say, it is a little ugly.
+            lambda v1_m: (
+                create_reader(v1_m.create_contributed_albums_g())
+                if hasattr(v1_m, 'contributed_albums') and v1_m.contributed_albums else
+                raise_(NotSupported.create_by_p_p(source, protocol_cls))
+            ),
+            artist
+        )
 
     # --------
     # Playlist
@@ -623,20 +623,15 @@ class Library:
         return self._model_upgrade(playlist)
 
     def playlist_create_songs_rd(self, playlist):
-        """Create songs reader for artist model.
-
-        :raises NotSupported:
-        """
-        provider = self.get_or_raise(playlist.source)
-        if isinstance(provider, SupportsPlaylistSongsReader):
-            reader = provider.playlist_create_songs_rd(playlist)
-        else:
-            playlist = self.cast_model_to_v1(playlist)
-            if playlist.meta.allow_create_songs_g:
-                reader = create_reader(playlist.create_songs_g())
-            else:
-                reader = create_reader(playlist.songs)
-        return reader
+        """Create songs reader for artist model."""
+        return self._handle_protocol_with_model(
+            SupportsPlaylistSongsReader,
+            lambda p, m: p.playlist_create_songs_rd(m),
+            lambda v1_m: (create_reader(v1_m.create_songs_g())
+                          if v1_m.meta.allow_create_songs_g else
+                          create_reader(v1_m.songs)),
+            playlist,
+        )
 
     def playlist_remove_song(self, playlist, song) -> bool:
         """Remove a song from the playlist
