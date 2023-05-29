@@ -149,14 +149,16 @@ class SongWikiLabel(QLabel):
         # Only show the date, like yyyy-mm-dd. Do not show hour/minutes/seconds.
         if song.date:
             date = song.date
-        elif ModelFlags.normal in album.meta.flags:
+        elif album is not None and ModelFlags.normal in album.meta.flags:
             date = album.released
         else:
             date = ''
         date_fmted = date[:10] if date else ''
+        album_str = f'<a href="{reverse(album)}">{album.name_display}</a>' \
+            if album else ''
         kvs = [
             ('歌手', artists_str),
-            ('所属专辑', f'<a href="{reverse(album)}">{album.name_display}</a>'),
+            ('所属专辑', or_unknown(album_str)),
             ('发行日期', or_unknown(date_fmted)),
             ('曲风', or_unknown(song.genre)),
         ]

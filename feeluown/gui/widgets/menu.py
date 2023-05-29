@@ -2,6 +2,7 @@ import logging
 
 from feeluown.utils import aio
 from feeluown.player import SongRadio
+from feeluown.library import SongProtocol
 
 logger = logging.getLogger(__name__)
 
@@ -38,9 +39,11 @@ class SongMenuInitializer:
             app.browser.goto(model=song, path='/explore')
 
         async def goto_song_album(song):
-            song = await aio.run_fn(self._app.library.song_upgrade, song)
-            album = await aio.run_fn(lambda: song.album)
-            self._app.browser.goto(model=album)
+            song: SongProtocol = await aio.run_fn(self._app.library.song_upgrade, song)
+            if song.album is not None:
+                self._app.browser.goto(model=song.album)
+            else:
+                self._app.show_msg('该歌曲没有专辑信息')
 
         menu.hovered.connect(self.on_action_hovered)
         artist_menu = menu.addMenu('查看歌手')
@@ -67,10 +70,14 @@ class SongMenuInitializer:
             artists = future.result()  # ignore the potential exception
             if artists:
                 for artist in artists:
-                    artist_action = action.menu().addAction(artist.name)
-                    # create a closure to bind variable artist
-                    artist_action.triggered.connect(
-                        (lambda x: lambda: self._app.browser.goto(model=x))(artist))
+                    try:
+                        artist_action = action.menu().addAction(artist.name)
+                        # create a closure to bind variable artist
+                        artist_action.triggered.connect(
+                            (lambda x: lambda: self._app.browser.goto(model=x))(artist))
+                    except RuntimeError:
+                        # action may have been deleted.
+                        return
             data['artists'] = artists or []
             action.setData(data)
 
