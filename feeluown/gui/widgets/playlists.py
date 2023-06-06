@@ -96,7 +96,7 @@ class PlaylistsView(TextlistView):
         try:
             # FIXME: this may block the app.
             app = self.parent().parent()._app   # type: ignore[attr-defined]
-            app.library.playlist_add_song(playlist, song)
+            is_success = app.library.playlist_add_song(playlist, song)
         except:  # noqa, to avoid crash.
             logger.exception('add song to playlist failed')
             is_success = False
