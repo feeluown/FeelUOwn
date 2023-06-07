@@ -16,6 +16,7 @@ from .flags import Flags as PF
 
 __all__ = (
     'SupportsAlbumGet',
+    'SupportsAlbumSongsReader',
 
     'SupportsArtistAlbumsReader',
     'SupportsArtistGet',

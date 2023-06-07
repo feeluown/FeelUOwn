@@ -12,7 +12,7 @@ from .model_protocol import (
     BriefUserProtocol,
     SongProtocol,
 )
-from .models import ModelFlags, BaseModel, ModelType, \
+from .models import ModelFlags, BaseModel, ModelType, SearchType, \
     SongModel, BriefSongModel, \
     BriefArtistModel, BriefAlbumModel, \
     BriefCommentModel, CommentModel, \
