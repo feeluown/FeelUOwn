@@ -151,7 +151,6 @@ class PluginsManager:
                 plugin.init_config(config)
             except Exception:  # noqa
                 logger.exception(f'Init config for plugin:{plugin.name} failed')
-                return
 
     def enable_plugins(self, app: App):
         logger.info(f'Enable plugins that are scaned. total: {len(self._plugins)} ')
