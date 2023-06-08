@@ -52,13 +52,22 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 """
 
 import time
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Tuple, Any, Union
 
 from pydantic import BaseModel as _BaseModel, PrivateAttr
 
 from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
+from feeluown.models import SearchType  # noqa
 from feeluown.utils.utils import elfhash
 from .model_state import ModelState
+
+
+TSong = Union['SongModel', 'BriefSongModel']
+TAlbum = Union['AlbumModel', 'BriefAlbumModel']
+TArtist = Union['ArtistModel', 'BriefArtistModel']
+TVideo = Union['VideoModel', 'BriefVideoModel']
+TPlaylist = Union['PlaylistModel', 'BriefPlaylistModel']
+TUser = Union['UserModel', 'BriefUserModel']
 
 
 def fmt_artists_names(names: List[str]) -> str:
@@ -401,11 +410,11 @@ class PlaylistModel(BaseBriefModel):
 
 class SimpleSearchResult(_BaseModel):
     q: str
-    songs: List[BriefSongModel] = []
-    albums: List[BriefAlbumModel] = []
-    artists: List[BriefAlbumModel] = []
-    playlists: List[BriefPlaylistModel] = []
-    videos: List[BriefVideoModel] = []
+    songs: List[TSong] = []
+    albums: List[TAlbum] = []
+    artists: List[TArtist] = []
+    playlists: List[TPlaylist] = []
+    videos: List[TVideo] = []
 
 
 _type_modelcls_mapping = {
