@@ -47,6 +47,21 @@ def test_plugin_init_config(foo_plugin):
     assert config.foo.VERBOSE == 0
 
 
+def test_plugin_manager_init_plugins_config(plugin_mgr, foo_module, mocker):
+    # When one plugin init_config fails, it should not affects others.
+
+    def init_config_raise(*args, **kwargs): raise Exception('xxx')
+
+    invalid_plugin = mocker.Mock()
+    invalid_plugin.init_config = init_config_raise
+
+    config = Config()
+    plugin_mgr._plugins['xxx'] = invalid_plugin
+    plugin_mgr.load_plugin_from_module(foo_module)
+    plugin_mgr.init_plugins_config(config)
+    assert config.foo.VERBOSE == 0
+
+
 def test_plugin_manager_enable_plugin(plugin_mgr, foo_module, app_mock, mocker):
     mock_init_config = mocker.patch.object(Plugin, 'init_config')
     mock_enable = mocker.patch.object(Plugin, 'enable')
