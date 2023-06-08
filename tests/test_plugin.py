@@ -48,7 +48,7 @@ def test_plugin_init_config(foo_plugin):
 
 
 def test_plugin_manager_init_plugins_config(plugin_mgr, foo_module, mocker):
-    # When one plugin init_config fails, it should not affects others.
+    # When one plugin init_config fails, it should not affect others.
 
     def init_config_raise(*args, **kwargs): raise Exception('xxx')
 
