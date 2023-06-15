@@ -8,8 +8,10 @@ from feeluown.gui.image import open_image
 
 
 class CoverLabel(QLabel):
-    def __init__(self, parent=None, pixmap=None):
+    def __init__(self, parent=None, pixmap=None, radius=3):
         super().__init__(parent=parent)
+
+        self._radius = radius
 
         # There is possibility that self._img is None and self._pixmap is not None.
         # When self._img is not None, self._pixmap can not be None.
@@ -48,21 +50,27 @@ class CoverLabel(QLabel):
         """
         if self._pixmap is None:
             return
-        radius = 3
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+
+        painter = self.setup_painter_with_pixmap()
+        radius = self._radius
         size = self._pixmap.size()
-        brush = QBrush(self._pixmap)
-        painter.setBrush(brush)
-        painter.setPen(Qt.NoPen)
         y = (size.height() - self.height()) // 2
+
         painter.save()
         painter.translate(0, -y)
         rect = QRect(0, y, self.width(), self.height())
         painter.drawRoundedRect(rect, radius, radius)
         painter.restore()
         painter.end()
+
+    def setup_painter_with_pixmap(self):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        brush = QBrush(self._pixmap)
+        painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
+        return painter
 
     def contextMenuEvent(self, e):
         if self._img is None:
@@ -102,8 +110,8 @@ class CoverLabelV2(CoverLabel):
 
     .. versionadded:: 3.7.8
     """
-    def __init__(self, app):
-        super().__init__(parent=None)
+    def __init__(self, app, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
 
         self._app = app
 

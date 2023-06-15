@@ -66,7 +66,7 @@ class GuiApp(App, QWidget):
 
         # GUI 的一些辅助管理模块
         self.coll_mgr = CollectionManager(self)
-        self.theme_mgr = ThemeManager(self)
+        self.theme_mgr = ThemeManager(self, parent=self)
         self.tips_mgr = TipsManager(self)
         self.hotkey_mgr = HotkeyManager(self)
         self.img_mgr = ImgManager(self)
