@@ -62,7 +62,8 @@ class CookiesLoginDialog(LoginDialog):
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
         self.login_btn = QPushButton('登录', self)
-        self.weblogin_btn = QPushButton('网页登录', self)
+        self.weblogin_btn = QPushButton('内置浏览器登录', self)
+        self.keyringlogin_btn = QPushButton('外部浏览器登录', self)
 
         self.hint_label.setTextFormat(Qt.RichText)
 
