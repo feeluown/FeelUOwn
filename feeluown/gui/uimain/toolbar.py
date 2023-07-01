@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
@@ -6,6 +8,10 @@ from feeluown.gui.widgets import (
 )
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine
+from feeluown.gui.components import Avatar
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 
 ButtonSize = (30, 30)
@@ -18,7 +24,7 @@ class ToolbarButton(QPushButton):
 
 
 class BottomPanel(QWidget):
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -35,6 +41,7 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
+        self.avatar = Avatar(length=ButtonSize[0])
         self.settings_btn = SettingsButton()
         self.settings_btn.setToolTip('配置')
 
@@ -63,8 +70,10 @@ class BottomPanel(QWidget):
         self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self._stack_switch)
         # self._layout.addStretch(0)
-        self._layout.addSpacing(80)
+        self._layout.addSpacing(40)
         self._layout.addWidget(self.status_line)
+        self._layout.addWidget(self.avatar)
+        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.settings_btn)
 
         # assume the magicbox height is about 30
