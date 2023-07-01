@@ -57,7 +57,6 @@ class Ui:
         self.pc_panel.playlist_btn.clicked.connect(self.raise_playlist_view)
         self.toolbar.settings_btn.clicked.connect(
             self._open_settings_dialog)
-        self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
 
@@ -98,14 +97,9 @@ class Ui:
         self.floating_box.move(840, 440)
         self.floating_box.raise_()
         self.top_panel.hide()
+        self.sidebar.hide()
         self._app.resize(960, 600)
 
     def _open_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)
         dialog.exec()
-
-    def _toggle_sidebar(self):
-        if self.sidebar.isVisible():
-            self.sidebar.hide()
-        else:
-            self.sidebar.show()

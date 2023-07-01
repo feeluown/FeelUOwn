@@ -1,8 +1,15 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
+from feeluown.gui.widgets import (
+    HomeButton, LeftArrowButton, RightArrowButton, SearchButton, SettingsButton,
+)
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine
+
+
+ButtonSize = (30, 30)
+ButtonSpacing = int(ButtonSize[0] / 3)
 
 
 class ToolbarButton(QPushButton):
@@ -16,18 +23,19 @@ class BottomPanel(QWidget):
         self._app = app
 
         self._layout = QHBoxLayout(self)
-        self.back_btn = ToolbarButton('⇦', self)
-        self.forward_btn = ToolbarButton('⇨', self)
+        self.back_btn = LeftArrowButton(length=ButtonSize[0])
+        self.forward_btn = RightArrowButton(length=ButtonSize[0])
+        self.home_btn = HomeButton(length=ButtonSize[0])
+
         self.magicbox = MagicBox(self._app)
 
-        self._stack_switch = ToolbarButton('⁐', self)
+        self._stack_switch = SearchButton(length=ButtonSize[0])
         self._stacked_widget = QStackedWidget(self)
         self._stacked_widget.addWidget(self.magicbox)
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
-        self.toggle_sidebar_btn = ToolbarButton('◨', self)
-        self.settings_btn = ToolbarButton('⋮', self)
+        self.settings_btn = SettingsButton()
         self.settings_btn.setToolTip('配置')
 
         # initialize widgets
@@ -43,18 +51,20 @@ class BottomPanel(QWidget):
     def _setup_ui(self):
         self.setObjectName('bottom_panel')
 
-        self._layout.addSpacing(5)
+        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.back_btn)
-        self._layout.addSpacing(5)
+        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.forward_btn)
+        self._layout.addSpacing(ButtonSpacing)
+        self._layout.addWidget(self.home_btn)
+
         self._layout.addSpacing(80)
         self._layout.addWidget(self._stacked_widget)
-        self._layout.addSpacing(10)
+        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self._stack_switch)
         # self._layout.addStretch(0)
         self._layout.addSpacing(80)
         self._layout.addWidget(self.status_line)
-        self._layout.addWidget(self.toggle_sidebar_btn)
         self._layout.addWidget(self.settings_btn)
 
         # assume the magicbox height is about 30
