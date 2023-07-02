@@ -47,12 +47,11 @@ PlayerControlPanel IconButton:hover, VolumeButton:hover{
 #volume_btn:checked {
     border-width: 3px;
 }
-#song_source_label {
+SongSourceTag {
     outline: none;
     border-radius: 2px;
     color: #888;
     border: 1px solid #999;
-    font-size: 12px;
 }
 PlayerControlPanel QPushButton:hover,
 PlayerControlPanel QPushButton:focus

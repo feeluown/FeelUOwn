@@ -1,64 +1,20 @@
-import asyncio
 import logging
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QLabel, QFrame, QHBoxLayout, QVBoxLayout,
-    QPushButton, QSizePolicy, QMenu,
-)
+from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 
-from feeluown.utils import aio
-from feeluown.media import MediaType
+from feeluown.utils.aio import run_afn
 from feeluown.gui.widgets import TextButton
 from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.components import (
     LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
-    MVButton, PlaylistButton,
+    MVButton, PlaylistButton, SongSourceTag,
 )
 
 logger = logging.getLogger(__name__)
-
-
-class SourceLabel(QLabel):
-    default_text = '音乐来源'
-
-    def __init__(self, app, parent=None):
-        super().__init__(text=SourceLabel.default_text, parent=parent)
-        self._app = app
-
-    def contextMenuEvent(self, e):
-        # FIXME(wuliaotc): 在切换provider时禁用menu
-        song = self._app.playlist.current_song
-        if song is None:
-            return
-
-        menu = QMenu()
-        submenu = menu.addMenu('“智能”替换')
-        for provider in self._app.library.list():
-            pid = provider.identifier
-            if pid == song.source:
-                continue
-            action = submenu.addAction(provider.name)
-            action.triggered.connect(
-                (lambda x: lambda: asyncio.create_task(self._switch_provider(x)))(pid)
-            )
-        menu.exec(e.globalPos())
-
-    async def _switch_provider(self, provider_id):
-        song = self._app.playlist.current_song
-        songs = await self._app.library.a_list_song_standby(
-            song, source_in=[provider_id])
-        if songs:
-            standby = songs[0]
-            assert standby != song
-            self._app.show_msg(f'使用 {standby} 替换当前歌曲')
-            self._app.playlist.pure_set_current_song(standby, standby.url)
-            self._app.playlist.remove(song)
-        else:
-            self._app.show_msg(f'提供方 “{provider_id}” 没有找到可用的相似歌曲')
 
 
 class PlayerControlPanel(QFrame):
@@ -106,7 +62,7 @@ class PlayerControlPanel(QFrame):
 
         self.song_title_label = LineSongLabel(self._app)
         self.song_title_label.setAlignment(Qt.AlignCenter)
-        self.song_source_label = SourceLabel(self._app, parent=self)
+        self.song_source_label = SongSourceTag(self._app, parent=self)
 
         self.cover_label = CoverLabelV2(app)
         self.duration_label = DurationLabel(app, parent=self)
@@ -114,7 +70,6 @@ class PlayerControlPanel(QFrame):
 
         # we should enable focus since we want to have shortcut keys
         self.setFocusPolicy(Qt.StrongFocus)
-        self.song_source_label.setObjectName('song_source_label')
 
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
@@ -210,20 +165,7 @@ class PlayerControlPanel(QFrame):
 
     def on_metadata_changed(self, metadata):
         if not metadata:
-            self.song_source_label.setText('歌曲来源')
             return
-
-        # Set source name.
-        source = metadata.get('source', '')
-        default = '未知来源'
-
-        if source:
-            source_name_map = {p.identifier: p.name
-                               for p in self._app.library.list()}
-            name = source_name_map.get(source, default)
-            self.song_source_label.setText(name)
-        else:
-            self.song_source_label.setText(default)
 
         released = metadata.get('released', '')
         if released:
@@ -234,17 +176,8 @@ class PlayerControlPanel(QFrame):
         artwork = metadata.get('artwork', '')
         artwork_uid = metadata.get('uri', artwork)
         if artwork:
-            aio.run_afn(self.cover_label.show_cover, artwork, artwork_uid)
-            aio.run_afn(self._app.ui.floating_box.show_cover, artwork, artwork_uid)
-            aio.run_afn(self._app.ui.floating_box.show_cover, artwork, artwork_uid)
-
-        # Set audio bitrate info if available.
-        media = self._app.player.current_media
-        if media is not None and media.type_ == MediaType.audio:
-            props = media.props
-            if props.bitrate:
-                text = self.song_source_label.text()
-                self.song_source_label.setText(f'{text} - {props.bitrate}kbps')
+            run_afn(self.cover_label.show_cover, artwork, artwork_uid)
+            run_afn(self._app.ui.floating_box.show_cover, artwork, artwork_uid)
 
 
 class TopPanel(QFrame):

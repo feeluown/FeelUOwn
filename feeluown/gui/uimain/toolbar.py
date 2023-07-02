@@ -32,6 +32,7 @@ class BottomPanel(QWidget):
         self.back_btn = LeftArrowButton(length=ButtonSize[0])
         self.forward_btn = RightArrowButton(length=ButtonSize[0])
         self.home_btn = HomeButton(length=ButtonSize[0])
+        self.home_btn.hide()  # TODO: implement a home page.
 
         self.magicbox = MagicBox(self._app)
 

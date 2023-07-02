@@ -112,12 +112,14 @@ class LikeButton(QPushButton):
 
 
 class MVButton(TextButton):
-    def __init__(self, app: App, parent=None):
+    def __init__(self, app: App, parent=None, height=None, **kwargs):
         super().__init__('MV', parent=parent)
 
         self._app = app
         self.setObjectName('mv_btn')
         self.setToolTip('播放 MV')
+        if height:
+            self.setFixedHeight(height)
 
         self._app.playlist.song_changed.connect(self.on_player_song_changed,
                                                 aioqueue=True)

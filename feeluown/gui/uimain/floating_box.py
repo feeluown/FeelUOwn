@@ -8,19 +8,14 @@ from PyQt5.QtGui import (
     QMouseEvent, QCursor, QPainter, QPalette, QBrush,
 )
 
+from feeluown.gui.helpers import darker_or_lighter
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.components import (
     LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
-    MVButton, VolumeSlider,
+    MVButton, VolumeSlider, SongSourceTag,
 )
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
-
-
-def darker_or_lighter(color):
-    if color.lightness() > 150:
-        return color.darker(120)
-    return color.lighter(120)
 
 
 class MouseState:
@@ -62,7 +57,9 @@ class Toolbar(QWidget):
         self._app = app
 
         button_width = 20
+        self._song_btn_size = (16, 16)
 
+        self.song_source_tag = SongSourceTag(app=self._app, font_size=10)
         self.line_song_label = LineSongLabel(app=self._app)
         self.progress_slider = ProgressSlider(app=self._app)
         self.progress_label = ProgressRatioLabel(app=self._app)
@@ -71,9 +68,9 @@ class Toolbar(QWidget):
                                           spacing=0,
                                           button_width=button_width+5)
         self.lyric_button = LyricButton(app=self._app)
-        self.like_button = LikeButton(app=self._app)
+        self.like_button = LikeButton(app=self._app, size=self._song_btn_size)
         self.watch_button = WatchButton(app=self._app)
-        self.mv_button = MVButton(app=self._app)
+        self.mv_button = MVButton(app=self._app, height=self._song_btn_size[1])
         self.volume_button = QPushButton()
 
         self.volume_button.setObjectName('volume_btn')
@@ -102,13 +99,14 @@ class Toolbar(QWidget):
         self._v_layout.addStretch(0)
         self._v_layout.addLayout(self._btns_layout)
 
+        self._song_layout.setSpacing(self._song_btn_size[1]//2)
+        self._song_layout.addWidget(self.song_source_tag)
         self._song_layout.addWidget(self.line_song_label)
+        self._song_layout.addWidget(self.mv_button)
         self._song_layout.addWidget(self.like_button)
 
-        self._other_btns_layout.addWidget(self.mv_button)
         self._other_btns_layout.addWidget(self.watch_button)
         self._other_btns_layout.addWidget(self.lyric_button)
-        self.mv_button.hide()
         self.watch_button.hide()
         self.lyric_button.hide()
 
@@ -150,7 +148,7 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.setPen(Qt.NoPen)
 
         # Draw border.
-        color = darker_or_lighter(self.palette().color(QPalette.Background))
+        color = darker_or_lighter(self.palette().color(QPalette.Background), 120)
         painter.setBrush(QBrush(color))
         painter.drawRoundedRect(self.rect(), radius, radius)
 
@@ -210,7 +208,7 @@ class FloatingBox(QFrame):
             return
 
         # Draw background for toolbar.
-        new_bg_color = darker_or_lighter(self.palette().color(QPalette.Background))
+        new_bg_color = darker_or_lighter(self.palette().color(QPalette.Background), 120)
         painter = QPainter(self)
         painter.setPen(Qt.NoPen)
         painter.save()
