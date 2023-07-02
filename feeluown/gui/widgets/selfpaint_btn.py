@@ -151,7 +151,7 @@ class SettingsButton(SelfPaintAbstractSquareButton):
 
 
 if __name__ == '__main__':
-    from feeluown.gui.widgets.debug import simple_layout
+    from feeluown.gui.debug import simple_layout
 
     length = 40
 

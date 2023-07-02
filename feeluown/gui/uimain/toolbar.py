@@ -41,7 +41,7 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
-        self.avatar = Avatar(length=ButtonSize[0])
+        self.avatar = Avatar(app, length=ButtonSize[0])
         self.settings_btn = SettingsButton()
         self.settings_btn.setToolTip('配置')
 

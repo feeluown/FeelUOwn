@@ -1,13 +1,20 @@
 from contextlib import contextmanager
+from unittest.mock import MagicMock
 
 from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout
 
 
 @contextmanager
 def simple_qapp():
-    app = QApplication([])
+    qapp = QApplication([])
+    yield qapp
+    qapp.exec()
+
+
+@contextmanager
+def mock_app():
+    app = MagicMock()
     yield app
-    app.exec()
 
 
 @contextmanager
