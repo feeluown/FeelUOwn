@@ -90,6 +90,10 @@ class TextlistDelegate(QStyledItemDelegate):
 
 
 class TextlistView(QListView):
+    """
+    .. versiondeprecated:: 3.9
+        A TextlistView should have scrollbar by default.
+    """
 
     def __init__(self, parent):
         super().__init__(parent)

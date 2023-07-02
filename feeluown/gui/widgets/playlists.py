@@ -73,6 +73,8 @@ class PlaylistsView(TextlistView):
     """歌单列表视图
 
     该视图会显示所有的元素，理论上不会有滚动条，也不接受滚动事件
+
+    .. versiondeprecated:: 3.9
     """
     show_playlist = pyqtSignal([object])
 

@@ -1,7 +1,8 @@
 from typing import Optional, TYPE_CHECKING
 
+from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QMenu, QAction
-from PyQt5.QtGui import QPainter, QIcon, QPalette
+from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
 from feeluown.library import UserModel
 from feeluown.gui.widgets import SelfPaintAbstractSquareButton
@@ -20,6 +21,16 @@ class Avatar(SelfPaintAbstractSquareButton):
         self._app = app
         self._provider_ui_item: Optional[ProviderUiItem] = None
         self._current_user: Optional[UserModel] = None
+        self.clicked.connect(self.on_clicked)
+        self.setToolTip('点击登陆资源提供方')
+
+    def on_clicked(self):
+        if self._provider_ui_item is not None:
+            self.maybe_goto_current_provider()
+        else:
+            pos = self.cursor().pos()
+            e = QContextMenuEvent(QContextMenuEvent.Mouse, pos, pos)
+            self.contextMenuEvent(e)
 
     def contextMenuEvent(self, e) -> None:
         # pylint: disable=unnecessary-direct-lambda-call
@@ -36,13 +47,22 @@ class Avatar(SelfPaintAbstractSquareButton):
             action.triggered.connect(
                 (lambda item: lambda _: self.on_provider_selected(item))(item))
             menu.addAction(action)
-
         menu.exec_(e.globalPos())
 
     def on_provider_selected(self, provider: ProviderUiItem):
-        provider.clicked.emit()
         self._provider_ui_item = provider
+        self.maybe_goto_current_provider()
+
+    def maybe_goto_current_provider(self):
+        provider = self._provider_ui_item
+        old_page = self._app.browser.current_page
+        provider.clicked.emit()
+        new_page = self._app.browser.current_page
         self.setToolTip(provider.text + '\n\n' + provider.desc)
+        # HACK: If the provider does not update the current page,
+        # render the provider home page manually.
+        if new_page == old_page:
+            self._app.browser.goto(page=f'/providers/{provider.name}')
 
     def paintEvent(self, _):
         painter = QPainter(self)

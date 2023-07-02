@@ -97,9 +97,17 @@ class Ui:
         self.floating_box.move(840, 440)
         self.floating_box.raise_()
         self.top_panel.hide()
-        self.sidebar.hide()
+        self._top_separator.hide()
         self._app.resize(960, 600)
 
     def _open_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)
         dialog.exec()
+
+    def toggle_player_bar(self):
+        if self.top_panel.isVisible():
+            self.top_panel.hide()
+            self._top_separator.hide()
+        else:
+            self.top_panel.show()
+            self._top_separator.show()

@@ -5,7 +5,6 @@ from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollAre
     QHBoxLayout
 
 from feeluown.gui.widgets.playlists import PlaylistsView
-from feeluown.gui.widgets.provider import ProvidersView
 from feeluown.gui.widgets.collections import CollectionsView
 from feeluown.gui.widgets.my_music import MyMusicView
 from feeluown.gui.widgets.textbtn import TextButton
@@ -89,7 +88,6 @@ class _LeftPanel(QFrame):
         super().__init__(parent)
         self._app = app
 
-        self.library_header = QLabel('音乐提供方', self)
         self.collections_header = QLabel('本地收藏', self)
         self.collections_header.setToolTip(
             '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
@@ -102,12 +100,9 @@ class _LeftPanel(QFrame):
         self.my_music_header = QLabel('我的音乐', self)
 
         self.playlists_view = PlaylistsView(self)
-        self.providers_view = ProvidersView(self, library=self._app.library)
         self.my_music_view = MyMusicView(self)
         self.collections_view = CollectionsView(self)
 
-        self.providers_con = ListViewContainer(
-            self.library_header, self.providers_view)
         self.collections_con = ListViewContainer(
             self.collections_header, self.collections_view)
         self.playlists_con = ListViewContainer(
@@ -115,7 +110,6 @@ class _LeftPanel(QFrame):
         self.my_music_con = ListViewContainer(
             self.my_music_header, self.my_music_view)
 
-        self.providers_view.setModel(self._app.pvd_uimgr.model)
         self.playlists_view.setModel(self._app.pl_uimgr.model)
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)
         self.collections_view.setModel(self._app.coll_uimgr.model)
@@ -124,13 +118,11 @@ class _LeftPanel(QFrame):
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(16, 16, 16, 0)
-        self._layout.addWidget(self.providers_con)
         self._layout.addWidget(self.collections_con)
         self._layout.addWidget(self.my_music_con)
         self._layout.addWidget(self.playlists_con)
         self._layout.addStretch(0)
 
-        self.providers_view.setFrameShape(QFrame.NoFrame)
         self.playlists_view.setFrameShape(QFrame.NoFrame)
         self.my_music_view.setFrameShape(QFrame.NoFrame)
         self.collections_view.setFrameShape(QFrame.NoFrame)
