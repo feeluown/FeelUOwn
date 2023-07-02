@@ -144,6 +144,8 @@ class _LeftPanel(QFrame):
         self.my_music_con.hide()
 
         self.home_btn.clicked.connect(self.show_library)
+        self.recently_played_btn.clicked.connect(
+            lambda: self._app.browser.goto(page='/recently_played'))
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
         self.collections_view.show_collection.connect(self.show_coll)
