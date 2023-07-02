@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
 from feeluown.gui.components import Avatar, PlaylistButton
 from feeluown.gui.widgets import (
-    HomeButton, LeftArrowButton, RightArrowButton, SearchButton, SettingsButton,
+    LeftArrowButton, RightArrowButton, SearchButton, SettingsButton,
 )
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine
@@ -31,8 +31,6 @@ class BottomPanel(QWidget):
         self._layout = QHBoxLayout(self)
         self.back_btn = LeftArrowButton(length=ButtonSize[0])
         self.forward_btn = RightArrowButton(length=ButtonSize[0])
-        self.home_btn = HomeButton(length=ButtonSize[0])
-        self.home_btn.hide()  # TODO: implement a home page.
 
         self.magicbox = MagicBox(self._app)
 
@@ -61,7 +59,6 @@ class BottomPanel(QWidget):
 
         self._layout.addWidget(self.back_btn)
         self._layout.addWidget(self.forward_btn)
-        self._layout.addWidget(self.home_btn)
 
         self._layout.addSpacing(80)
         self._layout.addWidget(self._stacked_widget)
