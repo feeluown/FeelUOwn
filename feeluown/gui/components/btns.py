@@ -14,17 +14,14 @@ logger = logging.getLogger(__name__)
 
 
 class LyricButton(TextButton):
-    def __init__(self, app: App, parent=None):
-        super().__init__('词', parent=parent)
+    def __init__(self, app: App, **kwargs):
+        kwargs.setdefault('height', 16)
+        super().__init__('词', **kwargs)
         self._app = app
 
-        # TODO: height and font_size should be a arguement of TextButton.
-        height = 16
         font_size = 9
-
         self.setCheckable(True)
         self.clicked.connect(self._toggle_lyric_window)
-        self.setFixedHeight(height)
         font = self.font()
         font.setPixelSize(font_size)
         self.setFont(font)
@@ -48,8 +45,8 @@ class LyricButton(TextButton):
 
 
 class WatchButton(TextButton):
-    def __init__(self, app: App, parent=None):
-        super().__init__('♨', parent=parent)
+    def __init__(self, app: App, *args, **kwargs):
+        super().__init__('♨', *args, **kwargs)
         self._app = app
 
         self.setToolTip('开启 watch 模式时，播放器会优先尝试为歌曲找一个合适的视频来播放。\n'
@@ -71,6 +68,10 @@ class WatchButton(TextButton):
         font = self.font()
         resize_font(font, -2)
         self.setFont(font)
+
+    def showEvent(self, e):
+        self.setChecked(self._app.playlist.watch_mode)
+        super().showEvent(e)
 
 
 class LikeButton(QPushButton):

@@ -1,11 +1,6 @@
-from PyQt5.QtCore import Qt, QModelIndex
-
 from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader
-from feeluown.gui.widgets import TextButton
-from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer
-from feeluown.gui.widgets.songs import BaseSongsTableModel, Column, ColumnsMode
 
 
 async def render(req, **kwargs):
