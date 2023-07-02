@@ -136,12 +136,7 @@ class AnimatedCoverLabel(CoverLabelV2):
         self.update()
 
     def paintEvent(self, e):
-        if self._pixmap is None:
-            return
-
         radius = self._radius
-        size = self._pixmap.size()
-        y = (size.height() - self.height()) // 2
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
@@ -159,12 +154,14 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.setBrush(QBrush(color))
         painter.drawRoundedRect(self.rect(), radius, radius)
 
-        # Draw pixmap.
-        rect = QRect(self._padding, y+self._padding,
-                     self.width()-self._padding*2, self.height()-self._padding*2)
-        brush = QBrush(self._pixmap)
-        painter.setBrush(brush)
-        painter.drawRoundedRect(rect, radius, radius)
+        if self._pixmap is not None:
+            size = self._pixmap.size()
+            y = (size.height() - self.height()) // 2
+            rect = QRect(self._padding, y+self._padding,
+                         self.width()-self._padding*2, self.height()-self._padding*2)
+            brush = QBrush(self._pixmap)
+            painter.setBrush(brush)
+            painter.drawRoundedRect(rect, radius, radius)
 
         painter.restore()
         painter.end()

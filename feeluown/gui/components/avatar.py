@@ -1,12 +1,10 @@
 from typing import Optional, TYPE_CHECKING
 
-from PyQt5.QtCore import QPoint
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
 from feeluown.library import UserModel
 from feeluown.gui.widgets import SelfPaintAbstractSquareButton
-from feeluown.gui.widgets.selfpaint_btn import paint_round_bg_when_hover
 from feeluown.gui.uimodels.provider import ProviderUiItem
 
 if TYPE_CHECKING:
@@ -55,19 +53,19 @@ class Avatar(SelfPaintAbstractSquareButton):
 
     def maybe_goto_current_provider(self):
         provider = self._provider_ui_item
-        old_page = self._app.browser.current_page
         provider.clicked.emit()
-        new_page = self._app.browser.current_page
         self.setToolTip(provider.text + '\n\n' + provider.desc)
         # HACK: If the provider does not update the current page,
         # render the provider home page manually.
-        if new_page == old_page:
-            self._app.browser.goto(page=f'/providers/{provider.name}')
+        # old_page = self._app.browser.current_page
+        # new_page = self._app.browser.current_page
+        # if new_page == old_page:
+        #     self._app.browser.goto(page=f'/providers/{provider.name}')
 
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        paint_round_bg_when_hover(self, painter)
+        self.paint_round_bg_when_hover(painter)
 
         has_avatar = False
         if self._current_user is not None and self._current_user.avatar_url:

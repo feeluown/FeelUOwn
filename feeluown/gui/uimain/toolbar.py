@@ -3,12 +3,12 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
+from feeluown.gui.components import Avatar, PlaylistButton
 from feeluown.gui.widgets import (
     HomeButton, LeftArrowButton, RightArrowButton, SearchButton, SettingsButton,
 )
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine
-from feeluown.gui.components import Avatar
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -41,9 +41,9 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
+        self.playlist_btn = PlaylistButton(self._app, length=ButtonSize[0])
         self.avatar = Avatar(app, length=ButtonSize[0])
-        self.settings_btn = SettingsButton()
-        self.settings_btn.setToolTip('配置')
+        self.settings_btn = SettingsButton(length=ButtonSize[0])
 
         # initialize widgets
         self.back_btn.setEnabled(False)
@@ -58,32 +58,28 @@ class BottomPanel(QWidget):
     def _setup_ui(self):
         self.setObjectName('bottom_panel')
 
-        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.back_btn)
-        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.forward_btn)
-        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.home_btn)
 
         self._layout.addSpacing(80)
         self._layout.addWidget(self._stacked_widget)
-        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self._stack_switch)
         # self._layout.addStretch(0)
         self._layout.addSpacing(40)
         self._layout.addWidget(self.status_line)
         self._layout.addWidget(self.avatar)
-        self._layout.addSpacing(ButtonSpacing)
         self._layout.addWidget(self.settings_btn)
+        self._layout.addWidget(self.playlist_btn)
 
         # assume the magicbox height is about 30
-        h_margin, v_margin = 5, 7
+        h_margin, v_margin = ButtonSpacing, 7
         height = self.magicbox.height()
 
         self.setFixedHeight(height + v_margin * 2 + 8)
         self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
         self._layout.setAlignment(self._stacked_widget, Qt.AlignVCenter)
-        self._layout.setSpacing(0)
+        self._layout.setSpacing(ButtonSpacing)
 
     def _show_next_stacked_widget(self):
         current_index = self._stacked_widget.currentIndex()

@@ -17,18 +17,17 @@ class SelfPaintAbstractSquareButton(QPushButton):
     def paintEvent(self, _):
         raise NotImplementedError('paintEvent must be implemented')
 
+    def paint_round_bg_when_hover(self, painter):
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
 
-def paint_round_bg_when_hover(widget, painter):
-    opt = QStyleOptionButton()
-    widget.initStyleOption(opt)
-
-    if opt.state & QStyle.State_MouseOver:
-        painter.save()
-        painter.setPen(Qt.NoPen)
-        color = widget.palette().color(QPalette.Background)
-        painter.setBrush(darker_or_lighter(color, 120))
-        painter.drawEllipse(widget.rect())
-        painter.restore()
+        if opt.state & QStyle.State_MouseOver:
+            painter.save()
+            painter.setPen(Qt.NoPen)
+            color = self.palette().color(QPalette.Background)
+            painter.setBrush(darker_or_lighter(color, 120))
+            painter.drawEllipse(self.rect())
+            painter.restore()
 
 
 class HomeButton(SelfPaintAbstractSquareButton):
@@ -55,7 +54,7 @@ class HomeButton(SelfPaintAbstractSquareButton):
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        paint_round_bg_when_hover(self, painter)
+        self.paint_round_bg_when_hover(painter)
 
         pen = painter.pen()
         pen.setWidthF(1.5)
@@ -88,7 +87,7 @@ class ArrowAbstractButton(SelfPaintAbstractSquareButton):
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        paint_round_bg_when_hover(self, painter)
+        self.paint_round_bg_when_hover(painter)
 
         pen = painter.pen()
         pen.setWidthF(1.5)
@@ -124,7 +123,7 @@ class SearchButton(SelfPaintAbstractSquareButton):
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        paint_round_bg_when_hover(self, painter)
+        self.paint_round_bg_when_hover(painter)
 
         pen = painter.pen()
         pen.setWidthF(1.5)
@@ -136,10 +135,15 @@ class SearchButton(SelfPaintAbstractSquareButton):
 
 
 class SettingsButton(SelfPaintAbstractSquareButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setToolTip('配置')
+
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        paint_round_bg_when_hover(self, painter)
+        self.paint_round_bg_when_hover(painter)
 
         pen = painter.pen()
         pen.setWidth(2)

@@ -54,22 +54,10 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.pc_panel.playlist_btn.clicked.connect(self.raise_playlist_view)
         self.toolbar.settings_btn.clicked.connect(
             self._open_settings_dialog)
 
         self._setup_ui()
-
-    def raise_playlist_view(self):
-        if not self.playlist_overlay.isVisible():
-            width = max(self._app.width() // 4, 330)
-            x = self._app.width() - width
-            height = self._app.height()
-            self.playlist_overlay.setGeometry(x, 0, width, height)
-            self.playlist_overlay.show()
-            self.playlist_overlay.setFocus()
-            # Put the widget on top.
-            self.playlist_overlay.raise_()
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)

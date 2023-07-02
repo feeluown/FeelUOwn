@@ -11,13 +11,12 @@ from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.utils import aio
 from feeluown.media import MediaType
 from feeluown.gui.widgets import TextButton
-from feeluown.gui.widgets.playlist_button import PlaylistButton
 from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.components import (
     LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
-    MVButton,
+    MVButton, PlaylistButton,
 )
 
 logger = logging.getLogger(__name__)
@@ -81,7 +80,7 @@ class PlayerControlPanel(QFrame):
         self.next_btn = self.media_btns.next_btn
 
         self.volume_btn = VolumeButton(self)
-        self.playlist_btn = PlaylistButton(self._app, self)
+        self.playlist_btn = PlaylistButton(self._app, length=30, parent=self)
         #: mark song as favorite button
         self.like_btn = LikeButton(self._app, parent=self)
         self.mv_btn = MVButton(app=self._app, parent=self)
