@@ -6,6 +6,14 @@ from feeluown.gui.helpers import darker_or_lighter
 
 
 class SelfPaintAbstractButton(QPushButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # It seems macOS platform does not turn this attribute on by default.
+        # The following two attrs are only needed on macOS, and they don't
+        # cause any side effects on other platforms.
+        self.setAttribute(Qt.WA_Hover, True)
+        self.setAttribute(Qt.WA_LayoutUsesWidgetRect, True)
+
     def paintEvent(self, _):
         raise NotImplementedError('paintEvent must be implemented')
 
