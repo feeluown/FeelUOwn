@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 
 ButtonSize = (30, 30)
-ButtonSpacing = int(ButtonSize[0] / 3)
+ButtonSpacing = int(ButtonSize[0] / 6)
 
 
 class ToolbarButton(QPushButton):
@@ -63,7 +63,6 @@ class BottomPanel(QWidget):
         self._layout.addSpacing(80)
         self._layout.addWidget(self._stacked_widget)
         self._layout.addWidget(self._stack_switch)
-        # self._layout.addStretch(0)
         self._layout.addSpacing(40)
         self._layout.addWidget(self.status_line)
         self._layout.addWidget(self.avatar)
@@ -71,7 +70,8 @@ class BottomPanel(QWidget):
         self._layout.addWidget(self.playlist_btn)
 
         # assume the magicbox height is about 30
-        h_margin, v_margin = ButtonSpacing, 7
+        # h_margin = 20(TableContainer h_spacing) - 30*0.25(back_btn padding)
+        h_margin, v_margin = 11, 7
         height = self.magicbox.height()
 
         self.setFixedHeight(height + v_margin * 2 + 8)

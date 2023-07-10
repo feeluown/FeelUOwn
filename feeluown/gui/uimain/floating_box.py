@@ -1,3 +1,4 @@
+import sys
 from typing import Optional
 
 from PyQt5.QtCore import QTimer, QEvent, Qt, QRect
@@ -16,6 +17,8 @@ from feeluown.gui.components import (
     MVButton, VolumeSlider, SongSourceTag,
 )
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
+
+IS_MACOS = sys.platform == 'darwin'
 
 
 class MouseState:
@@ -58,6 +61,7 @@ class Toolbar(QWidget):
 
         button_width = 20
         self._song_btn_size = (16, 16)
+        # self.setStyleSheet('border: 1px solid red;')
 
         self.song_source_tag = SongSourceTag(app=self._app, font_size=10)
         self.line_song_label = LineSongLabel(app=self._app)
@@ -81,7 +85,8 @@ class Toolbar(QWidget):
         # has different default values.
         self._layout = QHBoxLayout(self)
         self._layout.setSpacing(6)
-        self._layout.setContentsMargins(8, 8, 8, 8)
+        bottom_margin = 0 if IS_MACOS else 8
+        self._layout.setContentsMargins(8, 8, 8, bottom_margin)
 
         self._v_layout = QVBoxLayout()
         self._song_layout = QHBoxLayout()
@@ -98,6 +103,12 @@ class Toolbar(QWidget):
         self._v_layout.addWidget(self.progress_slider)
         self._v_layout.addStretch(0)
         self._v_layout.addLayout(self._btns_layout)
+
+        if IS_MACOS:
+            # On macOS, the default height of the slider is not enough to show
+            # the slider handler, so set a minimum height for sliders.
+            self.progress_slider.setMinimumHeight(24)
+            self.volume_slider.setMinimumHeight(24)
 
         self._song_layout.setSpacing(self._song_btn_size[1]//2)
         self._song_layout.addWidget(self.song_source_tag)
@@ -148,7 +159,7 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.setPen(Qt.NoPen)
 
         # Draw border.
-        color = darker_or_lighter(self.palette().color(QPalette.Background), 120)
+        color = darker_or_lighter(self.palette().color(QPalette.Background), 115)
         painter.setBrush(QBrush(color))
         painter.drawRoundedRect(self.rect(), radius, radius)
 
@@ -208,7 +219,7 @@ class FloatingBox(QFrame):
             return
 
         # Draw background for toolbar.
-        new_bg_color = darker_or_lighter(self.palette().color(QPalette.Background), 120)
+        new_bg_color = darker_or_lighter(self.palette().color(QPalette.Background), 115)
         painter = QPainter(self)
         painter.setPen(Qt.NoPen)
         painter.save()
