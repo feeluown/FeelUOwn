@@ -49,6 +49,9 @@ class ProviderUiManager:
     def get_item(self, name):
         return self._items.get(name)
 
+    def list_items(self):
+        return list(self._items.values())
+
     def add_item(self, uiitem):
         name = uiitem.name
         self.model.assoc(name, uiitem)

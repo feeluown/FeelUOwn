@@ -9,7 +9,7 @@ def test_show_bitrate(qtbot, app_mock):
     w = PlayerControlPanel(app_mock)
     qtbot.addWidget(w)
     metadata = {'title': 'xx'}
-    w.on_metadata_changed(metadata)
+    w.song_source_label.on_metadata_changed(metadata)
     assert '100kbps' in w.song_source_label.text()
 
 

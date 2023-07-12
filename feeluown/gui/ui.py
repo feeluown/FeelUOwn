@@ -12,7 +12,6 @@ from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -52,23 +51,10 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.pc_panel.playlist_btn.clicked.connect(self.raise_playlist_view)
         self.toolbar.settings_btn.clicked.connect(
             self._open_settings_dialog)
-        self.toolbar.toggle_sidebar_btn.clicked.connect(self._toggle_sidebar)
 
         self._setup_ui()
-
-    def raise_playlist_view(self):
-        if not self.playlist_overlay.isVisible():
-            width = max(self._app.width() // 4, 330)
-            x = self._app.width() - width
-            height = self._app.height()
-            self.playlist_overlay.setGeometry(x, 0, width, height)
-            self.playlist_overlay.show()
-            self.playlist_overlay.setFocus()
-            # Put the widget on top.
-            self.playlist_overlay.raise_()
 
     def _setup_ui(self):
         self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
@@ -81,7 +67,6 @@ class Ui:
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.mpv_widget)
         self._layout.addWidget(self._message_line)
@@ -99,8 +84,10 @@ class Ui:
         dialog = SettingsDialog(self._app, self._app)
         dialog.exec()
 
-    def _toggle_sidebar(self):
-        if self.sidebar.isVisible():
-            self.sidebar.hide()
+    def toggle_player_bar(self):
+        if self.top_panel.isVisible():
+            self.top_panel.hide()
+            self._top_separator.hide()
         else:
-            self.sidebar.show()
+            self.top_panel.show()
+            self._top_separator.show()

@@ -191,6 +191,8 @@ class Browser:
         from feeluown.gui.pages.model import render as render_model
         from feeluown.gui.pages.coll_mixed import render as render_coll_mixed
         from feeluown.gui.pages.song_explore import render as render_song_explore
+        from feeluown.gui.pages.provider_home import render as render_provider_home
+        from feeluown.gui.pages.recently_played import render as render_recently_played
 
         model_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
 
@@ -204,6 +206,8 @@ class Browser:
             (f'{model_prefix}/songs/<identifier>/hot_comments', dummy_render),
             (f'{model_prefix}/songs/<identifier>/explore', render_song_explore),
             ('/colls/<identifier>', render_coll_mixed),
+            ('/providers/<identifier>', render_provider_home),
+            ('/recently_played', render_recently_played),
             ('/search', render_search),
         ]
         for url, renderer in urlpatterns:

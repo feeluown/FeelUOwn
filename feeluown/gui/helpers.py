@@ -28,7 +28,7 @@ try:
     # helper module should work in no-window mode
     from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
         QAbstractListModel
-    from PyQt5.QtGui import QPalette, QFontMetrics
+    from PyQt5.QtGui import QPalette, QFontMetrics, QColor
     from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
 except ImportError:
     pass
@@ -47,6 +47,18 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
+
+IS_MACOS = sys.platform == 'darwin'
+
+
+def darker_or_lighter(color: QColor, factor):
+    """
+    If the color is a light color, for example, white, then this returns
+    a darker color.
+    """
+    if color.lightness() > 150:
+        return color.darker(factor)
+    return color.lighter(factor)
 
 
 async def async_run(func, loop=None, executor=None):
