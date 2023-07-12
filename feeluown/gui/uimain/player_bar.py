@@ -157,7 +157,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addLayout(self._progress_v_layout)
         self._layout.addStretch(0)
         self._layout.addSpacing(18)
-        self._layout.addSpacing(50)
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.toggle_video_btn)
