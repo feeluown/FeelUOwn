@@ -13,6 +13,7 @@ from feeluown.gui.components import (
     LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
     MVButton, PlaylistButton, SongSourceTag,
 )
+from feeluown.gui.helpers import IS_MACOS
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +85,10 @@ class PlayerControlPanel(QFrame):
         self.cover_label.setFixedWidth(44)
         self.cover_label.setMaximumHeight(44)
         self.song_source_label.setFixedHeight(20)
-        self.progress_slider.setFixedHeight(20)  # half of parent height
+        if IS_MACOS:
+            self.progress_slider.setFixedHeight(25)  # half of parent height
+        else:
+            self.progress_slider.setFixedHeight(20)  # half of parent height
         self.position_label.setFixedWidth(50)
         self.duration_label.setFixedWidth(50)
         self.position_label.setAlignment(Qt.AlignCenter)

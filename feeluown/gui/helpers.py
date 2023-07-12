@@ -48,6 +48,8 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
+IS_MACOS = sys.platform == 'darwin'
+
 
 def darker_or_lighter(color: QColor, factor):
     """
