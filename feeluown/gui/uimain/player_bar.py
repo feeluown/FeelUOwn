@@ -181,7 +181,6 @@ class PlayerControlPanel(QFrame):
         artwork_uid = metadata.get('uri', artwork)
         if artwork:
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
-            run_afn(self._app.ui.floating_box.show_cover, artwork, artwork_uid)
 
 
 class TopPanel(QFrame):

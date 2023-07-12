@@ -11,7 +11,6 @@ from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
-from feeluown.gui.uimain.floating_box import FloatingBox
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +40,6 @@ class Ui:
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.playlist_overlay = PlaylistOverlay(app, parent=app)
 
-        self.floating_box = FloatingBox(app=self._app, parent=self._app)
-
         # alias
         self.magicbox = self.bottom_panel.magicbox
         self.player_bar = self.pc_panel = self.top_panel.pc_panel
@@ -70,7 +67,6 @@ class Ui:
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 
-        # self._layout.addWidget(self.bottom_panel)
         self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.mpv_widget)
         self._layout.addWidget(self._message_line)
@@ -82,10 +78,6 @@ class Ui:
         self.top_panel.layout().setSpacing(0)
         self.top_panel.layout().setContentsMargins(0, 0, 0, 0)
 
-        self.floating_box.move(840, 440)
-        self.floating_box.raise_()
-        self.top_panel.hide()
-        self._top_separator.hide()
         self._app.resize(960, 600)
 
     def _open_settings_dialog(self):
