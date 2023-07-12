@@ -51,7 +51,12 @@ class CoverLabel(QLabel):
         if self._pixmap is None:
             return
 
-        painter = self.setup_painter_with_pixmap()
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        brush = QBrush(self._pixmap)
+        painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
         radius = self._radius
         size = self._pixmap.size()
         y = (size.height() - self.height()) // 2
@@ -62,15 +67,6 @@ class CoverLabel(QLabel):
         painter.drawRoundedRect(rect, radius, radius)
         painter.restore()
         painter.end()
-
-    def setup_painter_with_pixmap(self):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
-        brush = QBrush(self._pixmap)
-        painter.setBrush(brush)
-        painter.setPen(Qt.NoPen)
-        return painter
 
     def contextMenuEvent(self, e):
         if self._img is None:

@@ -10,9 +10,8 @@ class LineSongLabel(QLabel):
 
     default_text = '...'
 
-    def __init__(self, app, parent=None, color_role=QPalette.Text):
+    def __init__(self, app, parent=None):
         super().__init__(text=self.default_text, parent=parent)
-        self._color_role = color_role
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
         self._app = app
@@ -78,7 +77,7 @@ class LineSongLabel(QLabel):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setFont(QApplication.font())
-        painter.setPen(self.palette().color(self._color_role))
+        painter.setPen(self.palette().color(QPalette.Text))
 
         if self._timer.isActive():
             self._txt = self._raw_text
