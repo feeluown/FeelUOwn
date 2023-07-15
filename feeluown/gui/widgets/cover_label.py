@@ -25,7 +25,7 @@ class CoverLabel(QLabel):
         self.update()  # Schedule a repaint to refresh the UI ASAP.
 
     def show_img(self, img: QImage):
-        if not img:
+        if not img or img.isNull():
             self.drawer = None
             return
 

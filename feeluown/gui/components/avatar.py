@@ -15,14 +15,18 @@ if TYPE_CHECKING:
 
 
 class Avatar(SelfPaintAbstractSquareButton):
+    """
+    When no provider is selected, click this button will popup a menu,
+    and let user select a provider. When a provider is selected, click this
+    button will trigger `provider_ui_item.clicked`. If the provider has
+    a current user, this tries to show the user avatar.
+    """
 
     def __init__(self, app: 'GuiApp', *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._app = app
         self._provider_ui_item: Optional[ProviderUiItem] = None
-        self._current_user: Optional[UserModel] = None
-        self._pixmap = None
         self._avatar_drawer = None
         self._icon_drawer = AvatarIconDrawer(self.width(), self._padding)
         self.clicked.connect(self.on_clicked)
@@ -30,7 +34,7 @@ class Avatar(SelfPaintAbstractSquareButton):
 
     def on_clicked(self):
         if self._provider_ui_item is not None:
-            self.maybe_goto_current_provider()
+            self._provider_ui_item.clicked.emit()
         else:
             pos = self.cursor().pos()
             e = QContextMenuEvent(QContextMenuEvent.Mouse, pos, pos)
@@ -56,38 +60,27 @@ class Avatar(SelfPaintAbstractSquareButton):
     def on_provider_selected(self, provider: ProviderUiItem):
         self._provider_ui_item = provider
         self.setToolTip(provider.text + '\n\n' + provider.desc)
-        self.maybe_goto_current_provider()
-        run_afn(self.maybe_fetch_current_user)
+        self._provider_ui_item.clicked.emit()
+        run_afn(self.show_provider_current_user)
 
-    def maybe_goto_current_provider(self):
-        provider = self._provider_ui_item
-        provider.clicked.emit()
-        # HACK: If the provider does not update the current page,
-        # render the provider home page manually.
-        # old_page = self._app.browser.current_page
-        # new_page = self._app.browser.current_page
-        # if new_page == old_page:
-        #     self._app.browser.goto(page=f'/providers/{provider.name}')
-
-    async def maybe_fetch_current_user(self):
+    async def show_provider_current_user(self):
         self._avatar_drawer = None
         try:
-            self._current_user = await run_fn(
+            user = await run_fn(
                 self._app.library.provider_get_current_user,
                 self._provider_ui_item.name)
         except NoUserLoggedIn:
-            self._current_user = None
+            user = None
 
-        if self._current_user is not None:
-            self.setToolTip(f'{self._current_user.name} ({self._provider_ui_item.text})')
-            if self._current_user.avatar_url:
+        if user is not None:
+            self.setToolTip(f'{user.name} ({self._provider_ui_item.text})')
+            if user.avatar_url:
                 img_data = await run_afn(self._app.img_mgr.get,
-                                         self._current_user.avatar_url,
-                                         reverse(self._current_user))
+                                         user.avatar_url,
+                                         reverse(user))
                 if img_data:
                     self._avatar_drawer = PixmapDrawer.from_img_data(
-                        img_data, self, radius=0.5
-                    )
+                        img_data, self, radius=0.5)
 
     def paintEvent(self, _):
         painter = QPainter(self)
