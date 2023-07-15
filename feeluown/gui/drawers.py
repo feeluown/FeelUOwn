@@ -36,7 +36,8 @@ class PixmapDrawer:
     def maybe_update_pixmap(self):
         if self._widget.width() != self._widget_last_width:
             self._widget_last_width = self._widget.width()
-            new_img = self._img.scaledToWidth(self._widget_last_width, Qt.SmoothTransformation)
+            new_img = self._img.scaledToWidth(self._widget_last_width,
+                                              Qt.SmoothTransformation)
             self._pixmap = QPixmap(new_img)
 
     def draw(self, painter):

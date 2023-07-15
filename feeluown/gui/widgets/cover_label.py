@@ -50,7 +50,8 @@ class CoverLabel(QLabel):
             return
         menu = QMenu()
         action = menu.addAction('查看原图')
-        action.triggered.connect(lambda: open_image(self.drawer.get_img()))  # type: ignore
+        action.triggered.connect(
+            lambda: open_image(self.drawer.get_img()))  # type: ignore
         menu.exec(e.globalPos())
 
     def resizeEvent(self, e):
@@ -61,7 +62,8 @@ class CoverLabel(QLabel):
         super_size = super().sizeHint()
         if self.drawer is None:
             return super_size
-        h = (self.width() * self.drawer.get_pixmap().height()) // self.drawer.get_pixmap().width()
+        h = (self.width() * self.drawer.get_pixmap().height()) \
+            // self.drawer.get_pixmap().width()
         # cover label height hint can be as large as possible, since the
         # parent width has been set maximumHeigh
         w = self.width()

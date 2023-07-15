@@ -72,8 +72,9 @@ class Avatar(SelfPaintAbstractSquareButton):
     async def maybe_fetch_current_user(self):
         self._avatar_drawer = None
         try:
-            self._current_user = await run_fn(self._app.library.provider_get_current_user,
-                                              self._provider_ui_item.name)
+            self._current_user = await run_fn(
+                self._app.library.provider_get_current_user,
+                self._provider_ui_item.name)
         except NoUserLoggedIn:
             self._current_user = None
 
@@ -84,7 +85,9 @@ class Avatar(SelfPaintAbstractSquareButton):
                                          self._current_user.avatar_url,
                                          reverse(self._current_user))
                 if img_data:
-                    self._avatar_drawer = PixmapDrawer.from_img_data(img_data, self, radius=0.5)
+                    self._avatar_drawer = PixmapDrawer.from_img_data(
+                        img_data, self, radius=0.5
+                    )
 
     def paintEvent(self, _):
         painter = QPainter(self)
