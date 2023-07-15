@@ -3,7 +3,7 @@ from typing import Optional, TYPE_CHECKING
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
-from feeluown.library import UserModel, NoUserLoggedIn
+from feeluown.library import NoUserLoggedIn
 from feeluown.models.uri import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.widgets import SelfPaintAbstractSquareButton
