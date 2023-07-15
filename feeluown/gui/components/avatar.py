@@ -3,28 +3,38 @@ from typing import Optional, TYPE_CHECKING
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
-from feeluown.library import UserModel
+from feeluown.library import NoUserLoggedIn
+from feeluown.models.uri import reverse
+from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.widgets import SelfPaintAbstractSquareButton
 from feeluown.gui.uimodels.provider import ProviderUiItem
+from feeluown.gui.drawers import PixmapDrawer, AvatarIconDrawer
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 
 class Avatar(SelfPaintAbstractSquareButton):
+    """
+    When no provider is selected, click this button will popup a menu,
+    and let user select a provider. When a provider is selected, click this
+    button will trigger `provider_ui_item.clicked`. If the provider has
+    a current user, this tries to show the user avatar.
+    """
 
     def __init__(self, app: 'GuiApp', *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._app = app
         self._provider_ui_item: Optional[ProviderUiItem] = None
-        self._current_user: Optional[UserModel] = None
+        self._avatar_drawer = None
+        self._icon_drawer = AvatarIconDrawer(self.width(), self._padding)
         self.clicked.connect(self.on_clicked)
         self.setToolTip('点击登陆资源提供方')
 
     def on_clicked(self):
         if self._provider_ui_item is not None:
-            self.maybe_goto_current_provider()
+            self._provider_ui_item.clicked.emit()
         else:
             pos = self.cursor().pos()
             e = QContextMenuEvent(QContextMenuEvent.Mouse, pos, pos)
@@ -49,46 +59,41 @@ class Avatar(SelfPaintAbstractSquareButton):
 
     def on_provider_selected(self, provider: ProviderUiItem):
         self._provider_ui_item = provider
-        self.maybe_goto_current_provider()
-
-    def maybe_goto_current_provider(self):
-        provider = self._provider_ui_item
-        provider.clicked.emit()
         self.setToolTip(provider.text + '\n\n' + provider.desc)
-        # HACK: If the provider does not update the current page,
-        # render the provider home page manually.
-        # old_page = self._app.browser.current_page
-        # new_page = self._app.browser.current_page
-        # if new_page == old_page:
-        #     self._app.browser.goto(page=f'/providers/{provider.name}')
+        self._provider_ui_item.clicked.emit()
+        run_afn(self.show_provider_current_user)
+
+    async def show_provider_current_user(self):
+        self._avatar_drawer = None
+        try:
+            user = await run_fn(
+                self._app.library.provider_get_current_user,
+                self._provider_ui_item.name)
+        except NoUserLoggedIn:
+            user = None
+
+        if user is not None:
+            self.setToolTip(f'{user.name} ({self._provider_ui_item.text})')
+            if user.avatar_url:
+                img_data = await run_afn(self._app.img_mgr.get,
+                                         user.avatar_url,
+                                         reverse(user))
+                if img_data:
+                    self._avatar_drawer = PixmapDrawer.from_img_data(
+                        img_data, self, radius=0.5)
 
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         self.paint_round_bg_when_hover(painter)
 
-        has_avatar = False
-        if self._current_user is not None and self._current_user.avatar_url:
-            has_avatar = True
-            # Draw avatar.
-
-        if not has_avatar:
-            pen = painter.pen()
-            pen.setWidthF(1.5)
-            painter.setPen(pen)
-
+        if self._avatar_drawer:
+            self._avatar_drawer.draw(painter)
+        else:
             # If a provider is selected, draw a highlight circle.
             if self._provider_ui_item is not None:
-                painter.setPen(self.palette().color(QPalette.Highlight))
-
-            diameter = self.width() // 3
-            # Draw circle.
-            painter.drawEllipse(diameter, self._padding, diameter, diameter)
-            # Draw body.
-            x, y = self._padding, self.height() // 2
-            width, height = self.width() // 2, self.height() // 2
-            painter.drawArc(x, y, width, height, 0, 60*16)
-            painter.drawArc(x, y, width, height, 120*16, 60*16)
+                self._icon_drawer.fg_color = self.palette().color(QPalette.Highlight)
+            self._icon_drawer.draw(painter)
 
 
 if __name__ == '__main__':
