@@ -1,26 +1,33 @@
 import sys
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
-    QHBoxLayout
+    QHBoxLayout, QFormLayout, QDialog, QLineEdit, QDialogButtonBox, QMessageBox
 
-from feeluown.gui.widgets import RecentlyPlayedButton, HomeButton
+from feeluown.gui.widgets import (
+    RecentlyPlayedButton, HomeButton, PlusButton, TriagleButton,
+)
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.widgets.collections import CollectionsView
 from feeluown.gui.widgets.my_music import MyMusicView
-from feeluown.gui.widgets.textbtn import TextButton
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 
 class ListViewContainer(QFrame):
-    btn_text_hide = '△'
-    btn_text_show = '▼'
 
     def __init__(self, label, view, parent=None):
         super().__init__(parent)
 
+        self._btn_length = 14
         self._label = label
         self._view = view
-        self._toggle_btn = TextButton(self.btn_text_hide, self)
+        self._toggle_btn = TriagleButton(length=self._btn_length)
+        self.create_btn = PlusButton(length=self._btn_length)
+        # Show this button when needed.
+        self.create_btn.hide()
 
         self._toggle_btn.clicked.connect(self.toggle_view)
         self.setup_ui()
@@ -36,6 +43,8 @@ class ListViewContainer(QFrame):
         self._b_h_layout = QHBoxLayout()
         self._t_h_layout.addWidget(self._label)
         self._t_h_layout.addStretch(0)
+        self._t_h_layout.addWidget(self.create_btn)
+        self._t_h_layout.addSpacing(self._btn_length // 2)
         self._t_h_layout.addWidget(self._toggle_btn)
         self._b_h_layout.addWidget(self._view)
 
@@ -46,21 +55,15 @@ class ListViewContainer(QFrame):
 
     def toggle_view(self):
         if self._view.isVisible():
-            self.hide_view()
+            self._toggle_btn.set_direction('down')
+            self._view.hide()
         else:
-            self.show_view()
-
-    def show_view(self):
-        self._toggle_btn.setText(self.btn_text_hide)
-        self._view.show()
-
-    def hide_view(self):
-        self._toggle_btn.setText(self.btn_text_show)
-        self._view.hide()
+            self._toggle_btn.set_direction('up')
+            self._view.show()
 
 
 class LeftPanel(QScrollArea):
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -85,7 +88,7 @@ class LeftPanel(QScrollArea):
 
 class _LeftPanel(QFrame):
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -139,6 +142,7 @@ class _LeftPanel(QFrame):
         self.my_music_view.setFrameShape(QFrame.NoFrame)
         self.collections_view.setFrameShape(QFrame.NoFrame)
         self.setFrameShape(QFrame.NoFrame)
+        self.collections_con.create_btn.show()
         # 让各个音乐库来决定是否显示这些组件
         self.playlists_con.hide()
         self.my_music_con.hide()
@@ -149,11 +153,49 @@ class _LeftPanel(QFrame):
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
         self.collections_view.show_collection.connect(self.show_coll)
+        self.collections_view.remove_collection.connect(self.remove_coll)
+        self.collections_con.create_btn.clicked.connect(
+            self.popup_collection_adding_dialog)
+
+    def popup_collection_adding_dialog(self):
+        dialog = QDialog(self)
+        # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
+        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        layout = QFormLayout(dialog)
+        id_edit = QLineEdit(dialog)
+        title_edit = QLineEdit(dialog)
+        layout.addRow('ID', id_edit)
+        layout.addRow('标题', title_edit)
+        button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Save)
+        layout.addRow('', button_box)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+
+        def create_collection_and_reload():
+            identifier = id_edit.text()
+            title = title_edit.text()
+            print(identifier, title)
+            self._app.coll_mgr.create(identifier, title)
+            self._app.coll_uimgr.refresh()
+
+        dialog.accepted.connect(create_collection_and_reload)
+        dialog.open()
 
     def show_library(self):
         coll_library = self._app.coll_uimgr.get_coll_library()
         coll_id = self._app.coll_uimgr.get_coll_id(coll_library)
         self._app.browser.goto(page=f'/colls/{coll_id}')
+
+    def remove_coll(self, coll):
+        def do():
+            self._app.coll_uimgr.remove(coll)
+            self._app.coll_mgr.remove(coll)
+            self._app.coll_uimgr.refresh()
+
+        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除收藏集 '{coll.name}' 吗？",
+                          QMessageBox.Yes | QMessageBox.No, self)
+        box.accepted.connect(do)
+        box.open()
 
     def show_coll(self, coll):
         coll_id = self._app.coll_uimgr.get_coll_id(coll)

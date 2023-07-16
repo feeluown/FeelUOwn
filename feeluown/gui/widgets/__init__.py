@@ -3,4 +3,5 @@ from .login import CookiesLoginDialog  # noqa
 from .selfpaint_btn import (  # noqa
     SelfPaintAbstractSquareButton, RecentlyPlayedButton,
     HomeButton, LeftArrowButton, RightArrowButton, SearchButton, SettingsButton,
+    PlusButton, TriagleButton
 )

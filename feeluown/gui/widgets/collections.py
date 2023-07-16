@@ -1,8 +1,8 @@
 import logging
 from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QAbstractItemView
+from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
-from feeluown.collection import CollectionType
+from feeluown.collection import CollectionType, Collection
 from .textlist import TextlistModel, TextlistView
 
 
@@ -30,7 +30,11 @@ class CollectionsModel(TextlistModel):
 
 
 class CollectionsView(TextlistView):
+    """
+    Maybe make this a component instead of a widget.
+    """
     show_collection = pyqtSignal([object])
+    remove_collection = pyqtSignal([object])
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -40,6 +44,17 @@ class CollectionsView(TextlistView):
     def _on_clicked(self, index):
         collection = index.data(role=Qt.UserRole)
         self.show_collection.emit(collection)
+
+    def contextMenuEvent(self, event):
+        indexes = self.selectionModel().selectedIndexes()
+        if len(indexes) != 1:
+            return
+
+        collection: Collection = self.model().data(indexes[0], Qt.UserRole)
+        menu = QMenu()
+        action = menu.addAction('删除此收藏集')
+        action.triggered.connect(lambda: self.remove_collection.emit(collection))
+        menu.exec(event.globalPos())
 
     # dragEnterEvent -> dragMoveEvent -> dropEvent
     def dragEnterEvent(self, e):

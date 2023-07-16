@@ -138,3 +138,13 @@ def test_coll_mgr_generate_library_coll(app_mock, tmp_path):
     with library_coll_file.open() as f:
         content = f.read()
     assert album in content
+
+
+def test_collection_create_empty(tmp_path):
+    path = tmp_path / 'test.fuo'
+    Collection.create_empty(path, "Hello World")
+
+    coll = Collection(path)
+    coll.load()
+    assert coll.models == []
+    assert coll.name == 'Hello World'

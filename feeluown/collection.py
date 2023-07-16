@@ -100,6 +100,19 @@ class Collection:
                         self._has_nonexistent_models = True
                     self.models.append(model)
 
+    @classmethod
+    def create_empty(cls, fpath, title=''):
+        """Create an empty collection."""
+        doc = tomlkit.document()
+        if title:
+            doc.add('title', title)
+        doc.add('created', datetime.now())
+        doc.add('updated', datetime.now())
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write(TOML_DELIMLF)
+            f.write(tomlkit.dumps(doc))
+            f.write(TOML_DELIMLF)
+
     def add(self, model):
         """add model to collection
 
@@ -184,21 +197,45 @@ class CollectionManager:
         self._library = app.library
         self.default_dir = COLLECTIONS_DIR
 
-    def scan(self):
-        """Scan collections directories for valid fuo files, yield
-        Collection instance for each file.
-        """
-        default_fpaths = []
+    def create(self, fname, title) -> Collection:
+        first_valid_dir = ''
+        for d, exists in self._get_dirs():
+            if exists:
+                first_valid_dir = d
+                break
+
+        assert first_valid_dir, 'there must be a valid collection dir'
+        normalized_name = fname.replace(' ', '_')
+        fpath = os.path.join(first_valid_dir, normalized_name)
+        filepath = f'{fpath}.fuo'
+        logger.info(f'Create collection:{title} at {filepath}')
+        return Collection.create_empty(filepath, title)
+
+    def remove(self, collection: Collection):
+        os.remove(collection.fpath)
+
+    def _get_dirs(self, ):
         directorys = [self.default_dir]
         if self._app.config.COLLECTIONS_DIR:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
                 directorys += self._app.config.COLLECTIONS_DIR
             else:
                 directorys.append(self._app.config.COLLECTIONS_DIR)
+        expanded_dirs = []
         for directory in directorys:
             directory = os.path.expanduser(directory)
-            if not os.path.exists(directory):
-                logger.warning(f'Collection Dir:{directory} does not exist.')
+            expanded_dirs.append((directory, os.path.exists(directory)))
+        return expanded_dirs
+
+    def scan(self):
+        """Scan collections directories for valid fuo files, yield
+        Collection instance for each file.
+        """
+        default_fpaths = []
+        valid_dirs = self._get_dirs()
+        for directory, exists in valid_dirs:
+            if not exists:
+                logger.warning('Collection directory %s does not exist', directory)
                 continue
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):

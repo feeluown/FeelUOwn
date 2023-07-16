@@ -40,6 +40,12 @@ class CollectionUiManager:
         self._id_coll_mapping[coll_id] = collection
         self.model.add(collection)
 
+    def remove(self, collection):
+        coll_id = self.get_coll_id(collection)
+        if coll_id in self._id_coll_mapping:
+            self._id_coll_mapping.pop(coll_id)
+            self.model.remove(collection)
+
     def clear(self):
         self._id_coll_mapping.clear()
         self.model.clear()
