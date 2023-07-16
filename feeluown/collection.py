@@ -23,6 +23,10 @@ DEPRECATED_FUO_FILENAMES = (
 TOML_DELIMLF = "+++\n"
 
 
+class CollectionAlreadyExists(Exception):
+    pass
+
+
 class CollectionType(Enum):
     sys_library = 16
 
@@ -103,6 +107,9 @@ class Collection:
     @classmethod
     def create_empty(cls, fpath, title=''):
         """Create an empty collection."""
+        if os.path.exists(fpath):
+            raise CollectionAlreadyExists()
+
         doc = tomlkit.document()
         if title:
             doc.add('title', title)

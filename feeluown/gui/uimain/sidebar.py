@@ -5,6 +5,7 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout, QFormLayout, QDialog, QLineEdit, QDialogButtonBox, QMessageBox
 
+from feeluown.collection import CollectionAlreadyExists
 from feeluown.gui.widgets import (
     RecentlyPlayedButton, HomeButton, PlusButton, TriagleButton,
 )
@@ -172,11 +173,14 @@ class _LeftPanel(QFrame):
         button_box.rejected.connect(dialog.reject)
 
         def create_collection_and_reload():
-            identifier = id_edit.text()
+            fname = id_edit.text()
             title = title_edit.text()
-            print(identifier, title)
-            self._app.coll_mgr.create(identifier, title)
-            self._app.coll_uimgr.refresh()
+            try:
+                self._app.coll_mgr.create(fname, title)
+            except CollectionAlreadyExists:
+                QMessageBox.warning(self, '警告', f"收藏集 '{fname}' 已存在")
+            else:
+                self._app.coll_uimgr.refresh()
 
         dialog.accepted.connect(create_collection_and_reload)
         dialog.open()
