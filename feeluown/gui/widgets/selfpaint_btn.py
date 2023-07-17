@@ -2,6 +2,7 @@ from PyQt5.QtCore import QPoint, Qt, QRect, QRectF
 from PyQt5.QtWidgets import QPushButton, QStyle, QStyleOptionButton
 from PyQt5.QtGui import QPainter, QPalette
 
+from feeluown.gui.drawers import HomeIconDrawer, PlusIconDrawer, TriangleIconDrawer
 from feeluown.gui.helpers import darker_or_lighter
 
 
@@ -168,6 +169,36 @@ class SettingsButton(SelfPaintAbstractSquareButton):
         painter.drawPoint(QPoint(x, int(self.width() * 0.7)))
 
 
+class PlusButton(SelfPaintAbstractSquareButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.drawer = PlusIconDrawer(self.width(), self._padding)
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self.drawer.draw(painter)
+
+
+class TriagleButton(SelfPaintAbstractSquareButton):
+    def __init__(self, direction='up', *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.drawer = TriangleIconDrawer(self.width(),
+                                         self._padding,
+                                         direction=direction)
+
+    def set_direction(self, direction):
+        self.drawer.set_direction(direction)
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self.drawer.draw(painter)
+
+
 class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
     def __init__(self, *args, **kwargs):
         super().__init__('最近播放', *args, **kwargs)
@@ -194,40 +225,10 @@ class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
         painter.drawPoint(QPoint(self._padding, center))
 
 
-class HomeIcon:
-    def __init__(self, length, padding):
-        icon_length = length
-        diff = 1  # root/body width diff
-        h_padding = v_padding = padding
-
-        body_left_x = h_padding + diff*2
-        body_right_x = icon_length - h_padding - diff*2
-        body_top_x = icon_length // 2
-
-        self._roof = QPoint(icon_length // 2, v_padding)
-        self._root_left = QPoint(h_padding, icon_length // 2 + diff)
-        self._root_right = QPoint(icon_length - h_padding, icon_length // 2 + diff)
-
-        self._body_bottom_left = QPoint(body_left_x, icon_length - v_padding)
-        self._body_bottom_right = QPoint(body_right_x, icon_length - v_padding)
-        self._body_top_left = QPoint(body_left_x, body_top_x)
-        self._body_top_right = QPoint(body_right_x, body_top_x)
-
-    def paint(self, painter):
-        pen = painter.pen()
-        pen.setWidthF(1.5)
-        painter.setPen(pen)
-        painter.drawLine(self._roof, self._root_left)
-        painter.drawLine(self._roof, self._root_right)
-        painter.drawLine(self._body_bottom_left, self._body_bottom_right)
-        painter.drawLine(self._body_top_left, self._body_bottom_left)
-        painter.drawLine(self._body_top_right, self._body_bottom_right)
-
-
 class HomeButton(SelfPaintAbstractIconTextButton):
     def __init__(self, *args, **kwargs):
         super().__init__('主页', *args, **kwargs)
-        self.home_icon = HomeIcon(self.height(), self._padding)
+        self.home_icon = HomeIconDrawer(self.height(), self._padding)
 
     def draw_icon(self, painter):
         self.home_icon.paint(painter)
@@ -247,3 +248,5 @@ if __name__ == '__main__':
         layout.addWidget(SettingsButton(length=length))
         layout.addWidget(RecentlyPlayedButton(height=length))
         layout.addWidget(HomeButton(height=length))
+
+        layout.addWidget(TriagleButton(length=length, direction='up'))

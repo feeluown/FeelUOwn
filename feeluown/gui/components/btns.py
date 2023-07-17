@@ -92,7 +92,7 @@ class LikeButton(QPushButton):
 
     def toggle_liked(self):
         song = self._app.playlist.current_song
-        coll_library = self._app.coll_uimgr.get_coll_library()
+        coll_library = self._app.coll_mgr.get_coll_library()
         if self.is_song_liked(song):
             coll_library.remove(song)
             self._app.show_msg('歌曲已经从“本地收藏”中移除')
@@ -108,7 +108,7 @@ class LikeButton(QPushButton):
             self.setToolTip('从“本地收藏”中移除')
 
     def is_song_liked(self, song):
-        coll_library = self._app.coll_uimgr.get_coll_library()
+        coll_library = self._app.coll_mgr.get_coll_library()
         return song in coll_library.models
 
 
