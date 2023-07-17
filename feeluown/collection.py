@@ -1,15 +1,19 @@
+import base64
 import itertools
 import logging
 import os
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Dict, Iterable, List
 
 import tomlkit
 
+from feeluown.consts import COLLECTIONS_DIR
+from feeluown.utils.dispatch import Signal
 from feeluown.models.uri import resolve, reverse, ResolverNotFound, \
     ResolveFailed, ModelExistence
-from feeluown.consts import COLLECTIONS_DIR
+from feeluown.utils.utils import elfhash
 
 logger = logging.getLogger(__name__)
 
@@ -38,11 +42,14 @@ class Collection:
     def __init__(self, fpath):
         # TODO: 以后考虑添加 identifier 字段，identifier
         # 字段应该尽量设计成可以跨电脑使用
-        self.fpath = fpath
+        self.fpath = str(fpath)
+        # TODO: 目前还没想好 collection identifier 计算方法，故添加这个函数
+        # 现在把 fpath 当作 identifier 使用，但对外透明
+        self.identifier = elfhash(base64.b64encode(bytes(self.fpath, 'utf-8')))
 
         # these variables should be inited during loading
         self.type = None
-        self.name = None
+        self.name = None  # Collection title.
         self.models = []
         self.updated_at = None
         self.created_at = None
@@ -199,10 +206,23 @@ class Collection:
 
 
 class CollectionManager:
+
     def __init__(self, app):
         self._app = app
+        self.scan_finished = Signal()
         self._library = app.library
         self.default_dir = COLLECTIONS_DIR
+
+        self._id_coll_mapping: Dict[str, Collection] = {}
+
+    def get(self, identifier):
+        return self._id_coll_mapping.get(int(identifier), None)
+
+    def get_coll_library(self):
+        for coll in self._id_coll_mapping.values():
+            if coll.type == CollectionType.sys_library:
+                return coll
+        assert False, "collection 'library' must exists."
 
     def create(self, fname, title) -> Collection:
         first_valid_dir = ''
@@ -219,7 +239,10 @@ class CollectionManager:
         return Collection.create_empty(filepath, title)
 
     def remove(self, collection: Collection):
-        os.remove(collection.fpath)
+        coll_id = collection.identifier
+        if coll_id in self._id_coll_mapping:
+            self._id_coll_mapping.pop(coll_id)
+            os.remove(collection.fpath)
 
     def _get_dirs(self, ):
         directorys = [self.default_dir]
@@ -235,6 +258,31 @@ class CollectionManager:
         return expanded_dirs
 
     def scan(self):
+        colls: List[Collection] = []
+        library_coll = None
+        for coll in self._scan():
+            if coll.type == CollectionType.sys_library:
+                library_coll = coll
+                continue
+            colls.append(coll)
+        colls.insert(0, library_coll)
+        for collection in colls:
+            coll_id = collection.identifier
+            assert coll_id not in self._id_coll_mapping, collection.fpath
+            self._id_coll_mapping[coll_id] = collection
+        self.scan_finished.emit()
+
+    def refresh(self):
+        self.clear()
+        self.scan()
+
+    def listall(self):
+        return self._id_coll_mapping.values()
+
+    def clear(self):
+        self._id_coll_mapping.clear()
+
+    def _scan(self) -> Iterable[Collection]:
         """Scan collections directories for valid fuo files, yield
         Collection instance for each file.
         """

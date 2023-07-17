@@ -171,7 +171,7 @@ class Browser:
     # --------------
 
     def _render_coll(self, _, identifier):
-        coll = self._app.coll_uimgr.get(int(identifier))
+        coll = self._app.coll_mgr.get(identifier)
         self._app.ui.right_panel.show_collection(coll)
 
     def on_history_changed(self):

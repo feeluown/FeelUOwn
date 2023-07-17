@@ -5,11 +5,11 @@ from unittest.mock import AsyncMock
 import pytest
 
 from feeluown.argparser import create_cli_parser
+from feeluown.collection import CollectionManager
 from feeluown.entry_points.run_app import run_app, before_start_app, start_app
 from feeluown.app import App, AppMode, get_app
 from feeluown.app.cli_app import CliApp
 from feeluown.plugin import PluginsManager
-from feeluown.gui.uimodels.collection import CollectionUiManager
 
 
 @pytest.fixture
@@ -32,8 +32,8 @@ def noharm(mocker):
     mocker.patch('feeluown.entry_points.run_app.ensure_dirs')
     mocker.patch.object(App, 'dump_state')
     mocker.patch.object(PluginsManager, 'enable_plugins')
-    # CollectionUiManager write library.fuo file during initialization.
-    mocker.patch.object(CollectionUiManager, 'initialize')
+    # CollectionManager write library.fuo file during scaning.
+    mocker.patch.object(CollectionManager, 'scan')
 
 
 @pytest.fixture

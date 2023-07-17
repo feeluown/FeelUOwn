@@ -1,45 +1,38 @@
 import logging
+from typing import TYPE_CHECKING
+
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QAbstractItemView, QMenu
 
 from feeluown.collection import CollectionType, Collection
-from .textlist import TextlistModel, TextlistView
+from feeluown.gui.widgets.textlist import TextlistModel, TextlistView
 
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
 
 
-class CollectionsModel(TextlistModel):
-    def flags(self, index):
-        if not index.isValid():
-            return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDropEnabled
-        return flags
-
-    def data(self, index, role=Qt.DisplayRole):
-        row = index.row()
-        item = self._items[row]
-        if role == Qt.DisplayRole:
-            icon = '◎  '
-            if item.type == CollectionType.sys_library:
-                icon = '◉  '
-            return icon + item.name
-        if role == Qt.ToolTipRole:
-            return item.fpath
-        return super().data(index, role)
-
-
-class CollectionsView(TextlistView):
+class CollectionListView(TextlistView):
     """
     Maybe make this a component instead of a widget.
     """
     show_collection = pyqtSignal([object])
     remove_collection = pyqtSignal([object])
 
-    def __init__(self, parent):
-        super().__init__(parent)
+    def __init__(self, app: 'GuiApp', **kwargs):
+        super().__init__(**kwargs)
+        self._app = app
         self.setDragDropMode(QAbstractItemView.DropOnly)
+        self.setModel(CollectionListModel(self))
+
         self.clicked.connect(self._on_clicked)
+        self._app.coll_mgr.scan_finished.connect(self.on_scan_finished)
+
+    def on_scan_finished(self):
+        self.model().clear()
+        for coll in self._app.coll_mgr.listall():
+            self.model().add(coll)
 
     def _on_clicked(self, index):
         collection = index.data(role=Qt.UserRole)
@@ -93,3 +86,23 @@ class CollectionsView(TextlistView):
         self.viewport().update()
         self._result_timer.start(2000)
         e.accept()
+
+
+class CollectionListModel(TextlistModel):
+    def flags(self, index):
+        if not index.isValid():
+            return 0
+        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDropEnabled
+        return flags
+
+    def data(self, index, role=Qt.DisplayRole):
+        row = index.row()
+        item = self._items[row]
+        if role == Qt.DisplayRole:
+            icon = '◎  '
+            if item.type == CollectionType.sys_library:
+                icon = '◉  '
+            return icon + item.name
+        if role == Qt.ToolTipRole:
+            return item.fpath
+        return super().data(index, role)

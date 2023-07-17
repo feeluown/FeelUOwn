@@ -1,9 +1,10 @@
-from feeluown.app.gui_app import GuiApp
+from feeluown.app.gui_app import GuiApp, CollectionManager
 
 
 def test_gui_app_initialize(qtbot, mocker, args, config, noharm):
     # TaskManager must be initialized with asyncio.
     mocker.patch('feeluown.app.app.TaskManager')
+    mocker.patch.object(CollectionManager, 'scan')
     app = GuiApp(args, config)
     qtbot.addWidget(app)
 

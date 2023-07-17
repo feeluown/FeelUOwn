@@ -16,7 +16,6 @@ from feeluown.gui.tray import Tray
 from feeluown.gui.uimodels.provider import ProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
-from feeluown.gui.uimodels.collection import CollectionUiManager
 
 from feeluown.collection import CollectionManager
 
@@ -76,7 +75,6 @@ class GuiApp(App, QWidget):
         self.pvd_uimgr = ProviderUiManager(self)
         self.pl_uimgr = PlaylistUiManager(self)
         self.mymusic_uimgr = MyMusicUiManager(self)
-        self.coll_uimgr = CollectionUiManager(self)
 
         self.browser = Browser(self)
         self.ui = Ui(self)
@@ -92,7 +90,7 @@ class GuiApp(App, QWidget):
         if self.config.ENABLE_TRAY:
             self.tray.initialize()
             self.tray.show()
-        self.coll_uimgr.initialize()
+        self.coll_mgr.scan()
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
@@ -103,9 +101,8 @@ class GuiApp(App, QWidget):
 
     def apply_state(self, state):
         super().apply_state(state)
-        coll_library = self.coll_uimgr.get_coll_library()
-        coll_id = self.coll_uimgr.get_coll_id(coll_library)
-        self.browser.goto(page=f'/colls/{coll_id}')
+        coll_library = self.coll_mgr.get_coll_library()
+        self.browser.goto(page=f'/colls/{coll_library.identifier}')
 
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})

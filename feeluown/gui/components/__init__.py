@@ -9,3 +9,4 @@ from .line_song import LineSongLabel  # noqa
 from .playlist_btn import PlaylistButton  # noqa
 from .volume_slider import *  # noqa
 from .song_tag import SongSourceTag  # noqa
+from .collections import CollectionListView  # noqa

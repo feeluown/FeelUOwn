@@ -3,7 +3,7 @@ import pytest
 from feeluown.argparser import create_cli_parser
 from feeluown.app import create_config
 from feeluown.plugin import PluginsManager
-from feeluown.gui.uimodels.collection import CollectionUiManager
+from feeluown.collection import CollectionManager
 from feeluown.utils.dispatch import Signal
 
 
@@ -40,5 +40,4 @@ def config():
 def noharm(mocker):
     mocker.patch('feeluown.app.app.Player')
     mocker.patch.object(PluginsManager, 'enable_plugins')
-    # CollectionUiManager write library.fuo file during initialization.
-    mocker.patch.object(CollectionUiManager, 'initialize')
+    mocker.patch.object(CollectionManager, 'scan')

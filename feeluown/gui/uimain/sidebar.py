@@ -10,7 +10,7 @@ from feeluown.gui.widgets import (
     RecentlyPlayedButton, HomeButton, PlusButton, TriagleButton,
 )
 from feeluown.gui.widgets.playlists import PlaylistsView
-from feeluown.gui.widgets.collections import CollectionsView
+from feeluown.gui.components import CollectionListView
 from feeluown.gui.widgets.my_music import MyMusicView
 
 if TYPE_CHECKING:
@@ -108,7 +108,7 @@ class _LeftPanel(QFrame):
 
         self.playlists_view = PlaylistsView(self)
         self.my_music_view = MyMusicView(self)
-        self.collections_view = CollectionsView(self)
+        self.collections_view = CollectionListView(self._app)
 
         self.collections_con = ListViewContainer(
             self.collections_header, self.collections_view)
@@ -119,7 +119,6 @@ class _LeftPanel(QFrame):
 
         self.playlists_view.setModel(self._app.pl_uimgr.model)
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)
-        self.collections_view.setModel(self._app.coll_uimgr.model)
 
         self._layout = QVBoxLayout(self)
         self._sub_layout = QVBoxLayout()
@@ -153,7 +152,8 @@ class _LeftPanel(QFrame):
             lambda: self._app.browser.goto(page='/recently_played'))
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
-        self.collections_view.show_collection.connect(self.show_coll)
+        self.collections_view.show_collection.connect(
+            lambda coll: self._app.browser.goto(page=f'/colls/{coll.identifier}'))
         self.collections_view.remove_collection.connect(self.remove_coll)
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
@@ -180,27 +180,21 @@ class _LeftPanel(QFrame):
             except CollectionAlreadyExists:
                 QMessageBox.warning(self, '警告', f"收藏集 '{fname}' 已存在")
             else:
-                self._app.coll_uimgr.refresh()
+                self._app.coll_mgr.refresh()
 
         dialog.accepted.connect(create_collection_and_reload)
         dialog.open()
 
     def show_library(self):
-        coll_library = self._app.coll_uimgr.get_coll_library()
-        coll_id = self._app.coll_uimgr.get_coll_id(coll_library)
-        self._app.browser.goto(page=f'/colls/{coll_id}')
+        coll_library = self._app.coll_mgr.get_coll_library()
+        self._app.browser.goto(page=f'/colls/{coll_library.identifier}')
 
     def remove_coll(self, coll):
         def do():
-            self._app.coll_uimgr.remove(coll)
             self._app.coll_mgr.remove(coll)
-            self._app.coll_uimgr.refresh()
+            self._app.coll_mgr.refresh()
 
         box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除收藏集 '{coll.name}' 吗？",
                           QMessageBox.Yes | QMessageBox.No, self)
         box.accepted.connect(do)
         box.open()
-
-    def show_coll(self, coll):
-        coll_id = self._app.coll_uimgr.get_coll_id(coll)
-        self._app.browser.goto(page='/colls/{}'.format(coll_id))
