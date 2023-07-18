@@ -37,9 +37,12 @@ class ModelSerializerMixin:
                 fields = [field for field in model.__fields__
                           if field not in BaseModel.__fields__]
                 # Include properties.
+                pydantic_fields = ("__values__", "fields", "__fields_set__",
+                                   "model_computed_fields", "model_extra",
+                                   "model_fields_set")
                 fields += [prop for prop in dir(modelcls)
                            if isinstance(getattr(modelcls, prop), property)
-                           and prop not in ("__values__", "fields")]
+                           and prop not in pydantic_fields]
             else:
                 fields = model.meta.fields_display
         else:
