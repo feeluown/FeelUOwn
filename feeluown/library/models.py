@@ -54,7 +54,7 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 import time
 from typing import List, Optional, Tuple, Any, Union
 
-from pydantic import BaseModel as _BaseModel, PrivateAttr
+from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr, field_validator
 
 from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
 from feeluown.models import SearchType  # noqa
@@ -117,16 +117,15 @@ class ModelMeta:
 
 
 class BaseModel(_BaseModel):
-    class Config:
-        # Do not use Model.from_orm to convert v1 model to v2 model
-        # since v1 model has too much magic.
-        orm_mode = False
-        # Forbidding extra fields is good for debugging. The default behavior
-        # is a little implicit. If you want to store an extra attribute on model,
-        # use :meth:`cache_set` explicitly.
-        extra = 'forbid'
+    # Do not use Model.from_orm to convert v1 model to v2 model
+    # since v1 model has too much magic.
+    #
+    # Forbidding extra fields is good for debugging. The default behavior
+    # is a little implicit. If you want to store an extra attribute on model,
+    # use :meth:`cache_set` explicitly.
+    model_config = ConfigDict(from_attributes=False, extra='forbid')
 
-    __cache__: dict = PrivateAttr(default_factory=dict)
+    _cache: dict = PrivateAttr(default_factory=dict)
     meta: Any = ModelMeta.create()
 
     identifier: str
@@ -137,9 +136,18 @@ class BaseModel(_BaseModel):
     #: (DEPRECATED) for backward compact
     exists: ModelExistence = ModelExistence.unknown
 
+    @field_validator('identifier', mode='before')
+    def int_to_str(cls, v):
+        # Old version pydantic convert int to str implicitly.
+        # Many plugins(such as netease) use int as indentifier during initialization.
+        # To keep backward compatibility, convert int to str here.
+        if isinstance(v, int):
+            return str(v)
+        return v
+
     def cache_get(self, key) -> Tuple[Any, bool]:
-        if key in self.__cache__:
-            value, expired_at = self.__cache__[key]
+        if key in self._cache:
+            value, expired_at = self._cache[key]
             if expired_at is None or expired_at >= int(time.time()):
                 return value, True
         return None, False
@@ -152,7 +160,7 @@ class BaseModel(_BaseModel):
             expired_at = None
         else:
             expired_at = int(time.time()) + ttl
-        self.__cache__[key] = (value, expired_at)
+        self._cache[key] = (value, expired_at)
 
     """
     Implement __hash__ and __eq__ so that a model can be a dict key.
@@ -172,7 +180,7 @@ class BaseModel(_BaseModel):
 
     def __getattr__(self, attr):
         try:
-            return super().__getattribute__(attr)
+            return super().__getattr__(attr)
         except AttributeError:
             if attr.endswith('_display'):
                 return getattr(self, attr[:-8])
@@ -273,7 +281,7 @@ class SongModel(BaseNormalModel):
     """
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
-    album: Optional[BriefAlbumModel]
+    album: Optional[BriefAlbumModel] = None
     artists: List[BriefArtistModel]
     duration: int  # milliseconds
 
@@ -327,9 +335,9 @@ class CommentModel(BaseNormalModel):
     #: unix timestamp, for example 1591695620
     time: int
     #: the parent comment which this comment replies to
-    parent: Optional[BriefCommentModel]
+    parent: Optional[BriefCommentModel] = None
     #: the root comment id
-    root_comment_id: Optional[str]
+    root_comment_id: Optional[str] = None
 
 
 class ArtistModel(BaseNormalModel):
@@ -402,7 +410,7 @@ class VideoModel(BaseNormalModel):
 class PlaylistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_normal=True)
     # Since modelv1 playlist does not have creator field, it is set to optional.
-    creator: Optional[BriefUserModel]
+    creator: Optional[BriefUserModel] = None
     name: str
     cover: str
     description: str

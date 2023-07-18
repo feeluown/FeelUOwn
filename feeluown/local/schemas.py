@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
-from pydantic import BaseModel, Field, Extra
+from pydantic import ConfigDict, BaseModel, Field
 
 
 DEFAULT_TITLE = DEFAULT_ARTIST_NAME = DEFAULT_ALBUM_NAME = 'Unknown'
 
 
 class Common(BaseModel):
-    class Config:
-        allow_population_by_field_name = True
-        extra = Extra.ignore
+    model_config = ConfigDict(populate_by_name=True, extra="ignore")
 
     duration: float
     title: str = DEFAULT_TITLE
