@@ -75,6 +75,7 @@ def gen_for_win_linux():
     DESKTOP_FILE = 'feeluown.desktop'
     from_icon = ICONS_DIR / 'feeluown.png'
     to_icon = pathlib.Path.home() / '.FeelUOwn' / 'feeluown.png'
+    to_icon.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(from_icon, to_icon)
 
     icon_string = win_linux_icon.format(feeluown_icon=to_icon)
