@@ -29,13 +29,13 @@ class BaseModel(Model):
         model_type = ModelType.dummy.value
 
         #: declare model fields, each model must have an identifier field
-        fields = ['identifier', '__cache__']
+        fields = ['identifier', '_cache']
 
         #: Model 用来展示的字段
         fields_display = []
 
         #: 不触发 get 的 Model 字段，这些字段往往 get 是获取不到的
-        fields_no_get = ['identifier', '__cache__']
+        fields_no_get = ['identifier', '_cache']
 
     def __eq__(self, other):
         if not isinstance(other, BaseModel):
@@ -54,8 +54,8 @@ class BaseModel(Model):
 
     def cache_get(self, key):
         self._init_cache()
-        if key in self.__cache__:
-            value, expired_at = self.__cache__[key]
+        if key in self._cache:
+            value, expired_at = self._cache[key]
             if expired_at is None or expired_at >= int(time.time()):
                 return value, True
         return None, False
@@ -69,12 +69,12 @@ class BaseModel(Model):
             expired_at = None
         else:
             expired_at = int(time.time()) + ttl
-        self.__cache__[key] = (value, expired_at)
+        self._cache[key] = (value, expired_at)
 
     def _init_cache(self):
         # not thread safe
-        if self.__cache__ is None:
-            self.__cache__ = {}
+        if self._cache is None:
+            self._cache = {}
 
 
 class ArtistModel(BaseModel):

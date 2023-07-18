@@ -126,7 +126,7 @@ class BaseModel(_BaseModel):
         # use :meth:`cache_set` explicitly.
         extra = 'forbid'
 
-    __cache__: dict = PrivateAttr(default_factory=dict)
+    _cache: dict = PrivateAttr(default_factory=dict)
     meta: Any = ModelMeta.create()
 
     identifier: str
@@ -138,8 +138,8 @@ class BaseModel(_BaseModel):
     exists: ModelExistence = ModelExistence.unknown
 
     def cache_get(self, key) -> Tuple[Any, bool]:
-        if key in self.__cache__:
-            value, expired_at = self.__cache__[key]
+        if key in self._cache:
+            value, expired_at = self._cache[key]
             if expired_at is None or expired_at >= int(time.time()):
                 return value, True
         return None, False
@@ -152,7 +152,7 @@ class BaseModel(_BaseModel):
             expired_at = None
         else:
             expired_at = int(time.time()) + ttl
-        self.__cache__[key] = (value, expired_at)
+        self._cache[key] = (value, expired_at)
 
     """
     Implement __hash__ and __eq__ so that a model can be a dict key.
