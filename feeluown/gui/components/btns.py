@@ -6,7 +6,7 @@ from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout
 from feeluown.app import App
 from feeluown.player import State
 from feeluown.excs import ProviderIOError
-from feeluown.utils import aio
+from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.helpers import resize_font
 
@@ -112,32 +112,34 @@ class LikeButton(QPushButton):
         return song in coll_library.models
 
 
-class MVButton(TextButton):
-    def __init__(self, app: App, parent=None, height=None, **kwargs):
-        super().__init__('MV', parent=parent)
-
+class SongMVTextButton(TextButton):
+    def __init__(self, app: App, song=None, text='MV', **kwargs):
+        super().__init__(text, **kwargs)
         self._app = app
-        self.setObjectName('mv_btn')
-        self.setToolTip('播放 MV')
-        if height:
-            self.setFixedHeight(height)
+        self._song = None
+        self._mv = None
 
-        self._app.playlist.song_changed.connect(self.on_player_song_changed,
-                                                aioqueue=True)
+        self.bind_song(song)
+        self.clicked.connect(self.on_clicked)
 
-    def on_player_song_changed(self, song):
-        task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
-        task_spec.bind_coro(self.update_mv_btn_status(song))
+    def on_clicked(self):
+        if self._mv is not None:
+            self._app.playlist.play_model(self._mv)
 
-    async def update_mv_btn_status(self, song):
-        if song is None:
-            self.setEnabled(False)
-            return
+    def bind_song(self, song):
+        if song != self._song:
+            self._song = song
+            self._mv = None
+
+    async def get_mv(self):
+        if self._song is None:
+            return None
 
         try:
-            mv = await aio.run_fn(self._app.library.song_get_mv, song)
+            mv = await run_fn(self._app.library.song_get_mv, self._song)
         except ProviderIOError:
-            logger.exception('fetch song mv info failed')
+            logger.exception('get song mv info failed')
+            mv = None
             self.setEnabled(False)
         else:
             if mv is None:
@@ -145,6 +147,25 @@ class MVButton(TextButton):
             else:
                 self.setToolTip(mv.title)
                 self.setEnabled(True)
+        self._mv = mv
+        return self._mv
+
+
+class MVButton(SongMVTextButton):
+    def __init__(self, app: App, parent=None, **kwargs):
+        super().__init__(app, song=None, parent=parent, **kwargs)
+
+        self.setObjectName('mv_btn')
+        self._app.playlist.song_changed.connect(
+            self.on_player_song_changed, aioqueue=True)
+
+    def on_player_song_changed(self, song):
+        task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
+        task_spec.bind_coro(self.update_mv_btn_status(song))
+
+    async def update_mv_btn_status(self, song):
+        self.bind_song(song)
+        await self.get_mv()
 
 
 class MediaButtons(QWidget):
