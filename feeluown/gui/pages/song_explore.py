@@ -16,7 +16,9 @@ from feeluown.library import (
 from feeluown.player import Lyric
 from feeluown.models.uri import reverse, resolve
 from feeluown.utils import aio
+from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader
+from feeluown.gui.components import SongMVTextButton
 from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, resize_font
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.textbtn import TextButton
@@ -85,14 +87,15 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     if upgraded_album is not None:
         album = upgraded_album
 
-    await view.show_song_wiki(song, album)
-    await view.maybe_show_song_similar(provider, song)
+    run_afn(view.show_song_wiki, song, album)
+    run_afn(view.maybe_show_song_pic, upgraded_song, upgraded_album)
+    run_afn(view.maybe_show_song_similar, provider, song)
+    run_afn(view.maybe_show_mv_btn, song)
+    run_afn(view.maybe_show_song_lyric, song)
     try:
         await view.maybe_show_song_hot_comments(provider, song)
     except:  # noqa
         logger.exception('show song hot comments failed')
-    await view.maybe_show_song_lyric(song)
-    await view.maybe_show_song_pic(upgraded_song, upgraded_album)
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
@@ -195,6 +198,7 @@ class SongExploreView(QWidget):
         self.comments_header = MidHeader('热门评论')
         self.lyric_view = LyricView(parent=self)
         self.play_btn = TextButton('播放')
+        self.play_mv_btn = SongMVTextButton(self._app)
         self.copy_web_url_btn = TextButton('复制网页地址')
         self.cover_label = CoverLabelV2(app=app)
         self.song_wiki_label = SongWikiLabel(app)
@@ -232,6 +236,7 @@ class SongExploreView(QWidget):
         self._left_top_layout = QHBoxLayout()
         self._song_meta_layout = QVBoxLayout()
         self._btns_layout = QHBoxLayout()
+        self._btns_layout.setSpacing(6)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(10, 20, 10, 0)
@@ -259,7 +264,7 @@ class SongExploreView(QWidget):
         self._song_meta_layout.addLayout(self._btns_layout)
 
         self._btns_layout.addWidget(self.play_btn)
-        self._btns_layout.addSpacing(6)
+        self._btns_layout.addWidget(self.play_mv_btn)
         self._btns_layout.addWidget(self.copy_web_url_btn)
         self._btns_layout.addStretch(0)
 
@@ -306,6 +311,10 @@ class SongExploreView(QWidget):
             msg = err_msg_tpl.format(feature='查看歌曲评论',
                                      interface=SupportsSongHotComments.__name__)
             self.comments_header.setText(msg)
+
+    async def maybe_show_mv_btn(self, song):
+        self.play_mv_btn.bind_song(song)
+        await self.play_mv_btn.get_mv()
 
     async def maybe_show_song_lyric(self, song):
         if self._app.playlist.current_song == song:

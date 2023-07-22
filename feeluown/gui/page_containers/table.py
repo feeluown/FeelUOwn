@@ -17,7 +17,7 @@ from feeluown.library import ModelState, NotSupported, ModelFlags, ModelType
 
 from feeluown.gui.helpers import BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper
-from feeluown.gui.widgets.menu import SongMenuInitializer
+from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.widgets.imglist import ImgListView
 from feeluown.gui.widgets.album import AlbumListModel, AlbumListView, \
     AlbumFilterProxyModel

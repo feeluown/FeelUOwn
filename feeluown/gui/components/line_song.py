@@ -2,7 +2,7 @@ from PyQt5.QtCore import QTimer, QRect, Qt
 from PyQt5.QtGui import QFontMetrics, QPainter, QPalette
 from PyQt5.QtWidgets import QApplication, QLabel, QSizePolicy, QMenu
 
-from feeluown.gui.widgets.menu import SongMenuInitializer
+from feeluown.gui.components import SongMenuInitializer
 
 
 class LineSongLabel(QLabel):
