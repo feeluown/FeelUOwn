@@ -57,7 +57,7 @@ setup(
         'qasync',
         'tomlkit',
         'packaging',
-        'pydantic>=2.0.0',
+        'pydantic>=1.10',  # v1 and v2 are both ok.
         'mutagen>=1.37',
     ],
     extras_require={

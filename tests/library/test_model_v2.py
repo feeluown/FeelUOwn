@@ -5,6 +5,9 @@ from feeluown.library import SongModel, BriefAlbumModel, BriefArtistModel, Brief
 
 
 def test_use_pydantic_from_orm(song):
+    # Raise a pydantic exception.
+    # For pydantic v1, pydantic.ConfigError is raised.
+    # FOr pydantic v2, pydantic.ValidationError is raised.
     with pytest.raises(Exception):
         BriefSongModel.from_orm(song)
 
