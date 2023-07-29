@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import Qt, QRectF, QRect, QSize
 from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
     QKeySequence, QFont
-from PyQt5.QtWidgets import QLabel, QWidget,\
+from PyQt5.QtWidgets import QLabel, QWidget, \
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
     QMenu, QAction, QFontDialog, QShortcut, QSpacerItem
 
