@@ -4,6 +4,11 @@ import pydantic
 from feeluown.library import SongModel, BriefAlbumModel, BriefArtistModel, BriefSongModel
 
 
+def test_use_pydantic_from_orm(song):
+    with pytest.raises(Exception):
+        BriefSongModel.from_orm(song)
+
+
 def test_create_song_model_basic():
     identifier = '1'
     brief_album = BriefAlbumModel(identifier='1', source='x',

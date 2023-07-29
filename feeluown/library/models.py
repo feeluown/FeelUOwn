@@ -54,7 +54,15 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 import time
 from typing import List, Optional, Tuple, Any, Union
 
-from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr, field_validator
+from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr
+try:
+    # pydantic>=2.0
+    from pydantic import field_validator
+    identifier_validator = field_validator('identifier', mode='before')
+except ImportError:
+    # pydantic<2.0
+    from pydantic import validator
+    identifier_validator = validator('identifier', pre=True)
 
 from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
 from feeluown.models import SearchType  # noqa
@@ -68,6 +76,8 @@ TArtist = Union['ArtistModel', 'BriefArtistModel']
 TVideo = Union['VideoModel', 'BriefVideoModel']
 TPlaylist = Union['PlaylistModel', 'BriefPlaylistModel']
 TUser = Union['UserModel', 'BriefUserModel']
+
+
 
 
 def fmt_artists_names(names: List[str]) -> str:
@@ -123,7 +133,19 @@ class BaseModel(_BaseModel):
     # Forbidding extra fields is good for debugging. The default behavior
     # is a little implicit. If you want to store an extra attribute on model,
     # use :meth:`cache_set` explicitly.
+
+    # For pydantic v2.
     model_config = ConfigDict(from_attributes=False, extra='forbid')
+
+    # For pydantic v1.
+    class Config:
+        # Do not use Model.from_orm to convert v1 model to v2 model
+        # since v1 model has too much magic.
+        orm_mode = False
+        # Forbidding extra fields is good for debugging. The default behavior
+        # is a little implicit. If you want to store an extra attribute on model,
+        # use :meth:`cache_set` explicitly.
+        extra = 'forbid'
 
     _cache: dict = PrivateAttr(default_factory=dict)
     meta: Any = ModelMeta.create()
@@ -136,7 +158,7 @@ class BaseModel(_BaseModel):
     #: (DEPRECATED) for backward compact
     exists: ModelExistence = ModelExistence.unknown
 
-    @field_validator('identifier', mode='before')
+    @identifier_validator
     def int_to_str(cls, v):
         # Old version pydantic convert int to str implicitly.
         # Many plugins(such as netease) use int as indentifier during initialization.
