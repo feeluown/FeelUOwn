@@ -100,7 +100,7 @@ class CollectionListModel(TextlistModel):
         item = self._items[row]
         if role == Qt.DisplayRole:
             icon = '◎  '
-            if item.type == CollectionType.sys_library:
+            if item.type in (CollectionType.sys_library, CollectionType.sys_pool):
                 icon = '◉  '
             return icon + item.name
         if role == Qt.ToolTipRole:

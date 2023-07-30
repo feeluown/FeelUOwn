@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QPoint, Qt, QRect, QRectF
+from PyQt5.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
 from PyQt5.QtWidgets import QPushButton, QStyle, QStyleOptionButton
-from PyQt5.QtGui import QPainter, QPalette
+from PyQt5.QtGui import QPainter, QPalette, QPainterPath
 
 from feeluown.gui.drawers import HomeIconDrawer, PlusIconDrawer, TriangleIconDrawer
 from feeluown.gui.helpers import darker_or_lighter
@@ -32,10 +32,10 @@ class SelfPaintAbstractButton(QPushButton):
 
 
 class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
-    def __init__(self, text, height=30, padding=0.25, parent=None):
+    def __init__(self, text='', height=30, padding=0.25, parent=None):
         super().__init__(parent=parent)
 
-        self._padding = int(height * padding) if padding < 1 else padding
+        self._padding: int = int(height * padding if padding < 1 else padding)
         self._text_width = self.fontMetrics().horizontalAdvance(text)
         self._text = text
 
@@ -200,8 +200,8 @@ class TriagleButton(SelfPaintAbstractSquareButton):
 
 
 class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__('最近播放', *args, **kwargs)
+    def __init__(self, text='最近播放', **kwargs):
+        super().__init__(text, **kwargs)
 
     def draw_icon(self, painter):
         pen_width = 1.5
@@ -223,6 +223,47 @@ class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
         pen.setWidthF(pen_width * 2)
         painter.setPen(pen)
         painter.drawPoint(QPoint(self._padding, center))
+
+
+class DiscoveryButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, text='发现', **kwargs):
+        super().__init__(text=text, **kwargs)
+
+        self._timer = QTimer(self)
+
+        length = self.height()
+        self._half = length // 2
+        self._v1 = self._half - self._padding
+        self._v2 = self._v1 / 2.5
+
+        self._triagle = QPainterPath(QPointF(-self._v2, 0))
+        self._triagle.lineTo(QPointF(0, self._v1))
+        self._triagle.lineTo(QPointF(0, self._v2))
+        self._rotate = 0
+        self._rotate_mod = 360
+
+        self._timer.timeout.connect(self.on_timeout)
+        self._timer.start(30)
+
+    def on_timeout(self):
+        self._rotate = (self._rotate + 2) % self._rotate_mod
+        self.update()
+
+    def draw_icon(self, painter: QPainter):
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
+
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+
+        painter.save()
+        painter.translate(self._half, self._half)
+        painter.rotate(self._rotate)
+        for ratio in range(4):
+            painter.rotate(90*ratio)
+            painter.drawPath(self._triagle)
+        painter.restore()
 
 
 class HomeButton(SelfPaintAbstractIconTextButton):
@@ -248,5 +289,6 @@ if __name__ == '__main__':
         layout.addWidget(SettingsButton(length=length))
         layout.addWidget(RecentlyPlayedButton(height=length))
         layout.addWidget(HomeButton(height=length))
+        layout.addWidget(DiscoveryButton(height=length))
 
         layout.addWidget(TriagleButton(length=length, direction='up'))

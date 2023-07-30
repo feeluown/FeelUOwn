@@ -1,5 +1,6 @@
 from feeluown.models.uri import ResolveFailed, ResolverNotFound, reverse
-from feeluown.collection import Collection, CollectionManager, LIBRARY_FILENAME
+from feeluown.collection import Collection, CollectionManager, LIBRARY_FILENAME, \
+    POOL_FILENAME
 
 
 def test_collection_load(tmp_path, song, mocker):
@@ -160,9 +161,10 @@ def test_predefined_collection_should_on_top(tmp_path, app_mock, mocker):
     coll1 = new_collection(tmp_path / '1.fuo')
     coll2 = new_collection(tmp_path / '2.fuo')
     coll_library = new_collection(tmp_path / LIBRARY_FILENAME)
+    coll_pool = new_collection(tmp_path / POOL_FILENAME)
 
     coll_mgr = CollectionManager(app_mock)
     mocker.patch.object(CollectionManager, '_scan',
-                        return_value=[coll1, coll_library, coll2])
+                        return_value=[coll1, coll_library, coll_pool, coll2])
     coll_mgr.scan()
-    assert list(coll_mgr.listall()) == [coll_library, coll1, coll2]
+    assert list(coll_mgr.listall()) == [coll_library, coll_pool, coll1, coll2]
