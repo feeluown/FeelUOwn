@@ -18,8 +18,10 @@ from feeluown.utils.utils import elfhash
 logger = logging.getLogger(__name__)
 
 COLL_LIBRARY_IDENTIFIER = 'library'
+COLL_POOL_IDENTIFIER = 'pool'
 # for backward compat, we should never change these filenames
 LIBRARY_FILENAME = f'{COLL_LIBRARY_IDENTIFIER}.fuo'
+POOL_FILENAME = f'{COLL_POOL_IDENTIFIER}.fuo'
 DEPRECATED_FUO_FILENAMES = (
     'Songs.fuo', 'Albums.fuo', 'Artists.fuo', 'Videos.fuo'
 )
@@ -33,6 +35,7 @@ class CollectionAlreadyExists(Exception):
 
 class CollectionType(Enum):
     sys_library = 16
+    sys_pool = 13
 
     mixed = 8
 
@@ -70,6 +73,8 @@ class Collection:
         self.name = name
         if name == COLL_LIBRARY_IDENTIFIER:
             self.type = CollectionType.sys_library
+        elif name == COLL_POOL_IDENTIFIER:
+            self.type = CollectionType.sys_pool
         else:
             self.type = CollectionType.mixed
 
@@ -126,6 +131,11 @@ class Collection:
             f.write(TOML_DELIMLF)
             f.write(tomlkit.dumps(doc))
             f.write(TOML_DELIMLF)
+
+        coll = cls(fpath)
+        coll._loads_metadata(doc)
+        coll.type = CollectionType.mixed
+        return coll
 
     def add(self, model):
         """add model to collection
@@ -213,10 +223,13 @@ class CollectionManager:
         self._library = app.library
         self.default_dir = COLLECTIONS_DIR
 
-        self._id_coll_mapping: Dict[str, Collection] = {}
+        self._id_coll_mapping: Dict[int, Collection] = {}
+        self._sys_colls = {}
 
     def get(self, identifier):
-        return self._id_coll_mapping.get(int(identifier), None)
+        if identifier in (CollectionType.sys_pool, CollectionType.sys_library):
+            return self._sys_colls[identifier]
+        return self._id_coll_mapping[int(identifier)]
 
     def get_coll_library(self):
         for coll in self._id_coll_mapping.values():
@@ -259,12 +272,24 @@ class CollectionManager:
 
     def scan(self):
         colls: List[Collection] = []
-        library_coll = None
         for coll in self._scan():
             if coll.type == CollectionType.sys_library:
-                library_coll = coll
-                continue
-            colls.append(coll)
+                self._sys_colls[CollectionType.sys_library] = coll
+            elif coll.type == CollectionType.sys_pool:
+                self._sys_colls[CollectionType.sys_pool] = coll
+            else:
+                colls.append(coll)
+
+        if CollectionType.sys_pool not in self._sys_colls:
+            pool_fpath = os.path.join(self.default_dir, POOL_FILENAME)
+            assert not os.path.exists(pool_fpath)
+            logger.info('Generating collection pool.')
+            coll = Collection.create_empty(pool_fpath, '想听')
+            self._sys_colls[CollectionType.sys_pool] = coll
+
+        pool_coll = self._sys_colls[CollectionType.sys_pool]
+        library_coll = self._sys_colls[CollectionType.sys_library]
+        colls.insert(0, pool_coll)
         colls.insert(0, library_coll)
         for collection in colls:
             coll_id = collection.identifier

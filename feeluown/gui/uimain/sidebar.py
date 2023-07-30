@@ -5,9 +5,9 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout, QFormLayout, QDialog, QLineEdit, QDialogButtonBox, QMessageBox
 
-from feeluown.collection import CollectionAlreadyExists
+from feeluown.collection import CollectionAlreadyExists, CollectionType
 from feeluown.gui.widgets import (
-    RecentlyPlayedButton, HomeButton, PlusButton, TriagleButton,
+    DiscoveryButton, HomeButton, PlusButton, TriagleButton,
 )
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.components import CollectionListView
@@ -94,8 +94,8 @@ class _LeftPanel(QFrame):
         self._app = app
 
         self.home_btn = HomeButton(height=30, parent=self)
-        self.recently_played_btn = RecentlyPlayedButton(height=30, parent=self)
-        self.collections_header = QLabel('本地收藏', self)
+        self.discovery_btn = DiscoveryButton(height=30, padding=0.2, parent=self)
+        self.collections_header = QLabel('本地收藏集', self)
         self.collections_header.setToolTip(
             '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
             '每个收藏集都以一个独立 .fuo 文件的存在，'
@@ -129,9 +129,9 @@ class _LeftPanel(QFrame):
         self._layout.addLayout(self._top_layout)
         self._layout.addLayout(self._sub_layout)
 
-        self._top_layout.addWidget(self.home_btn)
-        self._top_layout.addWidget(self.recently_played_btn)
         self._top_layout.setContentsMargins(15, 16, 16, 0)
+        self._top_layout.addWidget(self.home_btn)
+        self._top_layout.addWidget(self.discovery_btn)
         self._sub_layout.setContentsMargins(16, 8, 16, 0)
         self._sub_layout.addWidget(self.collections_con)
         self._sub_layout.addWidget(self.my_music_con)
@@ -148,8 +148,7 @@ class _LeftPanel(QFrame):
         self.my_music_con.hide()
 
         self.home_btn.clicked.connect(self.show_library)
-        self.recently_played_btn.clicked.connect(
-            lambda: self._app.browser.goto(page='/recently_played'))
+        self.discovery_btn.clicked.connect(self.show_pool)
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
         self.collections_view.show_collection.connect(
@@ -188,6 +187,10 @@ class _LeftPanel(QFrame):
     def show_library(self):
         coll_library = self._app.coll_mgr.get_coll_library()
         self._app.browser.goto(page=f'/colls/{coll_library.identifier}')
+
+    def show_pool(self):
+        coll = self._app.coll_mgr.get(CollectionType.sys_pool)
+        self._app.browser.goto(page=f'/colls/{coll.identifier}')
 
     def remove_coll(self, coll):
         def do():
