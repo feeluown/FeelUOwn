@@ -21,6 +21,7 @@ Test this file with following code::
     # insepct jar
     # jar._cookies
 """
+# flake8: noqa
 
 import collections
 import base64
