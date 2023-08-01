@@ -75,6 +75,11 @@ setup(
             'aionowplaying>=0.9.4',
         ],
         'webengine': ['PyQtWebEngine'],
+        # Load cookies from chrome/firefox/...
+        'cookies': [
+            'secretstorage',
+            'pycryptodome',
+        ],
         'dev': [
             # lint
             'flake8',
