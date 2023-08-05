@@ -7,6 +7,7 @@ from typing import Optional
 
 from feeluown.excs import ProviderIOError
 from feeluown.utils import aio
+from feeluown.utils.aio import run_fn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
@@ -461,7 +462,17 @@ class Playlist:
 
         try:
             media = await self._prepare_media(song)
-        except MediaNotFound:
+        except MediaNotFound as e:
+            if e.reason is MediaNotFound.Reason.check_children:
+                # TODO: maybe we can just add children to playlist?
+                self._app.show_msg(f'{song_str} 的播放资源在孩子节点上，将替换当前播放列表')
+                self.mark_as_bad(song)
+                logger.info(f'{song_str} has children, replace the current playlist')
+                song = await run_fn(self._app.library.song_upgrade, song)
+                self.set_models(song.children)
+                self.next()
+                return
+
             logger.info(f'{song_str} has no valid media, mark it as bad')
             self.mark_as_bad(song)
 

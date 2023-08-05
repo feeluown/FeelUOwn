@@ -307,6 +307,11 @@ class SongModel(BaseNormalModel):
     album: Optional[BriefAlbumModel] = None
     artists: List[BriefArtistModel]
     duration: int  # milliseconds
+    # A playlist can consist of multiple songs and a song can have many children.
+    # The differences between playlist's songs and song' children is that
+    # a child of a song usually have no album and artists. They share some
+    # metadata with the parent song.
+    children: List['TSong'] = []
 
     genre: str = ''
     date: str = ''  # For example: 2020-12-11 00:00:00, 2020-12-11T00:00:00Z
