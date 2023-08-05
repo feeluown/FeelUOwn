@@ -2,6 +2,7 @@
 HELP: I do not know how to design exception classes,
 as a result, these interfaces can be changed frequently.
 """
+from enum import Enum
 
 from requests.exceptions import RequestException
 
@@ -87,7 +88,15 @@ class NotSupported(LibraryException):
 
 
 class MediaNotFound(ResourceNotFound):
-    pass
+    class Reason(Enum):
+        not_found = 'not_found'
+        # Song/video has children and children have medias. Song/video itself does
+        # not have any media.
+        check_children = 'check_children'
+
+    def __init__(self, *args, reason=Reason.not_found, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.reason = reason
 
 
 class NoUserLoggedIn(LibraryException):

@@ -113,6 +113,10 @@ class ArtistModel(BaseModel):
     def description(self):  # To be compatible with ArtistModel v2.
         return self.desc
 
+    @property
+    def children(self):
+        return []
+
     def __getattribute__(self, name):
         value = super().__getattribute__(name)
         if name == 'songs':
@@ -207,7 +211,7 @@ class SongModel(BaseModel, MultiQualityMixin):
         model_type = ModelType.song.value
         fields = ['album', 'artists', 'lyric', 'comments', 'title', 'url',
                   'duration', 'mv', 'media',
-                  'disc', 'genre', 'date', 'track', 'pic_url']
+                  'disc', 'genre', 'date', 'track', 'pic_url', 'children']
         fields_display = ['title', 'artists_name', 'album_name', 'duration_ms']
 
         support_multi_quality = False

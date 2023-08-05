@@ -307,6 +307,7 @@ class SongModel(BaseNormalModel):
     album: Optional[BriefAlbumModel] = None
     artists: List[BriefArtistModel]
     duration: int  # milliseconds
+    children: List['TSong'] = []
 
     genre: str = ''
     date: str = ''  # For example: 2020-12-11 00:00:00, 2020-12-11T00:00:00Z
