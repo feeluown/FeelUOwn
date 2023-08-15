@@ -465,12 +465,15 @@ class Playlist:
         except MediaNotFound as e:
             if e.reason is MediaNotFound.Reason.check_children:
                 # TODO: maybe we can just add children to playlist?
-                self._app.show_msg(f'{song_str} 的播放资源在孩子节点上，将替换当前播放列表')
+                self._app.show_msg(f'{song_str} 的播放资源在孩子节点上，将孩子节点添加到播放列表')
                 self.mark_as_bad(song)
                 logger.info(f'{song_str} has children, replace the current playlist')
                 song = await run_fn(self._app.library.song_upgrade, song)
-                self.set_models(song.children)
-                self.next()
+                if song.children:
+                    self.batch_add(song.children)
+                    await self.a_set_current_song(song.children[0])
+                else:
+                    self.next()
                 return
 
             logger.info(f'{song_str} has no valid media, mark it as bad')
