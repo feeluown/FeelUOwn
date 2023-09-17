@@ -143,7 +143,7 @@ def read_audio_metadata(fpath, can_convert_chinese=False, lang='auto') -> Option
         metadata_dict['duration'] = 0
     else:
         # milesecond
-        metadata_dict['duration'] = metadata.info.length * 1000
+        metadata_dict['duration'] = int(metadata.info.length * 1000)
 
     # Convert simplified to traditional, or reverse.
     if can_convert_chinese:
