@@ -4,7 +4,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtGui import QGuiApplication, QResizeEvent
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
@@ -19,7 +19,9 @@ from feeluown.utils import aio
 from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader
 from feeluown.gui.components import SongMVTextButton
-from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, resize_font
+from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, \
+    resize_font
+from feeluown.gui.widgets.labels import ElidedLineLabel
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
@@ -69,7 +71,8 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
         song = upgraded_song
 
     # Before fetching more data, show some widgets.
-    view.title_label.setText(song.title)
+    view.title_label.set_src_text(song.title)
+    view.title_label.setToolTip(song.title)
     view.play_btn.clicked.connect(lambda: app.playlist.play_model(song))
 
     # Show other widgets.
@@ -188,12 +191,18 @@ class RightCon(QWidget):
         return QSize(130, size_hint.height())
 
 
+class Title(LargeHeader, ElidedLineLabel):
+    pass
+
+
 class SongExploreView(QWidget):
     def __init__(self, app: GuiApp):
         super().__init__(parent=None)
         self._app = app
 
-        self.title_label = LargeHeader()
+        self._title_cover_spacing = 10
+        self._left_right_spacing = 30
+        self.title_label = Title()
         self.similar_songs_header = MidHeader('相似歌曲')
         self.comments_header = MidHeader('热门评论')
         self.lyric_view = LyricView(parent=self)
@@ -242,11 +251,11 @@ class SongExploreView(QWidget):
         self._layout.setContentsMargins(10, 20, 10, 0)
 
         self._layout.addWidget(self._left_con_scrollarea, 3)
-        self._layout.addSpacing(30)
+        self._layout.addSpacing(self._left_right_spacing)
         self._layout.addWidget(self._right_con, 1)
 
         self._left_layout.addLayout(self._left_top_layout)
-        self._left_layout.addSpacing(10)
+        self._left_layout.addSpacing(self._title_cover_spacing)
         self._left_layout.addWidget(self.comments_header)
         self._left_layout.addWidget(self.comments_view)
         self._left_layout.addWidget(self.similar_songs_header)
@@ -343,6 +352,13 @@ class SongExploreView(QWidget):
                 aio.run_afn(self.cover_label.show_cover,
                             song.pic_url,
                             reverse(song) + '/pic_url')
+
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        margins = self.layout().contentsMargins()
+        margin_h = margins.left() + margins.right()
+        self._left_con.setMaximumWidth(
+            self.width() - margin_h - self._left_right_spacing - self._right_con.width())
+        return super().resizeEvent(e)
 
 
 class InlineErrorMessageView(QLabel):

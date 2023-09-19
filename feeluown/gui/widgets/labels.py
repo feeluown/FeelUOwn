@@ -1,7 +1,8 @@
 from PyQt5.QtCore import QTime, Qt
-from PyQt5.QtWidgets import QLabel
+from PyQt5.QtWidgets import QLabel, QSizePolicy
 
 from feeluown.utils.utils import parse_ms
+from feeluown.gui.helpers import elided_text
 
 
 def format_second(s):
@@ -19,6 +20,33 @@ def format_second(s):
     else:
         text = t.toString('mm:ss')
     return text
+
+
+class ElidedLineLabel(QLabel):
+    """Label whose text is auto elided based on its width.
+
+    .. versionadded:: 3.8.15
+    """
+    def __init__(self, text='', **kwargs):
+        super().__init__(text, **kwargs)
+        self._src_text = text
+        self.setWordWrap(False)
+        self.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        # Set horizental size policy to Preferred so that this label
+        # can shrink or expand when the parent is resized.
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+
+    def set_src_text(self, text):
+        self._src_text = text
+        self._auto_adjust_text()
+
+    def _auto_adjust_text(self):
+        text = elided_text(self._src_text, self.width(), self.font())
+        self.setText(text)
+
+    def resizeEvent(self, e):
+        self._auto_adjust_text()
+        return super().resizeEvent(e)
 
 
 class DurationLabel(QLabel):
