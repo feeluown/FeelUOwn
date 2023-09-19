@@ -23,6 +23,10 @@ def format_second(s):
 
 
 class ElidedLineLabel(QLabel):
+    """Label whose text is auto elided based on its width.
+
+    .. versionadded:: 3.8.15
+    """
     def __init__(self, text='', **kwargs):
         super().__init__(text, **kwargs)
         self._src_text = text
