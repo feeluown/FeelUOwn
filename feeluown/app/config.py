@@ -10,7 +10,7 @@ from feeluown.config import Config
 
 def create_config() -> Config:
     config = Config()
-    config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
+    config.deffield('DEBUG', default=False, type_=bool, desc='是否为调试模式')
     config.deffield('VERBOSE', default=0, type_=int, desc='日志详细程度')
     config.deffield('RPC_PORT', default=23333, type_=int, desc='RPC 端口')
     config.deffield('PUBSUB_PORT', default=23334, type_=int, desc='PUBSUB 端口')
@@ -24,7 +24,7 @@ def create_config() -> Config:
     config.deffield('AUDIO_SELECT_POLICY', default='hq<>')
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
-    config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
+    config.deffield('PROVIDERS_STANDBY', type_=list, default=[], desc='')
     config.deffield('ENABLE_TRAY', type_=bool, default=True, desc='启用系统托盘')
     config.deffield('NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False,
                     desc='切换歌曲时显示桌面通知')

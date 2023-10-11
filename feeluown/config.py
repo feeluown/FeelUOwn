@@ -35,7 +35,11 @@ class Config:
             if field.warn is not None:
                 warnings.warn('Config field({}): {}'.format(name, field.warn),
                               stacklevel=2)
-            # TODO: 校验值类型
+            if field.type_ is not None:
+                if not isinstance(value, field.type_):
+                    logger.error(f"Set config field:{name} failed, "
+                                 "because the value type is not as expected")
+                    return
             object.__setattr__(self, name, value)
         else:
             logger.warning('Assign to an undeclared config key.')
@@ -51,6 +55,11 @@ class Config:
         :param warn: if field is deprecated, set a warn message.
         """
         if name not in self._fields:
+            if type_ is not None:
+                if not isinstance(type_, type):
+                    raise ValueError('type_ is an invalid type')
+                if not isinstance(default, type_):
+                    raise ValueError('Invalid default value for this type')
             self._fields[name] = Field(name=name,
                                        type_=type_,
                                        default=default,
