@@ -13,7 +13,7 @@ from feeluown.gui.tips import TipsManager
 from feeluown.gui.watch import WatchManager
 from feeluown.gui.ui import Ui
 from feeluown.gui.tray import Tray
-from feeluown.gui.uimodels.provider import ProviderUiManager
+from feeluown.gui.provider_ui import ProviderUiManager, CurrentProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
 
@@ -23,6 +23,7 @@ from .app import App
 
 
 class GuiApp(App, QWidget):
+
     def __init__(self, *args, **kwargs):
         config = args[1]
         pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -33,7 +34,8 @@ class GuiApp(App, QWidget):
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
         QApplication.setDesktopFileName('FeelUOwn')
-        QApplication.instance().setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
+        QApplication.instance().setQuitOnLastWindowClosed(
+            not config.ENABLE_TRAY)
         QApplication.instance().setApplicationName('FeelUOwn')
 
         if sys.platform == 'win32':
@@ -42,7 +44,8 @@ class GuiApp(App, QWidget):
             # "Segoe UI Symbol" is used to render charactor symbols.
             # "Microsoft Yahei" is used to render chinese (and english).
             # Choose a default sans-serif font when the first two fonts do not work,
-            font.setFamilies(['Segoe UI Symbol', 'Microsoft YaHei', 'sans-serif'])
+            font.setFamilies(
+                ['Segoe UI Symbol', 'Microsoft YaHei', 'sans-serif'])
 
             # When a HiDPI screen is used, users need to set both font DPI and
             # screen scale factor to make it working properly when pointSize is used.
@@ -72,7 +75,8 @@ class GuiApp(App, QWidget):
         self.watch_mgr = WatchManager(self)
 
         # GUI 组件的数据管理模块
-        self.pvd_uimgr = ProviderUiManager(self)
+        self.pvd_ui_mgr = self.pvd_uimgr = ProviderUiManager(self)
+        self.current_pvd_ui_mgr = CurrentProviderUiManager(self)
         self.pl_uimgr = PlaylistUiManager(self)
         self.mymusic_uimgr = MyMusicUiManager(self)
 

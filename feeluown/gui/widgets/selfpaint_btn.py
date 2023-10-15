@@ -242,8 +242,8 @@ class DiscoveryButton(SelfPaintAbstractIconTextButton):
         self._rotate = 0
         self._rotate_mod = 360
 
-        self._timer.timeout.connect(self.on_timeout)
-        self._timer.start(30)
+        # self._timer.timeout.connect(self.on_timeout)
+        # self._timer.start(30)
 
     def on_timeout(self):
         self._rotate = (self._rotate + 2) % self._rotate_mod
