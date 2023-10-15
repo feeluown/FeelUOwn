@@ -34,8 +34,7 @@ class GuiApp(App, QWidget):
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
         QApplication.setDesktopFileName('FeelUOwn')
-        QApplication.instance().setQuitOnLastWindowClosed(
-            not config.ENABLE_TRAY)
+        QApplication.instance().setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         QApplication.instance().setApplicationName('FeelUOwn')
 
         if sys.platform == 'win32':
@@ -44,8 +43,7 @@ class GuiApp(App, QWidget):
             # "Segoe UI Symbol" is used to render charactor symbols.
             # "Microsoft Yahei" is used to render chinese (and english).
             # Choose a default sans-serif font when the first two fonts do not work,
-            font.setFamilies(
-                ['Segoe UI Symbol', 'Microsoft YaHei', 'sans-serif'])
+            font.setFamilies(['Segoe UI Symbol', 'Microsoft YaHei', 'sans-serif'])
 
             # When a HiDPI screen is used, users need to set both font DPI and
             # screen scale factor to make it working properly when pointSize is used.
