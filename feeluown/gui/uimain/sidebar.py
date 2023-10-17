@@ -5,7 +5,10 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout, QFormLayout, QDialog, QLineEdit, QDialogButtonBox, QMessageBox
 
+from feeluown.library import SupportsPlaylistDelete
 from feeluown.collection import CollectionAlreadyExists, CollectionType
+from feeluown.utils import aio
+from feeluown.gui.provider_ui import UISupportsCreatePlaylist
 from feeluown.gui.widgets import (
     DiscoveryButton, HomeButton, PlusButton, TriagleButton,
 )
@@ -153,9 +156,12 @@ class _LeftPanel(QFrame):
             lambda pl: self._app.browser.goto(model=pl))
         self.collections_view.show_collection.connect(
             lambda coll: self._app.browser.goto(page=f'/colls/{coll.identifier}'))
-        self.collections_view.remove_collection.connect(self.remove_coll)
+        self.collections_view.remove_collection.connect(self._remove_coll)
+        self.playlists_view.remove_playlist.connect(self._remove_playlist)
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
+        self.playlists_con.create_btn.clicked.connect(
+            self.popup_playlist_adding_dialog)
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
@@ -184,6 +190,12 @@ class _LeftPanel(QFrame):
         dialog.accepted.connect(create_collection_and_reload)
         dialog.open()
 
+    def popup_playlist_adding_dialog(self):
+        provider_ui = self._app.current_pvd_ui_mgr.get()
+        if provider_ui is not None:
+            if isinstance(provider_ui, UISupportsCreatePlaylist):
+                provider_ui.popup_create_playlist_dialog()
+
     def show_library(self):
         coll_library = self._app.coll_mgr.get_coll_library()
         self._app.browser.goto(page=f'/colls/{coll_library.identifier}')
@@ -192,7 +204,23 @@ class _LeftPanel(QFrame):
         coll = self._app.coll_mgr.get(CollectionType.sys_pool)
         self._app.browser.goto(page=f'/colls/{coll.identifier}')
 
-    def remove_coll(self, coll):
+    def _remove_playlist(self, playlist):
+        async def do():
+            provider = self._app.library.get_or_raise(playlist.source)
+            if isinstance(provider, SupportsPlaylistDelete):
+                ok = await aio.run_fn(provider.playlist_delete, playlist.identifier)
+                self._app.show_msg(f"删除歌单 {playlist.name} {'成功' if ok else '失败'}")
+                if ok is True:
+                    self._app.pl_uimgr.model.remove(playlist)
+            else:
+                self._app.show_msg(f'资源提供方({provider.identifier})不支持删除歌单')
+
+        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
+                          QMessageBox.Yes | QMessageBox.No, self)
+        box.accepted.connect(lambda: aio.run_afn(do))
+        box.open()
+
+    def _remove_coll(self, coll):
         def do():
             self._app.coll_mgr.remove(coll)
             self._app.coll_mgr.refresh()

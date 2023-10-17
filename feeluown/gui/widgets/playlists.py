@@ -6,7 +6,7 @@ from PyQt5.QtCore import (
     QModelIndex,
 )
 from PyQt5.QtWidgets import (
-    QAbstractItemView,
+    QAbstractItemView, QMenu
 )
 
 from .textlist import TextlistModel, TextlistView
@@ -41,6 +41,23 @@ class PlaylistsModel(TextlistModel):
         self.beginInsertRows(QModelIndex(), start, end)
         playlists.extend(_playlists)
         self.endInsertRows()
+
+    def remove(self, playlist):
+        for i, playlist_ in enumerate(self._playlists):
+            if playlist_ == playlist:
+                self.beginRemoveRows(QModelIndex(), i, i+1)
+                self._playlists.remove(playlist)
+                self.endRemoveRows()
+                break
+
+        for i, playlist_ in enumerate(self._fav_playlists):
+            if playlist_ == playlist:
+                start = i+len(self._playlists)
+                end = start + 1
+                self.beginRemoveRows(QModelIndex(), start, end)
+                self._fav_playlists.remove(playlist)
+                self.endRemoveRows()
+                break
 
     def clear(self):
         total_length = len(self.items)
@@ -77,6 +94,7 @@ class PlaylistsView(TextlistView):
     .. versiondeprecated:: 3.9
     """
     show_playlist = pyqtSignal([object])
+    remove_playlist = pyqtSignal([object])
 
     def __init__(self, parent):
         super().__init__(parent)
@@ -87,6 +105,17 @@ class PlaylistsView(TextlistView):
     def _on_clicked(self, index):
         playlist = index.data(role=Qt.UserRole)
         self.show_playlist.emit(playlist)
+
+    def contextMenuEvent(self, event):
+        indexes = self.selectionModel().selectedIndexes()
+        if len(indexes) != 1:
+            return
+
+        playlist = self.model().data(indexes[0], Qt.UserRole)
+        menu = QMenu()
+        action = menu.addAction('删除此歌单')
+        action.triggered.connect(lambda: self.remove_playlist.emit(playlist))
+        menu.exec(event.globalPos())
 
     def dropEvent(self, e):
         mimedata = e.mimeData()
