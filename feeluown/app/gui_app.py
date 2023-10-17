@@ -13,7 +13,7 @@ from feeluown.gui.tips import TipsManager
 from feeluown.gui.watch import WatchManager
 from feeluown.gui.ui import Ui
 from feeluown.gui.tray import Tray
-from feeluown.gui.uimodels.provider import ProviderUiManager
+from feeluown.gui.provider_ui import ProviderUiManager, CurrentProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
 
@@ -23,6 +23,7 @@ from .app import App
 
 
 class GuiApp(App, QWidget):
+
     def __init__(self, *args, **kwargs):
         config = args[1]
         pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -72,7 +73,8 @@ class GuiApp(App, QWidget):
         self.watch_mgr = WatchManager(self)
 
         # GUI 组件的数据管理模块
-        self.pvd_uimgr = ProviderUiManager(self)
+        self.pvd_ui_mgr = self.pvd_uimgr = ProviderUiManager(self)
+        self.current_pvd_ui_mgr = CurrentProviderUiManager(self)
         self.pl_uimgr = PlaylistUiManager(self)
         self.mymusic_uimgr = MyMusicUiManager(self)
 
