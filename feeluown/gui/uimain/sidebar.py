@@ -197,11 +197,13 @@ class _LeftPanel(QFrame):
     def popup_playlist_adding_dialog(self):
         provider_ui = self._app.current_pvd_ui_mgr.get()
         if provider_ui is None:
+            self._app.show_msg('当前的资源提供方未注册其 UI')
             return
         provider = provider_ui.provider
         if not isinstance(provider, SupportsPlaylistCreateByName) \
            or not isinstance(provider, SupportsCurrentUser) \
            or not provider.has_current_user():
+            self._app.show_msg('当前的资源提供方不支持创建歌单')
             return
 
         dialog = QDialog(self)
