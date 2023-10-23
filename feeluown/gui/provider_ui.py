@@ -10,14 +10,6 @@ if TYPE_CHECKING:
 
 
 @runtime_checkable
-class UISupportsCreatePlaylist(Protocol):
-
-    @abstractmethod
-    def popup_create_playlist_dialog(self):
-        ...
-
-
-@runtime_checkable
 class UISupportsLoginOrGoHome(Protocol):
 
     @abstractmethod

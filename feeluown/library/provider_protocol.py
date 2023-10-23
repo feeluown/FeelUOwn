@@ -26,6 +26,7 @@ __all__ = (
 
     'SupportsPlaylistAddSong',
     'SupportsPlaylistGet',
+    'SupportsPlaylistCreateByName',
     'SupportsPlaylistDelete',
     'SupportsPlaylistRemoveSong',
     'SupportsPlaylistSongsReader',
@@ -279,6 +280,17 @@ class SupportsPlaylistGet(Protocol):
         :raises ProviderIOError:
         """
         raise NotImplementedError
+
+
+@runtime_checkable
+class SupportsPlaylistCreateByName(Protocol):
+    @abstractmethod
+    def playlist_create_by_name(self, name) -> PlaylistModel:
+        """Create playlist for user logged in.
+
+        :raises NoUserLoggedIn:
+        :raises ProviderIOError:
+        """
 
 
 @runtime_checkable
