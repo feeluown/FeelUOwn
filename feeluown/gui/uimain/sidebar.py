@@ -5,9 +5,19 @@ from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout, QFormLayout, QDialog, QLineEdit, QDialogButtonBox, QMessageBox
 
+from feeluown.excs import ProviderIOError, NoUserLoggedIn
+from feeluown.library import (
+    SupportsPlaylistDelete,
+    SupportsPlaylistCreateByName,
+    SupportsCurrentUser,
+)
 from feeluown.collection import CollectionAlreadyExists, CollectionType
+from feeluown.utils import aio
 from feeluown.gui.widgets import (
-    DiscoveryButton, HomeButton, PlusButton, TriagleButton,
+    DiscoveryButton,
+    HomeButton,
+    PlusButton,
+    TriagleButton,
 )
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.components import CollectionListView
@@ -64,6 +74,7 @@ class ListViewContainer(QFrame):
 
 
 class LeftPanel(QScrollArea):
+
     def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
         self._app = app
@@ -96,13 +107,11 @@ class _LeftPanel(QFrame):
         self.home_btn = HomeButton(height=30, parent=self)
         self.discovery_btn = DiscoveryButton(height=30, padding=0.2, parent=self)
         self.collections_header = QLabel('本地收藏集', self)
-        self.collections_header.setToolTip(
-            '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
-            '每个收藏集都以一个独立 .fuo 文件的存在，'
-            '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
-            '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
-            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。'
-        )
+        self.collections_header.setToolTip('我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
+                                           '每个收藏集都以一个独立 .fuo 文件的存在，'
+                                           '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
+                                           '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
+                                           '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。')
         self.playlists_header = QLabel('歌单列表', self)
         self.my_music_header = QLabel('我的音乐', self)
 
@@ -110,12 +119,11 @@ class _LeftPanel(QFrame):
         self.my_music_view = MyMusicView(self)
         self.collections_view = CollectionListView(self._app)
 
-        self.collections_con = ListViewContainer(
-            self.collections_header, self.collections_view)
-        self.playlists_con = ListViewContainer(
-            self.playlists_header, self.playlists_view)
-        self.my_music_con = ListViewContainer(
-            self.my_music_header, self.my_music_view)
+        self.collections_con = ListViewContainer(self.collections_header,
+                                                 self.collections_view)
+        self.playlists_con = ListViewContainer(self.playlists_header,
+                                               self.playlists_view)
+        self.my_music_con = ListViewContainer(self.my_music_header, self.my_music_view)
 
         self.playlists_view.setModel(self._app.pl_uimgr.model)
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)
@@ -153,9 +161,11 @@ class _LeftPanel(QFrame):
             lambda pl: self._app.browser.goto(model=pl))
         self.collections_view.show_collection.connect(
             lambda coll: self._app.browser.goto(page=f'/colls/{coll.identifier}'))
-        self.collections_view.remove_collection.connect(self.remove_coll)
+        self.collections_view.remove_collection.connect(self._remove_coll)
+        self.playlists_view.remove_playlist.connect(self._remove_playlist)
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
+        self.playlists_con.create_btn.clicked.connect(self._create_playlist)
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
@@ -184,6 +194,50 @@ class _LeftPanel(QFrame):
         dialog.accepted.connect(create_collection_and_reload)
         dialog.open()
 
+    def _create_playlist(self):
+        provider_ui = self._app.current_pvd_ui_mgr.get()
+        if provider_ui is None:
+            self._app.show_msg('当前的资源提供方未注册其 UI')
+            return
+        provider = provider_ui.provider
+        if not isinstance(provider, SupportsPlaylistCreateByName) \
+           or not isinstance(provider, SupportsCurrentUser) \
+           or not provider.has_current_user():
+            self._app.show_msg('当前的资源提供方不支持创建歌单')
+            return
+
+        dialog = QDialog(self)
+        # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
+        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        layout = QFormLayout(dialog)
+        title_edit = QLineEdit(dialog)
+        layout.addRow('歌单名', title_edit)
+        button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Yes)
+        layout.addRow('', button_box)
+        button_box.accepted.connect(dialog.accept)
+        button_box.rejected.connect(dialog.reject)
+
+        def create_playlist_and_reload():
+            title = title_edit.text()
+
+            async def do():
+                try:
+                    playlist = await aio.run_fn(provider.playlist_create_by_name, title)
+                except (ProviderIOError, NoUserLoggedIn) as e:
+                    QMessageBox.warning(self._app, '错误', f"创建歌单 '{title}' 失败: {e}")
+                else:
+                    # Add playlist to pl_uimgr is a workaround, which may cause bug.
+                    # For example, the order of the newly created playlist should be
+                    # in the top for some providers.
+                    # TODO: re-fetch user's playlists and fill the UI.
+                    self._app.pl_uimgr.add(playlist, is_fav=False)
+                    self._app.show_msg(f"创建歌单 '{title}' 成功")
+
+            aio.run_afn(do)
+
+        dialog.accepted.connect(create_playlist_and_reload)
+        dialog.open()
+
     def show_library(self):
         coll_library = self._app.coll_mgr.get_coll_library()
         self._app.browser.goto(page=f'/colls/{coll_library.identifier}')
@@ -192,7 +246,25 @@ class _LeftPanel(QFrame):
         coll = self._app.coll_mgr.get(CollectionType.sys_pool)
         self._app.browser.goto(page=f'/colls/{coll.identifier}')
 
-    def remove_coll(self, coll):
+    def _remove_playlist(self, playlist):
+
+        async def do():
+            provider = self._app.library.get_or_raise(playlist.source)
+            if isinstance(provider, SupportsPlaylistDelete):
+                ok = await aio.run_fn(provider.playlist_delete, playlist.identifier)
+                self._app.show_msg(f"删除歌单 {playlist.name} {'成功' if ok else '失败'}")
+                if ok is True:
+                    self._app.pl_uimgr.model.remove(playlist)
+            else:
+                self._app.show_msg(f'资源提供方({provider.identifier})不支持删除歌单')
+
+        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
+                          QMessageBox.Yes | QMessageBox.No, self)
+        box.accepted.connect(lambda: aio.run_afn(do))
+        box.open()
+
+    def _remove_coll(self, coll):
+
         def do():
             self._app.coll_mgr.remove(coll)
             self._app.coll_mgr.refresh()

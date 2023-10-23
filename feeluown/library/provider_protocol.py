@@ -26,6 +26,8 @@ __all__ = (
 
     'SupportsPlaylistAddSong',
     'SupportsPlaylistGet',
+    'SupportsPlaylistCreateByName',
+    'SupportsPlaylistDelete',
     'SupportsPlaylistRemoveSong',
     'SupportsPlaylistSongsReader',
 
@@ -273,6 +275,28 @@ class SupportsVideoMultiQuality(Protocol):
 class SupportsPlaylistGet(Protocol):
     @abstractmethod
     def playlist_get(self, identifier: ID) -> PlaylistModel:
+        """
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
+        """
+        raise NotImplementedError
+
+
+@runtime_checkable
+class SupportsPlaylistCreateByName(Protocol):
+    @abstractmethod
+    def playlist_create_by_name(self, name) -> PlaylistModel:
+        """Create playlist for user logged in.
+
+        :raises NoUserLoggedIn:
+        :raises ProviderIOError:
+        """
+
+
+@runtime_checkable
+class SupportsPlaylistDelete(Protocol):
+    @abstractmethod
+    def playlist_delete(self, identifier: ID) -> bool:
         """
         :raises ModelNotFound: model not found by the identifier
         :raises ProviderIOError:
