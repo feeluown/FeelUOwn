@@ -4,8 +4,8 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import QSize, Qt
 from PyQt5.QtWidgets import QFrame, QLabel, QVBoxLayout, QSizePolicy, QScrollArea, \
     QHBoxLayout, QFormLayout, QDialog, QLineEdit, QDialogButtonBox, QMessageBox
-from feeluown.excs import ProviderIOError, NoUserLoggedIn
 
+from feeluown.excs import ProviderIOError, NoUserLoggedIn
 from feeluown.library import (
     SupportsPlaylistDelete,
     SupportsPlaylistCreateByName,
@@ -165,7 +165,7 @@ class _LeftPanel(QFrame):
         self.playlists_view.remove_playlist.connect(self._remove_playlist)
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
-        self.playlists_con.create_btn.clicked.connect(self.popup_playlist_adding_dialog)
+        self.playlists_con.create_btn.clicked.connect(self._create_playlist)
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
@@ -194,7 +194,7 @@ class _LeftPanel(QFrame):
         dialog.accepted.connect(create_collection_and_reload)
         dialog.open()
 
-    def popup_playlist_adding_dialog(self):
+    def _create_playlist(self):
         provider_ui = self._app.current_pvd_ui_mgr.get()
         if provider_ui is None:
             self._app.show_msg('当前的资源提供方未注册其 UI')
