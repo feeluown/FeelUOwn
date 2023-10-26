@@ -343,7 +343,8 @@ class InnerLyricWindow(QWidget):
             dialog.open()
 
     def show_font_dialog(self):
-        dialog = QFontDialog(self.font())
+        dialog = QFontDialog(self.font(), self)
+        # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
         dialog.setAttribute(Qt.WA_DeleteOnClose)
         dialog.currentFontChanged.connect(self.setFont)
         dialog.fontSelected.connect(self.setFont)
