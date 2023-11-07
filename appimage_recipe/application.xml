@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>feeluown</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0</project_license>
+  <name>FeelUOwn</name>
+  <summary>Open, modify and create compressed archive files</summary>
+  <description>
+    <p>FeelUOwn Launcher</p>
+  </description>
+  <launchable type="desktop-id">feeluown.desktop</launchable>
+  <url type="homepage">https://github.com/feeluown/FeelUOwn</url>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://user-images.githubusercontent.com/4962134/235288158-39e6e01d-74f4-4f14-b942-7af924fc6a90.png</image>
+    </screenshot>
+  </screenshots>
+  <provides>
+    <id>feeluown.desktop</id>
+  </provides>
+</component>

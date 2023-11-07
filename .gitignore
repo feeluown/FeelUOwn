@@ -15,9 +15,9 @@
 *.swo
 *.whl
 
-*.desktop
 *.md~
 *.py~
+/*.AppImage
 
 sphinx_doc/build
 test.py

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=Application
+Name=FeelUOwn
+Comment=FeelUOwn Launcher
+Exec=feeluown --log-to-file
+Icon=feeluown
+Categories=AudioVideo;Audio;Player;Qt;
+Terminal=false
+StartupNotify=true
+StartupWMClass=FeelUOwn
+X-AppImage-Name=FeelUOwn
+X-AppImage-Version=1.0.0
