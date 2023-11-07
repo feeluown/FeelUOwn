@@ -1,0 +1,36 @@
+name: Release for appimage
+on:
+  push:
+    tags:
+      - v*
+  workflow_dispatch:
+
+jobs:
+  build-n-publish:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@master
+    - name: Set up Python
+      uses: actions/setup-python@v1
+      with:
+        python-version: "3.10"
+    - name: Build
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyqt5
+        pip install -e .[win32,battery]
+        pip install python-appimage
+    - name: Bundle
+      run: python-appimage build app -p 3.10 appimage_recipe/
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: FeelUOwn-x86_64.AppImage
+        path: FeelUOwn-x86_64.AppImage
+    - name: Upload to release page
+      if: startsWith(github.ref, 'refs/tags/v')
+      uses: softprops/action-gh-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: FeelUOwn-x86_64.AppImage
