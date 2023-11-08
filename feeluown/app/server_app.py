@@ -14,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 class ServerApp(App):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -43,12 +44,15 @@ class ServerApp(App):
     def run(self):
         super().run()
 
-        asyncio.create_task(self.rpc_server.run(
-            self.get_listen_addr(),
-            self.config.RPC_PORT
-        ))
-        asyncio.create_task(self.pubsub_server.run(
-            self.get_listen_addr(),
-            self.config.PUBSUB_PORT,
-        ))
+        asyncio.create_task(
+            self.rpc_server.run(self.get_listen_addr(), self.config.RPC_PORT))
+        asyncio.create_task(
+            self.pubsub_server.run(
+                self.get_listen_addr(),
+                self.config.PUBSUB_PORT,
+            ))
+        if self.config.ENABLE_WEB_SERVER:
+            from feeluown.webserver import run_web_server
+            asyncio.create_task(
+                run_web_server(self.get_listen_addr(), self.config.WEB_PORT))
         asyncio.create_task(run_nowplaying_server(self))

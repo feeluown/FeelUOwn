@@ -77,6 +77,7 @@ setup(
             'pyshortcuts',
             'aionowplaying @ git+https://github.com/waylyrics/aionowplaying.git@fix-smtc-support',
         ],
+        'webserver': ['sanic', 'websockets'],
         'webengine': ['PyQtWebEngine'],
         # Load cookies from chrome/firefox/...
         'cookies': [
