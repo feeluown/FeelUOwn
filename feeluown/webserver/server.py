@@ -62,6 +62,7 @@ async def signal(request, ws: Websocket):
     class Subscriber:
 
         def write_topic_msg(self, topic, msg):
+            # TODO: 这个结构体可能会变化，需要注意一下
             queue.put_nowait(json.dumps({'topic': topic, 'data': msg, 'format': 'json'}))
 
     subscriber = Subscriber()
