@@ -1,8 +1,6 @@
 import asyncio
 import json
 import logging
-from typing import List
-from dataclasses import dataclass
 
 from sanic import Sanic, json as jsonify, Websocket
 
@@ -19,11 +17,7 @@ sanic_app = Sanic('FeelUOwn')
 
 
 def resp(js):
-    return jsonify({
-        'code': 200,
-        'msg': 'ok',
-        'data': js
-    })
+    return jsonify({'code': 200, 'msg': 'ok', 'data': js})
 
 
 @sanic_app.route('/api/v1/status')
@@ -62,9 +56,11 @@ async def play(request):
 
 @sanic_app.websocket('/signal/v1')
 async def signal(request, ws: Websocket):
+    # TODO: 优化这个代码，比如处理连接的关闭。
     queue = asyncio.Queue()
 
     class Subscriber:
+
         def write_topic_msg(self, topic, msg):
             queue.put_nowait(json.dumps({'topic': topic, 'data': msg, 'format': 'json'}))
 
@@ -79,7 +75,7 @@ async def signal(request, ws: Websocket):
         await ws.send(data)
 
 
-async def run_sanic_app(host, port):
+async def run_web_server(host, port):
     server = await sanic_app.create_server(host, port, return_asyncio_server=True)
     await server.startup()
     await server.serve_forever()

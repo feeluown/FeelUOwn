@@ -14,6 +14,8 @@ def create_config() -> Config:
     config.deffield('VERBOSE', default=0, type_=int, desc='日志详细程度')
     config.deffield('RPC_PORT', default=23333, type_=int, desc='RPC 端口')
     config.deffield('PUBSUB_PORT', default=23334, type_=int, desc='PUBSUB 端口')
+    config.deffield('WEB_PORT', default=23332, type_=int, desc='WEB 服务端口')
+    config.deffield('ENABLE_WEB_SERVER', default=False, type_=bool)
     config.deffield('MODE', default=0x0000, desc='CLI or GUI 模式')
     config.deffield('THEME', default='auto', desc='auto/light/dark')
     config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
