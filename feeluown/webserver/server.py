@@ -11,6 +11,7 @@ from feeluown.serializers import serialize
 from feeluown.server.pubsub import Gateway as PubsubGateway
 from feeluown.server.handlers.cmd import Cmd
 from feeluown.server.handlers.status import StatusHandler
+from feeluown.server.handlers.player import PlayerHandler
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,31 @@ async def status(request):
     app = get_app()
     handler = StatusHandler(app)
     rv = handler.handle(cmd)
+    return resp(serialize('python', rv, brief=False))
+
+
+@sanic_app.post('/api/v1/player/pause')
+async def pause(request):
+    cmd = Cmd('pause')
+    app = get_app()
+    rv = PlayerHandler(app).handle(cmd)
+    return resp(serialize('python', rv, brief=False))
+
+
+@sanic_app.post('/api/v1/player/resume')
+async def resume(request):
+    cmd = Cmd('resume')
+    app = get_app()
+    rv = PlayerHandler(app).handle(cmd)
+    return resp(serialize('python', rv, brief=False))
+
+
+@sanic_app.post('/api/v1/player/play')
+async def play(request):
+    js = request.json
+    cmd = Cmd('play', js['uri'])
+    app = get_app()
+    rv = PlayerHandler(app).handle(cmd)
     return resp(serialize('python', rv, brief=False))
 
 
