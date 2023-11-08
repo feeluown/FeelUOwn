@@ -8,6 +8,7 @@ from feeluown.server.pubsub import (
 from feeluown.server.pubsub.publishers import SignalPublisher
 from feeluown.server import FuoServer, ProtocolType
 from feeluown.nowplaying import run_nowplaying_server
+from feeluown.webserver.server import run_sanic_app
 from .app import App
 
 logger = logging.getLogger(__name__)
@@ -51,4 +52,5 @@ class ServerApp(App):
             self.get_listen_addr(),
             self.config.PUBSUB_PORT,
         ))
+        asyncio.create_task(run_sanic_app(self.get_listen_addr(), 23332))
         asyncio.create_task(run_nowplaying_server(self))
