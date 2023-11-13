@@ -3,6 +3,7 @@ from feeluown.player import Player, Playlist
 from feeluown.serializers import serialize
 from feeluown.library import SongModel
 from feeluown.models import SongModel as SongModelV1
+from feeluown.player import Metadata
 
 
 def test_serialize_app(mocker):
@@ -17,6 +18,12 @@ def test_serialize_app(mocker):
         serialize(format, app, brief=False)
         serialize(format, app, fetch=True)
     player.shutdown()
+
+
+def test_serialize_metadata():
+    metadata = Metadata({'title': 'hello world'})
+    js = serialize('python', metadata)
+    assert js['__type__'] == 'player.Metadata'
 
 
 def test_serialize_model():
