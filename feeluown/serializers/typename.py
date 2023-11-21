@@ -55,12 +55,13 @@ def get_type_by_name(name: str):
 
 
 def get_names_by_type(type_: Any):
+    # try except so that performance is not affected.
     try:
         return r_typenames[type_]
     except KeyError:
         if type_.__module__ == 'unittest.mock':
             return ['unittest.mock.Mock']
-        raise
+        return []
 
 
 def attach_typename(method):
@@ -69,8 +70,10 @@ def attach_typename(method):
         result = method(this, obj, **kwargs)
         if isinstance(result, dict):
             typenames = get_names_by_type(type(obj))
-            assert typenames, f'no typename for {type(obj)}'
-            result['__type__'] = typenames[0]
+            if typenames:
+                result['__type__'] = typenames[0]
+            else:
+                result['__type__'] = 'to_be_added__pr_is_welcome'
         return result
 
     return wrapper
