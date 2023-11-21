@@ -2,7 +2,7 @@ import asyncio
 import json
 import logging
 
-from sanic import Sanic, json as jsonify, Websocket
+from sanic import Sanic, json as jsonify, Websocket, Request
 
 from feeluown.app import get_app
 from feeluown.serializers import serialize
@@ -10,6 +10,8 @@ from feeluown.server.pubsub import Gateway as PubsubGateway
 from feeluown.server.handlers.cmd import Cmd
 from feeluown.server.handlers.status import StatusHandler
 from feeluown.server.handlers.player import PlayerHandler
+from .jsonrpc_ import initialize, handle
+
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +56,12 @@ async def play(request):
     return resp(serialize('python', rv, brief=False))
 
 
+@sanic_app.post('/rpc/v1')
+async def rpcv1(request: Request):
+    js = handle(request.body)
+    return jsonify(js)
+
+
 @sanic_app.websocket('/signal/v1')
 async def signal(request, ws: Websocket):
     # TODO: 优化这个代码，比如处理连接的关闭。
@@ -77,6 +85,7 @@ async def signal(request, ws: Websocket):
 
 
 async def run_web_server(host, port):
+    initialize()
     server = await sanic_app.create_server(host, port, return_asyncio_server=True)
     await server.startup()
     await server.serve_forever()

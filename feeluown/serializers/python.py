@@ -1,3 +1,4 @@
+from .typename import attach_typename
 from .base import Serializer, SerializerMeta, SerializerError, \
     SimpleSerializerMixin
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
@@ -20,6 +21,10 @@ class PythonSerializer(Serializer):
             json_[key] = serializer.serialize(value)
         return json_
 
+    @attach_typename
+    def serialize(self, obj):
+        return super().serialize(obj)
+
 
 class ModelSerializer(PythonSerializer, ModelSerializerMixin):
 
@@ -36,6 +41,7 @@ class ModelSerializer(PythonSerializer, ModelSerializerMixin):
         if self.opt_brief is False:
             self.opt_fetch = True
 
+    @attach_typename
     def serialize(self, model):
         dict_ = {}
         for field, value in self._get_items(model):
