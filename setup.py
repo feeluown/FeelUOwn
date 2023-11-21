@@ -74,7 +74,7 @@ setup(
             'pyshortcuts',
             'aionowplaying>=0.9.4',
         ],
-        'webserver': ['sanic', 'websockets'],
+        'webserver': ['sanic', 'websockets', 'json-rpc'],
         'webengine': ['PyQtWebEngine'],
         # Load cookies from chrome/firefox/...
         'cookies': [
