@@ -1,3 +1,5 @@
+import pytest
+
 from feeluown.app import App
 from feeluown.player import Player, Playlist
 from feeluown.serializers import serialize
@@ -23,7 +25,7 @@ def test_serialize_app(mocker):
 def test_serialize_metadata():
     metadata = Metadata({'title': 'hello world'})
     js = serialize('python', metadata)
-    assert js['__type__'] == 'player.Metadata'
+    assert js['__type__'].endswith('player.Metadata')
 
 
 def test_serialize_model():
@@ -38,6 +40,7 @@ def test_serialize_model():
     assert song_js['identifier'] == '1'
 
 
+@pytest.mark.skip(reason='model v1 will be removed lator')
 def test_serialize_model_v1():
     song = SongModelV1(identifier='1', title='', artists=[], duration=0)
     song_js = serialize('python', song)

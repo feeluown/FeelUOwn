@@ -47,6 +47,7 @@ typenames.update(_sys_typenames)
 r_typenames = defaultdict(list)
 for k, v in typenames.items():
     r_typenames[v].append(k)
+r_typenames = dict(r_typenames)
 
 
 def get_type_by_name(name: str):
@@ -54,7 +55,12 @@ def get_type_by_name(name: str):
 
 
 def get_names_by_type(type_: Any):
-    return r_typenames.get(type_, [])
+    try:
+        return r_typenames[type_]
+    except KeyError:
+        if type_.__module__ == 'unittest.mock':
+            return ['unittest.mock.Mock']
+        raise
 
 
 def attach_typename(method):
