@@ -129,6 +129,9 @@ class Playlist:
         #    The *songs_removed* and *songs_added* signal.
         self.songs_removed = Signal()  # (index, count)
         self.songs_added = Signal()  # (index, count)
+        # .. versionadded:: 3.9.0
+        #    The *play_model_handling* signal.
+        self.play_model_handling = Signal()
 
         self._app.player.media_finished.connect(self._on_media_finished)
 
@@ -684,6 +687,7 @@ class Playlist:
         """
         # Stop the player so that user know the action is working.
         self._app.player.stop()
+        self.play_model_handling.emit()
         task = self.set_current_model(model)
         if task is not None:
             def cb(future):
