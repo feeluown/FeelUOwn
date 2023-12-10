@@ -167,9 +167,7 @@ class PlayerControlPanel(QFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
     def on_metadata_changed(self, metadata):
-        if not metadata:
-            return
-
+        metadata = metadata or {}
         released = metadata.get('released', '')
         if released:
             self.cover_label.setToolTip(f'专辑发行日期：{released}')
@@ -180,6 +178,8 @@ class PlayerControlPanel(QFrame):
         artwork_uid = metadata.get('uri', artwork)
         if artwork:
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
+        else:
+            self.cover_label.show_img(None)
 
 
 class TopPanel(QFrame):

@@ -286,6 +286,7 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
     pl._current_song = song
     await pl.a_set_current_song(pl.next_song)
     assert mock_mark_as_bad.called
+    await asyncio.sleep(0.1)
     assert mock_next.called
 
 
