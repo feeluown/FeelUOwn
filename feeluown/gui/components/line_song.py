@@ -1,8 +1,13 @@
+from typing import TYPE_CHECKING
+
 from PyQt5.QtCore import QTimer, QRect, Qt
 from PyQt5.QtGui import QFontMetrics, QPainter, QPalette
 from PyQt5.QtWidgets import QApplication, QLabel, QSizePolicy, QMenu
 
 from feeluown.gui.components import SongMenuInitializer
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 
 class LineSongLabel(QLabel):
@@ -10,7 +15,7 @@ class LineSongLabel(QLabel):
 
     default_text = '...'
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(text=self.default_text, parent=parent)
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
@@ -28,10 +33,12 @@ class LineSongLabel(QLabel):
 
         self._app.player.metadata_changed.connect(
             self.on_metadata_changed, aioqueue=True)
+        self._app.playlist.play_model_handling.connect(
+            self.on_play_model_handling, aioqueue=True)
 
     def on_metadata_changed(self, metadata):
         if not metadata:
-            self.setText('')
+            self.setText('...')
             return
 
         # Set main text.
@@ -42,6 +49,9 @@ class LineSongLabel(QLabel):
                 # FIXME: use _get_artists_name
                 text += f" - {','.join(artists)}"
         self.setText(text)
+
+    def on_play_model_handling(self):
+        self.setText('正在加载歌曲...')
 
     def change_text_position(self):
         if not self.parent().isVisible():  # type: ignore

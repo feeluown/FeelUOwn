@@ -267,6 +267,9 @@ class BriefSongModel(BaseBriefModel):
     album_name: str = ''
     duration_ms: str = ''
 
+    def __str__(self):
+        return f'{self.title} - {self.artists_name}'
+
 
 class BriefVideoModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.video, is_brief=True)

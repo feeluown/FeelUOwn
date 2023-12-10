@@ -1,4 +1,5 @@
 import warnings
+from typing import Optional
 
 from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QPainter, QImage
@@ -13,7 +14,7 @@ class CoverLabel(QLabel):
         super().__init__(parent=parent)
 
         self._radius = radius
-        self.drawer = None
+        self.drawer = PixmapDrawer(None, self, self._radius)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
 
     def show_pixmap(self, pixmap):
@@ -24,12 +25,11 @@ class CoverLabel(QLabel):
         self.updateGeometry()
         self.update()  # Schedule a repaint to refresh the UI ASAP.
 
-    def show_img(self, img: QImage):
+    def show_img(self, img: Optional[QImage]):
         if not img or img.isNull():
-            self.drawer = None
-            return
-
-        self.drawer = PixmapDrawer(img, self, self._radius)
+            self.drawer = PixmapDrawer(None, self, self._radius)
+        else:
+            self.drawer = PixmapDrawer(img, self, self._radius)
         self.updateGeometry()
         self.update()
 
@@ -41,12 +41,11 @@ class CoverLabel(QLabel):
         one is as follow, the other way is using bitmap mask,
         but in our practice, the mask way has poor render effects
         """
-        if self.drawer:
-            painter = QPainter(self)
-            self.drawer.draw(painter)
+        painter = QPainter(self)
+        self.drawer.draw(painter)
 
     def contextMenuEvent(self, e):
-        if self.drawer is None:
+        if self.drawer.get_img() is None:
             return
         menu = QMenu()
         action = menu.addAction('查看原图')
@@ -60,7 +59,7 @@ class CoverLabel(QLabel):
 
     def sizeHint(self):
         super_size = super().sizeHint()
-        if self.drawer is None:
+        if self.drawer.get_pixmap() is None:
             return super_size
         h = (self.width() * self.drawer.get_pixmap().height()) \
             // self.drawer.get_pixmap().width()

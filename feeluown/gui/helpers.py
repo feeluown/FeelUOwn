@@ -553,6 +553,10 @@ def fetch_cover_wrapper(app: GuiApp):
     return fetch_model_cover
 
 
+def random_solarized_color():
+    return QColor(random.choice(list(SOLARIZED_COLORS.values())))
+
+
 # https://ethanschoonover.com/solarized/
 SOLARIZED_COLORS = {
     'yellow':    '#b58900',
