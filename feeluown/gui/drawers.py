@@ -1,6 +1,10 @@
+from typing import Optional
+
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
 from PyQt5.QtGui import QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF
 from PyQt5.QtWidgets import QWidget
+
+from feeluown.gui.helpers import random_solarized_color
 
 
 class PixmapDrawer:
@@ -12,14 +16,19 @@ class PixmapDrawer:
         """
         :param widget: a object which has width() and height() method.
         """
-        self._img = img
         self._widget_last_width = widget.width()
-
-        new_img = img.scaledToWidth(self._widget_last_width, Qt.SmoothTransformation)
-        self._pixmap = QPixmap(new_img)
-
         self._widget = widget
         self._radius = radius
+
+        if img is None:
+            self._color = random_solarized_color()
+            self._img = None
+            self._pixmap = None
+        else:
+            self._img = img
+            self._color = None
+            new_img = img.scaledToWidth(self._widget_last_width, Qt.SmoothTransformation)
+            self._pixmap = QPixmap(new_img)
 
     @classmethod
     def from_img_data(cls, img_data, *args, **kwargs):
@@ -27,10 +36,10 @@ class PixmapDrawer:
         img.loadFromData(img_data)
         return cls(img, *args, **kwargs)
 
-    def get_img(self) -> QImage:
+    def get_img(self) -> Optional[QImage]:
         return self._img
 
-    def get_pixmap(self) -> QPixmap:
+    def get_pixmap(self) -> Optional[QPixmap]:
         return self._pixmap
 
     def maybe_update_pixmap(self):
@@ -41,21 +50,39 @@ class PixmapDrawer:
             self._pixmap = QPixmap(new_img)
 
     def draw(self, painter):
-        if self._pixmap is None:
-            return
-
-        self.maybe_update_pixmap()
-
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        if self._pixmap is None:
+            self._draw_random_color(painter)
+        else:
+            self._draw_pixmap(painter)
+        painter.restore()
+
+    def _get_radius(self):
+        return self._radius if self._radius >= 1 else self._widget.width() * self._radius
+
+    def _draw_random_color(self, painter: QPainter):
+        brush = QBrush(self._color)
+        painter.setBrush(brush)
+        painter.setPen(Qt.NoPen)
+        rect = self._widget.rect()
+        if self._radius == 0:
+            painter.drawRect(rect)
+        else:
+            radius = self._get_radius()
+            painter.drawRoundedRect(rect, radius, radius)
+
+    def _draw_pixmap(self, painter: QPainter):
+        assert self._pixmap is not None
+
+        self.maybe_update_pixmap()
         brush = QBrush(self._pixmap)
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
         radius = self._radius
         size = self._pixmap.size()
         y = (size.height() - self._widget.height()) // 2
-
         painter.save()
         painter.translate(0, -y)
         rect = QRect(0, y, self._widget.width(), self._widget.height())
@@ -64,7 +91,6 @@ class PixmapDrawer:
         else:
             radius = radius if self._radius >= 1 else self._widget.width() * self._radius
             painter.drawRoundedRect(rect, radius, radius)
-        painter.restore()
         painter.restore()
 
 

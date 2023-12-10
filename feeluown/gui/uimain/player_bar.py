@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy
@@ -15,12 +16,15 @@ from feeluown.gui.components import (
 )
 from feeluown.gui.helpers import IS_MACOS
 
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
+
 logger = logging.getLogger(__name__)
 
 
 class PlayerControlPanel(QFrame):
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -167,9 +171,7 @@ class PlayerControlPanel(QFrame):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
     def on_metadata_changed(self, metadata):
-        if not metadata:
-            return
-
+        metadata = metadata or {}
         released = metadata.get('released', '')
         if released:
             self.cover_label.setToolTip(f'专辑发行日期：{released}')
@@ -180,6 +182,8 @@ class PlayerControlPanel(QFrame):
         artwork_uid = metadata.get('uri', artwork)
         if artwork:
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
+        else:
+            self.cover_label.show_img(None)
 
 
 class TopPanel(QFrame):

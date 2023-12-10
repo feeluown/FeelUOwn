@@ -3,11 +3,11 @@ import warnings
 import logging
 import random
 from enum import IntEnum, Enum
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
 from feeluown.excs import ProviderIOError
 from feeluown.utils import aio
-from feeluown.utils.aio import run_fn
+from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
@@ -16,6 +16,9 @@ from feeluown.library import (
 )
 from feeluown.media import Media
 from feeluown.models.uri import reverse
+
+if TYPE_CHECKING:
+    from feeluown.app import App
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +74,7 @@ class PlaylistMode(IntEnum):
 
 
 class Playlist:
-    def __init__(self, app, songs=None, playback_mode=PlaybackMode.loop,
+    def __init__(self, app: 'App', songs=None, playback_mode=PlaybackMode.loop,
                  audio_select_policy='hq<>'):
         """
         :param songs: list of :class:`feeluown.models.SongModel`
@@ -126,6 +129,9 @@ class Playlist:
         #    The *songs_removed* and *songs_added* signal.
         self.songs_removed = Signal()  # (index, count)
         self.songs_added = Signal()  # (index, count)
+        # .. versionadded:: 3.9.0
+        #    The *play_model_handling* signal.
+        self.play_model_handling = Signal()
 
         self._app.player.media_finished.connect(self._on_media_finished)
 
@@ -397,6 +403,9 @@ class Playlist:
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
         return previous_song
 
+    async def a_next(self):
+        self.next()
+
     def next(self) -> Optional[asyncio.Task]:
         if self.next_song is None:
             self.eof_reached.emit()
@@ -473,7 +482,7 @@ class Playlist:
                     self.batch_add(song.children)
                     await self.a_set_current_song(song.children[0])
                 else:
-                    self.next()
+                    run_afn(self.a_next)
                 return
 
             logger.info(f'{song_str} has no valid media, mark it as bad')
@@ -482,7 +491,7 @@ class Playlist:
             # if mode is fm mode, do not find standby song,
             # just skip the song
             if self.mode is PlaylistMode.fm:
-                self.next()
+                run_afn(self.a_next)
                 return
 
             self._app.show_msg(f'{song_str} is invalid, try to find standby')
@@ -493,7 +502,9 @@ class Playlist:
             )
             if standby_candidates:
                 standby, media = standby_candidates[0]
-                self._app.show_msg(f'Song standby was found in {standby.source} ✅')
+                msg = f'Song standby was found in {standby.source} ✅'
+                logger.info(msg)
+                self._app.show_msg(msg)
                 # Insert the standby song after the song
                 if song in self._songs and standby not in self._songs:
                     index = self._songs.index(song)
@@ -501,7 +512,9 @@ class Playlist:
                     self.songs_added.emit(index + 1, 1)
                 target_song = standby
             else:
-                self._app.show_msg('Song standby not found')
+                msg = 'Song standby not found'
+                logger.info(msg)
+                self._app.show_msg(msg)
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
             logger.error(f'prepare media failed: {e}, try next song')
@@ -511,7 +524,7 @@ class Playlist:
             logger.exception('prepare media failed due to unknown error, '
                              'so we mark the song as a bad one')
             self.mark_as_bad(song)
-            self.next()
+            run_afn(self.a_next)
             return
         else:
             assert media, "media must not be empty"
@@ -534,7 +547,7 @@ class Playlist:
 
         if song is not None:
             if media is None:
-                self.next()
+                run_afn(self.a_next)
             else:
                 # Note that the value of model v1 {}_display may be None.
                 kwargs = {}
@@ -607,6 +620,7 @@ class Playlist:
 
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
+        task_spec.disable_default_cb()
         if self.watch_mode is True:
             try:
                 mv_media = await task_spec.bind_blocking_io(
@@ -671,6 +685,9 @@ class Playlist:
 
         .. versionadded: 3.7.14
         """
+        # Stop the player so that user know the action is working.
+        self._app.player.stop()
+        self.play_model_handling.emit()
         task = self.set_current_model(model)
         if task is not None:
             def cb(future):
@@ -680,4 +697,5 @@ class Playlist:
                     logger.exception('play model failed')
                 else:
                     self._app.player.resume()
+                    logger.info(f'play a model ({model}) succeed')
             task.add_done_callback(cb)
