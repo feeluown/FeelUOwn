@@ -1,6 +1,8 @@
 from abc import abstractmethod, ABC
 from typing import TYPE_CHECKING, runtime_checkable, Protocol, Dict, Optional, List
 
+from PyQt5.QtCore import pyqtSignal, QObject
+
 from feeluown.library import ProviderV2
 from feeluown.gui.widgets.provider import ProvidersModel
 from feeluown.utils.dispatch import Signal
@@ -14,6 +16,14 @@ class UISupportsLoginOrGoHome(Protocol):
 
     @abstractmethod
     def login_or_go_home(self):
+        ...
+
+
+@runtime_checkable
+class UISupportsDiscovery(Protocol):
+
+    @abstractmethod
+    def discovery(self):
         ...
 
 
@@ -33,9 +43,12 @@ class AbstractProviderUi(ABC):
         ...
 
 
-class CurrentProviderUiManager:
+class CurrentProviderUiManager(QObject):
+
+    changed = pyqtSignal([object, object])
 
     def __init__(self, app: 'GuiApp'):
+        super().__init__(parent=app)
         self._app = app
         self._current: Optional[AbstractProviderUi] = None
 
@@ -48,7 +61,9 @@ class CurrentProviderUiManager:
 
     def set(self, provider_ui: AbstractProviderUi):
         self._current_item = None
+        old = self._current
         self._current = provider_ui
+        self.changed.emit(provider_ui, old)
 
     def get_either(self):
         return self._current or self._current_item
