@@ -19,9 +19,11 @@ from feeluown.gui.widgets import (
     PlusButton,
     TriagleButton,
 )
+from feeluown.gui.provider_ui import UISupportsDiscovery
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.components import CollectionListView
 from feeluown.gui.widgets.my_music import MyMusicView
+from feeluown.gui.helpers import disconnect_slots_if_has
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -166,6 +168,8 @@ class _LeftPanel(QFrame):
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
         self.playlists_con.create_btn.clicked.connect(self._create_playlist)
+        self._app.current_pvd_ui_mgr.changed.connect(
+            self.on_current_pvd_ui_changed)
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
@@ -273,3 +277,8 @@ class _LeftPanel(QFrame):
                           QMessageBox.Yes | QMessageBox.No, self)
         box.accepted.connect(do)
         box.open()
+
+    def on_current_pvd_ui_changed(self, pvd_ui, _):
+        disconnect_slots_if_has(self.discovery_btn)
+        if isinstance(pvd_ui, UISupportsDiscovery):
+            self.discovery_btn.clicked.connect(pvd_ui.discovery)
