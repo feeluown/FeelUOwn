@@ -130,76 +130,125 @@ class ImgListDelegate(QAbstractItemDelegate):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.view = parent
+        self.view: 'ImgListView' = parent
         # TODO: move as_circle/w_h_ratio attribute to view
         self.as_circle = True
         self.w_h_ratio = 1.0
 
+        self.spacing = self.view.img_spacing
+        self.half_spacing = self.spacing // 2
+        self.text_height = self.view.img_text_height
+
+    def column_count(self):
+        return ((self.view.width() + self.view.img_spacing) //
+                (self.view.img_sizehint()[0] + self.view.img_spacing))
+
+    def is_left_first(self, index):
+        if self.view.isWrapping():
+            return index.row() % self.column_count() == 0
+        return index.row() == 0
+
+    def is_right_last(self, index):
+        if self.view.isWrapping():
+            column_count = self.column_count()
+            return index.row() % column_count == column_count - 1
+        return False  # FIXME: implement this
+
+    def get_spacing(self, index):
+        if self.is_left_first(index) or self.is_right_last(index):
+            return self.half_spacing
+        return self.spacing
+
     def paint(self, painter, option, index):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
+
         rect = option.rect
-        text_rect_height = 30
-        img_text_height = self.view.img_text_height
-        source_rect_height = img_text_height - text_rect_height
-        text_y = rect.y() + rect.height() - img_text_height
-        cover_height = rect.height() - img_text_height
-        cover_width = rect.width()
-        text_rect = QRectF(rect.x(), text_y, rect.width(), text_rect_height)
-        whats_this_rect = QRectF(
-            rect.x(), text_y + text_rect_height - 5,
-            rect.width(), source_rect_height + 5
-        )
+        painter.translate(rect.x(), rect.y())
+        if not self.is_left_first(index):
+            painter.translate(self.half_spacing, 0)
+
         obj = index.data(Qt.DecorationRole)
         if obj is None:
             painter.restore()
             return
 
+        text_title_height = 30
+        text_source_height = self.text_height - text_title_height
+        text_source_color = non_text_color = self.get_non_text_color(option)
+        spacing = self.get_spacing(index)
+        draw_width = rect.width() - spacing
+
+        # Draw cover or color.
+        cover_height = rect.height() - self.text_height - self.spacing
+        painter.save()
+        self.draw_cover_or_color(painter, non_text_color, obj, draw_width, cover_height)
+        painter.restore()
+
+        # Draw text(album name / artist name / playlist name).
+        painter.translate(0, cover_height)
+        text_rect = QRectF(0, 0, draw_width, text_title_height)
+        painter.save()
+        self.draw_title(painter, index, text_rect)
+        painter.restore()
+
+        # Draw source.
+        painter.save()
+        painter.translate(0, text_title_height - 5)
+        whats_this_rect = QRectF(0, 0, draw_width, text_source_height + 5)
+        self.draw_whats_this(painter, index, text_source_color, whats_this_rect)
+        painter.restore()
+
+        painter.restore()
+
+    def get_non_text_color(self, option):
         text_color = option.palette.color(QPalette.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
         else:
             non_text_color = text_color.lighter(150)
         non_text_color.setAlpha(100)
-        painter.save()
+        return non_text_color
+
+    def draw_cover_or_color(self, painter, non_text_color, obj, draw_width, height):
         pen = painter.pen()
         pen.setColor(non_text_color)
         painter.setPen(pen)
-        painter.translate(rect.x(), rect.y())
         if isinstance(obj, QColor):
             color = obj
             brush = QBrush(color)
             painter.setBrush(brush)
         else:
             if obj.height() < obj.width():
-                img = obj.scaledToHeight(cover_height, Qt.SmoothTransformation)
+                img = obj.scaledToHeight(height, Qt.SmoothTransformation)
             else:
-                img = obj.scaledToWidth(cover_width, Qt.SmoothTransformation)
+                img = obj.scaledToWidth(draw_width, Qt.SmoothTransformation)
             brush = QBrush(img)
             painter.setBrush(brush)
         border_radius = 3
         if self.as_circle:
-            border_radius = cover_width // 2
-        cover_rect = QRect(0, 0, cover_width, cover_height)
+            border_radius = draw_width // 2
+        cover_rect = QRect(0, 0, draw_width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
-        painter.restore()
-        option = QTextOption()
-        source_option = QTextOption()
+
+    def draw_title(self, painter, index, text_rect):
+        text_option = QTextOption()
         if self.as_circle:
-            option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+            text_option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         else:
-            option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-            source_option.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+            text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
         name = index.data(Qt.DisplayRole)
         fm = QFontMetrics(painter.font())
         elided_name = fm.elidedText(name, Qt.ElideRight, int(text_rect.width()))
-        painter.drawText(text_rect, elided_name, option)
-        painter.restore()
+        painter.drawText(text_rect, elided_name, text_option)
 
-        # Draw WhatsThis.
+    def draw_whats_this(self, painter, index, non_text_color, whats_this_rect):
+        source_option = QTextOption()
+        if self.as_circle:
+            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+        else:
+            source_option.setAlignment(Qt.AlignLeft | Qt.AlignTop)
         whats_this = index.data(Qt.WhatsThisRole)
-        painter.save()
         pen = painter.pen()
         font = painter.font()
         resize_font(font, -2)
@@ -207,12 +256,13 @@ class ImgListDelegate(QAbstractItemDelegate):
         pen.setColor(non_text_color)
         painter.setPen(non_text_color)
         painter.drawText(whats_this_rect, whats_this, source_option)
-        painter.restore()
 
     def sizeHint(self, option, index):
+        spacing = self.get_spacing(index)
         width = self.view.img_sizehint()[0]
         if index.isValid():
-            return QSize(width, int(width / self.w_h_ratio) + self.view.img_text_height)
+            height = int(width / self.w_h_ratio) + self.text_height
+            return QSize(width + spacing, height + self.spacing)
         return super().sizeHint(option, index)
 
 
@@ -260,7 +310,6 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
         self.setResizeMode(QListView.Adjust)
         self.setWrapping(True)
         self.setFrameShape(QFrame.NoFrame)
-        self.setSpacing(self.img_spacing)
         self.initialize()
 
     def resizeEvent(self, e):
@@ -288,8 +337,9 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
         #   CoverMaxWidth = 2 * img_min_width + img_spacing - 1
 
         # calculate max column count
-        count = (width - img_spacing) // (img_min_width + img_spacing)
+        count = (width + img_spacing) // (img_min_width + img_spacing)
         count = max(count, 1)
-        img_height = img_width = (width - ((count + 1) * img_spacing)) // count
+        # calculate img_width when column count is the max
+        img_height = img_width = (width + img_spacing) // count - img_spacing
         img_height = img_height + img_text_height
         return img_width, img_height
