@@ -1,8 +1,8 @@
 """
 ImgList model and delegate
 
-- ImgListDelegate
-- ImgListModel
+- ImgCardListDelegate
+- ImgCardListModel
 
 By default, we think the proper width of a cover is about 160px,
 the margin between two cover should be about 20px. When the view is
@@ -15,11 +15,11 @@ import random
 from typing import TypeVar, Optional, List, cast
 
 from PyQt5.QtCore import (
-    QAbstractListModel, QModelIndex, Qt,
-    QRectF, QRect, QSize, QSortFilterProxyModel
+    QAbstractListModel, QModelIndex, Qt, QObject, QEvent,
+    QRectF, QRect, QSize, QSortFilterProxyModel, pyqtSignal
 )
 from PyQt5.QtGui import (
-    QImage, QColor,
+    QImage, QColor, QResizeEvent,
     QBrush, QPainter, QTextOption, QFontMetrics, QPalette
 )
 from PyQt5.QtWidgets import (
@@ -27,6 +27,7 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import aio
+from feeluown.library import AlbumModel, AlbumType
 from feeluown.utils.reader import wrap
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import (
@@ -49,7 +50,7 @@ COLORS = {
 }
 
 
-class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
+class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
@@ -126,22 +127,30 @@ class ImgListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         return None
 
 
-class ImgListDelegate(QAbstractItemDelegate):
-    def __init__(self, parent=None):
+class ImgCardListDelegate(QAbstractItemDelegate):
+    def __init__(self, parent=None,
+                 img_min_width=150, img_spacing=20, img_text_height=40,
+                 **_):
         super().__init__(parent)
 
-        self.view: 'ImgListView' = parent
-        # TODO: move as_circle/w_h_ratio attribute to view
+        self.view: 'ImgCardListView' = parent
+        self.view.installEventFilter(self)
         self.as_circle = True
         self.w_h_ratio = 1.0
 
-        self.spacing = self.view.img_spacing
+        self.img_min_width = img_min_width
+        self.img_spacing = img_spacing
+        self.img_text_height = img_text_height
+
+        self.spacing = self.img_spacing
         self.half_spacing = self.spacing // 2
-        self.text_height = self.view.img_text_height
+        self.text_height = self.img_text_height
+
+        self._img_width = self._img_height = 0
+        self._view_width = 0
 
     def column_count(self):
-        return ((self.view.width() + self.view.img_spacing) //
-                (self.view.img_sizehint()[0] + self.view.img_spacing))
+        return (self._view_width + self.img_spacing) // (self._img_width + self.img_spacing)
 
     def is_left_first(self, index):
         if self.view.isWrapping():
@@ -259,74 +268,20 @@ class ImgListDelegate(QAbstractItemDelegate):
 
     def sizeHint(self, option, index):
         spacing = self.get_spacing(index)
-        width = self.view.img_sizehint()[0]
+        width = self._img_width
         if index.isValid():
             height = int(width / self.w_h_ratio) + self.text_height
             return QSize(width + spacing, height + self.spacing)
         return super().sizeHint(option, index)
 
+    def on_view_resized(self, size: QSize, old_size: QSize):
+        self._view_width = size.width()
+        self._img_width, self._img_height = self.re_calc_img_size()
+        self.view._row_height = self._img_height
 
-class ImgFilterProxyModel(QSortFilterProxyModel):
-    def __init__(self, parent=None, types=None):
-        super().__init__(parent)
-
-        self.text = ''
-
-    def filter_by_text(self, text):
-        if text == self.text:
-            return
-        self.text = text
-        self.invalidateFilter()
-
-    def filterAcceptsRow(self, source_row, source_parent):
-        accepted = True
-        source_model = cast(ImgListModel, self.sourceModel())
-        index = source_model.index(source_row, parent=source_parent)
-        artist = index.data(Qt.UserRole)
-        if self.text:
-            accepted = self.text.lower() in artist.name_display.lower()
-        return accepted
-
-
-class ImgListView(ItemViewNoScrollMixin, QListView):
-    """
-    .. versionadded:: 3.7.7
-       The *img_min_width*, *img_spacing*, *img_text_height* parameter were added.
-    """
-    def __init__(self, parent=None,
-                 img_min_width=150, img_spacing=20, img_text_height=40,
-                 **kwargs):
-        super().__init__(parent=parent, **kwargs)
-
-        self.img_min_width = img_min_width
-        self.img_spacing = img_spacing
-        self.img_text_height = img_text_height
-
-        # override ItemViewNoScrollMixin variables
-        self._least_row_count = 1
-        self._row_height = img_min_width + img_spacing + img_text_height
-
-        self.setViewMode(QListView.IconMode)
-        self.setResizeMode(QListView.Adjust)
-        self.setWrapping(True)
-        self.setFrameShape(QFrame.NoFrame)
-        self.initialize()
-
-    def resizeEvent(self, e):
-        super().resizeEvent(e)
-
-        if self._no_scroll_v is True:
-            self._row_height = self.img_sizehint()[1] + self.img_spacing
-            self.adjust_height()
-
-    def img_sizehint(self) -> tuple:
-        """
-
-        .. versionadded:: 3.7.7
-        """
-        # HELP: listview needs about 20 spacing left on macOS
-        width = self.width() - 20
-
+    def re_calc_img_size(self):
+        # HELP: CardListView needs about 20 spacing left on macOS
+        width = max(0, self._view_width - 20)
         img_spacing = self.img_spacing
         img_min_width = self.img_min_width
         img_text_height = self.img_text_height
@@ -343,3 +298,194 @@ class ImgListView(ItemViewNoScrollMixin, QListView):
         img_height = img_width = (width + img_spacing) // count - img_spacing
         img_height = img_height + img_text_height
         return img_width, img_height
+
+    def eventFilter(self, _: QObject, event: QEvent):
+        if event.type() == QEvent.Resize:
+            event = cast(QResizeEvent, event)
+            self.on_view_resized(event.size(), event.oldSize())
+        return False
+
+
+class ImgFilterProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None, types=None):
+        super().__init__(parent)
+
+        self.text = ''
+
+    def filter_by_text(self, text):
+        if text == self.text:
+            return
+        self.text = text
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        accepted = True
+        source_model = cast(ImgCardListModel, self.sourceModel())
+        index = source_model.index(source_row, parent=source_parent)
+        artist = index.data(Qt.UserRole)
+        if self.text:
+            accepted = self.text.lower() in artist.name_display.lower()
+        return accepted
+
+
+class ImgCardListView(ItemViewNoScrollMixin, QListView):
+    """
+    .. versionchanged:: 3.9
+       The *img_min_width*, *img_spacing*, *img_text_height* parameter were removed.
+    """
+    def __init__(self, parent=None, **kwargs):
+        super().__init__(parent=parent, **kwargs)
+
+        # Override ItemViewNoScrollMixin variables. Actually, there variables are
+        # not important because ItemViewNoScrollMixin use QListView.sizeHint() to
+        # calculate the size and it works well.
+        #
+        #
+        self._least_row_count = 1
+        self._row_height = 0
+
+        self.setViewMode(QListView.IconMode)
+        self.setResizeMode(QListView.Adjust)
+        self.setWrapping(True)
+        self.setFrameShape(QFrame.NoFrame)
+        self.initialize()
+
+        self.activated.connect(self.on_activated)
+
+    def on_activated(self, _: QModelIndex):
+        """
+        Subclass can implement this method if needed.
+        """
+        pass
+
+
+class VideoCardListModel(ImgCardListModel):
+    def data(self, index, role):
+        offset = index.row()
+        if not index.isValid() or offset >= len(self._items):
+            return None
+        video = self._items[offset]
+        if role == Qt.DisplayRole:
+            return video.title_display
+        return super().data(index, role)
+
+
+class VideoCardListDelegate(ImgCardListDelegate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.as_circle = False
+        self.w_h_ratio = 1.618
+
+
+class VideoFilterProxyModel(ImgFilterProxyModel):
+    pass
+
+
+class VideoCardListView(ImgCardListView):
+    play_video_needed = pyqtSignal([object])
+
+    def on_activated(self, index):
+        video = index.data(Qt.UserRole)
+        self.play_video_needed.emit(video)
+
+
+class PlaylistCardListModel(ImgCardListModel):
+    pass
+
+
+class PlaylistCardListDelegate(ImgCardListDelegate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.as_circle = False
+
+
+class PlaylistFilterProxyModel(ImgFilterProxyModel):
+    pass
+
+
+class PlaylistCardListView(ImgCardListView):
+    show_playlist_needed = pyqtSignal([object])
+
+    def on_activated(self, index):
+        artist = index.data(Qt.UserRole)
+        self.show_playlist_needed.emit(artist)
+
+
+class ArtistCardListModel(ImgCardListModel):
+    pass
+
+
+class ArtistCardListDelegate(ImgCardListDelegate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.as_circle = True
+
+
+class ArtistFilterProxyModel(ImgFilterProxyModel):
+    pass
+
+
+class ArtistCardListView(ImgCardListView):
+    show_artist_needed = pyqtSignal([object])
+
+    def on_activated(self, index):
+        artist = index.data(Qt.UserRole)
+        self.show_artist_needed.emit(artist)
+
+
+class AlbumCardListModel(ImgCardListModel):
+    def data(self, index, role):
+        offset = index.row()
+        if not index.isValid() or offset >= len(self._items):
+            return None
+
+        album = self._items[offset]
+        if role == Qt.WhatsThisRole:
+            if isinstance(album, AlbumModel):
+                if album.song_count >= 0:
+                    # Like: 1991-01-01 10首
+                    return f'{album.released} {album.song_count}首'
+                return album.released
+        return super().data(index, role)
+
+
+class AlbumCardListDelegate(ImgCardListDelegate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.as_circle = False
+
+
+class AlbumFilterProxyModel(ImgFilterProxyModel):
+    def __init__(self, parent=None, types=None):
+        super().__init__(parent)
+
+        self.types = types
+
+    def filter_by_types(self, types):
+        # if types is a empty list or None, we show all albums
+        if not types:
+            types = None
+        self.types = types
+        self.invalidateFilter()
+
+    def filterAcceptsRow(self, source_row, source_parent):
+        accepted = super().filterAcceptsRow(source_row, source_parent)
+        source_model = self.sourceModel()
+        assert isinstance(source_model, AlbumCardListModel)
+        index = source_model.index(source_row, parent=source_parent)
+        album = index.data(Qt.UserRole)
+        if accepted and self.types:
+            accepted = AlbumType(album.type_) in self.types
+        return accepted
+
+
+class AlbumCardListView(ImgCardListView):
+    show_album_needed = pyqtSignal([object])
+
+    def on_activated(self, index):
+        album = index.data(Qt.UserRole)
+        self.show_album_needed.emit(album)
