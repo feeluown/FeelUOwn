@@ -21,9 +21,10 @@ from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.widgets.img_card_list import ImgCardListView
 from feeluown.gui.widgets.img_card_list import (
     AlbumCardListModel, AlbumCardListView, AlbumFilterProxyModel, AlbumCardListDelegate,
-    ArtistCardListModel, ArtistCardListView, ArtistFilterProxyModel, ArtistCardListDelegate,
+    ArtistCardListModel, ArtistCardListView, ArtistFilterProxyModel,
     VideoCardListModel, VideoCardListView, VideoFilterProxyModel, VideoCardListDelegate,
-    PlaylistCardListModel, PlaylistCardListView, PlaylistFilterProxyModel, PlaylistCardListDelegate,
+    PlaylistCardListModel, PlaylistCardListView, PlaylistFilterProxyModel,
+    PlaylistCardListDelegate, ArtistCardListDelegate,
 )
 from feeluown.gui.widgets.songs import ColumnsMode, SongsTableModel, SongsTableView, \
     SongFilterProxyModel
@@ -263,7 +264,8 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.videos_table = VideoCardListView(parent=self)
         self.videos_table.setItemDelegate(VideoCardListDelegate(self.videos_table))
         self.playlists_table = PlaylistCardListView(parent=self)
-        self.playlists_table.setItemDelegate(PlaylistCardListDelegate(self.playlists_table))
+        self.playlists_table.setItemDelegate(
+            PlaylistCardListDelegate(self.playlists_table))
         self.comments_table = CommentListView(parent=self)
         self.desc_widget = DescLabel(parent=self)
 

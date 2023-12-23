@@ -12,7 +12,7 @@ resized, the cover width and the margin should make a few adjustment.
 # pylint: disable=unused-argument
 import logging
 import random
-from typing import TypeVar, Optional, List, cast
+from typing import TypeVar, Optional, List, cast, Union
 
 from PyQt5.QtCore import (
     QAbstractListModel, QModelIndex, Qt, QObject, QEvent,
@@ -20,7 +20,7 @@ from PyQt5.QtCore import (
 )
 from PyQt5.QtGui import (
     QImage, QColor, QResizeEvent,
-    QBrush, QPainter, QTextOption, QFontMetrics, QPalette
+    QBrush, QPainter, QTextOption, QFontMetrics
 )
 from PyQt5.QtWidgets import (
     QAbstractItemDelegate, QListView, QFrame,
@@ -31,7 +31,8 @@ from feeluown.library import AlbumModel, AlbumType
 from feeluown.utils.reader import wrap
 from feeluown.models.uri import reverse
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin,
+    ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin, painter_save,
+    secondary_text_color
 )
 
 logger = logging.getLogger(__name__)
@@ -128,8 +129,20 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
 
 
 class ImgCardListDelegate(QAbstractItemDelegate):
+    """
+    Card layout should be like the following::
+
+        |card0    card1    card2|
+                                          <- vertical spacing
+        |card3    card4    card5|
+                                          <- vertical spacing
+
+    The leftmost cards should have a half_h_spacing on the right side,
+    and the rightmost cards should have a half_h_spacing on the left side.
+    Middle cards should have a half_h_spacing on both sides.
+    """
     def __init__(self, parent=None,
-                 img_min_width=150, img_spacing=20, img_text_height=40,
+                 card_min_width=150, card_spacing=20, card_text_height=40,
                  **_):
         super().__init__(parent)
 
@@ -138,90 +151,63 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.as_circle = True
         self.w_h_ratio = 1.0
 
-        self.img_min_width = img_min_width
-        self.img_spacing = img_spacing
-        self.img_text_height = img_text_height
+        self.card_min_width = card_min_width
+        self.card_spacing = card_spacing
+        self.card_text_height = card_text_height
 
-        self.spacing = self.img_spacing
-        self.half_spacing = self.spacing // 2
-        self.text_height = self.img_text_height
+        self.h_spacing = self.card_spacing
+        self.v_spacing = self.half_h_spacing = self.h_spacing // 2
+        self.text_height = self.card_text_height
 
-        self._img_width = self._img_height = 0
+        # These variables are calculated in on_view_resized().
+        self._card_width = self._card_height = 0
         self._view_width = 0
 
-    def column_count(self):
-        return (self._view_width + self.img_spacing) // (self._img_width + self.img_spacing)
-
-    def is_left_first(self, index):
-        if self.view.isWrapping():
-            return index.row() % self.column_count() == 0
-        return index.row() == 0
-
-    def is_right_last(self, index):
-        if self.view.isWrapping():
-            column_count = self.column_count()
-            return index.row() % column_count == column_count - 1
-        return False  # FIXME: implement this
-
-    def get_spacing(self, index):
-        if self.is_left_first(index) or self.is_right_last(index):
-            return self.half_spacing
-        return self.spacing
+    def update_settings(self, name, value):
+        assert hasattr(self, name), f"no such setting: {name}"
+        setattr(self, name, value)
+        self.re_calc_all()
+        self.view.update()
 
     def paint(self, painter, option, index):
-        painter.save()
-        painter.setRenderHint(QPainter.Antialiasing)
-
-        rect = option.rect
-        painter.translate(rect.x(), rect.y())
-        if not self.is_left_first(index):
-            painter.translate(self.half_spacing, 0)
-
-        obj = index.data(Qt.DecorationRole)
+        obj: Optional[Union[QImage, QColor]] = index.data(Qt.DecorationRole)
         if obj is None:
-            painter.restore()
             return
 
-        text_title_height = 30
-        text_source_height = self.text_height - text_title_height
-        text_source_color = non_text_color = self.get_non_text_color(option)
-        spacing = self.get_spacing(index)
-        draw_width = rect.width() - spacing
+        with painter_save(painter):
+            painter.setRenderHint(QPainter.Antialiasing)
+            painter.translate(option.rect.x(), option.rect.y())
 
-        # Draw cover or color.
-        cover_height = rect.height() - self.text_height - self.spacing
-        painter.save()
-        self.draw_cover_or_color(painter, non_text_color, obj, draw_width, cover_height)
-        painter.restore()
+            if not self.is_leftmost(index):
+                painter.translate(self.half_h_spacing, 0)
 
-        # Draw text(album name / artist name / playlist name).
-        painter.translate(0, cover_height)
-        text_rect = QRectF(0, 0, draw_width, text_title_height)
-        painter.save()
-        self.draw_title(painter, index, text_rect)
-        painter.restore()
+            spacing = self.get_card_h_spacing(index)
+            draw_width = option.rect.width() - spacing
 
-        # Draw source.
-        painter.save()
-        painter.translate(0, text_title_height - 5)
-        whats_this_rect = QRectF(0, 0, draw_width, text_source_height + 5)
-        self.draw_whats_this(painter, index, text_source_color, whats_this_rect)
-        painter.restore()
+            secondary_color = border_color = secondary_text_color(option.palette)
+            # Draw cover or color.
+            img_height = int(draw_width * self.w_h_ratio)
+            with painter_save(painter):
+                self.draw_img_or_color(
+                    painter, border_color, obj, draw_width, img_height)
 
-        painter.restore()
+            # Draw text(album name / artist name / playlist name), and draw source.
+            text_title_height = 30
+            text_source_height = self.text_height - text_title_height
+            painter.translate(0, img_height)
+            text_rect = QRectF(0, 0, draw_width, text_title_height)
+            with painter_save(painter):
+                self.draw_title(painter, index, text_rect)
+            painter.translate(0, text_title_height - 5)
+            with painter_save(painter):
+                self.draw_whats_this(painter,
+                                     index,
+                                     secondary_color,
+                                     QRectF(0, 0, draw_width, text_source_height + 5))
 
-    def get_non_text_color(self, option):
-        text_color = option.palette.color(QPalette.Text)
-        if text_color.lightness() > 150:
-            non_text_color = text_color.darker(140)
-        else:
-            non_text_color = text_color.lighter(150)
-        non_text_color.setAlpha(100)
-        return non_text_color
-
-    def draw_cover_or_color(self, painter, non_text_color, obj, draw_width, height):
+    def draw_img_or_color(self, painter, border_color, obj, draw_width, height):
         pen = painter.pen()
-        pen.setColor(non_text_color)
+        pen.setColor(border_color)
         painter.setPen(pen)
         if isinstance(obj, QColor):
             color = obj
@@ -267,37 +253,61 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         painter.drawText(whats_this_rect, whats_this, source_option)
 
     def sizeHint(self, option, index):
-        spacing = self.get_spacing(index)
-        width = self._img_width
+        spacing = self.get_card_h_spacing(index)
+        width = self._card_width
         if index.isValid():
             height = int(width / self.w_h_ratio) + self.text_height
-            return QSize(width + spacing, height + self.spacing)
+            return QSize(width + spacing, height + self.v_spacing)
         return super().sizeHint(option, index)
 
-    def on_view_resized(self, size: QSize, old_size: QSize):
+    def on_view_resized(self, size: QSize, _: QSize):
         self._view_width = size.width()
-        self._img_width, self._img_height = self.re_calc_img_size()
-        self.view._row_height = self._img_height
+        self.re_calc_all()
 
-    def re_calc_img_size(self):
+    def re_calc_all(self):
         # HELP: CardListView needs about 20 spacing left on macOS
         width = max(0, self._view_width - 20)
-        img_spacing = self.img_spacing
-        img_min_width = self.img_min_width
-        img_text_height = self.img_text_height
+        card_spacing = self.card_spacing
 
         # according to our algorithm, when the widget width is:
-        #   2(img_min_width + img_spacing) + img_spacing - 1,
+        #   2(card_min_width + card_spacing) + card_spacing - 1,
         # the cover width can take the maximum width, it will be:
-        #   CoverMaxWidth = 2 * img_min_width + img_spacing - 1
+        #   CoverMaxWidth = 2 * card_min_width + card_spacing - 1
 
         # calculate max column count
-        count = (width + img_spacing) // (img_min_width + img_spacing)
+        count = (width + card_spacing) // (self.card_min_width + card_spacing)
         count = max(count, 1)
         # calculate img_width when column count is the max
-        img_height = img_width = (width + img_spacing) // count - img_spacing
-        img_height = img_height + img_text_height
-        return img_width, img_height
+        self._card_width = (width + card_spacing) // count - card_spacing
+        self._card_height = int(self._card_width * self.w_h_ratio) + self.text_height
+        self.view._row_height = self._card_height + self.v_spacing
+
+    def column_count(self):
+        return (self._view_width + self.card_spacing) // \
+            (self._card_width + self.card_spacing)
+
+    def which_column(self, index: QModelIndex):
+        if not self.view.isWrapping():
+            return index.row()
+        return index.row() % self.column_count()
+
+    def which_row(self, index: QModelIndex):
+        if not self.view.isWrapping():
+            return 0
+        return index.row() // self.column_count()
+
+    def is_leftmost(self, index):
+        return self.which_column(index) == 0
+
+    def is_rightmost(self, index):
+        if self.view.isWrapping():
+            return self.which_column(index) == self.column_count() - 1
+        return False  # HELP: no way to check if it is the rightmost.
+
+    def get_card_h_spacing(self, index):
+        if self.is_leftmost(index) or self.is_rightmost(index):
+            return self.half_h_spacing
+        return self.h_spacing
 
     def eventFilter(self, _: QObject, event: QEvent):
         if event.type() == QEvent.Resize:
@@ -331,7 +341,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
 class ImgCardListView(ItemViewNoScrollMixin, QListView):
     """
     .. versionchanged:: 3.9
-       The *img_min_width*, *img_spacing*, *img_text_height* parameter were removed.
+       The *card_min_width*, *card_spacing*, *card_text_height* parameter were removed.
     """
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)

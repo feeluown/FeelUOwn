@@ -58,9 +58,10 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
             # HACK: set fixed row for tables.
             # pylint: disable=protected-access
             for table in table_container._tables:
-                if isinstance(table.itemDelegate(), ImgCardListDelegate):
+                delegate = table.itemDelegate()
+                if isinstance(delegate, ImgCardListDelegate):
                     table._fixed_row_count = 2
-                    table.itemDelegate().img_min_width = 100
+                    delegate.update_settings("card_min_width", 100)
                 elif isinstance(table, SongsTableView):
                     table._fixed_row_count = 8
                     table._row_height = table.verticalHeader().defaultSectionSize()
