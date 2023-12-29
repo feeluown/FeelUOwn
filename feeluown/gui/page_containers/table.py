@@ -18,15 +18,14 @@ from feeluown.library import ModelState, NotSupported, ModelFlags, ModelType
 from feeluown.gui.helpers import BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper
 from feeluown.gui.components import SongMenuInitializer
-from feeluown.gui.widgets.imglist import ImgListView
-from feeluown.gui.widgets.album import AlbumListModel, AlbumListView, \
-    AlbumFilterProxyModel
-from feeluown.gui.widgets.artist import ArtistListModel, ArtistListView, \
-    ArtistFilterProxyModel
-from feeluown.gui.widgets.video_list import VideoListModel, VideoListView, \
-    VideoFilterProxyModel
-from feeluown.gui.widgets.playlist import PlaylistListModel, PlaylistListView, \
-    PlaylistFilterProxyModel
+from feeluown.gui.widgets.img_card_list import ImgCardListView
+from feeluown.gui.widgets.img_card_list import (
+    AlbumCardListModel, AlbumCardListView, AlbumFilterProxyModel, AlbumCardListDelegate,
+    ArtistCardListModel, ArtistCardListView, ArtistFilterProxyModel,
+    VideoCardListModel, VideoCardListView, VideoFilterProxyModel, VideoCardListDelegate,
+    PlaylistCardListModel, PlaylistCardListView, PlaylistFilterProxyModel,
+    PlaylistCardListDelegate, ArtistCardListDelegate,
+)
 from feeluown.gui.widgets.songs import ColumnsMode, SongsTableModel, SongsTableView, \
     SongFilterProxyModel
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
@@ -93,25 +92,25 @@ class Renderer:
     def show_albums(self, reader):
         self._show_model_with_cover(reader,
                                     self.albums_table,
-                                    AlbumListModel,
+                                    AlbumCardListModel,
                                     AlbumFilterProxyModel)
 
     def show_artists(self, reader):
         self._show_model_with_cover(reader,
                                     self.artists_table,
-                                    ArtistListModel,
+                                    ArtistCardListModel,
                                     ArtistFilterProxyModel)
 
     def show_videos(self, reader):
         self._show_model_with_cover(reader,
                                     self.videos_table,
-                                    VideoListModel,
+                                    VideoCardListModel,
                                     VideoFilterProxyModel)
 
     def show_playlists(self, reader):
         self._show_model_with_cover(reader,
                                     self.playlists_table,
-                                    PlaylistListModel,
+                                    PlaylistCardListModel,
                                     PlaylistFilterProxyModel)
 
     def _show_model_with_cover(self, reader, table, model_cls, filter_model_cls):
@@ -257,10 +256,16 @@ class TableContainer(QFrame, BgTransparentMixin):
         self.tabbar = TableTabBarV2()
         self.meta_widget = TableMetaWidget(parent=self)
         self.songs_table = SongsTableView(app=self._app, parent=self)
-        self.albums_table = AlbumListView(parent=self, img_min_width=120)
-        self.artists_table = ArtistListView(parent=self)
-        self.videos_table = VideoListView(parent=self)
-        self.playlists_table = PlaylistListView(parent=self)
+        self.albums_table = AlbumCardListView(parent=self)
+        self.albums_table.setItemDelegate(
+            AlbumCardListDelegate(self.albums_table, img_min_width=120))
+        self.artists_table = ArtistCardListView(parent=self)
+        self.artists_table.setItemDelegate(ArtistCardListDelegate(self.artists_table))
+        self.videos_table = VideoCardListView(parent=self)
+        self.videos_table.setItemDelegate(VideoCardListDelegate(self.videos_table))
+        self.playlists_table = PlaylistCardListView(parent=self)
+        self.playlists_table.setItemDelegate(
+            PlaylistCardListDelegate(self.playlists_table))
         self.comments_table = CommentListView(parent=self)
         self.desc_widget = DescLabel(parent=self)
 
@@ -306,6 +311,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._v_layout = QVBoxLayout()
 
         self._v_layout.addWidget(self.meta_widget)
+        self._v_layout.addSpacing(15)
         self._v_layout.addWidget(self.toolbar)
         self._v_layout.addWidget(self.desc_widget)
 
@@ -360,7 +366,7 @@ class TableContainer(QFrame, BgTransparentMixin):
                 self.toolbar.albums_mode()
             if table is self.songs_table:
                 self.toolbar.songs_mode()
-        if isinstance(self._table, ImgListView):
+        if isinstance(self._table, ImgCardListView):
             self._table.setModel(None)
         self._table = table
 
