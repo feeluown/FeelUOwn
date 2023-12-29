@@ -22,13 +22,14 @@ import asyncio
 import random
 import sys
 import logging
+from contextlib import contextmanager
 from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
 try:
     # helper module should work in no-window mode
     from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
         QAbstractListModel
-    from PyQt5.QtGui import QPalette, QFontMetrics, QColor
+    from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter
     from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
 except ImportError:
     pass
@@ -555,6 +556,23 @@ def fetch_cover_wrapper(app: GuiApp):
 
 def random_solarized_color():
     return QColor(random.choice(list(SOLARIZED_COLORS.values())))
+
+
+@contextmanager
+def painter_save(painter: QPainter):
+    painter.save()
+    yield
+    painter.restore()
+
+
+def secondary_text_color(palette: QPalette):
+    text_color: QColor = palette.color(QPalette.Text)
+    if text_color.lightness() > 150:
+        non_text_color = text_color.darker(140)
+    else:
+        non_text_color = text_color.lighter(150)
+    non_text_color.setAlpha(100)
+    return non_text_color
 
 
 # https://ethanschoonover.com/solarized/
