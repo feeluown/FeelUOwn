@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn
@@ -11,16 +11,10 @@ from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListDelegate,
 )
 
-from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecListDailySongs
-from feeluown.gui.widgets.textbtn import TextButton
-from feeluown.gui.helpers import fetch_cover_wrapper, BgTransparentMixin
-from feeluown.gui.widgets.song_minicard_list import (
-    SongMiniCardListView,
-    SongMiniCardListModel,
-    SongMiniCardListDelegate,
-)
+from feeluown.library import SupportsRecListDailyPlaylists
 
-from fuo_netease import provider
+from feeluown.gui.widgets import CalendarButton, RankButton
+from feeluown.gui.helpers import fetch_cover_wrapper
 
 
 if TYPE_CHECKING:
@@ -42,42 +36,41 @@ class View(QWidget):
 
         self.header_title = LargeHeader()
         self.header_playlist_list = MidHeader()
-        self.header_daily_rec = MidHeader()
         self.playlist_list_view = PlaylistCardListView(fixed_row_count=1)
         self.playlist_list_view.setItemDelegate(
             PlaylistCardListDelegate(self.playlist_list_view,
                                      card_min_width=100,))
-
-        self.daily_rec_view = SongMiniCardListView(no_scroll_v=False, fixed_row_count=2)
-        delegate = SongMiniCardListDelegate(
-            self.daily_rec_view,
-            card_min_width=150,
-            card_height=40,
-            card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
-            card_right_spacing=10,
-        )
-        self.daily_rec_view.setItemDelegate(delegate)
+        self.daily_songs_btn = CalendarButton('每日推荐', parent=self)
+        self.rank_btn = RankButton(parent=self)
+        self.daily_songs_btn.setMinimumWidth(150)
+        self.rank_btn.setMinimumWidth(150)
 
         self.header_title.setText('发现音乐')
         self.header_playlist_list.setText('个性化推荐')
-        self.header_daily_rec.setText('每日推荐')
 
         self._layout = QVBoxLayout(self)
         self._setup_ui()
 
-        self.daily_rec_view.play_song_needed.connect(self._app.playlist.play_model)
         self.playlist_list_view.show_playlist_needed.connect(
-            lambda model: self.browser.goto(model=model))
+            lambda model: self._app.browser.goto(model=model))
+        self.daily_songs_btn.clicked.connect(
+            lambda: self._app.browser.goto(page='/rec/daily_songs'))
+        self.rank_btn.clicked.connect(
+            lambda: self._app.show_msg('未实现，欢迎 PR！'))
 
     def _setup_ui(self):
+        self._h_layout = QHBoxLayout()
+        self._h_layout.addWidget(self.daily_songs_btn)
+        self._h_layout.addSpacing(10)
+        self._h_layout.addWidget(self.rank_btn)
+        self._h_layout.addStretch(0)
+
         self._layout.setContentsMargins(20, 10, 20, 0)
         self._layout.setSpacing(0)
         self._layout.addWidget(self.header_title)
         self._layout.addSpacing(10)
-        self._layout.addWidget(self.header_daily_rec)
-        self._layout.addSpacing(5)
-        self._layout.addWidget(self.daily_rec_view)
-        self._layout.addSpacing(10)
+        self._layout.addLayout(self._h_layout)
+        self._layout.addSpacing(30)
         self._layout.addWidget(self.header_playlist_list)
         self._layout.addSpacing(10)
         self._layout.addWidget(self.playlist_list_view)
@@ -99,9 +92,3 @@ class View(QWidget):
             filter_model = PlaylistFilterProxyModel()
             filter_model.setSourceModel(model)
             self.playlist_list_view.setModel(filter_model)
-
-        if isinstance(provider, SupportsRecListDailySongs):
-            songs = await run_fn(provider.rec_list_daily_songs)
-            model = SongMiniCardListModel(create_reader(songs),
-                                          fetch_cover_wrapper(self._app))
-            self.daily_rec_view.setModel(model)
