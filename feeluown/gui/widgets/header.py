@@ -22,4 +22,4 @@ class LargeHeader(BaseHeader):
 
 class MidHeader(BaseHeader):
     def __init__(self, *args, **kwargs):
-        super().__init__(15, *args, **kwargs)
+        super().__init__(16, *args, **kwargs)

@@ -168,8 +168,10 @@ class _LeftPanel(QFrame):
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
         self.playlists_con.create_btn.clicked.connect(self._create_playlist)
-        self._app.current_pvd_ui_mgr.changed.connect(
-            self.on_current_pvd_ui_changed)
+        # self._app.current_pvd_ui_mgr.changed.connect(
+        #     self.on_current_pvd_ui_changed)
+        self.discovery_btn.clicked.connect(
+            lambda: self._app.browser.goto(page='/rec'))
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
