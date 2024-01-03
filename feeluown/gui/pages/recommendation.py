@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 
 from feeluown.utils.reader import create_reader
@@ -11,7 +10,7 @@ from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListDelegate,
 )
 
-from feeluown.library import SupportsRecListDailyPlaylists
+from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecListDailySongs
 
 from feeluown.gui.widgets import CalendarButton, RankButton
 from feeluown.gui.helpers import fetch_cover_wrapper
@@ -47,6 +46,8 @@ class View(QWidget):
 
         self.header_title.setText('发现音乐')
         self.header_playlist_list.setText('个性化推荐')
+        self.rank_btn.setDisabled(True)
+        self.rank_btn.setToolTip('未实现，欢迎 PR！')
 
         self._layout = QVBoxLayout(self)
         self._setup_ui()
@@ -92,3 +93,6 @@ class View(QWidget):
             filter_model = PlaylistFilterProxyModel()
             filter_model.setSourceModel(model)
             self.playlist_list_view.setModel(filter_model)
+
+        if not isinstance(provider, SupportsRecListDailySongs):
+            self.daily_songs_btn.setDisabled(True)

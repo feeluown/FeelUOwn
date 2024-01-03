@@ -5,16 +5,19 @@ from feeluown.gui.page_containers.table import TableContainer, Renderer
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.utils.aio import run_fn
 from feeluown.utils.reader import create_reader
+from .template import render_error_message
 
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 
-async def render(req, **kwargs):
+async def render(req, **_):
     app: 'GuiApp' = req.ctx['app']
     pvd_ui = app.current_pvd_ui_mgr.get()
-    assert pvd_ui is not None
+    if pvd_ui is None:
+        return await render_error_message(app, '当前资源提供方未知，无法浏览该页面')
+
     provider = pvd_ui.provider
 
     scroll_area = ScrollArea()
@@ -27,4 +30,4 @@ async def render(req, **kwargs):
         await body.set_renderer(renderer)
         renderer.show_songs(create_reader(songs))
         renderer.meta_widget.show()
-        renderer.meta_widget.title = f'每日推荐歌曲（{provider.name}）'
+        renderer.meta_widget.title = '每日推荐歌曲'
