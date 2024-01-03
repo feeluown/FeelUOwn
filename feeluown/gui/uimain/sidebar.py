@@ -19,11 +19,10 @@ from feeluown.gui.widgets import (
     PlusButton,
     TriagleButton,
 )
-from feeluown.gui.provider_ui import UISupportsDiscovery
+
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.components import CollectionListView
 from feeluown.gui.widgets.my_music import MyMusicView
-from feeluown.gui.helpers import disconnect_slots_if_has
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -156,6 +155,8 @@ class _LeftPanel(QFrame):
         # 让各个音乐库来决定是否显示这些组件
         self.playlists_con.hide()
         self.my_music_con.hide()
+        self.discovery_btn.setDisabled(True)
+        self.discovery_btn.setToolTip('当前资源提供方未知')
 
         self.home_btn.clicked.connect(self.show_library)
         self.discovery_btn.clicked.connect(self.show_pool)
@@ -170,6 +171,8 @@ class _LeftPanel(QFrame):
         self.playlists_con.create_btn.clicked.connect(self._create_playlist)
         self._app.current_pvd_ui_mgr.changed.connect(
             self.on_current_pvd_ui_changed)
+        self.discovery_btn.clicked.connect(
+            lambda: self._app.browser.goto(page='/rec'))
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
@@ -279,6 +282,5 @@ class _LeftPanel(QFrame):
         box.open()
 
     def on_current_pvd_ui_changed(self, pvd_ui, _):
-        disconnect_slots_if_has(self.discovery_btn)
-        if isinstance(pvd_ui, UISupportsDiscovery):
-            self.discovery_btn.clicked.connect(pvd_ui.discovery)
+        self.discovery_btn.setEnabled(True)
+        self.discovery_btn.setToolTip(f'点击进入 {pvd_ui.provider.name} 推荐页')

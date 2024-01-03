@@ -210,3 +210,48 @@ class HomeIconDrawer:
         painter.drawLine(self._body_bottom_left, self._body_bottom_right)
         painter.drawLine(self._body_top_left, self._body_bottom_left)
         painter.drawLine(self._body_top_right, self._body_bottom_right)
+
+
+class CalendarIconDrawer:
+    def __init__(self, length, padding):
+        self._body_x = self._body_y = padding
+        self._body_width = length - 2 * padding
+        self._radius = 3
+        self._h_line_y = self._body_y + self._body_width // 4
+
+    def paint(self, painter: QPainter):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        body_rect = QRect(self._body_x, self._body_x, self._body_width, self._body_width)
+        painter.drawRoundedRect(body_rect, self._radius, self._radius)
+        painter.drawLine(QPoint(self._body_x, self._h_line_y),
+                         QPoint(self._body_x + self._body_width, self._h_line_y))
+
+
+class RankIconDrawer:
+    def __init__(self, length, padding):
+        body = length - 2*padding
+        body_2 = body // 2
+        body_8 = body // 8
+        body_3 = body // 3
+        _top_right_x = length - padding
+        _top_right_y = padding + body_8
+        _bottom_left_y = padding + body - body_8
+
+        self.p1 = QPoint(padding, _bottom_left_y)
+        self.p2 = QPoint(padding + body_3, padding + body_3)
+        self.p3 = QPoint(padding + body_2, padding + body_3 * 2)
+        self.p4 = QPoint(_top_right_x, _top_right_y)
+        self.p5 = QPoint(_top_right_x - body_3, _top_right_y)
+        self.p6 = QPoint(_top_right_x, _top_right_y + body_3)
+
+    def paint(self, painter: QPainter):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        painter.drawLine(self.p1, self.p2)
+        painter.drawLine(self.p2, self.p3)
+        painter.drawLine(self.p3, self.p4)
+        painter.drawLine(self.p4, self.p5)
+        painter.drawLine(self.p4, self.p6)
