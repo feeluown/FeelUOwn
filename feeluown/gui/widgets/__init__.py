@@ -4,4 +4,5 @@ from .selfpaint_btn import (  # noqa
     SelfPaintAbstractSquareButton, RecentlyPlayedButton,
     HomeButton, LeftArrowButton, RightArrowButton, SearchButton, SettingsButton,
     PlusButton, TriagleButton, DiscoveryButton,
+    SelfPaintAbstractIconTextButton, CalendarButton, RankButton,
 )

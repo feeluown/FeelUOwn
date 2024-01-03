@@ -2,7 +2,10 @@ from PyQt5.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
 from PyQt5.QtWidgets import QPushButton, QStyle, QStyleOptionButton
 from PyQt5.QtGui import QPainter, QPalette, QPainterPath
 
-from feeluown.gui.drawers import HomeIconDrawer, PlusIconDrawer, TriangleIconDrawer
+from feeluown.gui.drawers import (
+    HomeIconDrawer, PlusIconDrawer, TriangleIconDrawer, CalendarIconDrawer,
+    RankIconDrawer,
+)
 from feeluown.gui.helpers import darker_or_lighter
 
 
@@ -275,6 +278,24 @@ class HomeButton(SelfPaintAbstractIconTextButton):
         self.home_icon.paint(painter)
 
 
+class CalendarButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, text='日历',  *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.calendar_icon = CalendarIconDrawer(self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.calendar_icon.paint(painter)
+
+
+class RankButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, text='排行榜',  *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.rank_icon = RankIconDrawer(self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.rank_icon.paint(painter)
+
+
 if __name__ == '__main__':
     from feeluown.gui.debug import simple_layout
 
@@ -292,3 +313,5 @@ if __name__ == '__main__':
         layout.addWidget(DiscoveryButton(height=length))
 
         layout.addWidget(TriagleButton(length=length, direction='up'))
+        layout.addWidget(CalendarButton(height=length))
+        layout.addWidget(RankButton(height=length))

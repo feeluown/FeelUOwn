@@ -1,6 +1,5 @@
 from typing import runtime_checkable, Protocol, List, Tuple, Optional, Dict
 from abc import abstractmethod
-
 from feeluown.media import Quality, Media
 from .models import (
     BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
@@ -41,6 +40,10 @@ __all__ = (
 
     'SupportsVideoGet',
     'SupportsVideoMultiQuality',
+
+    'SupportsRecListDailySongs',
+    'SupportsRecListDailyAlbums',
+    'SupportsRecListDailyPlaylists',
 )
 
 
@@ -344,3 +347,27 @@ class SupportsCurrentUser(Protocol):
 
         :raises NoUserLoggedIn: there is no logged in user.
         """
+
+
+#
+# Protocols for recommendation.
+#
+@runtime_checkable
+class SupportsRecListDailySongs(Protocol):
+    @abstractmethod
+    def rec_list_daily_songs(self) -> List[SongModel]:
+        pass
+
+
+@runtime_checkable
+class SupportsRecListDailyPlaylists(Protocol):
+    @abstractmethod
+    def rec_list_daily_playlists(self) -> List[PlaylistModel]:
+        pass
+
+
+@runtime_checkable
+class SupportsRecListDailyAlbums(Protocol):
+    @abstractmethod
+    def rec_list_daily_albums(self) -> List[AlbumModel]:
+        pass
