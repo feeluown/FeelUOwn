@@ -52,6 +52,7 @@ def set_artwork(info_center: MPNowPlayingInfoCenter, b):
         nowplaying_info = NSMutableDictionary.dictionary()
     else:
         nowplaying_info = current_nowplaying_info.mutableCopy()
-    nowplaying_info[MPMediaItemPropertyArtwork] = artwork_from_bytes(b)
+    if b:
+        nowplaying_info[MPMediaItemPropertyArtwork] = artwork_from_bytes(b)
     info_center.setNowPlayingInfo_(nowplaying_info)
     return True
