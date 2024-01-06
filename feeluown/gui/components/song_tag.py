@@ -62,13 +62,13 @@ class SongSourceTag(QLabel):
 
     async def _switch_provider(self, provider_id):
         song = self._app.playlist.current_song
-        songs = await self._app.library.a_list_song_standby(
+        songs = await self._app.library.a_list_song_standby_v2(
             song, source_in=[provider_id])
         if songs:
-            standby = songs[0]
+            standby, media = songs[0]
             assert standby != song
             self._app.show_msg(f'使用 {standby} 替换当前歌曲')
-            self._app.playlist.pure_set_current_song(standby, standby.url)
+            self._app.playlist.pure_set_current_song(standby, media)
             self._app.playlist.remove(song)
         else:
             self._app.show_msg(f'提供方 “{provider_id}” 没有找到可用的相似歌曲')

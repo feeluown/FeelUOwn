@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from feeluown.library import ModelState, ModelFlags
+from feeluown.library import ModelState
 
 from feeluown.gui.mimedata import ModelMimeData
 from feeluown.gui.helpers import ItemViewNoScrollMixin, ReaderFetchMoreMixin

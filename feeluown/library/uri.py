@@ -24,10 +24,9 @@ import warnings
 
 from .base import ModelType
 from .model_state import ModelState
-from .models import (
-    BriefSongModel, BriefArtistModel, BriefAlbumModel,
-    BriefPlaylistModel, BriefUserModel, BriefVideoModel
-)
+from .models import get_modelcls_by_type
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -58,23 +57,6 @@ NS_TYPE_MAP = {
     value: key
     for key, value in TYPE_NS_MAP.items()
 }
-
-
-def get_model_cls(type_):
-    if type_ is ModelType.song:
-        return BriefSongModel
-    elif type_ is ModelType.artist:
-        return BriefArtistModel
-    elif type_ is ModelType.album:
-        return BriefAlbumModel
-    elif type_ is ModelType.playlist:
-        return BriefPlaylistModel
-    elif type_ is ModelType.user:
-        return BriefUserModel
-    elif type_ is ModelType.video:
-        return BriefVideoModel
-    else:
-        raise ValueError('invalid model type')
 
 
 class Resolver:
@@ -248,7 +230,7 @@ def parse_line(line):
         raise ResolveFailed('invalid line: {}'.format(line))
     source, ns, identifier = m.groups()
     path = uri[m.end():]
-    Model = get_model_cls(NS_TYPE_MAP[ns])
+    Model = get_modelcls_by_type(NS_TYPE_MAP[ns], brief=True)
     if ns == 'songs':
         parse_func = parse_song_str
     elif ns == 'albums':
@@ -261,7 +243,7 @@ def parse_line(line):
         parse_func = parse_unknown
     data = parse_func(model_str.strip())
     data['source'] = source
-    model = Model.create_by_display(identifier=identifier, **data)
+    model = Model(identifier=identifier, **data)
     return model, path
 
 

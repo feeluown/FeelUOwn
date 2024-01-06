@@ -97,7 +97,7 @@ class SearchSerializerMixin:
     """
 
     class Meta:
-        types = ( )
+        types = ()
 
     def _get_items(self, result):
         fields = ('songs', 'albums', 'artists', 'playlists',)

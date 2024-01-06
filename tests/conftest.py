@@ -137,13 +137,31 @@ def ekaf_artist0():
 
 
 @pytest.fixture
-def song():
+def artist():
+    return BriefArtistModel(identifier=0, source='fake', name='mary')
+
+
+@pytest.fixture
+def album(artist):
+    return AlbumModel(
+        identifier=0,
+        source='fake',
+        name='blue and green',
+        artists=[],
+        songs=[],
+        cover='',
+        description='',
+    )
+
+
+@pytest.fixture
+def song(artist, album):
     return SongModel(
         identifier='0',
         source=FakeSource,
         title='hello world',
-        artists=[],
-        album=None,
+        artists=[artist],
+        album=album,
         duration=600000,
         )
     # url='http://xxx.com/xxx.mp3'

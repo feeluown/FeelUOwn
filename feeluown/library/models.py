@@ -269,7 +269,7 @@ class SongModel(BaseNormalModel):
     """
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
-    album: Optional[BriefAlbumModel] = None
+    album: Optional[TAlbum] = None
     artists: List[BriefArtistModel]
     duration: int  # milliseconds
     # A playlist can consist of multiple songs and a song can have many children.
