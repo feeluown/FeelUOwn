@@ -20,6 +20,23 @@ class UISupportsLoginOrGoHome(Protocol):
 
 
 @runtime_checkable
+class UISupportsLoginEvent(Protocol):
+
+    @property
+    @abstractmethod
+    def login_event(self):
+        """
+        event:
+          0: first login failed
+          1: first login ok
+          2: re-login ok
+
+        :return: Signal(provider_ui, event)
+        """
+        ...
+
+
+@runtime_checkable
 class UISupportsDiscovery(Protocol):
 
     @abstractmethod

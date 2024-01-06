@@ -6,7 +6,8 @@ from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 from feeluown.library import NoUserLoggedIn
 from feeluown.models.uri import reverse
 from feeluown.utils.aio import run_afn, run_fn
-from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem
+from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
+    UISupportsLoginEvent
 from feeluown.gui.widgets import SelfPaintAbstractSquareButton
 from feeluown.gui.drawers import PixmapDrawer, AvatarIconDrawer
 
@@ -70,8 +71,18 @@ class Avatar(SelfPaintAbstractSquareButton):
 
         menu.exec_(e.globalPos())
 
+    def on_provider_ui_login_event(self, provider_ui, event):
+        if event in (1, 2):
+            run_afn(self.show_pvd_ui_current_user)
+            run_afn(
+                self._app.ui.sidebar.show_provider_current_user_playlists,
+                provider_ui.provider
+            )
+
     def on_pvd_ui_selected(self, pvd_ui):
         self._app.current_pvd_ui_mgr.set(pvd_ui)
+        if isinstance(pvd_ui, UISupportsLoginEvent):
+            pvd_ui.login_event.connect(self.on_provider_ui_login_event)
         if isinstance(pvd_ui, UISupportsLoginOrGoHome):
             pvd_ui.login_or_go_home()
         run_afn(self.show_pvd_ui_current_user)
