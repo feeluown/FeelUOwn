@@ -252,9 +252,7 @@ def resolve(line, model=None):
 
     for example, line can be 'fuo://local/songs/1/cover/data'
     """
-    from feeluown.library import (
-        ProviderFlags, get_modelcls_by_type, V2SupportedModelTypes,
-    )
+    from feeluown.library import get_modelcls_by_type, V2SupportedModelTypes
 
     if model is None:
         model, path = parse_line(line)
@@ -263,8 +261,6 @@ def resolve(line, model=None):
         if provider is None:
             model.state = ModelState.not_exists
         else:
-            # Try to use model v2 since v1 is deprecated.
-            assert library.check_flags_by_model(model, ProviderFlags.model_v2)
             model_type = ModelType(model.meta.model_type)
             modelcls = get_modelcls_by_type(model_type, brief=True)
             assert modelcls is not None and model_type in V2SupportedModelTypes

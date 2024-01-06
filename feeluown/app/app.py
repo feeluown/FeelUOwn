@@ -139,6 +139,8 @@ class App:
                     song = resolve(song)
                 except ResolverNotFound:
                     pass
+                except ResolveFailed as e:
+                    logger.warning(f'resolve failed, {e}')
                 else:
                     songs.append(song)
             playlist.set_models(songs)
