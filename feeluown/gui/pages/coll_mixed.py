@@ -51,13 +51,7 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
         self._app = app
         self._coll = coll
         self.tab_index = tab_index
-        self.tabs = [
-            ('歌曲', ModelType.song, self.show_songs),
-            ('专辑', ModelType.album, self.show_albums),
-            ('歌手', ModelType.artist, self.show_artists),
-            ('歌单', ModelType.playlist, self.show_playlists),
-            ('视频', ModelType.video, self.show_videos)
-        ]
+        self.tabs = self.default_tabs()
 
     async def render(self):
         coll = self._coll

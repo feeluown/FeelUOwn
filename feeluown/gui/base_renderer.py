@@ -4,6 +4,7 @@
 from abc import abstractmethod
 from typing import runtime_checkable, Protocol
 
+from feeluown.models import ModelType
 from feeluown.gui.widgets.tabbar import Tab, TabBar
 
 
@@ -66,6 +67,15 @@ class TabBarRendererMixin:
 
     def render_by_tab_index(self, tab_index):
         raise NotImplementedError
+
+    def default_tabs(self):
+        return [
+            ('歌曲', ModelType.song, self.show_songs),
+            ('专辑', ModelType.album, self.show_albums),
+            ('歌手', ModelType.artist, self.show_artists),
+            ('歌单', ModelType.playlist, self.show_playlists),
+            ('视频', ModelType.video, self.show_videos)
+        ]
 
 
 @runtime_checkable
