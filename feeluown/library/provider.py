@@ -7,7 +7,7 @@ feeluown.library
 """
 from abc import ABC, abstractmethod
 from contextlib import contextmanager
-from feeluown.models import (
+from feeluown.library import (
     BaseModel,
     SongModel,
     ArtistModel,

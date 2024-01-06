@@ -14,7 +14,7 @@ from feeluown.library import (
     BriefPlaylistModel,
     BriefUserModel,
 )
-from feeluown.models import (
+from feeluown.library import (
     SongModel as SongModelV1,
     ArtistModel as ArtistModelV1,
     AlbumModel as AlbumModelV1,

@@ -1,7 +1,7 @@
 from feeluown.library import V2SupportedModelTypes, AlbumModel, NotSupported
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
-from feeluown.models import ModelType, reverse
+from feeluown.library import ModelType, reverse
 
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer

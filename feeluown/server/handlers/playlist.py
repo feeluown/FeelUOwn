@@ -1,4 +1,4 @@
-from feeluown.models import ModelType
+from feeluown.library import ModelType
 from feeluown.library import resolve, reverse
 from feeluown.utils.utils import to_readall_reader
 from .base import AbstractHandler

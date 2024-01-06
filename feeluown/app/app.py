@@ -7,7 +7,7 @@ from feeluown.consts import STATE_FILE
 from feeluown.utils.request import Request
 from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
-from feeluown.models import (
+from feeluown.library import (
     Resolver, reverse, resolve,
     ResolverNotFound, ResolveFailed,
 )

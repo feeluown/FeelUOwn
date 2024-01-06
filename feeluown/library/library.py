@@ -5,7 +5,7 @@ from functools import partial, lru_cache
 from typing import cast, Optional, Union, TypeVar, Type, Callable, Any
 
 from feeluown.media import Media
-from feeluown.models import SearchType, ModelType
+from feeluown.library import SearchType, ModelType
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import log_exectime

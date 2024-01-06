@@ -16,7 +16,7 @@ from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
 from feeluown.library import NotSupported, ResourceNotFound
 from feeluown.library import NS_TYPE_MAP
-from feeluown.models import ModelType
+from feeluown.library import ModelType
 
 from .base import AbstractHandler
 from .excs import HandlerException
