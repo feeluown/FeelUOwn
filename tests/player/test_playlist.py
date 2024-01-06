@@ -275,19 +275,25 @@ async def test_playlist_remove_current_song(app_mock):
 async def test_play_next_bad_song(app_mock, song, song1, mocker):
     """
     Prepare media for song raises unknown error, the song should
-    be marked as bad.
+    be marked as bad. Besides, it should try to find standby.
     """
+    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=object())
+    mock_standby = mocker.patch.object(Playlist,
+                                       'find_and_use_standby',
+                                       return_value=(song1, None))
+    mocker.patch.object(Playlist, '_prepare_media', side_effect=Exception())
+    mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
+
     pl = Playlist(app_mock)
-    mocker.patch.object(pl, '_prepare_media', side_effect=Exception())
-    mock_mark_as_bad = mocker.patch.object(pl, 'mark_as_bad')
-    mock_next = mocker.patch.object(pl, 'next')
     pl.add(song)
     pl.add(song1)
     pl._current_song = song
     await pl.a_set_current_song(pl.next_song)
     assert mock_mark_as_bad.called
     await asyncio.sleep(0.1)
-    assert mock_next.called
+    assert mock_pure_set_current_song.called
+    assert mock_standby.called
 
 
 def test_play_all(app_mock):
