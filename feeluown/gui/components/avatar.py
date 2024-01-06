@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
-from feeluown.library import NoUserLoggedIn
+from feeluown.library import NoUserLoggedIn, UserModel
 from feeluown.models.uri import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
@@ -116,7 +116,7 @@ class Avatar(SelfPaintAbstractSquareButton):
 
         if user is None:
             return None
-        if user.avatar_url:
+        if isinstance(user, UserModel) and user.avatar_url:
             img_data = await run_afn(self._app.img_mgr.get, user.avatar_url,
                                      reverse(user))
             if img_data:
