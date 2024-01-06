@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPainter, QPalette, QPainterPath
 
 from feeluown.gui.drawers import (
     HomeIconDrawer, PlusIconDrawer, TriangleIconDrawer, CalendarIconDrawer,
-    RankIconDrawer,
+    RankIconDrawer, StarIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter
 
@@ -296,6 +296,15 @@ class RankButton(SelfPaintAbstractIconTextButton):
         self.rank_icon.paint(painter)
 
 
+class StarButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, text='收藏',  *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.star_icon = StarIconDrawer(self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.star_icon.paint(painter)
+
+
 if __name__ == '__main__':
     from feeluown.gui.debug import simple_layout
 
@@ -315,3 +324,4 @@ if __name__ == '__main__':
         layout.addWidget(TriagleButton(length=length, direction='up'))
         layout.addWidget(CalendarButton(height=length))
         layout.addWidget(RankButton(height=length))
+        layout.addWidget(StarButton(height=length))
