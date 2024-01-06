@@ -14,7 +14,7 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import aio
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 from feeluown.gui.helpers import (
     ItemViewNoScrollMixin, ReaderFetchMoreMixin, resize_font, SOLARIZED_COLORS
 )

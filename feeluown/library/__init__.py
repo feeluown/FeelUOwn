@@ -25,3 +25,4 @@ from .models import ModelFlags, BaseModel, ModelType, SearchType, \
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound
 from .provider_protocol import *
+from .uri import reverse, resolve

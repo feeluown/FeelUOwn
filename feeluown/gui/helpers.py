@@ -39,7 +39,7 @@ from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import NotSupported, ModelType, BaseModel
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 
 
 if TYPE_CHECKING:

@@ -66,9 +66,9 @@ except ImportError:
     identifier_validator = validator('identifier', pre=True)
     pydantic_version = 1
 
-from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
-from feeluown.models import SearchType  # noqa
 from feeluown.utils.utils import elfhash
+from .base import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
+from .base import SearchType  # noqa
 from .model_state import ModelState
 
 

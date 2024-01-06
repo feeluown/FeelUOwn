@@ -7,7 +7,7 @@ from typing import Optional, Deque
 
 from feeluown.utils import aio
 from feeluown.utils.router import Router, NotFound
-from feeluown.models.uri import resolve, reverse, ResolveFailed, parse_line
+from feeluown.library import resolve, reverse, ResolveFailed, parse_line
 
 logger = logging.getLogger(__name__)
 

@@ -17,7 +17,7 @@ from feeluown.utils.utils import elfhash, log_exectime
 from feeluown.utils.lang import can_convert_chinese, convert_chinese
 from feeluown.library import SongModel, AlbumModel, ArtistModel, AlbumType
 from feeluown.library import BriefAlbumModel, BriefArtistModel, BriefSongModel
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 
 from .schemas import EasyMP3Model, APEModel, FLACModel
 from .schemas import DEFAULT_ALBUM_NAME

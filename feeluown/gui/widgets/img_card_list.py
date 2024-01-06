@@ -29,7 +29,7 @@ from PyQt5.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.library import AlbumModel, AlbumType
 from feeluown.utils.reader import wrap
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 from feeluown.gui.helpers import (
     ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin, painter_save,
     secondary_text_color

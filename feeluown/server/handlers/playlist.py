@@ -1,5 +1,5 @@
 from feeluown.models import ModelType
-from feeluown.models.uri import resolve, reverse
+from feeluown.library import resolve, reverse
 from feeluown.utils.utils import to_readall_reader
 from .base import AbstractHandler
 

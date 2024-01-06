@@ -15,7 +15,7 @@ from feeluown.library import (
     MediaNotFound, SongProtocol, ModelType, NotSupported, ResourceNotFound
 )
 from feeluown.media import Media
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 
 if TYPE_CHECKING:
     from feeluown.app import App

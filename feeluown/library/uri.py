@@ -22,7 +22,8 @@ import json
 import re
 import warnings
 
-from .base import ModelType, ModelExistence
+from .base import ModelType
+from .model_state import ModelState
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +261,7 @@ def resolve(line, model=None):
         library = Resolver.library
         provider = library.get(model.source)
         if provider is None:
-            model.exists = ModelExistence.no
+            model.state = ModelState.not_exists
         else:
             # Try to use model v2 since v1 is deprecated.
             if library.check_flags_by_model(model, ProviderFlags.model_v2):

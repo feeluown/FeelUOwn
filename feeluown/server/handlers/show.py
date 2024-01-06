@@ -15,7 +15,7 @@ from urllib.parse import urlparse
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
 from feeluown.library import NotSupported, ResourceNotFound
-from feeluown.models.uri import NS_TYPE_MAP
+from feeluown.library import NS_TYPE_MAP
 from feeluown.models import ModelType
 
 from .base import AbstractHandler

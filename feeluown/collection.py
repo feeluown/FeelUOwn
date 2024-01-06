@@ -11,7 +11,7 @@ import tomlkit
 
 from feeluown.consts import COLLECTIONS_DIR
 from feeluown.utils.dispatch import Signal
-from feeluown.models.uri import resolve, reverse, ResolverNotFound, \
+from feeluown.library import resolve, reverse, ResolverNotFound, \
     ResolveFailed, ModelExistence
 from feeluown.utils.utils import elfhash
 
