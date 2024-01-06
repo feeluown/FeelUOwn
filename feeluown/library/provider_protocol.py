@@ -315,6 +315,15 @@ class SupportsCurrentUser(Protocol):
         """
 
 
+@runtime_checkable
+class SupportsCurrentUserListPlaylists(Protocol):
+    @abstractmethod
+    def current_user_list_playlists(self):
+        """
+        : raises NoUserLoggedIn:
+        """
+
+
 #
 # Protocols for current user favorites/collections
 #

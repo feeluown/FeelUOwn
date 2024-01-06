@@ -13,6 +13,8 @@ from feeluown.library import (
 )
 from feeluown.collection import CollectionAlreadyExists, CollectionType
 from feeluown.utils import aio
+from feeluown.utils.reader import create_reader
+from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets import (
     DiscoveryButton,
     HomeButton,
@@ -98,6 +100,16 @@ class LeftPanel(QScrollArea):
         size = super().sizeHint()
         width = min(self._app.width() * 22 // 100, 240)
         return QSize(width, size.height())
+
+    async def show_provider_current_user_playlists(self, provider):
+        self.p.playlists_con.show()
+        self._app.pl_uimgr.clear()
+
+        playlists = await run_fn(provider.current_user_list_playlists)
+        reader = await run_fn(provider.current_user_fav_create_playlists_rd)
+        fav_playlists = create_reader(reader).readall()
+        self._app.pl_uimgr.add(playlists)
+        self._app.pl_uimgr.add(fav_playlists, is_fav=True)
 
 
 class _LeftPanel(QFrame):
