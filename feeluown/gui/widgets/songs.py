@@ -18,7 +18,6 @@ from PyQt5.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.library import ModelState, ModelFlags
-from feeluown.library import ModelExistence
 
 from feeluown.gui.mimedata import ModelMimeData
 from feeluown.gui.helpers import ItemViewNoScrollMixin, ReaderFetchMoreMixin
@@ -250,12 +249,8 @@ class BaseSongsTableModel(QAbstractTableModel):
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
         incomplete = False
-        if ModelFlags.v2 & song.meta.flags:
-            if song.state in (ModelState.not_exists, ModelState.cant_upgrade):
-                incomplete = True
-        else:
-            if song and song.exists == ModelExistence.no:
-                incomplete = True
+        if song.state in (ModelState.not_exists, ModelState.cant_upgrade):
+            incomplete = True
         if incomplete:
             if index.column() != Column.song:
                 flags = no_item_flags

@@ -3,8 +3,6 @@ import random
 import pytest
 
 from feeluown.library import Library, ModelType, BriefAlbumModel
-from feeluown.library.provider import dummy_provider
-from feeluown.models import SearchModel
 
 
 def test_library_search(library):
@@ -96,27 +94,6 @@ async def test_library_a_list_songs_standby_with_specified_providers(song):
     song.source = 'dummy-1'
     songs = await library.a_list_song_standby(song)
     assert len(songs) == 0
-
-
-@pytest.mark.asyncio
-async def test_library_a_list_songs_standby_v2(library, provider,
-                                               song, song1, song_standby, mocker):
-    mock_search = mocker.patch.object(provider, 'search')
-    mock_search.return_value = SearchModel(q='xx', songs=[song1, song_standby])
-
-    song_media_list = await library.a_list_song_standby_v2(song)
-    for standby, media in song_media_list:
-        if standby is song_standby:
-            assert media.url == 'standby.mp3'
-            break
-    else:
-        assert False, 'song_standby should be a stanby option'
-
-
-def test_library_register_should_emit_signal(library, mocker):
-    mock_emit = mocker.patch('feeluown.utils.dispatch.Signal.emit')
-    library.register(dummy_provider)
-    mock_emit.assert_called_once_with(dummy_provider)
 
 
 def test_library_model_get(library, ekaf_provider, ekaf_album0):

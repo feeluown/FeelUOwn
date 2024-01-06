@@ -67,7 +67,7 @@ except ImportError:
     pydantic_version = 1
 
 from feeluown.utils.utils import elfhash
-from .base import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
+from .base import ModelType, ModelFlags, AlbumType
 from .base import SearchType  # noqa
 from .model_state import ModelState
 
@@ -156,9 +156,6 @@ class BaseModel(_BaseModel):
     source: str = 'dummy'
     state: ModelState = ModelState.artificial
 
-    #: (DEPRECATED) for backward compact
-    exists: ModelExistence = ModelExistence.unknown
-
     @identifier_validator
     def int_to_str(cls, v):
         # Old version pydantic convert int to str implicitly.
@@ -216,41 +213,6 @@ class BaseBriefModel(BaseModel):
     Model -> model gotten stage
     """
     meta: Any = ModelMeta.create(is_brief=True)
-
-    @classmethod
-    def from_display_model(cls, model):
-        """Create a new model from an old model in display stage.
-
-        This method never triggers IO operations.
-        """
-        # Due to the display_property mechanism, it is unsafe to
-        # get attribute of other stage model property.
-        assert model.stage is ModelStage.display
-        data = {'state': cls._guess_state_from_exists(model.exists)}
-        for field in cls.__fields__:
-            if field in ('state', 'meta'):
-                continue
-            if field in ('identifier', 'source', 'exists'):
-                value = object.__getattribute__(model, field)
-            else:
-                if field in model.meta.fields_display:
-                    value = getattr(model, f'{field}_display')
-                else:
-                    # For example, BriefVideoModel has field `artists_name` and
-                    # the old model does not have such display field.
-                    value = ''
-            data[field] = value
-        return cls(**data)
-
-    @classmethod
-    def _guess_state_from_exists(cls, exists):
-        if exists == ModelExistence.no:
-            state_value = ModelState.not_exists
-        elif exists == ModelExistence.unknown:
-            state_value = ModelState.artificial
-        else:
-            state_value = ModelState.exists
-        return state_value
 
 
 class BaseNormalModel(BaseModel):

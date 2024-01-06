@@ -1,7 +1,7 @@
 from typing import Tuple, cast
 
 from feeluown.media import Media, Quality
-from feeluown.library import ModelType
+from .base import ModelType
 from .models import V2SupportedModelTypes
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \

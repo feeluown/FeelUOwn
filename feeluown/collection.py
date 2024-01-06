@@ -12,7 +12,7 @@ import tomlkit
 from feeluown.consts import COLLECTIONS_DIR
 from feeluown.utils.dispatch import Signal
 from feeluown.library import resolve, reverse, ResolverNotFound, \
-    ResolveFailed, ModelExistence
+    ResolveFailed, ModelState
 from feeluown.utils.utils import elfhash
 
 logger = logging.getLogger(__name__)
@@ -112,7 +112,7 @@ class Collection:
                                    str(filepath), line, str(e))
                     model = None
                 if model is not None:
-                    if model.exists is ModelExistence.no:
+                    if model.state is ModelState.not_exists:
                         self._has_nonexistent_models = True
                     self.models.append(model)
 
@@ -184,7 +184,7 @@ class Collection:
         if not self._has_nonexistent_models:
             return
         for i, model in enumerate(self.models.copy()):
-            if model.exists is ModelExistence.no and model.source == provider.identifier:
+            if model.state is ModelState.not_exists and model.source == provider.identifier:
                 new_model = resolve(reverse(model, as_line=True))
                 # TODO: emit data changed signal
                 self.models[i] = new_model
@@ -193,7 +193,7 @@ class Collection:
     def on_provider_removed(self, provider):
         for model in self.models:
             if model.source == provider.identifier:
-                model.exists = ModelExistence.no
+                model.state = ModelState.not_exists
                 self._has_nonexistent_models = True
 
     def _loads_metadata(self, metadata):

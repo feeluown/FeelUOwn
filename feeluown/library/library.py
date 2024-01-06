@@ -5,11 +5,11 @@ from functools import partial, lru_cache
 from typing import cast, Optional, Union, TypeVar, Type, Callable, Any
 
 from feeluown.media import Media
-from feeluown.library import SearchType, ModelType
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import log_exectime
 from feeluown.utils.reader import create_reader
+from .base import SearchType, ModelType
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
@@ -156,14 +156,6 @@ class Library:
 
         :raises ProviderAlreadyExists:
         :raises ValueError:
-
-        >>> from feeluown.library import dummy_provider
-        >>> library = Library(None)
-        >>> library.register(dummy_provider)
-        >>> library.register(dummy_provider)
-        Traceback (most recent call last):
-            ...
-        feeluown.excs.ProviderAlreadyRegistered
         """
         if not isinstance(provider, AbstractProvider):
             raise ValueError('invalid provider instance')
