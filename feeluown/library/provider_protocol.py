@@ -13,40 +13,6 @@ from .model_protocol import (
 from .flags import Flags as PF
 
 
-__all__ = (
-    'SupportsAlbumGet',
-    'SupportsAlbumSongsReader',
-
-    'SupportsArtistAlbumsReader',
-    'SupportsArtistGet',
-    'SupportsArtistSongsReader',
-
-    'SupportsCurrentUser',
-
-    'SupportsPlaylistAddSong',
-    'SupportsPlaylistGet',
-    'SupportsPlaylistCreateByName',
-    'SupportsPlaylistDelete',
-    'SupportsPlaylistRemoveSong',
-    'SupportsPlaylistSongsReader',
-
-    'SupportsSongGet',
-    'SupportsSongHotComments',
-    'SupportsSongLyric',
-    'SupportsSongMV',
-    'SupportsSongMultiQuality',
-    'SupportsSongSimilar',
-    'SupportsSongWebUrl',
-
-    'SupportsVideoGet',
-    'SupportsVideoMultiQuality',
-
-    'SupportsRecListDailySongs',
-    'SupportsRecListDailyAlbums',
-    'SupportsRecListDailyPlaylists',
-)
-
-
 ID = str
 _FlagProtocolMapping: Dict[Tuple[ModelType, PF], type] = {}
 
@@ -347,6 +313,46 @@ class SupportsCurrentUser(Protocol):
 
         :raises NoUserLoggedIn: there is no logged in user.
         """
+
+
+#
+# Protocols for current user favorites/collections
+#
+@runtime_checkable
+class SupportsCurrentUserFavSongsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_songs_rd(self):
+        """
+        : raises NoUserLoggedIn:
+        """
+
+
+@runtime_checkable
+class SupportsCurrentUserFavAlbumsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_albums_rd(self):
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserFavArtistsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_artists_rd(self):
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserFavPlaylistsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_playlists_rd(self):
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserFavVideosReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_videos_rd(self):
+        pass
 
 
 #

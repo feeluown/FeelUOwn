@@ -18,6 +18,7 @@ from feeluown.gui.widgets import (
     HomeButton,
     PlusButton,
     TriagleButton,
+    StarButton,
 )
 
 from feeluown.gui.widgets.playlists import PlaylistsView
@@ -107,6 +108,7 @@ class _LeftPanel(QFrame):
 
         self.home_btn = HomeButton(height=30, parent=self)
         self.discovery_btn = DiscoveryButton(height=30, padding=0.2, parent=self)
+        self.fav_btn = StarButton('我的收藏', height=30, parent=self)
         self.collections_header = QLabel('本地收藏集', self)
         self.collections_header.setToolTip('我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
                                            '每个收藏集都以一个独立 .fuo 文件的存在，'
@@ -141,6 +143,7 @@ class _LeftPanel(QFrame):
         self._top_layout.setContentsMargins(15, 16, 16, 0)
         self._top_layout.addWidget(self.home_btn)
         self._top_layout.addWidget(self.discovery_btn)
+        self._top_layout.addWidget(self.fav_btn)
         self._sub_layout.setContentsMargins(16, 8, 16, 0)
         self._sub_layout.addWidget(self.collections_con)
         self._sub_layout.addWidget(self.my_music_con)
@@ -156,6 +159,7 @@ class _LeftPanel(QFrame):
         self.playlists_con.hide()
         self.my_music_con.hide()
         self.discovery_btn.setDisabled(True)
+        self.fav_btn.setDisabled(True)
         self.discovery_btn.setToolTip('当前资源提供方未知')
 
         self.home_btn.clicked.connect(self.show_library)
@@ -173,6 +177,8 @@ class _LeftPanel(QFrame):
             self.on_current_pvd_ui_changed)
         self.discovery_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/rec'))
+        self.fav_btn.clicked.connect(
+            lambda: self._app.browser.goto(page='/my_fav'))
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
@@ -282,5 +288,10 @@ class _LeftPanel(QFrame):
         box.open()
 
     def on_current_pvd_ui_changed(self, pvd_ui, _):
-        self.discovery_btn.setEnabled(True)
-        self.discovery_btn.setToolTip(f'点击进入 {pvd_ui.provider.name} 推荐页')
+        if pvd_ui:
+            self.discovery_btn.setEnabled(True)
+            self.fav_btn.setEnabled(True)
+            self.discovery_btn.setToolTip(f'点击进入 {pvd_ui.provider.name} 推荐页')
+        else:
+            self.discovery_btn.setEnabled(False)
+            self.fav_btn.setEnabled(False)

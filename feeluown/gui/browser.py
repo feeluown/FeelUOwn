@@ -196,6 +196,7 @@ class Browser:
         from feeluown.gui.pages.recommendation import render as render_rec
         from feeluown.gui.pages.recommendation_daily_songs import \
             render as render_rec_daily_songs
+        from feeluown.gui.pages.my_fav import render as render_my_fav
 
         model_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
 
@@ -214,6 +215,7 @@ class Browser:
             ('/search', render_search),
             ('/rec', render_rec),
             ('/rec/daily_songs', render_rec_daily_songs),
+            ('/my_fav', render_my_fav),
         ]
         for url, renderer in urlpatterns:
             self.route(url)(renderer)

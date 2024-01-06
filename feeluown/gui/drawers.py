@@ -1,3 +1,4 @@
+import math
 from typing import Optional
 
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
@@ -255,3 +256,33 @@ class RankIconDrawer:
         painter.drawLine(self.p3, self.p4)
         painter.drawLine(self.p4, self.p5)
         painter.drawLine(self.p4, self.p6)
+
+
+class StarIconDrawer:
+    def __init__(self, length, padding):
+
+        radius_outer = (length - 2*padding)//2
+        length_half = length // 2
+        radius_inner = radius_outer // 2
+        center = QPointF(length_half, length_half)
+        angle = math.pi / 2
+
+        self._star_polygon = QPolygonF()
+        for _ in range(5):
+            outer_point = center + QPointF(
+                radius_outer * math.cos(angle),
+                -radius_outer * math.sin(angle)
+            )
+            self._star_polygon.append(outer_point)
+            inner_point = center + QPointF(
+                radius_inner * math.cos(angle + math.pi/5),
+                -radius_inner * math.sin(angle + math.pi/5)
+            )
+            self._star_polygon.append(inner_point)
+            angle += 2 * math.pi / 5
+
+    def paint(self, painter: QPainter):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        painter.drawPolygon(self._star_polygon)
