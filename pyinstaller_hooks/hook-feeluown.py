@@ -10,7 +10,9 @@ assets_files = [
     '**/*.svg',
     '**/*.ico',
     '**/*.icns',
-    '**/*.colors'
+    '**/*.colors',
+    '**/*.mo',
+    '**/*.po',
 ]
 datas, hiddenimports = collect_entry_point('fuo.plugins_v1')
 
