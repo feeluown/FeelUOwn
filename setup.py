@@ -74,7 +74,7 @@ setup(
         ],
         'win32': [
             'pyshortcuts',
-            'aionowplaying @ git+ssh://git@github.com:poly000/aionowplaying.git',
+            'aionowplaying @ git+ssh://git@github.com/poly000/aionowplaying.git',
         ],
         'webengine': ['PyQtWebEngine'],
         # Load cookies from chrome/firefox/...
