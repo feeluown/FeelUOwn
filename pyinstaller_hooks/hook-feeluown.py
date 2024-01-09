@@ -16,7 +16,8 @@ assets_files = [
 ]
 datas, hiddenimports = collect_entry_point('fuo.plugins_v1')
 
-hiddenimports.append('ytmusicapi')
+if 'fuo_ytmusic' in hiddenimports:
+    hiddenimports.append('ytmusicapi')
 
 # aionowplaying is conditionally imported.
 if os.name == 'nt':
