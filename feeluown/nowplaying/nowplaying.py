@@ -1,5 +1,6 @@
 # pylint: disable=import-error
 import logging
+import os
 
 import aionowplaying as aionp
 
@@ -19,18 +20,24 @@ PlaybackStatusStateMapping = {
 }
 
 
-def to_aionp_time(t):
-    return int(t * 1000)
+# todo: fix! aionp.interface.macos treat aionp time as milisecond while
+# other two interface treat it as microsecond (which is commented
+# at aionp.interface.base)
+def to_aionp_time(t_sec):
+    return int(t_sec * 1000 * 1000)
 
 
-def from_aionp_time(t):
-    return t / 1000
+def from_aionp_time(t_sec):
+    return t_sec / 1000 / 1000
 
 
 class NowPlayingService(aionp.NowPlayingInterface):
     def __init__(self, app: 'ServerApp'):
         super().__init__('FeelUOwn')
         self._app = app
+
+        if os.name == "nt":
+            self._app.player.position_changed.connect(self.update_position)
 
         self._app.player.seeked.connect(self.update_position)
         self._app.player.media_loaded.connect(self.on_player_media_loaded,
@@ -75,10 +82,12 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self.set_playback_property(PlayProp.Metadata, metadata)
 
     def update_duration(self, duration):
-        self.set_playback_property(PlayProp.Duration, int(duration * 1000))
+        print("update_duration:", duration)
+        self.set_playback_property(PlayProp.Duration, int(duration * 1000 * 1000))
 
     def update_position(self, position):
-        self.set_playback_property(PlayProp.Position, int(position * 1000))
+        print("update_position:", position)
+        self.set_playback_property(PlayProp.Position, int(position * 1000 * 1000))
 
     def update_playback_status(self, state):
         self.set_playback_property(PlayProp.PlaybackStatus,
