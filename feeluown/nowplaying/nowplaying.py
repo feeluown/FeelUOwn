@@ -27,8 +27,8 @@ def to_aionp_time(t_sec):
     return int(t_sec * 1000 * 1000)
 
 
-def from_aionp_time(t_sec):
-    return t_sec / 1000 / 1000
+def from_aionp_time(t_microsec):
+    return t_microsec / 1000 / 1000
 
 
 class NowPlayingService(aionp.NowPlayingInterface):
@@ -82,11 +82,9 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self.set_playback_property(PlayProp.Metadata, metadata)
 
     def update_duration(self, duration):
-        print("update_duration:", duration)
         self.set_playback_property(PlayProp.Duration, int(duration * 1000 * 1000))
 
     def update_position(self, position):
-        print("update_position:", position)
         self.set_playback_property(PlayProp.Position, int(position * 1000 * 1000))
 
     def update_playback_status(self, state):
