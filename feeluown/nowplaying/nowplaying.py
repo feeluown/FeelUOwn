@@ -23,11 +23,11 @@ PlaybackStatusStateMapping = {
 # todo: fix! aionp.interface.macos treat aionp time as milisecond while
 # other two interface treat it as microsecond (which is commented
 # at aionp.interface.base)
-def sec_to_μs(t_sec):
+def sec_to_us(t_sec):
     return int(t_sec * 1000 * 1000)
 
 
-def μs_to_sec(t_microsec):
+def us_to_sec(t_microsec):
     return t_microsec / 1000 / 1000
 
 
@@ -82,10 +82,10 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self.set_playback_property(PlayProp.Metadata, metadata)
 
     def update_duration(self, duration):
-        self.set_playback_property(PlayProp.Duration, int(sec_to_μs(duration or 0)))
+        self.set_playback_property(PlayProp.Duration, int(sec_to_us(duration or 0)))
 
     def update_position(self, position):
-        self.set_playback_property(PlayProp.Position, int(sec_to_μs(position or 0)))
+        self.set_playback_property(PlayProp.Position, int(sec_to_us(position or 0)))
 
     def update_playback_status(self, state):
         self.set_playback_property(PlayProp.PlaybackStatus,
@@ -118,16 +118,16 @@ class NowPlayingService(aionp.NowPlayingInterface):
             self._app.playlist.playback_mode = PlaybackMode.sequential
 
     def on_set_position(self, track_id: str, position: int):
-        self._app.player.position = μs_to_sec(position)
+        self._app.player.position = us_to_sec(position)
 
     def on_seek(self, offset_us: int):
-        self._app.player.position = μs_to_sec(offset_us)
+        self._app.player.position = us_to_sec(offset_us)
 
     def get_playback_property(self, name: PlayProp):
         if name == PlayProp.Duration:
-            return sec_to_μs(self._app.player.duration)
+            return sec_to_us(self._app.player.duration)
         elif name == PlayProp.Position:
-            return sec_to_μs(self._app.player.position)
+            return sec_to_us(self._app.player.position)
         elif name == PlayProp.PlaybackStatus:
             return StatePlaybackStatusMapping[self._app.player.state]
         elif name == PlayProp.Rate:
