@@ -202,7 +202,11 @@ class PluginsManager:
         """
         try:
             import importlib.metadata  # pylint: disable=redefined-outer-name
-            entry_points = importlib.metadata.entry_points().get('fuo.plugins_v1', [])
+            from sys import version_info
+            if version_info.major == 3 and version_info.minor > 10:
+                entry_points = importlib.metadata.entry_points().select(group='fuo.plugins_v1')
+            else:
+                entry_points = importlib.metadata.entry_points().get('fuo.plugins_v1', [])
         except ImportError:
             import pkg_resources
             entry_points = pkg_resources.iter_entry_points('fuo.plugins_v1')
