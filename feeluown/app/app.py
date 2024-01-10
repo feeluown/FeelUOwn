@@ -7,7 +7,7 @@ from feeluown.consts import STATE_FILE
 from feeluown.utils.request import Request
 from feeluown.library import Library
 from feeluown.utils.dispatch import Signal
-from feeluown.models import (
+from feeluown.library import (
     Resolver, reverse, resolve,
     ResolverNotFound, ResolveFailed,
 )
@@ -139,6 +139,8 @@ class App:
                     song = resolve(song)
                 except ResolverNotFound:
                     pass
+                except ResolveFailed as e:
+                    logger.warning(f'resolve failed, {e}')
                 else:
                     songs.append(song)
             playlist.set_models(songs)

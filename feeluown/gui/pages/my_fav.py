@@ -1,5 +1,5 @@
 from feeluown.app.gui_app import GuiApp
-from feeluown.models import ModelType
+from feeluown.library import ModelType
 from feeluown.utils.aio import run_fn
 from feeluown.gui.page_containers.table import Renderer
 from feeluown.gui.base_renderer import TabBarRendererMixin

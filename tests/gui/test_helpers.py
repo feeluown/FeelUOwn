@@ -2,7 +2,7 @@ from unittest import mock
 
 import pytest
 
-from feeluown.models import reverse
+from feeluown.library import reverse
 from feeluown.library import ModelNotFound
 from feeluown.gui.helpers import fetch_cover_wrapper
 

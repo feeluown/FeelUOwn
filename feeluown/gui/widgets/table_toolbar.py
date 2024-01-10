@@ -1,7 +1,7 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QWidget
 
-from feeluown.models import AlbumType
+from feeluown.library import AlbumType
 from feeluown.gui.widgets import TextButton
 
 

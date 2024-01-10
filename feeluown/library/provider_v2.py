@@ -1,7 +1,7 @@
 from typing import Tuple, cast
 
 from feeluown.media import Media, Quality
-from feeluown.models import ModelType
+from .base import ModelType
 from .models import V2SupportedModelTypes
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
@@ -37,7 +37,7 @@ class ProviderV2:
            and IO(network) operations may be performed implicitly. For example,
            the code `song.url` *may* trigger a network request to fetch the
            url when `song.url` is currently None. Tips: you can check the
-           `BaseModel.__getattribute__` implementation in `feeluown.models` package
+           `BaseModel.__getattribute__` implementation in `feeluown.library` package
            for more details.
 
            For model v2, everything are explicit. Basic attributes of model can be

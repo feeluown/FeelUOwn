@@ -1,4 +1,4 @@
-from feeluown.models.uri import ResolveFailed, ResolverNotFound, reverse
+from feeluown.library import ResolveFailed, ResolverNotFound, reverse
 from feeluown.collection import Collection, CollectionManager, LIBRARY_FILENAME, \
     POOL_FILENAME
 

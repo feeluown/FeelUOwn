@@ -1,11 +1,10 @@
 from unittest.mock import MagicMock
 import pytest
 
-from feeluown import models
 from feeluown.library import (
     AbstractProvider, ProviderV2, ModelType, ProviderFlags as PF,
     AlbumModel, ArtistModel, BriefVideoModel, BriefSongModel,
-    Library, SongModel, BriefAlbumModel, BriefArtistModel
+    Library, SongModel, BriefAlbumModel, BriefArtistModel, SimpleSearchResult
 )
 from feeluown.media import Quality, Media, MediaType
 from feeluown.utils.reader import create_reader
@@ -26,7 +25,7 @@ class FakeProvider(AbstractProvider):
         return 'FAKE'
 
     def search(self, keyword, **kwargs):
-        return FakeSearchModel(q=keyword, songs=[_song1, _song2, _song3])
+        return SimpleSearchResult(q=keyword, songs=[_song1, _song2, _song3])
 
 
 class EkafProvider(AbstractProvider, ProviderV2):
@@ -87,31 +86,17 @@ class EkafProvider(AbstractProvider, ProviderV2):
 
 
 _fake_provider = FakeProvider()
+_song1 = SongModel(source=FakeSource,
+                   identifier='1', title='1', album=None,
+                   artists=[], duration=0)
+_song2 = SongModel(source=FakeSource,
+                   identifier='2', title='2', album=None,
+                   artists=[], duration=0)
+_song3 = SongModel(source=FakeSource,
+                   identifier='3', title='3', album=None,
+                   artists=[], duration=0)
 
 
-class FakeSongModel(models.SongModel):
-    class Meta:
-        provider = _fake_provider
-
-
-class FakeArtistModel(models.ArtistModel):
-    class Meta:
-        provider = _fake_provider
-
-
-class FakeAlbumModel(models.AlbumModel):
-    class Meta:
-        provider = _fake_provider
-
-
-class FakeSearchModel(models.SearchModel):
-    class Meta:
-        provider = _fake_provider
-
-
-_song1 = FakeSongModel(identifier=1, url='1.mp3')
-_song2 = FakeSongModel(identifier=2, url='2.mp3')
-_song3 = FakeSongModel(identifier=3)
 _ekaf_brief_song0 = BriefSongModel(source=EkafSource,
                                    identifier='0')
 _ekaf_brief_album0 = BriefAlbumModel(source=EkafSource,
@@ -129,16 +114,6 @@ _ekaf_brief_mv0 = BriefVideoModel(source=EkafSource,
 _ekaf_song0 = SongModel(source=EkafSource,
                         identifier='0', title='0', album=_ekaf_brief_album0,
                         artists=[_ekaf_brief_artist0], duration=0)
-
-
-@pytest.fixture
-def artist():
-    return FakeArtistModel(identifier=0, name='mary')
-
-
-@pytest.fixture
-def album():
-    return FakeAlbumModel(identifier=0, name='blue and green')
 
 
 @pytest.fixture
@@ -162,26 +137,34 @@ def ekaf_artist0():
 
 
 @pytest.fixture
-def song(artist, album):
-    return FakeSongModel(
+def artist():
+    return BriefArtistModel(identifier=0, source='fake', name='mary')
+
+
+@pytest.fixture
+def album(artist):
+    return AlbumModel(
         identifier=0,
+        source='fake',
+        name='blue and green',
+        artists=[],
+        songs=[],
+        cover='',
+        description='',
+    )
+
+
+@pytest.fixture
+def song(artist, album):
+    return SongModel(
+        identifier='0',
+        source=FakeSource,
         title='hello world',
         artists=[artist],
         album=album,
         duration=600000,
-        url='http://xxx.com/xxx.mp3')
-
-
-@pytest.fixture
-def song_standby(song):
-    return FakeSongModel(
-        identifier=100,
-        title=song.title,
-        artists=song.artists,
-        album=song.album,
-        duration=song.duration,
-        url='standby.mp3'
-    )
+        )
+    # url='http://xxx.com/xxx.mp3'
 
 
 @pytest.fixture

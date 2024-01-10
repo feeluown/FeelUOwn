@@ -1,6 +1,6 @@
 from feeluown.app.gui_app import GuiApp
 from feeluown.collection import CollectionType, Collection
-from feeluown.models import ModelType
+from feeluown.library import ModelType
 from feeluown.utils.reader import wrap
 from feeluown.gui.page_containers.table import Renderer
 

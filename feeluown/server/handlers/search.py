@@ -1,4 +1,6 @@
 import logging
+
+from feeluown.library import SupportsSongGet
 from .base import AbstractHandler
 
 logger = logging.getLogger(__name__)
@@ -31,7 +33,7 @@ class SearchHandler(AbstractHandler):
         """
         providers = self.library.list()
         source_in = [provd.identifier for provd in providers
-                     if provd.Song.meta.allow_get]
+                     if isinstance(provd, SupportsSongGet)]
         params = {}
         if options is not None:
             type_in = options.pop('type', None)

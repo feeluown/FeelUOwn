@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
-from feeluown.models import SearchType
+from feeluown.library import SearchType
 from feeluown.gui.page_containers.table import TableContainer, Renderer
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.widgets.img_card_list import ImgCardListDelegate
