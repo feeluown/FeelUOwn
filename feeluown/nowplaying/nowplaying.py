@@ -78,7 +78,9 @@ class NowPlayingService(aionp.NowPlayingInterface):
         metadata.album = meta.get('album', '')
         metadata.title = meta.get('title', '')
         metadata.cover = meta.get('artwork', '')
-        metadata.url = ''
+        metadata.url = meta.get('uri', '')
+        if os.name == 'nt':
+            metadata.id_ = meta.get('uri', '')
         self.set_playback_property(PlayProp.Metadata, metadata)
 
     def update_duration(self, duration):
