@@ -11,6 +11,8 @@ from feeluown.player import (
 )
 from feeluown.utils.dispatch import Signal
 
+SONG2_URL = 'http://x.mp3'
+
 
 @pytest.fixture()
 def pl(app_mock, song, song1):
@@ -33,7 +35,6 @@ def pl_prepare_media_none(mocker, pl):
 
 @pytest.fixture()
 def pl_list_standby_return_empty(mocker, pl):
-    pl._app.library.a_list_song_standby
     f2 = asyncio.Future()
     f2.set_result([])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
@@ -42,9 +43,8 @@ def pl_list_standby_return_empty(mocker, pl):
 
 @pytest.fixture()
 def pl_list_standby_return_song2(mocker, pl, song2):
-    pl._app.library.a_list_song_standby
     f2 = asyncio.Future()
-    f2.set_result([(song2, song2.url)])
+    f2.set_result([(song2, SONG2_URL)])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
     mock_a_list_standby.return_value = f2
 
@@ -135,7 +135,7 @@ async def test_set_current_song_with_bad_song_2(
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
-    mock_pure_set_current_song.assert_called_once_with(song2, song2.url, sentinal)
+    mock_pure_set_current_song.assert_called_once_with(song2, SONG2_URL, sentinal)
 
 
 def test_pure_set_current_song(
@@ -143,7 +143,7 @@ def test_pure_set_current_song(
     # Current song index is 0
     assert pl.list().index(song) == 0
     # song2 is not in playlist before
-    pl.pure_set_current_song(song2, song2.url)
+    pl.pure_set_current_song(song2, SONG2_URL)
     assert pl.current_song == song2
     # The song should be inserted after the current song,
     # so the index should be 1

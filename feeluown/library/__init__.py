@@ -1,6 +1,6 @@
 # flake8: noqa
 from .library import Library
-from .provider import AbstractProvider, dummy_provider
+from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .flags import Flags as ProviderFlags
 from .model_state import ModelState
@@ -25,3 +25,7 @@ from .models import ModelFlags, BaseModel, ModelType, SearchType, \
 from .excs import NotSupported, NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound
 from .provider_protocol import *
+from .uri import (
+    Resolver, reverse, resolve, ResolverNotFound, ResolveFailed,
+    parse_line, NS_TYPE_MAP,
+)

@@ -1,15 +1,14 @@
 # mypy: disable-error-code=type-abstract
 import logging
 import warnings
-from functools import partial, lru_cache
+from functools import partial
 from typing import cast, Optional, Union, TypeVar, Type, Callable, Any
 
 from feeluown.media import Media
-from feeluown.models import SearchType, ModelType
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from feeluown.utils.utils import log_exectime
 from feeluown.utils.reader import create_reader
+from .base import SearchType, ModelType
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
 from .excs import (
@@ -18,8 +17,7 @@ from .excs import (
 )
 from .flags import Flags as PF
 from .models import (
-    ModelFlags as MF, BaseModel, BriefSongModel, UserModel,
-    get_modelcls_by_type,
+    ModelFlags as MF, BriefSongModel, UserModel,
 )
 from .model_protocol import (
     BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
@@ -156,14 +154,6 @@ class Library:
 
         :raises ProviderAlreadyExists:
         :raises ValueError:
-
-        >>> from feeluown.library import dummy_provider
-        >>> library = Library(None)
-        >>> library.register(dummy_provider)
-        >>> library.register(dummy_provider)
-        Traceback (most recent call last):
-            ...
-        feeluown.excs.ProviderAlreadyRegistered
         """
         if not isinstance(provider, AbstractProvider):
             raise ValueError('invalid provider instance')
@@ -247,69 +237,6 @@ class Library:
                 # When a provider does not implement search method, it returns None.
                 if result is not None:
                     yield result
-
-    @log_exectime
-    def list_song_standby(self, song, onlyone=True):
-        """try to list all valid standby
-
-        Search a song in all providers. The typical usage scenario is when a
-        song is not available in one provider, we can try to acquire it from other
-        providers.
-
-        FIXME: this method will send several network requests,
-        which may block the caller.
-
-        :param song: song model
-        :param onlyone: return only one element in result
-        :return: list of songs (maximum count: 2)
-        """
-        valid_sources = [pvd.identifier for pvd in self.list()
-                         if pvd.identifier != song.source]
-        q = '{} {}'.format(song.title, song.artists_name)
-        result_g = self.search(q, source_in=valid_sources)
-        sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
-        # choose one or two valid standby
-        result = []
-        for standby in sorted_standby_list:
-            if standby.url:  # this may trigger network request
-                result.append(standby)
-                if onlyone or len(result) >= 2:
-                    break
-        return result
-
-    async def a_list_song_standby(self, song, onlyone=True, source_in=None):
-        """async version of list_song_standby
-
-        .. versionadded:: 3.7.5
-             The *source_in* paramter.
-        """
-        if source_in is None:
-            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
-        else:
-            pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
-        # FIXME(cosven): the model return from netease is new model,
-        # and it does not has url attribute
-        valid_providers = [pvd_id for pvd_id in pvd_ids
-                           if pvd_id != song.source and pvd_id != 'netease']
-        q = '{} {}'.format(song.title_display, song.artists_name_display)
-        result_g = []
-        async for result in self.a_search(q, source_in=valid_providers):
-            if result is not None:
-                result_g.append(result)
-        sorted_standby_list = _extract_and_sort_song_standby_list(song, result_g)
-        # choose one or two valid standby
-        result = []
-        for standby in sorted_standby_list:
-            try:
-                url = await aio.run_in_executor(None, lambda: standby.url)
-            except:  # noqa
-                logger.exception('get standby url failed')
-            else:
-                if url:
-                    result.append(standby)
-                    if onlyone or len(result) >= 2:
-                        break
-        return result
 
     async def a_list_song_standby_v2(self, song,
                                      audio_select_policy='>>>', source_in=None,
@@ -422,37 +349,6 @@ class Library:
                                 ModelType(model.meta.model_type),
                                 flags)
 
-    # ---------------------------
-    # Methods for backward compat
-    # ---------------------------
-    def cast_model_to_v1(self, model):
-        """Cast a v1/v2 model to v1 (for protocol)
-
-        During the model migration from v1 to v2, v2 may lack some ability.
-        Cast the model to v1 to acquire such ability.
-
-        :raises NotSupported: provider doesn't support v1 model
-        """
-        if isinstance(model, BaseModel) and (model.meta.flags & MF.v2):
-            return self._cast_model_to_v1_impl(model)
-        return model
-
-    @lru_cache(maxsize=1024)
-    def _cast_model_to_v1_impl(self, model):
-        provider = self.get_or_raise(model.source)
-        ModelCls = provider.get_model_cls(model.meta.model_type)
-        # The source of the default SongModel is None. When ModelCls.source
-        # is None, it means that the provider does not has its own model class.
-        if ModelCls.source is None:
-            model_type_str = repr(ModelType(model.meta.model_type))
-            emsg = f'provider:{model.source} has no v1 model for {model_type_str}'
-            e = NotSupported(emsg, provider=provider)
-            raise e
-        kv = {}
-        for field in ModelCls.meta.fields_display:
-            kv[field] = getattr(model, field)
-        return ModelCls.create_by_display(identifier=model.identifier, **kv)
-
     # -----
     # Songs
     # -----
@@ -501,10 +397,6 @@ class Library:
         provider = self.get_or_raise(song.source)
         if isinstance(provider, SupportsSongMV):
             mv = provider.song_get_mv(song)
-        elif not self.check_flags(song.source, song.meta.model_type, PF.model_v2):
-            song_v1 = self.cast_model_to_v1(song)
-            mv = song_v1.mv
-            mv = cast(Optional[VideoProtocol], mv)
         else:
             mv = None
         return mv
@@ -520,12 +412,8 @@ class Library:
         """
         provider = self.get_or_raise(song.source)
         if isinstance(provider, SupportsSongLyric):
-            lyric = provider.song_get_lyric(song)
-        else:
-            song_v1 = self.cast_model_to_v1(song)
-            lyric = song_v1.lyric
-            lyric = cast(Optional[LyricProtocol], lyric)
-        return lyric
+            return provider.song_get_lyric(song)
+        raise NotSupported
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
         provider = self.getv2_or_raise(song.source)
@@ -559,17 +447,7 @@ class Library:
         provider = self.get_or_raise(model.source)
         if isinstance(provider, protocol_cls):
             return v2_handler(provider, model)
-
-        try:
-            v1model = self.cast_model_to_v1(model)
-        except NotSupported as e:
-            # Make the error message more informative.
-            if e.provider is not None:
-                pid = e.provider.identifier
-                msg = f'provider:{pid} does not support {protocol_cls.__name__}'
-                raise NotSupported(msg)
-            raise  # This branch should not be reached.
-        return v1_handler(v1model)
+        raise NotSupported(f'{protocol_cls} not supported')
 
     # --------
     # Artist
@@ -640,11 +518,8 @@ class Library:
         """
         provider = self.get_or_raise(playlist.source)
         if isinstance(provider, SupportsPlaylistRemoveSong):
-            ok = provider.playlist_remove_song(playlist, song)
-        else:
-            playlist = self.cast_model_to_v1(playlist)
-            ok = playlist.remove(song.identifier)
-        return ok
+            return provider.playlist_remove_song(playlist, song)
+        raise NotSupported
 
     def playlist_add_song(self, playlist, song) -> bool:
         """Add a song to the playlist
@@ -653,11 +528,8 @@ class Library:
         """
         provider = self.get_or_raise(playlist.source)
         if isinstance(provider, SupportsPlaylistAddSong):
-            ok = provider.playlist_add_song(playlist, song)
-        else:
-            playlist = self.cast_model_to_v1(playlist)
-            ok = playlist.add(song.identifier)
-        return ok
+            return provider.playlist_add_song(playlist, song)
+        raise NotSupported
 
     # -------------------------
     # generic methods for model
@@ -757,22 +629,7 @@ class Library:
                     model.state = ModelState.not_exists
                     raise ModelNotFound(f'provider:{provider} return an empty model')
                 return upgraded_model
-
-        # Fallback to v1 way if the provider does not support PF.get.
-        # For example, provider X may support 'get' for SongModel and it
-        # does not support 'get' for ArtistModel temporarily. It returns
-        # a SongModel and the song.artists returns list of BriefArtistModel,
-        # in this condition, BriefArtistModel should be upgraded in v1 way.
-        return self._model_upgrade_in_v1_way(model)
-
-    def _model_upgrade_in_v1_way(self, model):
-        v1model = self.cast_model_to_v1(model)
-        modelcls = get_modelcls_by_type(ModelType(model.meta.model_type))
-        fields = [f for f in list(modelcls.__fields__)
-                  if f not in list(BaseModel.__fields__)]
-        for field in fields:
-            getattr(v1model, field)
-        return v1model
+        raise NotSupported
 
     # --------
     # Video

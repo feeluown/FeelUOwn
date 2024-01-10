@@ -185,7 +185,7 @@ class CookiesLoginDialog(LoginDialog):
     def setup_user(self, user):
         """Setup user session
 
-        :type user: feeluown.models.UserModel
+        :type user: feeluown.library.UserModel
         """
         raise NotImplementedError
 
@@ -193,7 +193,7 @@ class CookiesLoginDialog(LoginDialog):
         """Create a user model from cookies dict
 
         :type cookies: dict
-        :rtype: feeluown.models.UserModel
+        :rtype: feeluown.library.UserModel
         """
         raise NotImplementedError
 
@@ -214,7 +214,7 @@ class CookiesLoginDialog(LoginDialog):
         Generally, you can store the cookies in FeelUOwn data directory
         with specifical filename.
 
-        :type user: feeluown.models.UserModel
+        :type user: feeluown.library.UserModel
         :type cookies: dict
         """
         raise NotImplementedError

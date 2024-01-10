@@ -1,6 +1,6 @@
 from textwrap import indent
 # FIXME: maybe we should move `reverse` into serializers package
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 from .base import Serializer, SerializerMeta, SerializerError
 from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
     ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \

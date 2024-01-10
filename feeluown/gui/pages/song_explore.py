@@ -14,7 +14,7 @@ from feeluown.library import (
     NotSupported, ModelFlags
 )
 from feeluown.player import Lyric
-from feeluown.models.uri import reverse, resolve
+from feeluown.library import reverse, resolve
 from feeluown.utils import aio
 from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader

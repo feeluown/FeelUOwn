@@ -4,7 +4,7 @@
 from abc import abstractmethod
 from typing import runtime_checkable, Protocol
 
-from feeluown.models import ModelType
+from feeluown.library import ModelType
 from feeluown.gui.widgets.tabbar import Tab, TabBar
 
 
