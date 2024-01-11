@@ -105,6 +105,9 @@ class NowPlayingService(aionp.NowPlayingInterface):
     async def on_previous(self):
         self._app.playlist.previous()
 
+    def on_stop(self):
+        self._app.player.stop()
+
     def on_loop_status(self, status: aionp.LoopStatus):
         if status == aionp.LoopStatus.Playlist:
             self._app.playlist.playback_mode = PlaybackMode.loop
