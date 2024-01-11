@@ -57,7 +57,7 @@ setup(
         'qasync',
         'tomlkit',
         'packaging',
-        'pydantic>=1.8.1',
+        'pydantic>=1.10',  # v1 and v2 are both ok.
         'mutagen>=1.37',
     ],
     extras_require={
@@ -74,7 +74,13 @@ setup(
             'pyshortcuts',
             'aionowplaying>=0.9.4',
         ],
+        'webserver': ['sanic', 'websockets', 'json-rpc'],
         'webengine': ['PyQtWebEngine'],
+        # Load cookies from chrome/firefox/...
+        'cookies': [
+            'secretstorage',
+            'pycryptodome',
+        ],
         'dev': [
             # lint
             'flake8',

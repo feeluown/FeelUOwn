@@ -52,13 +52,32 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 """
 
 import time
-from typing import List, Optional, Tuple, Any
+from typing import List, Optional, Tuple, Any, Union
 
-from pydantic import BaseModel as _BaseModel, PrivateAttr
+from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr
+try:
+    # pydantic>=2.0
+    from pydantic import field_validator
+    identifier_validator = field_validator('identifier', mode='before')
+    pydantic_version = 2
+except ImportError:
+    # pydantic<2.0
+    from pydantic import validator
+    identifier_validator = validator('identifier', pre=True)
+    pydantic_version = 1
 
-from feeluown.models import ModelType, ModelExistence, ModelStage, ModelFlags, AlbumType
 from feeluown.utils.utils import elfhash
+from .base import ModelType, ModelFlags, AlbumType
+from .base import SearchType  # noqa
 from .model_state import ModelState
+
+
+TSong = Union['SongModel', 'BriefSongModel']
+TAlbum = Union['AlbumModel', 'BriefAlbumModel']
+TArtist = Union['ArtistModel', 'BriefArtistModel']
+TVideo = Union['VideoModel', 'BriefVideoModel']
+TPlaylist = Union['PlaylistModel', 'BriefPlaylistModel']
+TUser = Union['UserModel', 'BriefUserModel']
 
 
 def fmt_artists_names(names: List[str]) -> str:
@@ -108,16 +127,28 @@ class ModelMeta:
 
 
 class BaseModel(_BaseModel):
-    class Config:
-        # Do not use Model.from_orm to convert v1 model to v2 model
-        # since v1 model has too much magic.
-        orm_mode = False
-        # Forbidding extra fields is good for debugging. The default behavior
-        # is a little implicit. If you want to store an extra attribute on model,
-        # use :meth:`cache_set` explicitly.
-        extra = 'forbid'
+    # Do not use Model.from_orm to convert v1 model to v2 model
+    # since v1 model has too much magic.
+    #
+    # Forbidding extra fields is good for debugging. The default behavior
+    # is a little implicit. If you want to store an extra attribute on model,
+    # use :meth:`cache_set` explicitly.
 
-    __cache__: dict = PrivateAttr(default_factory=dict)
+    # For pydantic v2.
+    if pydantic_version == 2:
+        model_config = ConfigDict(from_attributes=False, extra='forbid')
+    else:
+        # For pydantic v1.
+        class Config:
+            # Do not use Model.from_orm to convert v1 model to v2 model
+            # since v1 model has too much magic.
+            orm_mode = False
+            # Forbidding extra fields is good for debugging. The default behavior
+            # is a little implicit. If you want to store an extra attribute on model,
+            # use :meth:`cache_set` explicitly.
+            extra = 'forbid'
+
+    _cache: dict = PrivateAttr(default_factory=dict)
     meta: Any = ModelMeta.create()
 
     identifier: str
@@ -125,12 +156,18 @@ class BaseModel(_BaseModel):
     source: str = 'dummy'
     state: ModelState = ModelState.artificial
 
-    #: (DEPRECATED) for backward compact
-    exists: ModelExistence = ModelExistence.unknown
+    @identifier_validator
+    def int_to_str(cls, v):
+        # Old version pydantic convert int to str implicitly.
+        # Many plugins(such as netease) use int as indentifier during initialization.
+        # To keep backward compatibility, convert int to str here.
+        if isinstance(v, int):
+            return str(v)
+        return v
 
     def cache_get(self, key) -> Tuple[Any, bool]:
-        if key in self.__cache__:
-            value, expired_at = self.__cache__[key]
+        if key in self._cache:
+            value, expired_at = self._cache[key]
             if expired_at is None or expired_at >= int(time.time()):
                 return value, True
         return None, False
@@ -143,7 +180,7 @@ class BaseModel(_BaseModel):
             expired_at = None
         else:
             expired_at = int(time.time()) + ttl
-        self.__cache__[key] = (value, expired_at)
+        self._cache[key] = (value, expired_at)
 
     """
     Implement __hash__ and __eq__ so that a model can be a dict key.
@@ -163,7 +200,7 @@ class BaseModel(_BaseModel):
 
     def __getattr__(self, attr):
         try:
-            return super().__getattribute__(attr)
+            return super().__getattr__(attr)
         except AttributeError:
             if attr.endswith('_display'):
                 return getattr(self, attr[:-8])
@@ -176,41 +213,6 @@ class BaseBriefModel(BaseModel):
     Model -> model gotten stage
     """
     meta: Any = ModelMeta.create(is_brief=True)
-
-    @classmethod
-    def from_display_model(cls, model):
-        """Create a new model from an old model in display stage.
-
-        This method never triggers IO operations.
-        """
-        # Due to the display_property mechanism, it is unsafe to
-        # get attribute of other stage model property.
-        assert model.stage is ModelStage.display
-        data = {'state': cls._guess_state_from_exists(model.exists)}
-        for field in cls.__fields__:
-            if field in ('state', 'meta'):
-                continue
-            if field in ('identifier', 'source', 'exists'):
-                value = object.__getattribute__(model, field)
-            else:
-                if field in model.meta.fields_display:
-                    value = getattr(model, f'{field}_display')
-                else:
-                    # For example, BriefVideoModel has field `artists_name` and
-                    # the old model does not have such display field.
-                    value = ''
-            data[field] = value
-        return cls(**data)
-
-    @classmethod
-    def _guess_state_from_exists(cls, exists):
-        if exists == ModelExistence.no:
-            state_value = ModelState.not_exists
-        elif exists == ModelExistence.unknown:
-            state_value = ModelState.artificial
-        else:
-            state_value = ModelState.exists
-        return state_value
 
 
 class BaseNormalModel(BaseModel):
@@ -226,6 +228,9 @@ class BriefSongModel(BaseBriefModel):
     artists_name: str = ''
     album_name: str = ''
     duration_ms: str = ''
+
+    def __str__(self):
+        return f'{self.title} - {self.artists_name}'
 
 
 class BriefVideoModel(BaseBriefModel):
@@ -264,9 +269,14 @@ class SongModel(BaseNormalModel):
     """
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
-    album: Optional[BriefAlbumModel]
+    album: Optional[TAlbum] = None
     artists: List[BriefArtistModel]
     duration: int  # milliseconds
+    # A playlist can consist of multiple songs and a song can have many children.
+    # The differences between playlist's songs and song' children is that
+    # a child of a song usually have no album and artists. They share some
+    # metadata with the parent song.
+    children: List['TSong'] = []
 
     genre: str = ''
     date: str = ''  # For example: 2020-12-11 00:00:00, 2020-12-11T00:00:00Z
@@ -318,9 +328,9 @@ class CommentModel(BaseNormalModel):
     #: unix timestamp, for example 1591695620
     time: int
     #: the parent comment which this comment replies to
-    parent: Optional[BriefCommentModel]
+    parent: Optional[BriefCommentModel] = None
     #: the root comment id
-    root_comment_id: Optional[str]
+    root_comment_id: Optional[str] = None
 
 
 class ArtistModel(BaseNormalModel):
@@ -333,14 +343,28 @@ class ArtistModel(BaseNormalModel):
 
 
 class AlbumModel(BaseNormalModel):
+    """
+    .. versionadded:: 3.8.12
+        The `song_count` field.
+    """
     meta: Any = ModelMeta.create(ModelType.album, is_normal=True)
     name: str
     cover: str
     type_: AlbumType = AlbumType.standard
     artists: List[BriefArtistModel]
     # One album usually has limited songs, and many providers' album_detail API
-    # can return songs list.
+    # can return songs list. UPDATE(3.8.12): However, we found that albums
+    # return by list_artist_album API usually has all fields except songs field.
+    # To solve this problem, we add a song_count field to AlbumModel.
+    #
+    # The song_count field should be checked first, -1 means that the count is
+    # unknown. The album may has songs or not. 0 means that the album has no songs.
+    # And a positive number means that the album has exact number of songs.
+    # If it is unknown, the songs field shuold be checked. If it is not empty,
+    # just use it (to keep backward compatibility). If it is empty,
+    # check if the provider supports SupportAlbumSongsReader protocol.
     songs: List[SongModel]
+    song_count: int = -1
     description: str
     released: str = ''  # format: 2000-12-27.
 
@@ -379,7 +403,7 @@ class VideoModel(BaseNormalModel):
 class PlaylistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_normal=True)
     # Since modelv1 playlist does not have creator field, it is set to optional.
-    creator: Optional[BriefUserModel]
+    creator: Optional[BriefUserModel] = None
     name: str
     cover: str
     description: str
@@ -387,11 +411,11 @@ class PlaylistModel(BaseBriefModel):
 
 class SimpleSearchResult(_BaseModel):
     q: str
-    songs: List[BriefSongModel] = []
-    albums: List[BriefAlbumModel] = []
-    artists: List[BriefAlbumModel] = []
-    playlists: List[BriefPlaylistModel] = []
-    videos: List[BriefVideoModel] = []
+    songs: List[TSong] = []
+    albums: List[TAlbum] = []
+    artists: List[TArtist] = []
+    playlists: List[TPlaylist] = []
+    videos: List[TVideo] = []
 
 
 _type_modelcls_mapping = {

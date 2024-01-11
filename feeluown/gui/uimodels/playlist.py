@@ -5,7 +5,7 @@
 
 from feeluown.gui.widgets.playlists import PlaylistsModel
 
-from feeluown.models import PlaylistModel
+from feeluown.library import PlaylistModel
 
 
 class PlaylistUiItem(PlaylistModel):

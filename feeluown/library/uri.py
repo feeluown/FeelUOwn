@@ -1,7 +1,7 @@
 """
 model/uri transform
 
-TODO: move feeluown.server.rpc.model_parser to feeluown.models.parser
+TODO: move feeluown.server.rpc.model_parser to feeluown.library.parser
 
 .. warn::
 
@@ -22,7 +22,10 @@ import json
 import re
 import warnings
 
-from .base import ModelType, ModelExistence
+from .base import ModelType
+from .model_state import ModelState
+from .models import get_modelcls_by_type
+
 
 logger = logging.getLogger(__name__)
 
@@ -213,8 +216,6 @@ def parse_line(line):
     >>> model.source, model.title_display
     ('xxx', '没有人知道')
     """
-    from feeluown.library import dummy_provider
-
     line = line.strip()
     parts = line.split('#', maxsplit=1)
     if len(parts) == 2:
@@ -229,7 +230,7 @@ def parse_line(line):
         raise ResolveFailed('invalid line: {}'.format(line))
     source, ns, identifier = m.groups()
     path = uri[m.end():]
-    Model = dummy_provider.get_model_cls(NS_TYPE_MAP[ns])
+    Model = get_modelcls_by_type(NS_TYPE_MAP[ns], brief=True)
     if ns == 'songs':
         parse_func = parse_song_str
     elif ns == 'albums':
@@ -241,8 +242,8 @@ def parse_line(line):
     else:
         parse_func = parse_unknown
     data = parse_func(model_str.strip())
-    model = Model.create_by_display(identifier=identifier, **data)
-    model.source = source
+    data['source'] = source
+    model = Model(identifier=identifier, **data)
     return model, path
 
 
@@ -251,29 +252,18 @@ def resolve(line, model=None):
 
     for example, line can be 'fuo://local/songs/1/cover/data'
     """
-    from feeluown.library import (
-        ProviderFlags, get_modelcls_by_type, V2SupportedModelTypes,
-    )
+    from feeluown.library import get_modelcls_by_type, V2SupportedModelTypes
 
     if model is None:
         model, path = parse_line(line)
         library = Resolver.library
         provider = library.get(model.source)
         if provider is None:
-            model.exists = ModelExistence.no
+            model.state = ModelState.not_exists
         else:
-            # Try to use model v2 since v1 is deprecated.
-            if library.check_flags_by_model(model, ProviderFlags.model_v2):
-                model_type = ModelType(model.meta.model_type)
-                modelcls = get_modelcls_by_type(model_type, brief=True)
-                if modelcls is None or \
-                   model_type not in V2SupportedModelTypes:
-                    assert False, 'library has not support the v2 model for {model_type}'
-                else:
-                    model = modelcls.from_display_model(model)
-            else:
-                model_cls = provider.get_model_cls(model.meta.model_type)
-                model = model_cls(model)
+            model_type = ModelType(model.meta.model_type)
+            modelcls = get_modelcls_by_type(model_type, brief=True)
+            assert modelcls is not None and model_type in V2SupportedModelTypes
     else:
         path = line
     # NOTE: the path resolve logic is deprecated

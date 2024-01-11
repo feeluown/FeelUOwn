@@ -1,44 +1,16 @@
 from typing import runtime_checkable, Protocol, List, Tuple, Optional, Dict
 from abc import abstractmethod
-
 from feeluown.media import Quality, Media
 from .models import (
     BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
     PlaylistModel, UserModel, ModelType,
 )
 from .model_protocol import (
-    BriefArtistProtocol, BriefSongProtocol,
+    BriefArtistProtocol, BriefSongProtocol, SongProtocol,
     BriefVideoProtocol, VideoProtocol,
     LyricProtocol,
 )
 from .flags import Flags as PF
-
-
-__all__ = (
-    'SupportsAlbumGet',
-
-    'SupportsArtistAlbumsReader',
-    'SupportsArtistGet',
-    'SupportsArtistSongsReader',
-
-    'SupportsCurrentUser',
-
-    'SupportsPlaylistAddSong',
-    'SupportsPlaylistGet',
-    'SupportsPlaylistRemoveSong',
-    'SupportsPlaylistSongsReader',
-
-    'SupportsSongGet',
-    'SupportsSongHotComments',
-    'SupportsSongLyric',
-    'SupportsSongMV',
-    'SupportsSongMultiQuality',
-    'SupportsSongSimilar',
-    'SupportsSongWebUrl',
-
-    'SupportsVideoGet',
-    'SupportsVideoMultiQuality',
-)
 
 
 ID = str
@@ -177,6 +149,14 @@ class SupportsAlbumGet(Protocol):
         raise NotImplementedError
 
 
+@eq(ModelType.album, PF.songs_rd)
+@runtime_checkable
+class SupportsAlbumSongsReader(Protocol):
+    @abstractmethod
+    def album_create_songs_rd(self, album) -> List[SongProtocol]:
+        raise NotImplementedError
+
+
 #
 # Protocols for Album related functions.
 #
@@ -271,6 +251,28 @@ class SupportsPlaylistGet(Protocol):
         raise NotImplementedError
 
 
+@runtime_checkable
+class SupportsPlaylistCreateByName(Protocol):
+    @abstractmethod
+    def playlist_create_by_name(self, name) -> PlaylistModel:
+        """Create playlist for user logged in.
+
+        :raises NoUserLoggedIn:
+        :raises ProviderIOError:
+        """
+
+
+@runtime_checkable
+class SupportsPlaylistDelete(Protocol):
+    @abstractmethod
+    def playlist_delete(self, identifier: ID) -> bool:
+        """
+        :raises ModelNotFound: model not found by the identifier
+        :raises ProviderIOError:
+        """
+        raise NotImplementedError
+
+
 @eq(ModelType.playlist, PF.songs_rd)
 @runtime_checkable
 class SupportsPlaylistSongsReader(Protocol):
@@ -311,3 +313,76 @@ class SupportsCurrentUser(Protocol):
 
         :raises NoUserLoggedIn: there is no logged in user.
         """
+
+
+@runtime_checkable
+class SupportsCurrentUserListPlaylists(Protocol):
+    @abstractmethod
+    def current_user_list_playlists(self):
+        """
+        : raises NoUserLoggedIn:
+        """
+
+
+#
+# Protocols for current user favorites/collections
+#
+@runtime_checkable
+class SupportsCurrentUserFavSongsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_songs_rd(self):
+        """
+        : raises NoUserLoggedIn:
+        """
+
+
+@runtime_checkable
+class SupportsCurrentUserFavAlbumsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_albums_rd(self):
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserFavArtistsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_artists_rd(self):
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserFavPlaylistsReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_playlists_rd(self):
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserFavVideosReader(Protocol):
+    @abstractmethod
+    def current_user_fav_create_videos_rd(self):
+        pass
+
+
+#
+# Protocols for recommendation.
+#
+@runtime_checkable
+class SupportsRecListDailySongs(Protocol):
+    @abstractmethod
+    def rec_list_daily_songs(self) -> List[SongModel]:
+        pass
+
+
+@runtime_checkable
+class SupportsRecListDailyPlaylists(Protocol):
+    @abstractmethod
+    def rec_list_daily_playlists(self) -> List[PlaylistModel]:
+        pass
+
+
+@runtime_checkable
+class SupportsRecListDailyAlbums(Protocol):
+    @abstractmethod
+    def rec_list_daily_albums(self) -> List[AlbumModel]:
+        pass

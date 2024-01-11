@@ -1,9 +1,9 @@
 from PyQt5.QtWidgets import QFrame, QVBoxLayout
 
-from feeluown.models import SearchType
+from feeluown.library import SearchType
 from feeluown.gui.page_containers.table import TableContainer, Renderer
 from feeluown.gui.page_containers.scroll_area import ScrollArea
-from feeluown.gui.widgets.imglist import ImgListView
+from feeluown.gui.widgets.img_card_list import ImgCardListDelegate
 from feeluown.gui.widgets.songs import SongsTableView, ColumnsMode
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.helpers import BgTransparentMixin
@@ -58,9 +58,10 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
             # HACK: set fixed row for tables.
             # pylint: disable=protected-access
             for table in table_container._tables:
-                if isinstance(table, ImgListView):
+                delegate = table.itemDelegate()
+                if isinstance(delegate, ImgCardListDelegate):
                     table._fixed_row_count = 2
-                    table.img_min_width = 100
+                    delegate.update_settings("card_min_width", 100)
                 elif isinstance(table, SongsTableView):
                     table._fixed_row_count = 8
                     table._row_height = table.verticalHeader().defaultSectionSize()

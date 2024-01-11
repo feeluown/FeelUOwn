@@ -3,7 +3,7 @@ import sys
 from PyQt5.QtCore import Qt, QRectF, QRect, QSize
 from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
     QKeySequence, QFont
-from PyQt5.QtWidgets import QLabel, QWidget,\
+from PyQt5.QtWidgets import QLabel, QWidget, \
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
     QMenu, QAction, QFontDialog, QShortcut, QSpacerItem
 
@@ -260,8 +260,8 @@ class InnerLyricWindow(QWidget):
         if self._auto_resize:
             self_size = QSize(size.width(), size.height())
             self.resize(self_size)
-            self.parent().resize(self_size)
-            self.parent().updateGeometry()
+            self.parent().resize(self_size)  # type: ignore
+            self.parent().updateGeometry()   # type: ignore
         self.line_label.set_line(line)
 
     def zoomin(self):
@@ -343,7 +343,8 @@ class InnerLyricWindow(QWidget):
             dialog.open()
 
     def show_font_dialog(self):
-        dialog = QFontDialog(self.font())
+        dialog = QFontDialog(self.font(), self)
+        # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
         dialog.setAttribute(Qt.WA_DeleteOnClose)
         dialog.currentFontChanged.connect(self.setFont)
         dialog.fontSelected.connect(self.setFont)

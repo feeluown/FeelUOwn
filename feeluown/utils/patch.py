@@ -1,6 +1,7 @@
 # flake8: noqa
 
 import asyncio
+import sys
 
 
 def patch_qeventloop():
@@ -103,3 +104,15 @@ def patch_mutagen():
         return value, data
 
     _specs.decode_terminated = decode_terminated
+
+
+def patch_pydantic():
+    """
+    For some reason, some plugins already use pydantic v2 and they only use
+    pydantic.v1 package. Make them compat with pydantic v1 in an hacker way :)
+    """
+    try:
+        import pydantic.v1
+    except ImportError:
+        import pydantic
+        sys.modules['pydantic.v1'] = pydantic

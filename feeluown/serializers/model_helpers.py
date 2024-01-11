@@ -14,16 +14,7 @@ from feeluown.library import (
     BriefPlaylistModel,
     BriefUserModel,
 )
-from feeluown.models import (
-    SongModel as SongModelV1,
-    ArtistModel as ArtistModelV1,
-    AlbumModel as AlbumModelV1,
-    PlaylistModel as PlaylistModelV1,
-    UserModel as UserModelV1,
-    SearchModel as SearchModelV1,
-
-    reverse,
-)
+from feeluown.library import reverse
 
 
 class ModelSerializerMixin:
@@ -37,9 +28,12 @@ class ModelSerializerMixin:
                 fields = [field for field in model.__fields__
                           if field not in BaseModel.__fields__]
                 # Include properties.
+                pydantic_fields = ("__values__", "fields", "__fields_set__",
+                                   "model_computed_fields", "model_extra",
+                                   "model_fields_set")
                 fields += [prop for prop in dir(modelcls)
                            if isinstance(getattr(modelcls, prop), property)
-                           and prop not in ("__values__", "fields")]
+                           and prop not in pydantic_fields]
             else:
                 fields = model.meta.fields_display
         else:
@@ -58,7 +52,7 @@ class ModelSerializerMixin:
 
 class SongSerializerMixin:
     class Meta:
-        types = (SongModel, SongModelV1, BriefSongModel)
+        types = (SongModel, BriefSongModel)
         # since url can be too long, we put it at last
         fields = ('title', 'duration', 'album', 'artists')
         line_fmt = '{uri:{uri_length}}\t# {title:_18} - {artists_name:_20}'
@@ -66,28 +60,28 @@ class SongSerializerMixin:
 
 class ArtistSerializerMixin:
     class Meta:
-        types = (ArtistModel, ArtistModelV1, BriefArtistModel)
+        types = (ArtistModel, BriefArtistModel)
         fields = ('name', 'songs')
         line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
 
 class AlbumSerializerMixin:
     class Meta:
-        types = (AlbumModel, AlbumModelV1, BriefAlbumModel)
+        types = (AlbumModel, BriefAlbumModel)
         fields = ('name', 'artists', 'songs')
         line_fmt = '{uri:{uri_length}}\t# {name:_18} - {artists_name:_20}'
 
 
 class PlaylistSerializerMixin:
     class Meta:
-        types = (PlaylistModel, PlaylistModelV1, BriefPlaylistModel)
+        types = (PlaylistModel, BriefPlaylistModel)
         fields = ('name', )
         line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
 
 class UserSerializerMixin:
     class Meta:
-        types = (UserModel, UserModelV1, BriefUserModel)
+        types = (UserModel, BriefUserModel)
         fields = ('name', 'playlists')
         line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
@@ -103,7 +97,7 @@ class SearchSerializerMixin:
     """
 
     class Meta:
-        types = (SearchModelV1, )
+        types = ()
 
     def _get_items(self, result):
         fields = ('songs', 'albums', 'artists', 'playlists',)

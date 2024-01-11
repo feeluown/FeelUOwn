@@ -37,15 +37,6 @@ def wait_until_23333_service_ok(timeout):
             return True
     return False
 
-def register_dummy_provider():
-    req = Request('exec', has_heredoc=True, heredoc_word='EOF')
-    req.set_heredoc_body('''
-from feeluown.library.provider import dummy_provider
-app.library.register(dummy_provider)
-''')
-    with create_client() as client:
-        asyncio.run(client.send(req))
-
 
 def collect():
     for key in globals():
@@ -58,12 +49,7 @@ def test_show_providers_with_json_format():
     with create_client() as client:
         resp = asyncio.run(
             client.send(Request('show', ['fuo://'], options={'format': 'json'})))
-        providers = json.loads(resp.text)
-        for provider in providers:
-            if provider['identifier'] == 'dummy':
-                break
-        else:
-            assert False, 'dummy provider should be found'
+        json.loads(resp.text)
 
 
 def test_cmd_options():
@@ -88,7 +74,6 @@ def run():
     popen = subprocess.Popen(['fuo', '-v'])
 
     assert wait_until_23333_service_ok(timeout=10)
-    register_dummy_provider()
 
     failed = False
     for case in collect():

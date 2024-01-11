@@ -1,21 +1,27 @@
+import base64
 import itertools
 import logging
 import os
 from datetime import datetime
 from enum import Enum
 from pathlib import Path
+from typing import Dict, Iterable, List
 
 import tomlkit
 
-from feeluown.models.uri import resolve, reverse, ResolverNotFound, \
-    ResolveFailed, ModelExistence
 from feeluown.consts import COLLECTIONS_DIR
+from feeluown.utils.dispatch import Signal
+from feeluown.library import resolve, reverse, ResolverNotFound, \
+    ResolveFailed, ModelState
+from feeluown.utils.utils import elfhash
 
 logger = logging.getLogger(__name__)
 
 COLL_LIBRARY_IDENTIFIER = 'library'
+COLL_POOL_IDENTIFIER = 'pool'
 # for backward compat, we should never change these filenames
 LIBRARY_FILENAME = f'{COLL_LIBRARY_IDENTIFIER}.fuo'
+POOL_FILENAME = f'{COLL_POOL_IDENTIFIER}.fuo'
 DEPRECATED_FUO_FILENAMES = (
     'Songs.fuo', 'Albums.fuo', 'Artists.fuo', 'Videos.fuo'
 )
@@ -23,8 +29,13 @@ DEPRECATED_FUO_FILENAMES = (
 TOML_DELIMLF = "+++\n"
 
 
+class CollectionAlreadyExists(Exception):
+    pass
+
+
 class CollectionType(Enum):
     sys_library = 16
+    sys_pool = 13
 
     mixed = 8
 
@@ -34,11 +45,14 @@ class Collection:
     def __init__(self, fpath):
         # TODO: 以后考虑添加 identifier 字段，identifier
         # 字段应该尽量设计成可以跨电脑使用
-        self.fpath = fpath
+        self.fpath = str(fpath)
+        # TODO: 目前还没想好 collection identifier 计算方法，故添加这个函数
+        # 现在把 fpath 当作 identifier 使用，但对外透明
+        self.identifier = elfhash(base64.b64encode(bytes(self.fpath, 'utf-8')))
 
         # these variables should be inited during loading
         self.type = None
-        self.name = None
+        self.name = None  # Collection title.
         self.models = []
         self.updated_at = None
         self.created_at = None
@@ -59,6 +73,8 @@ class Collection:
         self.name = name
         if name == COLL_LIBRARY_IDENTIFIER:
             self.type = CollectionType.sys_library
+        elif name == COLL_POOL_IDENTIFIER:
+            self.type = CollectionType.sys_pool
         else:
             self.type = CollectionType.mixed
 
@@ -96,14 +112,35 @@ class Collection:
                                    str(filepath), line, str(e))
                     model = None
                 if model is not None:
-                    if model.exists is ModelExistence.no:
+                    if model.state is ModelState.not_exists:
                         self._has_nonexistent_models = True
                     self.models.append(model)
+
+    @classmethod
+    def create_empty(cls, fpath, title=''):
+        """Create an empty collection."""
+        if os.path.exists(fpath):
+            raise CollectionAlreadyExists()
+
+        doc = tomlkit.document()
+        if title:
+            doc.add('title', title)
+        doc.add('created', datetime.now())
+        doc.add('updated', datetime.now())
+        with open(fpath, 'w', encoding='utf-8') as f:
+            f.write(TOML_DELIMLF)
+            f.write(tomlkit.dumps(doc))
+            f.write(TOML_DELIMLF)
+
+        coll = cls(fpath)
+        coll._loads_metadata(doc)
+        coll.type = CollectionType.mixed
+        return coll
 
     def add(self, model):
         """add model to collection
 
-        :param model: :class:`feeluown.models.BaseModel`
+        :param model: :class:`feeluown.library.BaseModel`
         :return: True means succeed, False means failed
         """
         if model not in self.models:
@@ -147,7 +184,8 @@ class Collection:
         if not self._has_nonexistent_models:
             return
         for i, model in enumerate(self.models.copy()):
-            if model.exists is ModelExistence.no and model.source == provider.identifier:
+            if model.state is ModelState.not_exists and \
+                    model.source == provider.identifier:
                 new_model = resolve(reverse(model, as_line=True))
                 # TODO: emit data changed signal
                 self.models[i] = new_model
@@ -156,7 +194,7 @@ class Collection:
     def on_provider_removed(self, provider):
         for model in self.models:
             if model.source == provider.identifier:
-                model.exists = ModelExistence.no
+                model.state = ModelState.not_exists
                 self._has_nonexistent_models = True
 
     def _loads_metadata(self, metadata):
@@ -179,26 +217,106 @@ class Collection:
 
 
 class CollectionManager:
+
     def __init__(self, app):
         self._app = app
+        self.scan_finished = Signal()
         self._library = app.library
         self.default_dir = COLLECTIONS_DIR
 
-    def scan(self):
-        """Scan collections directories for valid fuo files, yield
-        Collection instance for each file.
-        """
-        default_fpaths = []
+        self._id_coll_mapping: Dict[int, Collection] = {}
+        self._sys_colls = {}
+
+    def get(self, identifier):
+        if identifier in (CollectionType.sys_pool, CollectionType.sys_library):
+            return self._sys_colls[identifier]
+        return self._id_coll_mapping[int(identifier)]
+
+    def get_coll_library(self):
+        for coll in self._id_coll_mapping.values():
+            if coll.type == CollectionType.sys_library:
+                return coll
+        assert False, "collection 'library' must exists."
+
+    def create(self, fname, title) -> Collection:
+        first_valid_dir = ''
+        for d, exists in self._get_dirs():
+            if exists:
+                first_valid_dir = d
+                break
+
+        assert first_valid_dir, 'there must be a valid collection dir'
+        normalized_name = fname.replace(' ', '_')
+        fpath = os.path.join(first_valid_dir, normalized_name)
+        filepath = f'{fpath}.fuo'
+        logger.info(f'Create collection:{title} at {filepath}')
+        return Collection.create_empty(filepath, title)
+
+    def remove(self, collection: Collection):
+        coll_id = collection.identifier
+        if coll_id in self._id_coll_mapping:
+            self._id_coll_mapping.pop(coll_id)
+            os.remove(collection.fpath)
+
+    def _get_dirs(self, ):
         directorys = [self.default_dir]
         if self._app.config.COLLECTIONS_DIR:
             if isinstance(self._app.config.COLLECTIONS_DIR, list):
                 directorys += self._app.config.COLLECTIONS_DIR
             else:
                 directorys.append(self._app.config.COLLECTIONS_DIR)
+        expanded_dirs = []
         for directory in directorys:
             directory = os.path.expanduser(directory)
-            if not os.path.exists(directory):
-                logger.warning(f'Collection Dir:{directory} does not exist.')
+            expanded_dirs.append((directory, os.path.exists(directory)))
+        return expanded_dirs
+
+    def scan(self):
+        colls: List[Collection] = []
+        for coll in self._scan():
+            if coll.type == CollectionType.sys_library:
+                self._sys_colls[CollectionType.sys_library] = coll
+            elif coll.type == CollectionType.sys_pool:
+                self._sys_colls[CollectionType.sys_pool] = coll
+            else:
+                colls.append(coll)
+
+        if CollectionType.sys_pool not in self._sys_colls:
+            pool_fpath = os.path.join(self.default_dir, POOL_FILENAME)
+            assert not os.path.exists(pool_fpath)
+            logger.info('Generating collection pool.')
+            coll = Collection.create_empty(pool_fpath, '想听')
+            self._sys_colls[CollectionType.sys_pool] = coll
+
+        pool_coll = self._sys_colls[CollectionType.sys_pool]
+        library_coll = self._sys_colls[CollectionType.sys_library]
+        colls.insert(0, pool_coll)
+        colls.insert(0, library_coll)
+        for collection in colls:
+            coll_id = collection.identifier
+            assert coll_id not in self._id_coll_mapping, collection.fpath
+            self._id_coll_mapping[coll_id] = collection
+        self.scan_finished.emit()
+
+    def refresh(self):
+        self.clear()
+        self.scan()
+
+    def listall(self):
+        return self._id_coll_mapping.values()
+
+    def clear(self):
+        self._id_coll_mapping.clear()
+
+    def _scan(self) -> Iterable[Collection]:
+        """Scan collections directories for valid fuo files, yield
+        Collection instance for each file.
+        """
+        default_fpaths = []
+        valid_dirs = self._get_dirs()
+        for directory, exists in valid_dirs:
+            if not exists:
+                logger.warning('Collection directory %s does not exist', directory)
                 continue
             for filename in os.listdir(directory):
                 if not filename.endswith('.fuo'):

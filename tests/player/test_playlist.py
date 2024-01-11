@@ -11,6 +11,8 @@ from feeluown.player import (
 )
 from feeluown.utils.dispatch import Signal
 
+SONG2_URL = 'http://x.mp3'
+
 
 @pytest.fixture()
 def pl(app_mock, song, song1):
@@ -33,7 +35,6 @@ def pl_prepare_media_none(mocker, pl):
 
 @pytest.fixture()
 def pl_list_standby_return_empty(mocker, pl):
-    pl._app.library.a_list_song_standby
     f2 = asyncio.Future()
     f2.set_result([])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
@@ -42,9 +43,8 @@ def pl_list_standby_return_empty(mocker, pl):
 
 @pytest.fixture()
 def pl_list_standby_return_song2(mocker, pl, song2):
-    pl._app.library.a_list_song_standby
     f2 = asyncio.Future()
-    f2.set_result([(song2, song2.url)])
+    f2.set_result([(song2, SONG2_URL)])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
     mock_a_list_standby.return_value = f2
 
@@ -135,7 +135,7 @@ async def test_set_current_song_with_bad_song_2(
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
-    mock_pure_set_current_song.assert_called_once_with(song2, song2.url, sentinal)
+    mock_pure_set_current_song.assert_called_once_with(song2, SONG2_URL, sentinal)
 
 
 def test_pure_set_current_song(
@@ -143,7 +143,7 @@ def test_pure_set_current_song(
     # Current song index is 0
     assert pl.list().index(song) == 0
     # song2 is not in playlist before
-    pl.pure_set_current_song(song2, song2.url)
+    pl.pure_set_current_song(song2, SONG2_URL)
     assert pl.current_song == song2
     # The song should be inserted after the current song,
     # so the index should be 1
@@ -275,18 +275,25 @@ async def test_playlist_remove_current_song(app_mock):
 async def test_play_next_bad_song(app_mock, song, song1, mocker):
     """
     Prepare media for song raises unknown error, the song should
-    be marked as bad.
+    be marked as bad. Besides, it should try to find standby.
     """
+    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=object())
+    mock_standby = mocker.patch.object(Playlist,
+                                       'find_and_use_standby',
+                                       return_value=(song1, None))
+    mocker.patch.object(Playlist, '_prepare_media', side_effect=Exception())
+    mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
+
     pl = Playlist(app_mock)
-    mocker.patch.object(pl, '_prepare_media', side_effect=Exception())
-    mock_mark_as_bad = mocker.patch.object(pl, 'mark_as_bad')
-    mock_next = mocker.patch.object(pl, 'next')
     pl.add(song)
     pl.add(song1)
     pl._current_song = song
     await pl.a_set_current_song(pl.next_song)
     assert mock_mark_as_bad.called
-    assert mock_next.called
+    await asyncio.sleep(0.1)
+    assert mock_pure_set_current_song.called
+    assert mock_standby.called
 
 
 def test_play_all(app_mock):

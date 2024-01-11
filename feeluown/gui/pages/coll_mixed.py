@@ -1,6 +1,6 @@
 from feeluown.app.gui_app import GuiApp
-from feeluown.collection import CollectionType
-from feeluown.models import ModelType
+from feeluown.collection import CollectionType, Collection
+from feeluown.library import ModelType
 from feeluown.utils.reader import wrap
 from feeluown.gui.page_containers.table import Renderer
 
@@ -12,7 +12,7 @@ async def render(req, identifier, **kwargs):
     ui = app.ui
     tab_index = int(req.query.get('tab_index', 0))
 
-    coll = app.coll_uimgr.get(int(identifier))
+    coll = app.coll_mgr.get(identifier)
 
     mixed = False
     model_type = None
@@ -47,17 +47,11 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
     NOTE(cosven): I think mixed collection should be rendered in single page
     without tab.
     """
-    def __init__(self, app, tab_index, coll):
+    def __init__(self, app, tab_index, coll: Collection):
         self._app = app
         self._coll = coll
         self.tab_index = tab_index
-        self.tabs = [
-            ('歌曲', ModelType.song, self.show_songs),
-            ('专辑', ModelType.album, self.show_albums),
-            ('歌手', ModelType.artist, self.show_artists),
-            ('歌单', ModelType.playlist, self.show_playlists),
-            ('视频', ModelType.video, self.show_videos)
-        ]
+        self.tabs = self.default_tabs()
 
     async def render(self):
         coll = self._coll
@@ -82,8 +76,7 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
             self.songs_table.remove_song_func = remove_song
 
     def render_by_tab_index(self, tab_index):
-        coll_id = self._app.coll_uimgr.get_coll_id(self._coll)
-        self._app.browser.goto(page=f'/colls/{coll_id}',
+        self._app.browser.goto(page=f'/colls/{self._coll.identifier}',
                                query={'tab_index': tab_index})
 
     def render_models(self):

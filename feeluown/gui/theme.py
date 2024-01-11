@@ -46,8 +46,8 @@ class ThemeManager(QObject):
 
     theme_changed = pyqtSignal(str)
 
-    def __init__(self, app: GuiApp):
-        super().__init__(parent=app)
+    def __init__(self, app: GuiApp, parent=None):
+        super().__init__(parent=parent)
         self._app = app
         self.theme = None
 

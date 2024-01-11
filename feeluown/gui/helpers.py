@@ -22,13 +22,14 @@ import asyncio
 import random
 import sys
 import logging
+from contextlib import contextmanager
 from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
 try:
     # helper module should work in no-window mode
     from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
         QAbstractListModel
-    from PyQt5.QtGui import QPalette, QFontMetrics
+    from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter
     from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
 except ImportError:
     pass
@@ -38,7 +39,7 @@ from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import NotSupported, ModelType, BaseModel
-from feeluown.models.uri import reverse
+from feeluown.library import reverse
 
 
 if TYPE_CHECKING:
@@ -47,6 +48,18 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
+
+IS_MACOS = sys.platform == 'darwin'
+
+
+def darker_or_lighter(color: QColor, factor):
+    """
+    If the color is a light color, for example, white, then this returns
+    a darker color.
+    """
+    if color.lightness() > 150:
+        return color.darker(factor)
+    return color.lighter(factor)
 
 
 async def async_run(func, loop=None, executor=None):
@@ -509,6 +522,10 @@ def fetch_cover_wrapper(app: GuiApp):
                 return await fetch_image_with_cb(img_uid, img_url, cb)
 
             album = upgraded_song.album
+            if album is None:
+                cb(None)
+                return
+
             album_img_uid = reverse(album) + '/cover'
             model.cache_set(cache_key, album_img_uid)
             return await fetch_song_pic_from_album(album, cb)
@@ -535,6 +552,27 @@ def fetch_cover_wrapper(app: GuiApp):
         return await fetch_other_model_cover(model, cb)
 
     return fetch_model_cover
+
+
+def random_solarized_color():
+    return QColor(random.choice(list(SOLARIZED_COLORS.values())))
+
+
+@contextmanager
+def painter_save(painter: QPainter):
+    painter.save()
+    yield
+    painter.restore()
+
+
+def secondary_text_color(palette: QPalette):
+    text_color: QColor = palette.color(QPalette.Text)
+    if text_color.lightness() > 150:
+        non_text_color = text_color.darker(140)
+    else:
+        non_text_color = text_color.lighter(150)
+    non_text_color.setAlpha(100)
+    return non_text_color
 
 
 # https://ethanschoonover.com/solarized/

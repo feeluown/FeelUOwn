@@ -2,7 +2,7 @@ from collections import defaultdict
 from difflib import SequenceMatcher
 from typing import Any
 
-from feeluown.models.uri import resolve, reverse
+from feeluown.library import resolve, reverse
 from .base import AbstractHandler
 
 

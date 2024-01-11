@@ -2,6 +2,7 @@
 HELP: I do not know how to design exception classes,
 as a result, these interfaces can be changed frequently.
 """
+from enum import Enum
 
 from requests.exceptions import RequestException
 
@@ -71,9 +72,31 @@ class NotSupported(LibraryException):
     """Provider does not support the operation
     """
 
+    def __init__(self, *args, provider=None, **kwargs):
+        self.provider = provider
+
+    @classmethod
+    def create_by_p_p(cls, provider, protocol_cls):
+        if isinstance(provider, str):
+            pid = provider
+        else:
+            if hasattr(provider, 'meta'):
+                pid = provider.meta.identifier
+            else:
+                pid = provider.identifier
+        return cls(f'provider:{pid} does not support {protocol_cls.__name__}')
+
 
 class MediaNotFound(ResourceNotFound):
-    pass
+    class Reason(Enum):
+        not_found = 'not_found'
+        # Song/video has children and children have medias. Song/video itself does
+        # not have any media.
+        check_children = 'check_children'
+
+    def __init__(self, *args, reason=Reason.not_found, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.reason = reason
 
 
 class NoUserLoggedIn(LibraryException):

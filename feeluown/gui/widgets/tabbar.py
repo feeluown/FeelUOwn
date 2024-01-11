@@ -68,7 +68,7 @@ class TabBar(QTabBar):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self._height = 40
+        self._height = 30
         self.setFixedHeight(self._height)
 
         self.setDocumentMode(True)

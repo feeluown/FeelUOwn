@@ -4,7 +4,7 @@ import sys
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QGuiApplication
+from PyQt5.QtGui import QGuiApplication, QResizeEvent
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
@@ -14,10 +14,14 @@ from feeluown.library import (
     NotSupported, ModelFlags
 )
 from feeluown.player import Lyric
-from feeluown.models.uri import reverse, resolve
+from feeluown.library import reverse, resolve
 from feeluown.utils import aio
+from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader
-from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, resize_font
+from feeluown.gui.components import SongMVTextButton
+from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, \
+    resize_font
+from feeluown.gui.widgets.labels import ElidedLineLabel
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
@@ -67,7 +71,8 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
         song = upgraded_song
 
     # Before fetching more data, show some widgets.
-    view.title_label.setText(song.title)
+    view.title_label.set_src_text(song.title)
+    view.title_label.setToolTip(song.title)
     view.play_btn.clicked.connect(lambda: app.playlist.play_model(song))
 
     # Show other widgets.
@@ -85,14 +90,15 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     if upgraded_album is not None:
         album = upgraded_album
 
-    await view.show_song_wiki(song, album)
-    await view.maybe_show_song_similar(provider, song)
+    run_afn(view.show_song_wiki, song, album)
+    run_afn(view.maybe_show_song_pic, upgraded_song, upgraded_album)
+    run_afn(view.maybe_show_song_similar, provider, song)
+    run_afn(view.maybe_show_mv_btn, song)
+    run_afn(view.maybe_show_song_lyric, song)
     try:
         await view.maybe_show_song_hot_comments(provider, song)
     except:  # noqa
         logger.exception('show song hot comments failed')
-    await view.maybe_show_song_lyric(song)
-    await view.maybe_show_song_pic(upgraded_song, upgraded_album)
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
@@ -149,14 +155,16 @@ class SongWikiLabel(QLabel):
         # Only show the date, like yyyy-mm-dd. Do not show hour/minutes/seconds.
         if song.date:
             date = song.date
-        elif ModelFlags.normal in album.meta.flags:
+        elif album is not None and ModelFlags.normal in album.meta.flags:
             date = album.released
         else:
             date = ''
         date_fmted = date[:10] if date else ''
+        album_str = f'<a href="{reverse(album)}">{album.name_display}</a>' \
+            if album else ''
         kvs = [
             ('歌手', artists_str),
-            ('所属专辑', f'<a href="{reverse(album)}">{album.name_display}</a>'),
+            ('所属专辑', or_unknown(album_str)),
             ('发行日期', or_unknown(date_fmted)),
             ('曲风', or_unknown(song.genre)),
         ]
@@ -183,16 +191,23 @@ class RightCon(QWidget):
         return QSize(130, size_hint.height())
 
 
+class Title(LargeHeader, ElidedLineLabel):
+    pass
+
+
 class SongExploreView(QWidget):
     def __init__(self, app: GuiApp):
         super().__init__(parent=None)
         self._app = app
 
-        self.title_label = LargeHeader()
+        self._title_cover_spacing = 10
+        self._left_right_spacing = 30
+        self.title_label = Title()
         self.similar_songs_header = MidHeader('相似歌曲')
         self.comments_header = MidHeader('热门评论')
         self.lyric_view = LyricView(parent=self)
         self.play_btn = TextButton('播放')
+        self.play_mv_btn = SongMVTextButton(self._app)
         self.copy_web_url_btn = TextButton('复制网页地址')
         self.cover_label = CoverLabelV2(app=app)
         self.song_wiki_label = SongWikiLabel(app)
@@ -230,16 +245,17 @@ class SongExploreView(QWidget):
         self._left_top_layout = QHBoxLayout()
         self._song_meta_layout = QVBoxLayout()
         self._btns_layout = QHBoxLayout()
+        self._btns_layout.setSpacing(6)
 
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(10, 20, 10, 0)
 
         self._layout.addWidget(self._left_con_scrollarea, 3)
-        self._layout.addSpacing(30)
+        self._layout.addSpacing(self._left_right_spacing)
         self._layout.addWidget(self._right_con, 1)
 
         self._left_layout.addLayout(self._left_top_layout)
-        self._left_layout.addSpacing(10)
+        self._left_layout.addSpacing(self._title_cover_spacing)
         self._left_layout.addWidget(self.comments_header)
         self._left_layout.addWidget(self.comments_view)
         self._left_layout.addWidget(self.similar_songs_header)
@@ -257,7 +273,7 @@ class SongExploreView(QWidget):
         self._song_meta_layout.addLayout(self._btns_layout)
 
         self._btns_layout.addWidget(self.play_btn)
-        self._btns_layout.addSpacing(6)
+        self._btns_layout.addWidget(self.play_mv_btn)
         self._btns_layout.addWidget(self.copy_web_url_btn)
         self._btns_layout.addStretch(0)
 
@@ -305,6 +321,10 @@ class SongExploreView(QWidget):
                                      interface=SupportsSongHotComments.__name__)
             self.comments_header.setText(msg)
 
+    async def maybe_show_mv_btn(self, song):
+        self.play_mv_btn.bind_song(song)
+        await self.play_mv_btn.get_mv()
+
     async def maybe_show_song_lyric(self, song):
         if self._app.playlist.current_song == song:
             lyric = self._app.live_lyric.current_lyrics[0]
@@ -332,6 +352,13 @@ class SongExploreView(QWidget):
                 aio.run_afn(self.cover_label.show_cover,
                             song.pic_url,
                             reverse(song) + '/pic_url')
+
+    def resizeEvent(self, e: QResizeEvent) -> None:
+        margins = self.layout().contentsMargins()
+        margin_h = margins.left() + margins.right()
+        self._left_con.setMaximumWidth(
+            self.width() - margin_h - self._left_right_spacing - self._right_con.width())
+        return super().resizeEvent(e)
 
 
 class InlineErrorMessageView(QLabel):

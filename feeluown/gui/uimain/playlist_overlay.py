@@ -10,7 +10,7 @@ from PyQt5.QtGui import (
 from feeluown.player import PlaybackMode
 from feeluown.gui.helpers import fetch_cover_wrapper
 from feeluown.gui.widgets.textbtn import TextButton
-from feeluown.gui.widgets.menu import SongMenuInitializer
+from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.widgets.tabbar import TabBar
 from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListView,

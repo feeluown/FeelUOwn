@@ -13,10 +13,9 @@ from feeluown.gui.tips import TipsManager
 from feeluown.gui.watch import WatchManager
 from feeluown.gui.ui import Ui
 from feeluown.gui.tray import Tray
-from feeluown.gui.uimodels.provider import ProviderUiManager
+from feeluown.gui.provider_ui import ProviderUiManager, CurrentProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
-from feeluown.gui.uimodels.collection import CollectionUiManager
 
 from feeluown.collection import CollectionManager
 
@@ -24,6 +23,7 @@ from .app import App
 
 
 class GuiApp(App, QWidget):
+
     def __init__(self, *args, **kwargs):
         config = args[1]
         pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
@@ -66,17 +66,17 @@ class GuiApp(App, QWidget):
 
         # GUI 的一些辅助管理模块
         self.coll_mgr = CollectionManager(self)
-        self.theme_mgr = ThemeManager(self)
+        self.theme_mgr = ThemeManager(self, parent=self)
         self.tips_mgr = TipsManager(self)
         self.hotkey_mgr = HotkeyManager(self)
         self.img_mgr = ImgManager(self)
         self.watch_mgr = WatchManager(self)
 
         # GUI 组件的数据管理模块
-        self.pvd_uimgr = ProviderUiManager(self)
+        self.pvd_ui_mgr = self.pvd_uimgr = ProviderUiManager(self)
+        self.current_pvd_ui_mgr = CurrentProviderUiManager(self)
         self.pl_uimgr = PlaylistUiManager(self)
         self.mymusic_uimgr = MyMusicUiManager(self)
-        self.coll_uimgr = CollectionUiManager(self)
 
         self.browser = Browser(self)
         self.ui = Ui(self)
@@ -92,7 +92,7 @@ class GuiApp(App, QWidget):
         if self.config.ENABLE_TRAY:
             self.tray.initialize()
             self.tray.show()
-        self.coll_uimgr.initialize()
+        self.coll_mgr.scan()
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
@@ -103,9 +103,8 @@ class GuiApp(App, QWidget):
 
     def apply_state(self, state):
         super().apply_state(state)
-        coll_library = self.coll_uimgr.get_coll_library()
-        coll_id = self.coll_uimgr.get_coll_id(coll_library)
-        self.browser.goto(page=f'/colls/{coll_id}')
+        coll_library = self.coll_mgr.get_coll_library()
+        self.browser.goto(page=f'/colls/{coll_library.identifier}')
 
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})
