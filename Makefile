@@ -59,9 +59,12 @@ integration_test:
 
 test: lint unittest
 
-BUNDLE_FLAGS=
 ifeq ($(OS),Windows_NT)
 	FUO_VERSION != python -c 'print(__import__("feeluown").__version__, end="")' | tr -c '[:digit:]' '.'
+endif
+
+BUNDLE_FLAGS=
+ifeq ($(OS),Windows_NT)
 	create-version-file .metadata.yml --version FUO_VERSION
 	BUNDLE_FLAGS += --name FeelUOwn
 	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.ico
