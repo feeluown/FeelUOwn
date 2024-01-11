@@ -62,13 +62,12 @@ setup(
         'importlib-metadata>=4.6,<7.0',
     ],
     extras_require={
-        'battery': ['fuo-netease>=0.4.2,<1.0',
-                    'fuo-qqmusic>=0.2,<1.0',
-                    # kuwo does not work since 2023-08
+        'battery': ['fuo-netease>=1.0',
+                    'fuo-qqmusic>=1.0.1',
+                    'fuo-ytmusic>=0.3.2',
                     # 'fuo-kuwo>=0.1.1',
                     # https://github.com/BruceZhang1993/feeluown-bilibili
-                    'fuo-ytmusic<1.0',
-                    'feeluown-bilibili<1.0',
+                    'feeluown-bilibili>=0.3.1',
                     ],
         'macOS': [
             'aionowplaying>=0.9.4',
