@@ -21,11 +21,6 @@ jobs:
         pip install pyinstaller
         pip install pyinstaller-versionfile
         pip install -e .[win32,battery]
-    - name: Generate version_file.txt
-      shell: bash
-      run: |
-        fuo_version=$( echo 'print(__import__("feeluown").__version__, end="")' | python | tr -c '[:digit:]' '.')
-        create-version-file .\.metadata.yml --version $fuo_version
     - name: Download mpv-1.dll
       run: |
         choco install curl
