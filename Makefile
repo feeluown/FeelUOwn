@@ -61,8 +61,8 @@ test: lint unittest
 
 BUNDLE_FLAGS=
 ifeq ($(OS),Windows_NT)
-	fuo_version=$( echo 'print(__import__("feeluown").__version__, end="")' | python | tr -c '[:digit:]' '.' )
-	create-version-file .metadata.yml --version ${fuo_version}
+	FUO_VERSION := $( python -c 'print(__import__("feeluown").__version__, end="")' | tr -c '[:digit:]' '.' )
+	create-version-file .metadata.yml --version ${FUO_VERSION}
 	BUNDLE_FLAGS += --name FeelUOwn
 	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.ico
 	BUNDLE_FLAGS += --version-file version_file.txt
