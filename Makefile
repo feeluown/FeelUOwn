@@ -61,8 +61,6 @@ test: lint unittest
 
 BUNDLE_FLAGS=
 
-target: ;
-
 ifeq ($(OS),Windows_NT)
 	BUNDLE_FLAGS += --name FeelUOwn
 	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.ico
