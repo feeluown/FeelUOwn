@@ -69,12 +69,25 @@ else
 	BUNDLE_FLAGS += --name FeelUOwnX --osx-bundle-identifier org.feeluown.FeelUOwnX
 	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.icns
 endif
+
 # Please install pyinstaller manually.
+
+ifeq ($(OS),Windows_NT)
+bundle:
+	create-version-file .metadata.yml --version \
+		$(shell python -c 'print(__import__("feeluown").__version__, end="")' | tr -c '[:digit:]' '.')
+	pyinstaller -w feeluown/pyinstaller/main.py \
+		${BUNDLE_FLAGS} \
+		-w \
+		--noconfirm
+else
 bundle:
 	pyinstaller -w feeluown/pyinstaller/main.py \
 		${BUNDLE_FLAGS} \
 		-w \
 		--noconfirm
+endif
+
 
 clean: clean_py clean_emacs
 
