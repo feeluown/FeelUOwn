@@ -19,6 +19,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyqt5
         pip install pyinstaller
+        pip install pyinstaller-versionfile
         pip install -e .[win32,battery]
     - name: Generate version_file.txt
       run: |
