@@ -59,16 +59,17 @@ integration_test:
 
 test: lint unittest
 
-ifeq ($(OS),Windows_NT)
-	FUO_VERSION != python -c 'print(__import__("feeluown").__version__, end="")' | tr -c '[:digit:]' '.'
-endif
-
 BUNDLE_FLAGS=
+
+target: ;
+
 ifeq ($(OS),Windows_NT)
-	create-version-file .metadata.yml --version FUO_VERSION
 	BUNDLE_FLAGS += --name FeelUOwn
 	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.ico
 	BUNDLE_FLAGS += --version-file version_file.txt
+	target:
+		create-version-file .metadata.yml --version \
+			$(shell python -c 'print(__import__("feeluown").__version__, end="")' | tr -c '[:digit:]' '.')
 else
 # macOS: since apfs is not case-sensitive, we use FeelUOwnX instead of FeelUOwn
 	BUNDLE_FLAGS += --name FeelUOwnX --osx-bundle-identifier org.feeluown.FeelUOwnX
