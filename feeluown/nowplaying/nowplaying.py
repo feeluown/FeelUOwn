@@ -60,6 +60,7 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self.set_playback_property(PlayProp.CanGoPrevious, True)
         self.set_playback_property(PlayProp.CanSeek, True)
         self.set_playback_property(PlayProp.CanControl, True)
+        self.set_playback_property(PlayProp.Rate, 1.0)
 
     def update_playback_mode(self, mode: PlaybackMode):
         mode_mapping = {
