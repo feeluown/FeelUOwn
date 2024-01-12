@@ -60,6 +60,7 @@ integration_test:
 test: lint unittest
 
 BUNDLE_FLAGS=
+
 ifeq ($(OS),Windows_NT)
 	BUNDLE_FLAGS += --name FeelUOwn
 	BUNDLE_FLAGS += --icon feeluown/gui/assets/icons/feeluown.ico
@@ -87,7 +88,6 @@ bundle:
 		-w \
 		--noconfirm
 endif
-
 
 clean: clean_py clean_emacs
 
