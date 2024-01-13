@@ -51,8 +51,8 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
 
     >>> parse_lyric_text("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
     OrderedDict([(0, ' 作曲 : 周杰伦'), (1000, ' 作词 : 周杰伦')])
-    >>> parse_lyric_text("[01:30][01:00]再等直至再吻到你")
-    OrderedDict([(60000, '再等直至再吻到你'), (90000, '再等直至再吻到你')])
+    >>> parse_lyric_text("[01:30][00:01:10][01:00]再等直至再吻到你")
+    OrderedDict([(60000, '再等直至再吻到你'), (70000, '再等直至再吻到你'), (90000, '再等直至再吻到你')])
     """
     def to_mileseconds(time_str):
         mileseconds = 0
@@ -75,7 +75,6 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
             time_str = m.group(1)
             t = to_mileseconds(time_str)
             time_list.append(t)
-            m = sentence_pattern.search(line, 0)
             sentence = sentence[m.end():]
             m = sentence_pattern.search(sentence, 0)
         for t in time_list:
