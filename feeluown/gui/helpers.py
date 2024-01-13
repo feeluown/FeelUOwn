@@ -455,6 +455,10 @@ class ReaderFetchMoreMixin(Generic[T]):
             logger.exception('async fetch more items failed')
             self._fetch_more_cb(None)
         else:
+            if not items:
+                # The reader should not return empty list when fetching more items,
+                # maybe something wrong with the reader.
+                logger.warning('async fetch more items return empty list')
             self._fetch_more_cb(items)
 
 
