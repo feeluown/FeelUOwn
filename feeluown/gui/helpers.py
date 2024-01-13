@@ -431,7 +431,10 @@ class ReaderFetchMoreMixin(Generic[T]):
             assert isinstance(reader, Reader)
             try:
                 items = reader.read_range(self.rowCount(), step + self.rowCount())
-            except ProviderIOError:
+            except ProviderIOError as e:
+                logger.error(f'fetch more items failed, reason: {e}')
+                self._fetch_more_cb(None)
+            except:  # noqa
                 logger.exception('fetch more items failed')
                 self._fetch_more_cb(None)
             else:
