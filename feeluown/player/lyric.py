@@ -51,23 +51,35 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
 
     >>> parse_lyric_text("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
     OrderedDict([(0, ' 作曲 : 周杰伦'), (1000, ' 作词 : 周杰伦')])
+    >>> parse_lyric_text("[01:30][00:01:10][01:00]再等直至再吻到你")
+    OrderedDict([(60000, '再等直至再吻到你'), (70000, '再等直至再吻到你'), (90000, '再等直至再吻到你')])
     """
+    def to_mileseconds(time_str):
+        mileseconds = 0
+        unit = 1000
+        t_seq = time_str.split(':')
+        t_seq.reverse()
+        for num in t_seq:
+            mileseconds += int(float(num) * unit)
+            unit *= 60
+        return mileseconds
+
     ms_sentence_map = OrderedDict()
     sentence_pattern = re.compile(r'\[(\d+(:\d+){0,2}(\.\d+)?)\]')
     lines = content.splitlines()
     for line in lines:
         m = sentence_pattern.search(line, 0)
-        if m:
+        sentence = line
+        time_list = []
+        while m:
             time_str = m.group(1)
-            mileseconds = 0
-            unit = 1000
-            t_seq = time_str.split(':')
-            t_seq.reverse()
-            for num in t_seq:
-                mileseconds += int(float(num) * unit)
-                unit *= 60
-            sentence = line[m.end():]
-            ms_sentence_map[mileseconds] = sentence
+            t = to_mileseconds(time_str)
+            time_list.append(t)
+            sentence = sentence[m.end():]
+            m = sentence_pattern.search(sentence, 0)
+        for t in time_list:
+            ms_sentence_map[t] = sentence
+    ms_sentence_map = OrderedDict(sorted(ms_sentence_map.items(), key=lambda x: x[0]))
     return ms_sentence_map
 
 
