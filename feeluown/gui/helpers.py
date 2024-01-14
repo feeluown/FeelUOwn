@@ -34,7 +34,7 @@ try:
 except ImportError:
     pass
 
-from feeluown.utils import aio
+from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
@@ -240,7 +240,9 @@ class ItemViewNoScrollMixin:
                 # qt will trigger fetchMore when the last row is
                 # inside the viewport, so we always hide the last
                 # two row to ensure fetch-more will not be
-                # triggered automatically
+                # triggered automatically.
+                #
+                # qt triggers fetchMore when user scrolls down to bottom.
                 index = self._last_visible_index()
                 rect = self.visualRect(index)
                 height = self.sizeHint().height() - int(rect.height() * 1.5) - \
@@ -425,17 +427,11 @@ class ReaderFetchMoreMixin(Generic[T]):
                     if count == step:
                         break
                 return items
-            future = aio.create_task(fetch())
-            future.add_done_callback(self._async_fetch_cb)
+            task = run_afn(fetch)
         else:
             assert isinstance(reader, Reader)
-            try:
-                items = reader.read_range(self.rowCount(), step + self.rowCount())
-            except ProviderIOError:
-                logger.exception('fetch more items failed')
-                self._fetch_more_cb(None)
-            else:
-                self._fetch_more_cb(items)
+            task = run_fn(reader.read_range, self.rowCount(), step + self.rowCount())
+        task.add_done_callback(self._async_fetch_cb)
 
     def on_items_fetched(self: ModelUsingReader[T], items: List[T]):
         begin = len(self._items)
@@ -452,10 +448,17 @@ class ReaderFetchMoreMixin(Generic[T]):
     def _async_fetch_cb(self: ModelUsingReader[T], future):
         try:
             items = future.result()
+        except ProviderIOError as e:
+            logger.error(f'async fetch more items failed, reason: {e}')
+            self._fetch_more_cb(None)
         except:  # noqa
             logger.exception('async fetch more items failed')
             self._fetch_more_cb(None)
         else:
+            if not items:
+                # The reader should not return empty list when fetching more items,
+                # maybe something wrong with the reader.
+                logger.warning('async fetch more items return empty list')
             self._fetch_more_cb(items)
 
 
@@ -490,7 +493,7 @@ def fetch_cover_wrapper(app: GuiApp):
         # If the song is a v1 model, just fallback to use its album cover.
         if not is_v2_model:
             try:
-                upgraded_song = await aio.run_fn(library.song_upgrade, model)
+                upgraded_song = await run_fn(library.song_upgrade, model)
             except NotSupported:
                 cb(None)
             else:
@@ -510,7 +513,7 @@ def fetch_cover_wrapper(app: GuiApp):
 
         # Image is not in cache.
         try:
-            upgraded_song = await aio.run_fn(library.song_upgrade, model)
+            upgraded_song = await run_fn(library.song_upgrade, model)
         except (NotSupported, ResourceNotFound):
             cb(None)
         else:
@@ -540,7 +543,7 @@ def fetch_cover_wrapper(app: GuiApp):
             return
 
         try:
-            img_url = await aio.run_fn(library.model_get_cover, model)
+            img_url = await run_fn(library.model_get_cover, model)
         except NotSupported:
             img_url = ''
 
