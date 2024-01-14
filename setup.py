@@ -74,7 +74,7 @@ setup(
         ],
         'win32': [
             'pyshortcuts',
-            'aionowplaying @ git+https://github.com/waylyrics/aionowplaying.git@fix-smtc-support',
+            'aionowplaying @ git+https://github.com/BruceZhang1993/aionowplaying.git@master',
         ],
         'webserver': ['sanic', 'websockets', 'json-rpc'],
         'webengine': ['PyQtWebEngine'],
