@@ -1,5 +1,7 @@
 import locale
 import logging
+import time
+import math
 
 from mpv import (  # type: ignore
     MPV,
@@ -152,20 +154,44 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
+    def fade(self, fade_in: bool, max_volume=None):
+        def fade_curve(k: float, fade_in: bool) -> float:
+            if fade_in:
+                return 1-math.cos(k*math.pi)
+            else:
+                return 1+math.cos(k*math.pi)
+
+        def set_volume(max_volume: int, fade_in: bool):
+            for _tick in range(25):
+                new_volume = math.ceil(fade_curve(_tick/25, fade_in=fade_in)/2*max_volume)
+                self.volume = new_volume
+                time.sleep(0.02)
+
+        if max_volume:
+            set_volume(max_volume, fade_in=fade_in)
+        else:
+            set_volume(self._volume, fade_in=fade_in)
+
     def resume(self):
+        _volume = self.volume
+        self.volume = 0
         self._mpv.pause = False
+        self.fade(fade_in=True, max_volume=_volume)
         self.state = State.playing
 
     def pause(self):
+        _volume = self.volume
+        self.fade(fade_in=False)
+
         self._mpv.pause = True
+        self.volume = _volume
         self.state = State.paused
 
     def toggle(self):
-        self._mpv.pause = not self._mpv.pause
         if self._mpv.pause:
-            self.state = State.paused
+            self.resume()
         else:
-            self.state = State.playing
+            self.pause()
 
     def stop(self):
         self._mpv.pause = True
