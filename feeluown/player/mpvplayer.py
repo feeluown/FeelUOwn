@@ -13,6 +13,7 @@ from mpv import (  # type: ignore
     ErrorCode,
 )
 
+from feeluown.fuoexec.fuoexec import fuoexec_get_globals
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
@@ -81,6 +82,10 @@ class MpvPlayer(AbstractPlayer):
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv._event_callbacks.append(self._on_event)
         logger.debug('Player initialize finished.')
+
+        self.do_fade = False
+        if fuoexec_get_globals()['config'].FADE_IN_OUT:
+            self.do_fade = True
 
     def shutdown(self):
         # The mpv has already been terminated.
@@ -173,19 +178,26 @@ class MpvPlayer(AbstractPlayer):
             set_volume(self._volume, fade_in=fade_in)
 
     def resume(self):
-        _volume = self.volume
-        self.volume = 0
+        if self.do_fade:
+            _volume = self.volume
+            self.volume = 0
+
         self._mpv.pause = False
-        self.fade(fade_in=True, max_volume=_volume)
         self.state = State.playing
 
+        if self.do_fade:
+            self.fade(fade_in=True, max_volume=_volume)
+
     def pause(self):
-        _volume = self.volume
-        self.fade(fade_in=False)
+        if self.do_fade:
+            _volume = self.volume
+            self.fade(fade_in=False)
 
         self._mpv.pause = True
-        self.volume = _volume
         self.state = State.paused
+
+        if self.do_fade:
+            self.volume = _volume
 
     def toggle(self):
         if self._mpv.pause:
