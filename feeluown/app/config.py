@@ -31,5 +31,5 @@ def create_config() -> Config:
     config.deffield('NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False,
                     desc='切换歌曲时显示桌面通知')
     config.deffield('NOTIFY_DURATION', type_=int, default=3000, desc='桌面通知保留时长(ms)')
-    config.deffield('FADE_IN_OUT', type_=bool, default=False, desc='播放暂停淡入淡出')
+    config.deffield('PLAYBACK_CROSSFADE', type_=bool, default=False, desc='播放暂停淡入淡出')
     return config

@@ -14,7 +14,6 @@ from mpv import (  # type: ignore
     ErrorCode,
 )
 
-from feeluown.fuoexec.fuoexec import fuoexec_get_globals
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
@@ -32,7 +31,7 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, _=None, audio_device=b'auto', winid=None, **kwargs):
+    def __init__(self, _=None, audio_device=b'auto', winid=None, fade=False, **kwargs):
         """
         :param _: keep this arg to keep backward compatibility
         """
@@ -84,9 +83,7 @@ class MpvPlayer(AbstractPlayer):
         self._mpv._event_callbacks.append(self._on_event)
         logger.debug('Player initialize finished.')
 
-        globals = fuoexec_get_globals()
-        if 'config' in globals:
-            self.do_fade = globals['config'].FADE_IN_OUT
+        self.do_fade = fade
 
     def shutdown(self):
         # The mpv has already been terminated.
