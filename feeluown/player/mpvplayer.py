@@ -84,7 +84,9 @@ class MpvPlayer(AbstractPlayer):
         self._mpv._event_callbacks.append(self._on_event)
         logger.debug('Player initialize finished.')
 
-        self.do_fade = fuoexec_get_globals()['config'].FADE_IN_OUT
+        globals = fuoexec_get_globals()
+        if 'config' in globals:
+            self.do_fade = globals['config'].FADE_IN_OUT
 
     def shutdown(self):
         # The mpv has already been terminated.
