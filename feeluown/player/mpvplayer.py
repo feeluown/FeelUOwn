@@ -176,7 +176,9 @@ class MpvPlayer(AbstractPlayer):
                 interval = 0.01
 
             for _tick in range(freq):
-                new_volume = math.ceil(fade_curve(_tick/freq, fade_in=fade_in)*max_volume)
+                new_volume = math.ceil(
+                    fade_curve(_tick/freq, fade_in=fade_in)*max_volume
+                )
                 self.volume = new_volume
                 time.sleep(interval)
 
