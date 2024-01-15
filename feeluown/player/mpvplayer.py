@@ -14,6 +14,7 @@ from mpv import (  # type: ignore
     ErrorCode,
 )
 
+from threading import Thread, RLock
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
@@ -84,6 +85,8 @@ class MpvPlayer(AbstractPlayer):
         logger.debug('Player initialize finished.')
 
         self.do_fade = fade
+        if self.do_fade:
+            self.fade_lock = RLock()
 
     def shutdown(self):
         # The mpv has already been terminated.
@@ -157,7 +160,9 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
-    def fade(self, fade_in: bool, max_volume=None):
+    def fade(self, fade_in: bool, max_volume=None, callback=None):
+        self.fade_lock.acquire()
+
         # k: factor between 0 and 1, to represent tick/fade_time
         def fade_curve(k: float, fade_in: bool) -> float:
             if fade_in:
@@ -182,9 +187,17 @@ class MpvPlayer(AbstractPlayer):
                 time.sleep(interval)
 
         if max_volume:
-            set_volume(max_volume, fade_in=fade_in)
+            volume = max_volume
         else:
-            set_volume(self._volume, fade_in=fade_in)
+            volume = self.volume
+
+        set_volume(volume, fade_in=fade_in)
+
+        if callback is not None:
+            callback()
+
+        self.volume = volume
+        self.fade_lock.release()
 
     def resume(self):
         if self.do_fade:
@@ -195,18 +208,27 @@ class MpvPlayer(AbstractPlayer):
         self.state = State.playing
 
         if self.do_fade:
-            self.fade(fade_in=True, max_volume=_volume)
+            fade_thread = Thread(
+                target=self.fade,
+                kwargs={"fade_in": True,
+                        "max_volume": _volume}
+            )
+            fade_thread.start()
 
-    def pause(self):
-        if self.do_fade:
-            _volume = self.volume
-            self.fade(fade_in=False)
-
+    def _pause(self):
         self._mpv.pause = True
         self.state = State.paused
 
+    def pause(self):
         if self.do_fade:
-            self.volume = _volume
+            fade_thread = Thread(
+                target=self.fade,
+                kwargs={"fade_in": False,
+                        "callback": self._pause}
+            )
+            fade_thread.start()
+        else:
+            self._pause()
 
     def toggle(self):
         if self._mpv.pause:
