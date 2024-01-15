@@ -2,6 +2,7 @@ import locale
 import logging
 import time
 import math
+import os
 
 from mpv import (  # type: ignore
     MPV,
@@ -158,17 +159,26 @@ class MpvPlayer(AbstractPlayer):
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
     def fade(self, fade_in: bool, max_volume=None):
+        # k: factor between 0 and 1, to represent tick/fade_time
         def fade_curve(k: float, fade_in: bool) -> float:
             if fade_in:
-                return 1-math.cos(k*math.pi)
+                return (1-math.cos(k*math.pi)) / 2
             else:
-                return 1+math.cos(k*math.pi)
+                return (1+math.cos(k*math.pi)) / 2
 
         def set_volume(max_volume: int, fade_in: bool):
-            for _tick in range(25):
-                new_volume = math.ceil(fade_curve(_tick/25, fade_in=fade_in)/2*max_volume)
+            # https://bugs.python.org/issue31539#msg302699
+            if os.name == "nt":
+                freq = 25
+                interval = 0.02
+            else:
+                freq = 50
+                interval = 0.01
+
+            for _tick in range(freq):
+                new_volume = math.ceil(fade_curve(_tick/freq, fade_in=fade_in)*max_volume)
                 self.volume = new_volume
-                time.sleep(0.02)
+                time.sleep(interval)
 
         if max_volume:
             set_volume(max_volume, fade_in=fade_in)
