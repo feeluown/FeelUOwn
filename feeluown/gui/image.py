@@ -35,6 +35,8 @@ class ImgManager(object):
         return None
 
     async def get(self, img_url, img_name):
+        if not img_url:
+            return None
         if img_url.startswith('fuo://local'):
             # Before, `models.uri.resolve` is uesd to handle these non-std paths,
             # and it is not elegant in fact :(
@@ -45,7 +47,7 @@ class ImgManager(object):
             return provider.handle_with_path(img_url[11:])
         fpath = self.cache.get(img_name)
         if fpath is not None:
-            logger.info('read image:%s from cache', img_name)
+            logger.debug('read image:%s from cache', img_name)
             with open(fpath, 'rb') as f:
                 content = f.read()
             self.cache.update(img_name)

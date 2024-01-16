@@ -174,7 +174,6 @@ class WatchManager:
 
     def on_media_changed(self, media):
         if not media:
-            logger.info('No media is played, set mode to none')
             self.set_mode(Mode.none)
 
     def on_video_format_changed(self, video_format):
