@@ -2,12 +2,11 @@
 import logging
 import warnings
 from functools import partial
-from typing import cast, Optional, Union, TypeVar, Type, Callable, Any
+from typing import Optional, Union, TypeVar
 
 from feeluown.media import Media
-from feeluown.utils import aio
+from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
-from feeluown.utils.reader import create_reader
 from .base import SearchType, ModelType
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
@@ -26,11 +25,9 @@ from .model_protocol import (
 from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
-    SupportsCurrentUser, SupportsAlbumSongsReader,
+    SupportsCurrentUser,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
-    SupportsArtistSongsReader, SupportsArtistAlbumsReader,
-    SupportsVideoMultiQuality, SupportsArtistContributedAlbumsReader,
+    SupportsVideoMultiQuality,
 )
 
 
@@ -43,11 +40,6 @@ T_p = TypeVar('T_p')
 
 def raise_(e):
     raise e
-
-
-def support_or_raise(provider, protocol_cls):
-    if not isinstance(provider, protocol_cls):
-        raise NotSupported(f'{provider} not support {protocol_cls}') from None
 
 
 def default_score_fn(origin, standby):
@@ -136,7 +128,11 @@ def err_provider_not_support_flag(pid, model_type, op):
 
 
 class Library:
-    """音乐库，管理资源提供方以及资源"""
+    """音乐库，管理资源提供方以及资源
+
+    .. versionchanged:: 4.0
+       Never raise ProviderNotFound error.
+    """
 
     def __init__(self, providers_standby=None):
         """
@@ -222,12 +218,10 @@ class Library:
         fs = []  # future list
         for provider in self._filter(identifier_in=source_in):
             for type_ in type_in:
-                future = aio.run_in_executor(
-                    None,
-                    partial(provider.search, keyword, type_=type_))
+                future = run_fn(partial(provider.search, keyword, type_=type_))
                 fs.append(future)
 
-        for future in aio.as_completed(fs, timeout=timeout):
+        for future in as_completed(fs, timeout=timeout):
             try:
                 result = await future
             except:  # noqa
@@ -250,9 +244,7 @@ class Library:
         async def prepare_media(standby, policy):
             media = None
             try:
-                media = await aio.run_in_executor(None,
-                                                  self.song_prepare_media,
-                                                  standby, policy)
+                await run_fn(self.song_prepare_media, standby, policy)
             except MediaNotFound:
                 pass
             except:  # noqa
@@ -358,23 +350,12 @@ class Library:
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
-            # FIXME: raise ProviderNotfound
-            raise MediaNotFound(f'provider:{song.source} not found')
-        if song.meta.flags & MF.v2:
-            support_or_raise(provider, SupportsSongMultiQuality)
-            provider = cast(SupportsSongMultiQuality, provider)
+            raise MediaNotFound(f'provider({song.source}) not found')
+        media = None
+        if isinstance(provider, SupportsSongMultiQuality):
             media, _ = provider.song_select_media(song, policy)
-        else:
-            if song.meta.support_multi_quality:
-                media, _ = song.select_media(policy)  # type: ignore
-            else:
-                url = song.url  # type: ignore
-                if url:
-                    media = Media(url)
-                else:
-                    raise MediaNotFound
         if not media:
-            raise MediaNotFound
+            raise MediaNotFound('provider returns empty media')
         return media
 
     def song_prepare_mv_media(self, song: BriefSongProtocol, policy) -> Media:
@@ -386,34 +367,23 @@ class Library:
         if mv is not None:
             media = self.video_prepare_media(mv, policy)
             return media
-        raise MediaNotFound
+        raise MediaNotFound('provider returns empty media')
 
     def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
-        """Get the MV model of a song.
-
-        :raises NotSupported:
-        :raises ProviderNotFound:
-        """
-        provider = self.get_or_raise(song.source)
+        """Get the MV model of a song."""
+        provider = self.get(song.source)
         if isinstance(provider, SupportsSongMV):
-            mv = provider.song_get_mv(song)
-        else:
-            mv = None
-        return mv
+            return provider.song_get_mv(song)
 
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
         """Get the lyric model of a song.
 
         Return None when lyric does not exist instead of raising exceptions,
         because it is predictable.
-
-        :raises NotSupported:
-        :raises ProviderNotFound:
         """
-        provider = self.get_or_raise(song.source)
+        provider = self.get(song.source)
         if isinstance(provider, SupportsSongLyric):
             return provider.song_get_lyric(song)
-        raise NotSupported
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
         provider = self.getv2_or_raise(song.source)
@@ -425,73 +395,11 @@ class Library:
     def album_upgrade(self, album: BriefAlbumProtocol):
         return self._model_upgrade(album)
 
-    def album_create_songs_rd(self, album: BriefAlbumProtocol):
-        """Create songs reader for album model."""
-        return self._handle_protocol_with_model(
-            SupportsAlbumSongsReader,
-            lambda p, m: p.album_create_songs_rd(m),
-            lambda v1_m: create_reader(v1_m.songs),  # type: ignore
-            album,
-        )
-
-    def _handle_protocol_with_model(self,
-                                    protocol_cls: Type[T_p],
-                                    v2_handler: Callable[[T_p, Any], Any],
-                                    v1_handler: Callable[[Any], Any],
-                                    model: ModelProtocol):
-        """A handler helper (experimental).
-
-        :raises ProviderNotFound:
-        :raises NotSupported:
-        """
-        provider = self.get_or_raise(model.source)
-        if isinstance(provider, protocol_cls):
-            return v2_handler(provider, model)
-        raise NotSupported(f'{protocol_cls} not supported')
-
     # --------
     # Artist
     # --------
     def artist_upgrade(self, artist: BriefArtistProtocol):
         return self._model_upgrade(artist)
-
-    def artist_create_songs_rd(self, artist):
-        """Create songs reader for artist model."""
-        return self._handle_protocol_with_model(
-            SupportsArtistSongsReader,
-            lambda p, m: p.artist_create_songs_rd(m),
-            lambda v1_m: (create_reader(v1_m.create_songs_g())
-                          if v1_m.meta.allow_create_songs_g else
-                          create_reader(v1_m.songs)),
-            artist,
-        )
-
-    def artist_create_albums_rd(self, artist, contributed=False):
-        """Create albums reader for artist model."""
-        source = artist.source
-        if contributed is False:
-            protocol_cls = SupportsArtistAlbumsReader
-            return self._handle_protocol_with_model(
-                protocol_cls,
-                lambda p, m: p.artist_create_albums_rd(m),
-                lambda v1_m: (create_reader(v1_m.create_albums_g())
-                              if v1_m.meta.allow_create_albums_g else
-                              raise_(NotSupported.create_by_p_p(source, protocol_cls))),
-                artist
-            )
-        protocol_cls = SupportsArtistContributedAlbumsReader
-        return self._handle_protocol_with_model(
-            protocol_cls,
-            lambda p, m: p.artist_create_contributed_albums_rd(m),
-            # Old code check if provider supports contributed_albums in this way,
-            # have to say, it is a little ugly.
-            lambda v1_m: (
-                create_reader(v1_m.create_contributed_albums_g())
-                if hasattr(v1_m, 'contributed_albums') and v1_m.contributed_albums else
-                raise_(NotSupported.create_by_p_p(source, protocol_cls))
-            ),
-            artist
-        )
 
     # --------
     # Playlist
@@ -499,37 +407,6 @@ class Library:
 
     def playlist_upgrade(self, playlist):
         return self._model_upgrade(playlist)
-
-    def playlist_create_songs_rd(self, playlist):
-        """Create songs reader for artist model."""
-        return self._handle_protocol_with_model(
-            SupportsPlaylistSongsReader,
-            lambda p, m: p.playlist_create_songs_rd(m),
-            lambda v1_m: (create_reader(v1_m.create_songs_g())
-                          if v1_m.meta.allow_create_songs_g else
-                          create_reader(v1_m.songs)),
-            playlist,
-        )
-
-    def playlist_remove_song(self, playlist, song) -> bool:
-        """Remove a song from the playlist
-
-        :return: true if the song is not in playlist anymore.
-        """
-        provider = self.get_or_raise(playlist.source)
-        if isinstance(provider, SupportsPlaylistRemoveSong):
-            return provider.playlist_remove_song(playlist, song)
-        raise NotSupported
-
-    def playlist_add_song(self, playlist, song) -> bool:
-        """Add a song to the playlist
-
-        :return: true if the song exists in playlist.
-        """
-        provider = self.get_or_raise(playlist.source)
-        if isinstance(provider, SupportsPlaylistAddSong):
-            return provider.playlist_add_song(playlist, song)
-        raise NotSupported
 
     # -------------------------
     # generic methods for model
@@ -571,24 +448,18 @@ class Library:
         :param model: model which has a 'cover' field.
         :return: cover url if exists, else ''.
         """
-        if MF.v2 in model.meta.flags:
-            if MF.normal not in model.meta.flags:
-                try:
-                    um = self._model_upgrade(model)
-                except (ResourceNotFound, NotSupported):
-                    return ''
-            else:
-                um = model
-            # FIXME: remove this hack lator.
-            if ModelType(model.meta.model_type) is ModelType.artist:
-                cover = um.pic_url
-            else:
-                cover = um.cover
+        if MF.normal not in model.meta.flags:
+            try:
+                um = self._model_upgrade(model)
+            except (ResourceNotFound, NotSupported):
+                return ''
         else:
-            cover = model.cover
-            # Check if cover is a media object.
-            if cover and not isinstance(cover, str):
-                cover = cover.url
+            um = model
+        # FIXME: remove this hack lator.
+        if ModelType(model.meta.model_type) is ModelType.artist:
+            cover = um.pic_url
+        else:
+            cover = um.cover
         return cover
 
     def _model_upgrade(self, model):
@@ -604,10 +475,6 @@ class Library:
             Raise ModelNotFound if the model does not exist.
             Before ModelCannotUpgrade was raised.
         """
-        # Upgrade model in v1 way if it is a v1 model.
-        if MF.v2 not in model.meta.flags:
-            return self._model_upgrade_in_v1_way(model)
-
         # Return model directly if it is already a normal model.
         if MF.normal in model.meta.flags:
             return model
@@ -643,18 +510,11 @@ class Library:
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
         """
         provider = self.get_or_raise(video.source)
-        if video.meta.flags & MF.v2:
-            # provider MUST has multi_quality flag for video
-            assert isinstance(provider, SupportsVideoMultiQuality)
-            media, _ = provider.video_select_media(video, policy)
-        else:
-            # V1 VideoModel has attribute `media`
-            if video.meta.support_multi_quality:
-                media, _ = video.select_media(policy)  # type: ignore
-            else:
-                media = video.media  # type: ignore
+        # provider MUST has multi_quality flag for video
+        assert isinstance(provider, SupportsVideoMultiQuality)
+        media, _ = provider.video_select_media(video, policy)
         if not media:
-            raise MediaNotFound
+            raise MediaNotFound('provider returns empty media')
         return media
 
     # --------

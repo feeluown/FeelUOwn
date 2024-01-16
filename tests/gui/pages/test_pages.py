@@ -1,7 +1,7 @@
 import pytest
 
 from feeluown.library import BriefArtistModel, BriefAlbumModel, SongModel, \
-    PlaylistModel, NotSupported
+    PlaylistModel
 from feeluown.utils.router import Request
 from feeluown.gui.pages.model import render as render_model
 from feeluown.gui.pages.song_explore import render as render_song_explore
@@ -76,7 +76,8 @@ async def test_render_song_v2_with_non_exists_album(guiapp, ekaf_provider):
 
 
 @pytest.mark.asyncio
-async def test_render_playlist_v2(guiapp, ekaf_provider):
+async def test_render_playlist_v2(guiapp, ekaf_provider, mocker):
+    mock_error = mocker.patch('feeluown.gui.pages.model.render_error_message')
     playlist = PlaylistModel(
         source=ekaf_provider.identifier,
         identifier='does_not_exist',
@@ -88,5 +89,5 @@ async def test_render_playlist_v2(guiapp, ekaf_provider):
     req = Request('', '', {}, {}, ctx)
 
     # ekaf_provider does not support create songs reader for playlist currently.
-    with pytest.raises(NotSupported):
-        await render_model(req)
+    await render_model(req)
+    assert mock_error.called

@@ -4,8 +4,8 @@ import logging
 from typing import Dict, Optional, TYPE_CHECKING
 from collections import namedtuple, OrderedDict
 
-from feeluown.library import LyricModel, NotSupported
-from feeluown.utils import aio
+from feeluown.library import LyricModel
+from feeluown.utils.aio import run_fn
 from feeluown.utils.dispatch import Signal
 
 if TYPE_CHECKING:
@@ -207,17 +207,15 @@ class LiveLyric:
         def cb(future):
             try:
                 lyric = future.result()
-            except NotSupported:
-                lyric = None
             except:  # noqa
                 logger.exception('get lyric failed')
                 lyric = None
             self.set_lyric(lyric)
 
-        future = aio.run_fn(self._app.library.song_get_lyric, song)
+        future = run_fn(self._app.library.song_get_lyric, song)
         future.add_done_callback(cb)
 
-    def set_lyric(self, model: LyricModel):
+    def set_lyric(self, model: Optional[LyricModel]):
         if model is None:
             self._lyric = self._trans_lyric = None
         elif model.content:

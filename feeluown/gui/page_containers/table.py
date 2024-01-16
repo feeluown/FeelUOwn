@@ -13,7 +13,7 @@ from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
 from feeluown.excs import ProviderIOError
-from feeluown.library import ModelState, NotSupported, ModelFlags, ModelType
+from feeluown.library import ModelState, NotSupported, ModelType
 
 from feeluown.gui.helpers import BgTransparentMixin, \
     disconnect_slots_if_has, fetch_cover_wrapper
@@ -502,7 +502,6 @@ class TableContainer(QFrame, BgTransparentMixin):
                 song = await aio.run_in_executor(
                     None, self._app.library.song_upgrade, song)
             except NotSupported as e:
-                assert ModelFlags.v2 & song.meta.flags
                 self._app.show_msg(f'资源提供方不支持该功能: {str(e)}')
                 logger.info(f'provider:{song.source} does not support song_get')
                 song.state = ModelState.cant_upgrade

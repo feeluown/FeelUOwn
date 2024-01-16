@@ -12,7 +12,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import (
-    MediaNotFound, SongProtocol, ModelType, NotSupported, ResourceNotFound
+    MediaNotFound, SongProtocol, ModelType, NotSupported, ResourceNotFound,
 )
 from feeluown.media import Media
 from feeluown.library import reverse
@@ -480,7 +480,7 @@ class Playlist:
                 await self.a_set_current_song_children(song)
                 return
 
-            logger.info(f'{song_str} has no valid media, mark it as bad')
+            logger.info(f'no media found for {song_str} due to {e}, mark it as bad')
             self.mark_as_bad(song)
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
