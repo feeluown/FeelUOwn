@@ -2,10 +2,11 @@
 import logging
 import warnings
 from functools import partial
-from typing import cast, Optional, Union, TypeVar, Type, Callable, Any
+from typing import Optional, Union, TypeVar, Type, Callable, Any
 
 from feeluown.media import Media
 from feeluown.utils import aio
+from feeluown.utils.aio import run_fn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.reader import create_reader
 from .base import SearchType, ModelType
@@ -136,7 +137,11 @@ def err_provider_not_support_flag(pid, model_type, op):
 
 
 class Library:
-    """音乐库，管理资源提供方以及资源"""
+    """音乐库，管理资源提供方以及资源
+
+    .. versionchanged:: 4.0
+       Never raise ProviderNotFound error.
+    """
 
     def __init__(self, providers_standby=None):
         """
@@ -250,9 +255,7 @@ class Library:
         async def prepare_media(standby, policy):
             media = None
             try:
-                media = await aio.run_in_executor(None,
-                                                  self.song_prepare_media,
-                                                  standby, policy)
+                await run_fn(self.song_prepare_media, standby, policy)
             except MediaNotFound:
                 pass
             except:  # noqa
@@ -358,23 +361,12 @@ class Library:
     def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
-            # FIXME: raise ProviderNotfound
-            raise MediaNotFound(f'provider:{song.source} not found')
-        if song.meta.flags & MF.v2:
-            support_or_raise(provider, SupportsSongMultiQuality)
-            provider = cast(SupportsSongMultiQuality, provider)
+            raise MediaNotFound(f'provider({song.source}) not found')
+        media = None
+        if isinstance(provider, SupportsSongMultiQuality):
             media, _ = provider.song_select_media(song, policy)
-        else:
-            if song.meta.support_multi_quality:
-                media, _ = song.select_media(policy)  # type: ignore
-            else:
-                url = song.url  # type: ignore
-                if url:
-                    media = Media(url)
-                else:
-                    raise MediaNotFound
         if not media:
-            raise MediaNotFound
+            raise MediaNotFound('provider returns empty media')
         return media
 
     def song_prepare_mv_media(self, song: BriefSongProtocol, policy) -> Media:
@@ -386,15 +378,14 @@ class Library:
         if mv is not None:
             media = self.video_prepare_media(mv, policy)
             return media
-        raise MediaNotFound
+        raise MediaNotFound('provider returns empty media')
 
     def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
         """Get the MV model of a song.
 
         :raises NotSupported:
-        :raises ProviderNotFound:
         """
-        provider = self.get_or_raise(song.source)
+        provider = self.get(song.source)
         if isinstance(provider, SupportsSongMV):
             mv = provider.song_get_mv(song)
         else:
@@ -571,24 +562,18 @@ class Library:
         :param model: model which has a 'cover' field.
         :return: cover url if exists, else ''.
         """
-        if MF.v2 in model.meta.flags:
-            if MF.normal not in model.meta.flags:
-                try:
-                    um = self._model_upgrade(model)
-                except (ResourceNotFound, NotSupported):
-                    return ''
-            else:
-                um = model
-            # FIXME: remove this hack lator.
-            if ModelType(model.meta.model_type) is ModelType.artist:
-                cover = um.pic_url
-            else:
-                cover = um.cover
+        if MF.normal not in model.meta.flags:
+            try:
+                um = self._model_upgrade(model)
+            except (ResourceNotFound, NotSupported):
+                return ''
         else:
-            cover = model.cover
-            # Check if cover is a media object.
-            if cover and not isinstance(cover, str):
-                cover = cover.url
+            um = model
+        # FIXME: remove this hack lator.
+        if ModelType(model.meta.model_type) is ModelType.artist:
+            cover = um.pic_url
+        else:
+            cover = um.cover
         return cover
 
     def _model_upgrade(self, model):
@@ -604,10 +589,6 @@ class Library:
             Raise ModelNotFound if the model does not exist.
             Before ModelCannotUpgrade was raised.
         """
-        # Upgrade model in v1 way if it is a v1 model.
-        if MF.v2 not in model.meta.flags:
-            return self._model_upgrade_in_v1_way(model)
-
         # Return model directly if it is already a normal model.
         if MF.normal in model.meta.flags:
             return model
@@ -643,18 +624,11 @@ class Library:
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
         """
         provider = self.get_or_raise(video.source)
-        if video.meta.flags & MF.v2:
-            # provider MUST has multi_quality flag for video
-            assert isinstance(provider, SupportsVideoMultiQuality)
-            media, _ = provider.video_select_media(video, policy)
-        else:
-            # V1 VideoModel has attribute `media`
-            if video.meta.support_multi_quality:
-                media, _ = video.select_media(policy)  # type: ignore
-            else:
-                media = video.media  # type: ignore
+        # provider MUST has multi_quality flag for video
+        assert isinstance(provider, SupportsVideoMultiQuality)
+        media, _ = provider.video_select_media(video, policy)
         if not media:
-            raise MediaNotFound
+            raise MediaNotFound('provider returns empty media')
         return media
 
     # --------

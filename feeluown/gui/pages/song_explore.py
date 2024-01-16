@@ -348,10 +348,9 @@ class SongExploreView(QWidget):
                         album.cover,
                         reverse(album) + '/cover')
         else:
-            if ModelFlags.v2 in song.meta.flags:
-                aio.run_afn(self.cover_label.show_cover,
-                            song.pic_url,
-                            reverse(song) + '/pic_url')
+            aio.run_afn(self.cover_label.show_cover,
+                        song.pic_url,
+                        reverse(song) + '/pic_url')
 
     def resizeEvent(self, e: QResizeEvent) -> None:
         margins = self.layout().contentsMargins()
