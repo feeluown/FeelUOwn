@@ -1,6 +1,8 @@
 from feeluown.library import (
     V2SupportedModelTypes, AlbumModel,
     SupportsAlbumSongsReader, SupportsPlaylistRemoveSong,
+    SupportsArtistAlbumsReader, SupportsArtistContributedAlbumsReader,
+    SupportsPlaylistSongsReader, SupportsArtistSongsReader,
 )
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.reader import create_reader
@@ -9,6 +11,7 @@ from feeluown.library import ModelType, reverse
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer
 from feeluown.gui.widgets.songs import ColumnsMode
+from .template import render_error_message
 
 
 async def render(req, **kwargs):
@@ -77,8 +80,19 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
             contributed = tab_index == 3
             self.toolbar.filter_albums_needed.connect(
                 lambda types: self.albums_table.model().filter_by_types(types))
-            reader = await run_fn(
-                self._app.library.artist_create_albums_rd, artist, contributed)
+
+            source = artist.source
+            provider = self._app.library.get(source)
+            if contributed is False and isinstance(provider, SupportsArtistAlbumsReader):
+                reader = await run_fn(provider.artist_create_albums_rd, artist)
+            elif isinstance(provider, SupportsArtistContributedAlbumsReader):
+                reader = await run_fn(provider.artist_create_contributed_albums_rd, artist)  # noqa
+            else:
+                if contributed:
+                    await render_error_message(self._app, '资源提供方不支持获取歌手贡献过的专辑')
+                else:
+                    await render_error_message(self._app, '资源提供方不支持获取歌手专辑')
+                return
             self.toolbar.show()
             self.show_albums(reader)
 
@@ -91,14 +105,17 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
 
     async def _show_songs(self):
         artist = self.model
-        reader = await run_fn(self._app.library.artist_create_songs_rd, artist)
+        provider = self._app.library.get(artist.source)
+        if not isinstance(provider, SupportsArtistSongsReader):
+            await render_error_message(self._app, '资源提供方不支持获取歌手歌曲')
+            return
 
         async def cb():
-            reader = await run_fn(self._app.library.artist_create_songs_rd, artist)
+            reader = await run_fn(provider.artist_create_songs_rd, artist)
             self.__show_songs(reader)
 
+        await cb()
         self.tabbar.show_songs_needed.connect(lambda: run_afn(cb))
-        self.__show_songs(reader)
 
     def __show_songs(self, reader):
         self.show_songs(reader=reader,
@@ -142,7 +159,8 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
                     if isinstance(provider, SupportsAlbumSongsReader):
                         reader = await run_fn(provider.album_create_songs_rd, album)
                     else:
-                        reader = create_reader([])
+                        await render_error_message(self._app, '资源提供方不支持获取专辑歌曲')
+                        return
             self.meta_widget.songs_count = reader.count
             self.show_songs(reader, columns_mode=ColumnsMode.album)
 
@@ -175,8 +193,12 @@ class PlaylistRenderer(Renderer):
             self.songs_table.remove_song_func = self.remove_song
 
     async def _show_songs(self):
-        reader = await run_fn(self._app.library.playlist_create_songs_rd,
-                              self.playlist)
+        provider = self._app.library.get(self.playlist.source)
+        if isinstance(provider, SupportsPlaylistSongsReader):
+            reader = await run_fn(provider.playlist_create_songs_rd, self.playlist)
+        else:
+            await render_error_message(self._app, '资源提供方不支持获取歌单歌曲')
+            return
         self.show_songs(reader=reader, show_count=True)
 
     def remove_song(self, song):

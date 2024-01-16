@@ -2,13 +2,11 @@
 import logging
 import warnings
 from functools import partial
-from typing import Optional, Union, TypeVar, Type, Callable, Any
+from typing import Optional, Union, TypeVar
 
 from feeluown.media import Media
-from feeluown.utils import aio
-from feeluown.utils.aio import run_fn
+from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
-from feeluown.utils.reader import create_reader
 from .base import SearchType, ModelType
 from .provider import AbstractProvider
 from .provider_v2 import ProviderV2
@@ -29,9 +27,7 @@ from .provider_protocol import (
     check_flag as check_flag_impl,
     SupportsCurrentUser,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsPlaylistSongsReader,
-    SupportsArtistSongsReader, SupportsArtistAlbumsReader,
-    SupportsVideoMultiQuality, SupportsArtistContributedAlbumsReader,
+    SupportsVideoMultiQuality,
 )
 
 
@@ -222,12 +218,10 @@ class Library:
         fs = []  # future list
         for provider in self._filter(identifier_in=source_in):
             for type_ in type_in:
-                future = aio.run_in_executor(
-                    None,
-                    partial(provider.search, keyword, type_=type_))
+                future = run_fn(partial(provider.search, keyword, type_=type_))
                 fs.append(future)
 
-        for future in aio.as_completed(fs, timeout=timeout):
+        for future in as_completed(fs, timeout=timeout):
             try:
                 result = await future
             except:  # noqa
@@ -401,64 +395,11 @@ class Library:
     def album_upgrade(self, album: BriefAlbumProtocol):
         return self._model_upgrade(album)
 
-    def _handle_protocol_with_model(self,
-                                    protocol_cls: Type[T_p],
-                                    v2_handler: Callable[[T_p, Any], Any],
-                                    v1_handler: Callable[[Any], Any],
-                                    model: ModelProtocol):
-        """A handler helper (experimental).
-
-        :raises ProviderNotFound:
-        :raises NotSupported:
-        """
-        provider = self.get_or_raise(model.source)
-        if isinstance(provider, protocol_cls):
-            return v2_handler(provider, model)
-        raise NotSupported(f'{protocol_cls} not supported')
-
     # --------
     # Artist
     # --------
     def artist_upgrade(self, artist: BriefArtistProtocol):
         return self._model_upgrade(artist)
-
-    def artist_create_songs_rd(self, artist):
-        """Create songs reader for artist model."""
-        return self._handle_protocol_with_model(
-            SupportsArtistSongsReader,
-            lambda p, m: p.artist_create_songs_rd(m),
-            lambda v1_m: (create_reader(v1_m.create_songs_g())
-                          if v1_m.meta.allow_create_songs_g else
-                          create_reader(v1_m.songs)),
-            artist,
-        )
-
-    def artist_create_albums_rd(self, artist, contributed=False):
-        """Create albums reader for artist model."""
-        source = artist.source
-        if contributed is False:
-            protocol_cls = SupportsArtistAlbumsReader
-            return self._handle_protocol_with_model(
-                protocol_cls,
-                lambda p, m: p.artist_create_albums_rd(m),
-                lambda v1_m: (create_reader(v1_m.create_albums_g())
-                              if v1_m.meta.allow_create_albums_g else
-                              raise_(NotSupported.create_by_p_p(source, protocol_cls))),
-                artist
-            )
-        protocol_cls = SupportsArtistContributedAlbumsReader
-        return self._handle_protocol_with_model(
-            protocol_cls,
-            lambda p, m: p.artist_create_contributed_albums_rd(m),
-            # Old code check if provider supports contributed_albums in this way,
-            # have to say, it is a little ugly.
-            lambda v1_m: (
-                create_reader(v1_m.create_contributed_albums_g())
-                if hasattr(v1_m, 'contributed_albums') and v1_m.contributed_albums else
-                raise_(NotSupported.create_by_p_p(source, protocol_cls))
-            ),
-            artist
-        )
 
     # --------
     # Playlist
@@ -466,17 +407,6 @@ class Library:
 
     def playlist_upgrade(self, playlist):
         return self._model_upgrade(playlist)
-
-    def playlist_create_songs_rd(self, playlist):
-        """Create songs reader for artist model."""
-        return self._handle_protocol_with_model(
-            SupportsPlaylistSongsReader,
-            lambda p, m: p.playlist_create_songs_rd(m),
-            lambda v1_m: (create_reader(v1_m.create_songs_g())
-                          if v1_m.meta.allow_create_songs_g else
-                          create_reader(v1_m.songs)),
-            playlist,
-        )
 
     # -------------------------
     # generic methods for model

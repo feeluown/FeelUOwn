@@ -197,7 +197,10 @@ class RightPanel(QFrame):
             self._draw_pixmap(painter, draw_width, draw_height, scrolled)
             self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
             curve = QEasingCurve(QEasingCurve.OutCubic)
-            alpha_ratio = min(scrolled / max_scroll_height, 1)
+            if max_scroll_height == 0:
+                alpha_ratio = 1
+            else:
+                alpha_ratio = min(scrolled / max_scroll_height, 1)
             alpha = int(250 * curve.valueForProgress(alpha_ratio))
             painter.save()
             color = self.palette().color(QPalette.Window)
