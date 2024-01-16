@@ -15,7 +15,8 @@ from .jsonrpc_ import initialize, handle
 
 logger = logging.getLogger(__name__)
 
-sanic_app = Sanic('FeelUOwn')
+# Disable sanic's logging so that it can use feeluown's logging system.
+sanic_app = Sanic('FeelUOwn', configure_logging=False)
 
 
 def resp(js):

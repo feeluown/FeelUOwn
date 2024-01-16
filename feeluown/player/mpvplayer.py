@@ -1,5 +1,8 @@
 import locale
 import logging
+import time
+import math
+import os
 
 from mpv import (  # type: ignore
     MPV,
@@ -11,6 +14,7 @@ from mpv import (  # type: ignore
     ErrorCode,
 )
 
+from threading import Thread, RLock
 from feeluown.utils.dispatch import Signal
 from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
@@ -28,7 +32,7 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, _=None, audio_device=b'auto', winid=None, **kwargs):
+    def __init__(self, _=None, audio_device=b'auto', winid=None, fade=False, **kwargs):
         """
         :param _: keep this arg to keep backward compatibility
         """
@@ -79,6 +83,10 @@ class MpvPlayer(AbstractPlayer):
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv._event_callbacks.append(self._on_event)
         logger.debug('Player initialize finished.')
+
+        self.do_fade = fade
+        if self.do_fade:
+            self.fade_lock = RLock()
 
     def shutdown(self):
         # The mpv has already been terminated.
@@ -152,20 +160,81 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
+    def fade(self, fade_in: bool, max_volume=None, callback=None):
+        self.fade_lock.acquire()
+
+        # k: factor between 0 and 1, to represent tick/fade_time
+        def fade_curve(k: float, fade_in: bool) -> float:
+            if fade_in:
+                return (1-math.cos(k*math.pi)) / 2
+            else:
+                return (1+math.cos(k*math.pi)) / 2
+
+        def set_volume(max_volume: int, fade_in: bool):
+            # https://bugs.python.org/issue31539#msg302699
+            if os.name == "nt":
+                freq = 25
+                interval = 0.02
+            else:
+                freq = 50
+                interval = 0.01
+
+            for _tick in range(freq):
+                new_volume = math.ceil(
+                    fade_curve(_tick/freq, fade_in=fade_in)*max_volume
+                )
+                self.volume = new_volume
+                time.sleep(interval)
+
+        if max_volume:
+            volume = max_volume
+        else:
+            volume = self.volume
+
+        set_volume(volume, fade_in=fade_in)
+
+        if callback is not None:
+            callback()
+
+        self.volume = volume
+        self.fade_lock.release()
+
     def resume(self):
+        if self.do_fade:
+            _volume = self.volume
+            self.volume = 0
+
         self._mpv.pause = False
         self.state = State.playing
 
-    def pause(self):
+        if self.do_fade:
+            fade_thread = Thread(
+                target=self.fade,
+                kwargs={"fade_in": True,
+                        "max_volume": _volume}
+            )
+            fade_thread.start()
+
+    def _pause(self):
         self._mpv.pause = True
         self.state = State.paused
 
-    def toggle(self):
-        self._mpv.pause = not self._mpv.pause
-        if self._mpv.pause:
-            self.state = State.paused
+    def pause(self):
+        if self.do_fade:
+            fade_thread = Thread(
+                target=self.fade,
+                kwargs={"fade_in": False,
+                        "callback": self._pause}
+            )
+            fade_thread.start()
         else:
-            self.state = State.playing
+            self._pause()
+
+    def toggle(self):
+        if self._mpv.pause:
+            self.resume()
+        else:
+            self.pause()
 
     def stop(self):
         self._mpv.pause = True
