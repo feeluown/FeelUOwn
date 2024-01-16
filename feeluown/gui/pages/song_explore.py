@@ -333,14 +333,10 @@ class SongExploreView(QWidget):
                 self.lyric_view.on_line_changed, weak=True)
             return
 
-        try:
-            lyric_model = self._app.library.song_get_lyric(song)
-        except NotSupported:
-            pass
-        else:
-            if lyric_model is None:
-                return
-            self.lyric_view.set_lyric(Lyric.from_content(lyric_model.content))
+        lyric_model = self._app.library.song_get_lyric(song)
+        if lyric_model is None:
+            return
+        self.lyric_view.set_lyric(Lyric.from_content(lyric_model.content))
 
     async def maybe_show_song_pic(self, song, album):
         if album:

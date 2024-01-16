@@ -1,6 +1,7 @@
-from feeluown.library import V2SupportedModelTypes, AlbumModel, NotSupported
-from feeluown.library.provider_protocol import SupportsPlaylistRemoveSong
-from feeluown.utils import aio
+from feeluown.library import (
+    V2SupportedModelTypes, AlbumModel,
+    SupportsAlbumSongsReader, SupportsPlaylistRemoveSong,
+)
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.reader import create_reader
 from feeluown.library import ModelType, reverse
@@ -20,17 +21,17 @@ async def render(req, **kwargs):
     # FIXME: handle ProviderIOError and RequestException.
     if ModelType(model.meta.model_type) in V2SupportedModelTypes:
         if model.meta.model_type == ModelType.album:
-            album = await aio.run_fn(app.library.album_upgrade, model)
+            album = await run_fn(app.library.album_upgrade, model)
             tab_index = int(req.query.get('tab_index', 1))
             al_renderer = AlbumRenderer(album, tab_index)
             await app.ui.table_container.set_renderer(al_renderer)
         elif model.meta.model_type == ModelType.artist:
-            artist = await aio.run_fn(app.library.artist_upgrade, model)
+            artist = await run_fn(app.library.artist_upgrade, model)
             tab_index = int(req.query.get('tab_index', 1))
             ar_renderer = ArtistRenderer(artist, tab_index)
             await app.ui.table_container.set_renderer(ar_renderer)
         elif model.meta.model_type == ModelType.playlist:
-            playlist = await aio.run_fn(app.library.playlist_upgrade, model)
+            playlist = await run_fn(app.library.playlist_upgrade, model)
             pl_renderer = PlaylistRenderer(playlist)
             await app.ui.table_container.set_renderer(pl_renderer)
         else:
@@ -62,7 +63,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
         tab_index = self.tab_index
 
         # fetch and render basic metadata
-        self.meta_widget.title = await aio.run_fn(lambda: artist.name)
+        self.meta_widget.title = await run_fn(lambda: artist.name)
         self.meta_widget.source = self._get_source_alias(artist.source)
         self.meta_widget.show()
 
@@ -76,7 +77,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
             contributed = tab_index == 3
             self.toolbar.filter_albums_needed.connect(
                 lambda types: self.albums_table.model().filter_by_types(types))
-            reader = await aio.run_fn(
+            reader = await run_fn(
                 self._app.library.artist_create_albums_rd, artist, contributed)
             self.toolbar.show()
             self.show_albums(reader)
@@ -90,13 +91,13 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
 
     async def _show_songs(self):
         artist = self.model
-        reader = await aio.run_fn(self._app.library.artist_create_songs_rd, artist)
+        reader = await run_fn(self._app.library.artist_create_songs_rd, artist)
 
         async def cb():
-            reader = await aio.run_fn(self._app.library.artist_create_songs_rd, artist)
+            reader = await run_fn(self._app.library.artist_create_songs_rd, artist)
             self.__show_songs(reader)
 
-        self.tabbar.show_songs_needed.connect(lambda: aio.run_afn(cb))
+        self.tabbar.show_songs_needed.connect(lambda: run_afn(cb))
         self.__show_songs(reader)
 
     def __show_songs(self, reader):
@@ -137,11 +138,10 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
                 if album.song_count == 0:
                     reader = create_reader([])
                 else:
-                    try:
-                        reader = await aio.run_fn(
-                            self._app.library.album_create_songs_rd, album)
-                    except NotSupported as e:
-                        self._app.show_msg(str(e))
+                    provider = self._app.library.get(album.source)
+                    if isinstance(provider, SupportsAlbumSongsReader):
+                        reader = await run_fn(provider.album_create_songs_rd, album)
+                    else:
                         reader = create_reader([])
             self.meta_widget.songs_count = reader.count
             self.show_songs(reader, columns_mode=ColumnsMode.album)
@@ -149,7 +149,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         # fetch cover and description
         cover = album.cover
         if cover:
-            aio.run_afn(self.show_cover, cover, reverse(album, '/cover'))
+            run_afn(self.show_cover, cover, reverse(album, '/cover'))
 
 
 class PlaylistRenderer(Renderer):
@@ -168,17 +168,15 @@ class PlaylistRenderer(Renderer):
 
         # show playlist cover
         if playlist.cover:
-            aio.create_task(
-                self.show_cover(playlist.cover,
-                                reverse(playlist) + '/cover'))
+            run_afn(self.show_cover, playlist.cover, reverse(playlist) + '/cover')
 
         provider = self._app.library.get(self.playlist.source)
         if isinstance(provider, SupportsPlaylistRemoveSong):
             self.songs_table.remove_song_func = self.remove_song
 
     async def _show_songs(self):
-        reader = await aio.run_fn(self._app.library.playlist_create_songs_rd,
-                                  self.playlist)
+        reader = await run_fn(self._app.library.playlist_create_songs_rd,
+                              self.playlist)
         self.show_songs(reader=reader, show_count=True)
 
     def remove_song(self, song):
@@ -187,7 +185,7 @@ class PlaylistRenderer(Renderer):
             provider = self._app.library.get(self.playlist.source)
             if await run_fn(provider.playlist_remove_song, self.playlist, song) is True:
                 # Re-render songs table so that user can see that the song is removed.
-                aio.run_afn(self._show_songs)
+                run_afn(self._show_songs)
                 self._app.show_msg(f'移除歌曲 {song} 成功')
             else:
                 self._app.show_msg(f'移除歌曲 {song} 失败')

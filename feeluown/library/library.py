@@ -27,7 +27,7 @@ from .model_protocol import (
 from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
-    SupportsCurrentUser, SupportsAlbumSongsReader,
+    SupportsCurrentUser,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsPlaylistSongsReader,
     SupportsArtistSongsReader, SupportsArtistAlbumsReader,
@@ -44,11 +44,6 @@ T_p = TypeVar('T_p')
 
 def raise_(e):
     raise e
-
-
-def support_or_raise(provider, protocol_cls):
-    if not isinstance(provider, protocol_cls):
-        raise NotSupported(f'{provider} not support {protocol_cls}') from None
 
 
 def default_score_fn(origin, standby):
@@ -381,30 +376,20 @@ class Library:
         raise MediaNotFound('provider returns empty media')
 
     def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
-        """Get the MV model of a song.
-
-        :raises NotSupported:
-        """
+        """Get the MV model of a song."""
         provider = self.get(song.source)
         if isinstance(provider, SupportsSongMV):
-            mv = provider.song_get_mv(song)
-        else:
-            mv = None
-        return mv
+            return provider.song_get_mv(song)
 
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
         """Get the lyric model of a song.
 
         Return None when lyric does not exist instead of raising exceptions,
         because it is predictable.
-
-        :raises NotSupported:
-        :raises ProviderNotFound:
         """
-        provider = self.get_or_raise(song.source)
+        provider = self.get(song.source)
         if isinstance(provider, SupportsSongLyric):
             return provider.song_get_lyric(song)
-        raise NotSupported
 
     def song_get_web_url(self, song: BriefSongProtocol) -> str:
         provider = self.getv2_or_raise(song.source)
@@ -415,15 +400,6 @@ class Library:
     # --------
     def album_upgrade(self, album: BriefAlbumProtocol):
         return self._model_upgrade(album)
-
-    def album_create_songs_rd(self, album: BriefAlbumProtocol):
-        """Create songs reader for album model."""
-        return self._handle_protocol_with_model(
-            SupportsAlbumSongsReader,
-            lambda p, m: p.album_create_songs_rd(m),
-            lambda v1_m: create_reader(v1_m.songs),  # type: ignore
-            album,
-        )
 
     def _handle_protocol_with_model(self,
                                     protocol_cls: Type[T_p],
