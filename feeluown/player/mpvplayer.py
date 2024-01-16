@@ -161,8 +161,6 @@ class MpvPlayer(AbstractPlayer):
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
     def fade(self, fade_in: bool, max_volume=None, callback=None):
-        self.fade_lock.acquire()
-
         # k: factor between 0 and 1, to represent tick/fade_time
         def fade_curve(k: float, fade_in: bool) -> float:
             if fade_in:
@@ -186,34 +184,29 @@ class MpvPlayer(AbstractPlayer):
                 self.volume = new_volume
                 time.sleep(interval)
 
-        if max_volume:
-            volume = max_volume
-        else:
-            volume = self.volume
+        with self.fade_lock:
+            if max_volume:
+                volume = max_volume
+            else:
+                volume = self.volume
 
-        set_volume(volume, fade_in=fade_in)
+            set_volume(volume, fade_in=fade_in)
 
-        if callback is not None:
-            callback()
+            if callback is not None:
+                callback()
 
-        self.volume = volume
-        self.fade_lock.release()
+            self.volume = volume
 
     def resume(self):
         if self.do_fade:
-            _volume = self.volume
-            self.volume = 0
+            fade_thread = Thread(
+                target=self.fade,
+                kwargs={"fade_in": True}
+            )
+            fade_thread.start()
 
         self._mpv.pause = False
         self.state = State.playing
-
-        if self.do_fade:
-            fade_thread = Thread(
-                target=self.fade,
-                kwargs={"fade_in": True,
-                        "max_volume": _volume}
-            )
-            fade_thread.start()
 
     def _pause(self):
         self._mpv.pause = True
