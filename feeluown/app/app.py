@@ -57,7 +57,10 @@ class App:
         # TODO: initialization should be moved into initialize
         Resolver.library = self.library
         # Player.
-        self.player = Player(audio_device=bytes(config.MPV_AUDIO_DEVICE, 'utf-8'))
+        self.player = Player(
+            audio_device=bytes(config.MPV_AUDIO_DEVICE, 'utf-8'),
+            fade=config.PLAYBACK_CROSSFADE
+        )
         # Theoretically, each caller maintain its own position delegate.
         # For simplicity, this delegate is created for common use cases and
         #
