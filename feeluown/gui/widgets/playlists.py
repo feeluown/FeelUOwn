@@ -9,6 +9,8 @@ from PyQt5.QtWidgets import (
     QAbstractItemView, QMenu
 )
 
+from feeluown.library import SupportsPlaylistAddSong
+from feeluown.utils.aio import run_afn, run_fn
 from .textlist import TextlistModel, TextlistView
 
 
@@ -124,16 +126,23 @@ class PlaylistsView(TextlistView):
         playlist = index.data(Qt.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()
-        try:
-            # FIXME: this may block the app.
-            app = self.parent().parent()._app   # type: ignore[attr-defined]
-            is_success = app.library.playlist_add_song(playlist, song)
-        except:  # noqa, to avoid crash.
-            logger.exception('add song to playlist failed')
+
+        async def do():
             is_success = False
-        self._results[index.row] = (index, is_success)
-        self.viewport().update()
-        self._result_timer.start(2000)
+            app = self.parent().parent()._app   # type: ignore[attr-defined]
+            try:
+                provider = app.library.get(playlist.source)
+                if isinstance(provider, SupportsPlaylistAddSong):
+                    is_success = await run_fn(provider.playlist_add_song, playlist, song)
+            except:  # noqa, to avoid crash.
+                logger.exception('add song to playlist failed')
+                is_success = False
+            app.show_msg(f"添加歌曲 {song} 到播放列表 {'成功' if is_success is True else '失败'}")
+            self._results[index.row] = (index, is_success)
+            self.viewport().update()
+            self._result_timer.start(2000)
+
+        run_afn(do)
         e.accept()
 
     def dragMoveEvent(self, e):

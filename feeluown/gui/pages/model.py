@@ -1,5 +1,7 @@
 from feeluown.library import V2SupportedModelTypes, AlbumModel, NotSupported
+from feeluown.library.provider_protocol import SupportsPlaylistRemoveSong
 from feeluown.utils import aio
+from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.reader import create_reader
 from feeluown.library import ModelType, reverse
 
@@ -170,7 +172,9 @@ class PlaylistRenderer(Renderer):
                 self.show_cover(playlist.cover,
                                 reverse(playlist) + '/cover'))
 
-        self.songs_table.remove_song_func = self.remove_song
+        provider = self._app.library.get(self.playlist.source)
+        if isinstance(provider, SupportsPlaylistRemoveSong):
+            self.songs_table.remove_song_func = self.remove_song
 
     async def _show_songs(self):
         reader = await aio.run_fn(self._app.library.playlist_create_songs_rd,
@@ -178,9 +182,14 @@ class PlaylistRenderer(Renderer):
         self.show_songs(reader=reader, show_count=True)
 
     def remove_song(self, song):
-        # FIXME: this may block the whole app.
-        if self._app.library.playlist_remove_song(self.playlist, song) is True:
-            # Re-render songs table so that user can see that the song is removed.
-            aio.run_afn(self._show_songs)
-        else:
-            self._app.show_msg('移除歌曲失败')
+
+        async def do():
+            provider = self._app.library.get(self.playlist.source)
+            if await run_fn(provider.playlist_remove_song, self.playlist, song) is True:
+                # Re-render songs table so that user can see that the song is removed.
+                aio.run_afn(self._show_songs)
+                self._app.show_msg(f'移除歌曲 {song} 成功')
+            else:
+                self._app.show_msg(f'移除歌曲 {song} 失败')
+
+        run_afn(do)

@@ -29,7 +29,7 @@ from .provider_protocol import (
     check_flag as check_flag_impl,
     SupportsCurrentUser, SupportsAlbumSongsReader,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsPlaylistRemoveSong, SupportsPlaylistAddSong, SupportsPlaylistSongsReader,
+    SupportsPlaylistSongsReader,
     SupportsArtistSongsReader, SupportsArtistAlbumsReader,
     SupportsVideoMultiQuality, SupportsArtistContributedAlbumsReader,
 )
@@ -501,26 +501,6 @@ class Library:
                           create_reader(v1_m.songs)),
             playlist,
         )
-
-    def playlist_remove_song(self, playlist, song) -> bool:
-        """Remove a song from the playlist
-
-        :return: true if the song is not in playlist anymore.
-        """
-        provider = self.get_or_raise(playlist.source)
-        if isinstance(provider, SupportsPlaylistRemoveSong):
-            return provider.playlist_remove_song(playlist, song)
-        raise NotSupported
-
-    def playlist_add_song(self, playlist, song) -> bool:
-        """Add a song to the playlist
-
-        :return: true if the song exists in playlist.
-        """
-        provider = self.get_or_raise(playlist.source)
-        if isinstance(provider, SupportsPlaylistAddSong):
-            return provider.playlist_add_song(playlist, song)
-        raise NotSupported
 
     # -------------------------
     # generic methods for model
