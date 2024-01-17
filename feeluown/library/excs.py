@@ -4,7 +4,6 @@ from feeluown.excs import (  # noqa
     ResourceNotFound,
     # FIXME: ProviderAlreadyExists should be renamed to ProviderAlreadyRegistered
     ProviderAlreadyRegistered as ProviderAlreadyExists,
-    ProviderNotFound,
     ModelNotFound,
     NotSupported,
     NoUserLoggedIn,

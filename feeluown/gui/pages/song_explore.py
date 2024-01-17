@@ -8,7 +8,7 @@ from PyQt5.QtGui import QGuiApplication, QResizeEvent
 from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
-from feeluown.excs import ProviderNotFound, ResourceNotFound
+from feeluown.excs import ResourceNotFound
 from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
     NotSupported, ModelFlags
@@ -30,6 +30,7 @@ from feeluown.gui.widgets.lyric import LyricView
 from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate, SongMiniCardListModel, SongMiniCardListView
 )
+from .template import render_error_message
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -50,12 +51,9 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     app: GuiApp = req.ctx['app']
     song = req.ctx['model']
 
-    try:
-        provider = app.library.get_or_raise(song.source)
-    except ProviderNotFound as e:
-        err_view = InlineErrorMessageView()
-        err_view.show_msg(f'无法展示歌曲详情：{repr(e)}')
-        app.ui.right_panel.set_body(err_view)
+    provider = app.library.get(song.source)
+    if provider is None:
+        await render_error_message(app, f'没有相应的资源提供方 {song.source}')
         return
 
     # TODO: Initialize the view with song object, and it should reduce
@@ -354,14 +352,3 @@ class SongExploreView(QWidget):
         self._left_con.setMaximumWidth(
             self.width() - margin_h - self._left_right_spacing - self._right_con.width())
         return super().resizeEvent(e)
-
-
-class InlineErrorMessageView(QLabel):
-    """Error message view
-    """
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setAlignment(Qt.AlignCenter)
-
-    def show_msg(self, msg):
-        self.setText(msg)

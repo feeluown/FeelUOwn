@@ -2,29 +2,28 @@
 import logging
 import warnings
 from functools import partial
-from typing import Optional, Union, TypeVar
+from typing import Optional, TypeVar
 
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
 from .base import SearchType, ModelType
-from .provider import AbstractProvider, ProviderV2
+from .provider import Provider
 from .excs import (
-    NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
-    ProviderNotFound, ModelNotFound, ResourceNotFound
+    NotSupported, MediaNotFound, ProviderAlreadyExists,
+    ModelNotFound, ResourceNotFound
 )
 from .flags import Flags as PF
 from .models import (
-    ModelFlags as MF, BriefSongModel, UserModel,
+    ModelFlags as MF, BriefSongModel,
 )
 from .model_protocol import (
-    BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol, UserProtocol,
+    BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol,
     LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
 )
 from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
-    SupportsCurrentUser,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality,
 )
@@ -127,11 +126,7 @@ def err_provider_not_support_flag(pid, model_type, op):
 
 
 class Library:
-    """音乐库，管理资源提供方以及资源
-
-    .. versionchanged:: 4.0
-       Never raise ProviderNotFound error.
-    """
+    """Resource entrypoints."""
 
     def __init__(self, providers_standby=None):
         """
@@ -150,7 +145,7 @@ class Library:
         :raises ProviderAlreadyExists:
         :raises ValueError:
         """
-        if not isinstance(provider, AbstractProvider):
+        if not isinstance(provider, Provider):
             raise ValueError('invalid provider instance')
         for _provider in self._providers:
             if _provider.identifier == provider.identifier:
@@ -162,7 +157,7 @@ class Library:
         """deregister provider
 
         .. versionchanged:: 4.0
-           Do not raise ProviderNotFound anymore, return False instead.
+           Do not raise exception anymore, return False instead.
         """
         if provider in self._providers:
             self._providers.remove(provider)
@@ -170,7 +165,7 @@ class Library:
             return True
         return False
 
-    def get(self, identifier):
+    def get(self, identifier) -> Optional[Provider]:
         """通过资源提供方唯一标识获取提供方实例"""
         for provider in self._providers:
             if provider.identifier == identifier:
@@ -293,28 +288,6 @@ class Library:
                     return song_media_list
         return song_media_list
 
-    #
-    # methods for v2
-    #
-
-    # provider common
-
-    def get_or_raise(self, identifier) -> Union[AbstractProvider, ProviderV2]:
-        """
-        :raises ProviderNotFound:
-        """
-        provider = self.get(identifier)
-        if provider is None:
-            raise ProviderNotFound(f'provider {identifier} not found')
-        return provider
-
-    def getv2_or_raise(self, identifier):
-        provider = self.get_or_raise(identifier)
-        # You should ensure the provider is v2 first. For example, if check_flags
-        # returns true, the provider must be a v2 instance.
-        assert isinstance(provider, ProviderV2), 'provider must be v2'
-        return provider
-
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
         """Check if a provider satisfies the specific ability for a model type
 
@@ -387,10 +360,6 @@ class Library:
         if isinstance(provider, SupportsSongLyric):
             return provider.song_get_lyric(song)
 
-    def song_get_web_url(self, song: BriefSongProtocol) -> str:
-        provider = self.getv2_or_raise(song.source)
-        return provider.song_get_web_url(song)
-
     # --------
     # Album
     # --------
@@ -424,25 +393,10 @@ class Library:
         :raise NotSupported: provider has not .get for this model type
         :raise ResourceNotFound: model does not exist
         """
-        provider = self.get_or_raise(pid)
-        model = None
-        try_v1way = True
-        if isinstance(provider, ProviderV2):
-            if provider.use_model_v2(mtype):
-                if self.check_flags(pid, mtype, PF.get):
-                    try_v1way = False
-                    model = provider.model_get(mtype, mid)
-
-        # Try to use the ModelV1.get API to get the model.
-        if try_v1way and isinstance(provider, AbstractProvider):
-            try:
-                model_cls = provider.get_model_cls(mtype)
-                model = model_cls.get(mid)
-            except AttributeError:
-                pass
-        if model is None:
-            raise ModelNotFound
-        return model
+        provider = self.get(pid)
+        if provider is None:
+            raise ModelNotFound(f'provider:{pid} not found')
+        return provider.model_get(mtype, mid)
 
     def model_get_cover(self, model):
         """Get the cover url of model
@@ -469,7 +423,6 @@ class Library:
 
         :raises NotSupported: provider does't impl SupportGetProtocol for the model type
         :raises ModelNotFound: the model does not exist
-        :raises ProviderNotFound: the provider does not exist
 
         Note you may catch ResourceNotFound exception to simplify your code.
 
@@ -477,28 +430,23 @@ class Library:
             Raise ModelNotFound if the model does not exist.
             Before ModelCannotUpgrade was raised.
         """
-        # Return model directly if it is already a normal model.
+        # Return model directly if it is already a normal(upgraded) model.
         if MF.normal in model.meta.flags:
             return model
 
-        provider = self.getv2_or_raise(model.source)
         model_type = ModelType(model.meta.model_type)
-        is_support = check_flag_impl(provider, model_type, PF.get)
-        if is_support:
-            try:
-                upgraded_model = provider.model_get(model_type, model.identifier)
-            except ModelNotFound:
+        provider = self.get(model.source)
+        if provider is None:
+            raise ModelNotFound(f'provider:{model.source} not found')
+        try:
+            upgraded_model = provider.model_get(model_type, model.identifier)
+        except ModelNotFound as e:
+            if e.reason is ModelNotFound.Reason.not_found:
                 model.state = ModelState.not_exists
-                raise
-            else:
-                # Provider should raise ModelNotFound when the mode does not exist.
-                # Some providers does not follow the protocol, and they may return None.
-                # Keep this logic to keep backward compatibility.
-                if upgraded_model is None:
-                    model.state = ModelState.not_exists
-                    raise ModelNotFound(f'provider:{provider} return an empty model')
-                return upgraded_model
-        raise NotSupported
+            elif e.reason is ModelNotFound.Reason.not_supported:
+                model.state = ModelState.cant_upgrade
+            raise
+        return upgraded_model
 
     # --------
     # Video
@@ -511,53 +459,11 @@ class Library:
 
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
         """
-        provider = self.get_or_raise(video.source)
-        # provider MUST has multi_quality flag for video
-        assert isinstance(provider, SupportsVideoMultiQuality)
-        media, _ = provider.video_select_media(video, policy)
+        provider = self.get(video.source)
+        if isinstance(provider, SupportsVideoMultiQuality):
+            media, _ = provider.video_select_media(video, policy)
+        else:
+            raise MediaNotFound('provider or video not found')
         if not media:
             raise MediaNotFound('provider returns empty media')
         return media
-
-    # --------
-    # Provider
-    # --------
-    def provider_has_current_user(self, source: str) -> bool:
-        """Check if a provider has a logged in user
-
-        No IO operation is triggered.
-
-        .. versionadded:: 3.7.6
-        """
-        provider = self.get_or_raise(source)
-        if isinstance(provider, SupportsCurrentUser):
-            return provider.has_current_user()
-
-        try:
-            user_v1 = getattr(provider, '_user')
-        except AttributeError:
-            logger.warn("We can't determine if the provider has a current user")
-            return False
-        else:
-            return user_v1 is not None
-
-    def provider_get_current_user(self, source: str) -> UserProtocol:
-        """Get provider current logged in user
-
-        :raises NotSupported:
-        :raises ProviderNotFound:
-        :raises NoUserLoggedIn:
-
-        .. versionadded:: 3.7.6
-        """
-        provider = self.get_or_raise(source)
-        if isinstance(provider, SupportsCurrentUser):
-            return provider.get_current_user()
-
-        user_v1 = getattr(provider, '_user', None)
-        if user_v1 is None:
-            raise NoUserLoggedIn
-        return UserModel(identifier=user_v1.identifier,
-                         source=source,
-                         name=user_v1.name_display,
-                         avatar_url='')

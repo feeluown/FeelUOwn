@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
-from feeluown.library import NoUserLoggedIn, UserModel
+from feeluown.library import UserModel, SupportsCurrentUser
 from feeluown.library import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
@@ -106,13 +106,14 @@ class Avatar(SelfPaintAbstractSquareButton):
         if user is not None:
             self.setToolTip(f'{user.name} ({item.text})')
 
-    async def _show_provider_current_user(self, name):
+    async def _show_provider_current_user(self, source):
         self.setToolTip('')
         self._avatar_drawer = None
-        try:
-            user = await run_fn(self._app.library.provider_get_current_user, name)
-        except NoUserLoggedIn:
-            user = None
+        provider = self._app.library.get(source)
+        assert provider is not None
+        user = None
+        if isinstance(provider, SupportsCurrentUser):
+            user = await run_fn(provider.get_current_user_or_none, source)
 
         if user is None:
             return None

@@ -23,7 +23,7 @@ class AbstractProvider(ABC):
     """
 
 
-class ProviderV2:
+class Provider:
     class meta:
         identifier: str = ''
         name: str = ''
@@ -109,7 +109,7 @@ class ProviderV2:
                 return self.artist_get(model_id)
             elif model_type == ModelType.playlist:
                 return self.playlist_get(model_id)
-        raise NotSupported
+        raise ModelNotFound(reason=ModelNotFound.Reason.not_supported)
 
     def _model_cache_get_or_fetch(self, model, cache_key):
         """Util method for getting value of cached field
@@ -175,3 +175,6 @@ class ProviderV2:
                     f'provider:{playable_model.source} has nonstandard implementation')
             return media, quality
         assert False, 'this should not happen'
+
+
+ProviderV2 = Provider
