@@ -2,7 +2,10 @@ import random
 
 import pytest
 
-from feeluown.library import ModelType, BriefAlbumModel
+from feeluown.library import (
+    ModelType, BriefAlbumModel, BriefSongModel, Provider, Media,
+    SimpleSearchResult, Quality
+)
 
 
 @pytest.mark.asyncio
@@ -74,3 +77,34 @@ def test_library_model_upgrade(library, ekaf_provider, ekaf_album0):
 def test_prepare_mv_media(library, ekaf_brief_song0):
     media = library.song_prepare_mv_media(ekaf_brief_song0, '<<<')
     assert media.url != ''  # media url is valid(not empty)
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v2(library):
+
+    class GoodProvider(Provider):
+        @property
+        def identifier(self):
+            return 'good'
+
+        @property
+        def name(self):
+            return 'good'
+
+        def song_list_quality(self, _):
+            return [Quality.Audio.hq]
+
+        def song_get_media(self, _, __):
+            return Media('good.mp3')
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q='',
+                songs=[BriefSongModel(identifier='1', source=self.identifier)]
+            )
+
+    library.register(GoodProvider())
+    song = BriefSongModel(identifier='1', title='try-to-find-standby', source='xxx')
+    song_media_list = await library.a_list_song_standby_v2(song)
+    assert song_media_list
+    assert song_media_list[0][1].url == 'good.mp3'
