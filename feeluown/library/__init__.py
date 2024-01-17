@@ -1,7 +1,6 @@
 # flake8: noqa
 from .library import Library
-from .provider import AbstractProvider
-from .provider_v2 import ProviderV2
+from .provider import AbstractProvider, ProviderV2
 from .flags import Flags as ProviderFlags
 from .model_state import ModelState
 from .model_protocol import (

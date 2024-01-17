@@ -8,8 +8,7 @@ from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
 from .base import SearchType, ModelType
-from .provider import AbstractProvider
-from .provider_v2 import ProviderV2
+from .provider import AbstractProvider, ProviderV2
 from .excs import (
     NotSupported, MediaNotFound, NoUserLoggedIn, ProviderAlreadyExists,
     ProviderNotFound, ModelNotFound, ResourceNotFound
@@ -159,14 +158,17 @@ class Library:
         self._providers.add(provider)
         self.provider_added.emit(provider)
 
-    def deregister(self, provider):
-        """deregister provider"""
-        try:
+    def deregister(self, provider) -> bool:
+        """deregister provider
+
+        .. versionchanged:: 4.0
+           Do not raise ProviderNotFound anymore, return False instead.
+        """
+        if provider in self._providers:
             self._providers.remove(provider)
-        except ValueError:
-            raise ProviderNotFound from None
-        else:
             self.provider_removed.emit(provider)
+            return True
+        return False
 
     def get(self, identifier):
         """通过资源提供方唯一标识获取提供方实例"""
