@@ -200,7 +200,8 @@ class App:
             'volume': player.volume,
             'state': player.state.value,
             'song': song,
-            'position': player.position,
+            # cast position to int to avoid such value 2.7755575615628914e-17
+            'position': int(player.position or 0),
             'playlist': [reverse(song, as_line=True) for song in playlist.list()],
             'recently_played': [reverse(song, as_line=True)
                                 for song in recently_played.list_songs()]

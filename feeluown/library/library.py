@@ -241,9 +241,9 @@ class Library:
         async def prepare_media(standby, policy):
             media = None
             try:
-                await run_fn(self.song_prepare_media, standby, policy)
-            except MediaNotFound:
-                pass
+                media = await run_fn(self.song_prepare_media, standby, policy)
+            except MediaNotFound as e:
+                logger.debug(f'standby media not found: {e}')
             except:  # noqa
                 logger.exception(f'get standby:{standby} media failed')
             return media
@@ -269,13 +269,16 @@ class Library:
                     media = await prepare_media(standby, audio_select_policy)
                     if media is None:
                         continue
-                    logger.info(f'find full mark standby for song:{q}')
+                    logger.debug(f'find full mark standby for song:{q}')
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
                         # Return as early as possible to get better performance
                         return song_media_list
                 elif score >= min_score:
                     standby_score_list.append((standby, score))
+        standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
+        logger.debug(f"find {len(standby_score_list)} similar songs "
+                     f"from {','.join(standby_pvd_id_set)}")
         # Limit try times since prapare_media is an expensive IO operation
         max_try = len(pvd_ids) * 2
         for standby, score in sorted(standby_score_list,
