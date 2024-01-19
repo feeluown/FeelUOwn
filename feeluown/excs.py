@@ -55,10 +55,6 @@ class ProviderAlreadyRegistered(LibraryException):
     pass
 
 
-class ProviderNotFound(ResourceNotFound):
-    pass
-
-
 class ModelNotFound(ResourceNotFound):
     """Model is not found
 
@@ -66,6 +62,17 @@ class ModelNotFound(ResourceNotFound):
 
     .. versionadded:: 3.7.7
     """
+    class Reason(Enum):
+        """
+        .. versionadded:: v4.0
+        """
+        not_found = 'not_found'
+        # The provider does implement corresponding protocol.
+        not_supported = 'not_supported'
+
+    def __init__(self, *args, reason=Reason.not_found, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.reason = reason
 
 
 class NotSupported(LibraryException):

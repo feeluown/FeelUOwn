@@ -274,14 +274,14 @@ class _LeftPanel(QFrame):
     def _remove_playlist(self, playlist):
 
         async def do():
-            provider = self._app.library.get_or_raise(playlist.source)
+            provider = self._app.library.get(playlist.source)
             if isinstance(provider, SupportsPlaylistDelete):
                 ok = await aio.run_fn(provider.playlist_delete, playlist.identifier)
                 self._app.show_msg(f"删除歌单 {playlist.name} {'成功' if ok else '失败'}")
                 if ok is True:
                     self._app.pl_uimgr.model.remove(playlist)
             else:
-                self._app.show_msg(f'资源提供方({provider.identifier})不支持删除歌单')
+                self._app.show_msg(f'资源提供方({playlist.source})不支持删除歌单')
 
         box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
                           QMessageBox.Yes | QMessageBox.No, self)

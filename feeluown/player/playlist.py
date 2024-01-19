@@ -23,10 +23,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def _get_song_str(song):
-    return f'{song.source}:{song.title_display} - {song.artists_name_display}'
-
-
 class PlaybackMode(IntEnum):
     """
     Playlist playback mode.
@@ -468,8 +464,6 @@ class Playlist:
 
         If the song is bad, then this will try to use a standby in Playlist.normal mode.
         """
-        song_str = _get_song_str(song)
-
         target_song = song  # The song to be set.
         media = None        # The corresponding media to be set.
 
@@ -480,7 +474,7 @@ class Playlist:
                 await self.a_set_current_song_children(song)
                 return
 
-            logger.info(f'no media found for {song_str} due to {e}, mark it as bad')
+            logger.info(f'no media found for {song} due to {e}, mark it as bad')
             self.mark_as_bad(song)
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
@@ -508,11 +502,10 @@ class Playlist:
         self.pure_set_current_song(target_song, media, metadata)
 
     async def a_set_current_song_children(self, song):
-        song_str = _get_song_str(song)
         # TODO: maybe we can just add children to playlist?
-        self._app.show_msg(f'{song_str} 的播放资源在孩子节点上，将孩子节点添加到播放列表')
+        self._app.show_msg(f'{song} 的播放资源在孩子节点上，将孩子节点添加到播放列表')
         self.mark_as_bad(song)
-        logger.info(f'{song_str} has children, replace the current playlist')
+        logger.info(f'{song} has children, replace the current playlist')
         song = await run_fn(self._app.library.song_upgrade, song)
         if song.children:
             self.batch_add(song.children)
@@ -522,16 +515,15 @@ class Playlist:
         return
 
     async def find_and_use_standby(self, song):
-        song_str = _get_song_str(song)
-        self._app.show_msg(f'{song_str} is invalid, try to find standby')
-        logger.info(f'try to find standby for {song_str}')
+        self._app.show_msg(f'{song} is invalid, try to find standby')
+        logger.info(f'try to find standby for {song}')
         standby_candidates = await self._app.library.a_list_song_standby_v2(
             song,
             self.audio_select_policy
         )
         if standby_candidates:
             standby, media = standby_candidates[0]
-            msg = f'Song standby was found in {standby.source} ✅'
+            msg = f'song standby was found in {standby.source} ✅'
             logger.info(msg)
             self._app.show_msg(msg)
             # Insert the standby song after the song
@@ -541,7 +533,7 @@ class Playlist:
                 self.songs_added.emit(index + 1, 1)
             return standby, media
 
-        msg = 'Song standby not found'
+        msg = 'song standby not found'
         logger.info(msg)
         self._app.show_msg(msg)
         return song, None

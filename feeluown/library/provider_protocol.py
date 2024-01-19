@@ -1,6 +1,7 @@
 from typing import runtime_checkable, Protocol, List, Tuple, Optional, Dict
 from abc import abstractmethod
 from feeluown.media import Quality, Media
+from feeluown.excs import NoUserLoggedIn
 from .models import (
     BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
     PlaylistModel, UserModel, ModelType,
@@ -312,7 +313,19 @@ class SupportsCurrentUser(Protocol):
         """Get current logged in user
 
         :raises NoUserLoggedIn: there is no logged in user.
+
+        .. versionchanged: 4.0
+            It can return Optional[UserModel], NoUserLoggedIn makes no sense.
         """
+
+    def get_current_user_or_none(self) -> Optional[UserModel]:
+        """
+        .. versionadded: 4.0
+        """
+        try:
+            return self.get_current_user()
+        except NoUserLoggedIn:
+            return None
 
 
 @runtime_checkable
