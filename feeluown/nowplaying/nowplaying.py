@@ -20,9 +20,6 @@ PlaybackStatusStateMapping = {
 }
 
 
-# todo: fix! aionp.interface.macos treat aionp time as milisecond while
-# other two interface treat it as microsecond (which is commented
-# at aionp.interface.base)
 def sec_to_us(t_sec):
     return int(t_sec * 1000 * 1000)
 
