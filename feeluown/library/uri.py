@@ -284,10 +284,7 @@ def reverse(model, path='', as_line=False):
     if path:
         warnings.warn('model path resolver will be removed')
         paths = getattr(model.meta, 'paths', [])
-        fields = getattr(model, '__fields__', None)
-        if fields is None:  # v1 model
-            fields = model.meta.fields
-        if path not in paths and path[1:] not in fields:
+        if path not in paths and path[1:] not in model.model_fields:
             raise NoReverseMatch(f'no-reverse-match for model:{model} path:{path}')
 
     source = model.source

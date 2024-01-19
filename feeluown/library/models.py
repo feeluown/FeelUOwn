@@ -230,7 +230,7 @@ class BriefSongModel(BaseBriefModel):
     duration_ms: str = ''
 
     def __str__(self):
-        return f'{self.title} - {self.artists_name}'
+        return f'{self.source}:{self.title}•{self.artists_name}'
 
 
 class BriefVideoModel(BaseBriefModel):
@@ -288,6 +288,9 @@ class SongModel(BaseNormalModel):
     # can be fetched in get_song_detail API. So one IO request can be saved
     # to fetch a image url of the song.
     pic_url: str = ''
+
+    def __str__(self):
+        return f'{self.source}:{self.title}•{self.artists_name}'
 
     @property
     def artists_name(self):

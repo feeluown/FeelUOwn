@@ -2,7 +2,7 @@ from unittest.mock import MagicMock
 import pytest
 
 from feeluown.library import (
-    AbstractProvider, ProviderV2, ModelType, ProviderFlags as PF,
+    ProviderV2, ModelType, ProviderFlags as PF,
     AlbumModel, ArtistModel, BriefVideoModel, BriefSongModel,
     Library, SongModel, BriefAlbumModel, BriefArtistModel, SimpleSearchResult
 )
@@ -14,7 +14,10 @@ FakeSource = 'fake'  # v1 provider
 EkafSource = 'ekaf'  # v2 provider
 
 
-class FakeProvider(AbstractProvider):
+class FakeProvider(ProviderV2):
+    class meta:
+        identifier = 'fake'
+        name = 'FAKE'
 
     @property
     def identifier(self):
@@ -28,7 +31,7 @@ class FakeProvider(AbstractProvider):
         return SimpleSearchResult(q=keyword, songs=[_song1, _song2, _song3])
 
 
-class EkafProvider(AbstractProvider, ProviderV2):
+class EkafProvider(ProviderV2):
     class meta:
         identifier = 'ekaf'
         name = 'EKAF'

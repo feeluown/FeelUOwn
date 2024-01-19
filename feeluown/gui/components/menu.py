@@ -5,7 +5,7 @@ from feeluown.app import App
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
-from feeluown.library import SongProtocol, VideoModel, SupportsSongMV
+from feeluown.library import SongProtocol, VideoModel
 
 logger = logging.getLogger(__name__)
 
@@ -108,11 +108,9 @@ class SongMenuInitializer:
         if data['mvs'] is None and self._fetching_mv is False:
             logger.debug('fetch song.mv for actions')
             song = data['song']
-            provider = self._app.library.get(song.source)
-            if provider is not None and isinstance(provider, SupportsSongMV):
-                self._fetching_mv = True
-                task = run_fn(provider.song_get_mv, song)
-                task.add_done_callback(mv_fetched_cb)
+            self._fetching_mv = True
+            task = run_fn(self._app.library.song_get_mv, song)
+            task.add_done_callback(mv_fetched_cb)
 
     def _hover_artists(self, action, data):
         # pylint: disable=unnecessary-direct-lambda-call

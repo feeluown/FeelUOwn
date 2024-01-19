@@ -1,7 +1,5 @@
 from feeluown.library import AbstractProvider
 from feeluown.library import (
-    ModelFlags,
-
     BaseModel,
     SongModel,
     ArtistModel,
@@ -23,19 +21,16 @@ class ModelSerializerMixin:
         # initialize fields that need to be serialized
         # if as_line option is set, we always use fields_display
         if self.opt_as_line or self.opt_brief:
-            if ModelFlags.v2 in model.meta.flags:
-                modelcls = type(model)
-                fields = [field for field in model.__fields__
-                          if field not in BaseModel.__fields__]
-                # Include properties.
-                pydantic_fields = ("__values__", "fields", "__fields_set__",
-                                   "model_computed_fields", "model_extra",
-                                   "model_fields_set")
-                fields += [prop for prop in dir(modelcls)
-                           if isinstance(getattr(modelcls, prop), property)
-                           and prop not in pydantic_fields]
-            else:
-                fields = model.meta.fields_display
+            modelcls = type(model)
+            fields = [field for field in model.__fields__
+                      if field not in BaseModel.__fields__]
+            # Include properties.
+            pydantic_fields = ("__values__", "fields", "__fields_set__",
+                               "model_computed_fields", "model_extra",
+                               "model_fields_set")
+            fields += [prop for prop in dir(modelcls)
+                       if isinstance(getattr(modelcls, prop), property)
+                       and prop not in pydantic_fields]
         else:
             fields = self._declared_fields
         items = [("provider", model.source),
