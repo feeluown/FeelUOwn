@@ -5,7 +5,7 @@ from feeluown.app import App
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
-from feeluown.library import SongProtocol, VideoModel
+from feeluown.library import SongModel, VideoModel
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,7 @@ class SongMenuInitializer:
             app.browser.goto(model=song, path='/explore')
 
         async def goto_song_album(song):
-            usong: SongProtocol = await run_fn(self._app.library.song_upgrade, song)
+            usong: SongModel = await run_fn(self._app.library.song_upgrade, song)
             if usong.album is not None:
                 self._app.browser.goto(model=usong.album)
             else:

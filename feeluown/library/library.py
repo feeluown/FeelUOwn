@@ -15,11 +15,9 @@ from .excs import (
 )
 from .flags import Flags as PF
 from .models import (
-    ModelFlags as MF, BriefSongModel,
-)
-from .model_protocol import (
-    BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol,
-    LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
+    ModelFlags as MF, BaseModel,
+    BriefVideoModel, BriefSongModel, SongModel,
+    LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel
 )
 from .model_state import ModelState
 from .provider_protocol import (
@@ -68,53 +66,6 @@ def default_score_fn(origin, standby):
     #       f"'{standby.album_name_display}', "
     #       f"'{standby.duration_ms_display}')")
     return score
-
-
-def _sort_song_standby(song, standby_list):
-    """sort song standby list by similarity"""
-
-    def get_score(standby):
-        """
-        score strategy
-
-        1. title + album > artist
-        2. artist > title > album
-        """
-
-        score = 10
-        if song.artists_name_display != standby.artists_name_display:
-            score -= 4
-        if song.title_display != standby.title_display:
-            score -= 3
-        if song.album_name_display != standby.album_name_display:
-            score -= 2
-        return score
-
-    sorted_standby_list = sorted(
-        standby_list,
-        key=lambda standby: get_score(standby),
-        reverse=True
-    )
-
-    return sorted_standby_list
-
-
-def _extract_and_sort_song_standby_list(song, result_g):
-    standby_list = []
-    for result in result_g:
-        for standby in result.songs[:2]:
-            standby_list.append(standby)
-    sorted_standby_list = _sort_song_standby(song, standby_list)
-    return sorted_standby_list
-
-
-def _get_display_property_or_raise(model, attr):
-    """Get property with no IO operation
-
-    I hope we need not use this function in other module because
-    it is tightly coupled with display_property.
-    """
-    return getattr(model, f'_display_store_{attr}')
 
 
 def err_provider_not_support_flag(pid, model_type, op):
@@ -205,7 +156,7 @@ class Library:
 
     async def a_search(self, keyword, source_in=None, timeout=None,
                        type_in=None,
-                       **kwargs):
+                       **_):
         """async version of search
 
         TODO: add Happy Eyeballs requesting strategy if needed
@@ -312,7 +263,7 @@ class Library:
                     return False
         return True
 
-    def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
+    def check_flags_by_model(self, model: BaseModel, flags: PF) -> bool:
         """Alias for check_flags"""
         warnings.warn('please use isinstance(provider, protocol_cls)')
         return self.check_flags(model.source,
@@ -322,10 +273,10 @@ class Library:
     # -----
     # Songs
     # -----
-    def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
+    def song_upgrade(self, song: BriefSongModel) -> SongModel:
         return self._model_upgrade(song)  # type: ignore
 
-    def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
+    def song_prepare_media(self, song: BriefSongModel, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
             raise MediaNotFound(f'provider({song.source}) not found')
@@ -336,7 +287,7 @@ class Library:
             raise MediaNotFound('provider returns empty media')
         return media
 
-    def song_prepare_mv_media(self, song: BriefSongProtocol, policy) -> Media:
+    def song_prepare_mv_media(self, song: BriefSongModel, policy) -> Media:
         """
 
         .. versionadded:: 3.7.5
@@ -347,13 +298,13 @@ class Library:
             return media
         raise MediaNotFound('provider returns empty media')
 
-    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
+    def song_get_mv(self, song: BriefSongModel) -> Optional[VideoModel]:
         """Get the MV model of a song."""
         provider = self.get(song.source)
         if isinstance(provider, SupportsSongMV):
             return provider.song_get_mv(song)
 
-    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
+    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricModel]:
         """Get the lyric model of a song.
 
         Return None when lyric does not exist instead of raising exceptions,
@@ -366,13 +317,13 @@ class Library:
     # --------
     # Album
     # --------
-    def album_upgrade(self, album: BriefAlbumProtocol):
+    def album_upgrade(self, album: BriefAlbumModel):
         return self._model_upgrade(album)
 
     # --------
     # Artist
     # --------
-    def artist_upgrade(self, artist: BriefArtistProtocol):
+    def artist_upgrade(self, artist: BriefArtistModel):
         return self._model_upgrade(artist)
 
     # --------
@@ -457,7 +408,7 @@ class Library:
     def video_upgrade(self, video):
         return self._model_upgrade(video)
 
-    def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
+    def video_prepare_media(self, video: BriefVideoModel, policy) -> Media:
         """Prepare media for video.
 
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.

@@ -12,7 +12,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import (
-    MediaNotFound, SongProtocol, ModelType, NotSupported, ResourceNotFound,
+    MediaNotFound, SongModel, ModelType, NotSupported, ResourceNotFound,
 )
 from feeluown.media import Media
 from feeluown.library import reverse
@@ -425,7 +425,7 @@ class Playlist:
         return self.set_current_song(self.previous_song)
 
     @property
-    def current_song(self) -> Optional[SongProtocol]:
+    def current_song(self) -> Optional[SongModel]:
         """Current song
 
         return None if there is no current song
@@ -433,7 +433,7 @@ class Playlist:
         return self._current_song
 
     @current_song.setter
-    def current_song(self, song: Optional[SongProtocol]):
+    def current_song(self, song: Optional[SongModel]):
         self.set_current_song(song)
 
     def set_current_song(self, song) -> Optional[asyncio.Task]:
