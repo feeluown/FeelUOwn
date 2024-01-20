@@ -5,7 +5,6 @@ from feeluown.excs import (  # noqa
     # FIXME: ProviderAlreadyExists should be renamed to ProviderAlreadyRegistered
     ProviderAlreadyRegistered as ProviderAlreadyExists,
     ModelNotFound,
-    NotSupported,
     NoUserLoggedIn,
     MediaNotFound,
 )  # noqa

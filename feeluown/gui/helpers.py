@@ -38,7 +38,7 @@ from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
-from feeluown.library import NotSupported, ModelType, BaseModel
+from feeluown.library import ModelNotFound, ModelType, BaseModel
 from feeluown.library import reverse
 
 
@@ -494,7 +494,7 @@ def fetch_cover_wrapper(app: GuiApp):
         if not is_v2_model:
             try:
                 upgraded_song = await run_fn(library.song_upgrade, model)
-            except NotSupported:
+            except ModelNotFound:
                 cb(None)
             else:
                 await fetch_song_pic_from_album(upgraded_song.album, cb)
@@ -514,7 +514,7 @@ def fetch_cover_wrapper(app: GuiApp):
         # Image is not in cache.
         try:
             upgraded_song = await run_fn(library.song_upgrade, model)
-        except (NotSupported, ResourceNotFound):
+        except ResourceNotFound:
             cb(None)
         else:
             # Try to fetch with pic_url first.
@@ -542,11 +542,7 @@ def fetch_cover_wrapper(app: GuiApp):
             cb(content)
             return
 
-        try:
-            img_url = await run_fn(library.model_get_cover, model)
-        except NotSupported:
-            img_url = ''
-
+        img_url = await run_fn(library.model_get_cover, model)
         return await fetch_image_with_cb(img_uid, img_url, cb)
 
     async def fetch_model_cover(model, cb):

@@ -11,7 +11,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
 from feeluown.excs import ResourceNotFound
 from feeluown.library import (
     SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
-    NotSupported, ModelFlags
+    ModelFlags,
 )
 from feeluown.player import Lyric
 from feeluown.library import reverse, resolve
@@ -63,7 +63,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
     try:
         upgraded_song = await aio.run_fn(app.library.song_upgrade, song)
-    except (NotSupported, ResourceNotFound):
+    except ResourceNotFound:
         upgraded_song = None
     if upgraded_song is not None:
         song = upgraded_song
@@ -81,7 +81,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     if album is not None:
         try:
             upgraded_album = await aio.run_fn(app.library.album_upgrade, song.album)
-        except (NotSupported, ResourceNotFound):
+        except ResourceNotFound:
             upgraded_album = None
     else:
         upgraded_album = None

@@ -48,20 +48,6 @@ class ReadFailed(ProviderIOError):
 
 
 class ResourceNotFound(LibraryException):
-    pass
-
-
-class ProviderAlreadyRegistered(LibraryException):
-    pass
-
-
-class ModelNotFound(ResourceNotFound):
-    """Model is not found
-
-    For example, a model identifier is invalid.
-
-    .. versionadded:: 3.7.7
-    """
     class Reason(Enum):
         """
         .. versionadded:: v4.0
@@ -75,23 +61,17 @@ class ModelNotFound(ResourceNotFound):
         self.reason = reason
 
 
-class NotSupported(LibraryException):
-    """Provider does not support the operation
+class ProviderAlreadyRegistered(LibraryException):
+    pass
+
+
+class ModelNotFound(ResourceNotFound):
+    """Model is not found
+
+    For example, a model identifier is invalid.
+
+    .. versionadded:: 3.7.7
     """
-
-    def __init__(self, *args, provider=None, **kwargs):
-        self.provider = provider
-
-    @classmethod
-    def create_by_p_p(cls, provider, protocol_cls):
-        if isinstance(provider, str):
-            pid = provider
-        else:
-            if hasattr(provider, 'meta'):
-                pid = provider.meta.identifier
-            else:
-                pid = provider.identifier
-        return cls(f'provider:{pid} does not support {protocol_cls.__name__}')
 
 
 class MediaNotFound(ResourceNotFound):

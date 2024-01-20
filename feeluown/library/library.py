@@ -9,10 +9,7 @@ from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
 from .base import SearchType, ModelType
 from .provider import Provider
-from .excs import (
-    NotSupported, MediaNotFound, ProviderAlreadyExists,
-    ModelNotFound, ResourceNotFound
-)
+from .excs import MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound
 from .flags import Flags as PF
 from .models import (
     ModelFlags as MF, BaseModel,
@@ -66,14 +63,6 @@ def default_score_fn(origin, standby):
     #       f"'{standby.album_name_display}', "
     #       f"'{standby.duration_ms_display}')")
     return score
-
-
-def err_provider_not_support_flag(pid, model_type, op):
-    op_str = str(op)
-    if op is PF.get:
-        op_str = 'get'
-    mtype_str = str(ModelType(model_type))
-    return NotSupported(f"provider:{pid} does't support '{op_str}' for {mtype_str}")
 
 
 class Library:
@@ -346,7 +335,6 @@ class Library:
         :param mid: model id
         :return: model
 
-        :raise NotSupported: provider has not .get for this model type
         :raise ResourceNotFound: model does not exist
         """
         provider = self.get(pid)
@@ -363,7 +351,7 @@ class Library:
         if MF.normal not in model.meta.flags:
             try:
                 um = self._model_upgrade(model)
-            except (ResourceNotFound, NotSupported):
+            except ResourceNotFound:
                 return ''
         else:
             um = model
@@ -377,7 +365,6 @@ class Library:
     def _model_upgrade(self, model):
         """Upgrade a model to normal model.
 
-        :raises NotSupported: provider does't impl SupportGetProtocol for the model type
         :raises ModelNotFound: the model does not exist
 
         Note you may catch ResourceNotFound exception to simplify your code.
