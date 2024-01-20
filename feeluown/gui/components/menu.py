@@ -1,11 +1,13 @@
 import logging
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
 
-from feeluown.app import App
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
 from feeluown.library import SongModel, VideoModel
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
 
@@ -15,7 +17,7 @@ MV_BTN_TEXT = '播放 MV'
 
 class SongMenuInitializer:
 
-    def __init__(self, app: App, song):
+    def __init__(self, app: 'GuiApp', song):
         """
         :type app: feeluown.app.App
         """

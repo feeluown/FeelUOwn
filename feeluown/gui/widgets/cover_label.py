@@ -59,10 +59,10 @@ class CoverLabel(QLabel):
 
     def sizeHint(self):
         super_size = super().sizeHint()
-        if self.drawer.get_pixmap() is None:
+        pixmap = self.drawer.get_pixmap()
+        if pixmap is None:
             return super_size
-        h = (self.width() * self.drawer.get_pixmap().height()) \
-            // self.drawer.get_pixmap().width()
+        h = (self.width() * pixmap.height()) // pixmap.width()
         # cover label height hint can be as large as possible, since the
         # parent width has been set maximumHeigh
         w = self.width()

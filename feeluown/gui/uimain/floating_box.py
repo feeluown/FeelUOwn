@@ -135,7 +135,7 @@ class AnimatedCoverLabel(CoverLabelV2):
         super().__init__(app, *args, **kwargs)
 
         self._padding = padding
-        self._angle = 0
+        self._angle: float = 0
         self._timer = QTimer()
         self._timer.timeout.connect(self.on_timeout)
         self._timer.start(16)
@@ -163,12 +163,13 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.setBrush(QBrush(color))
         painter.drawRoundedRect(self.rect(), radius, radius)
 
-        if self._pixmap is not None:
-            size = self._pixmap.size()
+        pixmap =  self.drawer.get_pixmap()
+        if pixmap is not None:
+            size = pixmap.size()
             y = (size.height() - self.height()) // 2
             rect = QRect(self._padding, y+self._padding,
                          self.width()-self._padding*2, self.height()-self._padding*2)
-            brush = QBrush(self._pixmap)
+            brush = QBrush(pixmap)
             painter.setBrush(brush)
             painter.drawRoundedRect(rect, radius, radius)
 

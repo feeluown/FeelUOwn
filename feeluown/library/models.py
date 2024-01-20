@@ -63,7 +63,7 @@ try:
 except ImportError:
     # pydantic<2.0
     from pydantic import validator
-    identifier_validator = validator('identifier', pre=True)
+    identifier_validator = validator('identifier', pre=True)  # type: ignore
     pydantic_version = 1
 
 from feeluown.utils.utils import elfhash

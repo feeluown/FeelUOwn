@@ -2,7 +2,7 @@
 import logging
 import warnings
 from functools import partial
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, List
 
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
@@ -123,7 +123,7 @@ class Library:
                 return provider
         return None
 
-    def list(self):
+    def list(self) -> List[Provider]:
         """列出所有资源提供方"""
         return list(self._providers)
 
@@ -303,6 +303,7 @@ class Library:
         provider = self.get(song.source)
         if isinstance(provider, SupportsSongMV):
             return provider.song_get_mv(song)
+        return None
 
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricModel]:
         """Get the lyric model of a song.
@@ -313,6 +314,7 @@ class Library:
         provider = self.get(song.source)
         if isinstance(provider, SupportsSongLyric):
             return provider.song_get_lyric(song)
+        return None
 
     # --------
     # Album
