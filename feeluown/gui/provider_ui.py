@@ -103,7 +103,7 @@ class ProviderUiManager:
 
         self._store: Dict[str, AbstractProviderUi] = {}  # {name: provider_ui}
 
-        self._items = {}  # name:model mapping
+        self._items: Dict[str, ProviderUiItem] = {}  # name:model mapping
         self.model = ProvidersModel(self._app.library, self._app)
 
     def register(self, provider_ui: AbstractProviderUi):

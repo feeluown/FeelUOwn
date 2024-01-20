@@ -30,9 +30,11 @@ class CollectionListView(TextlistView):
         self._app.coll_mgr.scan_finished.connect(self.on_scan_finished)
 
     def on_scan_finished(self):
-        self.model().clear()
+        model = self.model()
+        assert isinstance(model, TextlistModel)
+        model.clear()
         for coll in self._app.coll_mgr.listall():
-            self.model().add(coll)
+            model.add(coll)
 
     def _on_clicked(self, index):
         collection = index.data(role=Qt.UserRole)

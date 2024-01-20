@@ -23,6 +23,10 @@ def test_create_song_model_basic():
     # check song's attribute value
     assert song.artists_name == 'Audrey'
 
+    # song model cache get/set
+    song.cache_set('count', 1)
+    assert song.cache_get('count') == (1, True)
+
 
 def test_create_model_with_extra_field():
     with pytest.raises(pydantic.ValidationError):

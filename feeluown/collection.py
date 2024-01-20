@@ -124,9 +124,9 @@ class Collection:
 
         doc = tomlkit.document()
         if title:
-            doc.add('title', title)
-        doc.add('created', datetime.now())
-        doc.add('updated', datetime.now())
+            doc.add('title', title)         # type: ignore[arg-type]
+        doc.add('created', datetime.now())  # type: ignore[arg-type]
+        doc.add('updated', datetime.now())  # type: ignore[arg-type]
         with open(fpath, 'w', encoding='utf-8') as f:
             f.write(TOML_DELIMLF)
             f.write(tomlkit.dumps(doc))

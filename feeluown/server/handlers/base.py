@@ -1,6 +1,10 @@
-from typing import Dict, Type, TypeVar, Optional
+from typing import Dict, Type, TypeVar, Optional, TYPE_CHECKING
 
 from feeluown.server.session import SessionLike
+
+if TYPE_CHECKING:
+    from feeluown.app.server_app import ServerApp
+
 
 T = TypeVar('T', bound='HandlerMeta')
 cmd_handler_mapping: Dict[str, 'HandlerMeta'] = {}
@@ -22,7 +26,7 @@ class HandlerMeta(type):
 class AbstractHandler(metaclass=HandlerMeta):
     support_aio_handle = False
 
-    def __init__(self, app, session: Optional[SessionLike] = None):
+    def __init__(self, app: 'ServerApp', session: Optional[SessionLike] = None):
         """
         暂时不确定 session 应该设计为什么样的结构。当前主要是为了将它看作一个
         subscriber。大部分 handler 不需要使用到 session 对像，目前只有 SubHandler

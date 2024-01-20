@@ -4,13 +4,10 @@ from feeluown.media import Quality, Media
 from feeluown.excs import NoUserLoggedIn
 from .models import (
     BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
-    PlaylistModel, UserModel, ModelType,
+    PlaylistModel, UserModel, ModelType, BriefArtistModel, BriefSongModel,
+    LyricModel, BriefVideoModel,
 )
-from .model_protocol import (
-    BriefArtistProtocol, BriefSongProtocol, SongProtocol,
-    BriefVideoProtocol, VideoProtocol,
-    LyricProtocol,
-)
+
 from .flags import Flags as PF
 
 
@@ -62,7 +59,7 @@ class SupportsSongGet(Protocol):
 @runtime_checkable
 class SupportsSongSimilar(Protocol):
     @abstractmethod
-    def song_list_similar(self, song: BriefSongProtocol) -> List[BriefSongProtocol]:
+    def song_list_similar(self, song: BriefSongModel) -> List[BriefSongModel]:
         """List similar songs
         """
         raise NotImplementedError
@@ -72,7 +69,7 @@ class SupportsSongSimilar(Protocol):
 @runtime_checkable
 class SupportsSongMultiQuality(Protocol):
     @abstractmethod
-    def song_list_quality(self, song: BriefSongProtocol) -> List[Quality.Audio]:
+    def song_list_quality(self, song: BriefSongModel) -> List[Quality.Audio]:
         """List all possible qualities
 
         Please ensure all the qualities are valid. `song_get_media(song, quality)`
@@ -82,7 +79,7 @@ class SupportsSongMultiQuality(Protocol):
 
     @abstractmethod
     def song_select_media(
-        self, song: BriefSongProtocol, policy=None
+        self, song: BriefSongModel, policy=None
     ) -> Tuple[Media, Quality.Audio]:
         """Select a media by the quality sorting policy
 
@@ -92,7 +89,7 @@ class SupportsSongMultiQuality(Protocol):
 
     @abstractmethod
     def song_get_media(
-        self, song: BriefVideoProtocol, quality: Quality.Audio
+        self, song: BriefVideoModel, quality: Quality.Audio
     ) -> Optional[Media]:
         """Get song's media by a specified quality
 
@@ -104,21 +101,21 @@ class SupportsSongMultiQuality(Protocol):
 @eq(ModelType.song, PF.hot_comments)
 @runtime_checkable
 class SupportsSongHotComments(Protocol):
-    def song_list_hot_comments(self, song: BriefSongProtocol) -> List[BriefCommentModel]:
+    def song_list_hot_comments(self, song: BriefSongModel) -> List[BriefCommentModel]:
         raise NotImplementedError
 
 
 @eq(ModelType.song, PF.web_url)
 @runtime_checkable
 class SupportsSongWebUrl(Protocol):
-    def song_get_web_url(self, song: BriefSongProtocol) -> str:
+    def song_get_web_url(self, song: BriefSongModel) -> str:
         raise NotImplementedError
 
 
 @eq(ModelType.song, PF.lyric)
 @runtime_checkable
 class SupportsSongLyric(Protocol):
-    def song_get_lyric(self, song: BriefSongProtocol) -> Optional[LyricProtocol]:
+    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricModel]:
         """Get music video of the song
         """
         raise NotImplementedError
@@ -127,7 +124,7 @@ class SupportsSongLyric(Protocol):
 @eq(ModelType.song, PF.mv)
 @runtime_checkable
 class SupportsSongMV(Protocol):
-    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
+    def song_get_mv(self, song: BriefSongModel) -> Optional[VideoModel]:
         """Get music video of the song
 
         """
@@ -154,7 +151,7 @@ class SupportsAlbumGet(Protocol):
 @runtime_checkable
 class SupportsAlbumSongsReader(Protocol):
     @abstractmethod
-    def album_create_songs_rd(self, album) -> List[SongProtocol]:
+    def album_create_songs_rd(self, album) -> List[SongModel]:
         raise NotImplementedError
 
 
@@ -178,7 +175,7 @@ class SupportsArtistGet(Protocol):
 @runtime_checkable
 class SupportsArtistSongsReader(Protocol):
     @abstractmethod
-    def artist_create_songs_rd(self, artist: BriefArtistProtocol):
+    def artist_create_songs_rd(self, artist: BriefArtistModel):
         """Create songs reader of the artist
         """
         raise NotImplementedError
@@ -188,7 +185,7 @@ class SupportsArtistSongsReader(Protocol):
 @runtime_checkable
 class SupportsArtistAlbumsReader(Protocol):
     @abstractmethod
-    def artist_create_albums_rd(self, artist: BriefArtistProtocol):
+    def artist_create_albums_rd(self, artist: BriefArtistModel):
         """Create albums reader of the artist
         """
         raise NotImplementedError
@@ -197,7 +194,7 @@ class SupportsArtistAlbumsReader(Protocol):
 @runtime_checkable
 class SupportsArtistContributedAlbumsReader(Protocol):
     @abstractmethod
-    def artist_create_contributed_albums_rd(self, artist: BriefArtistProtocol):
+    def artist_create_contributed_albums_rd(self, artist: BriefArtistModel):
         """Create contributed albums reader of the artist
         """
         raise NotImplementedError
@@ -223,16 +220,16 @@ class SupportsVideoGet(Protocol):
 @runtime_checkable
 class SupportsVideoMultiQuality(Protocol):
     @abstractmethod
-    def video_list_quality(self, video: BriefVideoProtocol) -> List[Quality.Video]:
+    def video_list_quality(self, video: BriefVideoModel) -> List[Quality.Video]:
         raise NotImplementedError
 
     @abstractmethod
     def video_select_media(
-            self, video: BriefVideoProtocol, policy=None) -> Tuple[Media, Quality.Video]:
+            self, video: BriefVideoModel, policy=None) -> Tuple[Media, Quality.Video]:
         raise NotImplementedError
 
     @abstractmethod
-    def video_get_media(self, video: BriefVideoProtocol, quality) -> Optional[Media]:
+    def video_get_media(self, video: BriefVideoModel, quality) -> Optional[Media]:
         raise NotImplementedError
 
 

@@ -1,20 +1,23 @@
 import logging
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout
 
-from feeluown.app import App
 from feeluown.player import State
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.helpers import resize_font
 
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
+
 logger = logging.getLogger(__name__)
 
 
 class LyricButton(TextButton):
-    def __init__(self, app: App, **kwargs):
+    def __init__(self, app: 'GuiApp', **kwargs):
         kwargs.setdefault('height', 16)
         super().__init__('词', **kwargs)
         self._app = app
@@ -45,7 +48,7 @@ class LyricButton(TextButton):
 
 
 class WatchButton(TextButton):
-    def __init__(self, app: App, *args, **kwargs):
+    def __init__(self, app: 'GuiApp', *args, **kwargs):
         super().__init__('♨', *args, **kwargs)
         self._app = app
 
@@ -75,7 +78,7 @@ class WatchButton(TextButton):
 
 
 class LikeButton(QPushButton):
-    def __init__(self, app: App, size=(15, 15), parent=None):
+    def __init__(self, app: 'GuiApp', size=(15, 15), parent=None):
         super().__init__(parent=parent)
         self._app = app
         self.setCheckable(True)
@@ -113,7 +116,7 @@ class LikeButton(QPushButton):
 
 
 class SongMVTextButton(TextButton):
-    def __init__(self, app: App, song=None, text='MV', **kwargs):
+    def __init__(self, app: 'GuiApp', song=None, text='MV', **kwargs):
         super().__init__(text, **kwargs)
         self._app = app
         self._song = None
@@ -152,7 +155,7 @@ class SongMVTextButton(TextButton):
 
 
 class MVButton(SongMVTextButton):
-    def __init__(self, app: App, parent=None, **kwargs):
+    def __init__(self, app: 'GuiApp', parent=None, **kwargs):
         super().__init__(app, song=None, parent=parent, **kwargs)
 
         self.setObjectName('mv_btn')
@@ -169,7 +172,7 @@ class MVButton(SongMVTextButton):
 
 
 class MediaButtons(QWidget):
-    def __init__(self, app: App, spacing=8, button_width=30, parent=None):
+    def __init__(self, app: 'GuiApp', spacing=8, button_width=30, parent=None):
         super().__init__(parent=parent)
 
         self._app = app
