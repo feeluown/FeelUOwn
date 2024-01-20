@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFrame, QVBoxLayout
+from PyQt5.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout
 
 from feeluown.library import SearchType
 from feeluown.gui.page_containers.table import TableContainer, Renderer
@@ -58,9 +58,11 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
             # HACK: set fixed row for tables.
             # pylint: disable=protected-access
             for table in table_container._tables:
+                assert isinstance(table, QAbstractItemView)
                 delegate = table.itemDelegate()
                 if isinstance(delegate, ImgCardListDelegate):
-                    table._fixed_row_count = 2
+                    # FIXME: set fixed_row_count in better way.
+                    table._fixed_row_count = 2  # type: ignore[attr-defined]
                     delegate.update_settings("card_min_width", 100)
                 elif isinstance(table, SongsTableView):
                     table._fixed_row_count = 8

@@ -13,8 +13,7 @@ from feeluown.media import Media, Quality
 from .base import ModelType
 from .models import V2SupportedModelTypes
 from .flags import Flags
-from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
-    NotSupported  # noqa
+from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn  # noqa
 
 
 class AbstractProvider(ABC):
@@ -27,6 +26,7 @@ class Provider:
     class meta:
         identifier: str = ''
         name: str = ''
+        flags: dict = {}
 
     def __init__(self):
         self._user = None
@@ -40,6 +40,9 @@ class Provider:
     @abstractmethod
     def name(self):
         """provider name"""
+
+    def __str__(self):
+        return f'provider:{self.identifier}'
 
     @contextmanager
     def auth_as(self, user):
@@ -65,36 +68,7 @@ class Provider:
         pass
 
     def use_model_v2(self, model_type: ModelType) -> bool:
-        """Check whether model v2 is used for the specified model_type.
-
-        For feeluown developer, there are three things you should know.
-
-        1. Both v2 model and v1 model implement BriefXProtocol, which means
-           model.{attirbute}_display works for both models. For exmample,
-           SongModel(v2), BriefSongModel(v2) and SongModel(v1) all implement
-           BriefSongProtocol. So no matter which version the `song` is, it is
-           always safe to access `song.title_display`.
-
-        2. When model v2 is used, it means the way of accessing model's attributes
-           becomes different. So you should always check which version
-           the model is before accessing some attributes.
-
-           For model v1, you can access all model's attributes by {model}.{attribute},
-           and IO(network) operations may be performed implicitly. For example,
-           the code `song.url` *may* trigger a network request to fetch the
-           url when `song.url` is currently None. Tips: you can check the
-           `BaseModel.__getattribute__` implementation in `feeluown.library` package
-           for more details.
-
-           For model v2, everything are explicit. Basic attributes of model can be
-           accessed by {model}.{attribute} and there will be no IO operations.
-           Other attributes can only be accessed with methods of library. For example,
-           you can access song url/media info by `library.song_prepare_media`.
-
-        3. When deserializing model from a text line, the model version is important.
-           If provider does not declare it uses model v2, feeluown just use model v1
-           to do deserialization to keep backward compatibility.
-        """
+        """Check whether model v2 is used for the specified model_type."""
         return Flags.model_v2 in self.meta.flags.get(model_type, Flags.none)
 
     def model_get(self, model_type, model_id):

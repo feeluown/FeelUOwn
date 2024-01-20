@@ -2,24 +2,19 @@
 import logging
 import warnings
 from functools import partial
-from typing import Optional, TypeVar
+from typing import Optional, TypeVar, List
 
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
 from .base import SearchType, ModelType
 from .provider import Provider
-from .excs import (
-    NotSupported, MediaNotFound, ProviderAlreadyExists,
-    ModelNotFound, ResourceNotFound
-)
+from .excs import MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound
 from .flags import Flags as PF
 from .models import (
-    ModelFlags as MF, BriefSongModel,
-)
-from .model_protocol import (
-    BriefVideoProtocol, ModelProtocol, BriefSongProtocol, SongProtocol,
-    LyricProtocol, VideoProtocol, BriefAlbumProtocol, BriefArtistProtocol
+    ModelFlags as MF, BaseModel,
+    BriefVideoModel, BriefSongModel, SongModel,
+    LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel
 )
 from .model_state import ModelState
 from .provider_protocol import (
@@ -70,61 +65,6 @@ def default_score_fn(origin, standby):
     return score
 
 
-def _sort_song_standby(song, standby_list):
-    """sort song standby list by similarity"""
-
-    def get_score(standby):
-        """
-        score strategy
-
-        1. title + album > artist
-        2. artist > title > album
-        """
-
-        score = 10
-        if song.artists_name_display != standby.artists_name_display:
-            score -= 4
-        if song.title_display != standby.title_display:
-            score -= 3
-        if song.album_name_display != standby.album_name_display:
-            score -= 2
-        return score
-
-    sorted_standby_list = sorted(
-        standby_list,
-        key=lambda standby: get_score(standby),
-        reverse=True
-    )
-
-    return sorted_standby_list
-
-
-def _extract_and_sort_song_standby_list(song, result_g):
-    standby_list = []
-    for result in result_g:
-        for standby in result.songs[:2]:
-            standby_list.append(standby)
-    sorted_standby_list = _sort_song_standby(song, standby_list)
-    return sorted_standby_list
-
-
-def _get_display_property_or_raise(model, attr):
-    """Get property with no IO operation
-
-    I hope we need not use this function in other module because
-    it is tightly coupled with display_property.
-    """
-    return getattr(model, f'_display_store_{attr}')
-
-
-def err_provider_not_support_flag(pid, model_type, op):
-    op_str = str(op)
-    if op is PF.get:
-        op_str = 'get'
-    mtype_str = str(ModelType(model_type))
-    return NotSupported(f"provider:{pid} does't support '{op_str}' for {mtype_str}")
-
-
 class Library:
     """Resource entrypoints."""
 
@@ -172,7 +112,7 @@ class Library:
                 return provider
         return None
 
-    def list(self):
+    def list(self) -> List[Provider]:
         """列出所有资源提供方"""
         return list(self._providers)
 
@@ -205,7 +145,7 @@ class Library:
 
     async def a_search(self, keyword, source_in=None, timeout=None,
                        type_in=None,
-                       **kwargs):
+                       **_):
         """async version of search
 
         TODO: add Happy Eyeballs requesting strategy if needed
@@ -312,7 +252,7 @@ class Library:
                     return False
         return True
 
-    def check_flags_by_model(self, model: ModelProtocol, flags: PF) -> bool:
+    def check_flags_by_model(self, model: BaseModel, flags: PF) -> bool:
         """Alias for check_flags"""
         warnings.warn('please use isinstance(provider, protocol_cls)')
         return self.check_flags(model.source,
@@ -322,10 +262,10 @@ class Library:
     # -----
     # Songs
     # -----
-    def song_upgrade(self, song: BriefSongProtocol) -> SongProtocol:
+    def song_upgrade(self, song: BriefSongModel) -> SongModel:
         return self._model_upgrade(song)  # type: ignore
 
-    def song_prepare_media(self, song: BriefSongProtocol, policy) -> Media:
+    def song_prepare_media(self, song: BriefSongModel, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
             raise MediaNotFound(f'provider({song.source}) not found')
@@ -336,7 +276,7 @@ class Library:
             raise MediaNotFound('provider returns empty media')
         return media
 
-    def song_prepare_mv_media(self, song: BriefSongProtocol, policy) -> Media:
+    def song_prepare_mv_media(self, song: BriefSongModel, policy) -> Media:
         """
 
         .. versionadded:: 3.7.5
@@ -347,13 +287,14 @@ class Library:
             return media
         raise MediaNotFound('provider returns empty media')
 
-    def song_get_mv(self, song: BriefSongProtocol) -> Optional[VideoProtocol]:
+    def song_get_mv(self, song: BriefSongModel) -> Optional[VideoModel]:
         """Get the MV model of a song."""
         provider = self.get(song.source)
         if isinstance(provider, SupportsSongMV):
             return provider.song_get_mv(song)
+        return None
 
-    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricProtocol]:
+    def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricModel]:
         """Get the lyric model of a song.
 
         Return None when lyric does not exist instead of raising exceptions,
@@ -362,17 +303,18 @@ class Library:
         provider = self.get(song.source)
         if isinstance(provider, SupportsSongLyric):
             return provider.song_get_lyric(song)
+        return None
 
     # --------
     # Album
     # --------
-    def album_upgrade(self, album: BriefAlbumProtocol):
+    def album_upgrade(self, album: BriefAlbumModel):
         return self._model_upgrade(album)
 
     # --------
     # Artist
     # --------
-    def artist_upgrade(self, artist: BriefArtistProtocol):
+    def artist_upgrade(self, artist: BriefArtistModel):
         return self._model_upgrade(artist)
 
     # --------
@@ -393,7 +335,6 @@ class Library:
         :param mid: model id
         :return: model
 
-        :raise NotSupported: provider has not .get for this model type
         :raise ResourceNotFound: model does not exist
         """
         provider = self.get(pid)
@@ -410,7 +351,7 @@ class Library:
         if MF.normal not in model.meta.flags:
             try:
                 um = self._model_upgrade(model)
-            except (ResourceNotFound, NotSupported):
+            except ResourceNotFound:
                 return ''
         else:
             um = model
@@ -424,7 +365,6 @@ class Library:
     def _model_upgrade(self, model):
         """Upgrade a model to normal model.
 
-        :raises NotSupported: provider does't impl SupportGetProtocol for the model type
         :raises ModelNotFound: the model does not exist
 
         Note you may catch ResourceNotFound exception to simplify your code.
@@ -449,6 +389,8 @@ class Library:
             elif e.reason is ModelNotFound.Reason.not_supported:
                 model.state = ModelState.cant_upgrade
             raise
+        if upgraded_model is None:  # some provider does not implement
+            raise ModelNotFound(f'{provider} implementation error, it returns None :(')
         return upgraded_model
 
     # --------
@@ -457,7 +399,7 @@ class Library:
     def video_upgrade(self, video):
         return self._model_upgrade(video)
 
-    def video_prepare_media(self, video: BriefVideoProtocol, policy) -> Media:
+    def video_prepare_media(self, video: BriefVideoModel, policy) -> Media:
         """Prepare media for video.
 
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.

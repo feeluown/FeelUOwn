@@ -63,7 +63,7 @@ try:
 except ImportError:
     # pydantic<2.0
     from pydantic import validator
-    identifier_validator = validator('identifier', pre=True)
+    identifier_validator = validator('identifier', pre=True)  # type: ignore
     pydantic_version = 1
 
 from feeluown.utils.utils import elfhash
@@ -99,6 +99,15 @@ def fmt_artists_names(names: List[str]) -> str:
 
 def fmt_artists(artists: List['BriefArtistModel']) -> str:
     return fmt_artists_names([artist.name for artist in artists])
+
+
+def get_duration_ms(duration):
+    if duration is not None:
+        seconds = duration / 1000
+        m, s = seconds / 60, seconds % 60
+    else:
+        m, s = 0, 0
+    return '{:02}:{:02}'.format(int(m), int(s))
 
 
 # When a model is fully supported (with v2 design), it means
@@ -262,7 +271,7 @@ class BriefUserModel(BaseBriefModel):
     name: str = ''
 
 
-class SongModel(BaseNormalModel):
+class SongModel(BriefSongModel, BaseNormalModel):
     """
     ..versionadded: 3.8.11
         The `pic_url` field.
@@ -289,28 +298,17 @@ class SongModel(BaseNormalModel):
     # to fetch a image url of the song.
     pic_url: str = ''
 
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        self.artists_name = fmt_artists(self.artists)
+        self.album_name = self.album.name if self.album else ''
+        self.duration_ms = get_duration_ms(self.duration)
+
     def __str__(self):
         return f'{self.source}:{self.title}•{self.artists_name}'
 
-    @property
-    def artists_name(self):
-        return fmt_artists(self.artists)
 
-    @property
-    def album_name(self):
-        return self.album.name if self.album else ''
-
-    @property
-    def duration_ms(self):
-        if self.duration is not None:
-            seconds = self.duration / 1000
-            m, s = seconds / 60, seconds % 60
-        else:
-            m, s = 0, 0
-        return '{:02}:{:02}'.format(int(m), int(s))
-
-
-class UserModel(BaseNormalModel):
+class UserModel(BriefUserModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.user, is_normal=True)
     name: str = ''
     avatar_url: str = ''
@@ -336,7 +334,7 @@ class CommentModel(BaseNormalModel):
     root_comment_id: Optional[str] = None
 
 
-class ArtistModel(BaseNormalModel):
+class ArtistModel(BriefArtistModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.artist, is_normal=True)
     name: str
     pic_url: str
@@ -345,7 +343,7 @@ class ArtistModel(BaseNormalModel):
     description: str
 
 
-class AlbumModel(BaseNormalModel):
+class AlbumModel(BriefAlbumModel, BaseNormalModel):
     """
     .. versionadded:: 3.8.12
         The `song_count` field.
@@ -371,9 +369,9 @@ class AlbumModel(BaseNormalModel):
     description: str
     released: str = ''  # format: 2000-12-27.
 
-    @property
-    def artists_name(self):
-        return fmt_artists(self.artists)
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        self.artists_name = fmt_artists(self.artists)
 
 
 class LyricModel(BaseNormalModel):
@@ -382,28 +380,20 @@ class LyricModel(BaseNormalModel):
     trans_content: str = ''
 
 
-class VideoModel(BaseNormalModel):
+class VideoModel(BriefVideoModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.video, is_normal=True)
     title: str
     artists: List[BriefArtistModel]
     duration: int
     cover: str
 
-    @property
-    def artists_name(self):
-        return fmt_artists(self.artists)
-
-    @property
-    def duration_ms(self):
-        if self.duration is not None:
-            seconds = self.duration / 1000
-            m, s = seconds / 60, seconds % 60
-        else:
-            m, s = 0, 0
-        return '{:02}:{:02}'.format(int(m), int(s))
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        self.artists_name = fmt_artists(self.artists)
+        self.duration_ms = get_duration_ms(self.duration)
 
 
-class PlaylistModel(BaseBriefModel):
+class PlaylistModel(BriefPlaylistModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_normal=True)
     # Since modelv1 playlist does not have creator field, it is set to optional.
     creator: Optional[BriefUserModel] = None
