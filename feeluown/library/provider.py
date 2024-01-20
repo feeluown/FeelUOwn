@@ -41,6 +41,9 @@ class Provider:
     def name(self):
         """provider name"""
 
+    def __str__(self):
+        return f'provider:{self.identifier}'
+
     @contextmanager
     def auth_as(self, user):
         """auth as a user temporarily
