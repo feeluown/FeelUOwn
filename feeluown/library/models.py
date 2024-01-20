@@ -334,7 +334,7 @@ class CommentModel(BaseNormalModel):
     root_comment_id: Optional[str] = None
 
 
-class ArtistModel(BaseNormalModel):
+class ArtistModel(BriefArtistModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.artist, is_normal=True)
     name: str
     pic_url: str
@@ -380,7 +380,7 @@ class LyricModel(BaseNormalModel):
     trans_content: str = ''
 
 
-class VideoModel(BaseNormalModel):
+class VideoModel(BriefVideoModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.video, is_normal=True)
     title: str
     artists: List[BriefArtistModel]
@@ -393,7 +393,7 @@ class VideoModel(BaseNormalModel):
         self.duration_ms = get_duration_ms(self.duration)
 
 
-class PlaylistModel(BaseBriefModel):
+class PlaylistModel(BriefPlaylistModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.playlist, is_normal=True)
     # Since modelv1 playlist does not have creator field, it is set to optional.
     creator: Optional[BriefUserModel] = None
