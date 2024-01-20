@@ -389,6 +389,8 @@ class Library:
             elif e.reason is ModelNotFound.Reason.not_supported:
                 model.state = ModelState.cant_upgrade
             raise
+        if upgraded_model is None:  # some provider does not implement
+            raise ModelNotFound(f'{provider} implementation error, it returns None :(')
         return upgraded_model
 
     # --------
