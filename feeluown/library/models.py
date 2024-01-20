@@ -101,6 +101,15 @@ def fmt_artists(artists: List['BriefArtistModel']) -> str:
     return fmt_artists_names([artist.name for artist in artists])
 
 
+def get_duration_ms(duration):
+    if duration is not None:
+        seconds = duration / 1000
+        m, s = seconds / 60, seconds % 60
+    else:
+        m, s = 0, 0
+    return '{:02}:{:02}'.format(int(m), int(s))
+
+
 # When a model is fully supported (with v2 design), it means
 # the library has implemented all features(functions) for this model.
 # You can do anything with model v2 without model v1.
@@ -262,7 +271,7 @@ class BriefUserModel(BaseBriefModel):
     name: str = ''
 
 
-class SongModel(BaseNormalModel):
+class SongModel(BriefSongModel, BaseNormalModel):
     """
     ..versionadded: 3.8.11
         The `pic_url` field.
@@ -289,28 +298,17 @@ class SongModel(BaseNormalModel):
     # to fetch a image url of the song.
     pic_url: str = ''
 
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        self.artists_name = fmt_artists(self.artists)
+        self.album_name = self.album.name if self.album else ''
+        self.duration_ms = get_duration_ms(self.duration)
+
     def __str__(self):
         return f'{self.source}:{self.title}•{self.artists_name}'
 
-    @property
-    def artists_name(self):
-        return fmt_artists(self.artists)
 
-    @property
-    def album_name(self):
-        return self.album.name if self.album else ''
-
-    @property
-    def duration_ms(self):
-        if self.duration is not None:
-            seconds = self.duration / 1000
-            m, s = seconds / 60, seconds % 60
-        else:
-            m, s = 0, 0
-        return '{:02}:{:02}'.format(int(m), int(s))
-
-
-class UserModel(BaseNormalModel):
+class UserModel(BriefUserModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.user, is_normal=True)
     name: str = ''
     avatar_url: str = ''
@@ -345,7 +343,7 @@ class ArtistModel(BaseNormalModel):
     description: str
 
 
-class AlbumModel(BaseNormalModel):
+class AlbumModel(BriefAlbumModel, BaseNormalModel):
     """
     .. versionadded:: 3.8.12
         The `song_count` field.
@@ -371,9 +369,9 @@ class AlbumModel(BaseNormalModel):
     description: str
     released: str = ''  # format: 2000-12-27.
 
-    @property
-    def artists_name(self):
-        return fmt_artists(self.artists)
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        self.artists_name = fmt_artists(self.artists)
 
 
 class LyricModel(BaseNormalModel):
@@ -389,18 +387,10 @@ class VideoModel(BaseNormalModel):
     duration: int
     cover: str
 
-    @property
-    def artists_name(self):
-        return fmt_artists(self.artists)
-
-    @property
-    def duration_ms(self):
-        if self.duration is not None:
-            seconds = self.duration / 1000
-            m, s = seconds / 60, seconds % 60
-        else:
-            m, s = 0, 0
-        return '{:02}:{:02}'.format(int(m), int(s))
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        self.artists_name = fmt_artists(self.artists)
+        self.duration_ms = get_duration_ms(self.duration)
 
 
 class PlaylistModel(BaseBriefModel):
