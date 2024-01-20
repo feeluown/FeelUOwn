@@ -163,7 +163,7 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.setBrush(QBrush(color))
         painter.drawRoundedRect(self.rect(), radius, radius)
 
-        pixmap =  self.drawer.get_pixmap()
+        pixmap = self.drawer.get_pixmap()
         if pixmap is not None:
             size = pixmap.size()
             y = (size.height() - self.height()) // 2
