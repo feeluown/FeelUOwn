@@ -14,7 +14,7 @@ from urllib.parse import urlparse
 
 from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
-from feeluown.library import NotSupported, ResourceNotFound
+from feeluown.library import ResourceNotFound
 from feeluown.library import NS_TYPE_MAP
 from feeluown.library import ModelType
 
@@ -46,8 +46,6 @@ class ShowHandler(AbstractHandler):
             raise HandlerException(f'path {path} not found') from None
         except ResourceNotFound as e:
             raise HandlerException(str(e)) from e
-        except NotSupported as e:
-            raise HandlerException(str(e)) from None
         return rv
 
 

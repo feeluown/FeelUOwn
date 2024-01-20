@@ -5,14 +5,14 @@ import random
 from enum import IntEnum, Enum
 from typing import Optional, TYPE_CHECKING
 
-from feeluown.excs import ProviderIOError
+from feeluown.excs import ModelNotFound, ProviderIOError
 from feeluown.utils import aio
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import (
-    MediaNotFound, SongModel, ModelType, NotSupported, ResourceNotFound,
+    MediaNotFound, SongModel, ModelType, ResourceNotFound,
 )
 from feeluown.media import Media
 from feeluown.library import reverse
@@ -575,7 +575,7 @@ class Playlist:
         })
         try:
             song = await aio.run_fn(self._app.library.song_upgrade, song)
-        except (NotSupported, ResourceNotFound):
+        except ResourceNotFound:
             return metadata
         except:  # noqa
             logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
@@ -586,7 +586,7 @@ class Playlist:
         if song.album is not None:
             try:
                 album = await aio.run_fn(self._app.library.album_upgrade, song.album)
-            except (NotSupported, ResourceNotFound):
+            except ResourceNotFound:
                 pass
             except:  # noqa
                 logger.warning(
@@ -618,7 +618,7 @@ class Playlist:
         })
         try:
             video = await aio.run_fn(self._app.library.video_upgrade, video)
-        except NotSupported as e:
+        except ModelNotFound as e:
             logger.warning(f"can't get cover of video due to {str(e)}")
         else:
             metadata[MetadataFields.artwork] = video.cover

@@ -13,8 +13,7 @@ from feeluown.media import Media, Quality
 from .base import ModelType
 from .models import V2SupportedModelTypes
 from .flags import Flags
-from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn, \
-    NotSupported  # noqa
+from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn  # noqa
 
 
 class AbstractProvider(ABC):
