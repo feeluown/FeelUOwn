@@ -84,6 +84,10 @@ class MpvPlayer(AbstractPlayer):
         self._mpv._event_callbacks.append(self._on_event)
         logger.debug('Player initialize finished.')
 
+        # this should always be `False` for fade=False,
+        # because in that case `pause()` set status immediately
+        self.pausing = False
+
         self.do_fade = fade
         if self.do_fade:
             self.fade_lock = RLock()
@@ -195,8 +199,10 @@ class MpvPlayer(AbstractPlayer):
                 self._resume()
                 set_volume(max_volume, fade_in=True)
             else:
+                self.pausing = True
                 set_volume(max_volume, fade_in=False)
                 self._pause()
+                self.pausing = False
 
             self.volume = max_volume
 
@@ -227,7 +233,7 @@ class MpvPlayer(AbstractPlayer):
             self._pause()
 
     def toggle(self):
-        if self._mpv.pause:
+        if self.pausing or self._mpv.pause:
             self.resume()
         else:
             self.pause()
