@@ -53,8 +53,6 @@ class ImgManager(object):
             self.cache.update(img_name)
             return content
         event_loop = asyncio.get_event_loop()
-        action_msg = 'Downloading image from {}'.format(img_url)
-        self._app.show_msg(action_msg)
         try:
             # May return None.
             res = await event_loop.run_in_executor(
