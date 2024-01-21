@@ -160,7 +160,7 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
-    def fade(self, fade_in: bool, callback=None):
+    def fade(self, fade_in: bool):
         # k: factor between 0 and 1, to represent tick/fade_time
         def fade_curve(k: float, fade_in: bool) -> float:
             if fade_in:
@@ -186,21 +186,21 @@ class MpvPlayer(AbstractPlayer):
 
         with self.fade_lock:
             max_volume = self.volume
-            set_volume(max_volume, fade_in=fade_in)
+            
+            # skip fade-in on playing and fade-out on pause 
+            if fade_in != self._mpv.pause:
+                return
 
-            if callback is not None:
-                callback()
+            if fade_in:
+                self._resume()
+                set_volume(max_volume, fade_in=True)
+            else:
+                set_volume(max_volume, fade_in=True)
+                self._pause()
 
             self.volume = max_volume
 
-    def resume(self):
-        if self.do_fade:
-            fade_thread = Thread(
-                target=self.fade,
-                kwargs={"fade_in": True}
-            )
-            fade_thread.start()
-
+    def _resume(self):
         self._mpv.pause = False
         self.state = State.playing
 
@@ -208,13 +208,20 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.pause = True
         self.state = State.paused
 
+    def resume(self):
+        if self.do_fade:
+            fade_thread = Thread(
+                target=self.fade,
+                kwargs={"fade_in": True})
+            fade_thread.start()
+        else:
+            self._resume()
+
     def pause(self):
         if self.do_fade:
             fade_thread = Thread(
                 target=self.fade,
-                kwargs={"fade_in": False,
-                        "callback": self._pause}
-            )
+                kwargs={"fade_in": False})
             fade_thread.start()
         else:
             self._pause()
