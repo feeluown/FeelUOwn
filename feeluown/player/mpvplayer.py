@@ -33,7 +33,7 @@ class MpvPlayer(AbstractPlayer):
     todo: make me singleton
     """
     def __init__(self, _=None, audio_device=b'auto', winid=None,
-        fade=False, fade_time_ms=500, **kwargs):
+                 fade=False, fade_time_ms=500, **kwargs):
         """
         :param _: keep this arg to keep backward compatibility
         """
