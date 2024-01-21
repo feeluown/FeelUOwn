@@ -32,4 +32,5 @@ def create_config() -> Config:
                     desc='切换歌曲时显示桌面通知')
     config.deffield('NOTIFY_DURATION', type_=int, default=3000, desc='桌面通知保留时长(ms)')
     config.deffield('PLAYBACK_CROSSFADE', type_=bool, default=False, desc='播放暂停淡入淡出')
+    config.deffield('PLAYBACK_CROSSFADE_DURATION', type_=int, default=500, desc='淡入淡出持续时间')
     return config

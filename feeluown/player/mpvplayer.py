@@ -32,7 +32,8 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, _=None, audio_device=b'auto', winid=None, fade=False, **kwargs):
+    def __init__(self, _=None, audio_device=b'auto', winid=None,
+        fade=False, fade_time_ms=500, **kwargs):
         """
         :param _: keep this arg to keep backward compatibility
         """
@@ -87,6 +88,7 @@ class MpvPlayer(AbstractPlayer):
         self.do_fade = fade
         if self.do_fade:
             self.fade_lock = RLock()
+            self.fade_time_ms = fade_time_ms
 
     def shutdown(self):
         # The mpv has already been terminated.
@@ -171,11 +173,11 @@ class MpvPlayer(AbstractPlayer):
         def set_volume(max_volume: int, fade_in: bool):
             # https://bugs.python.org/issue31539#msg302699
             if os.name == "nt":
-                freq = 25
                 interval = 0.02
             else:
-                freq = 50
                 interval = 0.01
+
+            freq = int(self.fade_time_ms / 1000 / interval)
 
             for _tick in range(freq):
                 new_volume = math.ceil(
