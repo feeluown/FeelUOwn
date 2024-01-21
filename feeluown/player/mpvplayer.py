@@ -186,8 +186,8 @@ class MpvPlayer(AbstractPlayer):
 
         with self.fade_lock:
             max_volume = self.volume
-            
-            # skip fade-in on playing and fade-out on pause 
+  
+            # skip fade-in on playing and fade-out on pause
             if fade_in != self._mpv.pause:
                 return
 
