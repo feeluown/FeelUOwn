@@ -70,7 +70,7 @@ setup(
                     'feeluown-bilibili>=0.3.1',
                     ],
         'macOS': [
-            'aionowplaying>=0.9.4',
+            'aionowplaying>=0.9.4,<0.10',
         ],
         'win32': [
             'pyshortcuts',
