@@ -166,8 +166,25 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
+    def set_volume(self, max_volume: int, fade_in: bool):
+        # https://bugs.python.org/issue31539#msg302699
+        if os.name == "nt":
+            interval = 0.02
+        else:
+            interval = 0.01
+
+        freq = int(self.fade_time_ms / 1000 / interval)
+
+        for _tick in range(freq):
+            new_volume = math.ceil(
+                fade_curve(_tick/freq, fade_in=fade_in)*max_volume
+            )
+            self.volume = new_volume
+            time.sleep(interval)
+
     def fade_in(self):
         with self.fade_lock:
+            max_volume = self.volume
             # skip fade-in on playing
             if not self._mpv.pause:
                 return
@@ -329,18 +346,3 @@ def fade_curve(k: float, fade_in: bool) -> float:
     else:
         return (1+math.cos(k*math.pi)) / 2
 
-def set_volume(max_volume: int, fade_in: bool):
-    # https://bugs.python.org/issue31539#msg302699
-    if os.name == "nt":
-        freq = 25
-        interval = 0.02
-    else:
-        freq = 50
-        interval = 0.01
-
-    for _tick in range(freq):
-        new_volume = math.ceil(
-            fade_curve(_tick/freq, fade_in=fade_in)*max_volume
-        )
-        self.volume = new_volume
-        time.sleep(interval)
