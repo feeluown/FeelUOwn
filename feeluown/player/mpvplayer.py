@@ -164,46 +164,28 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
-    def fade(self, fade_in: bool):
-        # k: factor between 0 and 1, to represent tick/fade_time
-        def fade_curve(k: float, fade_in: bool) -> float:
-            if fade_in:
-                return (1-math.cos(k*math.pi)) / 2
-            else:
-                return (1+math.cos(k*math.pi)) / 2
-
-        def set_volume(max_volume: int, fade_in: bool):
-            # https://bugs.python.org/issue31539#msg302699
-            if os.name == "nt":
-                freq = 25
-                interval = 0.02
-            else:
-                freq = 50
-                interval = 0.01
-
-            for _tick in range(freq):
-                new_volume = math.ceil(
-                    fade_curve(_tick/freq, fade_in=fade_in)*max_volume
-                )
-                self.volume = new_volume
-                time.sleep(interval)
-
+    def fade_in(self):
         with self.fade_lock:
-            max_volume = self.volume
-
-            # skip fade-in on playing and fade-out on pause
-            if fade_in != self._mpv.pause:
+            # skip fade-in on playing
+            if not self._mpv.pause:
                 return
 
-            if fade_in:
-                self._resume()
-                set_volume(max_volume, fade_in=True)
-            else:
-                self.pausing = True
-                set_volume(max_volume, fade_in=False)
-                self._pause()
-                self.pausing = False
+            self._resume()
+            set_volume(max_volume, fade_in=True)
 
+    def fade_out(self):
+        with self.fade_lock:
+            # skip fade-out on pause
+            if self._mpv.pause or self.pausing:
+                return
+
+            max_volume = self.volume
+            self.pausing = True
+
+            set_volume(max_volume, fade_in=False)
+            self._pause()
+
+            self.pausing = False
             self.volume = max_volume
 
     def _resume(self):
@@ -216,19 +198,13 @@ class MpvPlayer(AbstractPlayer):
 
     def resume(self):
         if self.do_fade:
-            fade_thread = Thread(
-                target=self.fade,
-                kwargs={"fade_in": True})
-            fade_thread.start()
+            Thread(target=self.fade_in).start()
         else:
             self._resume()
 
     def pause(self):
         if self.do_fade:
-            fade_thread = Thread(
-                target=self.fade,
-                kwargs={"fade_in": False})
-            fade_thread.start()
+            Thread(target=self.fade_out).start()
         else:
             self._pause()
 
@@ -342,3 +318,27 @@ class MpvPlayer(AbstractPlayer):
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))
+
+
+# k: factor between 0 and 1, to represent tick/fade_time
+def fade_curve(k: float, fade_in: bool) -> float:
+    if fade_in:
+        return (1-math.cos(k*math.pi)) / 2
+    else:
+        return (1+math.cos(k*math.pi)) / 2
+
+def set_volume(max_volume: int, fade_in: bool):
+    # https://bugs.python.org/issue31539#msg302699
+    if os.name == "nt":
+        freq = 25
+        interval = 0.02
+    else:
+        freq = 50
+        interval = 0.01
+
+    for _tick in range(freq):
+        new_volume = math.ceil(
+            fade_curve(_tick/freq, fade_in=fade_in)*max_volume
+        )
+        self.volume = new_volume
+        time.sleep(interval)
