@@ -59,7 +59,8 @@ class App:
         # Player.
         self.player = Player(
             audio_device=bytes(config.MPV_AUDIO_DEVICE, 'utf-8'),
-            fade=config.PLAYBACK_CROSSFADE
+            fade=config.PLAYBACK_CROSSFADE,
+            fade_time_ms=config.PLAYBACK_CROSSFADE_DURATION,
         )
         # Theoretically, each caller maintain its own position delegate.
         # For simplicity, this delegate is created for common use cases and
