@@ -184,13 +184,14 @@ class MpvPlayer(AbstractPlayer):
 
     def fade_in(self):
         with self.fade_lock:
-            max_volume = self.volume
             # skip fade-in on playing
             if not self._mpv.pause:
                 return
 
+            max_volume = self.volume
+
             self._resume()
-            set_volume(max_volume, fade_in=True)
+            self.set_volume(max_volume, fade_in=True)
 
     def fade_out(self):
         with self.fade_lock:
@@ -201,7 +202,7 @@ class MpvPlayer(AbstractPlayer):
             max_volume = self.volume
             self.pausing = True
 
-            set_volume(max_volume, fade_in=False)
+            self.set_volume(max_volume, fade_in=False)
             self._pause()
 
             self.pausing = False
@@ -345,4 +346,3 @@ def fade_curve(k: float, fade_in: bool) -> float:
         return (1-math.cos(k*math.pi)) / 2
     else:
         return (1+math.cos(k*math.pi)) / 2
-
