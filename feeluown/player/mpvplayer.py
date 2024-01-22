@@ -32,7 +32,8 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, _=None, audio_device=b'auto', winid=None, fade=False, **kwargs):
+    def __init__(self, _=None, audio_device=b'auto', winid=None,
+                 fade=False, fade_time_ms=500, **kwargs):
         """
         :param _: keep this arg to keep backward compatibility
         """
@@ -91,6 +92,7 @@ class MpvPlayer(AbstractPlayer):
         self.do_fade = fade
         if self.do_fade:
             self.fade_lock = RLock()
+            self.fade_time_ms = fade_time_ms
 
     def shutdown(self):
         # The mpv has already been terminated.
