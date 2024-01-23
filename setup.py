@@ -59,7 +59,6 @@ setup(
         'packaging',
         'pydantic>=1.10',  # v1 and v2 are both ok.
         'mutagen>=1.37',
-        'importlib-metadata>=4.6,<7.0',
     ],
     extras_require={
         'battery': ['fuo-netease>=1.0',
