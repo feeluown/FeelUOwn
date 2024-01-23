@@ -85,6 +85,10 @@ class MpvPlayer(AbstractPlayer):
         self._mpv._event_callbacks.append(self._on_event)
         logger.debug('Player initialize finished.')
 
+        # this should always be `False` for fade=False,
+        # because in that case `pause()` set status immediately
+        self.pausing = False
+
         self.do_fade = fade
         if self.do_fade:
             self.fade_lock = RLock()
@@ -162,47 +166,49 @@ class MpvPlayer(AbstractPlayer):
             self.seeked.emit(start)
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
-    def fade(self, fade_in: bool, callback=None):
-        # k: factor between 0 and 1, to represent tick/fade_time
-        def fade_curve(k: float, fade_in: bool) -> float:
-            if fade_in:
-                return (1-math.cos(k*math.pi)) / 2
-            else:
-                return (1+math.cos(k*math.pi)) / 2
+    def set_volume(self, max_volume: int, fade_in: bool):
+        # https://bugs.python.org/issue31539#msg302699
+        if os.name == "nt":
+            interval = 0.02
+        else:
+            interval = 0.01
 
-        def set_volume(max_volume: int, fade_in: bool):
-            # https://bugs.python.org/issue31539#msg302699
-            if os.name == "nt":
-                interval = 0.02
-            else:
-                interval = 0.01
+        freq = int(self.fade_time_ms / 1000 / interval)
 
-            freq = int(self.fade_time_ms / 1000 / interval)
+        for _tick in range(freq):
+            new_volume = math.ceil(
+                fade_curve(_tick/freq, fade_in=fade_in)*max_volume
+            )
+            self.volume = new_volume
+            time.sleep(interval)
 
-            for _tick in range(freq):
-                new_volume = math.ceil(
-                    fade_curve(_tick/freq, fade_in=fade_in)*max_volume
-                )
-                self.volume = new_volume
-                time.sleep(interval)
-
+    def fade_in(self):
         with self.fade_lock:
+            # skip fade-in on playing
+            if not self._mpv.pause:
+                return
+
             max_volume = self.volume
-            set_volume(max_volume, fade_in=fade_in)
 
-            if callback is not None:
-                callback()
+            self._resume()
+            self.set_volume(max_volume, fade_in=True)
 
+    def fade_out(self):
+        with self.fade_lock:
+            # skip fade-out on pause
+            if self._mpv.pause or self.pausing:
+                return
+
+            max_volume = self.volume
+            self.pausing = True
+
+            self.set_volume(max_volume, fade_in=False)
+            self._pause()
+
+            self.pausing = False
             self.volume = max_volume
 
-    def resume(self):
-        if self.do_fade:
-            fade_thread = Thread(
-                target=self.fade,
-                kwargs={"fade_in": True}
-            )
-            fade_thread.start()
-
+    def _resume(self):
         self._mpv.pause = False
         self.state = State.playing
 
@@ -210,19 +216,20 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.pause = True
         self.state = State.paused
 
+    def resume(self):
+        if self.do_fade:
+            Thread(target=self.fade_in).start()
+        else:
+            self._resume()
+
     def pause(self):
         if self.do_fade:
-            fade_thread = Thread(
-                target=self.fade,
-                kwargs={"fade_in": False,
-                        "callback": self._pause}
-            )
-            fade_thread.start()
+            Thread(target=self.fade_out).start()
         else:
             self._pause()
 
     def toggle(self):
-        if self._mpv.pause:
+        if self.pausing or self._mpv.pause:
             self.resume()
         else:
             self.pause()
@@ -331,3 +338,11 @@ class MpvPlayer(AbstractPlayer):
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))
+
+
+# k: factor between 0 and 1, to represent tick/fade_time
+def fade_curve(k: float, fade_in: bool) -> float:
+    if fade_in:
+        return (1-math.cos(k*math.pi)) / 2
+    else:
+        return (1+math.cos(k*math.pi)) / 2
