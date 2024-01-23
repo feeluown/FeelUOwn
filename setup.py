@@ -70,11 +70,11 @@ setup(
                     'feeluown-bilibili>=0.3.1',
                     ],
         'macOS': [
-            'aionowplaying>=0.9.4,<0.10',
+            'aionowplaying>=0.10',
         ],
         'win32': [
             'pyshortcuts',
-            'aionowplaying @ git+https://github.com/BruceZhang1993/aionowplaying.git@master',
+            'aionowplaying>=0.10',
         ],
         'webserver': ['sanic', 'websockets', 'json-rpc'],
         'webengine': ['PyQtWebEngine'],
