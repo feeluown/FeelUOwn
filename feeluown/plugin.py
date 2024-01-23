@@ -201,9 +201,13 @@ class PluginsManager:
         https://packaging.python.org/guides/creating-and-discovering-plugins/
         """
         try:
-            import importlib_metadata  # pylint: disable=redefined-outer-name
-            entry_points = importlib_metadata.entry_points() \
-                .select(group='fuo.plugins_v1')
+            import importlib.metadata  # pylint: disable=redefined-outer-name
+            try:
+                entry_points = importlib.metadata.entry_points() \
+                    .select(group='fuo.plugins_v1')
+            except AttributeError:  # old version does not has `select` method
+                entry_points = importlib.metadata.entry_points() \
+                    .get('fuo.plugins_v1', [])
         except ImportError:
             import pkg_resources
             entry_points = pkg_resources.iter_entry_points('fuo.plugins_v1')
