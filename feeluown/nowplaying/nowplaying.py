@@ -1,5 +1,6 @@
 # pylint: disable=import-error
 import logging
+import os
 
 import aionowplaying as aionp
 
@@ -19,18 +20,21 @@ PlaybackStatusStateMapping = {
 }
 
 
-def to_aionp_time(t):
-    return int(t * 1000)
+def sec_to_us(t_sec):
+    return int(t_sec * 1000 * 1000)
 
 
-def from_aionp_time(t):
-    return t / 1000
+def us_to_sec(t_microsec):
+    return t_microsec / 1000 / 1000
 
 
 class NowPlayingService(aionp.NowPlayingInterface):
     def __init__(self, app: 'ServerApp'):
         super().__init__('FeelUOwn')
         self._app = app
+
+        if os.name == "nt":
+            self._app.player.position_changed.connect(self.update_position)
 
         self._app.player.seeked.connect(self.update_position)
         self._app.player.media_loaded.connect(self.on_player_media_loaded,
@@ -53,6 +57,7 @@ class NowPlayingService(aionp.NowPlayingInterface):
         self.set_playback_property(PlayProp.CanGoPrevious, True)
         self.set_playback_property(PlayProp.CanSeek, True)
         self.set_playback_property(PlayProp.CanControl, True)
+        self.set_playback_property(PlayProp.Rate, 1.0)
 
     def update_playback_mode(self, mode: PlaybackMode):
         mode_mapping = {
@@ -71,14 +76,16 @@ class NowPlayingService(aionp.NowPlayingInterface):
         metadata.album = meta.get('album', '')
         metadata.title = meta.get('title', '')
         metadata.cover = meta.get('artwork', '')
-        metadata.url = ''
+        metadata.url = meta.get('uri', '')
+        if os.name == 'nt':
+            metadata.id_ = meta.get('uri', '')
         self.set_playback_property(PlayProp.Metadata, metadata)
 
     def update_duration(self, duration):
-        self.set_playback_property(PlayProp.Duration, int(duration * 1000))
+        self.set_playback_property(PlayProp.Duration, int(sec_to_us(duration or 0)))
 
     def update_position(self, position):
-        self.set_playback_property(PlayProp.Position, int(position * 1000))
+        self.set_playback_property(PlayProp.Position, int(sec_to_us(position or 0)))
 
     def update_playback_status(self, state):
         self.set_playback_property(PlayProp.PlaybackStatus,
@@ -96,6 +103,9 @@ class NowPlayingService(aionp.NowPlayingInterface):
     async def on_previous(self):
         self._app.playlist.previous()
 
+    def on_stop(self):
+        self._app.player.stop()
+
     def on_loop_status(self, status: aionp.LoopStatus):
         if status == aionp.LoopStatus.Playlist:
             self._app.playlist.playback_mode = PlaybackMode.loop
@@ -110,14 +120,17 @@ class NowPlayingService(aionp.NowPlayingInterface):
         else:
             self._app.playlist.playback_mode = PlaybackMode.sequential
 
-    def on_seek(self, offset: int):
-        self._app.player.position = from_aionp_time(offset)
+    def on_set_position(self, track_id: str, position: int):
+        self._app.player.position = us_to_sec(position)
+
+    def on_seek(self, offset_us: int):
+        self._app.player.position = us_to_sec(offset_us)
 
     def get_playback_property(self, name: PlayProp):
         if name == PlayProp.Duration:
-            return to_aionp_time(self._app.player.duration)
+            return sec_to_us(self._app.player.duration)
         elif name == PlayProp.Position:
-            return to_aionp_time(self._app.player.position)
+            return sec_to_us(self._app.player.position)
         elif name == PlayProp.PlaybackStatus:
             return StatePlaybackStatusMapping[self._app.player.state]
         elif name == PlayProp.Rate:

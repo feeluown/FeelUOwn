@@ -202,7 +202,12 @@ class PluginsManager:
         """
         try:
             import importlib.metadata  # pylint: disable=redefined-outer-name
-            entry_points = importlib.metadata.entry_points().get('fuo.plugins_v1', [])
+            try:
+                entry_points = importlib.metadata.entry_points() \
+                    .select(group='fuo.plugins_v1')
+            except AttributeError:  # old version does not has `select` method
+                entry_points = importlib.metadata.entry_points() \
+                    .get('fuo.plugins_v1', [])
         except ImportError:
             import pkg_resources
             entry_points = pkg_resources.iter_entry_points('fuo.plugins_v1')
