@@ -1,7 +1,7 @@
 from feeluown.app import App
 from feeluown.player import Player, Playlist
 from feeluown.serializers import serialize
-from feeluown.library import SongModel
+from feeluown.library import SongModel, SimpleSearchResult
 from feeluown.player import Metadata
 
 
@@ -35,3 +35,10 @@ def test_serialize_model():
 
     song_js = serialize('python', song, fetch=True)
     assert song_js['identifier'] == '1'
+
+
+def test_serialize_search_result():
+    song = SongModel(identifier='1', title='', artists=[], duration=0)
+    result = SimpleSearchResult(q='', songs=[song])
+    d = serialize('python', result)
+    assert d['songs'][0]['identifier'] == '1'

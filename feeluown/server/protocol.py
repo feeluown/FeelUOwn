@@ -229,13 +229,6 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         """
         return False
 
-
-class PubsubProtocol(FuoServerProtocol):
-
-    async def write_welcome(self):
-        version = self.options.pubsub_version
-        self.writer.write(encode(f'OK pubsub {version}\r\n'))
-
     def write_topic_msg(self, topic, msg):
         """
         TODO: Create a enum for version.
@@ -255,3 +248,10 @@ class PubsubProtocol(FuoServerProtocol):
         except BrokenPipeError:
             # What's happening?
             raise DeadSubscriber from None
+
+
+class PubsubProtocol(FuoServerProtocol):
+
+    async def write_welcome(self):
+        version = self.options.pubsub_version
+        self.writer.write(encode(f'OK pubsub {version}\r\n'))
