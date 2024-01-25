@@ -11,6 +11,7 @@ from feeluown.library import (
     BriefAlbumModel,
     BriefPlaylistModel,
     BriefUserModel,
+    SimpleSearchResult,
 )
 from feeluown.library import reverse
 
@@ -92,7 +93,7 @@ class SearchSerializerMixin:
     """
 
     class Meta:
-        types = ()
+        types = (SimpleSearchResult, )
 
     def _get_items(self, result):
         fields = ('songs', 'albums', 'artists', 'playlists',)
