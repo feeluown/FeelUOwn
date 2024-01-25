@@ -29,7 +29,8 @@ def setup_config(args, config):
     config.DEBUG = args.debug or config.DEBUG
     config.VERBOSE = args.verbose or config.VERBOSE
     config.MPV_AUDIO_DEVICE = args.mpv_audio_device or config.MPV_AUDIO_DEVICE
-    config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE)
+    config.LOG_TO_FILE = bool(args.log_to_file or config.LOG_TO_FILE or
+                              os.getenv('FUO_LOG_TO_FILE'))
 
     if args.cmd is not None:
         config.MODE = App.CliMode
