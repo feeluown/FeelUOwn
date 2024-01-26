@@ -190,6 +190,7 @@ class MpvPlayer(AbstractPlayer):
 
             max_volume = self.volume
 
+            self.volume = 0
             self._resume()
             self.set_volume(max_volume, fade_in=True)
 
