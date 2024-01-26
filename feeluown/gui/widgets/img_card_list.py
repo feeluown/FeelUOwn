@@ -186,7 +186,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
 
             secondary_color = border_color = secondary_text_color(option.palette)
             # Draw cover or color.
-            img_height = int(draw_width * self.w_h_ratio)
+            img_height = int(draw_width / self.w_h_ratio)
             with painter_save(painter):
                 self.draw_img_or_color(
                     painter, border_color, obj, draw_width, img_height)
