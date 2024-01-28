@@ -339,7 +339,7 @@ class ArtistModel(BriefArtistModel, BaseNormalModel):
     name: str
     pic_url: str
     aliases: List[str]
-    hot_songs: List[SongModel]
+    hot_songs: List[BriefSongModel]
     description: str
 
 
