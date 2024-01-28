@@ -1,22 +1,20 @@
-from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 
 from feeluown.gui.widgets.textbtn import TextButton
+from feeluown.gui.helpers import ClickableMixin
 
 
-class ClickableHeader(QWidget):
+class ClickableHeader(ClickableMixin, QWidget):
     btn_text_fold = '△'
     btn_text_unfold = '▼'
-
-    clicked = pyqtSignal()
 
     def __init__(self, header, checked=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._is_checked = False
+
         self.inner_header = header
-        self.btn = TextButton(self._get_btn_text(checked))
-        self.btn.setCheckable(True)
-        self.btn.setChecked(checked)
+        self.btn = TextButton(self._get_btn_text(self._is_checked))
 
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -25,11 +23,12 @@ class ClickableHeader(QWidget):
         self._layout.addStretch(0)
         self._layout.addWidget(self.btn)
 
-        self.btn.clicked.connect(self.toggle)
+        self.btn.clicked.connect(self.clicked.emit)
+        self.clicked.connect(self.toggle)
 
-    def toggle(self, checked):
-        self.clicked.emit()
-        self.btn.setText(self._get_btn_text(checked))
+    def toggle(self):
+        self._is_checked = not self._is_checked
+        self.btn.setText(self._get_btn_text(self._is_checked))
 
     def _get_btn_text(self, checked):
         return self.btn_text_unfold if checked else self.btn_text_fold

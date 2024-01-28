@@ -14,12 +14,17 @@ from feeluown.gui.components import (
     LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
     MVButton, PlaylistButton, SongSourceTag,
 )
-from feeluown.gui.helpers import IS_MACOS
+from feeluown.gui.helpers import IS_MACOS, ClickableMixin
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
+
+
+class ClickableCover(ClickableMixin, CoverLabelV2):
+    def __init__(self, app, **kwargs):
+        super().__init__(app=app, **kwargs)
 
 
 class PlayerControlPanel(QFrame):
@@ -69,7 +74,7 @@ class PlayerControlPanel(QFrame):
         self.song_title_label.setAlignment(Qt.AlignCenter)
         self.song_source_label = SongSourceTag(self._app, parent=self)
 
-        self.cover_label = CoverLabelV2(app)
+        self.cover_label = ClickableCover(app)
         self.duration_label = DurationLabel(app, parent=self)
         self.position_label = ProgressLabel(app, parent=self)
 
@@ -82,6 +87,7 @@ class PlayerControlPanel(QFrame):
         player = self._app.player
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
+        self.cover_label.clicked.connect(self.show_nowplaying_overlay)
 
         self._setup_ui()
 
@@ -184,6 +190,10 @@ class PlayerControlPanel(QFrame):
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
         else:
             self.cover_label.show_img(None)
+
+    def show_nowplaying_overlay(self):
+        self._app.ui.nowplaying_overlay.show()
+        self._app.ui.nowplaying_overlay.raise_()
 
 
 class TopPanel(QFrame):
