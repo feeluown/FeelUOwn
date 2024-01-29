@@ -56,6 +56,11 @@ class GuiApp(App, QWidget):
             # including windows, linux and macOS.
             font.setPixelSize(13)
             QApplication.setFont(font)
+        elif sys.platform == 'darwin':
+            font = QApplication.font()
+            # The default font can not show chinese in bold.
+            font.setFamilies(['arial', 'Hiragino Sans GB', 'sans-serif'])
+            QApplication.setFont(font)
 
         QWidget.__init__(self)
         App.__init__(self, *args, **kwargs)
