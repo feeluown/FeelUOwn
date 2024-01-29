@@ -11,6 +11,7 @@ from feeluown.gui.uimain.sidebar import LeftPanel
 from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
+from feeluown.gui.uimain.nowplaying_overlay import NowplayingOverlay
 
 logger = logging.getLogger(__name__)
 
@@ -39,6 +40,7 @@ class Ui:
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.playlist_overlay = PlaylistOverlay(app, parent=app)
+        self.nowplaying_overlay = NowplayingOverlay(app, parent=app)
 
         # alias
         self.magicbox = self.bottom_panel.magicbox
@@ -64,6 +66,7 @@ class Ui:
         self._splitter.addWidget(self.right_panel)
         self._message_line.hide()
         self.playlist_overlay.hide()
+        self.nowplaying_overlay.hide()
 
         self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
 

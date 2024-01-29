@@ -25,14 +25,10 @@ import logging
 from contextlib import contextmanager
 from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
-try:
-    # helper module should work in no-window mode
-    from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
-        QAbstractListModel
-    from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter
-    from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
-except ImportError:
-    pass
+from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
+    QAbstractListModel, QPoint
+from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent
+from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
 
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
@@ -572,6 +568,43 @@ def secondary_text_color(palette: QPalette):
         non_text_color = text_color.lighter(150)
     non_text_color.setAlpha(100)
     return non_text_color
+
+
+class ClickableMixin:
+    clicked = pyqtSignal()
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)  # Cooperative multi-inheritance.
+
+        self._down = False
+
+    def mousePressEvent(self, e: QMouseEvent):
+        if e.button() != Qt.LeftButton:
+            # Call super.mousePressEvent because the concrete class may do sth inside it.
+            super().mousePressEvent(e)
+            return
+        if self._hit_button(e.pos()):
+            self._down = True
+            e.accept()
+        else:
+            super().mousePressEvent(e)
+
+    def mouseReleaseEvent(self, e: QMouseEvent):
+        if e.button() != Qt.LeftButton or not self._down:
+            super().mouseReleaseEvent(e)
+            return
+        self._down = False
+        if self._hit_button(e.pos()):
+            self.clicked.emit()
+            e.accept()
+        else:
+            super().mouseReleaseEvent(e)
+
+    def _hit_button(self, pos: QPoint):
+        return self.rect().contains(pos)
+
+    def set_down(self, down: bool):
+        self._down = down
 
 
 # https://ethanschoonover.com/solarized/
