@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QTimer, QRect, Qt
-from PyQt5.QtGui import QFontMetrics, QPainter, QPalette
-from PyQt5.QtWidgets import QApplication, QLabel, QSizePolicy, QMenu
+from PyQt5.QtGui import QPainter, QPalette
+from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu
 
 from feeluown.gui.components import SongMenuInitializer
 
@@ -25,8 +25,7 @@ class LineSongLabel(QLabel):
         # the text is longer than the label width
         self._timer = QTimer()
         self._txt = self._raw_text = self.default_text
-        self._font_metrics = QFontMetrics(QApplication.font())
-        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        self._text_rect = self.fontMetrics().boundingRect(self._raw_text)
         # text's position, keep changing to make text roll
         self._pos = 0
         self._timer.timeout.connect(self.change_text_position)
@@ -67,7 +66,7 @@ class LineSongLabel(QLabel):
 
     def setText(self, text):
         self._txt = self._raw_text = text
-        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        self._text_rect = self.fontMetrics().boundingRect(self._raw_text)
         self._pos = 0
         self.update()
 
@@ -86,13 +85,13 @@ class LineSongLabel(QLabel):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setFont(QApplication.font())
+        painter.setFont(self.font())
         painter.setPen(self.palette().color(QPalette.Text))
 
         if self._timer.isActive():
             self._txt = self._raw_text
         else:
-            self._txt = self._font_metrics.elidedText(
+            self._txt = self.fontMetrics().elidedText(
                 self._raw_text, Qt.ElideRight, self.width())
 
         painter.drawText(

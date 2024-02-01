@@ -16,6 +16,8 @@ class LyricView(QListWidget):
         super().__init__(parent)
 
         self._lyric = None
+        self._alignment = Qt.AlignLeft
+        self._highlight_font_size = 18
 
         self.setFrameShape(QFrame.NoFrame)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
@@ -31,10 +33,15 @@ class LyricView(QListWidget):
             return
 
         for i, line in enumerate(lyric.lines):
-            item = QListWidgetItem(line)
+            item = self._create_item(line)
             if i == lyric.current_index:
                 self.setCurrentItem(item)
             self.addItem(item)
+
+    def _create_item(self, line):
+        item = QListWidgetItem(line)
+        item.setTextAlignment(self._alignment)
+        return item
 
     def clear(self):
         super().clear()
@@ -58,7 +65,7 @@ class LyricView(QListWidget):
         self.reset_item(previous)
         if current:
             font = current.font()
-            font.setPixelSize(18)
+            font.setPixelSize(self._highlight_font_size)
             current.setFont(font)
 
     def reset_item(self, item):
