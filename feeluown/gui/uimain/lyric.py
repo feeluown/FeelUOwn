@@ -234,6 +234,7 @@ class InnerLyricWindow(QWidget):
         self.line_label = LineLabel(self)
 
         self._app.live_lyric.line_changed.connect(self.set_line)
+        self._app.live_lyric.lyrics_changed.connect(self.on_lyrics_changed)
         QShortcut(QKeySequence.ZoomIn, self).activated.connect(self.zoomin)
         QShortcut(QKeySequence.ZoomOut, self).activated.connect(self.zoomout)
         QShortcut(QKeySequence('Ctrl+='), self).activated.connect(self.zoomin)
@@ -263,6 +264,10 @@ class InnerLyricWindow(QWidget):
             self.parent().resize(self_size)  # type: ignore
             self.parent().updateGeometry()   # type: ignore
         self.line_label.set_line(line)
+
+    def on_lyrics_changed(self, lyric, *_):
+        if lyric is None:
+            self.set_line(LyricLine('未找到可用歌词', '', False))
 
     def zoomin(self):
         label = self.line_label

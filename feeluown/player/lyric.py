@@ -216,10 +216,10 @@ class LiveLyric:
         future.add_done_callback(cb)
 
     def set_lyric(self, model: Optional[LyricModel]):
-        if model is None:
-            self._lyric = self._trans_lyric = None
-        elif model.content:
+        if model is not None and model.content:
             self._lyric = Lyric.from_content(model.content)
             self._trans_lyric = Lyric.from_content(model.trans_content) \
                 if model.trans_content else None
+        else:
+            self._lyric = self._trans_lyric = None
         self.lyrics_changed.emit(self._lyric, self._trans_lyric)
