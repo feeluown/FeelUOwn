@@ -107,6 +107,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         card_height=40,
         card_right_spacing=10,
         card_padding=(3, 3, 3, 0),
+        hover_color_role=QPalette.Window,
     ):
         """
         QListView.setSpacing set spacing around the item, however, sometimes
@@ -119,6 +120,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.card_min_width = card_min_width
         self.card_height = card_height
         self.card_right_spacing = card_right_spacing
+        self.hover_color_role = hover_color_role
         self.card_top_padding = card_padding[1]
         self.card_bottom_padding = card_padding[3]
         self.card_left_padding = card_padding[0]
@@ -168,7 +170,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         elif option.state & QStyle.State_MouseOver:
             painter.save()
             painter.setPen(Qt.NoPen)
-            painter.setBrush(option.palette.color(QPalette.Window))
+            painter.setBrush(option.palette.color(self.hover_color_role))
             painter.drawRect(rect)
             painter.restore()
 

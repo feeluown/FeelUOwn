@@ -36,6 +36,7 @@ from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import ModelNotFound, ModelType, BaseModel
 from feeluown.library import reverse
+from feeluown.gui.consts import FontFamilies
 
 
 if TYPE_CHECKING:
@@ -605,6 +606,12 @@ class ClickableMixin:
 
     def set_down(self, down: bool):
         self._down = down
+
+
+def set_default_font_families(widget):
+    font = widget.font()
+    font.setFamilies(FontFamilies)
+    widget.setFont(font)
 
 
 # https://ethanschoonover.com/solarized/

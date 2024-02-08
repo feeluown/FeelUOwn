@@ -53,8 +53,7 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
         self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.toolbar.settings_btn.clicked.connect(
-            self._open_settings_dialog)
+        self.toolbar.settings_btn.clicked.connect(self._open_settings_dialog)
 
         self._setup_ui()
 

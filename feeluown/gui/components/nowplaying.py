@@ -1,11 +1,11 @@
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFontMetrics
+from PyQt5.QtGui import QFontMetrics, QPalette
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
-from feeluown.gui.helpers import fetch_cover_wrapper
+from feeluown.gui.helpers import fetch_cover_wrapper, random_solarized_color
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.lyric import LyricView
@@ -33,7 +33,6 @@ class RefreshOnSongChangedMixin:
         if not self.isVisible():
             self._need_refresh = True
             return
-        print('song changed, run refresh task')
         self.run_refresh_task()
 
     def showEvent(self, e):
@@ -94,11 +93,15 @@ class NowplayingLyricView(LyricView):
         font = self.font()
         font.setPixelSize(17)
         self.setFont(font)
-        self.viewport().setAutoFillBackground(False)
 
         self._alignment = Qt.AlignCenter
         self._highlight_font_size = 25
         self._item_spacing = 20
+
+        palette = self.palette()
+        palette.setColor(QPalette.Highlight, Qt.transparent)
+        palette.setColor(QPalette.HighlightedText, random_solarized_color())
+        self.setPalette(palette)
 
     def _create_item(self, line):
         item = super()._create_item(line)
@@ -131,8 +134,8 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
 
     def __init__(self, app: 'GuiApp', parent=None):
         self._app = app
-        super().__init__(parent=parent, no_scroll_v=False)
-        # self.viewport().setAutoFillBackground(False)
+        super().__init__(parent=parent, no_scroll_v=False,
+                         delegate_options={'quoted_bg_color_role': QPalette.Base})
 
     async def refresh(self):
         song = self._app.playlist.current_song
@@ -157,6 +160,7 @@ class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView
                 card_height=40,
                 card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
                 card_right_spacing=10,
+                hover_color_role=QPalette.Base,
             )
         )
 
@@ -184,5 +188,6 @@ class NowplayingPlayerPlaylistView(PlayerPlaylistView):
             card_height=40,
             card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
             card_right_spacing=10,
+            hover_color_role=QPalette.Base,
         )
         self.setItemDelegate(delegate)

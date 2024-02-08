@@ -15,6 +15,7 @@ from feeluown.gui.components.nowplaying import (
     NowplayingSimilarSongsView,
 )
 from feeluown.gui.components.line_song import TwoLineSongLabel
+from feeluown.gui.helpers import set_default_font_families
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -66,6 +67,7 @@ class NowplayingOverlay(QWidget):
         self.tabbar = QTabBar(self)
         self.tabbar.setDocumentMode(True)
         self.tabbar.setShape(QTabBar.TriangularEast)
+        set_default_font_families(self.comments_view)
 
         self._layout = QHBoxLayout(self)
         self._stacked_layout = QStackedLayout()
@@ -73,9 +75,14 @@ class NowplayingOverlay(QWidget):
         QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
         self.tabbar.currentChanged.connect(self._stacked_layout.setCurrentIndex)
         self.setup_ui()
-        self.setAutoFillBackground(True)
 
     def setup_ui(self):
+        self.setAutoFillBackground(True)
+        self.lyric_view.viewport().setAutoFillBackground(False)
+        self.comments_view.viewport().setAutoFillBackground(False)
+        self.player_playlist_view.viewport().setAutoFillBackground(False)
+        self.similar_songs_view.viewport().setAutoFillBackground(False)
+
         self._layout.addWidget(self.player_panel)
         self._layout.addLayout(self._stacked_layout)
         self._layout.addWidget(self.tabbar)
