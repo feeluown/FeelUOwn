@@ -77,7 +77,7 @@ class TabBar(QTabBar):
         # if setStyle is called. See tabSizeHint comment for more info.
         self.setStyle(TabBarStyle())
 
-    def _tabSizeHint(self, index):
+    def tabSizeHint(self, index):
         # NOTE(cosven): On macOS, the width of default sizeHint is too large.
         # We set the width to 0 and the widget can calculate a proper width
         # for it. I don't know if this works well on other platforms.
