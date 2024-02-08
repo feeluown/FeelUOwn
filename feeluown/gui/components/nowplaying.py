@@ -4,12 +4,46 @@ from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFontMetrics
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
-from feeluown.utils.aio import run_afn
+from feeluown.gui.components.player_playlist import PlayerPlaylistView
+from feeluown.gui.helpers import fetch_cover_wrapper
+from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.lyric import LyricView
+from feeluown.gui.widgets.song_minicard_list import (
+    SongMiniCardListDelegate, SongMiniCardListView, SongMiniCardListModel
+)
+from feeluown.library import SupportsSongHotComments, SupportsSongSimilar
+from feeluown.utils.aio import run_fn, run_afn
+from feeluown.utils.reader import create_reader
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+
+class RefreshOnSongChangedMixin:
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self._need_refresh = True
+        self._app.playlist.song_changed.connect(
+            lambda song: run_afn(self.on_song_changed, song), aioqueue=True, weak=False
+        )
+
+    async def on_song_changed(self, _):
+        if not self.isVisible():
+            self._need_refresh = True
+            return
+        print('song changed, run refresh task')
+        self.run_refresh_task()
+
+    def showEvent(self, e):
+        super().showEvent(e)
+        if self._need_refresh:
+            self.run_refresh_task()
+
+    def run_refresh_task(self):
+        self._app.task_mgr.run_afn_preemptive(self.refresh)
+        self._need_refresh = False
 
 
 class NowplayingArtwork(QWidget):
@@ -91,3 +125,64 @@ class NowplayingLyricView(LyricView):
         super().reset_item(item)
         if item:
             item.setSizeHint(item.data(Qt.UserRole)[1])
+
+
+class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
+
+    def __init__(self, app: 'GuiApp', parent=None):
+        self._app = app
+        super().__init__(parent=parent, no_scroll_v=False)
+        # self.viewport().setAutoFillBackground(False)
+
+    async def refresh(self):
+        song = self._app.playlist.current_song
+        reader = create_reader([])
+        if song is not None:
+            provider = self._app.library.get(song.source)
+            if isinstance(provider, SupportsSongHotComments):
+                comments = await run_fn(provider.song_list_hot_comments, song)
+                reader = create_reader(comments)
+        self.setModel(CommentListModel(reader))  # type: ignore
+
+
+class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView):
+
+    def __init__(self, app: 'GuiApp', parent=None):
+        self._app = app
+        super().__init__(parent=parent, no_scroll_v=False)
+        self.setItemDelegate(
+            SongMiniCardListDelegate(
+                self,
+                card_min_width=200,
+                card_height=40,
+                card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
+                card_right_spacing=10,
+            )
+        )
+
+    async def refresh(self):
+        song = self._app.playlist.current_song
+        reader = create_reader([])
+        if song is not None:
+            provider = self._app.library.get(song.source)
+            if isinstance(provider, SupportsSongSimilar):
+                songs = await run_fn(provider.song_list_similar, song)
+                reader = create_reader(songs)
+        self.setModel(SongMiniCardListModel(reader, fetch_cover_wrapper(self._app)))
+
+
+class NowplayingPlayerPlaylistView(PlayerPlaylistView):
+
+    def __init__(self, app, parent=None, **kwargs):
+        kwargs.setdefault('no_scroll_v', False)
+        kwargs.setdefault('row_height', 60)
+        super().__init__(app, parent=parent, **kwargs)
+
+        delegate = SongMiniCardListDelegate(
+            self,
+            card_min_width=200,
+            card_height=40,
+            card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
+            card_right_spacing=10,
+        )
+        self.setItemDelegate(delegate)

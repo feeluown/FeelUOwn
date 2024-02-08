@@ -1,7 +1,7 @@
-from PyQt5.QtCore import Qt, QRect, QEvent, QModelIndex, QItemSelectionModel
+from PyQt5.QtCore import Qt, QRect, QEvent
 from PyQt5.QtWidgets import (
-    QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout, QMenu,
-    QApplication, QShortcut, QAbstractItemView
+    QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout,
+    QApplication, QShortcut
 )
 from PyQt5.QtGui import (
     QColor, QLinearGradient, QPalette, QPainter, QKeySequence,
@@ -9,8 +9,8 @@ from PyQt5.QtGui import (
 
 from feeluown.player import PlaybackMode
 from feeluown.gui.helpers import fetch_cover_wrapper
+from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.widgets.textbtn import TextButton
-from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.widgets.tabbar import TabBar
 from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListView,
@@ -51,10 +51,8 @@ class PlaylistOverlay(QWidget):
                       self._goto_current_song_btn]
         self._stacked_layout = QStackedLayout()
         self._shadow_width = 15
-        self._player_playlist_model = PlayerPlaylistModel(
-            self._app.playlist,
-            fetch_cover_wrapper(self._app),
-        )
+        self._view_options = dict(row_height=60, no_scroll_v=False)
+        self._player_playlist_view = PlayerPlaylistView(self._app, **self._view_options)
 
         # AutoFillBackground should be disabled for PlaylistOverlay so that shadow
         # effects can be simulated. AutoFillBackground should be enabled for tabbar.
@@ -111,20 +109,18 @@ class PlaylistOverlay(QWidget):
         if not self.isVisible():
             return
 
-        view_options = dict(row_height=60, no_scroll_v=False)
         if index == 0:
             self._show_btns()
-            view: SongMiniCardListView = PlayerPlaylistView(self._app, **view_options)
-            view.setModel(self._player_playlist_model)
+            view = self._player_playlist_view
         else:
             self._hide_btns()
             model = SongMiniCardListModel(
                 create_reader(self._app.recently_played.list_songs()),
                 fetch_cover_wrapper(self._app)
             )
-            view = SongMiniCardListView(**view_options)
+            view = SongMiniCardListView(**self._view_options)
             view.setModel(model)
-
+            view.play_song_needed.connect(self._app.playlist.play_model)
         delegate = SongMiniCardListDelegate(
             view,
             card_min_width=self.width() - self.width()//6,
@@ -133,7 +129,6 @@ class PlaylistOverlay(QWidget):
             card_right_spacing=10,
         )
         view.setItemDelegate(delegate)
-        view.play_song_needed.connect(self._app.playlist.play_model)
         self._stacked_layout.addWidget(view)
         self._stacked_layout.setCurrentWidget(view)
 
@@ -180,71 +175,6 @@ class PlaylistOverlay(QWidget):
         if obj is self._app and event.type() == QEvent.Resize:
             self.hide()
         return False
-
-
-class PlayerPlaylistModel(SongMiniCardListModel):
-    def __init__(self, playlist, *args, **kwargs):
-        reader = create_reader(playlist.list())
-        super().__init__(reader, *args, **kwargs)
-
-        self._playlist = playlist
-        self._playlist.songs_added.connect(self.on_songs_added)
-        self._playlist.songs_removed.connect(self.on_songs_removed)
-
-    def flags(self, index):
-        flags = super().flags(index)
-        song = index.data(Qt.UserRole)[0]
-        if self._playlist.is_bad(song):
-            # Disable bad song.
-            flags &= ~Qt.ItemIsEnabled
-        return flags
-
-    def on_songs_added(self, index, count):
-        self.beginInsertRows(QModelIndex(), index, index+count-1)
-        # Insert from tail to front.
-        while count > 0:
-            self._items.insert(index, self._playlist[index+count-1])
-            count -= 1
-        self.endInsertRows()
-
-    def on_songs_removed(self, index, count):
-        self.beginRemoveRows(QModelIndex(), index, index+count-1)
-        while count > 0:
-            self._items.pop(index + count - 1)
-            count -= 1
-        self.endRemoveRows()
-
-
-class PlayerPlaylistView(SongMiniCardListView):
-    def __init__(self, app, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._app = app
-
-    def contextMenuEvent(self, e):
-        index = self.indexAt(e.pos())
-        if not index.isValid():
-            return
-
-        song = index.data(Qt.UserRole)[0]
-        menu = QMenu()
-        action = menu.addAction('从播放队列中移除')
-        menu.addSeparator()
-        SongMenuInitializer(self._app, song).apply(menu)
-
-        action.triggered.connect(lambda: self._app.playlist.remove(song))
-        menu.exec_(e.globalPos())
-
-    def scroll_to_current_song(self):
-        """Scroll to the current song, and select it to highlight it."""
-        current_song = self._app.playlist.current_song
-        songs = self._app.playlist.list()
-        if current_song is not None:
-            model = self.model()
-            row = songs.index(current_song)
-            index = model.index(row, 0)
-            # In order to highlight the current song.
-            self.selectionModel().select(index, QItemSelectionModel.SelectCurrent)
-            self.scrollTo(index, QAbstractItemView.PositionAtCenter)
 
 
 class PlaybackModeSwitch(TextButton):
