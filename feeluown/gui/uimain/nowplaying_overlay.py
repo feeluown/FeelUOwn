@@ -3,10 +3,11 @@ from typing import TYPE_CHECKING, cast
 from PyQt5.QtCore import QEvent, QSize
 from PyQt5.QtGui import QResizeEvent, QKeySequence
 from PyQt5.QtWidgets import (
-    QHBoxLayout, QVBoxLayout, QWidget, QShortcut, QStackedLayout, QTabBar
+    QHBoxLayout, QVBoxLayout, QWidget, QShortcut, QStackedLayout, QTabBar,
 )
 
-from feeluown.gui.components.btns import MediaButtons
+from feeluown.gui.components import PlayerProgressSliderAndLabel
+from feeluown.gui.components.btns import MediaButtonsV2
 from feeluown.gui.components.nowplaying import (
     NowplayingArtwork,
     NowplayingLyricView,
@@ -21,12 +22,6 @@ if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 
-class StackedPanel(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent=None):
-        super().__init__(parent=parent)
-
-
 class PlayerPanel(QWidget):
 
     def __init__(self, app: 'GuiApp', parent=None):
@@ -34,18 +29,23 @@ class PlayerPanel(QWidget):
 
         self.artwork_label = NowplayingArtwork(app, self)
         self.title_label = TwoLineSongLabel(app, self)
-        self.media_btns = MediaButtons(app, button_width=36, parent=self)
+        self.media_btns = MediaButtonsV2(app, button_width=36, parent=self)
+        self.progress = PlayerProgressSliderAndLabel(app, parent=self)
+        self._layout = QVBoxLayout(self)
 
         self.setup_ui()
 
     def setup_ui(self):
-        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 11, 0)
+        self._layout.setSpacing(0)
         # Put the cover_label in a vboxlayout and add strech around it,
         # so that cover_label's sizehint is respected.
         self._layout.addWidget(self.title_label)
-        self._layout.addSpacing(15)
+        self._layout.addSpacing(20)
         self._layout.addWidget(self.artwork_label)
-        self._layout.addSpacing(15)
+        self._layout.addSpacing(20)
+        self._layout.addStretch(0)
+        self._layout.addWidget(self.progress)
         self._layout.addWidget(self.media_btns)
 
     def sizeHint(self):
@@ -83,6 +83,8 @@ class NowplayingOverlay(QWidget):
         self.player_playlist_view.viewport().setAutoFillBackground(False)
         self.similar_songs_view.viewport().setAutoFillBackground(False)
 
+        # Set contents margin explicitly.
+        self._layout.setContentsMargins(20, 20, 20, 20)
         self._layout.addWidget(self.player_panel)
         self._layout.addLayout(self._stacked_layout)
         self._layout.addWidget(self.tabbar)
@@ -126,6 +128,7 @@ if __name__ == '__main__':
     dark = read_resource('dark.qss')
     qapp = QApplication([])
     app = Mock()
+    app.playlist.list.return_value = []
     app.size.return_value = QSize(600, 400)
     widget = NowplayingOverlay(app, None)
     widget.resize(600, 400)

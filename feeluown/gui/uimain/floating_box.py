@@ -3,7 +3,7 @@ from typing import Optional
 
 from PyQt5.QtCore import QTimer, QEvent, Qt, QRect
 from PyQt5.QtWidgets import (
-    QWidget, QLabel, QFrame, QHBoxLayout, QVBoxLayout, QPushButton,
+    QWidget, QFrame, QHBoxLayout, QVBoxLayout, QPushButton,
 )
 from PyQt5.QtGui import (
     QMouseEvent, QCursor, QPainter, QPalette, QBrush,
@@ -14,9 +14,8 @@ from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.components import (
     LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
-    MVButton, VolumeSlider, SongSourceTag,
+    MVButton, VolumeSlider, SongSourceTag, PlayerProgressRatioLabel
 )
-from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 
 IS_MACOS = sys.platform == 'darwin'
 
@@ -31,29 +30,6 @@ class MouseState:
         return self.start_pos != self.current_pos
 
 
-class ProgressRatioLabel(QWidget):
-    def __init__(self, app, parent=None):
-        super().__init__(parent=parent)
-
-        self._app = app
-
-        self.duration_label = DurationLabel(app, parent=self)
-        self.progress_label = ProgressLabel(app, parent=self)
-
-        font = self.font()
-        font.setPixelSize(10)
-        for label in (self.duration_label, self.progress_label):
-            label.setFont(font)
-            label.setMinimumWidth(26)
-
-        self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(2)
-        self._layout.addWidget(self.progress_label)
-        self._layout.addWidget(QLabel('/'))
-        self._layout.addWidget(self.duration_label)
-
-
 class Toolbar(QWidget):
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,7 +42,7 @@ class Toolbar(QWidget):
         self.song_source_tag = SongSourceTag(app=self._app, font_size=10)
         self.line_song_label = LineSongLabel(app=self._app)
         self.progress_slider = ProgressSlider(app=self._app)
-        self.progress_label = ProgressRatioLabel(app=self._app)
+        self.progress_label = PlayerProgressRatioLabel(app=self._app)
         self.volume_slider = VolumeSlider(app=self._app)
         self.media_buttons = MediaButtons(app=self._app,
                                           spacing=0,

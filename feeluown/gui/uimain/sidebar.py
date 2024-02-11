@@ -39,7 +39,7 @@ class ListViewContainer(QFrame):
         self._btn_length = 14
         self._label = label
         self._view = view
-        self._toggle_btn = TriagleButton(length=self._btn_length)
+        self._toggle_btn = TriagleButton(length=self._btn_length, padding=0.2)
         self.create_btn = PlusButton(length=self._btn_length)
         # Show this button when needed.
         self.create_btn.hide()

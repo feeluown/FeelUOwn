@@ -8,6 +8,7 @@ from feeluown.player import State
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets.textbtn import TextButton
+from feeluown.gui.widgets import PlayPauseButton, PlayNextButton, PlayPreviousButton
 from feeluown.gui.helpers import resize_font
 
 if TYPE_CHECKING:
@@ -169,6 +170,33 @@ class MVButton(SongMVTextButton):
     async def update_mv_btn_status(self, song):
         self.bind_song(song)
         await self.get_mv()
+
+
+class MediaButtonsV2(QWidget):
+    def __init__(self, app: 'GuiApp', button_width=30, parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+
+        self.previous_btn = PlayPreviousButton(parent=self, length=button_width)
+        self.pp_btn = PlayPauseButton(parent=self, length=button_width)
+        self.next_btn = PlayNextButton(parent=self, length=button_width)
+        self.pp_btn.setCheckable(True)
+
+        self._layout = QHBoxLayout(self)
+        self._layout.setSpacing(0)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.addWidget(self.previous_btn)
+        self._layout.addWidget(self.pp_btn)
+        self._layout.addWidget(self.next_btn)
+
+        self.next_btn.clicked.connect(self._app.playlist.next)
+        self.previous_btn.clicked.connect(self._app.playlist.previous)
+        self.pp_btn.clicked.connect(self._app.player.toggle)
+        self._app.player.state_changed.connect(
+            self._on_player_state_changed, aioqueue=True)
+
+    def _on_player_state_changed(self, state):
+        self.pp_btn.setChecked(state == State.playing)
 
 
 class MediaButtons(QWidget):
