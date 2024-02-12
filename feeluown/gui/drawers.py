@@ -87,7 +87,7 @@ class PixmapDrawer:
         y = (size.height() - self._widget.height()) // 2
         painter.save()
         painter.translate(0, -y)
-        rect = QRect(0, y, self._widget.width(), self._widget.height())
+        rect = QRect(0, 0, self._widget.width(), size.height())
         if radius == 0:
             painter.drawRect(rect)
         else:

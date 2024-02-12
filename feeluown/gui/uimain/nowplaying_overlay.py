@@ -16,8 +16,7 @@ from feeluown.gui.components.nowplaying import (
     NowplayingSimilarSongsView,
 )
 from feeluown.gui.components.line_song import TwoLineSongLabel
-from feeluown.gui.widgets import MVButton
-from feeluown.gui.helpers import set_default_font_families
+from feeluown.gui.helpers import set_default_font_families, disconnect_slots_if_has
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -29,35 +28,16 @@ class CtlButtons(QWidget):
         self._app = app
 
         self.media_btns = MediaButtonsV2(app, button_width=36, parent=self)
-        self.mv_btn = MVButton(length=36, parent=self)
-        self.mv_btn.setToolTip('播放歌曲 MV')
-        self.mv_btn.clicked.connect(self.play_mv)
-
-        self._app.playlist.song_mv_changed.connect(
-            self.on_current_song_mv_changed, aioqueue=True
-        )
-
         self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.addWidget(self.media_btns)
-        self._layout.addWidget(self.mv_btn)
-
-    def on_current_song_mv_changed(self, _, mv):
-        if mv is not None:
-            self.mv_btn.show()
-        else:
-            self.mv_btn.hide()
-
-    def play_mv(self):
-        self._app.playlist.set_current_model(self._app.playlist.current_song_mv)
-        parent = cast(PlayerPanel, self.parent())
-        parent.artwork_view.switch_body()
 
 
 class PlayerPanel(QWidget):
 
     def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent=parent)
-
+        self._app = app
         self.artwork_view = NowplayingArtwork(app, self)
         self.title_label = TwoLineSongLabel(app, self)
         self.ctl_btns = CtlButtons(app, parent=self)
@@ -65,6 +45,9 @@ class PlayerPanel(QWidget):
 
         self._layout = QVBoxLayout(self)
         self.setup_ui()
+
+        self.artwork_view.mv_btn.clicked.connect(self.play_mv)
+        self.ctl_btns.media_btns.toggle_video_btn.clicked.connect(self.enter_video_mode)
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 11, 0)
@@ -79,6 +62,26 @@ class PlayerPanel(QWidget):
         self._layout.addWidget(self.progress)
         self._layout.addWidget(self.ctl_btns)
         self._layout.setStretch(self._layout.indexOf(self.artwork_view), 1)
+
+    def play_mv(self):
+        print('play mv !!!!!!!')
+        self._app.playlist.set_current_model(self._app.playlist.current_song_mv)
+        self.enter_video_mode()
+
+    def enter_video_mode(self):
+        video_widget = self._app.ui.mpv_widget
+        disconnect_slots_if_has(video_widget.ctl_bar.exit_btn)
+        disconnect_slots_if_has(video_widget.ctl_bar.pip_btn)
+        video_widget.overlay_auto_visible = True
+        self.artwork_view.set_body(video_widget)
+        self.ctl_btns.hide()
+        self.progress.hide()
+        video_widget.ctl_bar.exit_btn.clicked.connect(self.enter_cover_mode)
+
+    def enter_cover_mode(self):
+        self.artwork_view.set_body(None)
+        self.ctl_btns.show()
+        self.progress.show()
 
     def sizeHint(self):
         return QSize(500, 400)
@@ -143,30 +146,17 @@ class NowplayingOverlay(QWidget):
 
 
 if __name__ == '__main__':
-    import os
-    from unittest.mock import Mock
+    from PyQt5.QtWidgets import QWidget
 
-    from PyQt5.QtCore import QDir
-    from PyQt5.QtWidgets import QApplication, QWidget
-
+    from feeluown.gui.debug import simple_layout, mock_app
     from feeluown.player import Metadata
-    from feeluown.gui.theme import read_resource
 
-    pkg_root_dir = os.path.join(os.path.join(os.path.dirname(__file__), '..'), '..')
-    icons_dir = os.path.join(pkg_root_dir, 'gui/assets/icons')
-    QDir.addSearchPath('icons', icons_dir)
-
-    qss = read_resource('common.qss')
-    dark = read_resource('dark.qss')
-    qapp = QApplication([])
-    app = Mock()
-    app.playlist.list.return_value = []
-    app.size.return_value = QSize(600, 400)
-    widget = NowplayingOverlay(app, None)
-    widget.resize(600, 400)
-    widget.setStyleSheet(qss + '\n' + dark)
-    widget.player_panel.title_label.on_metadata_changed(
-        Metadata(title='我和我的祖国', artists=['王菲'])
-    )
-    widget.show()
-    qapp.exec()
+    with simple_layout(theme='dark') as layout, mock_app() as app:
+        app.playlist.list.return_value = []
+        app.size.return_value = QSize(600, 400)
+        widget = NowplayingOverlay(app, None)
+        widget.resize(600, 400)
+        widget.player_panel.title_label.on_metadata_changed(
+            Metadata(title='我和我的祖国', artists=['王菲'])
+        )
+        layout.addWidget(widget)

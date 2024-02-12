@@ -7,7 +7,17 @@ from feeluown.player import State
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.size_grip import SizeGrip
 from feeluown.gui.widgets.textbtn import TextButton
-from .labels import ProgressLabel, DurationLabel
+from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
+
+
+class Button(TextButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        font = self.font()
+        font.setPixelSize(10)
+        self.setFont(font)
+        self.setFixedHeight(16)
 
 
 class VideoPlayerCtlBar(QWidget):
@@ -23,7 +33,9 @@ class VideoPlayerCtlBar(QWidget):
         self._progress_label = ProgressLabel(app, self)
         self._duration_label = DurationLabel(app, self)
         #: Toggle fullscreen button.
-        self._fullscreen_btn = TextButton("全屏")
+        self.pip_btn = Button("画中画")
+        self.fullscreen_btn = Button("全屏")
+        self.exit_btn = Button("隐藏")
         self._size_grip = SizeGrip(parent=self)
         self._layout = QVBoxLayout(self)
         self._bottom_layout = QHBoxLayout()
@@ -37,7 +49,7 @@ class VideoPlayerCtlBar(QWidget):
             weak=False,
             aioqueue=True)
         self._toggle_btn.clicked.connect(self._app.player.toggle)
-        self._fullscreen_btn.clicked.connect(self._app.watch_mgr.toggle_pip_fullscreen)
+        self.fullscreen_btn.clicked.connect(self._app.watch_mgr.toggle_pip_fullscreen)
 
     def _setup_ui(self):
         self.setAutoFillBackground(True)
@@ -52,22 +64,21 @@ class VideoPlayerCtlBar(QWidget):
 
         # Setup bottom layout.
         self._layout.addStretch(0)
-        self._bottom_layout.addSpacing(2)
+        self._bottom_layout.setSpacing(2)
         self._bottom_layout.addWidget(self._toggle_btn)
-        self._bottom_layout.addSpacing(8)
+        self._bottom_layout.addSpacing(6)
         self._bottom_layout.addWidget(self._progress_label)
-        self._bottom_layout.addSpacing(2)
         self._bottom_layout.addWidget(QLabel('/', self))
-        self._bottom_layout.addSpacing(2)
         self._bottom_layout.addWidget(self._duration_label)
         self._bottom_layout.addStretch(1)
-        self._bottom_layout.addWidget(self._fullscreen_btn)
-        self._bottom_layout.addSpacing(8)
+        self._bottom_layout.addWidget(self.pip_btn)
+        self._bottom_layout.addWidget(self.fullscreen_btn)
+        self._bottom_layout.addWidget(self.exit_btn)
+        self._bottom_layout.addSpacing(6)
         self._bottom_layout.addWidget(self._size_grip)
 
         # Setup widgets size.
         self._size_grip.setFixedSize(20, 20)
-        self._fullscreen_btn.setFixedHeight(20)
         # Button size should be same as the value defined in style sheet.
         self._toggle_btn.setFixedSize(24, 24)
 
@@ -103,7 +114,7 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self._overlay_visible_duration = 2000  # 2s
 
         # Define ui related objects and attributes.
-        self._ctl_bar = VideoPlayerCtlBar(app=app, parent=self)
+        self.ctl_bar = VideoPlayerCtlBar(app=app, parent=self)
         self._layout = QVBoxLayout(self)
 
         # Do initialization.
@@ -115,7 +126,7 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
         self._layout.addStretch(1)
-        self._layout.addWidget(self._ctl_bar)
+        self._layout.addWidget(self.ctl_bar)
         self.hide_overlay()
 
     def add_gl_painter(self, painter):
@@ -135,11 +146,11 @@ class VideoOpenGLWidget(QOpenGLWidget):
 
     def hide_overlay(self):
         """hide the overlay widget"""
-        self._ctl_bar.hide()
+        self.ctl_bar.hide()
 
     def show_overlay(self):
         """show the overlay widget"""
-        self._ctl_bar.show()
+        self.ctl_bar.show()
 
     def mouseMoveEvent(self, e):
         super().mouseMoveEvent(e)
@@ -156,3 +167,10 @@ class VideoOpenGLWidget(QOpenGLWidget):
     def leaveEvent(self, e):
         super().leaveEvent(e)
         self._overlay_visible_timer.start(self._overlay_visible_duration)
+
+
+if __name__ == '__main__':
+    from feeluown.gui.debug import simple_layout, mock_app
+
+    with simple_layout(theme='dark') as layout, mock_app() as app:
+        layout.addWidget(VideoPlayerCtlBar(app))

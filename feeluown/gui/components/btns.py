@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout
+from feeluown.gui.widgets.selfpaint_btn import TriagleButton
 
 from feeluown.player import State
 from feeluown.excs import ProviderIOError
@@ -176,7 +177,10 @@ class MediaButtonsV2(QWidget):
         self.previous_btn = PlayPreviousButton(parent=self, length=button_width)
         self.pp_btn = PlayPauseButton(parent=self, length=button_width)
         self.next_btn = PlayNextButton(parent=self, length=button_width)
+        self.toggle_video_btn = TriagleButton(length=button_width)
+        self.toggle_video_btn.hide()
         self.pp_btn.setCheckable(True)
+        self.toggle_video_btn.setToolTip('展示视频画面')
 
         self._layout = QHBoxLayout(self)
         self._layout.setSpacing(0)
@@ -184,15 +188,26 @@ class MediaButtonsV2(QWidget):
         self._layout.addWidget(self.previous_btn)
         self._layout.addWidget(self.pp_btn)
         self._layout.addWidget(self.next_btn)
+        self._layout.addWidget(self.toggle_video_btn)
 
         self.next_btn.clicked.connect(self._app.playlist.next)
         self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self._app.player.state_changed.connect(
-            self._on_player_state_changed, aioqueue=True)
+            self._on_player_state_changed, aioqueue=True
+        )
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True
+        )
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
+
+    def on_video_format_changed(self, video_format):
+        if video_format is None:
+            self.toggle_video_btn.hide()
+        else:
+            self.toggle_video_btn.show()
 
 
 class MediaButtons(QWidget):
