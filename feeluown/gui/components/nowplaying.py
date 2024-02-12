@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QFontMetrics, QPalette
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtWidgets import QStackedLayout, QWidget
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.helpers import fetch_cover_wrapper, random_solarized_color
@@ -52,16 +52,26 @@ class NowplayingArtwork(QWidget):
 
         self._app = app
         self._inner = CoverLabelV2(app, self)
+
         self._app.player.metadata_changed.connect(
             self.on_metadata_changed, aioqueue=True
         )
 
-        self._layout = QVBoxLayout(self)
+        self._layout = QStackedLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self._layout.addStretch(0)
         self._layout.addWidget(self._inner)
-        self._layout.addStretch(0)
+        self._layout.setAlignment(self._inner, Qt.AlignVCenter)
+
+    def switch_body(self):
+        video_widget = self._app.ui.mpv_widget
+        if self._layout.currentWidget() == video_widget:
+            self._layout.setCurrentWidget(self._inner)
+        else:
+            video_widget.overlay_auto_visible = False
+            self._layout.addWidget(video_widget)
+            self._layout.setCurrentWidget(video_widget)
+            self._layout.setAlignment(video_widget, Qt.AlignVCenter)
 
     def on_metadata_changed(self, metadata):
         metadata = metadata or {}

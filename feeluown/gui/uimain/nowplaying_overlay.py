@@ -16,10 +16,41 @@ from feeluown.gui.components.nowplaying import (
     NowplayingSimilarSongsView,
 )
 from feeluown.gui.components.line_song import TwoLineSongLabel
+from feeluown.gui.widgets import MVButton
 from feeluown.gui.helpers import set_default_font_families
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+
+class CtlButtons(QWidget):
+    def __init__(self, app: 'GuiApp', parent: 'PlayerPanel'):
+        super().__init__(parent=parent)
+        self._app = app
+
+        self.media_btns = MediaButtonsV2(app, button_width=36, parent=self)
+        self.mv_btn = MVButton(length=36, parent=self)
+        self.mv_btn.setToolTip('播放歌曲 MV')
+        self.mv_btn.clicked.connect(self.play_mv)
+
+        self._app.playlist.song_mv_changed.connect(
+            self.on_current_song_mv_changed, aioqueue=True
+        )
+
+        self._layout = QHBoxLayout(self)
+        self._layout.addWidget(self.media_btns)
+        self._layout.addWidget(self.mv_btn)
+
+    def on_current_song_mv_changed(self, _, mv):
+        if mv is not None:
+            self.mv_btn.show()
+        else:
+            self.mv_btn.hide()
+
+    def play_mv(self):
+        self._app.playlist.set_current_model(self._app.playlist.current_song_mv)
+        parent = cast(PlayerPanel, self.parent())
+        parent.artwork_view.switch_body()
 
 
 class PlayerPanel(QWidget):
@@ -27,12 +58,12 @@ class PlayerPanel(QWidget):
     def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent=parent)
 
-        self.artwork_label = NowplayingArtwork(app, self)
+        self.artwork_view = NowplayingArtwork(app, self)
         self.title_label = TwoLineSongLabel(app, self)
-        self.media_btns = MediaButtonsV2(app, button_width=36, parent=self)
+        self.ctl_btns = CtlButtons(app, parent=self)
         self.progress = PlayerProgressSliderAndLabel(app, parent=self)
-        self._layout = QVBoxLayout(self)
 
+        self._layout = QVBoxLayout(self)
         self.setup_ui()
 
     def setup_ui(self):
@@ -42,11 +73,12 @@ class PlayerPanel(QWidget):
         # so that cover_label's sizehint is respected.
         self._layout.addWidget(self.title_label)
         self._layout.addSpacing(20)
-        self._layout.addWidget(self.artwork_label)
+        self._layout.addWidget(self.artwork_view)
         self._layout.addSpacing(20)
         self._layout.addStretch(0)
         self._layout.addWidget(self.progress)
-        self._layout.addWidget(self.media_btns)
+        self._layout.addWidget(self.ctl_btns)
+        self._layout.setStretch(self._layout.indexOf(self.artwork_view), 1)
 
     def sizeHint(self):
         return QSize(500, 400)

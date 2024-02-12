@@ -160,16 +160,12 @@ class MVButton(SongMVTextButton):
         super().__init__(app, song=None, parent=parent, **kwargs)
 
         self.setObjectName('mv_btn')
-        self._app.playlist.song_changed.connect(
-            self.on_player_song_changed, aioqueue=True)
+        self._app.playlist.song_mv_changed.connect(
+            self.on_song_mv_changed, aioqueue=True)
 
-    def on_player_song_changed(self, song):
-        task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
-        task_spec.bind_coro(self.update_mv_btn_status(song))
-
-    async def update_mv_btn_status(self, song):
+    def on_song_mv_changed(self, song, mv):
         self.bind_song(song)
-        await self.get_mv()
+        self._mv = mv
 
 
 class MediaButtonsV2(QWidget):

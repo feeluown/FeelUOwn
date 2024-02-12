@@ -59,9 +59,7 @@ class WatchManager:
     @contextmanager
     def change_parent(self):
         self._parent_is_changing = True
-        self._before_change_mpv_widget_parent()
         yield
-        self._after_change_mpv_widget_parent()
         self._parent_is_changing = False
 
     def enter_normal_mode(self):
@@ -76,7 +74,6 @@ class WatchManager:
         if self._parent_is_normal is False:
             with self.change_parent():
                 self._app.ui.mpv_widget.hide()
-                self._app.ui.mpv_widget.shutdown()
                 self._pip_container.detach()
                 self._app.layout().insertWidget(1, self._app.ui.mpv_widget)
                 self._parent_is_normal = True
@@ -100,7 +97,6 @@ class WatchManager:
             height = self._app.player._mpv.height
             with self.change_parent():
                 self._app.ui.mpv_widget.hide()
-                self._app.ui.mpv_widget.shutdown()
                 self._app.ui._splitter.show()
                 self._app.ui.bottom_panel.show()
                 self._app.layout().removeWidget(self._app.ui.mpv_widget)

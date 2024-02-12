@@ -12,7 +12,7 @@ from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.player import Metadata, MetadataFields
 from feeluown.library import (
-    MediaNotFound, SongModel, ModelType, ResourceNotFound,
+    MediaNotFound, SongModel, ModelType, ResourceNotFound, VideoModel,
 )
 from feeluown.media import Media
 from feeluown.library import reverse
@@ -94,6 +94,7 @@ class Playlist:
 
         #: store value for ``current_song`` property
         self._current_song = None
+        self._current_song_mv = None
 
         #: songs whose url is invalid
         self._bad_songs = DedupList()
@@ -119,6 +120,7 @@ class Playlist:
 
         emit(song, media)
         """
+        self.song_mv_changed = Signal()  # emit(song, mv)
 
         #: When watch mode is on, playlist try to play the mv/video of the song
         self.watch_mode = False
@@ -134,6 +136,7 @@ class Playlist:
         self.play_model_handling = Signal()
 
         self._app.player.media_finished.connect(self._on_media_finished)
+        self.song_changed.connect(self._on_song_changed)
 
     @property
     def mode(self):
@@ -420,6 +423,22 @@ class Playlist:
         else:
             self.next()
 
+    def _on_song_changed(self, song):
+        self._app.task_mgr.run_afn_preemptive(self._fetch_current_song_mv, song)
+
+    async def _fetch_current_song_mv(self, song):
+        if song is None:
+            self._current_song_mv = None
+        else:
+            try:
+                mv = await run_fn(self._app.library.song_get_mv, song)
+            except ProviderIOError:
+                logger.exception('get song mv info failed')
+                self._current_song_mv = None
+            else:
+                self._current_song_mv = mv
+        self.song_mv_changed.emit(song, self._current_song_mv)
+
     def previous(self) -> Optional[asyncio.Task]:
         """return to the previous song in playlist"""
         return self.set_current_song(self.previous_song)
@@ -435,6 +454,10 @@ class Playlist:
     @current_song.setter
     def current_song(self, song: Optional[SongModel]):
         self.set_current_song(song)
+
+    @property
+    def current_song_mv(self) -> Optional[VideoModel]:
+        return self._current_song_mv
 
     def set_current_song(self, song) -> Optional[asyncio.Task]:
         """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
