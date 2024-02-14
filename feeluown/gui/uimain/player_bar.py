@@ -54,14 +54,12 @@ class PlayerControlPanel(QFrame):
         self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)
         self.toggle_video_btn = TextButton('△', self)
-        # toggle picture-in-picture button
-        self.toggle_pip_btn = TextButton('◲', self)
+        self.toggle_video_btn.hide()
 
         self.playlist_btn.setObjectName('playlist_btn')
         self.volume_btn.setObjectName('volume_btn')
         self.download_btn.setObjectName('download_btn')
         self.toggle_video_btn.setObjectName('toggle_video_btn')
-        self.toggle_pip_btn.setObjectName('toggle_pip_btn')
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
@@ -83,7 +81,8 @@ class PlayerControlPanel(QFrame):
 
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
-
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True)
         player = self._app.player
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
@@ -170,8 +169,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addWidget(self.playlist_btn)
         self._layout.addSpacing(8)
         self._layout.addWidget(self.toggle_video_btn)
-        self._layout.addSpacing(8)
-        self._layout.addWidget(self.toggle_pip_btn)
         self._layout.addSpacing(18)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -190,6 +187,12 @@ class PlayerControlPanel(QFrame):
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
         else:
             self.cover_label.show_img(None)
+
+    def on_video_format_changed(self, video_format):
+        if video_format is None:
+            self._app.ui.pc_panel.toggle_video_btn.hide()
+        else:
+            self._app.ui.pc_panel.toggle_video_btn.show()
 
     def show_nowplaying_overlay(self):
         self._app.ui.nowplaying_overlay.show()

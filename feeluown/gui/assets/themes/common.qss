@@ -102,7 +102,7 @@ ClickableHeader TextButton:checked {
 #toggle_lyric_btn {
     padding: 0px 5px;
 }
-#toggle_video_btn, #toggle_pip_btn {
+#toggle_video_btn {
     padding: 0px 3px;
 }
 

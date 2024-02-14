@@ -48,6 +48,9 @@ class PlayerPanel(QWidget):
 
         self.artwork_view.mv_btn.clicked.connect(self.play_mv)
         self.ctl_btns.media_btns.toggle_video_btn.clicked.connect(self.enter_video_mode)
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True
+        )
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 11, 0)
@@ -61,10 +64,8 @@ class PlayerPanel(QWidget):
         self._layout.addStretch(0)
         self._layout.addWidget(self.progress)
         self._layout.addWidget(self.ctl_btns)
-        self._layout.setStretch(self._layout.indexOf(self.artwork_view), 1)
 
     def play_mv(self):
-        print('play mv !!!!!!!')
         self._app.playlist.set_current_model(self._app.playlist.current_song_mv)
         self.enter_video_mode()
 
@@ -85,6 +86,10 @@ class PlayerPanel(QWidget):
 
     def sizeHint(self):
         return QSize(500, 400)
+
+    def on_video_format_changed(self, video_format):
+        if video_format is None:
+            self.enter_cover_mode()
 
 
 class NowplayingOverlay(QWidget):

@@ -8,6 +8,7 @@ from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.size_grip import SizeGrip
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
+from feeluown.gui.helpers import disconnect_slots_if_has
 
 
 class Button(TextButton):
@@ -49,7 +50,10 @@ class VideoPlayerCtlBar(QWidget):
             weak=False,
             aioqueue=True)
         self._toggle_btn.clicked.connect(self._app.player.toggle)
-        self.fullscreen_btn.clicked.connect(self._app.watch_mgr.toggle_pip_fullscreen)
+
+    def btns_disconnect_slots(self):
+        for btn in (self.pip_btn, self.fullscreen_btn, self.exit_btn):
+            disconnect_slots_if_has(btn)
 
     def _setup_ui(self):
         self.setAutoFillBackground(True)
