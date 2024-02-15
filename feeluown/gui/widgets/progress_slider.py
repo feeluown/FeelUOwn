@@ -4,6 +4,7 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QSlider, QAbstractSlider
 
 from feeluown.player import State
+from feeluown.gui.helpers import IS_MACOS
 
 
 class DraggingContext:
@@ -30,6 +31,9 @@ class ProgressSlider(QSlider):
         self._app.player.duration_changed.connect(self.update_total, aioqueue=True)
         self._app.player_pos_per300ms.changed.connect(self.update_progress)
         self._app.player.media_changed.connect(self.on_media_changed)
+
+        if IS_MACOS:
+            self.setMinimumHeight(25)  # otherwise, the handler can't show properly
 
     def update_total(self, s):
         s = s or 0

@@ -77,14 +77,22 @@ class PlayerPanel(QWidget):
         self.enter_video_mode()
 
     def enter_video_mode(self):
+        # FIXME: should call watch_mgr.set_mode
+        self._app.watch_mgr.exit_pip_mode()
+        self._app.watch_mgr.exit_fullwindow_mode()
         video_widget = self._app.ui.mpv_widget
         video_widget.overlay_auto_visible = True
         self.artwork_view.set_body(video_widget)
         self.ctl_btns.hide()
         self.progress.hide()
         video_widget.ctl_bar.clear_adhoc_btns()
-        btn = video_widget.ctl_bar.add_adhoc_btn('退出视频模式')
-        btn.clicked.connect(self.enter_cover_mode)
+        exit_btn = video_widget.ctl_bar.add_adhoc_btn('退出视频模式')
+        fullwindow_btn = video_widget.ctl_bar.add_adhoc_btn('窗口全屏')
+        exit_btn.clicked.connect(self.enter_cover_mode)
+        fullwindow_btn.clicked.connect(
+            lambda: self._app.watch_mgr.
+            enter_fullwindow_mode(go_back=self.enter_video_mode)
+        )
 
     def enter_cover_mode(self):
         self.artwork_view.set_body(None)

@@ -1,8 +1,10 @@
 import logging
 from enum import IntEnum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, QEvent
+from PyQt5.QtGui import QResizeEvent
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
@@ -14,8 +16,32 @@ logger = logging.getLogger(__name__)
 
 class Mode(IntEnum):
     none = 0    # Hide all video related widgets, including controller buttons.
-    normal = 1  # Show video widget inside the main window.
+    fullwindow = 1  # Show video widget inside the full window coantainer.
     pip = 2     # Show video widget in a detached container (picture in picture).
+
+
+class FullWindowContainer(QWidget):
+    def __init__(self, app: 'GuiApp', parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+        self._app.installEventFilter(self)
+
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(0)
+
+    def set_body(self, widget):
+        self._layout.insertWidget(0, widget)
+
+    def showEvent(self, e):
+        self.resize(self._app.size())
+        super().showEvent(e)
+
+    def eventFilter(self, obj, event):
+        if self.isVisible() and obj is self._app and event.type() == QEvent.Resize:
+            event = cast(QResizeEvent, event)
+            self.resize(event.size())
+        return False
 
 
 class WatchManager:
@@ -27,6 +53,7 @@ class WatchManager:
         """
         self._app = app
         self._pip_container = ResizableFramelessContainer()
+        self._fullwindow_container = FullWindowContainer(app, parent=app)
 
         #: Is the video widget visible before.
         self._is_visible_before = False
@@ -37,81 +64,65 @@ class WatchManager:
         self._ui = self._app.ui
         self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.pc_panel.media_btns.toggle_video_btn.clicked.connect(
-            lambda: self.set_mode(Mode.normal))
+            lambda: self.set_mode(Mode.fullwindow))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
         self._app.player.video_format_changed.connect(self.on_video_format_changed, aioqueue=True)  # noqa
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
+        self._fullwindow_container.hide()
 
     def set_mode(self, mode):
         self._is_visible_before = self._app.ui.mpv_widget.isVisible()
         mode = Mode(mode)  # So that user can call set_mode(0/1/2) in REPL.
         if mode is Mode.none:
-            self.exit_normal_mode()
+            self.exit_fullwindow_mode()
             self.exit_pip_mode()
         else:
-            self.enter_mode(mode)
+            # change current mode to mode
+            #
+            # if mode is same as the current mode, exit mode
+            # if mode is not same as the current mode, exit
+            # current mode and enter mode
+            if mode is Mode.fullwindow:
+                self.exit_pip_mode()
+                self.enter_fullwindow_mode(go_back=self.exit_fullwindow_mode)
+            else:
+                self.exit_fullwindow_mode()
+                self.enter_pip_mode()
 
-    def enter_mode(self, mode):
-        # change current mode to mode
-        #
-        # if mode is same as the current mode, exit mode
-        # if mode is not same as the current mode, exit
-        # current mode and enter mode
-        if mode is Mode.normal:
-            self.exit_pip_mode()
-            self.enter_normal_mode()
-        else:
-            self.exit_normal_mode()
-            self.enter_pip_mode()
-
-    def _hide_app_other_widgets(self):
-        for widget in (self._app.ui.bottom_panel,
-                       self._app.ui._top_separator,
-                       self._app.ui._splitter,
-                       self._app.ui.top_panel,):
-            widget.hide()
-
-    def _show_app_other_widgets(self):
-        for widget in (self._app.ui.bottom_panel,
-                       self._app.ui._top_separator,
-                       self._app.ui._splitter,
-                       self._app.ui.top_panel,):
-            widget.show()
-
-    def enter_normal_mode(self):
+    def enter_fullwindow_mode(self, go_back=None):
         """enter normal mode"""
         video_widget = self._app.ui.mpv_widget
         logger.info("enter video-show normal mode")
-        self._hide_app_other_widgets()
+        if video_widget.parent() != self._fullwindow_container:
+            self._fullwindow_container.set_body(video_widget)
 
-        if video_widget.parent() != self._app:
-            layout = self._app.layout()
-            layout.insertWidget(1, video_widget)  # type: ignore
-
+        self._fullwindow_container.show()
+        self._fullwindow_container.raise_()
         video_widget.show()
         video_widget.overlay_auto_visible = True
         video_widget.ctl_bar.clear_adhoc_btns()
         pip_btn = video_widget.ctl_bar.add_adhoc_btn('画中画')
-        hide_btn = video_widget.ctl_bar.add_adhoc_btn('最小化')
         pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
-        hide_btn.clicked.connect(self.exit_normal_mode)
+        if go_back is not None:
+            hide_btn = video_widget.ctl_bar.add_adhoc_btn('最小化')
+            hide_btn.clicked.connect(go_back)
 
-    def exit_normal_mode(self):
+    def exit_fullwindow_mode(self):
         self._app.ui.mpv_widget.hide()
-        self._show_app_other_widgets()
+        self._fullwindow_container.hide()
         logger.info("exit video-show normal mode")
 
     def _is_pip_mode(self):
         return self._app.ui.mpv_widget.parent() == self._pip_container
 
-    def _is_normal_mode(self):
+    def _is_fullwindow_mode(self):
         return (self._app.ui.mpv_widget.parent() == self._app and
                 self._app.ui.mpv_widget.isVisible())
 
     def _is_none_mode(self):
-        return not (self._is_pip_mode() or self._is_normal_mode())
+        return not (self._is_pip_mode() or self._is_fullwindow_mode())
 
     def enter_pip_mode(self):
         """enter picture in picture mode"""
@@ -126,10 +137,9 @@ class WatchManager:
         fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn('全屏')
         hide_btn = video_widget.ctl_bar.add_adhoc_btn('退出画中画')
         fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
-        hide_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
+        hide_btn.clicked.connect(lambda: self.set_mode(Mode.fullwindow))
         self._pip_container.show()
         self._app.ui.mpv_widget.show()
-        self._show_app_other_widgets()
         try:
             width = int(self._app.player._mpv.width)  # type: ignore
             height = int(self._app.player._mpv.height)  # type: ignore
@@ -157,7 +167,7 @@ class WatchManager:
         # The mv button only shows when there is a valid mv object
         mv = self._app.library.song_get_mv(song)
         self._app.playlist.set_current_model(mv)
-        self.enter_normal_mode()
+        self.enter_fullwindow_mode(go_back=self.exit_fullwindow_mode)
 
     def on_media_changed(self, media):
         if not media:
@@ -169,8 +179,8 @@ class WatchManager:
             self.set_mode(Mode.none)
         else:
             if self._is_visible_before is True:
-                if self._is_normal_mode():
-                    self.set_mode(Mode.normal)
+                if self._is_fullwindow_mode():
+                    self.set_mode(Mode.fullwindow)
                 elif self._is_pip_mode():
                     self.set_mode(Mode.pip)
 

@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, QSize
 from PyQt5.QtGui import QColor, QPalette
 from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
     QHBoxLayout, QOpenGLWidget, QLabel
@@ -19,6 +19,11 @@ class Button(TextButton):
         font.setPixelSize(10)
         self.setFont(font)
         self.setFixedHeight(16)
+
+    def sizeHint(self):
+        fm = self.fontMetrics()
+        rect = fm.boundingRect(self.text())
+        return QSize(rect.width() + 6, rect.height())
 
 
 class VideoPlayerCtlBar(QWidget):
@@ -78,6 +83,7 @@ class VideoPlayerCtlBar(QWidget):
         # Setup bottom layout.
         self._layout.addStretch(0)
         self._bottom_layout.setSpacing(2)
+        self._adhoc_btn_layout.setSpacing(4)
         self._bottom_layout.addWidget(self._toggle_btn)
         self._bottom_layout.addSpacing(6)
         self._bottom_layout.addWidget(self._progress_label)
@@ -182,4 +188,7 @@ if __name__ == '__main__':
     from feeluown.gui.debug import simple_layout, mock_app
 
     with simple_layout(theme='dark') as layout, mock_app() as app:
-        layout.addWidget(VideoPlayerCtlBar(app))
+        ctl_bar = VideoPlayerCtlBar(app)
+        ctl_bar.add_adhoc_btn('全屏')
+        ctl_bar.add_adhoc_btn('最小化')
+        layout.addWidget(ctl_bar)

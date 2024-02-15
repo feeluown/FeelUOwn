@@ -671,11 +671,11 @@ class Playlist:
         """
         .. versionadded: 3.7.13
         """
-        if ModelType(model.meta.model_type) is ModelType.song:
-            return self.set_current_song(model)
         if model is None:
             self._app.player.stop()
             return
+        if ModelType(model.meta.model_type) is ModelType.song:
+            return self.set_current_song(model)
         return self._t_scm.bind_coro(self.a_set_current_model(model))
 
     async def a_set_current_model(self, model):
