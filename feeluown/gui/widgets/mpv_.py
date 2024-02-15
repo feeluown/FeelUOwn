@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QMetaObject, pyqtSlot
+from PyQt5.QtCore import QMetaObject, pyqtSlot, QSize
 from PyQt5.QtOpenGL import QGLContext
 
 from mpv import MpvRenderContext, OpenGlCbGetProcAddrFn
@@ -80,6 +80,20 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         # OpenGLContext, which in general is the main thread.
         # QMetaObject.invokeMethod can do this trick.
         QMetaObject.invokeMethod(self, 'maybe_update')
+
+    # NOTE(cosven): heightForwidth does not work (tested inside nowplaying_overlay.py)
+    def hasHeightForWidth(self) -> bool:
+        return bool(self.mpv.width)
+
+    def heightForWidth(self, width: int) -> int:
+        if self.mpv.width:
+            return width // self.mpv.width * self.mpv.height
+        return super().heightForWidth(width)
+
+    def sizeHint(self):
+        if self.mpv.width:
+            return QSize(self.mpv.width, self.mpv.height)
+        return super().sizeHint()
 
 
 # TODO: 实现 MpvEmbeddedWidget

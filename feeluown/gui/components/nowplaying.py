@@ -95,11 +95,11 @@ class NowplayingArtwork(QWidget):
             self.on_current_song_mv_changed, aioqueue=True
         )
 
-        self._layout = QStackedLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-        self._layout.addWidget(self._inner)
-        self._layout.setAlignment(self._inner, Qt.AlignVCenter)
+        self._stacked_layout = QStackedLayout(self)
+        self.layout().setContentsMargins(0, 0, 0, 0)
+        self.layout().setSpacing(0)
+        self._stacked_layout.addWidget(self._inner)
+        self.layout().setAlignment(self._inner, Qt.AlignVCenter)
 
         self._mv_wrapper.raise_()
 
@@ -107,12 +107,12 @@ class NowplayingArtwork(QWidget):
         if widget is None:
             widget = self._inner
         if widget == self._inner:
-            self._layout.setCurrentWidget(self._inner)
+            self._stacked_layout.setCurrentWidget(self._inner)
             self._mv_wrapper.raise_()
         else:
-            self._layout.addWidget(widget)
-            self._layout.setCurrentWidget(widget)
-            self._layout.setAlignment(widget, Qt.AlignVCenter)
+            self._stacked_layout.addWidget(widget)
+            self._stacked_layout.setCurrentWidget(widget)
+            self._stacked_layout.setAlignment(widget, Qt.AlignVCenter)
             self._mv_wrapper.hide()
 
     def on_current_song_mv_changed(self, _, mv):

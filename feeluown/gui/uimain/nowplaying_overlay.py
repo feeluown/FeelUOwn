@@ -3,7 +3,12 @@ from typing import TYPE_CHECKING, cast
 from PyQt5.QtCore import QEvent, QSize
 from PyQt5.QtGui import QResizeEvent, QKeySequence
 from PyQt5.QtWidgets import (
-    QHBoxLayout, QVBoxLayout, QWidget, QShortcut, QStackedLayout, QTabBar,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QShortcut,
+    QStackedLayout,
+    QTabBar,
 )
 
 from feeluown.gui.components import PlayerProgressSliderAndLabel
@@ -23,6 +28,7 @@ if TYPE_CHECKING:
 
 
 class CtlButtons(QWidget):
+
     def __init__(self, app: 'GuiApp', parent: 'PlayerPanel'):
         super().__init__(parent=parent)
         self._app = app
@@ -60,6 +66,7 @@ class PlayerPanel(QWidget):
         self._layout.addWidget(self.title_label)
         self._layout.addSpacing(20)
         self._layout.addWidget(self.artwork_view)
+        self._layout.setStretch(self._layout.indexOf(self.artwork_view), 1)
         self._layout.addSpacing(20)
         self._layout.addStretch(0)
         self._layout.addWidget(self.progress)
@@ -87,7 +94,10 @@ class PlayerPanel(QWidget):
     def showEvent(self, a0) -> None:
         # When self is hidden, mpv_widget may be moved to somewhere else.
         # If it is removed, enter cover mode.
-        if self._app.ui.mpv_widget.parent() != self.artwork_view:
+        if (
+            self._app.ui.mpv_widget.parent() != self.artwork_view
+            or self._app.player.video_format is None
+        ):
             self.enter_cover_mode()
         else:
             self.enter_video_mode()
