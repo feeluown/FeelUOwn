@@ -16,7 +16,7 @@ from feeluown.gui.components.nowplaying import (
     NowplayingSimilarSongsView,
 )
 from feeluown.gui.components.line_song import TwoLineSongLabel
-from feeluown.gui.helpers import set_default_font_families, disconnect_slots_if_has
+from feeluown.gui.helpers import set_default_font_families
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -71,18 +71,27 @@ class PlayerPanel(QWidget):
 
     def enter_video_mode(self):
         video_widget = self._app.ui.mpv_widget
-        disconnect_slots_if_has(video_widget.ctl_bar.exit_btn)
-        disconnect_slots_if_has(video_widget.ctl_bar.pip_btn)
         video_widget.overlay_auto_visible = True
         self.artwork_view.set_body(video_widget)
         self.ctl_btns.hide()
         self.progress.hide()
-        video_widget.ctl_bar.exit_btn.clicked.connect(self.enter_cover_mode)
+        video_widget.ctl_bar.clear_adhoc_btns()
+        btn = video_widget.ctl_bar.add_adhoc_btn('退出视频模式')
+        btn.clicked.connect(self.enter_cover_mode)
 
     def enter_cover_mode(self):
         self.artwork_view.set_body(None)
         self.ctl_btns.show()
         self.progress.show()
+
+    def showEvent(self, a0) -> None:
+        # When self is hidden, mpv_widget may be moved to somewhere else.
+        # If it is removed, enter cover mode.
+        if self._app.ui.mpv_widget.parent() != self.artwork_view:
+            self.enter_cover_mode()
+        else:
+            self.enter_video_mode()
+        return super().showEvent(a0)
 
     def sizeHint(self):
         return QSize(500, 400)

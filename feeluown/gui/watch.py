@@ -84,18 +84,18 @@ class WatchManager:
         video_widget = self._app.ui.mpv_widget
         logger.info("enter video-show normal mode")
         self._hide_app_other_widgets()
-        video_widget.show()
-        video_widget.overlay_auto_visible = True
 
         if video_widget.parent() != self._app:
             layout = self._app.layout()
             layout.insertWidget(1, video_widget)  # type: ignore
 
-        video_widget.ctl_bar.fullscreen_btn.hide()
-        video_widget.ctl_bar.pip_btn.show()
-        video_widget.ctl_bar.btns_disconnect_slots()
-        video_widget.ctl_bar.pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
-        video_widget.ctl_bar.exit_btn.clicked.connect(self.exit_normal_mode)
+        video_widget.show()
+        video_widget.overlay_auto_visible = True
+        video_widget.ctl_bar.clear_adhoc_btns()
+        pip_btn = video_widget.ctl_bar.add_adhoc_btn('画中画')
+        hide_btn = video_widget.ctl_bar.add_adhoc_btn('最小化')
+        pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
+        hide_btn.clicked.connect(self.exit_normal_mode)
 
     def exit_normal_mode(self):
         self._app.ui.mpv_widget.hide()
@@ -122,24 +122,27 @@ class WatchManager:
         if video_widget.parent() != self._pip_container:
             self._pip_container.attach_widget(self._app.ui.mpv_widget)
 
-        video_widget.ctl_bar.btns_disconnect_slots()
-        video_widget.ctl_bar.fullscreen_btn.show()
-        video_widget.ctl_bar.pip_btn.hide()
-        video_widget.ctl_bar.fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
-        video_widget.ctl_bar.exit_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
+        video_widget.ctl_bar.clear_adhoc_btns()
+        fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn('全屏')
+        hide_btn = video_widget.ctl_bar.add_adhoc_btn('退出画中画')
+        fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
+        hide_btn.clicked.connect(lambda: self.set_mode(Mode.normal))
         self._pip_container.show()
         self._app.ui.mpv_widget.show()
         self._show_app_other_widgets()
-        width = self._app.player._mpv.width
-        height = self._app.player._mpv.height
-        proper_width = max(min(width, 640), 320)
-        proper_height = height * proper_width // width
-        self._pip_container.resize(proper_width, proper_height)
+        try:
+            width = int(self._app.player._mpv.width)  # type: ignore
+            height = int(self._app.player._mpv.height)  # type: ignore
+        except ValueError:
+            logger.exception('mpv video width/height is not a valid int')
+        else:
+            proper_width = max(min(width, 640), 320)
+            proper_height = height * proper_width // width
+            self._pip_container.resize(proper_width, proper_height)
 
     def exit_pip_mode(self):
         """exit picture in picture mode"""
         self._pip_container.hide()
-        self._app.ui.mpv_widget.hide()
         logger.info("exit video-show picture in picture mode")
 
     def toggle_pip_fullscreen(self):

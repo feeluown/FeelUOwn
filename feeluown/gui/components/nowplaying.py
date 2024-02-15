@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFontMetrics, QPalette, QColor
+from PyQt5.QtGui import QFontMetrics, QPalette, QColor, QPainter
 from PyQt5.QtWidgets import QHBoxLayout, QStackedLayout, QWidget
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
@@ -72,7 +72,6 @@ class MVWrapper(QWidget):
         self.setFixedSize(40, 25)
 
     def paintEvent(self, _):
-        from PyQt5.QtGui import QPainter
         painter = QPainter(self)
         painter.setPen(Qt.NoPen)
         painter.setBrush(self.palette().color(QPalette.Window))

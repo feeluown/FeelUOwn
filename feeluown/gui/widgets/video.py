@@ -8,7 +8,6 @@ from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.size_grip import SizeGrip
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
-from feeluown.gui.helpers import disconnect_slots_if_has
 
 
 class Button(TextButton):
@@ -33,11 +32,8 @@ class VideoPlayerCtlBar(QWidget):
         self._progress_slider = ProgressSlider(app)
         self._progress_label = ProgressLabel(app, self)
         self._duration_label = DurationLabel(app, self)
-        #: Toggle fullscreen button.
-        self.pip_btn = Button("画中画")
-        self.fullscreen_btn = Button("全屏")
-        self.exit_btn = Button("隐藏")
         self._size_grip = SizeGrip(parent=self)
+        self._adhoc_btn_layout = QHBoxLayout()
         self._layout = QVBoxLayout(self)
         self._bottom_layout = QHBoxLayout()
 
@@ -51,9 +47,23 @@ class VideoPlayerCtlBar(QWidget):
             aioqueue=True)
         self._toggle_btn.clicked.connect(self._app.player.toggle)
 
-    def btns_disconnect_slots(self):
-        for btn in (self.pip_btn, self.fullscreen_btn, self.exit_btn):
-            disconnect_slots_if_has(btn)
+    def add_adhoc_btn(self, text: str) -> QPushButton:
+        """
+        .. versionadded: 4.0.1
+        """
+        btn = Button(text)
+        self._adhoc_btn_layout.addWidget(btn)
+        return btn
+
+    def clear_adhoc_btns(self):
+        """
+        .. versionadded: 4.0.1
+        """
+        while self._adhoc_btn_layout.count():
+            item = self._adhoc_btn_layout.itemAt(0)
+            self._adhoc_btn_layout.removeItem(item)
+            if item.widget():
+                item.widget().deleteLater()
 
     def _setup_ui(self):
         self.setAutoFillBackground(True)
@@ -75,9 +85,7 @@ class VideoPlayerCtlBar(QWidget):
         self._bottom_layout.addWidget(QLabel('/', self))
         self._bottom_layout.addWidget(self._duration_label)
         self._bottom_layout.addStretch(1)
-        self._bottom_layout.addWidget(self.pip_btn)
-        self._bottom_layout.addWidget(self.fullscreen_btn)
-        self._bottom_layout.addWidget(self.exit_btn)
+        self._bottom_layout.addLayout(self._adhoc_btn_layout)
         self._bottom_layout.addSpacing(6)
         self._bottom_layout.addWidget(self._size_grip)
 
