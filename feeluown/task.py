@@ -98,14 +98,7 @@ class TaskManager:
         task_spec = task_mgr.get_or_create(task_name, TaskType.preemptive)
         task = task_spec.bind_coro(fetch_song())
     """
-    def __init__(self, app):
-        """
-
-        :param app: feeluown app instance
-        :param loop: asyncio event loop
-        """
-        self._app = app
-
+    def __init__(self, *_):
         # only accessible for task instance
         self.loop = asyncio.get_running_loop()
 
@@ -131,3 +124,22 @@ class TaskManager:
         task_spec = PreemptiveTaskSpec(self, name)
         self._store[name] = task_spec
         return task_spec
+
+    def run_afn_preemptive(self, afn, *args, name=''):
+        if not name:
+            name = get_fn_name(afn)
+        task_spec = self.get_or_create(name)
+        return task_spec.bind_coro(afn(*args))
+
+    def run_fn_preemptive(self, fn, *args, name=''):
+        if not name:
+            name = get_fn_name(fn)
+        task_spec = self.get_or_create(name)
+        return task_spec.bind_blocking_io(fn, *args)
+
+
+def get_fn_name(fn):
+    if hasattr(fn, '__self__') and hasattr(fn, '__func__'):
+        this = fn.__self__
+        return f'{this.__module__}.{this.__class__.__name__}.{fn.__name__}'
+    return f'{fn.__module__}.{fn.__name__}'

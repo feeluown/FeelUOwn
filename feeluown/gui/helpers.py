@@ -27,8 +27,9 @@ from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
 from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
     QAbstractListModel, QPoint
-from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent
-from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget
+from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent, \
+    QKeySequence
+from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QShortcut
 
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
@@ -36,6 +37,7 @@ from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
 from feeluown.library import ModelNotFound, ModelType, BaseModel
 from feeluown.library import reverse
+from feeluown.gui.consts import FontFamilies
 
 
 if TYPE_CHECKING:
@@ -605,6 +607,16 @@ class ClickableMixin:
 
     def set_down(self, down: bool):
         self._down = down
+
+
+def set_default_font_families(widget):
+    font = widget.font()
+    font.setFamilies(FontFamilies)
+    widget.setFont(font)
+
+
+def esc_hide_widget(widget):
+    QShortcut(QKeySequence.Cancel, widget).activated.connect(widget.hide)
 
 
 # https://ethanschoonover.com/solarized/

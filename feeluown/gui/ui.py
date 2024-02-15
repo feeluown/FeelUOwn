@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QSizePolicy, QSplitter, QVBoxLayout
 from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.settings import SettingsDialog
 from feeluown.gui.widgets.messageline import MessageLine
-from feeluown.gui.widgets.mpv import MpvOpenGLWidget
+from feeluown.gui.widgets.mpv_ import MpvOpenGLWidget
 
 from feeluown.gui.uimain.lyric import LyricWindow
 from feeluown.gui.uimain.sidebar import LeftPanel
@@ -51,10 +51,8 @@ class Ui:
         self.songs_table = self.table_container.songs_table
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
-        self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
-        self.toolbar.settings_btn.clicked.connect(
-            self._open_settings_dialog)
+        self.toolbar.settings_btn.clicked.connect(self._open_settings_dialog)
 
         self._setup_ui()
 

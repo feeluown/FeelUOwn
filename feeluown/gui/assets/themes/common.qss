@@ -65,6 +65,11 @@ TextButton {
     padding: 2px 8px;
     border-radius: 3px;
 }
+
+VideoPlayerCtlBar Button {
+    padding: 0px;
+}
+
 ToolbarButton {
     width: 30px;
     height: 30px;
@@ -101,9 +106,6 @@ ClickableHeader TextButton:checked {
 }
 #toggle_lyric_btn {
     padding: 0px 5px;
-}
-#toggle_video_btn, #toggle_pip_btn {
-    padding: 0px 3px;
 }
 
 VideoCtlToolbar QPushButton {

@@ -3,13 +3,29 @@ from PyQt5.QtWidgets import QPushButton, QStyle, QStyleOptionButton
 from PyQt5.QtGui import QPainter, QPalette, QPainterPath
 
 from feeluown.gui.drawers import (
-    HomeIconDrawer, PlusIconDrawer, TriangleIconDrawer, CalendarIconDrawer,
-    RankIconDrawer, StarIconDrawer,
+    HomeIconDrawer,
+    PlusIconDrawer,
+    TriangleIconDrawer,
+    CalendarIconDrawer,
+    RankIconDrawer,
+    StarIconDrawer,
+    VolumeIconDrawer,
 )
-from feeluown.gui.helpers import darker_or_lighter
+from feeluown.gui.helpers import darker_or_lighter, painter_save
+
+
+def set_pen_width(painter, width):
+    pen = painter.pen()
+    pen.setWidthF(width)
+    painter.setPen(pen)
+
+
+def set_pen_1_5(painter):
+    set_pen_width(painter, 1.5)
 
 
 class SelfPaintAbstractButton(QPushButton):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         # It seems macOS platform does not turn this attribute on by default.
@@ -20,6 +36,12 @@ class SelfPaintAbstractButton(QPushButton):
 
     def paintEvent(self, _):
         raise NotImplementedError('paintEvent must be implemented')
+
+    def hitButton(self, pos: QPoint) -> bool:
+        # QPushButton use style().subElementRect().contains to check if it is hit.
+        # style().subElementRect is really small for buttons. So it does not
+        # work well for small buttons (tested on macOS).
+        return self.rect().contains(pos)
 
     def paint_border_bg_when_hover(self, painter, radius=3):
         opt = QStyleOptionButton()
@@ -35,6 +57,7 @@ class SelfPaintAbstractButton(QPushButton):
 
 
 class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
+
     def __init__(self, text='', height=30, padding=0.25, parent=None):
         super().__init__(parent=parent)
 
@@ -54,8 +77,10 @@ class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
         self.draw_text(painter)
 
     def draw_text(self, painter):
-        text_rect = QRectF(self.height(), 0,
-                           self.width()-self.height()-self._padding, self.height())
+        text_rect = QRectF(
+            self.height(), 0,
+            self.width() - self.height() - self._padding, self.height()
+        )
         painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, self._text)
 
     def draw_icon(self, painter):
@@ -63,12 +88,17 @@ class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
 
 
 class SelfPaintAbstractSquareButton(SelfPaintAbstractButton):
+
     def __init__(self, length=30, padding=0.25, parent=None):
         """
         All buttons should has similar paddings.
         """
         super().__init__(parent)
-        self._padding = int(length * padding) if padding < 1 else padding
+        self._padding = int(length * padding) if padding < 1 else int(padding)
+        self._body_width = length - 2 * self._padding
+        self._body_rect = QRect(
+            self._padding, self._padding, self._body_width, self._body_width
+        )
         self.setFixedSize(length, length)
 
     def paint_round_bg_when_hover(self, painter):
@@ -85,6 +115,7 @@ class SelfPaintAbstractSquareButton(SelfPaintAbstractButton):
 
 
 class ArrowAbstractButton(SelfPaintAbstractSquareButton):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -106,28 +137,28 @@ class ArrowAbstractButton(SelfPaintAbstractSquareButton):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         self.paint_round_bg_when_hover(painter)
-
-        pen = painter.pen()
-        pen.setWidthF(1.5)
-        painter.setPen(pen)
+        set_pen_1_5(painter)
         for vertex in self.vertexes:
             if vertex != self.cross:
                 painter.drawLine(self.cross, vertex)
 
 
 class LeftArrowButton(ArrowAbstractButton):
+
     @property
     def cross(self):
         return self._left
 
 
 class RightArrowButton(ArrowAbstractButton):
+
     @property
     def cross(self):
         return self._right
 
 
 class SearchButton(SelfPaintAbstractSquareButton):
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -143,9 +174,7 @@ class SearchButton(SelfPaintAbstractSquareButton):
         painter.setRenderHint(QPainter.Antialiasing)
         self.paint_round_bg_when_hover(painter)
 
-        pen = painter.pen()
-        pen.setWidthF(1.5)
-        painter.setPen(pen)
+        set_pen_1_5(painter)
         # When the button size is very large, the line and the ellipse
         # will not be together.
         painter.drawEllipse(QRect(self._top_left, self._center))
@@ -153,6 +182,7 @@ class SearchButton(SelfPaintAbstractSquareButton):
 
 
 class SettingsButton(SelfPaintAbstractSquareButton):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -173,6 +203,7 @@ class SettingsButton(SelfPaintAbstractSquareButton):
 
 
 class PlusButton(SelfPaintAbstractSquareButton):
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -186,11 +217,12 @@ class PlusButton(SelfPaintAbstractSquareButton):
 
 
 class TriagleButton(SelfPaintAbstractSquareButton):
+
     def __init__(self, direction='up', *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.drawer = TriangleIconDrawer(self.width(),
-                                         self._padding,
-                                         direction=direction)
+        self.drawer = TriangleIconDrawer(
+            self.width(), self._padding, direction=direction
+        )
 
     def set_direction(self, direction):
         self.drawer.set_direction(direction)
@@ -203,6 +235,7 @@ class TriagleButton(SelfPaintAbstractSquareButton):
 
 
 class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
+
     def __init__(self, text='最近播放', **kwargs):
         super().__init__(text, **kwargs)
 
@@ -211,24 +244,24 @@ class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
         pen = painter.pen()
         pen.setWidthF(pen_width)
         painter.setPen(pen)
-
         x = y = self._padding
         length = self.height() - self._padding * 2
         center = self.height() // 2
         icon_rect = QRect(x, y, length, length)
         spacing = int(pen_width) + 3
-        painter.drawArc(icon_rect, 250*16, 280 * 16)
+        painter.drawArc(icon_rect, 250 * 16, 280 * 16)
         painter.drawLine(
             QPoint(center, center),
-            QPoint(self.height()-self._padding-spacing-self._padding//3, center))
-        painter.drawLine(QPoint(center, center),
-                         QPoint(center, self._padding+spacing))
+            QPoint(self.height() - self._padding - spacing - self._padding // 3, center)
+        )
+        painter.drawLine(QPoint(center, center), QPoint(center, self._padding + spacing))
         pen.setWidthF(pen_width * 2)
         painter.setPen(pen)
         painter.drawPoint(QPoint(self._padding, center))
 
 
 class DiscoveryButton(SelfPaintAbstractIconTextButton):
+
     def __init__(self, text='发现', **kwargs):
         super().__init__(text=text, **kwargs)
 
@@ -255,21 +288,18 @@ class DiscoveryButton(SelfPaintAbstractIconTextButton):
     def draw_icon(self, painter: QPainter):
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
-
-        pen = painter.pen()
-        pen.setWidthF(1.5)
-        painter.setPen(pen)
-
+        set_pen_1_5(painter)
         painter.save()
         painter.translate(self._half, self._half)
         painter.rotate(self._rotate)
         for ratio in range(4):
-            painter.rotate(90*ratio)
+            painter.rotate(90 * ratio)
             painter.drawPath(self._triagle)
         painter.restore()
 
 
 class HomeButton(SelfPaintAbstractIconTextButton):
+
     def __init__(self, *args, **kwargs):
         super().__init__('主页', *args, **kwargs)
         self.home_icon = HomeIconDrawer(self.height(), self._padding)
@@ -279,7 +309,8 @@ class HomeButton(SelfPaintAbstractIconTextButton):
 
 
 class CalendarButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text='日历',  *args, **kwargs):
+
+    def __init__(self, text='日历', *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.calendar_icon = CalendarIconDrawer(self.height(), self._padding)
 
@@ -288,7 +319,8 @@ class CalendarButton(SelfPaintAbstractIconTextButton):
 
 
 class RankButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text='排行榜',  *args, **kwargs):
+
+    def __init__(self, text='排行榜', *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.rank_icon = RankIconDrawer(self.height(), self._padding)
 
@@ -297,7 +329,8 @@ class RankButton(SelfPaintAbstractIconTextButton):
 
 
 class StarButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text='收藏',  *args, **kwargs):
+
+    def __init__(self, text='收藏', *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.star_icon = StarIconDrawer(self.height(), self._padding)
 
@@ -305,23 +338,196 @@ class StarButton(SelfPaintAbstractIconTextButton):
         self.star_icon.paint(painter)
 
 
+class PlayPauseButton(SelfPaintAbstractSquareButton):
+
+    def __init__(self, *args, draw_circle=True, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._draw_circle = draw_circle
+        self.setCheckable(True)
+        self.drawer = TriangleIconDrawer(
+            self.width(), self._padding, direction='right', brush=True
+        )
+        self._radius = self.width() // 2
+
+        # Calculate line rect properties.
+        p0 = self.drawer.triangle[0]
+        p1 = self.drawer.triangle[1]
+        p2 = self.drawer.triangle[2]
+        small_y = min(p1.y(), p2.y())
+        big_y = max(p1.y(), p2.y())
+        height = big_y - small_y
+        x = p0.x()
+        x2 = p1.x()
+        x_move = abs(x2 - x) / 8
+        self._line_half_width = 1
+        self._line1_rect = QRectF(
+            x - x_move - self._line_half_width, small_y, self._line_half_width * 2,
+            height
+        )
+        self._line2_rect = QRectF(
+            x2 + x_move - self._line_half_width, small_y, self._line_half_width * 2,
+            height
+        )
+        self._translate_x = -0.125 * self._body_width
+        self._pen_width = 1.5
+        self._inner_rect = QRectF(
+            self._pen_width, self._pen_width,
+            self.width() - 2 * self._pen_width,
+            self.height() - 2 * self._pen_width
+        )
+
+    def set_draw_circle(self, draw_circle: bool):
+        self._draw_circle = draw_circle
+        self.update()
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        set_pen_width(painter, self._pen_width)
+        self.paint_round_bg_when_hover(painter)
+        if self.isChecked():
+            with painter_save(painter):
+                painter.translate(self._translate_x, 0)
+                painter.setBrush(painter.pen().color())
+                painter.drawRoundedRect(
+                    self._line1_rect, self._line_half_width, self._line_half_width
+                )
+                painter.drawRoundedRect(
+                    self._line2_rect, self._line_half_width, self._line_half_width
+                )
+        else:
+            self.drawer.draw(painter)
+        if self._draw_circle is True:
+            painter.drawEllipse(self._inner_rect)
+
+
+class _PlayXButton(SelfPaintAbstractSquareButton):
+
+    def __init__(self, direction, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.drawer = TriangleIconDrawer(
+            self.width(), self._padding, direction=direction, brush=False
+        )
+        p0 = self.drawer.triangle[0]
+        p1 = self.drawer.triangle[1]
+        p2 = self.drawer.triangle[2]
+
+        # When the directory is 'right'
+        # left distance (before): body_width // 4
+        # left distance (now): body_width//2 - body_width*0.75//2
+        self._body_translate = -0.125 if direction == 'right' else 0.125
+
+        # Line rect properties.
+        small_y = min(p1.y(), p2.y())
+        big_y = max(p1.y(), p2.y())
+        half_width = 1.5
+        height = big_y - small_y
+        x = p0.x()
+        self._line = QPointF(x, small_y), QPointF(x, big_y)
+        self._line_rect = QRectF(x - half_width, small_y, half_width * 2, height)
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        with painter_save(painter):
+            painter.translate(self._body_translate * self._body_width, 0)
+            self.drawer.draw(painter)
+            with painter_save(painter):
+                set_pen_1_5(painter)
+                painter.setBrush(painter.pen().color())
+                painter.drawLine(*self._line)
+
+
+class PlayNextButton(_PlayXButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__('right', *args, **kwargs)
+
+
+class PlayPreviousButton(_PlayXButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__('left', *args, **kwargs)
+
+
+class MVButton(SelfPaintAbstractSquareButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.rectangle_height = int(self.width() * 0.618)
+        self.rectangle_y = (self.height() - self.rectangle_height) // 2
+        self.drawer = TriangleIconDrawer(
+            self.width(), self.width() * 0.35, direction='right', brush=True
+        )
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        opt = QStyleOptionButton()
+        self.initStyleOption(opt)
+        rect = QRect(1, self.rectangle_y, self.width() - 2, self.rectangle_height)
+        with painter_save(painter):
+            set_pen_1_5(painter)
+            if opt.state & QStyle.State_MouseOver:
+                color = self.palette().color(QPalette.Background)
+                painter.setBrush(darker_or_lighter(color, 120))
+            painter.drawRoundedRect(rect, 3, 3)
+        self.drawer.draw(painter)
+
+
+class VolumeButton(SelfPaintAbstractSquareButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.drawer = VolumeIconDrawer(self.width(), self._padding)
+
+    def set_volume(self, volume):
+        self.drawer.set_volume(volume)
+        self.update()
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self.drawer.draw(painter, self.palette())
+
+
 if __name__ == '__main__':
+    from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
+
     from feeluown.gui.debug import simple_layout
 
     length = 40
 
-    with simple_layout() as layout:
-        layout.addWidget(LeftArrowButton(length=length))
+    with simple_layout(QVBoxLayout) as layout:
+        l1 = QHBoxLayout()
+        l2 = QHBoxLayout()
+        layout.addLayout(l1)
+        layout.addLayout(l2)
+
+        l1.addWidget(LeftArrowButton(length=length))
         right = RightArrowButton(length=length)
         right.setDisabled(True)
-        layout.addWidget(right)
-        layout.addWidget(SearchButton(length=length))
-        layout.addWidget(SettingsButton(length=length))
-        layout.addWidget(RecentlyPlayedButton(height=length))
-        layout.addWidget(HomeButton(height=length))
-        layout.addWidget(DiscoveryButton(height=length))
+        l1.addWidget(right)
+        l1.addWidget(SearchButton(length=length))
+        l1.addWidget(SettingsButton(length=length))
+        l1.addWidget(RecentlyPlayedButton(height=length))
+        l1.addWidget(HomeButton(height=length))
+        l1.addWidget(DiscoveryButton(height=length))
 
-        layout.addWidget(TriagleButton(length=length, direction='up'))
-        layout.addWidget(CalendarButton(height=length))
-        layout.addWidget(RankButton(height=length))
-        layout.addWidget(StarButton(height=length))
+        l1.addWidget(TriagleButton(length=length, direction='up'))
+        l1.addWidget(CalendarButton(height=length))
+        l1.addWidget(RankButton(height=length))
+        l1.addWidget(StarButton(height=length))
+
+        l2.addWidget(PlayPreviousButton(length=length))
+        l2.addWidget(PlayPauseButton(length=100))
+        l2.addWidget(PlayNextButton(length=length))
+        volume_button = VolumeButton(length=length)
+        volume_button.set_volume(60)
+        l2.addWidget(volume_button)
+        l2.addStretch(0)

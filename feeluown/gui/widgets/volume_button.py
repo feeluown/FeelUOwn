@@ -2,9 +2,10 @@ from PyQt5.QtCore import Qt, QPoint, pyqtSignal
 from PyQt5.QtWidgets import (
     QVBoxLayout,
     QSlider,
-    QPushButton,
     QWidget,
 )
+
+from feeluown.gui.widgets import VolumeButton as _VolumeButton
 
 
 class _Slider(QWidget):
@@ -57,16 +58,16 @@ class _Slider(QWidget):
             self.move(parent.mapToGlobal(point))
 
 
-class VolumeButton(QPushButton):
+class VolumeButton(_VolumeButton):
     UNMUTED_ICON = 0
     MUTED_ICON = 1
 
     #: (0, 100)
     change_volume_needed = pyqtSignal([int])
 
-    def __init__(self, parent=None, *, icons=None):
+    def __init__(self, parent=None, icons=None, **kwargs):
         # TODO: let slider have orientation?
-        super().__init__(parent)
+        super().__init__(parent=parent, **kwargs)
 
         self._icons = icons
         if self._icons:
@@ -91,6 +92,7 @@ class VolumeButton(QPushButton):
         .. versionadd:: 3.4
         """
         self.slider.setValue(value)
+        self.set_volume(value)
 
     def on_slider_moved(self, value):
         self.change_volume_needed.emit(value)

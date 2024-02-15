@@ -6,13 +6,12 @@ from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSize
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 
 from feeluown.utils.aio import run_afn
-from feeluown.gui.widgets import TextButton
 from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.components import (
-    LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
-    MVButton, PlaylistButton, SongSourceTag,
+    LineSongLabel, MediaButtonsV2, LyricButton, WatchButton, LikeButton,
+    NowplayingMVTextButton, PlaylistButton, SongSourceTag,
 )
 from feeluown.gui.helpers import IS_MACOS, ClickableMixin
 
@@ -37,31 +36,29 @@ class PlayerControlPanel(QFrame):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
 
+        _button_width = 36
+
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
 
-        self.media_btns = MediaButtons(app=self._app, parent=self)
+        self.media_btns = MediaButtonsV2(
+            app=self._app, spacing=8, button_width=_button_width, parent=self
+        )
         self.previous_btn = self.media_btns.previous_btn
         self.pp_btn = self.media_btns.pp_btn
         self.next_btn = self.media_btns.next_btn
-
-        self.volume_btn = VolumeButton(self)
-        self.playlist_btn = PlaylistButton(self._app, length=30, parent=self)
+        self.volume_btn = VolumeButton(length=_button_width, parent=self)
+        self.playlist_btn = PlaylistButton(self._app, length=_button_width, parent=self)
         #: mark song as favorite button
         self.like_btn = LikeButton(self._app, parent=self)
-        self.mv_btn = MVButton(app=self._app, parent=self)
+        self.mv_btn = NowplayingMVTextButton(app=self._app, parent=self)
         self.toggle_lyric_btn = LyricButton(self._app, parent=self)
         self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)
-        self.toggle_video_btn = TextButton('△', self)
-        # toggle picture-in-picture button
-        self.toggle_pip_btn = TextButton('◲', self)
 
         self.playlist_btn.setObjectName('playlist_btn')
         self.volume_btn.setObjectName('volume_btn')
         self.download_btn.setObjectName('download_btn')
-        self.toggle_video_btn.setObjectName('toggle_video_btn')
-        self.toggle_pip_btn.setObjectName('toggle_pip_btn')
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
@@ -83,7 +80,8 @@ class PlayerControlPanel(QFrame):
 
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))
-
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True)
         player = self._app.player
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed)
@@ -168,10 +166,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addStretch(0)
         self._layout.addSpacing(18)
         self._layout.addWidget(self.playlist_btn)
-        self._layout.addSpacing(8)
-        self._layout.addWidget(self.toggle_video_btn)
-        self._layout.addSpacing(8)
-        self._layout.addWidget(self.toggle_pip_btn)
         self._layout.addSpacing(18)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -190,6 +184,12 @@ class PlayerControlPanel(QFrame):
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
         else:
             self.cover_label.show_img(None)
+
+    def on_video_format_changed(self, video_format):
+        if video_format is None:
+            self.media_btns.toggle_video_btn.hide()
+        else:
+            self.media_btns.toggle_video_btn.show()
 
     def show_nowplaying_overlay(self):
         self._app.ui.nowplaying_overlay.show()

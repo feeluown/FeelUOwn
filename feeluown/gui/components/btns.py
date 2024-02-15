@@ -3,11 +3,13 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QEvent
 from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout
+from feeluown.gui.widgets.selfpaint_btn import TriagleButton
 
 from feeluown.player import State
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets.textbtn import TextButton
+from feeluown.gui.widgets import PlayPauseButton, PlayNextButton, PlayPreviousButton
 from feeluown.gui.helpers import resize_font
 
 if TYPE_CHECKING:
@@ -123,11 +125,12 @@ class SongMVTextButton(TextButton):
         self._mv = None
 
         self.bind_song(song)
+        self.setDisabled(True)
         self.clicked.connect(self.on_clicked)
 
     def on_clicked(self):
         if self._mv is not None:
-            self._app.playlist.play_model(self._mv)
+            self._app.watch_mgr.play_video(self._mv)
 
     def bind_song(self, song):
         if song != self._song:
@@ -154,45 +157,31 @@ class SongMVTextButton(TextButton):
         return self._mv
 
 
-class MVButton(SongMVTextButton):
+class NowplayingMVTextButton(SongMVTextButton):
     def __init__(self, app: 'GuiApp', parent=None, **kwargs):
         super().__init__(app, song=None, parent=parent, **kwargs)
 
         self.setObjectName('mv_btn')
-        self._app.playlist.song_changed.connect(
-            self.on_player_song_changed, aioqueue=True)
+        self._app.playlist.song_mv_changed.connect(
+            self.on_song_mv_changed, aioqueue=True)
 
-    def on_player_song_changed(self, song):
-        task_spec = self._app.task_mgr.get_or_create('update-mv-btn-status')
-        task_spec.bind_coro(self.update_mv_btn_status(song))
-
-    async def update_mv_btn_status(self, song):
-        self.bind_song(song)
-        await self.get_mv()
+    def on_song_mv_changed(self, _, mv):
+        self.setEnabled(mv is not None)
+        self._mv = mv
 
 
-class MediaButtons(QWidget):
-    def __init__(self, app: 'GuiApp', spacing=8, button_width=30, parent=None):
+class MediaButtonsV2(QWidget):
+    def __init__(self, app: 'GuiApp', button_width=30, spacing=0, parent=None):
         super().__init__(parent=parent)
-
         self._app = app
 
-        self.button_width = button_width
-
-        size = (self.button_width, self.button_width)
-
-        self.previous_btn = QPushButton(self)
-        self.pp_btn = QPushButton(self)
-        self.next_btn = QPushButton(self)
+        self.previous_btn = PlayPreviousButton(parent=self, length=button_width)
+        self.pp_btn = PlayPauseButton(parent=self, length=button_width)
+        self.next_btn = PlayNextButton(parent=self, length=button_width)
+        self.toggle_video_btn = TriagleButton(length=button_width)
+        self.toggle_video_btn.hide()
         self.pp_btn.setCheckable(True)
-
-        self.previous_btn.setFixedSize(*size)
-        self.pp_btn.setFixedSize(*size)
-        self.next_btn.setFixedSize(*size)
-
-        self.previous_btn.setObjectName('previous_btn')
-        self.pp_btn.setObjectName('pp_btn')
-        self.next_btn.setObjectName('next_btn')
+        self.toggle_video_btn.setToolTip('展示视频画面')
 
         self._layout = QHBoxLayout(self)
         self._layout.setSpacing(spacing)
@@ -200,12 +189,23 @@ class MediaButtons(QWidget):
         self._layout.addWidget(self.previous_btn)
         self._layout.addWidget(self.pp_btn)
         self._layout.addWidget(self.next_btn)
+        self._layout.addWidget(self.toggle_video_btn)
 
         self.next_btn.clicked.connect(self._app.playlist.next)
         self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
         self._app.player.state_changed.connect(
-            self._on_player_state_changed, aioqueue=True)
+            self._on_player_state_changed, aioqueue=True
+        )
+        self._app.player.video_format_changed.connect(
+            self.on_video_format_changed, aioqueue=True
+        )
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
+
+    def on_video_format_changed(self, video_format):
+        if video_format is None:
+            self.toggle_video_btn.hide()
+        else:
+            self.toggle_video_btn.show()

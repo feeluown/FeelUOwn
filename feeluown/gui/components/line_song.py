@@ -1,10 +1,12 @@
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QTimer, QRect, Qt
-from PyQt5.QtGui import QFontMetrics, QPainter, QPalette
-from PyQt5.QtWidgets import QApplication, QLabel, QSizePolicy, QMenu
+from PyQt5.QtGui import QPainter, QPalette, QColor
+from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
 
+from feeluown.library import fmt_artists_names
 from feeluown.gui.components import SongMenuInitializer
+from feeluown.gui.helpers import elided_text
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -25,16 +27,17 @@ class LineSongLabel(QLabel):
         # the text is longer than the label width
         self._timer = QTimer()
         self._txt = self._raw_text = self.default_text
-        self._font_metrics = QFontMetrics(QApplication.font())
-        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        self._text_rect = self.fontMetrics().boundingRect(self._raw_text)
         # text's position, keep changing to make text roll
         self._pos = 0
         self._timer.timeout.connect(self.change_text_position)
 
         self._app.player.metadata_changed.connect(
-            self.on_metadata_changed, aioqueue=True)
+            self.on_metadata_changed, aioqueue=True
+        )
         self._app.playlist.play_model_handling.connect(
-            self.on_play_model_handling, aioqueue=True)
+            self.on_play_model_handling, aioqueue=True
+        )
 
     def on_metadata_changed(self, metadata):
         if not metadata:
@@ -47,7 +50,7 @@ class LineSongLabel(QLabel):
             artists = metadata.get('artists', [])
             if artists:
                 # FIXME: use _get_artists_name
-                text += f" - {','.join(artists)}"
+                text += f" • {','.join(artists)}"
         self.setText(text)
 
     def on_play_model_handling(self):
@@ -67,7 +70,7 @@ class LineSongLabel(QLabel):
 
     def setText(self, text):
         self._txt = self._raw_text = text
-        self._text_rect = self._font_metrics.boundingRect(self._raw_text)
+        self._text_rect = self.fontMetrics().boundingRect(self._raw_text)
         self._pos = 0
         self.update()
 
@@ -86,19 +89,20 @@ class LineSongLabel(QLabel):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setFont(QApplication.font())
+        painter.setFont(self.font())
         painter.setPen(self.palette().color(QPalette.Text))
 
         if self._timer.isActive():
             self._txt = self._raw_text
         else:
-            self._txt = self._font_metrics.elidedText(
-                self._raw_text, Qt.ElideRight, self.width())
+            self._txt = self.fontMetrics().elidedText(
+                self._raw_text, Qt.ElideRight, self.width()
+            )
 
         painter.drawText(
-            QRect(self._pos, 0, self.width() - self._pos, self.height()),
-            Qt.AlignLeft | Qt.AlignVCenter,
-            self._txt
+            QRect(self._pos, 0,
+                  self.width() - self._pos, self.height()),
+            Qt.AlignLeft | Qt.AlignVCenter, self._txt
         )  # type: ignore[call-overload]
 
     def contextMenuEvent(self, e):
@@ -109,3 +113,60 @@ class LineSongLabel(QLabel):
         menu = QMenu()
         SongMenuInitializer(self._app, song).apply(menu)
         menu.exec(e.globalPos())
+
+
+class TwoLineSongLabel(QWidget):
+    default_text = '...'
+
+    def __init__(self, app: 'GuiApp', parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+
+        self._title_label = QLabel()
+        self._subtitle_label = QLabel()
+
+        palette = self._subtitle_label.palette()
+        palette.setColor(QPalette.Text, QColor('grey'))
+        palette.setColor(QPalette.Foreground, QColor('Grey'))
+        self._subtitle_label.setPalette(palette)
+
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(5)
+        self._layout.addWidget(self._title_label)
+        self._layout.addWidget(self._subtitle_label)
+        self._app.player.metadata_changed.connect(
+            self.on_metadata_changed, aioqueue=True
+        )
+
+        font = self.font()
+        font.setPixelSize(25)
+        font.setBold(True)
+        self._title_label.setFont(font)
+        font.setPixelSize(20)
+        font.setBold(False)
+        self._subtitle_label.setFont(font)
+
+    def on_metadata_changed(self, metadata):
+        if not metadata:
+            self._title_label.setText('...')
+            return
+
+        # Set main text.
+        title = metadata.get('title', '')
+        if title:
+            artists = metadata.get('artists', [])
+            if artists:
+                # FIXME: use _get_artists_name
+                subtitle = fmt_artists_names(artists)
+                self._subtitle_label.setText(
+                    elided_text(
+                        subtitle, self._subtitle_label.width(),
+                        self._subtitle_label.font()
+                    )
+                )
+        self._title_label.setText(
+            elided_text(title, self._title_label.width(), self._title_label.font())
+        )

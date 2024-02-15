@@ -2,10 +2,10 @@ from datetime import datetime
 
 from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
     QPoint, QRect
-from PyQt5.QtGui import QPalette, QPen, QFont, QFontMetrics
-from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame, \
-    QApplication, QWidget
+from PyQt5.QtGui import QPalette, QPen, QFontMetrics
+from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame, QWidget
 
+from feeluown.gui.consts import ScrollBarWidth
 from feeluown.gui.helpers import ItemViewNoScrollMixin, Paddings, Margins
 from feeluown.library import CommentModel
 from feeluown.utils.reader import Reader
@@ -46,36 +46,42 @@ class CommentListModel(QAbstractListModel):
 
 
 class CommentListDelegate(QStyledItemDelegate):
-    def __init__(self, parent: QWidget):
+    def __init__(self, parent: QWidget, quoted_bg_color_role=QPalette.Window):
         super().__init__(parent=parent)
 
-        self._margin_h = 0
+        # macOS scrollbar may overlap with the content.
+        # So set the margin_h_right to `ScrollBarWidth * 2`.
+        self._margin_h_left, self._margin_h_right = 0, ScrollBarWidth * 2
         self._margin_v = 10
         self._name_content_margin = 5
-        self._name_height = QFontMetrics(QApplication.font()).height()
+        self._quoted_bg_color_role = quoted_bg_color_role
+        self._name_height = QFontMetrics(parent.font()).height()
         self._parent_comment_paddings = Paddings(8, 3, 8, 3)
         self._parent_comment_margins = Margins(20, 5, 10, 5)
+
+    @property
+    def _margin_h_total(self):
+        return self._margin_h_left + self._margin_h_right
 
     def paint(self, painter, option, index):
         # pylint: disable=too-many-locals,too-many-statements
         # Explicitly set the font to the same font, so that the content
         # height is always correct. Otherwise, the height maybe incorrect.
-        painter.setFont(QApplication.font())
-        fm = QFontMetrics(QApplication.font())
+        fm = QFontMetrics(option.font)
 
         painter.save()
         comment = index.data(Qt.UserRole)
 
         # size for render comment
-        body_width = option.rect.width() - self._margin_h * 2
+        body_width = option.rect.width() - self._margin_h_total
         body_height = option.rect.height() - self._margin_v * 2
 
-        painter.translate(QPoint(option.rect.x() + self._margin_h,
+        painter.translate(QPoint(option.rect.x() + self._margin_h_left,
                                  option.rect.y() + self._margin_v))
 
         # draw comment author name
         painter.save()
-        font = QFont()
+        font = option.font
         font.setBold(True)
         painter.setFont(font)
         name_rect = QRect(0, 0, body_width, self._name_height)
@@ -124,11 +130,7 @@ class CommentListDelegate(QStyledItemDelegate):
                                    p_body_rect.y() + p_paddings.top,
                                    p_body_rect.width() - p_paddings.width,
                                    p_body_rect.height() - p_paddings.height)
-            bg_color = option.palette.color(QPalette.Window)
-            if bg_color.lightness() > 150:
-                bg_color = bg_color.darker(100)
-            else:
-                bg_color = bg_color.lighter(100)
+            bg_color = option.palette.color(self._quoted_bg_color_role)
             painter.fillRect(p_body_rect, bg_color)
             painter.drawText(p_content_rect, Qt.TextWordWrap, text)
 
@@ -152,9 +154,9 @@ class CommentListDelegate(QStyledItemDelegate):
     def sizeHint(self, option, index):
         super_size_hint = super().sizeHint(option, index)
         parent_width = self.parent().width()  # type: ignore
-        fm = QFontMetrics(QApplication.font())
+        fm = QFontMetrics(option.font)
         comment = index.data(Qt.UserRole)
-        content_width = parent_width - 2 * self._margin_h
+        content_width = parent_width - self._margin_h_total
         content_height = self._get_text_height(fm, content_width, comment.content)
         height = content_height + self._name_height + \
             self._name_content_margin + self._margin_v * 2
@@ -178,9 +180,10 @@ class CommentListDelegate(QStyledItemDelegate):
 class CommentListView(ItemViewNoScrollMixin, QListView):
 
     def __init__(self, parent=None, **kwargs):
+        delegate_options = kwargs.pop('delegate_options', {})
         super().__init__(parent=parent, **kwargs)
 
-        self._delegate = CommentListDelegate(self)
+        self._delegate = CommentListDelegate(self, **delegate_options)
         self.setItemDelegate(self._delegate)
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)

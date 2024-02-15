@@ -2,10 +2,10 @@ import math
 from typing import Optional
 
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
-from PyQt5.QtGui import QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF
+from PyQt5.QtGui import QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette
 from PyQt5.QtWidgets import QWidget
 
-from feeluown.gui.helpers import random_solarized_color
+from feeluown.gui.helpers import random_solarized_color, painter_save
 
 
 class PixmapDrawer:
@@ -87,7 +87,7 @@ class PixmapDrawer:
         y = (size.height() - self._widget.height()) // 2
         painter.save()
         painter.translate(0, -y)
-        rect = QRect(0, y, self._widget.width(), self._widget.height())
+        rect = QRect(0, 0, self._widget.width(), size.height())
         if radius == 0:
             painter.drawRect(rect)
         else:
@@ -137,9 +137,14 @@ class PlusIconDrawer:
 
 
 class TriangleIconDrawer:
-    def __init__(self, length, padding, direction='up'):
+    def __init__(self, length, padding, direction='up', brush=False):
         self._length = length
         self._padding = padding
+        self.brush = brush
+
+        # initialized when direction is set
+        # polygon points are orgonized in anticlockwise direction
+        self.triangle = QPolygonF([])
         self.set_direction(direction)
 
     def set_direction(self, direction):
@@ -147,33 +152,41 @@ class TriangleIconDrawer:
         padding = self._padding
 
         half = length / 2
-        diameter = (length - 2 * padding) * 1.2
+        diameter = length - 2 * padding
+
+        real_padding = (length - diameter) / 2
+        center_top = QPointF(half, real_padding)
+        center_bottom = QPointF(half, real_padding + diameter)
+        left = QPointF(real_padding, half)
+        right = QPointF(real_padding + diameter, half)
+
         d60 = diameter / 2 * 0.87  # sin60
         d30 = diameter / 2 / 2    # sin30
 
-        half_d30 = half - d30
-        half_d60 = half - d60
-        half_p_d60 = half + d60
-        half_p_d30 = half + d30
-        l_p = length - padding
+        if direction in ('left', 'right'):
+            left_x = half - d30
+            top_y = half - d60
+            bottom_y = half + d60
+            right_x = half + d30
+        else:
+            left_x = half - d60
+            top_y = half - d30
+            bottom_y = half + d30
+            right_x = half + d60
 
-        center_top = QPointF(half, padding)
-        center_bottom = QPointF(half, l_p)
-        left = QPointF(padding, half)
-        right = QPointF(l_p, half)
-        left_top = QPointF(half_d30, half_d60)
-        left_bottom = QPointF(half_d60, half_p_d30)
-        right_top = QPointF(half_p_d30, half_p_d60)
-        right_bottom = QPointF(half_p_d60, half_p_d30)
+        left_top = QPointF(left_x, top_y)
+        left_bottom = QPointF(left_x, bottom_y)
+        right_top = QPointF(right_x, top_y)
+        right_bottom = QPointF(right_x, bottom_y)
 
         if direction == 'up':
-            self._triangle = QPolygonF([center_top, left_bottom, right_bottom])
+            self.triangle = QPolygonF([center_top, left_bottom, right_bottom])
         elif direction == 'down':
-            self._triangle = QPolygonF([center_bottom, left_top, right_top])
+            self.triangle = QPolygonF([center_bottom, right_top, left_top])
         elif direction == 'left':
-            self._triangle = QPolygonF([left, right_top, right_bottom])
+            self.triangle = QPolygonF([left, right_bottom, right_top])
         elif direction == 'right':
-            self._triangle = QPolygonF([right, left_top, left_bottom])
+            self.triangle = QPolygonF([right, left_top, left_bottom])
         else:
             raise ValueError('direction must be one of up/down/left/right')
 
@@ -181,7 +194,10 @@ class TriangleIconDrawer:
         pen = painter.pen()
         pen.setWidthF(1.5)
         painter.setPen(pen)
-        painter.drawPolygon(self._triangle)
+        with painter_save(painter):
+            if self.brush is True:
+                painter.setBrush(pen.color())
+            painter.drawPolygon(self.triangle)
 
 
 class HomeIconDrawer:
@@ -287,3 +303,71 @@ class StarIconDrawer:
         pen.setWidthF(1.5)
         painter.setPen(pen)
         painter.drawPolygon(self._star_polygon)
+
+
+class VolumeIconDrawer:
+    def __init__(self, length, padding):
+        self._polygon = QPolygonF()
+        self._padding = padding
+        self._volume = 100
+
+        body_length = length - 2 * padding
+        body_length_4_1 = 0.25 * body_length
+        body_length_2_1 = 0.5 * body_length
+        body_length_4_3 = 0.75 * body_length
+        body_length_3_1 = 0.33 * body_length
+        body_length_3_2 = 0.66 * body_length
+
+        left_top = QPointF(0, body_length_4_1)
+        left_bottom = QPointF(0, body_length_4_3)
+        mid_top = QPointF(body_length_3_1, body_length_4_1)
+        mid_bottom = QPointF(body_length_3_1, body_length_4_3)
+        right_top = QPointF(body_length_3_2, 0)
+        right_bottom = QPointF(body_length_3_2, body_length)
+
+        for p in (left_top, left_bottom, mid_bottom, right_bottom,
+                  right_top, mid_top):
+            self._polygon.append(p)
+
+        line_right_top_y = 0.1 * body_length
+        line_right_bottom_y = 0.9 * body_length
+        line_left_top_y = 0.2 * body_length
+        line_left_bottom_y = 0.8 * body_length
+        line_left_x = 0.85 * body_length
+        self._line1 = (QPointF(line_left_x, line_left_top_y),
+                       QPointF(body_length, line_right_top_y))
+        self._line2 = (QPointF(line_left_x, body_length_2_1),
+                       QPointF(body_length, body_length_2_1))
+        self._line3 = (QPointF(line_left_x, line_left_bottom_y),
+                       QPointF(body_length, line_right_bottom_y))
+
+    def set_volume(self, volume):
+        self._volume = volume
+
+    def draw(self, painter: QPainter, palette: QPalette):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        with painter_save(painter):
+            painter.translate(self._padding, self._padding)
+            painter.drawPolygon(self._polygon)
+
+            if self._volume >= 66:
+                lines = (self._line1, self._line2, self._line3)
+                disabled_lines = ()
+            elif self._volume >= 33:
+                lines = (self._line2, self._line3)
+                disabled_lines = (self._line1, )
+            elif self._volume > 0:
+                lines = (self._line3, )
+                disabled_lines = (self._line1, self._line2)
+            else:
+                lines = ()
+                disabled_lines = (self._line1, self._line2, self._line3)
+            for line in lines:
+                painter.drawLine(*line)
+            pen = painter.pen()
+            pen.setColor(palette.color(QPalette.Disabled, QPalette.ButtonText))
+            painter.setPen(pen)
+            for line in disabled_lines:
+                painter.drawLine(*line)

@@ -1,14 +1,11 @@
 from PyQt5.QtCore import Qt, QMetaObject, pyqtSlot
-from PyQt5.QtWidgets import QOpenGLWidget, QApplication
+from PyQt5.QtWidgets import QOpenGLWidget, QApplication, QWidget, QHBoxLayout
 from PyQt5.QtOpenGL import QGLContext
 
 # HELP: currently, we need import GL module，otherwise it will raise seg fault on Linux(Ubuntu 18.04)
-from OpenGL import GL  # noqa
+# from OpenGL import GL  # noqa
 
-from mpv import MPV, _mpv_get_sub_api, _mpv_opengl_cb_set_update_callback, \
-        _mpv_opengl_cb_init_gl, OpenGlCbGetProcAddrFn, _mpv_opengl_cb_draw, \
-        _mpv_opengl_cb_report_flip, MpvSubApi, OpenGlCbUpdateFn, _mpv_opengl_cb_uninit_gl, \
-        MpvRenderContext
+from mpv import MPV, OpenGlCbGetProcAddrFn, MpvRenderContext
 
 
 def get_proc_addr(_, name):
@@ -20,11 +17,12 @@ def get_proc_addr(_, name):
 
 
 class MpvWidget(QOpenGLWidget):
-    def __init__(self, parent=None):
+    def __init__(self, window, parent=None):
         super().__init__(parent=parent)
         self.mpv = MPV(ytdl=True)
         self.ctx = None
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
+        self._window = window
 
     def initializeGL(self):
         params = {'get_proc_address': self.get_proc_addr_c}
@@ -35,7 +33,7 @@ class MpvWidget(QOpenGLWidget):
 
     def paintGL(self):
         # compatible with HiDPI display
-        ratio = self.windowHandle().devicePixelRatio()
+        ratio = self._window.devicePixelRatio()
         w = int(self.width() * ratio)
         h = int(self.height() * ratio)
         opengl_fbo = {'w': w,
@@ -69,11 +67,33 @@ class MpvWidget(QOpenGLWidget):
 
 
 if __name__ == '__main__':
-    import locale
+    import locale, time, threading
+
     app = QApplication([])
     locale.setlocale(locale.LC_NUMERIC, 'C')
-    widget = MpvWidget()
+    root = QWidget()
+    layout = QHBoxLayout(root)
+    p1 = QWidget()
+    p2 = QWidget()
+    l1 = QHBoxLayout(p1)
+    l2 = QHBoxLayout(p2)
+    layout.addWidget(p1)
+    layout.addWidget(p2)
+    root.resize(600, 400)
+    root.show()
+
+    widget = MpvWidget(root)
+    l1.addWidget(widget)
     widget.show()
+
     url = 'data/test.webm'
     widget.mpv.play(url)
+
+    def reparent():
+        time.sleep(1)
+        widget.mpv.pause = True
+        l2.addWidget(widget)
+        widget.mpv.pause = False
+
+    threading.Thread(target=reparent).start()
     app.exec()

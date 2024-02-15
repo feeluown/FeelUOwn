@@ -37,6 +37,8 @@ class GuiApp(App, QWidget):
         QApplication.instance().setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         QApplication.instance().setApplicationName('FeelUOwn')
 
+        # Note that QApplication.setFont only works for those widgets that created
+        # after `QApplication.exec` (tested on macOS).
         if sys.platform == 'win32':
             font = QApplication.font()
             # By default, it uses SimSun(宋体) on windows, which is a little ugly.
