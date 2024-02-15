@@ -102,9 +102,6 @@ ClickableHeader TextButton:checked {
 #toggle_lyric_btn {
     padding: 0px 5px;
 }
-#toggle_video_btn {
-    padding: 0px 3px;
-}
 
 VideoCtlToolbar QPushButton {
     width: 24px;

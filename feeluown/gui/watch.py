@@ -36,7 +36,8 @@ class WatchManager:
 
         self._ui = self._app.ui
         self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
-        self._ui.pc_panel.toggle_video_btn.clicked.connect(lambda: self.set_mode(Mode.normal))  # noqa
+        self._ui.pc_panel.media_btns.toggle_video_btn.clicked.connect(
+            lambda: self.set_mode(Mode.normal))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
         self._app.player.video_format_changed.connect(self.on_video_format_changed, aioqueue=True)  # noqa
 
@@ -100,7 +101,6 @@ class WatchManager:
     def exit_normal_mode(self):
         self._app.ui.mpv_widget.hide()
         self._show_app_other_widgets()
-        self._app.ui.pc_panel.toggle_video_btn.setText('△')
         logger.info("exit video-show normal mode")
 
     def _is_pip_mode(self):

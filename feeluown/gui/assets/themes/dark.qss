@@ -22,24 +22,6 @@ TextButton:pressed, ToolbarButton:pressed {
     background-color: #3e3e3e;
 }
 
-#pp_btn, #video_pp_btn {
-    border-image: url(icons:play_dark.png);
-}
-#pp_btn:checked, #video_pp_btn:checked {
-    border-image: url(icons:pause_dark.png);
-}
-#previous_btn {
-    border-image: url(icons:last_dark.png);
-}
-#next_btn {
-    border-image: url(icons:next_dark.png);
-}
-#playlist_btn {
-    border-image: url(icons:cur_playlist_dark.png);
-}
-#volume_btn {
-    border-image: url(icons:volume_dark.png);
-}
 #like_btn {
     border-image: url(icons:like_dark.png);
 }

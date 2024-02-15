@@ -51,7 +51,6 @@ class Ui:
         self.songs_table = self.table_container.songs_table
         self.back_btn = self.bottom_panel.back_btn
         self.forward_btn = self.bottom_panel.forward_btn
-        self.toggle_video_btn = self.pc_panel.toggle_video_btn
 
         self.toolbar.settings_btn.clicked.connect(self._open_settings_dialog)
 

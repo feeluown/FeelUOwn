@@ -13,24 +13,6 @@ TextButton:pressed, ToolbarButton:pressed {
     background-color: #DDD;
 }
 
-#pp_btn, #video_pp_btn {
-    border-image: url(icons:play.png);
-}
-#pp_btn:checked, #video_pp_btn:checked {
-    border-image: url(icons:pause.png);
-}
-#previous_btn {
-    border-image: url(icons:last.png);
-}
-#next_btn {
-    border-image: url(icons:next.png);
-}
-#playlist_btn {
-    border-image: url(icons:cur_playlist.png);
-}
-#volume_btn {
-    border-image: url(icons:volume.png);
-}
 #like_btn {
     border-image: url(icons:like.png);
 }

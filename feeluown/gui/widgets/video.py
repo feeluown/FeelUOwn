@@ -4,6 +4,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
     QHBoxLayout, QOpenGLWidget, QLabel
 
 from feeluown.player import State
+from feeluown.gui.widgets import PlayPauseButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.size_grip import SizeGrip
 from feeluown.gui.widgets.textbtn import TextButton
@@ -28,7 +29,7 @@ class VideoPlayerCtlBar(QWidget):
         self._app = app
 
         # Create widgets.
-        self._toggle_btn = QPushButton()
+        self._toggle_btn = PlayPauseButton(draw_circle=False)
         self._progress_slider = ProgressSlider(app)
         self._progress_label = ProgressLabel(app, self)
         self._duration_label = DurationLabel(app, self)
@@ -67,8 +68,6 @@ class VideoPlayerCtlBar(QWidget):
 
     def _setup_ui(self):
         self.setAutoFillBackground(True)
-        # TODO: rename the ObjectName.
-        self._toggle_btn.setObjectName('video_pp_btn')
 
         # Setup layout.
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -91,8 +90,6 @@ class VideoPlayerCtlBar(QWidget):
 
         # Setup widgets size.
         self._size_grip.setFixedSize(20, 20)
-        # Button size should be same as the value defined in style sheet.
-        self._toggle_btn.setFixedSize(24, 24)
 
         # Customize the palette.
         palette = self.palette()

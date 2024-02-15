@@ -37,6 +37,12 @@ class SelfPaintAbstractButton(QPushButton):
     def paintEvent(self, _):
         raise NotImplementedError('paintEvent must be implemented')
 
+    def hitButton(self, pos: QPoint) -> bool:
+        # QPushButton use style().subElementRect().contains to check if it is hit.
+        # style().subElementRect is really small for buttons. So it does not
+        # work well for small buttons (tested on macOS).
+        return self.rect().contains(pos)
+
     def paint_border_bg_when_hover(self, painter, radius=3):
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
@@ -334,9 +340,10 @@ class StarButton(SelfPaintAbstractIconTextButton):
 
 class PlayPauseButton(SelfPaintAbstractSquareButton):
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, draw_circle=True, **kwargs):
         super().__init__(*args, **kwargs)
 
+        self._draw_circle = draw_circle
         self.setCheckable(True)
         self.drawer = TriangleIconDrawer(
             self.width(), self._padding, direction='right', brush=True
@@ -370,6 +377,10 @@ class PlayPauseButton(SelfPaintAbstractSquareButton):
             self.height() - 2 * self._pen_width
         )
 
+    def set_draw_circle(self, draw_circle: bool):
+        self._draw_circle = draw_circle
+        self.update()
+
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
@@ -387,7 +398,8 @@ class PlayPauseButton(SelfPaintAbstractSquareButton):
                 )
         else:
             self.drawer.draw(painter)
-        painter.drawEllipse(self._inner_rect)
+        if self._draw_circle is True:
+            painter.drawEllipse(self._inner_rect)
 
 
 class _PlayXButton(SelfPaintAbstractSquareButton):

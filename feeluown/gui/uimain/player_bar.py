@@ -6,7 +6,6 @@ from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSize
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 
 from feeluown.utils.aio import run_afn
-from feeluown.gui.widgets import TextButton
 from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
@@ -56,13 +55,10 @@ class PlayerControlPanel(QFrame):
         self.toggle_lyric_btn = LyricButton(self._app, parent=self)
         self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)
-        self.toggle_video_btn = TextButton('△', self)
-        self.toggle_video_btn.hide()
 
         self.playlist_btn.setObjectName('playlist_btn')
         self.volume_btn.setObjectName('volume_btn')
         self.download_btn.setObjectName('download_btn')
-        self.toggle_video_btn.setObjectName('toggle_video_btn')
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
@@ -170,8 +166,6 @@ class PlayerControlPanel(QFrame):
         self._layout.addStretch(0)
         self._layout.addSpacing(18)
         self._layout.addWidget(self.playlist_btn)
-        self._layout.addSpacing(8)
-        self._layout.addWidget(self.toggle_video_btn)
         self._layout.addSpacing(18)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -193,9 +187,9 @@ class PlayerControlPanel(QFrame):
 
     def on_video_format_changed(self, video_format):
         if video_format is None:
-            self._app.ui.pc_panel.toggle_video_btn.hide()
+            self.media_btns.toggle_video_btn.hide()
         else:
-            self._app.ui.pc_panel.toggle_video_btn.show()
+            self.media_btns.toggle_video_btn.show()
 
     def show_nowplaying_overlay(self):
         self._app.ui.nowplaying_overlay.show()
