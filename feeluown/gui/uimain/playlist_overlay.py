@@ -1,14 +1,14 @@
 from PyQt5.QtCore import Qt, QRect, QEvent
 from PyQt5.QtWidgets import (
     QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout,
-    QApplication, QShortcut
+    QApplication,
 )
 from PyQt5.QtGui import (
-    QColor, QLinearGradient, QPalette, QPainter, QKeySequence,
+    QColor, QLinearGradient, QPalette, QPainter,
 )
 
 from feeluown.player import PlaybackMode
-from feeluown.gui.helpers import fetch_cover_wrapper
+from feeluown.gui.helpers import fetch_cover_wrapper, esc_hide_widget
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.tabbar import TabBar
@@ -60,7 +60,7 @@ class PlaylistOverlay(QWidget):
 
         self._clear_playlist_btn.clicked.connect(self._app.playlist.clear)
         self._goto_current_song_btn.clicked.connect(self.goto_current_song)
-        QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
+        esc_hide_widget(self)
         q_app = QApplication.instance()
         assert q_app is not None  # make type checker happy.
         # type ignore: q_app has focusChanged signal, but type checker can't find it.

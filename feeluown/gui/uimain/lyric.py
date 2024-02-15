@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QLabel, QWidget, \
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
     QMenu, QAction, QFontDialog, QShortcut, QSpacerItem
 
-from feeluown.gui.helpers import resize_font, elided_text
+from feeluown.gui.helpers import esc_hide_widget, resize_font, elided_text
 from feeluown.player import LyricLine
 
 
@@ -72,7 +72,7 @@ class LyricWindow(QWidget):
 
         self._old_pos = None
 
-        QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
+        esc_hide_widget(self)
 
     def mousePressEvent(self, e):
         self._old_pos = e.globalPos()

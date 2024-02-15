@@ -1,12 +1,11 @@
 from typing import TYPE_CHECKING, cast
 
 from PyQt5.QtCore import QEvent, QSize
-from PyQt5.QtGui import QResizeEvent, QKeySequence
+from PyQt5.QtGui import QResizeEvent
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QShortcut,
     QTabBar,
     QStackedWidget,
     QSplitter,
@@ -22,7 +21,7 @@ from feeluown.gui.components.nowplaying import (
     NowplayingSimilarSongsView,
 )
 from feeluown.gui.components.line_song import TwoLineSongLabel
-from feeluown.gui.helpers import set_default_font_families
+from feeluown.gui.helpers import set_default_font_families, esc_hide_widget
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -146,7 +145,7 @@ class NowplayingOverlay(QWidget):
         self.stacked_widget.addWidget(self.player_playlist_view)
         self.stacked_widget.setCurrentIndex(0)
 
-        QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
+        esc_hide_widget(self)
         self.tabbar.currentChanged.connect(self.stacked_widget.setCurrentIndex)
         self._layout = QHBoxLayout(self)
         self.setup_ui()

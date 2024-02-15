@@ -6,6 +6,7 @@ from PyQt5.QtCore import Qt, QEvent
 from PyQt5.QtGui import QResizeEvent
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
+from feeluown.gui.helpers import esc_hide_widget
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
 if TYPE_CHECKING:
@@ -25,6 +26,7 @@ class FullWindowContainer(QWidget):
         super().__init__(parent=parent)
         self._app = app
         self._app.installEventFilter(self)
+        esc_hide_widget(self)
 
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
@@ -56,13 +58,12 @@ class WatchManager:
         self._fullwindow_container = FullWindowContainer(app, parent=app)
 
         #: Is the video widget visible before.
-        self._is_visible_before = False
+        self._is_visible_before_auto_set_to_none = False
 
     def initialize(self):
         self._initialize_mpv_video_renderring()
 
         self._ui = self._app.ui
-        self._ui.pc_panel.mv_btn.clicked.connect(self.play_mv)
         self._ui.pc_panel.media_btns.toggle_video_btn.clicked.connect(
             lambda: self.set_mode(Mode.fullwindow))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
@@ -73,7 +74,6 @@ class WatchManager:
         self._fullwindow_container.hide()
 
     def set_mode(self, mode):
-        self._is_visible_before = self._app.ui.mpv_widget.isVisible()
         mode = Mode(mode)  # So that user can call set_mode(0/1/2) in REPL.
         if mode is Mode.none:
             self.exit_fullwindow_mode()
@@ -92,9 +92,8 @@ class WatchManager:
                 self.enter_pip_mode()
 
     def enter_fullwindow_mode(self, go_back=None):
-        """enter normal mode"""
         video_widget = self._app.ui.mpv_widget
-        logger.info("enter video-show normal mode")
+        logger.debug("enter video-show fullwindow mode")
         if video_widget.parent() != self._fullwindow_container:
             self._fullwindow_container.set_body(video_widget)
 
@@ -112,7 +111,7 @@ class WatchManager:
     def exit_fullwindow_mode(self):
         self._app.ui.mpv_widget.hide()
         self._fullwindow_container.hide()
-        logger.info("exit video-show normal mode")
+        logger.debug("exit video-show fullwindow mode")
 
     def _is_pip_mode(self):
         return self._app.ui.mpv_widget.parent() == self._pip_container
@@ -126,7 +125,7 @@ class WatchManager:
 
     def enter_pip_mode(self):
         """enter picture in picture mode"""
-        logger.info("enter video-show picture in picture mode")
+        logger.debug("enter video-show picture in picture mode")
         video_widget = self._app.ui.mpv_widget
         video_widget.overlay_auto_visible = True
 
@@ -153,32 +152,30 @@ class WatchManager:
     def exit_pip_mode(self):
         """exit picture in picture mode"""
         self._pip_container.hide()
-        logger.info("exit video-show picture in picture mode")
+        logger.debug("exit video-show picture in picture mode")
 
     def toggle_pip_fullscreen(self):
         self._pip_container.setWindowState(
             self._pip_container.windowState() ^ Qt.WindowFullScreen)
 
-    def play_mv(self):
-        song = self._app.player.current_song
-        if song is None:
-            return
-
-        # The mv button only shows when there is a valid mv object
-        mv = self._app.library.song_get_mv(song)
-        self._app.playlist.set_current_model(mv)
-        self.enter_fullwindow_mode(go_back=self.exit_fullwindow_mode)
+    def play_video(self, video):
+        self._app.playlist.set_current_model(video)
+        self.set_mode(Mode.fullwindow)
 
     def on_media_changed(self, media):
         if not media:
+            logger.debug('media is changed to none, hide video-show')
             self.set_mode(Mode.none)
 
-    def on_video_format_changed(self, _):
-        if self._app.player.video_format is None:
-            logger.info('Media has no video, mode to none')
+    def on_video_format_changed(self, video_format):
+        if video_format is None:
+            # HELP(cosven): Event if player play a valid video, the video_format
+            # is changed to none first, and then it is changed to the real value.
+            # So remember if the video widget is visible before hide it.
+            self._is_visible_before_auto_set_to_none = self._app.ui.mpv_widget.isVisible()  # noqa
             self.set_mode(Mode.none)
         else:
-            if self._is_visible_before is True:
+            if self._is_visible_before_auto_set_to_none is True:
                 if self._is_fullwindow_mode():
                     self.set_mode(Mode.fullwindow)
                 elif self._is_pip_mode():

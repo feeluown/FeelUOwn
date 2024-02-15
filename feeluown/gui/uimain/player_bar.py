@@ -11,7 +11,7 @@ from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.components import (
     LineSongLabel, MediaButtonsV2, LyricButton, WatchButton, LikeButton,
-    MVButton, PlaylistButton, SongSourceTag,
+    NowplayingMVTextButton, PlaylistButton, SongSourceTag,
 )
 from feeluown.gui.helpers import IS_MACOS, ClickableMixin
 
@@ -51,7 +51,7 @@ class PlayerControlPanel(QFrame):
         self.playlist_btn = PlaylistButton(self._app, length=_button_width, parent=self)
         #: mark song as favorite button
         self.like_btn = LikeButton(self._app, parent=self)
-        self.mv_btn = MVButton(app=self._app, parent=self)
+        self.mv_btn = NowplayingMVTextButton(app=self._app, parent=self)
         self.toggle_lyric_btn = LyricButton(self._app, parent=self)
         self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)

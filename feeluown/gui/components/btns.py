@@ -125,11 +125,12 @@ class SongMVTextButton(TextButton):
         self._mv = None
 
         self.bind_song(song)
+        self.setDisabled(True)
         self.clicked.connect(self.on_clicked)
 
     def on_clicked(self):
         if self._mv is not None:
-            self._app.playlist.play_model(self._mv)
+            self._app.watch_mgr.play_video(self._mv)
 
     def bind_song(self, song):
         if song != self._song:
@@ -156,7 +157,7 @@ class SongMVTextButton(TextButton):
         return self._mv
 
 
-class MVButton(SongMVTextButton):
+class NowplayingMVTextButton(SongMVTextButton):
     def __init__(self, app: 'GuiApp', parent=None, **kwargs):
         super().__init__(app, song=None, parent=parent, **kwargs)
 
@@ -164,8 +165,8 @@ class MVButton(SongMVTextButton):
         self._app.playlist.song_mv_changed.connect(
             self.on_song_mv_changed, aioqueue=True)
 
-    def on_song_mv_changed(self, song, mv):
-        self.bind_song(song)
+    def on_song_mv_changed(self, _, mv):
+        self.setEnabled(mv is not None)
         self._mv = mv
 
 
