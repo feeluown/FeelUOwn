@@ -13,7 +13,7 @@ from feeluown.gui.helpers import darker_or_lighter
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.components import (
-    LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
+    LineSongLabel, MediaButtonsV2, LyricButton, WatchButton, LikeButton,
     MVButton, VolumeSlider, SongSourceTag, PlayerProgressRatioLabel
 )
 
@@ -44,9 +44,9 @@ class Toolbar(QWidget):
         self.progress_slider = ProgressSlider(app=self._app)
         self.progress_label = PlayerProgressRatioLabel(app=self._app)
         self.volume_slider = VolumeSlider(app=self._app)
-        self.media_buttons = MediaButtons(app=self._app,
-                                          spacing=0,
-                                          button_width=button_width+5)
+        self.media_buttons = MediaButtonsV2(app=self._app,
+                                            spacing=0,
+                                            button_width=button_width+5)
         self.lyric_button = LyricButton(app=self._app)
         self.like_button = LikeButton(app=self._app, size=self._song_btn_size)
         self.watch_button = WatchButton(app=self._app)
