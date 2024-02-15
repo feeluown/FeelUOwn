@@ -7,8 +7,9 @@ from PyQt5.QtWidgets import (
     QVBoxLayout,
     QWidget,
     QShortcut,
-    QStackedLayout,
     QTabBar,
+    QStackedWidget,
+    QSplitter,
 )
 
 from feeluown.gui.components import PlayerProgressSliderAndLabel
@@ -126,24 +127,34 @@ class NowplayingOverlay(QWidget):
         self._app = app
         self._app.installEventFilter(self)
 
+        self._splitter = QSplitter(self)
         self.player_panel = PlayerPanel(app, parent=self)
-        self.lyric_view = NowplayingLyricView(app, self)
-        self.comments_view = NowplayingCommentListView(app, self)
-        self.player_playlist_view = NowplayingPlayerPlaylistView(app, self)
-        self.similar_songs_view = NowplayingSimilarSongsView(app, self)
+        self.stacked_widget = QStackedWidget(parent=self)
         self.tabbar = QTabBar(self)
-        self.tabbar.setDocumentMode(True)
-        self.tabbar.setShape(QTabBar.TriangularEast)
-        set_default_font_families(self.comments_view)
 
-        self._layout = QHBoxLayout(self)
-        self._stacked_layout = QStackedLayout()
+        self.lyric_view = NowplayingLyricView(app)
+        self.comments_view = NowplayingCommentListView(app)
+        self.player_playlist_view = NowplayingPlayerPlaylistView(app)
+        self.similar_songs_view = NowplayingSimilarSongsView(app)
+        self.tabbar.addTab('歌词')
+        self.tabbar.addTab('热门评论')
+        self.tabbar.addTab('相似歌曲')
+        self.tabbar.addTab('播放队列')
+        self.stacked_widget.addWidget(self.lyric_view)
+        self.stacked_widget.addWidget(self.comments_view)
+        self.stacked_widget.addWidget(self.similar_songs_view)
+        self.stacked_widget.addWidget(self.player_playlist_view)
+        self.stacked_widget.setCurrentIndex(0)
 
         QShortcut(QKeySequence.Cancel, self).activated.connect(self.hide)
-        self.tabbar.currentChanged.connect(self._stacked_layout.setCurrentIndex)
+        self.tabbar.currentChanged.connect(self.stacked_widget.setCurrentIndex)
+        self._layout = QHBoxLayout(self)
         self.setup_ui()
 
     def setup_ui(self):
+        set_default_font_families(self.comments_view)
+        self.tabbar.setDocumentMode(True)
+        self.tabbar.setShape(QTabBar.TriangularEast)
         self.setAutoFillBackground(True)
         self.lyric_view.viewport().setAutoFillBackground(False)
         self.comments_view.viewport().setAutoFillBackground(False)
@@ -151,20 +162,12 @@ class NowplayingOverlay(QWidget):
         self.similar_songs_view.viewport().setAutoFillBackground(False)
 
         # Set contents margin explicitly.
+        self._splitter.setHandleWidth(0)
+        self._splitter.addWidget(self.player_panel)
+        self._splitter.addWidget(self.stacked_widget)
         self._layout.setContentsMargins(20, 20, 20, 20)
-        self._layout.addWidget(self.player_panel)
-        self._layout.addLayout(self._stacked_layout)
+        self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.tabbar)
-
-        self.tabbar.addTab('歌词')
-        self.tabbar.addTab('热门评论')
-        self.tabbar.addTab('相似歌曲')
-        self.tabbar.addTab('播放队列')
-        self._stacked_layout.addWidget(self.lyric_view)
-        self._stacked_layout.addWidget(self.comments_view)
-        self._stacked_layout.addWidget(self.similar_songs_view)
-        self._stacked_layout.addWidget(self.player_playlist_view)
-        self._stacked_layout.setCurrentIndex(0)
 
     def showEvent(self, e):
         self.resize(self._app.size())
