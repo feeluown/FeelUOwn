@@ -170,7 +170,7 @@ class MVButton(SongMVTextButton):
 
 
 class MediaButtonsV2(QWidget):
-    def __init__(self, app: 'GuiApp', button_width=30, parent=None):
+    def __init__(self, app: 'GuiApp', button_width=30, spacing=0, parent=None):
         super().__init__(parent=parent)
         self._app = app
 
@@ -183,7 +183,7 @@ class MediaButtonsV2(QWidget):
         self.toggle_video_btn.setToolTip('展示视频画面')
 
         self._layout = QHBoxLayout(self)
-        self._layout.setSpacing(0)
+        self._layout.setSpacing(spacing)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.addWidget(self.previous_btn)
         self._layout.addWidget(self.pp_btn)

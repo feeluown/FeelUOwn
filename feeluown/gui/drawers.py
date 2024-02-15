@@ -2,7 +2,7 @@ import math
 from typing import Optional
 
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
-from PyQt5.QtGui import QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF
+from PyQt5.QtGui import QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette
 from PyQt5.QtWidgets import QWidget
 
 from feeluown.gui.helpers import random_solarized_color, painter_save
@@ -303,3 +303,71 @@ class StarIconDrawer:
         pen.setWidthF(1.5)
         painter.setPen(pen)
         painter.drawPolygon(self._star_polygon)
+
+
+class VolumeIconDrawer:
+    def __init__(self, length, padding):
+        self._polygon = QPolygonF()
+        self._padding = padding
+        self._volume = 100
+
+        body_length = length - 2 * padding
+        body_length_4_1 = 0.25 * body_length
+        body_length_2_1 = 0.5 * body_length
+        body_length_4_3 = 0.75 * body_length
+        body_length_3_1 = 0.33 * body_length
+        body_length_3_2 = 0.66 * body_length
+
+        left_top = QPointF(0, body_length_4_1)
+        left_bottom = QPointF(0, body_length_4_3)
+        mid_top = QPointF(body_length_3_1, body_length_4_1)
+        mid_bottom = QPointF(body_length_3_1, body_length_4_3)
+        right_top = QPointF(body_length_3_2, 0)
+        right_bottom = QPointF(body_length_3_2, body_length)
+
+        for p in (left_top, left_bottom, mid_bottom, right_bottom,
+                  right_top, mid_top):
+            self._polygon.append(p)
+
+        line_right_top_y = 0.1 * body_length
+        line_right_bottom_y = 0.9 * body_length
+        line_left_top_y = 0.2 * body_length
+        line_left_bottom_y = 0.8 * body_length
+        line_left_x = 0.85 * body_length
+        self._line1 = (QPointF(line_left_x, line_left_top_y),
+                       QPointF(body_length, line_right_top_y))
+        self._line2 = (QPointF(line_left_x, body_length_2_1),
+                       QPointF(body_length, body_length_2_1))
+        self._line3 = (QPointF(line_left_x, line_left_bottom_y),
+                       QPointF(body_length, line_right_bottom_y))
+
+    def set_volume(self, volume):
+        self._volume = volume
+
+    def draw(self, painter: QPainter, palette: QPalette):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        with painter_save(painter):
+            painter.translate(self._padding, self._padding)
+            painter.drawPolygon(self._polygon)
+
+            if self._volume >= 66:
+                lines = (self._line1, self._line2, self._line3)
+                disabled_lines = ()
+            elif self._volume >= 33:
+                lines = (self._line2, self._line3)
+                disabled_lines = (self._line1, )
+            elif self._volume > 0:
+                lines = (self._line3, )
+                disabled_lines = (self._line1, self._line2)
+            else:
+                lines = ()
+                disabled_lines = (self._line1, self._line2, self._line3)
+            for line in lines:
+                painter.drawLine(*line)
+            pen = painter.pen()
+            pen.setColor(palette.color(QPalette.Disabled, QPalette.ButtonText))
+            painter.setPen(pen)
+            for line in disabled_lines:
+                painter.drawLine(*line)

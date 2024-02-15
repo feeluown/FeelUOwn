@@ -11,7 +11,7 @@ from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.components import (
-    LineSongLabel, MediaButtons, LyricButton, WatchButton, LikeButton,
+    LineSongLabel, MediaButtonsV2, LyricButton, WatchButton, LikeButton,
     MVButton, PlaylistButton, SongSourceTag,
 )
 from feeluown.gui.helpers import IS_MACOS, ClickableMixin
@@ -37,16 +37,19 @@ class PlayerControlPanel(QFrame):
             def __init__(self, *args, **kwargs):
                 super().__init__(*args, **kwargs)
 
+        _button_width = 36
+
         # initialize sub widgets
         self._layout = QHBoxLayout(self)
 
-        self.media_btns = MediaButtons(app=self._app, parent=self)
+        self.media_btns = MediaButtonsV2(
+            app=self._app, spacing=8, button_width=_button_width, parent=self
+        )
         self.previous_btn = self.media_btns.previous_btn
         self.pp_btn = self.media_btns.pp_btn
         self.next_btn = self.media_btns.next_btn
-
-        self.volume_btn = VolumeButton(self)
-        self.playlist_btn = PlaylistButton(self._app, length=30, parent=self)
+        self.volume_btn = VolumeButton(length=_button_width, parent=self)
+        self.playlist_btn = PlaylistButton(self._app, length=_button_width, parent=self)
         #: mark song as favorite button
         self.like_btn = LikeButton(self._app, parent=self)
         self.mv_btn = MVButton(app=self._app, parent=self)

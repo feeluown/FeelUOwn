@@ -9,6 +9,7 @@ from feeluown.gui.drawers import (
     CalendarIconDrawer,
     RankIconDrawer,
     StarIconDrawer,
+    VolumeIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -465,6 +466,24 @@ class MVButton(SelfPaintAbstractSquareButton):
         self.drawer.draw(painter)
 
 
+class VolumeButton(SelfPaintAbstractSquareButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.drawer = VolumeIconDrawer(self.width(), self._padding)
+
+    def set_volume(self, volume):
+        self.drawer.set_volume(volume)
+        self.update()
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self.drawer.draw(painter, self.palette())
+
+
 if __name__ == '__main__':
     from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
 
@@ -496,4 +515,7 @@ if __name__ == '__main__':
         l2.addWidget(PlayPreviousButton(length=length))
         l2.addWidget(PlayPauseButton(length=100))
         l2.addWidget(PlayNextButton(length=length))
+        volume_button = VolumeButton(length=length)
+        volume_button.set_volume(60)
+        l2.addWidget(volume_button)
         l2.addStretch(0)
