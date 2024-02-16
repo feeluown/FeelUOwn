@@ -506,7 +506,7 @@ class Playlist:
             return
         except Exception as e:  # noqa
             # When the exception is unknown, we mark the song as bad.
-            self._app.show_msg(f'prepare media failed due to unknown error: {e}')
+            self._app.show_msg(f'获取歌曲链接失败: {e}')
             logger.exception('prepare media failed due to unknown error, '
                              'so we mark the song as a bad one')
             self.mark_as_bad(song)
@@ -520,9 +520,10 @@ class Playlist:
                 run_afn(self.a_next)
                 return
             if self._app.config.ENABLE_MV_AS_STANDBY:
+                self._app.show_msg('尝试获取音乐视频的播放资源...')
                 media = await self._prepare_mv_media(song)
             if media:
-                self._app.show_msg('使用音乐视频作为其播放资源')
+                self._app.show_msg('使用音乐视频作为其播放资源 ✅')
             else:
                 target_song, media = await self.find_and_use_standby(song)
 
@@ -543,7 +544,7 @@ class Playlist:
         return
 
     async def find_and_use_standby(self, song):
-        self._app.show_msg(f'{song} 无可用的播放资源, 尝试寻找备用歌曲')
+        self._app.show_msg(f'{song} 无可用的播放资源, 尝试寻找备用歌曲...')
         logger.info(f'try to find standby from other providers for {song}')
         standby_candidates = await self._app.library.a_list_song_standby_v2(
             song,
