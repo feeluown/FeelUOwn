@@ -506,7 +506,7 @@ class Playlist:
             return
         except Exception as e:  # noqa
             # When the exception is unknown, we mark the song as bad.
-            self._app.show_msg(f'prepare media failed due to unknown error: {e}')
+            self._app.show_msg(f'获取歌曲链接失败: {e}')
             logger.exception('prepare media failed due to unknown error, '
                              'so we mark the song as a bad one')
             self.mark_as_bad(song)
@@ -519,7 +519,13 @@ class Playlist:
             if self.mode is PlaylistMode.fm:
                 run_afn(self.a_next)
                 return
-            target_song, media = await self.find_and_use_standby(song)
+            if self._app.config.ENABLE_MV_AS_STANDBY:
+                self._app.show_msg('尝试获取音乐视频的播放资源...')
+                media = await self._prepare_mv_media(song)
+            if media:
+                self._app.show_msg('使用音乐视频作为其播放资源 ✅')
+            else:
+                target_song, media = await self.find_and_use_standby(song)
 
         metadata = await self._prepare_metadata_for_song(target_song)
         self.pure_set_current_song(target_song, media, metadata)
@@ -538,17 +544,16 @@ class Playlist:
         return
 
     async def find_and_use_standby(self, song):
-        self._app.show_msg(f'{song} is invalid, try to find standby')
-        logger.info(f'try to find standby for {song}')
+        self._app.show_msg(f'{song} 无可用的播放资源, 尝试寻找备用歌曲...')
+        logger.info(f'try to find standby from other providers for {song}')
         standby_candidates = await self._app.library.a_list_song_standby_v2(
             song,
             self.audio_select_policy
         )
         if standby_candidates:
             standby, media = standby_candidates[0]
-            msg = f'song standby was found in {standby.source} ✅'
-            logger.info(msg)
-            self._app.show_msg(msg)
+            logger.info(f'song standby was found in {standby.source} ✅')
+            self._app.show_msg(f'在 {standby.source} 平台找到 {song} 的备用歌曲 ✅')
             # Insert the standby song after the song
             if song in self._songs and standby not in self._songs:
                 index = self._songs.index(song)
@@ -556,9 +561,8 @@ class Playlist:
                 self.songs_added.emit(index + 1, 1)
             return standby, media
 
-        msg = 'song standby not found'
-        logger.info(msg)
-        self._app.show_msg(msg)
+        logger.info(f'{song} song standby not found')
+        self._app.show_msg(f'未找到 {song} 的备用歌曲')
         return song, None
 
     def pure_set_current_song(self, song, media, metadata=None):
@@ -651,21 +655,25 @@ class Playlist:
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
         task_spec.disable_default_cb()
         if self.watch_mode is True:
-            try:
-                mv_media = await task_spec.bind_blocking_io(
-                    self._app.library.song_prepare_mv_media,
-                    song,
-                    self._app.config.VIDEO_SELECT_POLICY)
-            except MediaNotFound:
-                mv_media = None
-                self._app.show_msg('No mv found')
-            except Exception as e:  # noqa
-                mv_media = None
-                self._app.show_msg(f'Prepare mv media failed: {e}')
+            mv_media = await task_spec.bind_coro(self._prepare_mv_media(song))
             if mv_media:
                 return mv_media
+            self._app.show_msg('未找到可用的歌曲视频资源')
         return await task_spec.bind_blocking_io(
             self._app.library.song_prepare_media, song, self.audio_select_policy)
+
+    async def _prepare_mv_media(self, song) -> Optional[Media]:
+        try:
+            mv_media = await run_fn(
+                self._app.library.song_prepare_mv_media,
+                song,
+                self._app.config.VIDEO_SELECT_POLICY)
+        except MediaNotFound:
+            mv_media = None
+        except Exception as e:  # noqa
+            mv_media = None
+            logger.exception(f'fail to get {song} mv: {e}')
+        return mv_media
 
     def set_current_model(self, model):
         """
