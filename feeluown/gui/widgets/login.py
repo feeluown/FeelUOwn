@@ -1,9 +1,11 @@
 import json
 from http.cookies import SimpleCookie
+from urllib.parse import urlparse
 
 from PyQt5.QtCore import pyqtSignal, Qt
 from PyQt5.QtWidgets import QDialog, QTextEdit, QPushButton, \
     QVBoxLayout, QLabel
+
 try:
     from feeluown.gui.widgets.weblogin import WebLoginView
 except ImportError:
@@ -11,7 +13,32 @@ except ImportError:
 else:
     has_webengine = True
 
+try:
+    from feeluown.utils.yt_dlp_cookies import load_cookies  # noqa
+except ImportError:
+    can_load_keyring_cookies = False
+else:
+    can_load_keyring_cookies = True
+
 from feeluown.utils import aio
+
+
+def try_get_domain_from_uri(uri):
+    """
+    xx.yy.com -> yy.com
+    https://xx.yy.com -> yy.com
+    """
+    try:
+        result = urlparse(uri)
+    except ValueError:
+        return ''
+    # When uri is 'xx.yy.com', then netloc is empty.
+    netloc = result.netloc
+    if not netloc:
+        netloc = result.path
+    if netloc:
+        return '.'.join(netloc.split('.')[-2:])
+    return netloc
 
 
 class InvalidCookies(Exception):
@@ -46,7 +73,7 @@ class CookiesLoginDialog(LoginDialog):
     One usage example: feeluown-qqmusic.
     """
 
-    def __init__(self, uri=None, required_cookies_fields=None):
+    def __init__(self, uri=None, required_cookies_fields=None, domain=None):
         if has_webengine and uri and required_cookies_fields:
             use_webview = True
             flags = Qt.Window
@@ -57,12 +84,17 @@ class CookiesLoginDialog(LoginDialog):
         super().__init__(None, flags)
         self._use_webview = use_webview
         self._uri = uri
+        if domain is None and uri is not None:
+            self._domain = try_get_domain_from_uri(uri)
         self._required_cookies_fields = required_cookies_fields
 
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
         self.login_btn = QPushButton('登录', self)
         self.weblogin_btn = QPushButton('网页登录', self)
+        self.chrome_btn = QPushButton('从 Chrome 中读取 Cookie')
+        self.firefox_btn = QPushButton('从 Firefox 中读取 Cookie')
+        self.edge_btn = QPushButton('从 Edge 中读取 Cookie')
 
         self.hint_label.setTextFormat(Qt.RichText)
 
@@ -71,6 +103,9 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.hint_label)
         self._layout.addWidget(self.login_btn)
         self._layout.addWidget(self.weblogin_btn)
+        self._layout.addWidget(self.chrome_btn)
+        self._layout.addWidget(self.firefox_btn)
+        self._layout.addWidget(self.edge_btn)
 
         self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
@@ -88,6 +123,15 @@ class CookiesLoginDialog(LoginDialog):
             else:
                 # hide the button if provider does not support
                 self.weblogin_btn.hide()
+
+        if not (can_load_keyring_cookies and self._domain):
+            self.chrome_btn.setDisabled(True)
+            self.edge_btn.setDisabled(True)
+            self.firefox_btn.setDisabled(True)
+
+        self.chrome_btn.clicked.connect(lambda: self._start_keyring_login('chrome'))
+        self.firefox_btn.clicked.connect(lambda: self._start_keyring_login('firefox'))
+        self.edge_btn.clicked.connect(lambda: self._start_keyring_login('edge'))
         self.login_btn.clicked.connect(lambda: aio.create_task(self.login()))
         self.login_succeed.connect(self.hide)
 
@@ -95,6 +139,22 @@ class CookiesLoginDialog(LoginDialog):
         self._web_login = WebLoginView(self._uri, self._required_cookies_fields)
         self._web_login.succeed.connect(self._on_web_login_succeed)
         self._web_login.show()
+
+    def _start_keyring_login(self, browser):
+        cookie_dict = self._get_cookies_from_browser(browser)
+        self.cookies_text_edit.setText(json.dumps(cookie_dict, indent=2))
+        aio.create_task(self.login())
+
+    def _get_cookies_from_browser(self, browser):
+        """
+        :param browser: chrome,firefox,edge
+        """
+        jar = load_cookies(None, [browser], None)
+        cookie_dict = {}
+        for cookie in jar:
+            if self._domain in cookie.domain:
+                cookie_dict[cookie.name] = cookie.value
+        return cookie_dict
 
     def _on_web_login_succeed(self, cookies):
         self.cookies_text_edit.setText(json.dumps(cookies, indent=2))
