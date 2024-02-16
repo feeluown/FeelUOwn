@@ -27,6 +27,10 @@ def create_config() -> Config:
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
+    # TODO(cosven): maybe
+    # 1. when it is set to 2, find standby from other providers first.
+    # 2. when it is set to 3, play it's MV model instead of using MV's media.
+    config.deffield('ENABLE_MV_AS_STANDBY', type_=int, default=1, desc='MV 作为备用资源')
     config.deffield('ENABLE_TRAY', type_=bool, default=True, desc='启用系统托盘')
     config.deffield('NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False,
                     desc='切换歌曲时显示桌面通知')

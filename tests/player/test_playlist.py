@@ -19,6 +19,7 @@ def pl(app_mock, song, song1):
     """
     pl: [song, song1], current_song: song
     """
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
     playlist = Playlist(app_mock)
     playlist.add(song)
     playlist.add(song1)
@@ -136,6 +137,26 @@ async def test_set_current_song_with_bad_song_2(
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
     mock_pure_set_current_song.assert_called_once_with(song2, SONG2_URL, sentinal)
+
+
+@pytest.mark.asyncio
+async def test_set_current_song_with_bad_song_3(
+        mocker, song2, app_mock,
+        pl_prepare_media_none,):
+    """song has mv and the mv has valid media, should use mv's media as the media"""
+    media = object()
+    metadata = object()
+
+    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mock_prepare_mv_media = mocker.patch.object(Playlist, '_prepare_mv_media',
+                                                return_value=media)
+    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=metadata)
+
+    app_mock.config.ENABLE_MV_AS_STANDBY = 1
+    pl = Playlist(app_mock)
+    await pl.a_set_current_song(song2)
+    mock_prepare_mv_media.assert_called_once_with(song2)
+    mock_pure_set_current_song.assert_called_once_with(song2, media, metadata)
 
 
 def test_pure_set_current_song(
@@ -285,6 +306,7 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
     mocker.patch.object(Playlist, '_prepare_media', side_effect=Exception())
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
 
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
     pl = Playlist(app_mock)
     pl.add(song)
     pl.add(song1)
