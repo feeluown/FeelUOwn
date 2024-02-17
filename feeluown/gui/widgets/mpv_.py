@@ -1,9 +1,12 @@
+from contextlib import contextmanager
+
 from PyQt5.QtCore import QMetaObject, pyqtSlot, QSize
 from PyQt5.QtOpenGL import QGLContext
 
-from mpv import MpvRenderContext, OpenGlCbGetProcAddrFn
+from mpv import MpvRenderContext, OpenGlCbGetProcAddrFn, _mpv_set_property_string
 
 from feeluown.gui.widgets.video import VideoOpenGLWidget
+from feeluown.gui.helpers import IS_MACOS
 
 
 def get_proc_addr(_, name):
@@ -34,6 +37,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         self.mpv = self._app.player._mpv  # noqa
         self.ctx = None
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
+        self._is_changing_parent = False
 
     def initializeGL(self):
         params = {'get_proc_address': self.get_proc_addr_c}
@@ -94,6 +98,55 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         if self.mpv.width:
             return QSize(self.mpv.width, self.mpv.height)
         return super().sizeHint()
+
+    @property
+    def is_changing_parent(self):
+        return self._is_changing_parent
+
+    @contextmanager
+    def change_parent(self):
+        assert self._is_changing_parent is False, 'implementation bug'
+
+        # on macOS, changing mpv widget parent cause no side effects.
+        # on Linux (wayland), it seems changing mpv widget parent may cause segfault,
+        # so do some hack to avoid crash.
+        if not IS_MACOS:
+            self._is_changing_parent = True
+            self._before_change_mpv_widget_parent()
+        try:
+            yield
+        finally:
+            if not IS_MACOS:
+                self._after_change_mpv_widget_parent()
+                self._is_changing_parent = False
+
+    def _before_change_mpv_widget_parent(self):
+        """
+        According to Qt docs, reparenting an OpenGLWidget will destory the GL context.
+        In mpv widget, it calls _mpv_opengl_cb_uninit_gl. After uninit_gl, mpv can't show
+        video anymore because video_out is destroyed.
+
+        See mpv mpv_opengl_cb_uninit_gl implementation for more details.
+        """
+        _mpv_set_property_string(self._app.player._mpv.handle, b'vid', b'no')
+
+    def _after_change_mpv_widget_parent(self):
+        """
+        To recover the video show, we should reinit gl and reinit video. gl is
+        automatically reinited when the mpv_widget do painting. We should
+        manually reinit video.
+
+        NOTE(cosven): After some investigation, I found that the API in mpv to
+        reinit video_out(maybe video is almost same as video_out)
+        is init_best_video_out. Theoretically, sending 'video-reload' command
+        will trigger this API. However, we can't run this command
+        in our case and I don't know why. Another way to trigger
+        the API is to switch track. Changing vid property just switch the track.
+
+        Inpect mpv init_best_video_out caller for more details. You should see
+        mp_switch_track_n is one of the entrypoint.
+        """
+        _mpv_set_property_string(self._app.player._mpv.handle, b'vid', b'1')
 
 
 # TODO: 实现 MpvEmbeddedWidget

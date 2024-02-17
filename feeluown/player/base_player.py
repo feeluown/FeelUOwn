@@ -46,6 +46,8 @@ class AbstractPlayer(metaclass=ABCMeta):
 
         self._current_media = None
         self._current_metadata = Metadata()
+        self._video_format = None
+        self._video_channel = False  # False, True, 1, int
 
         #: player position changed signal
         self.position_changed = Signal()

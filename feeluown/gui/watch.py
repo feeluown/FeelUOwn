@@ -67,7 +67,7 @@ class WatchManager:
         self._ui.pc_panel.media_btns.toggle_video_btn.clicked.connect(
             lambda: self.set_mode(Mode.fullwindow))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
-        self._app.player.video_format_changed.connect(self.on_video_format_changed, aioqueue=True)  # noqa
+        self._app.player.video_channel_changed.connect(self.on_video_channel_changed, aioqueue=True)  # noqa
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
@@ -95,7 +95,8 @@ class WatchManager:
         video_widget = self._app.ui.mpv_widget
         logger.debug("enter video-show fullwindow mode")
         if video_widget.parent() != self._fullwindow_container:
-            self._fullwindow_container.set_body(video_widget)
+            with video_widget.change_parent():
+                self._fullwindow_container.set_body(video_widget)
 
         self._fullwindow_container.show()
         self._fullwindow_container.raise_()
@@ -130,7 +131,8 @@ class WatchManager:
         video_widget.overlay_auto_visible = True
 
         if video_widget.parent() != self._pip_container:
-            self._pip_container.attach_widget(self._app.ui.mpv_widget)
+            with video_widget.change_parent():
+                self._pip_container.attach_widget(video_widget)
 
         video_widget.ctl_bar.clear_adhoc_btns()
         fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn('全屏')
@@ -167,11 +169,16 @@ class WatchManager:
             logger.debug('media is changed to none, hide video-show')
             self.set_mode(Mode.none)
 
-    def on_video_format_changed(self, video_format):
-        if video_format is None:
-            # HELP(cosven): Event if player play a valid video, the video_format
+    def on_video_channel_changed(self, _):
+        if bool(self._app.player.video_channel) is False:
+            # When the mpv widget is changing it's parent, the video_channel may be
+            # changed to empty manully (see mpv_widget.change_parent).
+            if not self._app.ui.mpv_widget.is_changing_parent:
+                return
+
+            # HELP(cosven): Even if player play a valid video, the video_format
             # is changed to none first, and then it is changed to the real value.
-            # So remember if the video widget is visible before hide it.
+            # So check if the video widget is visible before hide it.
             self._is_visible_before_auto_set_to_none = self._app.ui.mpv_widget.isVisible()  # noqa
             self.set_mode(Mode.none)
         else:

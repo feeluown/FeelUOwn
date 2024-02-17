@@ -54,8 +54,8 @@ class PlayerPanel(QWidget):
 
         self.artwork_view.mv_btn.clicked.connect(self.play_mv)
         self.ctl_btns.media_btns.toggle_video_btn.clicked.connect(self.enter_video_mode)
-        self._app.player.video_format_changed.connect(
-            self.on_video_format_changed, aioqueue=True
+        self._app.player.video_channel_changed.connect(
+            self.on_video_channel_changed, aioqueue=True
         )
 
     def setup_ui(self):
@@ -82,7 +82,8 @@ class PlayerPanel(QWidget):
         self._app.watch_mgr.exit_fullwindow_mode()
         video_widget = self._app.ui.mpv_widget
         video_widget.overlay_auto_visible = True
-        self.artwork_view.set_body(video_widget)
+        with video_widget.change_parent():
+            self.artwork_view.set_body(video_widget)
         self.ctl_btns.hide()
         self.progress.hide()
         video_widget.ctl_bar.clear_adhoc_btns()
@@ -114,8 +115,11 @@ class PlayerPanel(QWidget):
     def sizeHint(self):
         return QSize(500, 400)
 
-    def on_video_format_changed(self, video_format):
-        if video_format is None:
+    def on_video_channel_changed(self, _):
+        if (
+            bool(self._app.player.video_channel) is False
+            and not self._app.ui.mpv_widget.is_changing_parent
+        ):
             self.enter_cover_mode()
 
 
