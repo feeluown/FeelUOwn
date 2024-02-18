@@ -54,7 +54,7 @@ class Tray(QSystemTrayIcon):
         self._next_action.triggered.connect(self._app.playlist.next)
         if self._toggle_app_action is not None:
             self._toggle_app_action.triggered.connect(self._toggle_app_state)
-        self._app.player.state_changed.connect(self.on_player_state_changed)
+        self._app.player.state_changed.connect(self.on_player_state_changed, aioqueue=True)
         self._app.playlist.song_changed.connect(self.on_player_song_changed)
         self._app.theme_mgr.theme_changed.connect(self.on_theme_changed)
         get_qapp().applicationStateChanged.connect(self.on_app_state_changed)

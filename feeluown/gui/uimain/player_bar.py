@@ -84,7 +84,7 @@ class PlayerControlPanel(QFrame):
             self.on_video_format_changed, aioqueue=True)
         player = self._app.player
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
-        player.volume_changed.connect(self.volume_btn.on_volume_changed)
+        player.volume_changed.connect(self.volume_btn.on_volume_changed, aioqueue=True)
         self.cover_label.clicked.connect(self.show_nowplaying_overlay)
 
         self._setup_ui()
