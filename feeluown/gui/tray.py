@@ -9,17 +9,16 @@ from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu
 from feeluown.player import State
 from feeluown.gui.helpers import elided_text, get_qapp
 
-
 TOGGLE_APP_TEXT = ('激活主窗口', '隐藏主窗口')
 TOGGLE_PLAYER_TEXT = ('播放', '暂停')
 
 IS_MACOS = sys.platform == 'darwin'
 
-
 logger = logging.getLogger(__name__)
 
 
 class Tray(QSystemTrayIcon):
+
     def __init__(self, app):
         """
         type app: feeluown.app.App
@@ -31,8 +30,9 @@ class Tray(QSystemTrayIcon):
         # setup context menu
         self._menu = QMenu()
         self._status_action = QAction('...')
-        self._toggle_player_action = QAction(QIcon.fromTheme('media-play'),
-                                             TOGGLE_PLAYER_TEXT[0])
+        self._toggle_player_action = QAction(
+            QIcon.fromTheme('media-play'), TOGGLE_PLAYER_TEXT[0]
+        )
         self._next_action = QAction(QIcon.fromTheme('media-skip-forward'), '下一首')
         self._prev_action = QAction(QIcon.fromTheme('media-skip-backward'), '上一首')
         self._quit_action = QAction(QIcon.fromTheme('exit'), '退出')
@@ -40,12 +40,11 @@ class Tray(QSystemTrayIcon):
         # can click the tray icon to toggle_app
         if IS_MACOS:
             self._toggle_app_action: Optional[QAction] = QAction(
-                QIcon.fromTheme('window'),
-                TOGGLE_APP_TEXT[1]
+                QIcon.fromTheme('window'), TOGGLE_APP_TEXT[1]
             )
         else:
             self._toggle_app_action = None
-            self.activated.connect(self._on_activated) # noqa
+            self.activated.connect(self._on_activated)  # noqa
 
         # bind signals
         self._quit_action.triggered.connect(self._app.exit)
@@ -54,7 +53,9 @@ class Tray(QSystemTrayIcon):
         self._next_action.triggered.connect(self._app.playlist.next)
         if self._toggle_app_action is not None:
             self._toggle_app_action.triggered.connect(self._toggle_app_state)
-        self._app.player.state_changed.connect(self.on_player_state_changed, aioqueue=True)
+        self._app.player.state_changed.connect(
+            self.on_player_state_changed, aioqueue=True
+        )
         self._app.playlist.song_changed.connect(self.on_player_song_changed)
         self._app.theme_mgr.theme_changed.connect(self.on_theme_changed)
         get_qapp().applicationStateChanged.connect(self.on_app_state_changed)
@@ -103,8 +104,9 @@ class Tray(QSystemTrayIcon):
 
     def _set_icon(self):
         # respect system icon
-        icon = QIcon.fromTheme('feeluown-tray',
-                               QIcon(self._app.theme_mgr.get_icon('tray')))
+        icon = QIcon.fromTheme(
+            'feeluown-tray', QIcon(self._app.theme_mgr.get_icon('tray'))
+        )
         self.setIcon(icon)
 
     def on_theme_changed(self, _):
@@ -115,9 +117,11 @@ class Tray(QSystemTrayIcon):
             status = f'{song.title_display} - {song.artists_name_display}'
             if self._app.config.NOTIFY_ON_TRACK_CHANGED:
                 # TODO: show song cover if possible
-                self.showMessage(song.title_display,
-                                 song.artists_name_display,
-                                 msecs=self._app.config.NOTIFY_DURATION)
+                self.showMessage(
+                    song.title_display,
+                    song.artists_name_display,
+                    msecs=self._app.config.NOTIFY_DURATION
+                )
             self._status_action.setText(elided_text(status, 120))
             self._status_action.setToolTip(status)
             self.setToolTip(status)
