@@ -68,7 +68,6 @@ class MpvPlayer(AbstractPlayer):
 
         #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()
-        self.video_channel_changed = Signal()
 
         self._mpv.observe_property(
             'time-pos',
@@ -272,20 +271,6 @@ class MpvPlayer(AbstractPlayer):
         # firstly changed to None, and then changed to the real format.
         self.video_format_changed.emit(vformat)
 
-    @property
-    def video_channel(self):
-        return self._video_channel
-
-    @video_channel.setter
-    def video_channel(self, value):
-        """
-        According to practice:
-        - when playing a audio, the video channel is changed to False.
-        - when playing a video, the video channel is changed to 1.
-        """
-        self._video_channel = value
-        self.video_channel_changed.emit(value)
-
     def _stop_mpv(self):
         # Remove current media.
         self._mpv.play("")
@@ -304,9 +289,6 @@ class MpvPlayer(AbstractPlayer):
     def _on_video_format_changed(self, vformat):
         self.video_format = vformat
 
-    def _on_video_changed(self, video):
-        self.video_channel = video
-
     def _on_event(self, event):
         event_id = event['event_id']
         if event_id == MpvEventID.END_FILE:
@@ -321,6 +303,7 @@ class MpvPlayer(AbstractPlayer):
         elif event_id == MpvEventID.FILE_LOADED:
             # If the media is a live streaming, this event may not be received.
             self.media_loaded.emit()
+            self.media_loaded_v2.emit({'video_format': self._mpv.video_format})
         elif event_id == MpvEventID.METADATA_UPDATE:
             metadata = dict(self._mpv.metadata or {})  # type: ignore
             logger.debug('metadata updated to %s', metadata)

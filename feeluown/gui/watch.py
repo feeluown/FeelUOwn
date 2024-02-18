@@ -57,21 +57,29 @@ class WatchManager:
         self._pip_container = ResizableFramelessContainer()
         self._fullwindow_container = FullWindowContainer(app, parent=app)
 
-        #: Is the video widget visible before.
-        self._is_visible_before_auto_set_to_none = False
+        self._keep_fullwindow_mode = False
+        self._keep_pip_mode = False
 
     def initialize(self):
         self._initialize_mpv_video_renderring()
 
         self._ui = self._app.ui
         self._ui.pc_panel.media_btns.toggle_video_btn.clicked.connect(
-            lambda: self.set_mode(Mode.fullwindow))
+            lambda: self.keep_and_set_mode(Mode.fullwindow))
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
-        self._app.player.video_channel_changed.connect(self.on_video_channel_changed, aioqueue=True)  # noqa
+        self._app.player.media_loaded_v2.connect(self.on_media_loaded, aioqueue=True)
 
         self._pip_container.setMinimumSize(200, 130)
         self._pip_container.hide()
         self._fullwindow_container.hide()
+
+    def keep_and_set_mode(self, mode):
+        mode = Mode(mode)
+        if mode is Mode.fullwindow:
+            self._keep_fullwindow_mode = True
+        elif mode is Mode.pip:
+            self._keep_pip_mode = True
+        self.set_mode(mode)
 
     def set_mode(self, mode):
         mode = Mode(mode)  # So that user can call set_mode(0/1/2) in REPL.
@@ -86,14 +94,14 @@ class WatchManager:
             # current mode and enter mode
             if mode is Mode.fullwindow:
                 self.exit_pip_mode()
-                self.enter_fullwindow_mode(go_back=self.exit_fullwindow_mode)
+                self.enter_fullwindow_mode(go_back=self.unkeep_and_exit_fullwindow_mode)
             else:
                 self.exit_fullwindow_mode()
                 self.enter_pip_mode()
 
     def enter_fullwindow_mode(self, go_back=None):
-        video_widget = self._app.ui.mpv_widget
         logger.debug("enter video-show fullwindow mode")
+        video_widget = self._app.ui.mpv_widget
         if video_widget.parent() != self._fullwindow_container:
             with video_widget.change_parent():
                 self._fullwindow_container.set_body(video_widget)
@@ -104,25 +112,22 @@ class WatchManager:
         video_widget.overlay_auto_visible = True
         video_widget.ctl_bar.clear_adhoc_btns()
         pip_btn = video_widget.ctl_bar.add_adhoc_btn('画中画')
-        pip_btn.clicked.connect(lambda: self.set_mode(Mode.pip))
+        pip_btn.clicked.connect(lambda: self.keep_and_set_mode(Mode.pip))
         if go_back is not None:
             hide_btn = video_widget.ctl_bar.add_adhoc_btn('最小化')
             hide_btn.clicked.connect(go_back)
 
+    def unkeep_pip_and_enter_fullwindow_mode(self):
+        self._keep_pip_mode = False
+        self.set_mode(Mode.fullwindow)
+
+    def unkeep_and_exit_fullwindow_mode(self):
+        self._keep_fullwindow_mode = False
+        self.exit_fullwindow_mode()
+
     def exit_fullwindow_mode(self):
-        self._app.ui.mpv_widget.hide()
         self._fullwindow_container.hide()
         logger.debug("exit video-show fullwindow mode")
-
-    def _is_pip_mode(self):
-        return self._app.ui.mpv_widget.parent() == self._pip_container
-
-    def _is_fullwindow_mode(self):
-        return (self._app.ui.mpv_widget.parent() == self._app and
-                self._app.ui.mpv_widget.isVisible())
-
-    def _is_none_mode(self):
-        return not (self._is_pip_mode() or self._is_fullwindow_mode())
 
     def enter_pip_mode(self):
         """enter picture in picture mode"""
@@ -138,13 +143,13 @@ class WatchManager:
         fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn('全屏')
         hide_btn = video_widget.ctl_bar.add_adhoc_btn('退出画中画')
         fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
-        hide_btn.clicked.connect(lambda: self.set_mode(Mode.fullwindow))
+        hide_btn.clicked.connect(self.unkeep_pip_and_enter_fullwindow_mode)
         self._pip_container.show()
         self._app.ui.mpv_widget.show()
         try:
             width = int(self._app.player._mpv.width)  # type: ignore
             height = int(self._app.player._mpv.height)  # type: ignore
-        except ValueError:
+        except TypeError:
             logger.exception('mpv video width/height is not a valid int')
         else:
             proper_width = max(min(width, 640), 320)
@@ -169,24 +174,14 @@ class WatchManager:
             logger.debug('media is changed to none, hide video-show')
             self.set_mode(Mode.none)
 
-    def on_video_channel_changed(self, _):
-        if bool(self._app.player.video_channel) is False:
-            # When the mpv widget is changing it's parent, the video_channel may be
-            # changed to empty manully (see mpv_widget.change_parent).
-            if not self._app.ui.mpv_widget.is_changing_parent:
-                return
-
-            # HELP(cosven): Even if player play a valid video, the video_format
-            # is changed to none first, and then it is changed to the real value.
-            # So check if the video widget is visible before hide it.
-            self._is_visible_before_auto_set_to_none = self._app.ui.mpv_widget.isVisible()  # noqa
-            self.set_mode(Mode.none)
+    def on_media_loaded(self, properties):
+        if bool(properties['video_format']) is True:
+            if self._keep_fullwindow_mode:
+                self.set_mode(Mode.fullwindow)
+            elif self._keep_pip_mode:
+                self.set_mode(Mode.pip)
         else:
-            if self._is_visible_before_auto_set_to_none is True:
-                if self._is_fullwindow_mode():
-                    self.set_mode(Mode.fullwindow)
-                elif self._is_pip_mode():
-                    self.set_mode(Mode.pip)
+            self.set_mode(Mode.none)
 
     #
     # private methods

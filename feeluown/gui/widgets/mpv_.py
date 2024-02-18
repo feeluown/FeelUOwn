@@ -37,7 +37,6 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         self.mpv = self._app.player._mpv  # noqa
         self.ctx = None
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
-        self._is_changing_parent = False
 
     def initializeGL(self):
         params = {'get_proc_address': self.get_proc_addr_c}
@@ -99,26 +98,18 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
             return QSize(self.mpv.width, self.mpv.height)
         return super().sizeHint()
 
-    @property
-    def is_changing_parent(self):
-        return self._is_changing_parent
-
     @contextmanager
     def change_parent(self):
-        assert self._is_changing_parent is False, 'implementation bug'
-
         # on macOS, changing mpv widget parent cause no side effects.
         # on Linux (wayland), it seems changing mpv widget parent may cause segfault,
         # so do some hack to avoid crash.
         if not IS_MACOS:
-            self._is_changing_parent = True
             self._before_change_mpv_widget_parent()
         try:
             yield
         finally:
             if not IS_MACOS:
                 self._after_change_mpv_widget_parent()
-                self._is_changing_parent = False
 
     def _before_change_mpv_widget_parent(self):
         """

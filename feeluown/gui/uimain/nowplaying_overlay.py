@@ -53,10 +53,13 @@ class PlayerPanel(QWidget):
         self.setup_ui()
 
         self.artwork_view.mv_btn.clicked.connect(self.play_mv)
-        self.ctl_btns.media_btns.toggle_video_btn.clicked.connect(self.enter_video_mode)
-        self._app.player.video_channel_changed.connect(
-            self.on_video_channel_changed, aioqueue=True
+        self.ctl_btns.media_btns.toggle_video_btn.clicked.connect(
+            self.keep_and_enter_video_mode
         )
+        self._app.player.media_loaded_v2.connect(
+            self.on_media_loaded, aioqueue=True
+        )
+        self._keep_video_mode = False
 
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 11, 0)
@@ -76,20 +79,31 @@ class PlayerPanel(QWidget):
         self._app.playlist.set_current_model(self._app.playlist.current_song_mv)
         self.enter_video_mode()
 
+    def keep_and_enter_video_mode(self):
+        self._keep_video_mode = True
+        self.enter_video_mode()
+
+    def unkeep_and_enter_cover_mode(self):
+        self._keep_video_mode = False
+        self.enter_cover_mode()
+
     def enter_video_mode(self):
         # FIXME: should call watch_mgr.set_mode
         self._app.watch_mgr.exit_pip_mode()
         self._app.watch_mgr.exit_fullwindow_mode()
         video_widget = self._app.ui.mpv_widget
         video_widget.overlay_auto_visible = True
-        with video_widget.change_parent():
+        if video_widget.parent() == self.artwork_view:
             self.artwork_view.set_body(video_widget)
+        else:
+            with video_widget.change_parent():
+                self.artwork_view.set_body(video_widget)
         self.ctl_btns.hide()
         self.progress.hide()
         video_widget.ctl_bar.clear_adhoc_btns()
         exit_btn = video_widget.ctl_bar.add_adhoc_btn('退出视频模式')
         fullwindow_btn = video_widget.ctl_bar.add_adhoc_btn('窗口全屏')
-        exit_btn.clicked.connect(self.enter_cover_mode)
+        exit_btn.clicked.connect(self.unkeep_and_enter_cover_mode)
         fullwindow_btn.clicked.connect(
             lambda: self._app.watch_mgr.
             enter_fullwindow_mode(go_back=self.enter_video_mode)
@@ -115,11 +129,11 @@ class PlayerPanel(QWidget):
     def sizeHint(self):
         return QSize(500, 400)
 
-    def on_video_channel_changed(self, _):
-        if (
-            bool(self._app.player.video_channel) is False
-            and not self._app.ui.mpv_widget.is_changing_parent
-        ):
+    def on_media_loaded(self, properties):
+        if bool(properties['video_format']) is True:
+            if self._keep_video_mode:
+                self.enter_video_mode()
+        else:
             self.enter_cover_mode()
 
 
