@@ -46,6 +46,7 @@ class AbstractPlayer(metaclass=ABCMeta):
 
         self._current_media = None
         self._current_metadata = Metadata()
+        self._video_format = None
 
         #: player position changed signal
         self.position_changed = Signal()
@@ -60,7 +61,10 @@ class AbstractPlayer(metaclass=ABCMeta):
         #: media about to change: (old_media, media)
         self.media_about_to_changed = Signal()
         self.media_changed = Signal()  # Media source is changed (not loaded yet).
+        # The difference between media_loaded and media_loaded_v2 is that
+        # media_loaded_v2 carries some media properties.
         self.media_loaded = Signal()  # Start to play the media.
+        self.media_loaded_v2 = Signal()  # emit(properties)
         # Metadata is changed, and it may be changed during playing.
         self.metadata_changed = Signal()
         self.media_finished = Signal()  # Finish to play the media.

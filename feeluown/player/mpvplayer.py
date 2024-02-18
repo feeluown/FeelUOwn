@@ -303,6 +303,7 @@ class MpvPlayer(AbstractPlayer):
         elif event_id == MpvEventID.FILE_LOADED:
             # If the media is a live streaming, this event may not be received.
             self.media_loaded.emit()
+            self.media_loaded_v2.emit({'video_format': self._mpv.video_format})
         elif event_id == MpvEventID.METADATA_UPDATE:
             metadata = dict(self._mpv.metadata or {})  # type: ignore
             logger.debug('metadata updated to %s', metadata)
