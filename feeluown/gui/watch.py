@@ -105,10 +105,12 @@ class WatchManager:
         if video_widget.parent() != self._fullwindow_container:
             with video_widget.change_parent():
                 self._fullwindow_container.set_body(video_widget)
+                self._fullwindow_container.show()
+                self._fullwindow_container.raise_()
+        else:
+            self._fullwindow_container.show()
+            self._fullwindow_container.raise_()
 
-        self._fullwindow_container.show()
-        self._fullwindow_container.raise_()
-        video_widget.show()
         video_widget.overlay_auto_visible = True
         video_widget.ctl_bar.clear_adhoc_btns()
         pip_btn = video_widget.ctl_bar.add_adhoc_btn('画中画')
@@ -138,14 +140,15 @@ class WatchManager:
         if video_widget.parent() != self._pip_container:
             with video_widget.change_parent():
                 self._pip_container.attach_widget(video_widget)
+                self._pip_container.show()
+        else:
+            self._pip_container.show()
 
         video_widget.ctl_bar.clear_adhoc_btns()
         fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn('全屏')
         hide_btn = video_widget.ctl_bar.add_adhoc_btn('退出画中画')
         fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
         hide_btn.clicked.connect(self.unkeep_pip_and_enter_fullwindow_mode)
-        self._pip_container.show()
-        self._app.ui.mpv_widget.show()
         try:
             width = int(self._app.player._mpv.width)  # type: ignore
             height = int(self._app.player._mpv.height)  # type: ignore

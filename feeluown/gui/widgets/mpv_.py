@@ -1,3 +1,4 @@
+import sys
 from contextlib import contextmanager
 
 from PyQt5.QtCore import QMetaObject, pyqtSlot, QSize
@@ -119,7 +120,9 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
 
         See mpv mpv_opengl_cb_uninit_gl implementation for more details.
         """
-        _mpv_set_property_string(self._app.player._mpv.handle, b'vid', b'no')
+        _mpv_set_property_string(self.mpv.handle, b'vid', b'no')
+        self.hide()
+        self.shutdown()
 
     def _after_change_mpv_widget_parent(self):
         """
@@ -136,8 +139,16 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
 
         Inpect mpv init_best_video_out caller for more details. You should see
         mp_switch_track_n is one of the entrypoint.
+
+        Note the GL must be re-initialized properly before this function is called.
+        Generally, show parent once can trigger the initialization. Otherwise,
+        mpv.vid will not be set to 1, and video can not be shown.
         """
-        _mpv_set_property_string(self._app.player._mpv.handle, b'vid', b'1')
+        self.show()
+        self.repaint()  # force repaint to trigger re-initialization
+        _mpv_set_property_string(self.mpv.handle, b'vid', b'1')
+        if not bool(self.mpv.vid):
+            print('WARNING: video widget is not reconfigured properly', file=sys.stderr)
 
 
 # TODO: 实现 MpvEmbeddedWidget
