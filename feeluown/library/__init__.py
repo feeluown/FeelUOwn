@@ -19,7 +19,7 @@ from .models import ModelFlags, BaseModel, ModelType, SearchType, \
     LyricModel, VideoModel, BriefVideoModel, \
     ArtistModel, AlbumModel, PlaylistModel, BriefPlaylistModel, \
     fmt_artists_names, AlbumType, SimpleSearchResult, \
-    get_modelcls_by_type, \
+    get_modelcls_by_type, MediaFlags, \
     V2SupportedModelTypes
 from .excs import NoUserLoggedIn, ModelNotFound, \
     ProviderAlreadyExists, ResourceNotFound, MediaNotFound

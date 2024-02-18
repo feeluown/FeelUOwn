@@ -67,7 +67,7 @@ except ImportError:
     pydantic_version = 1
 
 from feeluown.utils.utils import elfhash
-from .base import ModelType, ModelFlags, AlbumType
+from .base import ModelType, ModelFlags, AlbumType, MediaFlags
 from .base import SearchType  # noqa
 from .model_state import ModelState
 
@@ -297,6 +297,7 @@ class SongModel(BriefSongModel, BaseNormalModel):
     # can be fetched in get_song_detail API. So one IO request can be saved
     # to fetch a image url of the song.
     pic_url: str = ''
+    media_flags: MediaFlags = MediaFlags.not_sure
 
     def model_post_init(self, _):
         super().model_post_init(_)

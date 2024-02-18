@@ -17,10 +17,12 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
-from feeluown.library import ModelState
+from feeluown.library import ModelState, ModelFlags, MediaFlags
 
 from feeluown.gui.mimedata import ModelMimeData
-from feeluown.gui.helpers import ItemViewNoScrollMixin, ReaderFetchMoreMixin
+from feeluown.gui.helpers import (
+    ItemViewNoScrollMixin, ReaderFetchMoreMixin, painter_save, IS_MACOS
+)
 
 
 logger = logging.getLogger(__name__)
@@ -468,6 +470,9 @@ class SongsTableDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.Antialiasing)
         hovered = index.row() == self.row_hovered
 
+        if index.column() == Column.song and IS_MACOS:
+            self.paint_vip_tag(painter, option, index)
+
         # Draw play button on Column.index when the row is hovered.
         if hovered and index.column() == Column.index:
             painter.save()
@@ -508,6 +513,22 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.setBrush(mask_color)
             painter.drawRect(option.rect)
             painter.restore()
+
+    def paint_vip_tag(self, painter, option, index):
+        song = index.data(Qt.UserRole)
+        if ModelFlags.normal in song.meta.flags and MediaFlags.vip in song.media_flags:
+            with painter_save(painter):
+                fm = option.fontMetrics
+                title = index.data(Qt.DisplayRole)
+                title_rect = fm.boundingRect(title)
+                if title_rect.width() < option.rect.width():
+                    font = option.font
+                    font.setPixelSize(7)
+                    painter.setFont(font)
+                    x = option.rect.x() + title_rect.width() + 10
+                    text_rect = QRect(x, option.rect.y() + 10, 16, 10)
+                    painter.drawRoundedRect(text_rect, 3, 3)
+                    painter.drawText(text_rect, Qt.AlignCenter, 'VIP')
 
     def sizeHint(self, option, index):
         """set proper width for each column
