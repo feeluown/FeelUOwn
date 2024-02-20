@@ -27,6 +27,15 @@ class ModelType(IntEnum):
     none = 128
 
 
+class MediaFlags(IntFlag):
+    not_sure = 0b10000000  # 不确定
+    not_exists = 0b00  # 不存在相关资源
+    sample = 0b01  # 存在试听片段
+    free = 0b10  # 存在免费的完整资源
+    vip = 0b100  # 存在资源，不免费，vip 可用
+    pay = 0b1000  # 存在资源，不免费，付费可用
+
+
 class SearchType(Enum):
     pl = 'playlist'
     al = 'album'
