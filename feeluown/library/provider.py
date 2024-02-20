@@ -64,6 +64,15 @@ class Provider:
         """use provider as a specific user"""
         self._user = user
 
+    def get_current_user_or_none(self):
+        """
+        .. versionadded: 4.0
+        """
+        try:
+            return self.get_current_user()
+        except NoUserLoggedIn:
+            return None
+
     def search(self, *args, **kwargs):
         pass
 
