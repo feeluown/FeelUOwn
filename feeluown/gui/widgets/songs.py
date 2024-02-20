@@ -21,7 +21,7 @@ from feeluown.library import ModelState, ModelFlags, MediaFlags
 
 from feeluown.gui.mimedata import ModelMimeData
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, ReaderFetchMoreMixin, painter_save, IS_MACOS
+    ItemViewNoScrollMixin, ReaderFetchMoreMixin, painter_save
 )
 
 
@@ -470,7 +470,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         painter.setRenderHint(QPainter.Antialiasing)
         hovered = index.row() == self.row_hovered
 
-        if index.column() == Column.song and IS_MACOS:
+        if index.column() == Column.song:
             self.paint_vip_tag(painter, option, index)
 
         # Draw play button on Column.index when the row is hovered.
@@ -522,11 +522,19 @@ class SongsTableDelegate(QStyledItemDelegate):
                 title = index.data(Qt.DisplayRole)
                 title_rect = fm.boundingRect(title)
                 if title_rect.width() < option.rect.width():
+                    # Tested on (KDE and macOS):
+                    #   when font size is 7px, text width~>16 & height~>10
                     font = option.font
                     font.setPixelSize(7)
                     painter.setFont(font)
+                    text_width, text_height = 16, 10
+                    y = option.rect.y() + (option.rect.height() - text_height) // 2
+                    # NOTE(cosven): On macOS, the acture width of text is large than
+                    # title_rect.width(), which is also true on KDE. This is decided
+                    # by QStyle. +10px works well on macOS, and it also works well
+                    # on KDE (actually, from local test, 7px is enough for KDE).
                     x = option.rect.x() + title_rect.width() + 10
-                    text_rect = QRect(x, option.rect.y() + 10, 16, 10)
+                    text_rect = QRect(x, y, text_width, text_height)
                     painter.drawRoundedRect(text_rect, 3, 3)
                     painter.drawText(text_rect, Qt.AlignCenter, 'VIP')
 
