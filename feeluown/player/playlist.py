@@ -489,14 +489,12 @@ class Playlist:
         """
         target_song = song  # The song to be set.
         media = None        # The corresponding media to be set.
-        no_media_msg = ''
         try:
             media = await self._prepare_media(song)
         except MediaNotFound as e:
             if e.reason is MediaNotFound.Reason.check_children:
                 await self.a_set_current_song_children(song)
                 return
-            no_media_msg = str(e)
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
             logger.error(f'prepare media failed: {e}, try next song')
@@ -506,7 +504,6 @@ class Playlist:
             # When the exception is unknown, we mark the song as bad.
             self._app.show_msg(f'获取歌曲链接失败: {e}')
             logger.exception('prepare media failed due to unknown error')
-            no_media_msg = str(e)
         else:
             assert media, "media must not be empty"
 
@@ -525,8 +522,7 @@ class Playlist:
                     run_afn(self.a_next)
                     return
 
-                logger.info(f"no media found for {song} due to '{no_media_msg}', "
-                            "mark it as bad")
+                logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
                 target_song, media = await self.find_and_use_standby(song)
 
