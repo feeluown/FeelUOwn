@@ -113,7 +113,7 @@ class Avatar(SelfPaintAbstractSquareButton):
         assert provider is not None
         user = None
         if isinstance(provider, SupportsCurrentUser):
-            user = await run_fn(provider.get_current_user_or_none, source)
+            user = await run_fn(provider.get_current_user_or_none)
 
         if user is None:
             return None

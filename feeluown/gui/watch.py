@@ -105,9 +105,11 @@ class WatchManager:
         if video_widget.parent() != self._fullwindow_container:
             with video_widget.change_parent():
                 self._fullwindow_container.set_body(video_widget)
+                video_widget.show()
                 self._fullwindow_container.show()
                 self._fullwindow_container.raise_()
         else:
+            video_widget.show()
             self._fullwindow_container.show()
             self._fullwindow_container.raise_()
 
@@ -139,9 +141,11 @@ class WatchManager:
 
         if video_widget.parent() != self._pip_container:
             with video_widget.change_parent():
+                video_widget.show()
                 self._pip_container.attach_widget(video_widget)
                 self._pip_container.show()
         else:
+            video_widget.show()
             self._pip_container.show()
 
         video_widget.ctl_bar.clear_adhoc_btns()

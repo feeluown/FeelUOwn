@@ -489,16 +489,12 @@ class Playlist:
         """
         target_song = song  # The song to be set.
         media = None        # The corresponding media to be set.
-
         try:
             media = await self._prepare_media(song)
         except MediaNotFound as e:
             if e.reason is MediaNotFound.Reason.check_children:
                 await self.a_set_current_song_children(song)
                 return
-
-            logger.info(f'no media found for {song} due to {e}, mark it as bad')
-            self.mark_as_bad(song)
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
             logger.error(f'prepare media failed: {e}, try next song')
@@ -507,24 +503,27 @@ class Playlist:
         except Exception as e:  # noqa
             # When the exception is unknown, we mark the song as bad.
             self._app.show_msg(f'获取歌曲链接失败: {e}')
-            logger.exception('prepare media failed due to unknown error, '
-                             'so we mark the song as a bad one')
-            self.mark_as_bad(song)
+            logger.exception('prepare media failed due to unknown error')
         else:
             assert media, "media must not be empty"
 
         # The song has no media, try to find and use standby unless it is in fm mode.
         if media is None:
-            # if mode is fm mode, do not find standby song, just skip the song.
-            if self.mode is PlaylistMode.fm:
-                run_afn(self.a_next)
-                return
             if self._app.config.ENABLE_MV_AS_STANDBY:
                 self._app.show_msg('尝试获取音乐视频的播放资源...')
                 media = await self._prepare_mv_media(song)
+
             if media:
                 self._app.show_msg('使用音乐视频作为其播放资源 ✅')
             else:
+                # if mode is fm mode, do not find standby song, just skip the song.
+                if self.mode is PlaylistMode.fm:
+                    self.mark_as_bad(song)
+                    run_afn(self.a_next)
+                    return
+
+                logger.info(f"no media found for {song}, mark it as bad")
+                self.mark_as_bad(song)
                 target_song, media = await self.find_and_use_standby(song)
 
         metadata = await self._prepare_metadata_for_song(target_song)

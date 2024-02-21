@@ -94,9 +94,11 @@ class PlayerPanel(QWidget):
         video_widget = self._app.ui.mpv_widget
         video_widget.overlay_auto_visible = True
         if video_widget.parent() == self.artwork_view:
+            video_widget.show()
             self.artwork_view.set_body(video_widget)
         else:
             with video_widget.change_parent():
+                video_widget.show()
                 self.artwork_view.set_body(video_widget)
         self.ctl_btns.hide()
         self.progress.hide()
