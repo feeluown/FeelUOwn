@@ -12,7 +12,7 @@ class VolumeButton(QAbstractSlider):
     def __init__(self, length=30, padding=0.25, parent=None):
         super().__init__(parent=parent)
 
-        self.setToolTip('调整音量（鼠标与键盘均可）')
+        self.setToolTip('调整音量')
 
         font = self.font()
         font.setPixelSize(length // 3)
@@ -27,7 +27,6 @@ class VolumeButton(QAbstractSlider):
         padding = int(length * padding if padding < 1 else padding)
         self.drawer = VolumeIconDrawer(length, padding)
         self.valueChanged.connect(self.change_volume_needed.emit)
-        self.valueChanged.connect(self.drawer.set_volume)
         self.setFixedSize(length, length)
 
     def on_volume_changed(self, value):
@@ -35,7 +34,9 @@ class VolumeButton(QAbstractSlider):
         # https://stackoverflow.com/a/4146392/4302892
         self.blockSignals(True)
         self.setValue(value)
+        self.drawer.set_volume(value)
         self.blockSignals(False)
+        self.update()
 
     def paintEvent(self, _) -> None:
         painter = QPainter(self)
