@@ -341,6 +341,9 @@ class VolumeIconDrawer:
         self._line3 = (QPointF(line_left_x, line_left_bottom_y),
                        QPointF(body_length, line_right_bottom_y))
 
+    def get_volume(self):
+        return self._volume
+
     def set_volume(self, volume):
         self._volume = volume
 

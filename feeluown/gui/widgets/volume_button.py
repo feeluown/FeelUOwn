@@ -1,108 +1,73 @@
-from PyQt5.QtCore import Qt, QPoint, pyqtSignal
-from PyQt5.QtWidgets import (
-    QVBoxLayout,
-    QSlider,
-    QWidget,
-)
+from PyQt5.QtCore import pyqtSignal, Qt
+from PyQt5.QtGui import QPainter, QPalette
+from PyQt5.QtWidgets import QAbstractSlider
 
-from feeluown.gui.widgets import VolumeButton as _VolumeButton
+from feeluown.gui.drawers import VolumeIconDrawer
+from feeluown.gui.helpers import painter_save, darker_or_lighter
 
 
-class _Slider(QWidget):
-    """A popup slider.
-
-    TODO: this slide can become a independent component?
-    TODO: draw border radius for widget
-    NOTE: inherit from QWidget instead of QSlider since QSlider can not
-    work with Qt.Popup window flag well. Currently, I don't know why.
-    """
-
-    about_to_hide = pyqtSignal()
-
-    def __init__(self, parent=None, initial_value=100):
-        super().__init__(parent)
-
-        self._slider = QSlider(self)
-        self._layout = QVBoxLayout(self)
-        self._layout.addWidget(self._slider)
-        self._layout.setSpacing(0)
-        # self._layout.setContentsMargins(0, 0, 0, 0)
-
-        # map some slider signals and methods to widget
-        self.sliderMoved = self._slider.sliderMoved
-        self.setValue = self._slider.setValue
-
-        self._slider.setMinimum(0)
-        self._slider.setMaximum(100)
-        self._slider.setValue(initial_value)
-        self.setWindowFlags(Qt.Popup)
-
-    def is_mute(self):
-        return self._slider.value() <= 0
-
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        self.about_to_hide.emit()
-
-    def showEvent(self, event):
-        # TODO: move the position calculating logic to VolumeButton class
-        # In general, the widget itself do not care about its position
-        parent = self.parent()
-        if parent:
-            assert isinstance(parent, QWidget)
-            pgeom = parent.geometry()
-            geom = self.geometry()
-            x = (pgeom.width() - geom.width())//2
-            y = -geom.height() - 10
-            point = QPoint(x, y)
-            self.move(parent.mapToGlobal(point))
-
-
-class VolumeButton(_VolumeButton):
-    UNMUTED_ICON = 0
-    MUTED_ICON = 1
-
-    #: (0, 100)
+class VolumeButton(QAbstractSlider):
     change_volume_needed = pyqtSignal([int])
 
-    def __init__(self, parent=None, icons=None, **kwargs):
-        # TODO: let slider have orientation?
-        super().__init__(parent=parent, **kwargs)
+    def __init__(self, length=30, padding=0.25, parent=None):
+        super().__init__(parent=parent)
 
-        self._icons = icons
-        if self._icons:
-            self._icon = VolumeButton.UNMUTED_ICON
-            self.setIcon(self._icons['unmuted'])
+        self.setToolTip('调整音量')
 
-        self.slider = _Slider(self)
-        self.slider.hide()
+        font = self.font()
+        font.setPixelSize(length // 3)
+        self.setFont(font)
 
-        self.setCheckable(True)
+        self.__pressed = False
+        self.__checked = False
 
-        # TODO: set maximum width in parent widget
-        self.setMaximumWidth(40)
+        self.setMinimum(0)
+        self.setMaximum(100)
 
-        self.slider.about_to_hide.connect(lambda: self.setChecked(False))
-        self.slider.sliderMoved.connect(self.on_slider_moved)
-        self.clicked.connect(self.slider.show)
+        padding = int(length * padding if padding < 1 else padding)
+        self.drawer = VolumeIconDrawer(length, padding)
+        self.valueChanged.connect(self.change_volume_needed.emit)
+        self.setFixedSize(length, length)
 
     def on_volume_changed(self, value):
-        """(alpha)
+        # blockSignals to avoid circular setVolume.
+        # https://stackoverflow.com/a/4146392/4302892
+        self.blockSignals(True)
+        self.setValue(value)
+        self.drawer.set_volume(value)
+        self.blockSignals(False)
+        self.update()
 
-        .. versionadd:: 3.4
-        """
-        self.slider.setValue(value)
-        self.set_volume(value)
+    def paintEvent(self, _) -> None:
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        if self.__checked is True:
+            with painter_save(painter):
+                painter.setPen(Qt.NoPen)
+                color = self.palette().color(QPalette.Background)
+                painter.setBrush(darker_or_lighter(color, 120))
+                painter.drawEllipse(self.rect())
+            painter.drawText(self.rect(), Qt.AlignCenter, f'{self.value()}%')
+        else:
+            self.drawer.draw(painter, self.palette())
 
-    def on_slider_moved(self, value):
-        self.change_volume_needed.emit(value)
+    def mousePressEvent(self, e) -> None:
+        super().mousePressEvent(e)
+        if e.button() == Qt.LeftButton:
+            self.__pressed = True
 
-        # update button icon
-        if not self._icons:
-            return
-        if self.slider.is_mute():
-            self.setIcon(self._icons['muted'])
-            self._icon = VolumeButton.MUTED_ICON
-        elif self._icon == VolumeButton.MUTED_ICON:
-            self.setIcon(self._icons['unmuted'])
-            self._icon = VolumeButton.UNMUTED_ICON
+    def mouseReleaseEvent(self, e):
+        super().mouseReleaseEvent(e)
+        if e.button() == Qt.LeftButton:
+            if self.__pressed is True:
+                self.__pressed = False
+                self.__checked = not self.__checked
+                # schedule an update to refresh ASAP.
+                self.update()
+
+
+if __name__ == '__main__':
+    from feeluown.gui.debug import simple_layout
+
+    with simple_layout() as layout:
+        layout.addWidget(VolumeButton(100))
