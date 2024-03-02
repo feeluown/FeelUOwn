@@ -57,12 +57,10 @@ class PlayerControlPanel(QFrame):
         self.toggle_watch_btn = WatchButton(self._app, self)
 
         self.playlist_btn.setObjectName('playlist_btn')
-        self.volume_btn.setObjectName('volume_btn')
         self.download_btn.setObjectName('download_btn')
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
-        self.volume_btn.setToolTip('调整音量')
         self.playlist_btn.setToolTip('显示当前播放列表')
         self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
         self.download_btn.setCheckable(True)
