@@ -87,6 +87,8 @@ class BottomPanel(QWidget):
         else:
             next_index = 0
         self._stacked_widget.setCurrentIndex(next_index)
+        if self._stacked_widget.currentWidget() == self.magicbox:
+            self.magicbox.setFocus()
 
     def _on_stack_switch_toggled(self, checked):
         if checked:
