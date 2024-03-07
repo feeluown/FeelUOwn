@@ -136,6 +136,23 @@ class PlusIconDrawer:
         painter.drawLine(self.left, self.right)
 
 
+class SearchIconDrawer:
+    def __init__(self, length, padding):
+        t_l_x = t_l_y = padding
+        b_r_x = b_r_y = length - padding
+        center = int(length * 0.6)
+        self._bottom_right = QPoint(b_r_x, b_r_y)
+        self._top_left = QPoint(t_l_x, t_l_y)
+        self._center = QPoint(center, center)
+
+    def draw(self, painter: QPainter):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        painter.drawEllipse(QRect(self._top_left, self._center))
+        painter.drawLine(self._center, self._bottom_right)
+
+
 class TriangleIconDrawer:
     def __init__(self, length, padding, direction='up', brush=False):
         self._length = length
