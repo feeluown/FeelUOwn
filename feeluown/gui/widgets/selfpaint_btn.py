@@ -10,6 +10,7 @@ from feeluown.gui.drawers import (
     RankIconDrawer,
     StarIconDrawer,
     VolumeIconDrawer,
+    SearchIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -101,17 +102,19 @@ class SelfPaintAbstractSquareButton(SelfPaintAbstractButton):
         )
         self.setFixedSize(length, length)
 
+    def paint_round_bg(self, painter):
+        painter.save()
+        painter.setPen(Qt.NoPen)
+        color = self.palette().color(QPalette.Background)
+        painter.setBrush(darker_or_lighter(color, 120))
+        painter.drawEllipse(self.rect())
+        painter.restore()
+
     def paint_round_bg_when_hover(self, painter):
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
-
         if opt.state & QStyle.State_MouseOver:
-            painter.save()
-            painter.setPen(Qt.NoPen)
-            color = self.palette().color(QPalette.Background)
-            painter.setBrush(darker_or_lighter(color, 120))
-            painter.drawEllipse(self.rect())
-            painter.restore()
+            self.paint_round_bg(painter)
 
 
 class ArrowAbstractButton(SelfPaintAbstractSquareButton):
@@ -157,28 +160,30 @@ class RightArrowButton(ArrowAbstractButton):
         return self._right
 
 
-class SearchButton(SelfPaintAbstractSquareButton):
+class SearchSwitchButton(SelfPaintAbstractSquareButton):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-        t_l_x = t_l_y = self._padding
-        b_r_x = b_r_y = self.width() - self._padding
-        center = int(self.width() * 0.6)
-        self._bottom_right = QPoint(b_r_x, b_r_y)
-        self._top_left = QPoint(t_l_x, t_l_y)
-        self._center = QPoint(center, center)
+        self._plus_drawer = PlusIconDrawer(self.width(), self._padding)
+        self._search_drawer = SearchIconDrawer(self.width(), self._padding)
+        # 0.21 = 1.414 / 2 - 0.5
+        self._translate_p = QPoint(self.width()//2, -int(self.width()*0.21))
 
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         self.paint_round_bg_when_hover(painter)
 
-        set_pen_1_5(painter)
         # When the button size is very large, the line and the ellipse
         # will not be together.
-        painter.drawEllipse(QRect(self._top_left, self._center))
-        painter.drawLine(self._center, self._bottom_right)
+        if self.isChecked():
+            with painter_save(painter):
+                painter.translate(self._translate_p)
+                painter.rotate(45)
+                self._plus_drawer.draw(painter)
+        else:
+            self._search_drawer.draw(painter)
 
 
 class SettingsButton(SelfPaintAbstractSquareButton):
@@ -513,7 +518,7 @@ if __name__ == '__main__':
         right = RightArrowButton(length=length)
         right.setDisabled(True)
         l1.addWidget(right)
-        l1.addWidget(SearchButton(length=length))
+        l1.addWidget(SearchSwitchButton(length=length))
         l1.addWidget(SettingsButton(length=length))
         l1.addWidget(RecentlyPlayedButton(height=length))
         l1.addWidget(HomeButton(height=length))

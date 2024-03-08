@@ -2,7 +2,6 @@ import io
 import sys
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
-from PyQt5.QtGui import QFontDatabase
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.fuoexec import fuoexec
@@ -30,7 +29,6 @@ class MagicBox(QLineEdit):
                         '输入 >>> 前缀之后，可以执行 Python 代码\n'
                         '输入 # 前缀之后，可以过滤表格内容\n'
                         '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
-        self.setFont(QFontDatabase.systemFont(QFontDatabase.FixedFont))
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedHeight(32)
         self.setFrame(False)

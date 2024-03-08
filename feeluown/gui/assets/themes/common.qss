@@ -23,11 +23,11 @@ LeftPanel QListView, QSplitter::handle {
 
 MagicBox {
     background: transparent;
-    border-bottom: 1px dashed #777;
+    border: 1px solid grey;
+    border-radius: 2px;
 }
 MagicBox:focus {
-    border-bottom: 1px solid #777;
-    background: palette(window);
+    border: 1px solid palette(text);
     outline: none;
 }
 
