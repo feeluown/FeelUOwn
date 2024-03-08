@@ -173,17 +173,16 @@ class SearchSwitchButton(SelfPaintAbstractSquareButton):
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
 
         # When the button size is very large, the line and the ellipse
         # will not be together.
         if self.isChecked():
             with painter_save(painter):
-                self.paint_round_bg(painter)
                 painter.translate(self._translate_p)
                 painter.rotate(45)
                 self._plus_drawer.draw(painter)
         else:
-            self.paint_round_bg_when_hover(painter)
             self._search_drawer.draw(painter)
 
 

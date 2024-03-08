@@ -5,7 +5,10 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
 from feeluown.gui.components import Avatar
 from feeluown.gui.widgets import (
-    LeftArrowButton, RightArrowButton, SearchSwitchButton, SettingsButton,
+    LeftArrowButton,
+    RightArrowButton,
+    SearchSwitchButton,
+    SettingsButton,
 )
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine
@@ -13,17 +16,18 @@ from feeluown.gui.widgets.statusline import StatusLine
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
-
 ButtonSize = (30, 30)
 ButtonSpacing = int(ButtonSize[0] / 6)
 
 
 class ToolbarButton(QPushButton):
+
     def __init__(self, text, parent=None):
         super().__init__(text, parent=parent)
 
 
 class BottomPanel(QWidget):
+
     def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
         self._app = app
@@ -53,6 +57,7 @@ class BottomPanel(QWidget):
         self.forward_btn.clicked.connect(self._app.browser.forward)
         self._stack_switch.clicked.connect(self._show_next_stacked_widget)
         self._stack_switch.toggled.connect(self._on_stack_switch_toggled)
+        self._stacked_widget.currentChanged.connect(self._on_stacked_widget_changed)
 
         self._setup_ui()
 
@@ -96,6 +101,11 @@ class BottomPanel(QWidget):
         else:
             self._stack_switch.setToolTip("显示搜索框")
 
+    def _on_stacked_widget_changed(self, _):
+        self._stack_switch.setChecked(
+            self._stacked_widget.currentWidget() == self.magicbox
+        )
+
     def add_stacked_widget(self, widget):
         """
 
@@ -104,7 +114,6 @@ class BottomPanel(QWidget):
         self._stacked_widget.addWidget(widget)
         if self._stacked_widget.count() > 1:
             self._stack_switch.show()
-            self._stack_switch.setChecked(False)
 
     def set_top_stacked_widget(self, widget):
         """
