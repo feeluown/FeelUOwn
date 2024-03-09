@@ -98,8 +98,8 @@ class PlayerPanel(QWidget):
             self.artwork_view.set_body(video_widget)
         else:
             with video_widget.change_parent():
-                video_widget.show()
                 self.artwork_view.set_body(video_widget)
+                video_widget.show()
         self.ctl_btns.hide()
         self.progress.hide()
         video_widget.ctl_bar.clear_adhoc_btns()
