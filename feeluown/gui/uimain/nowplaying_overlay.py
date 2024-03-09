@@ -98,6 +98,9 @@ class PlayerPanel(QWidget):
             self.artwork_view.set_body(video_widget)
         else:
             with video_widget.change_parent():
+                # Remember always give video_widget a parent first and
+                # then show it. Otherwise, mpv may use its mpv-gui to show video,
+                # which causes the player crash.
                 self.artwork_view.set_body(video_widget)
                 video_widget.show()
         self.ctl_btns.hide()
