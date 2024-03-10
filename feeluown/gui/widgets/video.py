@@ -59,6 +59,7 @@ class VideoPlayerCtlBar(QWidget):
         """
         btn = Button(text)
         self._adhoc_btn_layout.addWidget(btn)
+        btn.setPalette(self.palette())
         return btn
 
     def clear_adhoc_btns(self):
