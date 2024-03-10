@@ -30,6 +30,12 @@ sleep = asyncio.sleep
 #: run is an alias of `asyncio.run`.
 run = asyncio.run
 
+#: wait is an alias of `asyncio.wait`.
+wait = asyncio.wait
+
+#: gather is an alias of `asyncio.gather`.
+gather = asyncio.gather
+
 
 def run_in_executor(executor, func, *args):
     """alias for loop.run_in_executor"""
