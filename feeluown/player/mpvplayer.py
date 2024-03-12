@@ -4,7 +4,7 @@ import time
 import math
 import os
 
-from mpv import (  # type: ignore
+from feeluown.mpv import (  # type: ignore
     MPV,
     MpvEventID,
     MpvEventEndFile,

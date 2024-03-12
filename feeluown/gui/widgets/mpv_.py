@@ -4,7 +4,9 @@ from contextlib import contextmanager
 from PyQt5.QtCore import QMetaObject, pyqtSlot, QSize
 from PyQt5.QtOpenGL import QGLContext
 
-from mpv import MpvRenderContext, OpenGlCbGetProcAddrFn, _mpv_set_property_string
+from feeluown.mpv import (
+    MpvRenderContext, OpenGlCbGetProcAddrFn, _mpv_set_property_string
+)
 
 from feeluown.gui.widgets.video import VideoOpenGLWidget
 from feeluown.gui.helpers import IS_MACOS

@@ -5,7 +5,7 @@ from PyQt5.QtOpenGL import QGLContext
 # HELP: currently, we need import GL module，otherwise it will raise seg fault on Linux(Ubuntu 18.04)
 # from OpenGL import GL  # noqa
 
-from mpv import MPV, OpenGlCbGetProcAddrFn, MpvRenderContext
+from feeluown.mpv import MPV, OpenGlCbGetProcAddrFn, MpvRenderContext
 
 
 def get_proc_addr(_, name):
