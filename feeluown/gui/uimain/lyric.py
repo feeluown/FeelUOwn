@@ -12,6 +12,7 @@ from feeluown.player import LyricLine
 
 
 IS_MACOS = sys.platform == 'darwin'
+IS_WINDOWS = sys.platform == 'win32'
 
 
 def set_bg_color(palette, color):
@@ -35,6 +36,38 @@ Tooltip = """
 * 鼠标前进后退键可以播放前一首/下一首
 * ESC 键可以关闭此歌词窗口
 """
+
+
+class SizeGrip(QSizeGrip):
+    """
+    On windows, when the user drags the size grip, the lyric window is
+    resized and the lyric window also moves. This is not the expected.
+    So override the mouse event to fix this issue.
+
+    Check https://github.com/feeluown/FeelUOwn/issues/752 for more details.
+    """
+    def mousePressEvent(self, e):
+        super().mousePressEvent(e)
+        if IS_WINDOWS:
+            e.accept()
+
+    def mouseMoveEvent(self, e):
+        super().mouseMoveEvent(e)
+        if IS_WINDOWS:
+            e.accept()
+
+    def mouseReleaseEvent(self, e):
+        super().mouseReleaseEvent(e)
+        if IS_WINDOWS:
+            e.accept()
+
+    def paintEvent(self, _):
+        """
+        On windows, it draws a icon on the corner. On other platforms, it does not.
+        So let LyricWindow draw the icon for the SizeGrip.
+        """
+        if IS_WINDOWS:
+            return
 
 
 class LyricWindow(QWidget):
@@ -230,7 +263,7 @@ class InnerLyricWindow(QWidget):
         # When _auto_resize is True,
         # the window size adapts to the lyric sentence width.
         self._auto_resize = True
-        self._size_grip = QSizeGrip(self)
+        self._size_grip = SizeGrip(self)
         self.line_label = LineLabel(self)
 
         self._app.live_lyric.line_changed.connect(self.set_line)
