@@ -19,7 +19,6 @@ setup(
     author='feeluown',
     author_email='yinshaowen241@gmail.com',
     packages=find_packages(exclude=('tests*',)),
-    py_modules=['mpv'],
     package_data={
         '': ['nowplaying/linux/*.xml',
              'gui/assets/icons/*.png',
