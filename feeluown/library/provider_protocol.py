@@ -385,6 +385,18 @@ class SupportsRecListDailySongs(Protocol):
 
 
 @runtime_checkable
+class SupportsRecACollection(Protocol):
+    @abstractmethod
+    def rec_a_collection(self) -> Tuple[str, List[BriefSongModel]]:
+        """
+        For example, providers may provider a list of songs,
+        and the title looks like “大家都在听” / “红心歌曲”.
+
+        For different user, this API may return different result.
+        """
+
+
+@runtime_checkable
 class SupportsRecListDailyPlaylists(Protocol):
     @abstractmethod
     def rec_list_daily_playlists(self) -> List[PlaylistModel]:

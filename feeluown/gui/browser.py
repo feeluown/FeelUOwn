@@ -197,6 +197,7 @@ class Browser:
         from feeluown.gui.pages.recommendation_daily_songs import \
             render as render_rec_daily_songs
         from feeluown.gui.pages.my_fav import render as render_my_fav
+        from feeluown.gui.pages.homepage import render as render_homepage
 
         model_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
 
@@ -214,6 +215,7 @@ class Browser:
             ('/recently_played', render_recently_played),
             ('/search', render_search),
             ('/rec', render_rec),
+            ('/homepage', render_homepage),
             ('/rec/daily_songs', render_rec_daily_songs),
             ('/my_fav', render_my_fav),
         ]

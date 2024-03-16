@@ -243,8 +243,9 @@ class ItemViewNoScrollMixin:
                 # qt triggers fetchMore when user scrolls down to bottom.
                 index = self._last_visible_index()
                 rect = self.visualRect(index)
-                height = self.sizeHint().height() - int(rect.height() * 1.5) - \
-                    self._reserved
+                height = self.sizeHint().height()
+                if self._no_scroll_v is False:
+                    height = height - int(rect.height() * 1.5) - self._reserved
                 self.setFixedHeight(max(height, self.min_height()))
             else:
                 self.setFixedHeight(self._row_height * self._fixed_row_count)
