@@ -60,6 +60,15 @@ integration_test:
 test: lint unittest
 
 BUNDLE_FLAGS=
+# On macOS, excluding the following moduels can decrease the package size by 130MB,
+# mainly due to the QtWebEngine module.
+BUNDLE_FLAGS += --exclude PyQt5.QtQml
+BUNDLE_FLAGS += --exclude PyQt5.QtDBus
+BUNDLE_FLAGS += --exclude PyQt5.QtPdf
+BUNDLE_FLAGS += --exclude PyQt5.QtQuick
+BUNDLE_FLAGS += --exclude PyQt5.QtNetwork
+BUNDLE_FLAGS += --exclude PyQt5.QtWebEngineCore
+BUNDLE_FLAGS += --exclude PyQt5.QtWebEngineWidgets
 
 ifeq ($(OS),Windows_NT)
 	BUNDLE_FLAGS += --name FeelUOwn
