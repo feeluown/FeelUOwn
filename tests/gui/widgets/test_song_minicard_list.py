@@ -22,9 +22,3 @@ async def test_song_mini_card_list_model_remove_pixmap(qtbot, song):
         model._items.pop(0)
         model.endRemoveRows()
     assert len(model.pixmaps) == 0
-
-
-def test_2(song):
-    from feeluown.gui.widgets.songs import SongsTableModel
-    model = SongsTableModel(create_reader([song]))
-    model.fetchMore(QModelIndex())
