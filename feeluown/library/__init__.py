@@ -28,3 +28,4 @@ from .uri import (
     Resolver, reverse, resolve, ResolverNotFound, ResolveFailed,
     parse_line, NS_TYPE_MAP,
 )
+from .collection import Collection, CollectionType

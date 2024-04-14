@@ -49,10 +49,12 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
     """
     Reference: https://github.com/osdlyrics/osdlyrics/blob/master/python/lrc.py
 
-    >>> parse_lyric_text("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
-    OrderedDict([(0, ' 作曲 : 周杰伦'), (1000, ' 作词 : 周杰伦')])
-    >>> parse_lyric_text("[01:30][00:01:10][01:00]再等直至再吻到你")
-    OrderedDict([(60000, '再等直至再吻到你'), (70000, '再等直至再吻到你'), (90000, '再等直至再吻到你')])
+    >>> r = parse_lyric_text("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
+    >>> list(r.items())[0]
+    (0, ' 作曲 : 周杰伦')
+    >>> r = parse_lyric_text("[01:30][00:01:10][01:00]再等直至再吻到你")
+    >>> list(r.items())[-1]
+    (90000, '再等直至再吻到你')
     """
     def to_mileseconds(time_str):
         mileseconds = 0

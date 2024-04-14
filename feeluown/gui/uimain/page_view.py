@@ -3,7 +3,7 @@ import sys
 
 from PyQt5.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent
 from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QStackedLayout
+from PyQt5.QtWidgets import QAbstractScrollArea, QFrame, QVBoxLayout, QStackedLayout
 
 from feeluown.utils import aio
 from feeluown.library import ModelType
@@ -55,11 +55,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
                 height -= w.height()
         return height
 
-    def wheelEvent(self, e):
-        super().wheelEvent(e)
-        self._app.ui.bottom_panel.update()
-
-    def eventFilter(self, obj, event):
+    def eventFilter(self, _, event):
         if event.type() == QEvent.Resize:
             self.maybe_resize_itemview()
         return False
@@ -122,8 +118,18 @@ class RightPanel(QFrame):
             if w not in (self.scrollarea, ):
                 self._stacked_layout.removeWidget(w)
 
+        widget.installEventFilter(self)
+        if isinstance(widget, QAbstractScrollArea):
+            widget.verticalScrollBar().installEventFilter(self)
+
         self._stacked_layout.addWidget(widget)
         self._stacked_layout.setCurrentWidget(widget)
+
+    def eventFilter(self, _, event):
+        # Refresh when the body is scrolled.
+        if event.type() == QEvent.Wheel:
+            self.update()
+        return False
 
     def show_collection(self, coll, model_type):
 
@@ -176,7 +182,11 @@ class RightPanel(QFrame):
         if isinstance(current_widget, VFillableBg):
             draw_height += current_widget.fillable_bg_height()
 
-        scrolled = self.scrollarea.verticalScrollBar().value()
+        widget = self._stacked_layout.currentWidget()
+        if isinstance(widget, QAbstractScrollArea):
+            scrolled = widget.verticalScrollBar().value()
+        else:
+            scrolled = 0
         max_scroll_height = draw_height - self.bottom_panel.height()
 
         # Draw the whole background with QPalette.Base color.
