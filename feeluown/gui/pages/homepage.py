@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
-from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecACollection
+from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.gui.widgets.header import LargeHeader
@@ -111,7 +111,7 @@ class View(QWidget, BgTransparentMixin):
         songs = []
         for coro in as_completed([
             run_fn(provider.rec_a_collection) for provider in providers
-            if isinstance(provider, SupportsRecACollection)
+            if isinstance(provider, SupportsRecACollectionOfSongs)
         ]):
             try:
                 title, songs_ = await coro

@@ -3,7 +3,6 @@ import itertools
 import logging
 import os
 from datetime import datetime
-from enum import Enum
 from pathlib import Path
 from typing import Dict, Iterable, List
 
@@ -12,7 +11,7 @@ import tomlkit
 from feeluown.consts import COLLECTIONS_DIR
 from feeluown.utils.dispatch import Signal
 from feeluown.library import resolve, reverse, ResolverNotFound, \
-    ResolveFailed, ModelState
+    ResolveFailed, ModelState, CollectionType
 from feeluown.utils.utils import elfhash
 
 logger = logging.getLogger(__name__)
@@ -33,14 +32,10 @@ class CollectionAlreadyExists(Exception):
     pass
 
 
-class CollectionType(Enum):
-    sys_library = 16
-    sys_pool = 13
-
-    mixed = 8
-
-
 class Collection:
+    """
+    TODO: This collection should be moved into local provider.
+    """
 
     def __init__(self, fpath):
         # TODO: 以后考虑添加 identifier 字段，identifier

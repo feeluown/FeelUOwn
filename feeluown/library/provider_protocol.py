@@ -7,6 +7,7 @@ from .models import (
     PlaylistModel, UserModel, ModelType, BriefArtistModel, BriefSongModel,
     LyricModel, BriefVideoModel,
 )
+from .collection import Collection
 
 from .flags import Flags as PF
 
@@ -385,9 +386,9 @@ class SupportsRecListDailySongs(Protocol):
 
 
 @runtime_checkable
-class SupportsRecACollection(Protocol):
+class SupportsRecACollectionOfSongs(Protocol):
     @abstractmethod
-    def rec_a_collection(self) -> Tuple[str, List[BriefSongModel]]:
+    def rec_a_collection_of_songs(self) -> Collection:
         """
         For example, providers may provider a list of songs,
         and the title looks like “大家都在听” / “红心歌曲”.
