@@ -1,12 +1,12 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
 from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecACollection
 from feeluown.utils.reader import create_reader
-from feeluown.utils.aio import run_fn, wait, as_completed
-from feeluown.gui.widgets.header import LargeHeader, MidHeader
+from feeluown.utils.aio import run_fn, as_completed
+from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
     PlaylistCardListModel,
@@ -19,7 +19,6 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListModel,
 )
 from feeluown.gui.page_containers.scroll_area import ScrollArea
-from feeluown.gui.widgets import CalendarButton, RankButton
 from feeluown.gui.helpers import fetch_cover_wrapper, BgTransparentMixin
 
 if TYPE_CHECKING:

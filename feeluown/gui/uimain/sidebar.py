@@ -174,8 +174,12 @@ class _LeftPanel(QFrame):
         self.fav_btn.setDisabled(True)
         self.discovery_btn.setToolTip('当前资源提供方未知')
 
-        self.home_btn.clicked.connect(
-            lambda: self._app.browser.goto(page='/homepage'))
+        if self._app.config.ENABLE_NEW_HOMEPAGE is True:
+            self.home_btn.clicked.connect(
+                lambda: self._app.browser.goto(page='/homepage'))
+        else:
+            self.home_btn.clicked.connect(self.show_library)
+
         self.discovery_btn.clicked.connect(self.show_pool)
         self.playlists_view.show_playlist.connect(
             lambda pl: self._app.browser.goto(model=pl))
