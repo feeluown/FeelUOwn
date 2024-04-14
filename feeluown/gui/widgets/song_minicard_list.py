@@ -31,6 +31,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         self._items = []
         self.fetch_image = fetch_image
         self.pixmaps = {}  # {uri: (Option<pixmap>, Option<color>)}
+        self.rowsAboutToBeRemoved.connect(self.on_rows_about_to_be_removed)
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
@@ -45,7 +46,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         # TODO: duplicate code with ImgListModel
         def cb(content):
             uri = reverse(item)
-            if content is None:
+            if content is None and uri in self.pixmaps:
                 self.pixmaps[uri] = (self.pixmaps[uri][1], None)
                 return
 
@@ -87,8 +88,15 @@ class BaseSongMiniCardListModel(QAbstractListModel):
             return (song, pixmap)
         return None
 
+    def on_rows_about_to_be_removed(self, _, first, last):
+        for i in range(first, last+1):
+            item = self._items[i]
+            uri = reverse(item)
+            # clear pixmap cache
+            self.pixmaps.pop(uri, None)
 
-class SongMiniCardListModel(BaseSongMiniCardListModel, ReaderFetchMoreMixin):
+
+class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
     def __init__(self, reader, fetch_image, parent=None):
         super().__init__(fetch_image, parent)
 
