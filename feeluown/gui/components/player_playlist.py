@@ -11,7 +11,9 @@ from feeluown.utils.reader import create_reader
 
 
 class PlayerPlaylistModel(SongMiniCardListModel):
-    # FIXME: make this singleton
+    """
+    this is a singleton class (ensured by PlayerPlaylistView)
+    """
 
     def __init__(self, playlist, *args, **kwargs):
         reader = create_reader(playlist.list())
@@ -47,17 +49,19 @@ class PlayerPlaylistModel(SongMiniCardListModel):
 
 class PlayerPlaylistView(SongMiniCardListView):
 
+    _model = None
+
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
 
         self.play_song_needed.connect(self._app.playlist.play_model)
-        self.setModel(
-            PlayerPlaylistModel(
+        if PlayerPlaylistView._model is None:
+            PlayerPlaylistView._model = PlayerPlaylistModel(
                 self._app.playlist,
                 fetch_cover_wrapper(self._app),
             )
-        )
+        self.setModel(PlayerPlaylistView._model)
 
     def contextMenuEvent(self, e):
         index = self.indexAt(e.pos())
