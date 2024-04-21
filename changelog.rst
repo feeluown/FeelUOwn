@@ -15,6 +15,7 @@
 - 其它
 
   - 减少 macOS 包的体积（减少大约 100MB） #819
+  - 新增协议 SupportsRecACollectionOfSongs
 
 4.1.2 (2024-03-13)
 """"""""""""""""""""""
