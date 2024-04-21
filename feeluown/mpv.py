@@ -863,6 +863,8 @@ class MPV(object):
             self._event_thread.start()
         else:
             self._event_thread = None
+        if m := re.search(r'(\d+)\.(\d+)\.(\d+)', self.mpv_version):
+            self.mpv_version_tuple = tuple(map(int, m.groups()))
 
     def _loop(self):
         for event in _event_generator(self._event_handle):
@@ -1152,9 +1154,16 @@ class MPV(object):
     def _encode_options(options):
         return ','.join('{}={}'.format(_py_to_mpv(str(key)), str(val)) for key, val in options.items())
 
-    def loadfile(self, filename, mode='replace', **options):
+    def loadfile(self, filename, mode='replace', index=None, **options):
         """Mapped mpv loadfile command, see man mpv(1)."""
-        self.command('loadfile', filename.encode(fs_enc), mode, MPV._encode_options(options))
+        if self.mpv_version_tuple >= (0, 38, 0):
+            if index is None:
+                index = -1
+            self.command('loadfile', filename.encode(fs_enc), mode, index, MPV._encode_options(options))
+        else:
+            if index is not None:
+                warn(f'The index argument to the loadfile command is only supported on mpv >= 0.38.0')
+            self.command('loadfile', filename.encode(fs_enc), mode, MPV._encode_options(options))
 
     def loadlist(self, playlist, mode='replace'):
         """Mapped mpv loadlist command, see man mpv(1)."""
