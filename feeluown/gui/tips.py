@@ -41,6 +41,7 @@ Contributors = [
     ('hanchanli', ''),
     ('xssss1', ''),
     ('williamherry', ''),
+    ('seiuneko', ''),
 ]
 
 
