@@ -3,7 +3,6 @@ import logging
 import time
 import math
 import os
-import sys
 
 from feeluown.mpv import (  # type: ignore
     MPV,
@@ -49,8 +48,9 @@ class MpvPlayer(AbstractPlayer):
         # From libmpv 0.38, libmpv is not the default vo.
         # Note if vo is not set to libmpv, the video is rendered in mpv's
         # native window instead of feeluown's mpvwidget (tested on KDE+wayland).
-        if sys.platform == 'linux':
-            mpvkwargs['vo'] = 'libmpv'
+        # On macOS, this option is optional. I believe the option is also required
+        # on Windows.
+        mpvkwargs['vo'] = 'libmpv'
 
         # set log_handler if you want to debug
         # mpvkwargs['log_handler'] = self.__log_handler
