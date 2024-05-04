@@ -376,13 +376,13 @@ class SupportsCurrentUserFavVideosReader(Protocol):
 
 
 @runtime_checkable
-class SupportsDiscoveryToplist(Protocol):
+class SupportsToplist(Protocol):
     @abstractmethod
-    def discovery_list_toplist(self) -> List[BriefPlaylistModel]:
+    def toplist_list(self) -> List[BriefPlaylistModel]:
         """List all toplist(排行榜)."""
 
     @abstractmethod
-    def discovery_get_toplist(self, toplist_id) -> PlaylistModel:
+    def toplist_get(self, toplist_id) -> PlaylistModel:
         """Get toplist details.
 
         For some providers, the toplist model(schema) may be different from the

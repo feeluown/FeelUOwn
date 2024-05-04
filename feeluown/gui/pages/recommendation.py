@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from feeluown.library.provider_protocol import SupportsToplist
 
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn
@@ -46,8 +47,6 @@ class View(QWidget):
 
         self.header_title.setText('发现音乐')
         self.header_playlist_list.setText('个性化推荐')
-        self.rank_btn.setDisabled(True)
-        self.rank_btn.setToolTip('未实现，欢迎 PR！')
 
         self._layout = QVBoxLayout(self)
         self._setup_ui()
@@ -57,7 +56,7 @@ class View(QWidget):
         self.daily_songs_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/rec/daily_songs'))
         self.rank_btn.clicked.connect(
-            lambda: self._app.show_msg('未实现，欢迎 PR！'))
+            lambda: self._app.browser.goto(page='/toplist'))
 
     def _setup_ui(self):
         self._h_layout = QHBoxLayout()
@@ -96,3 +95,6 @@ class View(QWidget):
 
         if not isinstance(provider, SupportsRecListDailySongs):
             self.daily_songs_btn.setDisabled(True)
+
+        if not isinstance(provider, SupportsToplist):
+            self.rank_btn.setDisabled(True)
