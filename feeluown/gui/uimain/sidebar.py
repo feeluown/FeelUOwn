@@ -154,10 +154,14 @@ class _LeftPanel(QFrame):
 
         self._top_layout.setContentsMargins(15, 16, 16, 0)
         self._top_layout.addWidget(self.home_btn)
-        self._top_layout.addWidget(self.discovery_btn)
-        self._top_layout.addWidget(self.fav_btn)
         self._sub_layout.setContentsMargins(16, 8, 16, 0)
         self._sub_layout.addWidget(self.collections_con)
+        from feeluown.gui.widgets.separator import Separator
+        from feeluown.gui.components import Avatar
+        self._sub_layout.addWidget(Separator(self._app))
+        self._sub_layout.addWidget(Avatar(self._app, height=48))
+        self._sub_layout.addWidget(self.discovery_btn)
+        self._sub_layout.addWidget(self.fav_btn)
         self._sub_layout.addWidget(self.my_music_con)
         self._sub_layout.addWidget(self.playlists_con)
         self._layout.addStretch(0)

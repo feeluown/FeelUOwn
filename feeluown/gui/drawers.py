@@ -8,17 +8,13 @@ from PyQt5.QtWidgets import QWidget
 from feeluown.gui.helpers import random_solarized_color, painter_save
 
 
-class PixmapDrawer:
-    """Draw pixmap on a widget with radius.
-
-    The pixmap will be scaled to the width of the widget.
-    """
-    def __init__(self, img, widget: QWidget, radius: int = 0):
+class SizedPixmapDrawer:
+    def __init__(self, img, rect: QRect, radius: int = 0):
         """
         :param widget: a object which has width() and height() method.
         """
-        self._widget_last_width = widget.width()
-        self._widget = widget
+        self._rect = rect
+        self._img_old_width = rect.width()
         self._radius = radius
 
         if img is None:
@@ -28,8 +24,18 @@ class PixmapDrawer:
         else:
             self._img = img
             self._color = None
-            new_img = img.scaledToWidth(self._widget_last_width, Qt.SmoothTransformation)
+            new_img = img.scaledToWidth(self._img_old_width, Qt.SmoothTransformation)
             self._pixmap = QPixmap(new_img)
+
+    def get_radius(self):
+        return self._radius if self._radius >= 1 else \
+            self.get_rect().width() * self._radius
+
+    def get_rect(self):
+        return self._rect
+
+    def maybe_update_pixmap(self):
+        pass
 
     @classmethod
     def from_img_data(cls, img_data, *args, **kwargs):
@@ -43,15 +49,7 @@ class PixmapDrawer:
     def get_pixmap(self) -> Optional[QPixmap]:
         return self._pixmap
 
-    def maybe_update_pixmap(self):
-        if self._widget.width() != self._widget_last_width:
-            self._widget_last_width = self._widget.width()
-            assert self._img is not None
-            new_img = self._img.scaledToWidth(self._widget_last_width,
-                                              Qt.SmoothTransformation)
-            self._pixmap = QPixmap(new_img)
-
-    def draw(self, painter):
+    def draw(self, painter: QPainter):
         painter.save()
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setRenderHint(QPainter.SmoothPixmapTransform)
@@ -61,18 +59,15 @@ class PixmapDrawer:
             self._draw_pixmap(painter)
         painter.restore()
 
-    def _get_radius(self):
-        return self._radius if self._radius >= 1 else self._widget.width() * self._radius
-
     def _draw_random_color(self, painter: QPainter):
         brush = QBrush(self._color)
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
-        rect = self._widget.rect()
-        if self._radius == 0:
+        rect = self.get_rect()
+        radius = self.get_radius()
+        if radius == 0:
             painter.drawRect(rect)
         else:
-            radius = self._get_radius()
             painter.drawRoundedRect(rect, radius, radius)
 
     def _draw_pixmap(self, painter: QPainter):
@@ -82,18 +77,45 @@ class PixmapDrawer:
         brush = QBrush(self._pixmap)
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
-        radius = self._radius
+        radius = self.get_radius()
         size = self._pixmap.size()
-        y = (size.height() - self._widget.height()) // 2
+        target_rect = self.get_rect()
+        y = (size.height() - target_rect.height()) // 2
         painter.save()
+        painter.translate(target_rect.x(), target_rect.y())
         painter.translate(0, -y)
-        rect = QRect(0, 0, self._widget.width(), size.height())
+        rect = QRect(0, 0, target_rect.width(), size.height())
         if radius == 0:
             painter.drawRect(rect)
         else:
-            radius = radius if self._radius >= 1 else self._widget.width() * self._radius
             painter.drawRoundedRect(rect, radius, radius)
         painter.restore()
+
+
+class PixmapDrawer(SizedPixmapDrawer):
+    """Draw pixmap on a widget with radius.
+
+    The pixmap will be scaled to the width of the widget.
+
+    TODO: rename this drawer to WidgetPixmapDrawer?
+    """
+    def __init__(self, img, widget: QWidget, radius: int = 0):
+        """
+        :param widget: a object which has width() and height() method.
+        """
+        super().__init__(img, widget.rect(), radius)
+        self._widget = widget
+
+    def get_rect(self):
+        return self._widget.rect()
+
+    def maybe_update_pixmap(self):
+        if self._widget.width() != self._img_old_width:
+            self._img_old_width = self._widget.width()
+            assert self._img is not None
+            new_img = self._img.scaledToWidth(self._img_old_width,
+                                              Qt.SmoothTransformation)
+            self._pixmap = QPixmap(new_img)
 
 
 class AvatarIconDrawer:
@@ -103,7 +125,7 @@ class AvatarIconDrawer:
 
         self.fg_color = fg_color
 
-    def draw(self, painter):
+    def draw(self, painter: QPainter):
         pen = painter.pen()
         pen.setWidthF(1.5)
         painter.setPen(pen)

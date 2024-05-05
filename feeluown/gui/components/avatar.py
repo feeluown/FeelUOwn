@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING
 
+from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
@@ -8,14 +9,15 @@ from feeluown.library import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
     UISupportsLoginEvent
-from feeluown.gui.widgets import SelfPaintAbstractSquareButton
-from feeluown.gui.drawers import PixmapDrawer, AvatarIconDrawer
+from feeluown.gui.widgets import SelfPaintAbstractIconTextButton
+from feeluown.gui.drawers import SizedPixmapDrawer, AvatarIconDrawer
+from feeluown.gui.helpers import painter_save
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 
-class Avatar(SelfPaintAbstractSquareButton):
+class Avatar(SelfPaintAbstractIconTextButton):
     """
     When no provider is selected, click this button will popup a menu,
     and let user select a provider. When a provider is selected, click this
@@ -24,11 +26,14 @@ class Avatar(SelfPaintAbstractSquareButton):
     """
 
     def __init__(self, app: 'GuiApp', *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__('未登录', *args, **kwargs)
 
         self._app = app
         self._avatar_drawer = None
-        self._icon_drawer = AvatarIconDrawer(self.width(), self._padding)
+        self._avatar_padding = self._padding // 2
+        self._translate_x = 1 - self._padding
+        self._avatar_translate_x = -self._avatar_padding
+        self._icon_drawer = AvatarIconDrawer(self.height(), self._padding)
         self.clicked.connect(self.on_clicked)
         self.setToolTip('点击登陆资源提供方')
 
@@ -116,28 +121,41 @@ class Avatar(SelfPaintAbstractSquareButton):
             user = await run_fn(provider.get_current_user_or_none)
 
         if user is None:
+            self._text = '未登录'
             return None
         if isinstance(user, UserModel) and user.avatar_url:
+            self._text = user.name
             img_data = await run_afn(self._app.img_mgr.get, user.avatar_url,
                                      reverse(user))
             if img_data:
-                self._avatar_drawer = PixmapDrawer.from_img_data(img_data,
-                                                                 self,
-                                                                 radius=0.5)
+                p = self._avatar_padding
+                w = self.height() - 2 * p
+                rect = QRect(p, p, w, w)
+                self._avatar_drawer = SizedPixmapDrawer.from_img_data(
+                    img_data, rect, radius=0.5)
         return user
 
-    def paintEvent(self, _):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        self.paint_round_bg_when_hover(painter)
+    def paint_border_bg_when_hover(self, *_, **__):
+        pass
 
+    def draw_text(self, painter):
+        with painter_save(painter):
+            if not self._avatar_drawer:
+                painter.translate(self._translate_x, 0)
+            super().draw_text(painter)
+
+    def draw_icon(self, painter: QPainter):
         if self._avatar_drawer:
-            self._avatar_drawer.draw(painter)
+            with painter_save(painter):
+                painter.translate(self._avatar_translate_x, 0)
+                self._avatar_drawer.draw(painter)
         else:
-            # If a provider is selected, draw a highlight circle.
-            if self._app.current_pvd_ui_mgr.get_either() is not None:
-                self._icon_drawer.fg_color = self.palette().color(QPalette.Highlight)
-            self._icon_drawer.draw(painter)
+            with painter_save(painter):
+                painter.translate(self._translate_x, 0)
+                # If a provider is selected, draw a highlight circle.
+                if self._app.current_pvd_ui_mgr.get_either() is not None:
+                    self._icon_drawer.fg_color = self.palette().color(QPalette.Highlight)
+                self._icon_drawer.draw(painter)
 
 
 if __name__ == '__main__':
@@ -161,4 +179,4 @@ if __name__ == '__main__':
                 'Hello PyQt5',
             )
         ])
-        layout.addWidget(Avatar(mockapp, length=length))
+        layout.addWidget(Avatar(mockapp, height=length))
