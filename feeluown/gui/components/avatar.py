@@ -30,7 +30,12 @@ class Avatar(SelfPaintAbstractIconTextButton):
 
         self._app = app
         self._avatar_drawer = None
+        # In order to make the avatar/icon align to the left edge,
+        # translate the painter to -self._padding and set different padding
+        # for avatar-icon and avatar-image.
         self._avatar_padding = self._padding // 2
+        # Leave 1px to draw line itself.
+        # Theoretically, the line itself costs 1.5px and only 0.75px is needed.
         self._translate_x = 1 - self._padding
         self._avatar_translate_x = -self._avatar_padding
         self._icon_drawer = AvatarIconDrawer(self.height(), self._padding)

@@ -93,8 +93,5 @@ class View(QWidget):
             filter_model.setSourceModel(model)
             self.playlist_list_view.setModel(filter_model)
 
-        if not isinstance(provider, SupportsRecListDailySongs):
-            self.daily_songs_btn.setDisabled(True)
-
-        if not isinstance(provider, SupportsToplist):
-            self.rank_btn.setDisabled(True)
+        self.daily_songs_btn.setEnabled(isinstance(provider, SupportsRecListDailySongs))
+        self.rank_btn.setEnabled(isinstance(provider, SupportsToplist))
