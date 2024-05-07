@@ -15,6 +15,7 @@ from feeluown.collection import CollectionAlreadyExists, CollectionType
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn
+from feeluown.gui.components import Avatar, CollectionListView
 from feeluown.gui.widgets import (
     DiscoveryButton,
     HomeButton,
@@ -22,9 +23,8 @@ from feeluown.gui.widgets import (
     TriagleButton,
     StarButton,
 )
-
+from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.playlists import PlaylistsView
-from feeluown.gui.components import CollectionListView
 from feeluown.gui.widgets.my_music import MyMusicView
 
 if TYPE_CHECKING:
@@ -121,6 +121,8 @@ class _LeftPanel(QFrame):
         self.home_btn = HomeButton(height=30, parent=self)
         self.discovery_btn = DiscoveryButton(height=30, padding=0.2, parent=self)
         self.fav_btn = StarButton('我的收藏', height=30, parent=self)
+        self.fold_top_btn = TriagleButton(length=14, padding=0.2)
+        self.fold_top_btn.setCheckable(True)
         self.collections_header = QLabel('本地收藏集', self)
         self.collections_header.setToolTip('我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
                                            '每个收藏集都以一个独立 .fuo 文件的存在，'
@@ -143,27 +145,22 @@ class _LeftPanel(QFrame):
         self.playlists_view.setModel(self._app.pl_uimgr.model)
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)
 
+        self._top_separator = Separator(self._app)
         self._layout = QVBoxLayout(self)
-        self._sub_layout = QVBoxLayout()
-        self._top_layout = QVBoxLayout()
+        self._avatar_layout = QHBoxLayout()
 
         self._layout.setSpacing(0)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.addLayout(self._top_layout)
-        self._layout.addLayout(self._sub_layout)
-
-        self._top_layout.setContentsMargins(15, 16, 16, 0)
-        self._top_layout.addWidget(self.home_btn)
-        self._sub_layout.setContentsMargins(16, 8, 16, 0)
-        self._sub_layout.addWidget(self.collections_con)
-        from feeluown.gui.widgets.separator import Separator
-        from feeluown.gui.components import Avatar
-        self._sub_layout.addWidget(Separator(self._app))
-        self._sub_layout.addWidget(Avatar(self._app, height=48))
-        self._sub_layout.addWidget(self.discovery_btn)
-        self._sub_layout.addWidget(self.fav_btn)
-        self._sub_layout.addWidget(self.my_music_con)
-        self._sub_layout.addWidget(self.playlists_con)
+        self._layout.setContentsMargins(16, 10, 16, 0)
+        self._layout.addWidget(self.home_btn)
+        self._layout.addWidget(self.collections_con)
+        self._layout.addWidget(self._top_separator)
+        self._layout.addLayout(self._avatar_layout)
+        self._avatar_layout.addWidget(Avatar(self._app, height=48))
+        self._avatar_layout.addWidget(self.fold_top_btn)
+        self._layout.addWidget(self.discovery_btn)
+        self._layout.addWidget(self.fav_btn)
+        self._layout.addWidget(self.my_music_con)
+        self._layout.addWidget(self.playlists_con)
         self._layout.addStretch(0)
 
         self.playlists_view.setFrameShape(QFrame.NoFrame)
@@ -177,6 +174,7 @@ class _LeftPanel(QFrame):
         self.discovery_btn.setDisabled(True)
         self.fav_btn.setDisabled(True)
         self.discovery_btn.setToolTip('当前资源提供方未知')
+        self.fold_top_btn.setToolTip('折叠/打开“主页和本地收藏集”功能')
 
         if self._app.config.ENABLE_NEW_HOMEPAGE is True:
             self.home_btn.clicked.connect(
@@ -200,6 +198,18 @@ class _LeftPanel(QFrame):
             lambda: self._app.browser.goto(page='/rec'))
         self.fav_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/my_fav'))
+        self.fold_top_btn.clicked.connect(self._toggle_top_layout)
+
+    def _toggle_top_layout(self, checked):
+        widgets = [self._top_separator, self.collections_con, self.home_btn]
+        if checked:
+            self.fold_top_btn.set_direction('down')
+            for w in widgets:
+                w.hide()
+        else:
+            self.fold_top_btn.set_direction('up')
+            for w in widgets:
+                w.show()
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
