@@ -3,7 +3,6 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
-from feeluown.gui.components import Avatar
 from feeluown.gui.widgets import (
     LeftArrowButton,
     RightArrowButton,
@@ -46,7 +45,6 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
-        self.avatar = Avatar(app, length=ButtonSize[0])
         self.settings_btn = SettingsButton(length=ButtonSize[0])
 
         # initialize widgets
@@ -72,7 +70,6 @@ class BottomPanel(QWidget):
         self._layout.addWidget(self._stack_switch)
         self._layout.addSpacing(40)
         self._layout.addWidget(self.status_line)
-        self._layout.addWidget(self.avatar)
         self._layout.addWidget(self.settings_btn)
 
         # assume the magicbox height is about 30

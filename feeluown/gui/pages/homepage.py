@@ -3,7 +3,9 @@ from typing import TYPE_CHECKING
 
 from PyQt5.QtWidgets import QWidget, QVBoxLayout
 
-from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs
+from feeluown.library import (
+    SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs, Collection,
+)
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.gui.widgets.header import LargeHeader
@@ -37,45 +39,51 @@ async def render(req, **kwargs):
     await view.render()
 
 
-class View(QWidget, BgTransparentMixin):
-
-    def __init__(self, app: 'GuiApp'):
+class Panel(QWidget):
+    def __init__(self, title, body):
         super().__init__(parent=None)
+
+        self.header = LargeHeader(title)
+        self.body = body
+
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(10)
+        self._layout.addWidget(self.header)
+        self._layout.addWidget(self.body)
+
+    async def render(self):
+        pass
+
+
+class RecPlaylistsPanel(Panel):
+    def __init__(self, app):
         self._app = app
 
-        self.header_playlist_list = LargeHeader('一些歌单')
-        self.header_songs_list = LargeHeader('随便听听')
-        self.playlist_list_view = PlaylistCardListView(no_scroll_v=True)
-        self.playlist_list_view.setItemDelegate(
+        title = '一些歌单'
+        self.playlist_list_view = playlist_list_view = \
+            PlaylistCardListView(no_scroll_v=True)
+        playlist_list_view.setItemDelegate(
             PlaylistCardListDelegate(
-                self.playlist_list_view,
+                playlist_list_view,
                 card_min_width=150,
             )
         )
-        self.songs_list_view = SongMiniCardListView(no_scroll_v=True)
-        self.songs_list_view.setItemDelegate(
-            SongMiniCardListDelegate(self.songs_list_view, )
-        )
-
-        self._layout = QVBoxLayout(self)
-        self._setup_ui()
-
-        self.playlist_list_view.show_playlist_needed.connect(
+        super().__init__(title, playlist_list_view)
+        playlist_list_view.show_playlist_needed.connect(
             lambda model: self._app.browser.goto(model=model)
         )
-        self.songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
-    def _setup_ui(self):
-        self._layout.setContentsMargins(20, 10, 20, 0)
-        self._layout.setSpacing(0)
-        self._layout.addWidget(self.header_playlist_list)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.playlist_list_view)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.header_songs_list)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.songs_list_view)
-        self._layout.addStretch(0)
+    async def render(self):
+        playlists = await self._get_daily_playlists()
+        model = PlaylistCardListModel(
+            create_reader(playlists), fetch_cover_wrapper(self._app),
+            {p.identifier: p.name
+             for p in self._app.library.list()}
+        )
+        filter_model = PlaylistFilterProxyModel()
+        filter_model.setSourceModel(model)
+        self.playlist_list_view.setModel(filter_model)
 
     async def _get_daily_playlists(self):
         providers = self._app.library.list()
@@ -105,34 +113,20 @@ class View(QWidget, BgTransparentMixin):
                 break
         return playlists
 
-    async def _get_rec_songs(self):
-        providers = self._app.library.list()
-        titles = []
-        songs = []
-        for coro in as_completed([
-            run_fn(provider.rec_a_collection) for provider in providers
-            if isinstance(provider, SupportsRecACollectionOfSongs)
-        ]):
-            try:
-                title, songs_ = await coro
-            except:  # noqa
-                logger.exception('get rec songs failed')
-            else:
-                songs.extend(songs_)
-                titles.append(title)
-        return titles, songs
+
+class RecSongsPanel(Panel):
+    def __init__(self, app):
+        self._app = app
+
+        title = '随便听听'
+        self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True)
+        songs_list_view.setItemDelegate(
+            SongMiniCardListDelegate(songs_list_view, )
+        )
+        super().__init__(title, songs_list_view)
+        songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
     async def render(self):
-        playlists = await self._get_daily_playlists()
-        model = PlaylistCardListModel(
-            create_reader(playlists), fetch_cover_wrapper(self._app),
-            {p.identifier: p.name
-             for p in self._app.library.list()}
-        )
-        filter_model = PlaylistFilterProxyModel()
-        filter_model.setSourceModel(model)
-        self.playlist_list_view.setModel(filter_model)
-
         titles, songs = await self._get_rec_songs()
         songs_model = SongMiniCardListModel(
             create_reader(songs),
@@ -140,4 +134,45 @@ class View(QWidget, BgTransparentMixin):
         )
         self.songs_list_view.setModel(songs_model)
         if titles:
-            self.header_songs_list.setText(titles[0])
+            self.header.setText(titles[0])
+
+    async def _get_rec_songs(self):
+        providers = self._app.library.list()
+        titles = []
+        songs = []
+        for coro in as_completed([
+            run_fn(provider.rec_a_collection_of_songs) for provider in providers
+            if isinstance(provider, SupportsRecACollectionOfSongs)
+        ]):
+            try:
+                coll: Collection = await coro
+            except:  # noqa
+                logger.exception('get rec songs failed')
+            else:
+                songs.extend(coll.models)
+                titles.append(coll.name)
+        return titles, songs
+
+
+class View(QWidget, BgTransparentMixin):
+
+    def __init__(self, app: 'GuiApp'):
+        super().__init__(parent=None)
+        self._app = app
+
+        self.rec_playlist_panel = RecPlaylistsPanel(app)
+        self.rec_songs_panel = RecSongsPanel(app)
+
+        self._layout = QVBoxLayout(self)
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self._layout.setContentsMargins(20, 10, 20, 0)
+        self._layout.setSpacing(0)
+        self._layout.addWidget(self.rec_playlist_panel)
+        self._layout.addWidget(self.rec_songs_panel)
+        self._layout.addStretch(0)
+
+    async def render(self):
+        await self.rec_playlist_panel.render()
+        await self.rec_songs_panel.render()

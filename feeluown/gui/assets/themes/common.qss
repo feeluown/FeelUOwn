@@ -4,7 +4,7 @@ QWidget {
     /* border: 1px solid red; */
 }
 
-LeftPanel QLabel {
+LeftPanel QLabel, TriagleButton, PlusButton {
     color: #888;
 }
 

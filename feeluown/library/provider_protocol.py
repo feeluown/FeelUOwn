@@ -5,7 +5,7 @@ from feeluown.excs import NoUserLoggedIn
 from .models import (
     BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
     PlaylistModel, UserModel, ModelType, BriefArtistModel, BriefSongModel,
-    LyricModel, BriefVideoModel,
+    LyricModel, BriefVideoModel, BriefPlaylistModel,
 )
 from .collection import Collection
 
@@ -373,6 +373,22 @@ class SupportsCurrentUserFavVideosReader(Protocol):
     @abstractmethod
     def current_user_fav_create_videos_rd(self):
         pass
+
+
+@runtime_checkable
+class SupportsToplist(Protocol):
+    @abstractmethod
+    def toplist_list(self) -> List[BriefPlaylistModel]:
+        """List all toplist(排行榜)."""
+
+    @abstractmethod
+    def toplist_get(self, toplist_id) -> PlaylistModel:
+        """Get toplist details.
+
+        For some providers, the toplist model(schema) may be different from the
+        PlaylistModel. They should think about a way to solve this. For example,
+        turn the identifier into `toplist_{id}` and do some hack in playlist_get API.
+        """
 
 
 #
