@@ -7,7 +7,6 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
 from feeluown.library import (
     SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs, Collection,
-    SupportsCurrentUser
 )
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather
@@ -157,10 +156,7 @@ class View(QWidget, BgTransparentMixin):
         panels = []
         providers = self._app.library.list()
         for provider in providers:
-            if (
-                isinstance(provider, SupportsCurrentUser) and provider.has_current_user()
-                and isinstance(provider, SupportsRecListDailyPlaylists)
-            ):
+            if isinstance(provider, SupportsRecListDailyPlaylists):
                 panel = RecPlaylistsPanel(self._app, provider)
                 panels.append(panel)
             if isinstance(provider, SupportsRecACollectionOfSongs):
