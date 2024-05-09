@@ -1,13 +1,15 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
+from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
 from feeluown.library import (
     SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs, Collection,
 )
 from feeluown.utils.reader import create_reader
-from feeluown.utils.aio import run_fn, as_completed
+from feeluown.utils.aio import run_fn, gather
 from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
@@ -40,42 +42,73 @@ async def render(req, **kwargs):
 
 
 class Panel(QWidget):
-    def __init__(self, title, body):
+    _id_pixmap_cache = {}
+
+    def __init__(self, title, body, pixmap):
         super().__init__(parent=None)
 
+        self.icon_label = QLabel()
         self.header = LargeHeader(title)
         self.body = body
+
+        self.icon_label.setFixedSize(20, 20)
+        self.icon_label.setPixmap(pixmap)
 
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(10)
-        self._layout.addWidget(self.header)
+        self._h_layout = QHBoxLayout()
+        self._h_layout.setSpacing(5)
+        self._layout.addLayout(self._h_layout)
+        self._h_layout.addWidget(self.icon_label)
+        self._h_layout.addWidget(self.header)
         self._layout.addWidget(self.body)
+
+    @classmethod
+    def get_provider_pixmap(cls, app: 'GuiApp', provider_id):
+        if provider_id in cls._id_pixmap_cache:
+            return cls._id_pixmap_cache[provider_id]
+        pvd_ui = app.pvd_ui_mgr.get(provider_id)
+        svg = pvd_ui.get_colorful_svg()
+        return QPixmap(svg).scaledToWidth(20, Qt.SmoothTransformation)
 
     async def render(self):
         pass
 
 
-class RecPlaylistsPanel(Panel):
-    def __init__(self, app):
-        self._app = app
+class HBody(QWidget):
 
-        title = '一些歌单'
-        self.playlist_list_view = playlist_list_view = \
-            PlaylistCardListView(no_scroll_v=True)
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+
+class RecPlaylistsPanel(Panel):
+
+    def __init__(self, app: 'GuiApp', provider: SupportsRecListDailyPlaylists):
+        self._provider = provider
+        self._app = app
+        title = '推荐歌单'
+        self.playlist_list_view = PlaylistCardListView(no_scroll_v=True)
+        pixmap = Panel.get_provider_pixmap(app, provider.identifier)
+        super().__init__(title, self.playlist_list_view, pixmap)
+
+    async def render(self):
+        playlists = await run_fn(self._provider.rec_list_daily_playlists)
+        if not playlists:
+            return
+        playlist_list_view = self.playlist_list_view
+        playlist_list_view.show_playlist_needed.connect(
+            lambda model: self._app.browser.goto(model=model)
+        )
         playlist_list_view.setItemDelegate(
             PlaylistCardListDelegate(
                 playlist_list_view,
                 card_min_width=150,
             )
         )
-        super().__init__(title, playlist_list_view)
-        playlist_list_view.show_playlist_needed.connect(
-            lambda model: self._app.browser.goto(model=model)
-        )
-
-    async def render(self):
-        playlists = await self._get_daily_playlists()
         model = PlaylistCardListModel(
             create_reader(playlists), fetch_cover_wrapper(self._app),
             {p.identifier: p.name
@@ -83,75 +116,30 @@ class RecPlaylistsPanel(Panel):
         )
         filter_model = PlaylistFilterProxyModel()
         filter_model.setSourceModel(model)
-        self.playlist_list_view.setModel(filter_model)
-
-    async def _get_daily_playlists(self):
-        providers = self._app.library.list()
-        playlists_list = []
-        for coro in as_completed([
-            run_fn(provider.rec_list_daily_playlists) for provider in providers
-            if isinstance(provider, SupportsRecListDailyPlaylists)
-        ]):
-            try:
-                playlists_ = await coro
-            except:  # noqa
-                logger.exception('get recommended daily playlists failed')
-            else:
-                playlists_list.append(playlists_)
-
-        playlists = []
-        finished = [False] * len(playlists_list)
-        while True:
-            for i, playlists_ in enumerate(playlists_list):
-                try:
-                    playlist = playlists_.pop(0)
-                except IndexError:
-                    finished[i] = True
-                else:
-                    playlists.append(playlist)
-            if all(finished):
-                break
-        return playlists
+        playlist_list_view.setModel(filter_model)
 
 
 class RecSongsPanel(Panel):
-    def __init__(self, app):
+
+    def __init__(self, app: 'GuiApp', provider: SupportsRecACollectionOfSongs):
         self._app = app
+        self._provider = provider
 
         title = '随便听听'
         self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True)
-        songs_list_view.setItemDelegate(
-            SongMiniCardListDelegate(songs_list_view, )
-        )
-        super().__init__(title, songs_list_view)
+        songs_list_view.setItemDelegate(SongMiniCardListDelegate(songs_list_view, ))
+        pixmap = Panel.get_provider_pixmap(app, provider.identifier)
+        super().__init__(title, songs_list_view, pixmap)
         songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
     async def render(self):
-        titles, songs = await self._get_rec_songs()
+        coll: Collection = await run_fn(self._provider.rec_a_collection_of_songs)
         songs_model = SongMiniCardListModel(
-            create_reader(songs),
+            create_reader(coll.models),
             fetch_image=fetch_cover_wrapper(self._app),
         )
         self.songs_list_view.setModel(songs_model)
-        if titles:
-            self.header.setText(titles[0])
-
-    async def _get_rec_songs(self):
-        providers = self._app.library.list()
-        titles = []
-        songs = []
-        for coro in as_completed([
-            run_fn(provider.rec_a_collection_of_songs) for provider in providers
-            if isinstance(provider, SupportsRecACollectionOfSongs)
-        ]):
-            try:
-                coll: Collection = await coro
-            except:  # noqa
-                logger.exception('get rec songs failed')
-            else:
-                songs.extend(coll.models)
-                titles.append(coll.name)
-        return titles, songs
+        self.header.setText(coll.name)
 
 
 class View(QWidget, BgTransparentMixin):
@@ -160,19 +148,20 @@ class View(QWidget, BgTransparentMixin):
         super().__init__(parent=None)
         self._app = app
 
-        self.rec_playlist_panel = RecPlaylistsPanel(app)
-        self.rec_songs_panel = RecSongsPanel(app)
-
         self._layout = QVBoxLayout(self)
-        self._setup_ui()
-
-    def _setup_ui(self):
         self._layout.setContentsMargins(20, 10, 20, 0)
         self._layout.setSpacing(0)
-        self._layout.addWidget(self.rec_playlist_panel)
-        self._layout.addWidget(self.rec_songs_panel)
-        self._layout.addStretch(0)
 
     async def render(self):
-        await self.rec_playlist_panel.render()
-        await self.rec_songs_panel.render()
+        panels = []
+        providers = self._app.library.list()
+        for provider in providers:
+            if isinstance(provider, SupportsRecListDailyPlaylists):
+                panel = RecPlaylistsPanel(self._app, provider)
+                panels.append(panel)
+            if isinstance(provider, SupportsRecACollectionOfSongs):
+                panel = RecSongsPanel(self._app, provider)
+                panels.append(panel)
+        for panel in panels:
+            self._layout.addWidget(panel)
+        gather(*[panel.render() for panel in panels])
