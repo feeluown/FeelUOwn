@@ -67,8 +67,8 @@ class MpvPlayer(AbstractPlayer):
                                b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
 
         #: if video_format changes to None, there is no video available
-        self.video_format_changed = Signal()
-        self.audio_bitrate_changed = Signal()  # int, for example: 128001
+        self.video_format_changed = Signal()  # Optional[str]
+        self.audio_bitrate_changed = Signal()  # Optional[int], for example: 128001
 
         self._mpv.observe_property(
             'time-pos',
