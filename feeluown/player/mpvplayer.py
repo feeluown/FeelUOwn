@@ -68,6 +68,7 @@ class MpvPlayer(AbstractPlayer):
 
         #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()
+        self.audio_bitrate_changed = Signal()  # int, for example: 128001
 
         self._mpv.observe_property(
             'time-pos',
@@ -80,6 +81,10 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.observe_property(
             'video-format',
             lambda name, vformat: self._on_video_format_changed(vformat)
+        )
+        self._mpv.observe_property(
+            'audio-bitrate',
+            lambda name, bitrate: self._on_audio_bitrate_changed(bitrate)
         )
         # self._mpv.register_event_callback(lambda event: self._on_event(event))
         self._mpv._event_callbacks.append(self._on_event)
@@ -260,6 +265,13 @@ class MpvPlayer(AbstractPlayer):
         self._mpv.volume = self.volume
 
     @property
+    def audio_bitrate(self):
+        """
+        .. versionadded: 4.1.4
+        """
+        return self._mpv.audio_bitrate
+
+    @property
     def video_format(self):
         return self._video_format
 
@@ -288,6 +300,9 @@ class MpvPlayer(AbstractPlayer):
 
     def _on_video_format_changed(self, vformat):
         self.video_format = vformat
+
+    def _on_audio_bitrate_changed(self, bitrate):
+        self.audio_bitrate_changed.emit(bitrate)
 
     def _on_event(self, event):
         event_id = event['event_id']

@@ -1,13 +1,18 @@
+from typing import TYPE_CHECKING
+
 from PyQt5.QtWidgets import QLabel, QMenu
 
 from feeluown.utils.aio import run_afn
 from feeluown.media import MediaType
 
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
+
 
 class SongSourceTag(QLabel):
     default_text = '音乐来源'
 
-    def __init__(self, app, font_size=12, parent=None):
+    def __init__(self, app: 'GuiApp', font_size=12, parent=None):
         super().__init__(text=SongSourceTag.default_text, parent=parent)
         self._app = app
 
@@ -15,8 +20,13 @@ class SongSourceTag(QLabel):
         font.setPixelSize(font_size)
         self.setFont(font)
 
+        self._source = self.default_text
+        self._bitrate = 0
+
         self._app.player.metadata_changed.connect(
             self.on_metadata_changed, aioqueue=True)
+        self._app.player.audio_bitrate_changed.connect(
+            self.on_audio_bitrate_changed, aioqueue=True)
 
     def contextMenuEvent(self, e):
         # pylint: disable=unnecessary-direct-lambda-call
@@ -37,28 +47,43 @@ class SongSourceTag(QLabel):
             )
         menu.exec(e.globalPos())
 
+    def on_audio_bitrate_changed(self, bitrate):
+        if bitrate is not None:
+            old_bitrate = self._bitrate
+            new_bitrate = bitrate // 1000
+            # mpv's audio bitrate calculated on the packet level,
+            # only update text when the bitrate changes a lot.
+            self._bitrate = new_bitrate
+            if new_bitrate - old_bitrate > 10:
+                self.update_text()
+
     def on_metadata_changed(self, metadata):
         if not metadata:
-            self.setText(SongSourceTag.default_text)
-            return
+            self._source = ''
+            self._bitrate = 0
+        else:
+            self._source = '未知来源'
+            # Fill source name.
+            source = metadata.get('source', '')
+            if source:
+                source_name_map = {p.identifier: p.name
+                                   for p in self._app.library.list()}
+                self._source = source_name_map.get(source, self._source)
 
-        text = '未知来源'
+            # Fill audio bitrate info if available.
+            media = self._app.player.current_media
+            if media is not None and media.type_ == MediaType.audio:
+                props = media.props
+                if props.bitrate:
+                    self._bitrate = props.bitrate
+        self.update_text()
 
-        # Fill source name.
-        source = metadata.get('source', '')
-        if source:
-            source_name_map = {p.identifier: p.name
-                               for p in self._app.library.list()}
-            text = source_name_map.get(source, text)
-
-        # Fill audio bitrate info if available.
-        media = self._app.player.current_media
-        if media is not None and media.type_ == MediaType.audio:
-            props = media.props
-            if props.bitrate:
-                text = f'{text} • {props.bitrate}kbps'
-
-        self.setText(text)
+    def update_text(self):
+        if self._source:
+            text = f'{self._source} • {self._bitrate}kbps'
+            self.setText(text)
+        else:
+            self.setText(self.default_text)
 
     async def _switch_provider(self, provider_id):
         song = self._app.playlist.current_song
