@@ -12,7 +12,7 @@ def test_collection_load(tmp_path, song, mocker):
     path.write_text(text)
     coll = Collection(str(path))
     coll.load()
-    mock_resolve.called_once_with(text)
+    mock_resolve.assert_called_once_with(text)
     assert coll.models[0] is song
 
 
