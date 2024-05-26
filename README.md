@@ -40,8 +40,8 @@ brew install feeluown --with-battery # 安装 FeelUOwn 以及扩展
 feeluown genicon                     # 在桌面生成 FeelUOwn 图标
 ```
 
-Windows 用户可以在 Release 页面下载预打包好的二进制。
-Gentoo, NixOS, Debian 等 Linux 发行版也支持使用其系统包管理器安装！
+Windows 和 macOS 用户可以在 Release 页面下载预打包好的二进制。
+Gentoo, NixOS, Debian, openSUSE 等 Linux 发行版也支持使用其系统包管理器安装！
 详情可以参考文档：https://feeluown.readthedocs.io/ ，
 也欢迎你加入开发者/用户[交流群](https://t.me/joinchat/H7k12hG5HYsGy7RVvK_Dwg)。
 
