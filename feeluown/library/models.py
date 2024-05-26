@@ -401,6 +401,12 @@ class PlaylistModel(BriefPlaylistModel, BaseNormalModel):
     name: str
     cover: str
     description: str
+    play_count: int = -1  # -1 means unknown
+
+    def model_post_init(self, _):
+        super().model_post_init(_)
+        if self.creator is not None:
+            self.creator_name = self.creator.name
 
 
 class SimpleSearchResult(_BaseModel):

@@ -261,3 +261,11 @@ class DedupList(list):
     def clear(self):
         self._map.clear()
         super().clear()
+
+
+def int_to_human_readable(i):
+    if i >= 100000000:
+        return f'{i / 100000000:.1f}亿'
+    elif i >= 10000:
+        return f'{i / 10000:.1f}万'
+    return i
