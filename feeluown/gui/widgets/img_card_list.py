@@ -27,8 +27,9 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import aio
-from feeluown.library import AlbumModel, AlbumType
+from feeluown.library import AlbumModel, AlbumType, PlaylistModel
 from feeluown.utils.reader import wrap
+from feeluown.utils.utils import int_to_human_readable
 from feeluown.library import reverse
 from feeluown.gui.helpers import (
     ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin, painter_save,
@@ -401,7 +402,20 @@ class VideoCardListView(ImgCardListView):
 
 
 class PlaylistCardListModel(ImgCardListModel):
-    pass
+    def data(self, index, role):
+        offset = index.row()
+        if not index.isValid() or offset >= len(self._items):
+            return None
+
+        playlist = self._items[offset]
+        if (
+            role == Qt.WhatsThisRole
+            and isinstance(playlist, PlaylistModel)
+            and playlist.play_count > 0
+        ):
+            count = int_to_human_readable(playlist.play_count)
+            return f'► {count}'
+        return super().data(index, role)
 
 
 class PlaylistCardListDelegate(ImgCardListDelegate):
