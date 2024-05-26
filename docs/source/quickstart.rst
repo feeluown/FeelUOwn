@@ -90,6 +90,26 @@ NixOS
 
 https://github.com/berberman/flakes
 
+openSUSE
+~~~~~~~~
+
+对于 openSUSE Tumbleweed，请以根用户 root 运行下面命令：
+
+.. sourcecode:: sh
+
+    zypper addrepo https://download.opensuse.org/repositories/home:weearcm/openSUSE_Tumbleweed/home:weearcm.repo
+    zypper refresh
+    zypper install --recommends feeluown
+
+对于 openSUSE Slowroll，请以根用户 root 运行下面命令：
+
+.. sourcecode:: sh
+
+    zypper addrepo https://download.opensuse.org/repositories/home:weearcm/openSUSE_Slowroll/home:weearcm.repo
+    zypper refresh
+    zypper install --recommends  feeluown
+
+详情可以参考： `#833 <https://github.com/feeluown/FeelUOwn/issues/833>`_
 
 基本使用
 --------
