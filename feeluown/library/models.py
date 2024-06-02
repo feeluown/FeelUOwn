@@ -342,6 +342,9 @@ class ArtistModel(BriefArtistModel, BaseNormalModel):
     aliases: List[str]
     hot_songs: List[BriefSongModel]
     description: str
+    song_count: int = -1
+    album_count: int = -1
+    mv_count: int = -1
 
 
 class AlbumModel(BriefAlbumModel, BaseNormalModel):
@@ -387,6 +390,8 @@ class VideoModel(BriefVideoModel, BaseNormalModel):
     artists: List[BriefArtistModel]
     duration: int
     cover: str
+    play_count: int = -1  # -1 means unknown
+    released: str = ''  # publish date. format: 2000-12-27
 
     def model_post_init(self, _):
         super().model_post_init(_)
@@ -402,6 +407,8 @@ class PlaylistModel(BriefPlaylistModel, BaseNormalModel):
     cover: str
     description: str
     play_count: int = -1  # -1 means unknown
+    created: str = ''  # format: 2000-12-27
+    updated: str = ''  # format: 2000-12-27
 
     def model_post_init(self, _):
         super().model_post_init(_)
