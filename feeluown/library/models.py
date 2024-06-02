@@ -391,7 +391,7 @@ class VideoModel(BriefVideoModel, BaseNormalModel):
     duration: int
     cover: str
     play_count: int = -1  # -1 means unknown
-    released: str = ''  # format: 2000-12-27.
+    released: str = ''  # publish date. format: 2000-12-27
 
     def model_post_init(self, _):
         super().model_post_init(_)

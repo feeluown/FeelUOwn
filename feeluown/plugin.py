@@ -98,6 +98,8 @@ class Plugin:
         # instead of app.fuo_xxx.X=Y.
         if self.name.startswith('fuo_'):
             names.append(self.name[4:])
+        elif self.name.startswith('feeluown_'):
+            names.append(self.name[9:])
 
         # Define a subconfig(namespace) for plugin so that plugin can
         # define its own configuration fields.
