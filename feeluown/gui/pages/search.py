@@ -1,3 +1,4 @@
+from datetime import datetime
 from PyQt5.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout
 
 from feeluown.library import SearchType
@@ -10,7 +11,10 @@ from feeluown.gui.helpers import BgTransparentMixin
 from feeluown.gui.widgets.magicbox import KeySourceIn, KeyType
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.accordion import Accordion
+from feeluown.gui.widgets.labels import MessageLabel
 from feeluown.utils.reader import create_reader
+from feeluown.utils.router import Request
+from feeluown.app.gui_app import GuiApp
 
 Tabs = [('歌曲', SearchType.so),
         ('专辑', SearchType.al),
@@ -19,76 +23,88 @@ Tabs = [('歌曲', SearchType.so),
         ('视频', SearchType.vi)]
 
 
-async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
-    """/search handler
+def get_tab_idx(search_type):
+    for i, tab in enumerate(Tabs):
+        if tab[1] == search_type:
+            return i
+    raise ValueError("unknown search type")
 
-    :type app: feeluown.app.App
-    """
-    q = req.query.get('q', '')
-    if not q:
-        return
 
+def get_source_in(req: Request):
     source_in = req.query.get('source_in', None)
-    search_type = SearchType(req.query.get('type', SearchType.so.value))
     if source_in is not None:
         source_in = source_in.split(',')
     else:
         source_in = None
+    return source_in
 
-    app = req.ctx['app']
+
+async def render(req: Request, **kwargs):
+    """/search handler
+
+    :type app: feeluown.app.App
+    """
+    # pylint: disable=too-many-locals,too-many-branches
+    q = req.query.get('q', '')
+    if not q:
+        return
+
+    app: 'GuiApp' = req.ctx['app']
+    source_in = get_source_in(req)
+    search_type = SearchType(req.query.get('type', SearchType.so.value))
 
     body = Body()
     view = View(app, q)
     body.setWidget(view)
     app.ui.right_panel.set_body(body)
 
-    tab_index = 0
-    for i, tab in enumerate(Tabs):
-        if tab[1] == search_type:
-            tab_index = i
-            break
-
+    tab_index = get_tab_idx(search_type)
+    succeed = 0
+    start = datetime.now()
     is_first = True  # Is first search result.
+    view.hint.show_msg('正在搜索...')
     async for result in app.library.a_search(
             q, type_in=search_type, source_in=source_in):
-        if result is not None:
-            table_container = TableContainer(app, view.accordion)
-            table_container.layout().setContentsMargins(0, 0, 0, 0)
+        table_container = TableContainer(app, view.accordion)
+        table_container.layout().setContentsMargins(0, 0, 0, 0)
 
-            # HACK: set fixed row for tables.
-            # pylint: disable=protected-access
-            for table in table_container._tables:
-                assert isinstance(table, QAbstractItemView)
-                delegate = table.itemDelegate()
-                if isinstance(delegate, ImgCardListDelegate):
-                    # FIXME: set fixed_row_count in better way.
-                    table._fixed_row_count = 2  # type: ignore[attr-defined]
-                    delegate.update_settings("card_min_width", 100)
-                elif isinstance(table, SongsTableView):
-                    table._fixed_row_count = 8
-                    table._row_height = table.verticalHeader().defaultSectionSize()
+        # HACK: set fixed row for tables.
+        # pylint: disable=protected-access
+        for table in table_container._tables:
+            assert isinstance(table, QAbstractItemView)
+            delegate = table.itemDelegate()
+            if isinstance(delegate, ImgCardListDelegate):
+                # FIXME: set fixed_row_count in better way.
+                table._fixed_row_count = 2  # type: ignore[attr-defined]
+                delegate.update_settings("card_min_width", 100)
+            elif isinstance(table, SongsTableView):
+                table._fixed_row_count = 8
+                table._row_height = table.verticalHeader().defaultSectionSize()
 
-            renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
-            await table_container.set_renderer(renderer)
-            _, search_type, attrname, show_handler = renderer.tabs[tab_index]
-            objects = getattr(result, attrname) or []
-            if not objects:  # Result is empty.
-                continue
+        renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
+        await table_container.set_renderer(renderer)
+        _, search_type, attrname, show_handler = renderer.tabs[tab_index]
+        objects = getattr(result, attrname) or []
+        if not objects:  # Result is empty.
+            continue
 
-            if search_type is SearchType.so:
-                show_handler(  # type: ignore[operator]
-                    create_reader(objects), columns_mode=ColumnsMode.playlist)
-            else:
-                show_handler(create_reader(objects))  # type: ignore[operator]
-            source = objects[0].source
-            provider = app.library.get(source)
-            provider_name = provider.name
-            if is_first is False:
-                table_container.hide()
-            view.accordion.add_section(MidHeader(provider_name), table_container, 6, 12)
-            renderer.meta_widget.hide()
-            renderer.toolbar.hide()
-            is_first = False
+        succeed += 1
+        if search_type is SearchType.so:
+            show_handler(  # type: ignore[operator]
+                create_reader(objects), columns_mode=ColumnsMode.playlist)
+        else:
+            show_handler(create_reader(objects))  # type: ignore[operator]
+        source = objects[0].source
+        provider = app.library.get(source)
+        provider_name = provider.name
+        if is_first is False:
+            table_container.hide()
+        view.accordion.add_section(MidHeader(provider_name), table_container, 6, 12)
+        renderer.meta_widget.hide()
+        renderer.toolbar.hide()
+        is_first = False
+    time_cost = (datetime.now() - start).total_seconds()
+    view.hint.show_msg(f'搜索完成，共有 {succeed} 个有效的结果，花费 {time_cost:.2f}s')
 
 
 class SearchResultRenderer(Renderer, TabBarRendererMixin):
@@ -133,6 +149,7 @@ class View(QFrame, BgTransparentMixin):
         self._app = app
 
         self.title = LargeHeader(f'搜索“{q}”')
+        self.hint = MessageLabel()
         self.accordion = Accordion()
 
         self._layout = QVBoxLayout(self)
@@ -140,6 +157,8 @@ class View(QFrame, BgTransparentMixin):
         self._layout.setSpacing(0)
         self._layout.addSpacing(30)
         self._layout.addWidget(self.title)
+        self._layout.addSpacing(10)
+        self._layout.addWidget(self.hint)
         self._layout.addSpacing(10)
         self._layout.addWidget(self.accordion)
         self._layout.addStretch(0)
