@@ -133,6 +133,7 @@ async def start_app(args, config, sentinal=None):
 
     # GUI state must be load before running app, otherwise, it does not take effects.
     app.load_and_apply_state()
+    logger.info("Load app last state...")
 
     # App can exit in several ways.
     #
@@ -146,6 +147,7 @@ async def start_app(args, config, sentinal=None):
     # 1. Ctrl-C
     # 2. SIGTERM
     app.run()
+    logger.info("App started")
     app.started.emit(app)
 
     await sentinal

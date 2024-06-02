@@ -621,6 +621,7 @@ def esc_hide_widget(widget):
 
 
 # https://ethanschoonover.com/solarized/
+# Do not change the existing colors if they are used by some widgets/components.
 SOLARIZED_COLORS = {
     'yellow':    '#b58900',
     'orange':    '#cb4b16',

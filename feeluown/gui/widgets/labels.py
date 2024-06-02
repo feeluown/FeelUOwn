@@ -2,7 +2,7 @@ from PyQt5.QtCore import QTime, Qt
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 
 from feeluown.utils.utils import parse_ms
-from feeluown.gui.helpers import elided_text
+from feeluown.gui.helpers import elided_text, SOLARIZED_COLORS
 
 
 def format_second(s):
@@ -72,3 +72,28 @@ class ProgressLabel(QLabel):
 
     def on_position_changed(self, position):
         self.setText(format_second(position or 0))
+
+
+class MessageLabel(QLabel):
+    """Show warning/error message.
+    """
+    INFO = 'info'
+    ERROR = 'error'
+
+    def __init__(self, text='', level=None, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.setTextFormat(Qt.RichText)
+        self.show_msg(text, level)
+
+    def show_msg(self, text, level=None):
+        if level == MessageLabel.ERROR:
+            hint = '错误提示：'
+            color = 'red'
+        elif level == MessageLabel.INFO:
+            hint = '️提示：'
+            color = SOLARIZED_COLORS['blue']
+        else:
+            hint = '️'
+            color = SOLARIZED_COLORS['blue']
+        self.setText(f"<span style='color: {color};'>{hint}{text}<span>")

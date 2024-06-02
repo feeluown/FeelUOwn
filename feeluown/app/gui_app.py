@@ -115,11 +115,18 @@ class GuiApp(App, QWidget):
 
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})
+        local_storage = gui.get('browser', {}).get('local_storage', {})
+        self.browser.local_storage = local_storage
         self.ui.lyric_window.apply_state(lyric)
 
     def dump_state(self):
         state = super().dump_state()
-        state['gui'] = {'lyric': self.ui.lyric_window.dump_state()}
+        state['gui'] = {
+            'lyric': self.ui.lyric_window.dump_state(),
+            'browser': {
+                'local_storage': self.browser.local_storage
+            }
+        }
         return state
 
     def closeEvent(self, _):
