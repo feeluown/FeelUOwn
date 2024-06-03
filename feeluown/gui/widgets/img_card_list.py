@@ -27,7 +27,7 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import aio
-from feeluown.library import AlbumModel, AlbumType, PlaylistModel
+from feeluown.library import AlbumModel, AlbumType, PlaylistModel, VideoModel
 from feeluown.utils.reader import wrap
 from feeluown.utils.utils import int_to_human_readable
 from feeluown.library import reverse
@@ -126,6 +126,8 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             return item
         elif role == Qt.WhatsThisRole:
             return self.source_name_map.get(item.source, item.source)
+        elif role == Qt.ToolTipRole:
+            return item.name
         return None
 
 
@@ -377,7 +379,15 @@ class VideoCardListModel(ImgCardListModel):
             return None
         video = self._items[offset]
         if role == Qt.DisplayRole:
-            return video.title_display
+            return video.title
+        elif role == Qt.ToolTipRole:
+            return video.title
+        elif (
+            role == Qt.WhatsThisRole
+            and isinstance(video, VideoModel)
+            and video.play_count > 0
+        ):
+            return f'► {int_to_human_readable(video.play_count)}'
         return super().data(index, role)
 
 
