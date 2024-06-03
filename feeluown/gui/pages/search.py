@@ -76,7 +76,7 @@ async def render(req: Request, **kwargs):
             if isinstance(delegate, ImgCardListDelegate):
                 # FIXME: set fixed_row_count in better way.
                 table._fixed_row_count = 2  # type: ignore[attr-defined]
-                delegate.update_settings("card_min_width", 100)
+                delegate.update_settings("card_min_width", 140)
             elif isinstance(table, SongsTableView):
                 table._fixed_row_count = 8
                 table._row_height = table.verticalHeader().defaultSectionSize()
