@@ -41,7 +41,8 @@ class SignalConnector:
             self._slot_list.append((slot, kwargs))
 
     def connect_slot_symbol(self, slot_symbol: str, **kwargs):
-        self._slot_symbol_list.append((slot_symbol, kwargs))
+        if (slot_symbol, kwargs) not in self._slot_symbol_list:
+            self._slot_symbol_list.append((slot_symbol, kwargs))
 
     def disconnect_slot_symbol(self, slot_symbol):
         for i, (symbol, _) in enumerate(self._slot_symbol_list):
