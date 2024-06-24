@@ -81,6 +81,9 @@ setup(
             'secretstorage',
             'pycryptodome',
         ],
+        'ytdl': [
+            'yt-dlp',
+        ],
         'dev': [
             # lint
             'flake8',

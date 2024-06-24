@@ -652,7 +652,7 @@ class Playlist:
 
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
-        task_spec.disable_default_cb()
+        # task_spec.disable_default_cb()
         if self.watch_mode is True:
             mv_media = await task_spec.bind_coro(self._prepare_mv_media(song))
             if mv_media:
