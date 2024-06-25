@@ -28,7 +28,7 @@ def create_config() -> Config:
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
-    config.deffield('ENABLE_YTDL_AS_STANDBY', type_=bool, default=True,
+    config.deffield('ENABLE_YTDL_AS_MEDIA_PROVIDER', type_=bool, default=True,
                     desc='YTDL 作为备用资源')
     # For example::
     #    [{'name': 'match_by_source',

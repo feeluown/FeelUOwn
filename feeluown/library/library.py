@@ -20,7 +20,7 @@ from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsVideoMultiQuality, SupportsSongWebUrl,
+    SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
 )
 
 if TYPE_CHECKING:
@@ -425,10 +425,21 @@ class Library:
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
         """
         provider = self.get(video.source)
-        if isinstance(provider, SupportsVideoMultiQuality):
-            media, _ = provider.video_select_media(video, policy)
-        else:
-            raise MediaNotFound('provider or video not found')
-        if not media:
-            raise MediaNotFound('provider returns empty media')
+
+        try:
+            if isinstance(provider, SupportsVideoMultiQuality):
+                media, _ = provider.video_select_media(video, policy)
+                if not media:
+                    raise MediaNotFound('provider returns empty media')
+            else:
+                raise MediaNotFound('provider or video not found')
+        except MediaNotFound:
+            if self.ytdl is not None and isinstance(provider, SupportsVideoWebUrl):
+                video_web_url = provider.video_get_web_url(video)
+                logger.info(f'use ytdl to get media for {video_web_url}')
+                media = self.ytdl.select_video(video_web_url,
+                                               policy,
+                                               source=video.source)
+            if not media:
+                raise
         return media
