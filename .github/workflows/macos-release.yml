@@ -23,6 +23,7 @@ jobs:
     - name: Install libmpv
       run: |
         brew install mpv
+        ls /opt/homebrew/lib/libmpv*
     - name: Bundle
       run: |
         make bundle
