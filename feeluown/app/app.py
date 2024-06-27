@@ -54,7 +54,7 @@ class App:
 
         # Library.
         self.library = Library(config.PROVIDERS_STANDBY)
-        if config.ENABLE_YTDL_AS_STANDBY:
+        if config.ENABLE_YTDL_AS_MEDIA_PROVIDER:
             try:
                 self.library.setup_ytdl(rules=config.YTDL_RULES)
             except ImportError as e:
