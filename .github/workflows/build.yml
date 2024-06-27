@@ -16,8 +16,8 @@ jobs:
       # Allow some jobs fail.
       fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python: ['3.8', '3.10', '3.11']
+        os: [ubuntu-latest, macos-latest, windows-latest, macos-13]
+        python: ['3.8', '3.11']
 
     steps:
       - uses: actions/checkout@v2
