@@ -37,7 +37,6 @@ jobs:
         if: startsWith(matrix.os, 'macos')
         run: |
           brew install mpv
-          ls /opt/homebrew/lib/libmpv*
 
       - name: Install Windows Dependencies
         if: startsWith(matrix.os, 'windows')
