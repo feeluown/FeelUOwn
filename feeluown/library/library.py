@@ -2,7 +2,7 @@
 import logging
 import warnings
 from functools import partial
-from typing import Optional, TypeVar, List
+from typing import Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
@@ -20,8 +20,11 @@ from .model_state import ModelState
 from .provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsVideoMultiQuality,
+    SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
 )
+
+if TYPE_CHECKING:
+    from .ytdl import Ytdl
 
 
 logger = logging.getLogger(__name__)
@@ -75,9 +78,15 @@ class Library:
         """
         self._providers_standby = providers_standby
         self._providers = set()
+        self.ytdl: Optional['Ytdl'] = None
 
         self.provider_added = Signal()  # emit(AbstractProvider)
         self.provider_removed = Signal()  # emit(AbstractProvider)
+
+    def setup_ytdl(self, *args, **kwargs):
+        from .ytdl import Ytdl
+
+        self.ytdl = Ytdl(*args, **kwargs)
 
     def register(self, provider):
         """register provider
@@ -271,9 +280,20 @@ class Library:
             raise MediaNotFound(f'provider({song.source}) not found')
         media = None
         if isinstance(provider, SupportsSongMultiQuality):
-            media, _ = provider.song_select_media(song, policy)
+            try:
+                media, _ = provider.song_select_media(song, policy)
+            except MediaNotFound as e:
+                if e.reason is MediaNotFound.Reason.check_children:
+                    raise
+                else:
+                    media = None
         if not media:
-            raise MediaNotFound('provider returns empty media')
+            if self.ytdl is not None and isinstance(provider, SupportsSongWebUrl):
+                song_web_url = provider.song_get_web_url(song)
+                logger.info(f'use ytdl to get media for {song_web_url}')
+                media = self.ytdl.select_audio(song_web_url, policy, source=song.source)
+            if not media:
+                raise MediaNotFound('provider returns empty media')
         return media
 
     def song_prepare_mv_media(self, song: BriefSongModel, policy) -> Media:
@@ -405,10 +425,21 @@ class Library:
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
         """
         provider = self.get(video.source)
-        if isinstance(provider, SupportsVideoMultiQuality):
-            media, _ = provider.video_select_media(video, policy)
-        else:
-            raise MediaNotFound('provider or video not found')
-        if not media:
-            raise MediaNotFound('provider returns empty media')
+
+        try:
+            if isinstance(provider, SupportsVideoMultiQuality):
+                media, _ = provider.video_select_media(video, policy)
+                if not media:
+                    raise MediaNotFound('provider returns empty media')
+            else:
+                raise MediaNotFound('provider or video not found')
+        except MediaNotFound:
+            if self.ytdl is not None and isinstance(provider, SupportsVideoWebUrl):
+                video_web_url = provider.video_get_web_url(video)
+                logger.info(f'use ytdl to get media for {video_web_url}')
+                media = self.ytdl.select_video(video_web_url,
+                                               policy,
+                                               source=video.source)
+            if not media:
+                raise
         return media

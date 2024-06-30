@@ -22,7 +22,7 @@ jobs:
         pip install pyqt5
         pip install pyinstaller
         pip install pyinstaller-versionfile
-        pip install -e .[win32,battery,cookies]
+        pip install -e .[win32,battery,cookies,ytdl]
     - name: Download mpv-1.dll
       run: |
         choco install curl

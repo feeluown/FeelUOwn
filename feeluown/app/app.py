@@ -54,6 +54,14 @@ class App:
 
         # Library.
         self.library = Library(config.PROVIDERS_STANDBY)
+        if config.ENABLE_YTDL_AS_MEDIA_PROVIDER:
+            try:
+                self.library.setup_ytdl(rules=config.YTDL_RULES)
+            except ImportError as e:
+                logger.warning(f"can't enable ytdl as standby due to {e}")
+            else:
+                logger.info(f"enable ytdl as standby succeed"
+                            f" with rules:{config.YTDL_RULES}")
         # TODO: initialization should be moved into initialize
         Resolver.library = self.library
         # Player.

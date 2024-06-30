@@ -49,7 +49,7 @@ jobs:
           pip install --upgrade pip
           pip install pyqt5
           pip install "pytest<7.2"
-          pip install -e .[dev,cookies,webserver]
+          pip install -e .[dev,cookies,webserver,ytdl]
 
       - name: Install Python(macOS) Dependencies
         if: startsWith(matrix.os, 'macos')

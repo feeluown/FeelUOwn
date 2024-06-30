@@ -217,6 +217,12 @@ class SupportsVideoGet(Protocol):
         raise NotImplementedError
 
 
+@runtime_checkable
+class SupportsVideoWebUrl(Protocol):
+    def video_get_web_url(self, video: BriefVideoModel) -> str:
+        raise NotImplementedError
+
+
 @eq(ModelType.video, PF.multi_quality)
 @runtime_checkable
 class SupportsVideoMultiQuality(Protocol):

@@ -28,6 +28,13 @@ def create_config() -> Config:
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
+    config.deffield('ENABLE_YTDL_AS_MEDIA_PROVIDER', type_=bool, default=True,
+                    desc='YTDL 作为备用资源')
+    # For example::
+    #    [{'name': 'match_by_source',
+    #      'source': 'xxx',
+    #      'http_proxy': 'http://127.0.0.1:7890'},]
+    config.deffield('YTDL_RULES', type_=list, default=None, desc='')
     # TODO(cosven): maybe
     # 1. when it is set to 2, find standby from other providers first.
     # 2. when it is set to 3, play it's MV model instead of using MV's media.
