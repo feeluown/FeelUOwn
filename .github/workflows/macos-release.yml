@@ -3,11 +3,20 @@ on:
   push:
     tags:
       - v*
+    branches:
+      - master
   workflow_dispatch:
 
 jobs:
   build-n-publish:
-    runs-on: macos-latest
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      # Allow some jobs fail.
+      fail-fast: false
+      matrix:
+        os: [macos-latest, macos-13, macos-12]
+
     steps:
     - uses: actions/checkout@master
     - name: Set up Python
@@ -19,7 +28,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install pyqt5
         pip install pyinstaller
-        pip install -e .[macos,battery]
+        pip install -e .[macos,battery,cookies,ytdl]
     - name: Install libmpv
       run: |
         brew install mpv
@@ -30,7 +39,11 @@ jobs:
       run: |
         # List dist to help double check if bundle is ok.
         ls dist/
-        cd dist/ && zip FeelUOwnX.zip -r FeelUOwnX.app/
+        arch=`uname -m`
+        macos_version=`sw_vers -productVersion`
+        echo "DIST_ARCH=${arch}" >> $GITHUB_ENV
+        echo "DIST_MACOS_VERSION=${macos_version}" >> $GITHUB_ENV
+        cd dist/ && zip FeelUOwnX-macOS${macos_version}-${arch}.zip -r FeelUOwnX.app/
     - name: Upload artifact
       uses: actions/upload-artifact@v3
       with:
@@ -42,4 +55,12 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
-        files: dist/FeelUOwnX.zip
+        files: dist/FeelUOwnX-macOS{{ env.DIST_MACOS_VERSION }}-{{ env.DIST_ARCH }.zip
+    - name: Upload to release page
+      if: startsWith(github.ref, 'master')
+      uses: softprops/action-gh-release@v2
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        files: dist/FeelUOwnX-macOS{{ env.DIST_MACOS_VERSION }}-{{ env.DIST_ARCH }.zip
+        tag_name: nightly
