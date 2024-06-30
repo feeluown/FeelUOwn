@@ -32,6 +32,8 @@ jobs:
     - name: Install libmpv
       run: |
         brew install mpv
+    - name: Test if no syntax error
+      run: feeluown -h
     - name: Bundle
       run: |
         make bundle
