@@ -51,7 +51,7 @@ unittest: pytest
 pytest:
 # Disable faulthandler plugin, because it cause verbose output on windows.
 # Besides, the fault currently cause no side effects.
-	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -vvv -p no:faulthandler
+	TEST_ENV=travis QT_QPA_PLATFORM=offscreen pytest -p no:faulthandler
 
 integration_test: export QT_QPA_PLATFORM=offscreen
 integration_test:
