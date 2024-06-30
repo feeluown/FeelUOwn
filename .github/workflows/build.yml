@@ -38,6 +38,13 @@ jobs:
         run: |
           brew install mpv
 
+      - name: Setup DYLD path for macos-arm64
+        if: matrix.os == 'macos-latest'
+        run: |
+          # Python can't find libmpv on macOS arm64 by default.
+          # This problem does not exist on macOS with x86_64.
+          echo "DYLD_LIBRARY_PATH=/opt/homebrew/lib" > $GITHUB_ENV
+
       - name: Install Windows Dependencies
         if: startsWith(matrix.os, 'windows')
         run: |
