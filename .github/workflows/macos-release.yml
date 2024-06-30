@@ -38,7 +38,7 @@ jobs:
         # Python can't find libmpv on macOS arm64 by default.
         # This problem does not exist on macOS with x86_64.
         echo "DYLD_FALLBACK_LIBRARY_PATH=/opt/homebrew/lib" >> $GITHUB_ENV
-        echo "DYLD_FALLBACK_FRAMEWORK_PATH=/opt/homebrew/Frameworks >> $GITHUB_ENV
+        echo "DYLD_FALLBACK_FRAMEWORK_PATH=/opt/homebrew/Frameworks" >> $GITHUB_ENV
     - name: Test if no syntax error
       run: feeluown -h
     - name: Bundle
