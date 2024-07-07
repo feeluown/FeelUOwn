@@ -292,6 +292,9 @@ class Library:
                 song_web_url = provider.song_get_web_url(song)
                 logger.info(f'use ytdl to get media for {song_web_url}')
                 media = self.ytdl.select_audio(song_web_url, policy, source=song.source)
+                found = media is not None
+                logger.debug(f'ytdl select audio for {song_web_url} finished, '
+                             f'found: {found}')
             if not media:
                 raise MediaNotFound('provider returns empty media')
         return media
@@ -425,7 +428,6 @@ class Library:
         :param video: either a v1 MvModel or a v2 (Brief)VideoModel.
         """
         provider = self.get(video.source)
-
         try:
             if isinstance(provider, SupportsVideoMultiQuality):
                 media, _ = provider.video_select_media(video, policy)
@@ -440,6 +442,11 @@ class Library:
                 media = self.ytdl.select_video(video_web_url,
                                                policy,
                                                source=video.source)
+                found = media is not None
+                logger.debug(f'ytdl select video for {video_web_url} finished, '
+                             f'found: {found}')
+            else:
+                media = None
             if not media:
                 raise
         return media

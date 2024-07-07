@@ -600,26 +600,32 @@ class Playlist:
             MetadataFields.album: song.album_name_display or '',
         })
         try:
-            song = await aio.run_fn(self._app.library.song_upgrade, song)
+            song: SongModel = await aio.wait_for(
+                aio.run_fn(self._app.library.song_upgrade, song),
+                timeout=1,
+            )
         except ResourceNotFound:
             return metadata
         except:  # noqa
             logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
             return metadata
 
-        artwork = ''
-        released = ''
-        if song.album is not None:
+        artwork = song.pic_url
+        released = song.date
+        if not (artwork and released) and song.album is not None:
             try:
-                album = await aio.run_fn(self._app.library.album_upgrade, song.album)
+                album = await aio.wait_for(
+                    aio.run_fn(self._app.library.album_upgrade, song.album),
+                    timeout=1
+                )
             except ResourceNotFound:
                 pass
             except:  # noqa
                 logger.warning(
                     f"fetching song's album meta failed, song:{song.title_display}")
             else:
-                artwork = album.cover
-                released = album.released
+                artwork = album.cover or artwork
+                released = album.released or released
                 # For model v1, the cover can be a Media object.
                 # For example, in fuo_local plugin, the album.cover is a Media
                 # object with url set to fuo://local/songs/{identifier}/data/cover.

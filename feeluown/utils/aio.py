@@ -36,6 +36,9 @@ wait = asyncio.wait
 #: gather is an alias of `asyncio.gather`.
 gather = asyncio.gather
 
+#: wait_for is an alias of `asyncio.wait_for`
+wait_for = asyncio.wait_for
+
 
 def run_in_executor(executor, func, *args):
     """alias for loop.run_in_executor"""
