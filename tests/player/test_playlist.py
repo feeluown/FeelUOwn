@@ -355,13 +355,15 @@ def test_playlist_next_should_call_set_current_song(app_mock, mocker, song):
 
 
 @pytest.mark.asyncio
-async def test_playlist_prepare_metadata_for_song(app_mock, pl, ekaf_brief_song0):
+async def test_playlist_prepare_metadata_for_song(
+        app_mock, library, pl, ekaf_brief_song0, mocker):
     class Album:
         cover = Media('fuo://')
         released = '2018-01-01'
+
+    app_mock.library = library
     album = Album()
-    f = asyncio.Future()
-    f.set_result(album)
-    app_mock.library.album_upgrade.return_value = album
+    mocker.patch.object(library, 'album_upgrade', return_value=album)
+    # app_mock.library.album_upgrade.return_value = album
     # When cover is a media object, prepare_metadata should also succeed.
     await pl._prepare_metadata_for_song(ekaf_brief_song0)
