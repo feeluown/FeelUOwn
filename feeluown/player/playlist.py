@@ -81,6 +81,7 @@ class Playlist:
         :param playback_mode: :class:`feeluown.player.PlaybackMode`
         """
         self._app = app
+        self._metadata_mgr = MetadataManager(app)
 
         #: init playlist mode normal
         self._mode = PlaylistMode.normal
@@ -526,7 +527,7 @@ class Playlist:
                 self.mark_as_bad(song)
                 target_song, media = await self.find_and_use_standby(song)
 
-        metadata = await self._prepare_metadata_for_song(target_song)
+        metadata = await self._metadata_mgr.prepare_for_song(target_song)
         self.pure_set_current_song(target_song, media, metadata)
 
     async def a_set_current_song_children(self, song):
@@ -590,72 +591,6 @@ class Playlist:
         else:
             self._app.player.stop()
 
-    async def _prepare_metadata_for_song(self, song):
-        metadata = Metadata({
-            MetadataFields.uri: reverse(song),
-            MetadataFields.source: song.source,
-            MetadataFields.title: song.title_display or '',
-            # The song.artists_name should return a list of strings
-            MetadataFields.artists: [song.artists_name_display or ''],
-            MetadataFields.album: song.album_name_display or '',
-        })
-        try:
-            song: SongModel = await aio.wait_for(
-                aio.run_fn(self._app.library.song_upgrade, song),
-                timeout=1,
-            )
-        except ResourceNotFound:
-            return metadata
-        except:  # noqa
-            logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
-            return metadata
-
-        artwork = song.pic_url
-        released = song.date
-        if not (artwork and released) and song.album is not None:
-            try:
-                album = await aio.wait_for(
-                    aio.run_fn(self._app.library.album_upgrade, song.album),
-                    timeout=1
-                )
-            except ResourceNotFound:
-                pass
-            except:  # noqa
-                logger.warning(
-                    f"fetching song's album meta failed, song:{song.title_display}")
-            else:
-                artwork = album.cover or artwork
-                released = album.released or released
-                # For model v1, the cover can be a Media object.
-                # For example, in fuo_local plugin, the album.cover is a Media
-                # object with url set to fuo://local/songs/{identifier}/data/cover.
-                if isinstance(artwork, Media):
-                    artwork = artwork.url
-
-        # Try to use album meta first.
-        if artwork and released:
-            metadata[MetadataFields.artwork] = artwork
-            metadata[MetadataFields.released] = released
-        else:
-            metadata[MetadataFields.artwork] = song.pic_url or artwork
-            metadata[MetadataFields.released] = song.date or released
-        return metadata
-
-    async def _prepare_metadata_for_video(self, video):
-        metadata = Metadata({
-            # The value of model v1 title_display may be None.
-            MetadataFields.title: video.title_display or '',
-            MetadataFields.source: video.source,
-            MetadataFields.uri: reverse(video),
-        })
-        try:
-            video = await aio.run_fn(self._app.library.video_upgrade, video)
-        except ModelNotFound as e:
-            logger.warning(f"can't get cover of video due to {str(e)}")
-        else:
-            metadata[MetadataFields.artwork] = video.cover
-        return metadata
-
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
         # task_spec.disable_default_cb()
@@ -710,7 +645,7 @@ class Playlist:
         except MediaNotFound:
             self._app.show_msg('没有可用的播放链接')
         else:
-            metadata = await self._prepare_metadata_for_video(video)
+            metadata = await self._metadata_mgr.prepare_for_video(video)
             kwargs = {}
             if not self._app.has_gui:
                 kwargs['video'] = False
@@ -741,3 +676,76 @@ class Playlist:
                     self._app.player.resume()
                     logger.info(f'play a model ({model}) succeed')
             task.add_done_callback(cb)
+
+
+class MetadataManager:
+    def __init__(self, app: 'App'):
+        self._app = app
+
+    def _prepare_basic_metadata_for_song(self, song):
+        return Metadata({
+            MetadataFields.uri: reverse(song),
+            MetadataFields.source: song.source,
+            MetadataFields.title: song.title_display or '',
+            # The song.artists_name should return a list of strings
+            MetadataFields.artists: [song.artists_name_display or ''],
+            MetadataFields.album: song.album_name_display or '',
+        })
+
+    async def fetch_from_song(self, song):
+        empty_result = ('', '', None)
+        try:
+            usong: SongModel = await aio.wait_for(
+                aio.run_fn(self._app.library.song_upgrade, song),
+                timeout=1,
+            )
+        except ResourceNotFound:
+            return empty_result
+        except:  # noqa
+            logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
+            return empty_result
+        return (usong.pic_url, usong.date, usong.album)
+
+    async def fetch_from_album(self, album):
+        empty_result = ('', '')
+        try:
+            album = await aio.wait_for(
+                aio.run_fn(self._app.library.album_upgrade, album),
+                timeout=1
+            )
+        except ResourceNotFound:
+            return empty_result
+        except:  # noqa
+            logger.warning(
+                f"fetching album meta failed, album:{album.name}")
+            return empty_result
+        return (album.cover, album.released)
+
+    async def prepare_for_song(self, song):
+        metadata = self._prepare_basic_metadata_for_song(song)
+
+        artwork, released, album = await self.fetch_from_song(song)
+        if not (artwork and released) and album is not None:
+            album_cover, album_released = await self.fetch_from_album(album)
+            # Try to use album meta first.
+            artwork = album_cover or artwork
+            released = album_released or released
+        metadata[MetadataFields.artwork] = artwork
+        metadata[MetadataFields.released] = released
+
+        return metadata
+
+    async def prepare_for_video(self, video):
+        metadata = Metadata({
+            # The value of model v1 title_display may be None.
+            MetadataFields.title: video.title_display or '',
+            MetadataFields.source: video.source,
+            MetadataFields.uri: reverse(video),
+        })
+        try:
+            video = await aio.run_fn(self._app.library.video_upgrade, video)
+        except ModelNotFound as e:
+            logger.warning(f"can't get cover of video due to {str(e)}")
+        else:
+            metadata[MetadataFields.artwork] = video.cover
+        return metadata

@@ -2,7 +2,7 @@ from .metadata import MetadataFields, Metadata
 from .playlist import PlaybackMode, PlaylistRepeatMode, PlaylistShuffleMode
 from .base_player import State
 from .mpvplayer import MpvPlayer as Player
-from .playlist import PlaylistMode, Playlist
+from .playlist import PlaylistMode, Playlist, MetadataManager
 from .fm import FM
 from .radio import SongRadio
 from .lyric import LiveLyric, parse_lyric_text, Line as LyricLine, Lyric
@@ -24,6 +24,7 @@ __all__ = (
     'Playlist',
     'PlayerPositionDelegate',
 
+    'MetadataManager',
     'Metadata',
     'MetadataFields',
 
