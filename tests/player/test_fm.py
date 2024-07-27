@@ -3,7 +3,7 @@ import asyncio
 import pytest
 
 from feeluown.excs import ProviderIOError
-from feeluown.player import Playlist, PlaylistMode, FM, MetadataManager
+from feeluown.player import Playlist, PlaylistMode, FM, MetadataAssembler
 from feeluown.task import TaskManager
 
 
@@ -76,7 +76,7 @@ async def test_multiple_eof_reached_signal(app_mock, song, mocker):
 async def test_reactivate_fm_mode_after_playing_other_songs(
         app_mock, song, song1, mocker):
 
-    mocker.patch.object(MetadataManager, 'prepare_for_song')
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song')
 
     def f(*args, **kwargs): return [song1]
 

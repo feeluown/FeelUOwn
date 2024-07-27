@@ -6,7 +6,7 @@ import pytest
 from feeluown.library.excs import MediaNotFound
 from feeluown.player import (
     Playlist, PlaylistMode, Player, PlaybackMode,
-    PlaylistRepeatMode, PlaylistShuffleMode, MetadataManager
+    PlaylistRepeatMode, PlaylistShuffleMode, MetadataAssembler
 )
 from feeluown.utils.dispatch import Signal
 
@@ -115,7 +115,7 @@ async def test_set_current_song_with_bad_song_1(
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
     sentinal = object()
-    mocker.patch.object(MetadataManager, 'prepare_for_song', return_value=sentinal)
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=sentinal)
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
@@ -131,7 +131,7 @@ async def test_set_current_song_with_bad_song_2(
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
     sentinal = object()
-    mocker.patch.object(MetadataManager, 'prepare_for_song', return_value=sentinal)
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=sentinal)
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
@@ -149,7 +149,7 @@ async def test_set_current_song_with_bad_song_3(
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_prepare_mv_media = mocker.patch.object(Playlist, '_prepare_mv_media',
                                                 return_value=media)
-    mocker.patch.object(MetadataManager, 'prepare_for_song', return_value=metadata)
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=metadata)
 
     app_mock.config.ENABLE_MV_AS_STANDBY = 1
     pl = Playlist(app_mock)
@@ -180,7 +180,7 @@ async def test_set_an_existing_bad_song_as_current_song(
     song1 is bad, standby is [song2]
     play song1, song2 should be insert after song1 instead of song
     """
-    mocker.patch.object(MetadataManager, 'prepare_for_song')
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song')
     await pl.a_set_current_song(song1)
     assert pl.list().index(song2) == 2
 
@@ -298,7 +298,7 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
     be marked as bad. Besides, it should try to find standby.
     """
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
-    mocker.patch.object(MetadataManager, 'prepare_for_song', return_value=object())
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=object())
     mock_standby = mocker.patch.object(Playlist,
                                        'find_and_use_standby',
                                        return_value=(song1, None))
