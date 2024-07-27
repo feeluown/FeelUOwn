@@ -4,10 +4,9 @@ from unittest import mock
 import pytest
 
 from feeluown.library.excs import MediaNotFound
-from feeluown.media import Media
 from feeluown.player import (
     Playlist, PlaylistMode, Player, PlaybackMode,
-    PlaylistRepeatMode, PlaylistShuffleMode,
+    PlaylistRepeatMode, PlaylistShuffleMode, MetadataAssembler
 )
 from feeluown.utils.dispatch import Signal
 
@@ -116,7 +115,7 @@ async def test_set_current_song_with_bad_song_1(
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
     sentinal = object()
-    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=sentinal)
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=sentinal)
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
@@ -132,7 +131,7 @@ async def test_set_current_song_with_bad_song_2(
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
     sentinal = object()
-    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=sentinal)
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=sentinal)
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
@@ -150,7 +149,7 @@ async def test_set_current_song_with_bad_song_3(
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_prepare_mv_media = mocker.patch.object(Playlist, '_prepare_mv_media',
                                                 return_value=media)
-    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=metadata)
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=metadata)
 
     app_mock.config.ENABLE_MV_AS_STANDBY = 1
     pl = Playlist(app_mock)
@@ -181,7 +180,7 @@ async def test_set_an_existing_bad_song_as_current_song(
     song1 is bad, standby is [song2]
     play song1, song2 should be insert after song1 instead of song
     """
-    mocker.patch.object(Playlist, '_prepare_metadata_for_song')
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song')
     await pl.a_set_current_song(song1)
     assert pl.list().index(song2) == 2
 
@@ -299,7 +298,7 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
     be marked as bad. Besides, it should try to find standby.
     """
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
-    mocker.patch.object(Playlist, '_prepare_metadata_for_song', return_value=object())
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=object())
     mock_standby = mocker.patch.object(Playlist,
                                        'find_and_use_standby',
                                        return_value=(song1, None))
@@ -358,7 +357,7 @@ def test_playlist_next_should_call_set_current_song(app_mock, mocker, song):
 async def test_playlist_prepare_metadata_for_song(
         app_mock, library, pl, ekaf_brief_song0, mocker):
     class Album:
-        cover = Media('fuo://')
+        cover = 'http://'
         released = '2018-01-01'
 
     app_mock.library = library
@@ -366,4 +365,4 @@ async def test_playlist_prepare_metadata_for_song(
     mocker.patch.object(library, 'album_upgrade', return_value=album)
     # app_mock.library.album_upgrade.return_value = album
     # When cover is a media object, prepare_metadata should also succeed.
-    await pl._prepare_metadata_for_song(ekaf_brief_song0)
+    await pl._metadata_mgr.prepare_for_song(ekaf_brief_song0)

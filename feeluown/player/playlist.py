@@ -5,17 +5,16 @@ import random
 from enum import IntEnum, Enum
 from typing import Optional, TYPE_CHECKING
 
-from feeluown.excs import ModelNotFound, ProviderIOError
+from feeluown.excs import ProviderIOError
 from feeluown.utils import aio
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
-from feeluown.player import Metadata, MetadataFields
 from feeluown.library import (
-    MediaNotFound, SongModel, ModelType, ResourceNotFound, VideoModel,
+    MediaNotFound, SongModel, ModelType, VideoModel,
 )
 from feeluown.media import Media
-from feeluown.library import reverse
+from .metadata_assembler import MetadataAssembler
 
 if TYPE_CHECKING:
     from feeluown.app import App
@@ -27,7 +26,7 @@ class PlaybackMode(IntEnum):
     """
     Playlist playback mode.
 
-    .. versiondeprecated:: 3.8.12
+    .. deprecated:: 3.8.12
         Please use PlaylistRepeatMode and PlaylistShuffleMode instead.
     """
     one_loop = 0  #: One Loop
@@ -81,6 +80,7 @@ class Playlist:
         :param playback_mode: :class:`feeluown.player.PlaybackMode`
         """
         self._app = app
+        self._metadata_mgr = MetadataAssembler(app)
 
         #: init playlist mode normal
         self._mode = PlaylistMode.normal
@@ -327,7 +327,7 @@ class Playlist:
         """从播放列表中获取一首可以播放的歌曲
 
         :param base: base index
-        :param random: random strategy or not
+        :param random_: random strategy or not
         :param direction: forward if > 0 else backward
         :param loop: regard the song list as a loop
 
@@ -526,7 +526,7 @@ class Playlist:
                 self.mark_as_bad(song)
                 target_song, media = await self.find_and_use_standby(song)
 
-        metadata = await self._prepare_metadata_for_song(target_song)
+        metadata = await self._metadata_mgr.prepare_for_song(target_song)
         self.pure_set_current_song(target_song, media, metadata)
 
     async def a_set_current_song_children(self, song):
@@ -590,72 +590,6 @@ class Playlist:
         else:
             self._app.player.stop()
 
-    async def _prepare_metadata_for_song(self, song):
-        metadata = Metadata({
-            MetadataFields.uri: reverse(song),
-            MetadataFields.source: song.source,
-            MetadataFields.title: song.title_display or '',
-            # The song.artists_name should return a list of strings
-            MetadataFields.artists: [song.artists_name_display or ''],
-            MetadataFields.album: song.album_name_display or '',
-        })
-        try:
-            song: SongModel = await aio.wait_for(
-                aio.run_fn(self._app.library.song_upgrade, song),
-                timeout=1,
-            )
-        except ResourceNotFound:
-            return metadata
-        except:  # noqa
-            logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
-            return metadata
-
-        artwork = song.pic_url
-        released = song.date
-        if not (artwork and released) and song.album is not None:
-            try:
-                album = await aio.wait_for(
-                    aio.run_fn(self._app.library.album_upgrade, song.album),
-                    timeout=1
-                )
-            except ResourceNotFound:
-                pass
-            except:  # noqa
-                logger.warning(
-                    f"fetching song's album meta failed, song:{song.title_display}")
-            else:
-                artwork = album.cover or artwork
-                released = album.released or released
-                # For model v1, the cover can be a Media object.
-                # For example, in fuo_local plugin, the album.cover is a Media
-                # object with url set to fuo://local/songs/{identifier}/data/cover.
-                if isinstance(artwork, Media):
-                    artwork = artwork.url
-
-        # Try to use album meta first.
-        if artwork and released:
-            metadata[MetadataFields.artwork] = artwork
-            metadata[MetadataFields.released] = released
-        else:
-            metadata[MetadataFields.artwork] = song.pic_url or artwork
-            metadata[MetadataFields.released] = song.date or released
-        return metadata
-
-    async def _prepare_metadata_for_video(self, video):
-        metadata = Metadata({
-            # The value of model v1 title_display may be None.
-            MetadataFields.title: video.title_display or '',
-            MetadataFields.source: video.source,
-            MetadataFields.uri: reverse(video),
-        })
-        try:
-            video = await aio.run_fn(self._app.library.video_upgrade, video)
-        except ModelNotFound as e:
-            logger.warning(f"can't get cover of video due to {str(e)}")
-        else:
-            metadata[MetadataFields.artwork] = video.cover
-        return metadata
-
     async def _prepare_media(self, song):
         task_spec = self._app.task_mgr.get_or_create('prepare-media')
         # task_spec.disable_default_cb()
@@ -710,7 +644,7 @@ class Playlist:
         except MediaNotFound:
             self._app.show_msg('没有可用的播放链接')
         else:
-            metadata = await self._prepare_metadata_for_video(video)
+            metadata = await self._metadata_mgr.prepare_for_video(video)
             kwargs = {}
             if not self._app.has_gui:
                 kwargs['video'] = False

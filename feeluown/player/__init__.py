@@ -3,6 +3,7 @@ from .playlist import PlaybackMode, PlaylistRepeatMode, PlaylistShuffleMode
 from .base_player import State
 from .mpvplayer import MpvPlayer as Player
 from .playlist import PlaylistMode, Playlist
+from .metadata_assembler import MetadataAssembler
 from .fm import FM
 from .radio import SongRadio
 from .lyric import LiveLyric, parse_lyric_text, Line as LyricLine, Lyric
@@ -26,6 +27,7 @@ __all__ = (
 
     'Metadata',
     'MetadataFields',
+    'MetadataAssembler',
 
     'LiveLyric',
     'parse_lyric_text',
