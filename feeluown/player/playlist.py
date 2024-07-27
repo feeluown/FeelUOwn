@@ -381,13 +381,16 @@ class Playlist:
             next_song = self._get_good_song(random_=True)
         else:
             current_index = self._songs.index(self.current_song)
-            if current_index == len(self._songs) - 1:
-                if self.playback_mode in (PlaybackMode.loop, PlaybackMode.one_loop):
-                    next_song = self._get_good_song()
-                elif self.playback_mode == PlaybackMode.sequential:
-                    next_song = None
+            is_last_song = current_index == len(self._songs) - 1
+            if is_last_song and self.playback_mode == PlaybackMode.sequential:
+                next_song = None
             else:
-                next_song = self._get_good_song(base=current_index+1, loop=False)
+                if is_last_song:
+                    base_index = 0
+                else:
+                    base_index = current_index + 1
+                loop = self.playback_mode != PlaybackMode.sequential
+                next_song = self._get_good_song(base=base_index, loop=loop)
         return next_song
 
     @property
