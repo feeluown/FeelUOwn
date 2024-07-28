@@ -366,3 +366,10 @@ async def test_playlist_prepare_metadata_for_song(
     # app_mock.library.album_upgrade.return_value = album
     # When cover is a media object, prepare_metadata should also succeed.
     await pl._metadata_mgr.prepare_for_song(ekaf_brief_song0)
+
+
+def test_playlist_next_song(pl):
+    pl.mark_as_bad(pl.list()[1])
+    assert pl.next_song == pl.list()[0]
+    pl.playback_mode = PlaybackMode.sequential
+    assert pl.next_song is None
