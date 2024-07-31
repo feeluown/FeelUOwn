@@ -280,22 +280,34 @@ class RightPanel(QFrame):
     def _draw_pixmap(self, painter, draw_width, draw_height, scrolled):
         # scale pixmap
         assert self._pixmap is not None
-        scaled_pixmap = self._pixmap.scaledToWidth(
-            draw_width,
-            mode=Qt.SmoothTransformation)
-        pixmap_size = scaled_pixmap.size()
+        pixmap_size = self._pixmap.size()
 
         # draw the center part of the pixmap on available rect
         painter.save()
-        brush = QBrush(scaled_pixmap)
-        painter.setBrush(brush)
-        # note: in practice, most of the time, we can't show the
-        # whole artist pixmap, as a result, the artist head will be cut,
-        # which causes bad visual effect. So we render the top-center part
-        # of the pixmap here.
-        y = (pixmap_size.height() - draw_height) // 3
-        painter.translate(0, - y - scrolled)
-        rect = QRect(0, y, draw_width, draw_height)
+        if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
+            scaled_pixmap = self._pixmap.scaledToHeight(
+                draw_height,
+                mode=Qt.SmoothTransformation)
+            brush = QBrush(scaled_pixmap)
+            painter.setBrush(brush)
+            pixmap_size = scaled_pixmap.size()
+            x = (pixmap_size.width() - draw_width) // 2
+            painter.translate(-x, -scrolled)
+            rect = QRect(0, 0, pixmap_size.width(), draw_height)
+        else:
+            scaled_pixmap = self._pixmap.scaledToWidth(
+                draw_width,
+                mode=Qt.SmoothTransformation)
+            pixmap_size = scaled_pixmap.size()
+            brush = QBrush(scaled_pixmap)
+            painter.setBrush(brush)
+            # note: in practice, most of the time, we can't show the
+            # whole artist pixmap, as a result, the artist head will be cut,
+            # which causes bad visual effect. So we render the top-center part
+            # of the pixmap here.
+            y = (pixmap_size.height() - draw_height) // 3
+            painter.translate(0, - y - scrolled)
+            rect = QRect(0, y, draw_width, draw_height)
         painter.drawRect(rect)
         painter.restore()
 
