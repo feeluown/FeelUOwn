@@ -270,17 +270,14 @@ class RightPanel(QFrame):
     def _draw_pixmap(self, painter, draw_width, draw_height, scrolled):
         # scale pixmap
         assert self._pixmap is not None
-        scaled_pixmap = self._pixmap.scaledToWidth(
-            draw_width,
-            mode=Qt.SmoothTransformation)
+        pixmap_size = self._pixmap.size()
 
         # draw the center part of the pixmap on available rect
         painter.save()
-        if scaled_pixmap.height() < draw_height:
+        if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
             scaled_pixmap = self._pixmap.scaledToHeight(
                 draw_height,
-                mode=Qt.SmoothTransformation
-            )
+                mode=Qt.SmoothTransformation)
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
             pixmap_size = scaled_pixmap.size()
@@ -288,6 +285,9 @@ class RightPanel(QFrame):
             painter.translate(-x, -scrolled)
             rect = QRect(0, 0, pixmap_size.width(), draw_height)
         else:
+            scaled_pixmap = self._pixmap.scaledToWidth(
+                draw_width,
+                mode=Qt.SmoothTransformation)
             pixmap_size = scaled_pixmap.size()
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
