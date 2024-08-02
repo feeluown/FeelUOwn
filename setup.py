@@ -60,12 +60,12 @@ setup(
         'mutagen>=1.37',
     ],
     extras_require={
-        'battery': ['fuo-netease>=1.0',
-                    'fuo-qqmusic>=1.0.1',
-                    'fuo-ytmusic>=0.3.2',
+        'battery': ['fuo-netease>=1.0.3',
+                    'fuo-qqmusic>=1.0.5',
+                    'fuo-ytmusic>=0.4.3',
                     # 'fuo-kuwo>=0.1.1',
                     # https://github.com/BruceZhang1993/feeluown-bilibili
-                    'feeluown-bilibili>=0.3.1',
+                    'feeluown-bilibili>=0.4.0',
                     ],
         'macOS': [
             'aionowplaying>=0.10',
