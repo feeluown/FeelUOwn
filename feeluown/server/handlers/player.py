@@ -2,8 +2,12 @@ from collections import defaultdict
 from difflib import SequenceMatcher
 from typing import Any
 
-from feeluown.library import resolve, reverse
+from feeluown.library import (
+    resolve, reverse, BriefSongModel, BriefPlaylistModel,
+    SupportsPlaylistSongsReader,
+)
 from .base import AbstractHandler
+from .excs import HandlerException
 
 
 def score(src, tar):
@@ -47,12 +51,29 @@ class PlayerHandler(AbstractHandler):
             self.player.toggle()
 
     def play(self, s):  # pylint: disable=inconsistent-return-statements
-        # pylint: disable=no-else-return
+        # pylint: disable=no-else-return,too-many-branches
         if s.startswith('fuo://'):
             model = resolve(s)
             if model is None:
                 return 'Invalid fuo uri.'
-            self._app.playlist.play_model(model)
+            elif isinstance(model, BriefSongModel):
+                self._app.playlist.play_model(model)
+            elif isinstance(model, BriefPlaylistModel):
+                provider = self._app.library.get(model.source)
+                if isinstance(provider, SupportsPlaylistSongsReader):
+                    reader = provider.playlist_create_songs_rd(model)
+                    songs = reader.readall()
+                    self._app.playlist.set_models(songs, next_=True)
+                    self._app.player.resume()
+                else:
+                    raise HandlerException(
+                        f"provider:{provider.identifier} does not support"
+                        " SupportsPlaylistSongsReader"
+                    )
+            else:
+                model_type = model.meta.model_type
+                raise HandlerException(f"can't play this model type: {model_type}")
+
             return
         elif s.startswith('http'):
             return self.player.play(s, video=False)

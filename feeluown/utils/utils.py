@@ -10,9 +10,6 @@ from copy import copy, deepcopy
 from functools import wraps
 from itertools import filterfalse
 
-from feeluown.utils.reader import wrap as reader_wrap
-
-
 logger = logging.getLogger(__name__)
 
 
@@ -88,34 +85,6 @@ def get_osx_theme():
     with os.popen('defaults read -g AppleInterfaceStyle') as pipe:
         theme = pipe.read().strip()
     return 1 if theme == 'Dark' else -1
-
-
-def to_reader(model, field):
-    flag_attr = 'allow_create_{}_g'.format(field)
-    method_attr = 'create_{}_g'.format(field)
-
-    flag_g = getattr(model.meta, flag_attr)
-
-    if flag_g:
-        return reader_wrap(getattr(model, method_attr)())
-
-    value = getattr(model, field, None)
-    if value is None:
-        return reader_wrap([])
-    if isinstance(value, (list, tuple)):
-        return reader_wrap(value)
-    return reader_wrap(iter(value))  # TypeError if not iterable
-
-
-def to_readall_reader(*args, **kwargs):
-    """
-    hack: set SequentialReader reader's count to 1000 if it is None
-    so that we can call readall method.
-    """
-    reader = to_reader(*args, **kwargs)
-    if reader.count is None:
-        reader.count = 1000
-    return reader
 
 
 class DedupList(list):
