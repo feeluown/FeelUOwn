@@ -72,6 +72,14 @@ class PlaylistMode(IntEnum):
     fm = 1  #: FM mode
 
 
+class PlaylistPlayModelStage(IntEnum):
+    prepare_media = 10
+    find_standby_by_mv = 20
+    find_standby = 30
+    prepare_metadata = 40
+    load_media = 50
+
+
 class Playlist:
     def __init__(self, app: 'App', songs=None, playback_mode=PlaybackMode.loop,
                  audio_select_policy='hq<>'):
@@ -134,6 +142,9 @@ class Playlist:
         # .. versionadded:: 3.9.0
         #    The *play_model_handling* signal.
         self.play_model_handling = Signal()
+        # .. versionadded:: 4.1.7
+        #    The *play_model_handling* signal.
+        self.play_model_stage_changed = Signal()
 
         self._app.player.media_finished.connect(self._on_media_finished)
         self.song_changed.connect(self._on_song_changed)
@@ -493,6 +504,7 @@ class Playlist:
         target_song = song  # The song to be set.
         media = None        # The corresponding media to be set.
         try:
+            self.play_model_stage_changed.emit(PlaylistPlayModelStage.prepare_media)
             media = await self._prepare_media(song)
         except MediaNotFound as e:
             if e.reason is MediaNotFound.Reason.check_children:
@@ -513,12 +525,14 @@ class Playlist:
         # The song has no media, try to find and use standby unless it is in fm mode.
         if media is None:
             if self._app.config.ENABLE_MV_AS_STANDBY:
-                self._app.show_msg('尝试获取音乐视频的播放资源...')
+                self.play_model_stage_changed.emit(
+                    PlaylistPlayModelStage.find_standby_by_mv)
                 media = await self._prepare_mv_media(song)
 
             if media:
                 self._app.show_msg('使用音乐视频作为其播放资源 ✅')
             else:
+                self._app.show_msg('未找到可用的音乐视频资源 🙁')
                 # if mode is fm mode, do not find standby song, just skip the song.
                 if self.mode is PlaylistMode.fm:
                     self.mark_as_bad(song)
@@ -527,9 +541,14 @@ class Playlist:
 
                 logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
+                self.play_model_stage_changed.emit(PlaylistPlayModelStage.find_standby)
                 target_song, media = await self.find_and_use_standby(song)
 
-        metadata = await self._metadata_mgr.prepare_for_song(target_song)
+        metadata = None
+        if media is not None:
+            self.play_model_stage_changed.emit(PlaylistPlayModelStage.prepare_metadata)
+            metadata = await self._metadata_mgr.prepare_for_song(target_song)
+        self.play_model_stage_changed.emit(PlaylistPlayModelStage.load_media)
         self.pure_set_current_song(target_song, media, metadata)
 
     async def a_set_current_song_children(self, song):
@@ -582,6 +601,7 @@ class Playlist:
 
         if song is not None:
             if media is None:
+                self._app.show_msg("没找到可用的播放链接，播放下一首...")
                 run_afn(self.a_next)
             else:
                 # Note that the value of model v1 {}_display may be None.

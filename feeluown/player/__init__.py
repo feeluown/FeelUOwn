@@ -1,5 +1,6 @@
 from .metadata import MetadataFields, Metadata
-from .playlist import PlaybackMode, PlaylistRepeatMode, PlaylistShuffleMode
+from .playlist import PlaybackMode, PlaylistRepeatMode, PlaylistShuffleMode, \
+    PlaylistPlayModelStage
 from .base_player import State
 from .mpvplayer import MpvPlayer as Player
 from .playlist import PlaylistMode, Playlist
@@ -15,6 +16,7 @@ __all__ = (
     'PlaybackMode',
     'PlaylistRepeatMode',
     'PlaylistShuffleMode',
+    'PlaylistPlayModelStage',
     'State',
 
     'FM',
