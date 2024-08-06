@@ -114,13 +114,11 @@ async def test_set_current_song_with_bad_song_1(
         pl_list_standby_return_empty):
     mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
-    sentinal = object()
-    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=sentinal)
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
     # Since there is no standby song, the media should be None
-    mock_pure_set_current_song.assert_called_once_with(song2, None, sentinal)
+    mock_pure_set_current_song.assert_called_once_with(song2, None, None)
 
 
 @pytest.mark.asyncio

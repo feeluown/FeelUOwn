@@ -4,6 +4,7 @@ from PyQt5.QtCore import QTimer, QRect, Qt
 from PyQt5.QtGui import QPainter, QPalette, QColor
 from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
 
+from feeluown.player import PlaylistPlayModelStage
 from feeluown.library import fmt_artists_names
 from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.helpers import elided_text
@@ -35,8 +36,8 @@ class LineSongLabel(QLabel):
         self._app.player.metadata_changed.connect(
             self.on_metadata_changed, aioqueue=True
         )
-        self._app.playlist.play_model_handling.connect(
-            self.on_play_model_handling, aioqueue=True
+        self._app.playlist.play_model_stage_changed.connect(
+            self.on_play_model_stage_changed, aioqueue=True
         )
 
     def on_metadata_changed(self, metadata):
@@ -53,8 +54,17 @@ class LineSongLabel(QLabel):
                 text += f" • {','.join(artists)}"
         self.setText(text)
 
-    def on_play_model_handling(self):
-        self.setText('正在加载歌曲...')
+    def on_play_model_stage_changed(self, stage):
+        if stage == PlaylistPlayModelStage.prepare_media:
+            self.setText('正在获取歌曲播放链接...')
+        elif stage == PlaylistPlayModelStage.find_standby_by_mv:
+            self.setText('正在获取音乐的视频播放链接...')
+        elif stage == PlaylistPlayModelStage.find_standby:
+            self.setText('尝试寻找备用播放链接...')
+        elif stage == PlaylistPlayModelStage.prepare_metadata:
+            self.setText('尝试获取完整的歌曲元信息...')
+        elif stage == PlaylistPlayModelStage.load_media:
+            self.setText('正在加载歌曲资源...')
 
     def change_text_position(self):
         if not self.parent().isVisible():  # type: ignore

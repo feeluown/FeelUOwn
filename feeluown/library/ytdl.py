@@ -29,7 +29,7 @@ class Ytdl:
         # TODO: valid rules
         self._rules = rules or []
 
-    def match_rule(self, _, source=''):
+    def match_rule(self, url, source=''):
         """
         Currently, only 'match_source' is supported. Maybe support 'match_url'
         in the future.
@@ -39,6 +39,10 @@ class Ytdl:
             for rule in self._rules:
                 if rule['name'] == 'match_source' and source == rule['pattern']:
                     matched_rule = rule
+        if matched_rule:
+            logger.info(f"ytdl rule matched for {url}")
+        else:
+            logger.info(f"no ytdl rule matched for {url}")
         return matched_rule
 
     def select_audio(self, url, _: Optional[str] = None, source='') -> Optional[Media]:

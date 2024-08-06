@@ -290,7 +290,6 @@ class Library:
         if not media:
             if self.ytdl is not None and isinstance(provider, SupportsSongWebUrl):
                 song_web_url = provider.song_get_web_url(song)
-                logger.info(f'use ytdl to get media for {song_web_url}')
                 media = self.ytdl.select_audio(song_web_url, policy, source=song.source)
                 found = media is not None
                 logger.debug(f'ytdl select audio for {song_web_url} finished, '
@@ -438,7 +437,6 @@ class Library:
         except MediaNotFound:
             if self.ytdl is not None and isinstance(provider, SupportsVideoWebUrl):
                 video_web_url = provider.video_get_web_url(video)
-                logger.info(f'use ytdl to get media for {video_web_url}')
                 media = self.ytdl.select_video(video_web_url,
                                                policy,
                                                source=video.source)
