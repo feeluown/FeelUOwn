@@ -1,6 +1,5 @@
-from feeluown.library import ModelType
+from feeluown.library import ModelType, SupportsPlaylistSongsReader
 from feeluown.library import resolve, reverse
-from feeluown.utils.utils import to_readall_reader
 from .base import AbstractHandler
 
 
@@ -32,9 +31,12 @@ class PlaylistHandler(AbstractHandler):
                 if obj_type == ModelType.song:
                     playlist.add(obj)
                 elif obj_type == ModelType.playlist:
-                    songs = to_readall_reader(obj, "songs").readall()
-                    for song in songs:
-                        playlist.add(song)
+                    provider = self.library.get(obj.source)
+                    if isinstance(provider, SupportsPlaylistSongsReader):
+                        reader = provider.playlist_create_songs_rd(obj)
+                        for song in reader:
+                            playlist.add(song)
+                    # TODO: raise error if it does not support
 
     def remove(self, song_uri):
         # FIXME: a little bit tricky

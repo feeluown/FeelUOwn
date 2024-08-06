@@ -12,11 +12,11 @@ import logging
 from functools import wraps
 from urllib.parse import urlparse
 
-from feeluown.utils.utils import to_readall_reader
 from feeluown.utils.router import Router, NotFound
-from feeluown.library import ResourceNotFound
-from feeluown.library import NS_TYPE_MAP
-from feeluown.library import ModelType
+from feeluown.library import (
+    ResourceNotFound, NS_TYPE_MAP, ModelType,
+    SupportsPlaylistSongsReader, SupportsArtistAlbumsReader,
+)
 
 from .base import AbstractHandler
 from .excs import HandlerException
@@ -120,7 +120,11 @@ def lyric_(req, provider, sid):
 @use_provider
 def playlist_songs(req, provider, pid):
     playlist = get_model_or_raise(req.ctx['library'], provider, ModelType.playlist, pid)
-    return to_readall_reader(playlist, 'songs').readall()
+    if isinstance(provider, SupportsPlaylistSongsReader):
+        reader = provider.playlist_create_songs_rd(playlist)
+        return reader.readall()
+    raise HandlerException(f"provider:{provider.identifier} does not support"
+                           f" {SupportsPlaylistSongsReader}")
 
 
 @route('/<provider>/artists/<aid>/albums')
@@ -128,4 +132,8 @@ def playlist_songs(req, provider, pid):
 def albums_of_artist(req, provider, aid):
     """show all albums of an artist identified by artist id"""
     artist = get_model_or_raise(req.ctx['library'], provider, ModelType.artist, aid)
-    return to_readall_reader(artist, 'albums').readall()
+    if isinstance(provider, SupportsArtistAlbumsReader):
+        reader = provider.artist_create_albums_rd(artist)
+        return reader.readall()
+    raise HandlerException(f"provider:{provider.identifier} does not support"
+                           f" {SupportsArtistAlbumsReader}")
