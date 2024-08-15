@@ -11,7 +11,7 @@ from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.library import (
-    MediaNotFound, SongModel, ModelType, VideoModel,
+    MediaNotFound, SongModel, ModelType, VideoModel, ModelNotFound,
 )
 from feeluown.media import Media
 from .metadata_assembler import MetadataAssembler
@@ -20,6 +20,9 @@ if TYPE_CHECKING:
     from feeluown.app import App
 
 logger = logging.getLogger(__name__)
+
+TASK_SET_CURRENT_MODEL = 'playlist.set_current_model'
+TASK_PLAY_MODEL = 'playlist.play_model'
 
 
 class PlaybackMode(IntEnum):
@@ -132,8 +135,6 @@ class Playlist:
 
         #: When watch mode is on, playlist try to play the mv/video of the song
         self.watch_mode = False
-
-        self._t_scm = self._app.task_mgr.get_or_create('set-current-model')
 
         # .. versionadded:: 3.7.11
         #    The *songs_removed* and *songs_added* signal.
@@ -465,25 +466,14 @@ class Playlist:
         """
         return self._current_song
 
-    @current_song.setter
-    def current_song(self, song: Optional[SongModel]):
-        self.set_current_song(song)
-
     @property
     def current_song_mv(self) -> Optional[VideoModel]:
         return self._current_song_mv
 
-    def set_current_song(self, song) -> Optional[asyncio.Task]:
-        """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
+    async def a_set_current_song(self, song):
+        """Set the `song` as the current song.
 
-        .. note::
-
-            该方法理论上只应该被 Player 对象调用。
-
-        if song has not valid media, we find a replacement in other providers
-
-        .. versionadded:: 3.7.11
-           The method is added to replace current_song.setter.
+        If the song is bad, then this will try to use a standby in Playlist.normal mode.
         """
         if song is None:
             self.pure_set_current_song(None, None, None)
@@ -492,15 +482,6 @@ class Playlist:
         if self.mode is PlaylistMode.fm and song not in self._songs:
             self.mode = PlaylistMode.normal
 
-        # FIXME(cosven): `current_song.setter` depends on app.task_mgr and app.library,
-        # which make it hard to test.
-        return self._t_scm.bind_coro(self.a_set_current_song(song))
-
-    async def a_set_current_song(self, song):
-        """Set the `song` as the current song.
-
-        If the song is bad, then this will try to use a standby in Playlist.normal mode.
-        """
         target_song = song  # The song to be set.
         media = None        # The corresponding media to be set.
         try:
@@ -637,17 +618,6 @@ class Playlist:
             logger.exception(f'fail to get {song} mv: {e}')
         return mv_media
 
-    def set_current_model(self, model):
-        """
-        .. versionadded: 3.7.13
-        """
-        if model is None:
-            self._app.player.stop()
-            return
-        if ModelType(model.meta.model_type) is ModelType.song:
-            return self.set_current_song(model)
-        return self._t_scm.bind_coro(self.a_set_current_model(model))
-
     async def a_set_current_model(self, model):
         """
         TODO: handle when model is a song
@@ -673,6 +643,39 @@ class Playlist:
                 kwargs['video'] = False
             self._app.player.play(media, metadata=metadata, **kwargs)
 
+    async def a_play_model(self, model):
+        """
+        .. versionadded: 4.1.7
+        """
+        # Stop the player so that user know the action is working.
+        self._app.player.stop()
+        self.play_model_handling.emit()
+        if model is None:
+            self._app.player.stop()
+        else:
+            if ModelType(model.meta.model_type) is ModelType.song:
+                fn = self.a_set_current_song
+                upgrade_fn = self._app.library.song_upgrade
+            else:
+                fn = self.a_set_current_model
+                upgrade_fn = self._app.library.video_upgrade
+            try:
+                # Try to upgrade the model.
+                model = await aio.run_fn(upgrade_fn, model)
+            except ModelNotFound:
+                pass
+            except:  # noqa
+                logger.exception(f'upgrade model:{model} failed')
+            try:
+                await self._app.task_mgr.run_afn_preemptive(
+                    fn, model, name=TASK_SET_CURRENT_MODEL
+                )
+            except:  # noqa
+                logger.exception('play model failed')
+            else:
+                self._app.player.resume()
+                logger.info(f'play a model ({model}) succeed')
+
     """
     Sync methods.
 
@@ -684,17 +687,36 @@ class Playlist:
 
         .. versionadded: 3.7.14
         """
-        # Stop the player so that user know the action is working.
-        self._app.player.stop()
-        self.play_model_handling.emit()
-        task = self.set_current_model(model)
-        if task is not None:
-            def cb(future):
-                try:
-                    future.result()
-                except:  # noqa
-                    logger.exception('play model failed')
-                else:
-                    self._app.player.resume()
-                    logger.info(f'play a model ({model}) succeed')
-            task.add_done_callback(cb)
+        self._app.task_mgr.run_afn_preemptive(
+            self.a_play_model, model, name=TASK_PLAY_MODEL
+        )
+
+    def set_current_model(self, model):
+        """
+        .. versionadded: 3.7.13
+        """
+        if model is None:
+            self._app.player.stop()
+            return
+        if ModelType(model.meta.model_type) is ModelType.song:
+            return self.set_current_song(model)
+        return self._app.task_mgr.run_afn_preemptive(
+            self.a_set_current_model, model, name=TASK_SET_CURRENT_MODEL,
+        )
+
+    @current_song.setter
+    def current_song(self, song: Optional[SongModel]):
+        self.set_current_song(song)
+
+    def set_current_song(self, song):
+        """设置当前歌曲，将歌曲加入到播放列表，并发出 song_changed 信号
+
+        .. versionadded:: 3.7.11
+           The method is added to replace current_song.setter.
+        """
+        if song is None:
+            self.pure_set_current_song(None, None, None)
+            return None
+        return self._app.task_mgr.run_afn_preemptive(
+            self.a_set_current_song, song, name=TASK_SET_CURRENT_MODEL
+        )

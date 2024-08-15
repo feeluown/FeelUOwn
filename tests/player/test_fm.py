@@ -91,7 +91,7 @@ async def test_reactivate_fm_mode_after_playing_other_songs(
     await asyncio.sleep(0.1)  # wait for fm-fetch-song task finished
 
     # user trigger play next
-    app_mock.playlist.current_song = song
+    await app_mock.playlist.a_set_current_song(song)
     assert playlist.mode is PlaylistMode.normal
     assert is_active(fm) is False
 

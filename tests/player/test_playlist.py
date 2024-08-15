@@ -89,13 +89,12 @@ def test_set_current_song(pl, song2):
 
 
 @pytest.mark.asyncio
-async def test_play_model(pl, song, mocker):
-    mock_set = mocker.patch.object(pl, 'set_current_model')
+async def test_play_model(pl, app_mock, song, mocker):
     f = asyncio.Future()
     f.set_result(None)
-    mock_set.return_value = f
-    pl.play_model(song)
-    await asyncio.sleep(0.1)
+    mocker.patch.object(pl, 'set_current_model', return_value=f)
+    app_mock.task_mgr.run_afn_preemptive.return_value = f
+    await pl.a_play_model(song)
     # The player.resume method must be called.
     assert pl._app.player.resume.called
 
@@ -188,6 +187,11 @@ def mock_a_set_cursong(mocker):
     mocker.patch.object(Playlist, 'a_set_current_song', new=mock.MagicMock)
 
 
+@pytest.fixture
+def mock_prepare_metadata(mocker):
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=object())
+
+
 @pytest.mark.asyncio
 async def test_playlist_change_mode(app_mock, mocker):
     # from normal to fm
@@ -215,30 +219,27 @@ async def test_playlist_change_repeat_shuffle_mode(app_mock):
 
 
 @pytest.mark.asyncio
-async def test_playlist_exit_fm_mode(app_mock, song, mocker,
-                                     mock_a_set_cursong):
+async def test_playlist_exit_fm_mode(app_mock, song, mock_prepare_metadata):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
-    pl.current_song = song
+    await pl.a_set_current_song(song)
     assert pl.mode is PlaylistMode.normal
     assert app_mock.task_mgr.get_or_create.called
 
 
 @pytest.mark.asyncio
-async def test_playlist_fm_mode_play_next(app_mock, song, song1,
-                                          mock_a_set_cursong):
+async def test_playlist_fm_mode_play_next(app_mock, song, song1, mock_prepare_metadata):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
     pl.fm_add(song)
     pl._current_song = song1
-    pl.current_song = song   # should not exit fm mode
+    await pl.a_set_current_song(song)  # should not exit fm mode
     assert pl.mode is PlaylistMode.fm
 
 
 @pytest.mark.asyncio
-async def test_playlist_fm_mode_play_previous(app_mock, song, song1,
-                                              mock_a_set_cursong):
+async def test_playlist_fm_mode_play_previous(app_mock, song, song1):
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
     pl.fm_add(song1)
