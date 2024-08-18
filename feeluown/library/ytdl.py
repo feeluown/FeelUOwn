@@ -48,7 +48,7 @@ class Ytdl:
     def select_audio(self, url, _: Optional[str] = None, source='') -> Optional[Media]:
         matched_rule = self.match_rule(url, source)
         if matched_rule is None:
-            return
+            return None
         http_proxy = matched_rule.get('http_proxy')
         ytdl_opts = {}
         ytdl_opts.update(self._default_audio_ytdl_opts)
@@ -71,7 +71,7 @@ class Ytdl:
     def select_video(self, url, _: Optional[str] = None, source='') -> Optional[Media]:
         matched_rule = self.match_rule(url, source)
         if matched_rule is None:
-            return
+            return None
         http_proxy = matched_rule.get('http_proxy')
         ytdl_opts = {}
         ytdl_opts.update(self._default_video_ytdl_opts)
@@ -91,7 +91,7 @@ class Ytdl:
                     ):
                         video_candidates.append((f['url'], f['width']))
             if not (audio_candidates and video_candidates):
-                return
+                return None
             audio_candidates = sorted(
                 audio_candidates, key=lambda c: c[1] or 0, reverse=True
             )
@@ -123,5 +123,7 @@ if __name__ == '__main__':
     # print()
 
     media = ytdl.select_video(url, None, 'ytmusic')
+    assert media is not None
+    assert isinstance(media.manifest, VideoAudioManifest)
     print(media.manifest.video_url)
     print(media.manifest.audio_url)

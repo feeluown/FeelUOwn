@@ -93,7 +93,7 @@ class SongSourceTag(QLabel):
             standby, media = songs[0]
             assert standby != song
             self._app.show_msg(f'使用 {standby} 替换当前歌曲')
-            self._app.playlist.pure_set_current_song(standby, media)
+            self._app.playlist.set_current_song_with_media(standby, media)
             self._app.playlist.remove(song)
         else:
             self._app.show_msg(f'提供方 “{provider_id}” 没有找到可用的相似歌曲')

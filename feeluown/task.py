@@ -44,7 +44,7 @@ class PreemptiveTaskSpec:
             self._mgr.loop.call_soon_threadsafe(self._task.cancel)
         self._task = None
 
-    def bind_coro(self, coro):
+    def bind_coro(self, coro) -> asyncio.Task:
         """run the coroutine and bind the task
 
         it will cancel the previous task if exists
@@ -60,7 +60,7 @@ class PreemptiveTaskSpec:
             self._task.add_done_callback(self._cb)
         return self._task
 
-    def bind_blocking_io(self, func, *args):
+    def bind_blocking_io(self, func, *args) -> asyncio.Task:
         """run blocking io func in a thread executor, and bind the task
 
         it will cancel the previous task if exists
