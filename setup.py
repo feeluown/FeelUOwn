@@ -65,7 +65,7 @@ setup(
                     'fuo-ytmusic>=0.4.4',
                     # 'fuo-kuwo>=0.1.1',
                     # https://github.com/BruceZhang1993/feeluown-bilibili
-                    'feeluown-bilibili>=0.4.0',
+                    'feeluown-bilibili>=0.4.1',
                     ],
         'macOS': [
             'aionowplaying>=0.10',
