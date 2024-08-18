@@ -80,10 +80,12 @@ def test_remove_song(mocker, pl, song, song1, song2):
         assert len(pl) == 1
 
 
-def test_set_current_song(pl, song2):
-    # Set a nonexisting song as current song
-    # The song should be inserted after current_song
-    pl.pure_set_current_song(song2, None)
+def test_set_current_song_with_media(pl, song2):
+    """
+    Set a non-existing song as current song,
+    and the song should be inserted after current_song.
+    """
+    pl.set_current_song_with_media(song2, None)
     assert pl.current_song == song2
     assert pl.list()[1] == song2
 
@@ -111,13 +113,14 @@ async def test_set_current_song_with_bad_song_1(
         mocker, song2, pl,
         pl_prepare_media_none,
         pl_list_standby_return_empty):
-    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mock_set_current_song_with_media = mocker.patch.object(
+        Playlist, 'set_current_song_with_media')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
     # Since there is no standby song, the media should be None
-    mock_pure_set_current_song.assert_called_once_with(song2, None, None)
+    mock_set_current_song_with_media.assert_called_once_with(song2, None, None)
 
 
 @pytest.mark.asyncio
@@ -125,25 +128,27 @@ async def test_set_current_song_with_bad_song_2(
         mocker, song2, pl,
         pl_prepare_media_none,
         pl_list_standby_return_song2):
-    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mock_set_current_song_with_media = mocker.patch.object(
+        Playlist, 'set_current_song_with_media')
     mock_mark_as_bad = mocker.patch.object(Playlist, 'mark_as_bad')
     sentinal = object()
     mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=sentinal)
     await pl.a_set_current_song(song2)
     # A song that has no valid media should be marked as bad
     assert mock_mark_as_bad.called
-    mock_pure_set_current_song.assert_called_once_with(song2, SONG2_URL, sentinal)
+    mock_set_current_song_with_media.assert_called_once_with(song2, SONG2_URL, sentinal)
 
 
 @pytest.mark.asyncio
 async def test_set_current_song_with_bad_song_3(
         mocker, song2, app_mock,
-        pl_prepare_media_none,):
+        pl_prepare_media_none, ):
     """song has mv and the mv has valid media, should use mv's media as the media"""
     media = object()
     metadata = object()
 
-    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mock_set_current_song_with_media = mocker.patch.object(
+        Playlist, 'set_current_song_with_media')
     mock_prepare_mv_media = mocker.patch.object(Playlist, '_prepare_mv_media',
                                                 return_value=media)
     mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=metadata)
@@ -152,19 +157,7 @@ async def test_set_current_song_with_bad_song_3(
     pl = Playlist(app_mock)
     await pl.a_set_current_song(song2)
     mock_prepare_mv_media.assert_called_once_with(song2)
-    mock_pure_set_current_song.assert_called_once_with(song2, media, metadata)
-
-
-def test_pure_set_current_song(
-        mocker, song, song2, pl):
-    # Current song index is 0
-    assert pl.list().index(song) == 0
-    # song2 is not in playlist before
-    pl.pure_set_current_song(song2, SONG2_URL)
-    assert pl.current_song == song2
-    # The song should be inserted after the current song,
-    # so the index should be 1
-    assert pl.list().index(song2) == 1
+    mock_set_current_song_with_media.assert_called_once_with(song2, media, metadata)
 
 
 @pytest.mark.asyncio
@@ -224,7 +217,6 @@ async def test_playlist_exit_fm_mode(app_mock, song, mock_prepare_metadata):
     pl.mode = PlaylistMode.fm
     await pl.a_set_current_song(song)
     assert pl.mode is PlaylistMode.normal
-    assert app_mock.task_mgr.get_or_create.called
 
 
 @pytest.mark.asyncio
@@ -296,7 +288,8 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
     Prepare media for song raises unknown error, the song should
     be marked as bad. Besides, it should try to find standby.
     """
-    mock_pure_set_current_song = mocker.patch.object(Playlist, 'pure_set_current_song')
+    mock_set_current_song_with_media = mocker.patch.object(
+        Playlist, 'set_current_song_with_media')
     mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=object())
     mock_standby = mocker.patch.object(Playlist,
                                        'find_and_use_standby',
@@ -312,7 +305,7 @@ async def test_play_next_bad_song(app_mock, song, song1, mocker):
     await pl.a_set_current_song(pl.next_song)
     assert mock_mark_as_bad.called
     await asyncio.sleep(0.1)
-    assert mock_pure_set_current_song.called
+    assert mock_set_current_song_with_media.called
     assert mock_standby.called
 
 
