@@ -62,7 +62,7 @@ setup(
     extras_require={
         'battery': ['fuo-netease>=1.0.3',
                     'fuo-qqmusic>=1.0.5',
-                    'fuo-ytmusic>=0.4.3',
+                    'fuo-ytmusic>=0.4.4',
                     # 'fuo-kuwo>=0.1.1',
                     # https://github.com/BruceZhang1993/feeluown-bilibili
                     'feeluown-bilibili>=0.4.0',
