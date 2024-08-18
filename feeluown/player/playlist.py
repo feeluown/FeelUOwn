@@ -468,6 +468,10 @@ class Playlist:
         """
         return self._current_song
 
+    @current_song.setter
+    def current_song(self, song: Optional[SongModel]):
+        self.set_current_song(song)
+
     @property
     def current_song_mv(self) -> Optional[VideoModel]:
         return self._current_song_mv
@@ -706,10 +710,6 @@ class Playlist:
         return self._app.task_mgr.run_afn_preemptive(
             self.a_set_current_model, model, name=TASK_SET_CURRENT_MODEL,
         )
-
-    @current_song.setter
-    def current_song(self, song: Optional[SongModel]):
-        self.set_current_song(song)
 
     def set_current_song(self, song):
         """
