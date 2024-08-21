@@ -26,9 +26,11 @@ def test_serialize_metadata():
 
 
 def test_serialize_model():
-    song = SongModel(identifier='1', title='', artists=[], duration=0)
+    song = SongModel(identifier='1', title='hello', artists=[], duration=0)
     song_js = serialize('python', song)
     assert song_js['identifier'] == '1'
+    assert song_js['title'] == 'hello'
+    serialize('plain', song)  # should not raise error
 
     song_js = serialize('python', song, brief=True)
     assert song_js['identifier'] == '1'

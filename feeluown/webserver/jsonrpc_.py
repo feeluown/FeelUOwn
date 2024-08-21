@@ -1,3 +1,5 @@
+from functools import wraps
+
 from jsonrpc import JSONRPCResponseManager, Dispatcher
 
 from feeluown.fuoexec.fuoexec import fuoexec_get_globals
@@ -11,6 +13,25 @@ class DynamicDispatcher(Dispatcher):
         except KeyError:
             method = eval(key, fuoexec_get_globals())
             return method
+
+
+def deserialize(obj):
+    pass
+
+
+def method_wrapper(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        new_args = ()
+        if args:
+            new_args = deserialize(args)
+        new_kwargs = {}
+        if kwargs:
+            new_kwargs = {}
+            for k, v in kwargs.items():
+                new_kwargs[k] = deserialize(v)
+        return func(*new_args, **new_kwargs)
+    return wrapper
 
 
 dispatcher = DynamicDispatcher()

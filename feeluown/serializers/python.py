@@ -1,9 +1,10 @@
 from .typename import attach_typename
 from .base import Serializer, SerializerMeta, SerializerError, \
     SimpleSerializerMixin
-from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
-    ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
+from .model_helpers import ModelSerializerMixin, ProviderSerializerMixin, \
+    SearchSerializerMixin
+
+from feeluown.library import BaseModel
 
 
 class PythonSerializer(Serializer):
@@ -26,7 +27,9 @@ class PythonSerializer(Serializer):
         return super().serialize(obj)
 
 
-class ModelSerializer(PythonSerializer, ModelSerializerMixin):
+class ModelSerializer(PythonSerializer, ModelSerializerMixin, metaclass=SerializerMeta):
+    class Meta:
+        types = (BaseModel, )
 
     def __init__(self, **options):
         if options.get('brief') is False and options.get('fetch') is False:
@@ -73,36 +76,6 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
     def serialize_search_result_list(self, list_):
         serializer = SearchSerializer()
         return [serializer.serialize(model) for model in list_]
-
-
-###################
-# model serializers
-###################
-
-
-class SongSerializer(ModelSerializer, SongSerializerMixin,
-                     metaclass=SerializerMeta):
-    pass
-
-
-class ArtistSerializer(ModelSerializer, ArtistSerializerMixin,
-                       metaclass=SerializerMeta):
-    pass
-
-
-class AlbumSerializer(ModelSerializer, AlbumSerializerMixin,
-                      metaclass=SerializerMeta):
-    pass
-
-
-class PlaylistSerializer(ModelSerializer, PlaylistSerializerMixin,
-                         metaclass=SerializerMeta):
-    pass
-
-
-class UserSerializer(ModelSerializer, UserSerializerMixin,
-                     metaclass=SerializerMeta):
-    pass
 
 
 ####################

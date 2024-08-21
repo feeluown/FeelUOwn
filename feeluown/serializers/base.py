@@ -62,7 +62,7 @@ class Serializer:
             # FIXME: remove me when model v2 has its own serializer
             if isinstance(model, model_cls):
                 return serialize_cls
-        raise SerializerError("no serializer for {}".format(model))
+        raise SerializerError(f"no serializer for {type(model)}")
 
 
 class SerializerMeta(type):

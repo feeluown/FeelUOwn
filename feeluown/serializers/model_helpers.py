@@ -33,6 +33,7 @@ class ModelSerializerMixin:
                        if isinstance(getattr(modelcls, prop), property)
                        and prop not in pydantic_fields]
         else:
+            assert False, 'unreachable'
             fields = self._declared_fields
         items = [("provider", model.source),
                  ("identifier", str(model.identifier)),
