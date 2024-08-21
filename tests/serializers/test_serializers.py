@@ -44,3 +44,4 @@ def test_serialize_search_result():
     result = SimpleSearchResult(q='', songs=[song])
     d = serialize('python', result)
     assert d['songs'][0]['identifier'] == '1'
+    serialize('plain', result)  # should not raise error

@@ -1,10 +1,7 @@
-from .typename import attach_typename
-from .base import Serializer, SerializerMeta, SerializerError, \
-    SimpleSerializerMixin
-from .model_helpers import ModelSerializerMixin, ProviderSerializerMixin, \
-    SearchSerializerMixin
+from feeluown.library import BaseModel, reverse
 
-from feeluown.library import BaseModel
+from .typename import attach_typename
+from .base import Serializer, SerializerMeta
 
 
 class PythonSerializer(Serializer):
@@ -12,13 +9,12 @@ class PythonSerializer(Serializer):
 
     def __init__(self, **options):
         super().__init__(**options)
-        self.opt_level = options.get('level', 0)
 
     def serialize_items(self, items):
         json_ = {}
         for key, value in items:
             serializer_cls = PythonSerializer.get_serializer_cls(value)
-            serializer = serializer_cls(brief=True, level=self.opt_level + 1)
+            serializer = serializer_cls()
             json_[key] = serializer.serialize(value)
         return json_
 
@@ -27,29 +23,37 @@ class PythonSerializer(Serializer):
         return super().serialize(obj)
 
 
-class ModelSerializer(PythonSerializer, ModelSerializerMixin, metaclass=SerializerMeta):
+class ModelSerializer(PythonSerializer, metaclass=SerializerMeta):
     class Meta:
         types = (BaseModel, )
 
     def __init__(self, **options):
-        if options.get('brief') is False and options.get('fetch') is False:
-            raise SerializerError(
-                "fetch can't be False when brief is False")
-
         super().__init__(**options)
-        self.opt_as_line = options.get('as_line', False)
-        self.opt_brief = options.get('brief', True)
-        self.opt_fetch = options.get('fetch', False)
 
-        if self.opt_brief is False:
-            self.opt_fetch = True
+    def _get_items(self, model):
+        modelcls = type(model)
+        fields = [field for field in model.__fields__
+                  if field not in BaseModel.__fields__]
+        # Include properties.
+        pydantic_fields = ("__values__", "fields", "__fields_set__",
+                           "model_computed_fields", "model_extra",
+                           "model_fields_set")
+        fields += [prop for prop in dir(modelcls)
+                   if isinstance(getattr(modelcls, prop), property)
+                   and prop not in pydantic_fields]
+        items = [("provider", model.source),
+                 ("identifier", str(model.identifier)),
+                 ("uri", reverse(model))]
+        for field in fields:
+            items.append((field, getattr(model, field)))
+        return items
 
     @attach_typename
     def serialize(self, model):
         dict_ = {}
         for field, value in self._get_items(model):
             serializer_cls = self.get_serializer_cls(value)
-            value_dict = serializer_cls(brief=True, fetch=False).serialize(value)
+            value_dict = serializer_cls().serialize(value)
             dict_[field] = value_dict
         return dict_
 
@@ -69,12 +73,13 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
         result = []
         for item in list_:
             serializer_cls = PythonSerializer.get_serializer_cls(item)
-            serializer = serializer_cls(brief=True, fetch=False)
+            serializer = serializer_cls()
             result.append(serializer.serialize(item))
         return result
 
     def serialize_search_result_list(self, list_):
-        serializer = SearchSerializer()
+        from .objs import SearchPythonSerializer
+        serializer = SearchPythonSerializer()
         return [serializer.serialize(model) for model in list_]
 
 
@@ -89,21 +94,3 @@ class SimpleTypeSerializer(PythonSerializer, metaclass=SerializerMeta):
 
     def serialize(self, object):
         return object
-
-
-class ProviderSerializer(PythonSerializer,
-                         SimpleSerializerMixin,
-                         ProviderSerializerMixin,
-                         metaclass=SerializerMeta):
-    pass
-
-
-class SearchSerializer(PythonSerializer, SearchSerializerMixin,
-                       metaclass=SerializerMeta):
-
-    def serialize(self, result):
-        list_serializer = ListSerializer()
-        json_ = {}
-        for field, value in self._get_items(result):
-            json_[field] = list_serializer.serialize(value)
-        return json_
