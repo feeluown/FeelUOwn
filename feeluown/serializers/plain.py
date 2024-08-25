@@ -1,14 +1,84 @@
 from textwrap import indent
 # FIXME: maybe we should move `reverse` into serializers package
-from feeluown.library import reverse
 from .base import Serializer, SerializerMeta, SerializerError
-from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
-    ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
 from ._plain_formatter import WideFormatter
+
+from feeluown.library import (
+    reverse,
+    BaseModel,
+    SongModel,
+    ArtistModel,
+    AlbumModel,
+    PlaylistModel,
+    UserModel,
+    BriefSongModel,
+    BriefArtistModel,
+    BriefAlbumModel,
+    BriefPlaylistModel,
+    BriefUserModel,
+)
 
 formatter = WideFormatter()
 fmt = formatter.format
+
+
+class ModelSerializerMixin:
+
+    def _get_items(self, model):
+        # initialize fields that need to be serialized
+        # if as_line option is set, we always use fields_display
+        modelcls = type(model)
+        fields = [field for field in model.__fields__
+                  if field not in BaseModel.__fields__]
+        # Include properties.
+        pydantic_fields = ("__values__", "fields", "__fields_set__",
+                           "model_computed_fields", "model_extra",
+                           "model_fields_set")
+        fields += [prop for prop in dir(modelcls)
+                   if isinstance(getattr(modelcls, prop), property)
+                   and prop not in pydantic_fields]
+        items = [("provider", model.source),
+                 ("identifier", str(model.identifier)),
+                 ("uri", reverse(model))]
+        for field in fields:
+            items.append((field, getattr(model, field)))
+        return items
+
+
+class SongSerializerMixin:
+    class Meta:
+        types = (SongModel, BriefSongModel)
+        # since url can be too long, we put it at last
+        fields = ('title', 'duration', 'album', 'artists')
+        line_fmt = '{uri:{uri_length}}\t# {title:_18} - {artists_name:_20}'
+
+
+class ArtistSerializerMixin:
+    class Meta:
+        types = (ArtistModel, BriefArtistModel)
+        fields = ('name', 'songs')
+        line_fmt = '{uri:{uri_length}}\t# {name:_40}'
+
+
+class AlbumSerializerMixin:
+    class Meta:
+        types = (AlbumModel, BriefAlbumModel)
+        fields = ('name', 'artists', 'songs')
+        line_fmt = '{uri:{uri_length}}\t# {name:_18} - {artists_name:_20}'
+
+
+class PlaylistSerializerMixin:
+    class Meta:
+        types = (PlaylistModel, BriefPlaylistModel)
+        fields = ('name',)
+        line_fmt = '{uri:{uri_length}}\t# {name:_40}'
+
+
+class UserSerializerMixin:
+    class Meta:
+        types = (UserModel, BriefUserModel)
+        fields = ('name', 'playlists')
+        line_fmt = '{uri:{uri_length}}\t# {name:_40}'
 
 
 class PlainSerializer(Serializer):
@@ -54,7 +124,7 @@ class ModelSerializer(PlainSerializer, ModelSerializerMixin):
                 options.get('brief') is False,
                 options.get('fetch') is False]):
             raise SerializerError(
-                    "as_line, brief, fetch can't be false at same time")
+                "as_line, brief, fetch can't be false at same time")
         if options.get('as_line') is True and options.get('brief') is False:
             raise SerializerError(
                 "brief can't be False when as_line is True")
@@ -85,17 +155,20 @@ class ListSerializer(PlainSerializer, metaclass=SerializerMeta):
 
     SearchModel is an exception.
     """
+
     class Meta:
-        types = (list, )
+        types = (list,)
 
     def serialize(self, list_):
+        from .objs import SearchPlainSerializer
+
         if not list_:
             return ''
         item0 = list_[0]
         serializer_cls = PlainSerializer.get_serializer_cls(item0)
         level = self.opt_level + 1
         if issubclass(serializer_cls, ModelSerializer):
-            if issubclass(serializer_cls, SearchSerializer):
+            if issubclass(serializer_cls, SearchPlainSerializer):
                 return self.serialize_search_result_list(list_)
             uri_length = max(len(reverse(item)) for item in list_)
             serializer = serializer_cls(fetch=False, level=level,
@@ -112,8 +185,14 @@ class ListSerializer(PlainSerializer, metaclass=SerializerMeta):
         return '\n'.join(text_list)
 
     def serialize_search_result_list(self, list_):
-        serializer = SearchSerializer(level=self.opt_level + 1,
-                                      fetch=False, brief=True, as_line=False)
+        from .objs import SearchPlainSerializer
+
+        serializer = SearchPlainSerializer(
+            level=self.opt_level + 1,
+            fetch=False,
+            brief=True,
+            as_line=False
+        )
         # calculate max uri_length
         max_uri_length = 0
         for model in list_:
@@ -166,57 +245,3 @@ class SimpleTypeSerializer(PlainSerializer, metaclass=SerializerMeta):
         elif object is False:
             return 'false'
         return str(object)
-
-
-class ProviderSerializer(PlainSerializer, ProviderSerializerMixin,
-                         metaclass=SerializerMeta):
-
-    def __init__(self, **options):
-        super().__init__(**options)
-        self.opt_as_line = options.get('as_line', False)
-        self.opt_uri_length = options.get('uri_length', '')
-
-    def serialize(self, provider):
-        """
-        :type provider: AbstractProvider
-        """
-        items = self._get_items(provider)
-        dict_ = dict(items)
-        uri = dict_['uri']
-        name = dict_['name']
-        if self.opt_as_line or self.opt_level > 0:
-            return '{uri:{uri_length}}\t# {name}'.format(
-                uri=uri,
-                name=name,
-                uri_length=self.opt_uri_length
-            )
-        return self.serialize_items(items)
-
-
-class SearchSerializer(PlainSerializer, SearchSerializerMixin,
-                       metaclass=SerializerMeta):
-
-    def __init__(self, **options):
-        super().__init__(**options)
-        self.opt_uri_length = options.get('uri_length', '')
-
-    def serialize(self, result):
-        items = self._get_items(result)
-        # when serialize SearchModel, we formatt it as one line when level > 1
-        if self.opt_level >= 2:
-            return str(result)  # I think we will never use this line format
-        text_list = []
-        for field, value in items:
-            serializer = ListSerializer(level=self.opt_level - 1, fetch=False,
-                                        uri_length=self.opt_uri_length)
-            value_text = serializer.serialize(value)
-            text_list.append(value_text)
-        return '\n'.join(text_list)
-
-    def calc_max_uri_length(self, result):
-        items = self._get_items(result)
-        uri_length = 0
-        for field, value in items:
-            for each in value:
-                uri_length = max(uri_length, len(reverse(each)))
-        return uri_length

@@ -1,9 +1,41 @@
-from .typename import attach_typename
-from .base import Serializer, SerializerMeta, SerializerError, \
-    SimpleSerializerMixin
-from .model_helpers import ModelSerializerMixin, SongSerializerMixin, \
-    ArtistSerializerMixin, AlbumSerializerMixin, PlaylistSerializerMixin, \
-    UserSerializerMixin, SearchSerializerMixin, ProviderSerializerMixin
+from feeluown.library import BaseModel
+
+from .typename import attach_typename, get_type_by_name, model_cls_list
+from .base import Serializer, SerializerMeta, DeserializerError
+
+
+class PythonDeserializer:
+    _mapping = {}
+
+    def deserialize(self, obj):
+        if isinstance(obj, dict):
+            typename = obj['__type__']
+            deserializer_cls = self.get_deserializer_cls(typename)
+            return deserializer_cls().deserialize(obj)
+        elif isinstance(obj, list):
+            return [self.deserialize(each) for each in obj]
+        if isinstance(obj, (str, int, float, type(None))):
+            return obj
+        raise DeserializerError(f'no deserializer for type:{type(obj)}')
+
+    @classmethod
+    def get_deserializer_cls(cls, typename):
+        clz = get_type_by_name(typename)
+        if clz is None:
+            raise DeserializerError(f'no deserializer for type:{typename}')
+        for obj_clz, deserializer_cls in cls._mapping.items():
+            if obj_clz == clz:
+                return deserializer_cls
+        raise DeserializerError(f'no deserializer for type:{clz}')
+
+
+class ModelDeserializer(PythonDeserializer, metaclass=SerializerMeta):
+    class Meta:
+        types = model_cls_list
+
+    def deserialize(self, obj):
+        model_cls = get_type_by_name(obj['__type__'])
+        return model_cls.model_validate(obj)
 
 
 class PythonSerializer(Serializer):
@@ -11,13 +43,12 @@ class PythonSerializer(Serializer):
 
     def __init__(self, **options):
         super().__init__(**options)
-        self.opt_level = options.get('level', 0)
 
     def serialize_items(self, items):
         json_ = {}
         for key, value in items:
             serializer_cls = PythonSerializer.get_serializer_cls(value)
-            serializer = serializer_cls(brief=True, level=self.opt_level + 1)
+            serializer = serializer_cls()
             json_[key] = serializer.serialize(value)
         return json_
 
@@ -26,29 +57,12 @@ class PythonSerializer(Serializer):
         return super().serialize(obj)
 
 
-class ModelSerializer(PythonSerializer, ModelSerializerMixin):
+class ModelSerializer(PythonSerializer, metaclass=SerializerMeta):
+    class Meta:
+        types = (BaseModel, )
 
-    def __init__(self, **options):
-        if options.get('brief') is False and options.get('fetch') is False:
-            raise SerializerError(
-                "fetch can't be False when brief is False")
-
-        super().__init__(**options)
-        self.opt_as_line = options.get('as_line', False)
-        self.opt_brief = options.get('brief', True)
-        self.opt_fetch = options.get('fetch', False)
-
-        if self.opt_brief is False:
-            self.opt_fetch = True
-
-    @attach_typename
     def serialize(self, model):
-        dict_ = {}
-        for field, value in self._get_items(model):
-            serializer_cls = self.get_serializer_cls(value)
-            value_dict = serializer_cls(brief=True, fetch=False).serialize(value)
-            dict_[field] = value_dict
-        return dict_
+        return model.model_dump()
 
 
 #######################
@@ -66,43 +80,14 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
         result = []
         for item in list_:
             serializer_cls = PythonSerializer.get_serializer_cls(item)
-            serializer = serializer_cls(brief=True, fetch=False)
+            serializer = serializer_cls()
             result.append(serializer.serialize(item))
         return result
 
     def serialize_search_result_list(self, list_):
-        serializer = SearchSerializer()
+        from .objs import SearchPythonSerializer
+        serializer = SearchPythonSerializer()
         return [serializer.serialize(model) for model in list_]
-
-
-###################
-# model serializers
-###################
-
-
-class SongSerializer(ModelSerializer, SongSerializerMixin,
-                     metaclass=SerializerMeta):
-    pass
-
-
-class ArtistSerializer(ModelSerializer, ArtistSerializerMixin,
-                       metaclass=SerializerMeta):
-    pass
-
-
-class AlbumSerializer(ModelSerializer, AlbumSerializerMixin,
-                      metaclass=SerializerMeta):
-    pass
-
-
-class PlaylistSerializer(ModelSerializer, PlaylistSerializerMixin,
-                         metaclass=SerializerMeta):
-    pass
-
-
-class UserSerializer(ModelSerializer, UserSerializerMixin,
-                     metaclass=SerializerMeta):
-    pass
 
 
 ####################
@@ -116,21 +101,3 @@ class SimpleTypeSerializer(PythonSerializer, metaclass=SerializerMeta):
 
     def serialize(self, object):
         return object
-
-
-class ProviderSerializer(PythonSerializer,
-                         SimpleSerializerMixin,
-                         ProviderSerializerMixin,
-                         metaclass=SerializerMeta):
-    pass
-
-
-class SearchSerializer(PythonSerializer, SearchSerializerMixin,
-                       metaclass=SerializerMeta):
-
-    def serialize(self, result):
-        list_serializer = ListSerializer()
-        json_ = {}
-        for field, value in self._get_items(result):
-            json_[field] = list_serializer.serialize(value)
-        return json_

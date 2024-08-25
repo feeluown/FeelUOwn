@@ -54,7 +54,11 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 import time
 from typing import List, Optional, Tuple, Any, Union
 
-from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr
+from pydantic import (
+    ConfigDict, BaseModel as _BaseModel, PrivateAttr,
+    model_validator, model_serializer,
+)
+
 try:
     # pydantic>=2.0
     from pydantic import field_validator
@@ -215,6 +219,29 @@ class BaseModel(_BaseModel):
                 return getattr(self, attr[:-8])
             raise
 
+    @model_validator(mode='before')
+    def _deserialize(cls, value):
+        if isinstance(value, dict):
+            js = value
+            if 'provider' in js:
+                js['source'] = js.pop('provider', None)
+            js.pop('uri', None)
+            js.pop('__type__', None)
+            return js
+        return value
+
+    @model_serializer(mode='wrap')
+    def _serialize(self, f):
+        from feeluown.library import reverse
+
+        js = f(self)
+        js.pop('meta')
+        js.pop('state')
+        js['provider'] = js['source']
+        js['uri'] = reverse(self)
+        js['__type__'] = f'feeluown.library.{self.__class__.__name__}'
+        return js
+
 
 class BaseBriefModel(BaseModel):
     """
@@ -279,7 +306,7 @@ class SongModel(BriefSongModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
     album: Optional[TAlbum] = None
-    artists: List[BriefArtistModel]
+    artists: List[TArtist]
     duration: int  # milliseconds
     # A playlist can consist of multiple songs and a song can have many children.
     # The differences between playlist's songs and song' children is that

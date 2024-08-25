@@ -1,4 +1,4 @@
-from .base import SerializerError
+from .base import SerializerError, DeserializerError
 
 # format Serializer mapping, like::
 #
@@ -7,27 +7,40 @@ from .base import SerializerError
 #    'plain': PlainSerializer
 # }
 _MAPPING = {}
+_DE_MAPPING = {}
 
 
 def register_serializer(type_, serializer_cls):
     _MAPPING[type_] = serializer_cls
 
 
-def _load_serializers():
-    register_serializer('plain', PlainSerializer)
-    register_serializer('json', JsonSerializer)
-    register_serializer('python', PythonSerializer)
+def register_deserializer(type_, deserializer_cls):
+    _DE_MAPPING[type_] = deserializer_cls
 
 
-def get_serializer(format):
+def get_serializer(format_):
+    global _MAPPING
+
     if not _MAPPING:
-        _load_serializers()
-    if format not in _MAPPING:
-        raise SerializerError("Serializer for format:{} not found".format(format))
-    return _MAPPING.get(format)
+        register_serializer('plain', PlainSerializer)
+        register_serializer('json', JsonSerializer)
+        register_serializer('python', PythonSerializer)
+    if format_ not in _MAPPING:
+        raise SerializerError(f"Serializer for format:{format_} not found")
+    return _MAPPING.get(format_)
 
 
-def serialize(format, obj, **options):
+def get_deserializer(format_: str):
+    global _DE_MAPPING
+
+    if not _DE_MAPPING:
+        register_deserializer('python', PythonDeserializer)
+    if format_ not in _DE_MAPPING:
+        raise DeserializerError(f"Deserializer for format:{format_} not found")
+    return _DE_MAPPING[format_]
+
+
+def serialize(format_, obj, **options):
     """serialize python object defined in feeluown package
 
     :raises SerializerError:
@@ -40,12 +53,17 @@ def serialize(format, obj, **options):
         serialize('json', songs, indent=4, fetch=True)
         serialize('json', providers)
     """
-    serializer = get_serializer(format)(**options)
+    serializer = get_serializer(format_)(**options)
     return serializer.serialize(obj)
+
+
+def deserialize(format_, obj, **options):
+    deserializer = get_deserializer(format_)(**options)
+    return deserializer.deserialize(obj)
 
 
 from .base import SerializerMeta, SimpleSerializerMixin  # noqa
 from .plain import PlainSerializer  # noqa
 from .json_ import JsonSerializer  # noqa
-from .python import PythonSerializer  # noqa
+from .python import PythonSerializer, PythonDeserializer  # noqa
 from .objs import *  # noqa
