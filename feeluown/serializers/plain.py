@@ -27,29 +27,21 @@ class ModelSerializerMixin:
     def _get_items(self, model):
         # initialize fields that need to be serialized
         # if as_line option is set, we always use fields_display
-        if self.opt_as_line or self.opt_brief:
-            modelcls = type(model)
-            fields = [field for field in model.__fields__
-                      if field not in BaseModel.__fields__]
-            # Include properties.
-            pydantic_fields = ("__values__", "fields", "__fields_set__",
-                               "model_computed_fields", "model_extra",
-                               "model_fields_set")
-            fields += [prop for prop in dir(modelcls)
-                       if isinstance(getattr(modelcls, prop), property)
-                       and prop not in pydantic_fields]
-        else:
-            assert False, 'unreachable'
-            fields = self._declared_fields
+        modelcls = type(model)
+        fields = [field for field in model.__fields__
+                  if field not in BaseModel.__fields__]
+        # Include properties.
+        pydantic_fields = ("__values__", "fields", "__fields_set__",
+                           "model_computed_fields", "model_extra",
+                           "model_fields_set")
+        fields += [prop for prop in dir(modelcls)
+                   if isinstance(getattr(modelcls, prop), property)
+                   and prop not in pydantic_fields]
         items = [("provider", model.source),
                  ("identifier", str(model.identifier)),
                  ("uri", reverse(model))]
-        if self.opt_fetch:
-            for field in fields:
-                items.append((field, getattr(model, field)))
-        else:
-            for field in fields:
-                items.append((field, getattr(model, field + '_display')))
+        for field in fields:
+            items.append((field, getattr(model, field)))
         return items
 
 

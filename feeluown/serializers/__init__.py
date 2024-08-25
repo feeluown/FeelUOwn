@@ -36,7 +36,7 @@ def get_deserializer(format_: str):
     if not _DE_MAPPING:
         register_deserializer('python', PythonDeserializer)
     if format_ not in _DE_MAPPING:
-        raise SerializerError(f"Deserializer for format:{format_} not found")
+        raise DeserializerError(f"Deserializer for format:{format_} not found")
     return _DE_MAPPING[format_]
 
 

@@ -1,4 +1,4 @@
-from feeluown.library import BaseModel, reverse
+from feeluown.library import BaseModel
 
 from .typename import attach_typename, get_type_by_name, model_cls_list
 from .base import Serializer, SerializerMeta, DeserializerError
@@ -34,16 +34,7 @@ class ModelDeserializer(PythonDeserializer, metaclass=SerializerMeta):
         types = model_cls_list
 
     def deserialize(self, obj):
-        from typing import Annotated
-        from pydantic import RootModel
-        from feeluown.library.models import BeforeValidator, model_validate
-
         model_cls = get_type_by_name(obj['__type__'])
-
-        class M(RootModel):
-            root: Annotated[model_cls, BeforeValidator(model_validate)]
-
-        # return M.model_validate(obj).root
         return model_cls.model_validate(obj)
 
 
@@ -70,36 +61,8 @@ class ModelSerializer(PythonSerializer, metaclass=SerializerMeta):
     class Meta:
         types = (BaseModel, )
 
-    def __init__(self, **options):
-        super().__init__(**options)
-
-    def _get_items(self, model):
-        modelcls = type(model)
-        fields = [field for field in model.model_fields
-                  if ((field not in BaseModel.model_fields)
-                      or field in ('identifier', 'source', 'state'))]
-        # Include properties.
-        pydantic_fields = ("__values__", "fields", "__fields_set__",
-                           "model_computed_fields", "model_extra",
-                           "model_fields_set")
-        fields += [prop for prop in dir(modelcls)
-                   if isinstance(getattr(modelcls, prop), property)
-                   and prop not in pydantic_fields]
-        items = [("provider", model.source),
-                 ("identifier", str(model.identifier)),
-                 ("uri", reverse(model))]
-        for field in fields:
-            items.append((field, getattr(model, field)))
-        return items
-
-    @attach_typename
     def serialize(self, model):
-        dict_ = {}
-        for field, value in self._get_items(model):
-            serializer_cls = self.get_serializer_cls(value)
-            value_dict = serializer_cls().serialize(value)
-            dict_[field] = value_dict
-        return dict_
+        return model.model_dump()
 
 
 #######################

@@ -1,7 +1,7 @@
 from feeluown.app import App
 from feeluown.player import Player, Playlist
 from feeluown.serializers import serialize
-from feeluown.library import SongModel, SimpleSearchResult
+from feeluown.library import SongModel, SimpleSearchResult, AlbumModel
 from feeluown.player import Metadata
 
 
@@ -26,17 +26,31 @@ def test_serialize_metadata():
 
 
 def test_serialize_model():
-    song = SongModel(identifier='1', title='hello', artists=[], duration=0)
+    song = SongModel(
+        identifier='1',
+        title='hello',
+        album=AlbumModel(
+            identifier='1',
+            name='album',
+            cover='',
+            artists=[],
+            songs=[],
+            description='',
+        ),
+        artists=[],
+        duration=0
+    )
     song_js = serialize('python', song)
     assert song_js['identifier'] == '1'
     assert song_js['title'] == 'hello'
     serialize('plain', song)  # should not raise error
 
-    song_js = serialize('python', song, brief=True)
+    song_js = serialize('python', song)
     assert song_js['identifier'] == '1'
-
-    song_js = serialize('python', song, fetch=True)
-    assert song_js['identifier'] == '1'
+    assert song_js['uri'] == 'fuo://dummy/songs/1'
+    assert song_js['__type__'] == 'feeluown.library.SongModel'
+    assert song_js['album']['__type__'] == 'feeluown.library.AlbumModel'
+    assert song_js['album']['uri'] == 'fuo://dummy/albums/1'
 
 
 def test_serialize_search_result():

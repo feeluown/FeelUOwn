@@ -54,7 +54,10 @@ A: Obviously, we should not have too many `Model` for one Song. One `Model` is
 import time
 from typing import List, Optional, Tuple, Any, Union
 
-from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr
+from pydantic import (
+    ConfigDict, BaseModel as _BaseModel, PrivateAttr,
+    model_validator, model_serializer,
+)
 
 try:
     # pydantic>=2.0
@@ -71,21 +74,6 @@ from feeluown.utils.utils import elfhash
 from .base import ModelType, ModelFlags, AlbumType, MediaFlags
 from .base import SearchType  # noqa
 from .model_state import ModelState
-
-
-from typing import Annotated
-from pydantic import BeforeValidator, model_validator
-
-
-def model_validate(obj: Any):
-    if isinstance(obj, dict):
-        js = obj
-        if 'provider' in js:
-            js['source'] = js.pop('provider', None)
-        js.pop('uri', None)
-        js.pop('__type__', None)
-        return js
-    return obj
 
 
 TSong = Union['SongModel', 'BriefSongModel']
@@ -241,6 +229,18 @@ class BaseModel(_BaseModel):
             js.pop('__type__', None)
             return js
         return value
+
+    @model_serializer(mode='wrap')
+    def _serialize(self, f):
+        from feeluown.library import reverse
+
+        js = f(self)
+        js.pop('meta')
+        js.pop('state')
+        js['provider'] = js['source']
+        js['uri'] = reverse(self)
+        js['__type__'] = f'feeluown.library.{self.__class__.__name__}'
+        return js
 
 
 class BaseBriefModel(BaseModel):

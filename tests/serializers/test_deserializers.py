@@ -1,16 +1,12 @@
+import pytest
+
 from feeluown.library import SongModel
 from feeluown.serializers import serialize, deserialize
 
 
-def test_deserializer_basic_types():
-    assert deserialize('python', 1) == 1
-    assert deserialize('python', 'h') == 'h'
-    assert deserialize('python', 1.1) == 1.1
-    assert deserialize('python', None) is None
-
-
-def test_deserialize_model_from_valid_json():
-    js = {
+@pytest.fixture
+def asong_data():
+    return {
         'album': {'artists_name': '',
                   'identifier': '84557',
                   'name': '腔·调',
@@ -33,7 +29,28 @@ def test_deserialize_model_from_valid_json():
         'track': '1/1',
         'source': 'xx'
     }
-    song = SongModel.model_validate(js)
-    data = serialize('python', song)
+
+
+@pytest.fixture
+def asong(asong_data):
+    return SongModel.model_validate(asong_data)
+
+
+def test_deserializer_basic_types():
+    assert deserialize('python', 1) == 1
+    assert deserialize('python', 'h') == 'h'
+    assert deserialize('python', 1.1) == 1.1
+    assert deserialize('python', None) is None
+
+
+def test_deserialize_model_from_valid_json(asong):
+    data = serialize('python', asong)
     song2 = deserialize('python', data)
-    assert song2.artists[0] == song.artists[0]
+    assert song2.artists[0] == asong.artists[0]
+
+
+def test_deserialize_models(asong):
+    songs = [asong, asong]
+    data = serialize('python', songs)
+    songs2 = deserialize('python', data)
+    assert songs == songs2
