@@ -55,6 +55,7 @@ import time
 from typing import List, Optional, Tuple, Any, Union
 
 from pydantic import ConfigDict, BaseModel as _BaseModel, PrivateAttr
+
 try:
     # pydantic>=2.0
     from pydantic import field_validator
@@ -70,6 +71,21 @@ from feeluown.utils.utils import elfhash
 from .base import ModelType, ModelFlags, AlbumType, MediaFlags
 from .base import SearchType  # noqa
 from .model_state import ModelState
+
+
+from typing import Annotated
+from pydantic import BeforeValidator, model_validator
+
+
+def model_validate(obj: Any):
+    if isinstance(obj, dict):
+        js = obj
+        if 'provider' in js:
+            js['source'] = js.pop('provider', None)
+        js.pop('uri', None)
+        js.pop('__type__', None)
+        return js
+    return obj
 
 
 TSong = Union['SongModel', 'BriefSongModel']
@@ -215,6 +231,17 @@ class BaseModel(_BaseModel):
                 return getattr(self, attr[:-8])
             raise
 
+    @model_validator(mode='before')
+    def _deserialize(cls, value):
+        if isinstance(value, dict):
+            js = value
+            if 'provider' in js:
+                js['source'] = js.pop('provider', None)
+            js.pop('uri', None)
+            js.pop('__type__', None)
+            return js
+        return value
+
 
 class BaseBriefModel(BaseModel):
     """
@@ -279,7 +306,7 @@ class SongModel(BriefSongModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.song, is_normal=True)
     title: str
     album: Optional[TAlbum] = None
-    artists: List[BriefArtistModel]
+    artists: List[TArtist]
     duration: int  # milliseconds
     # A playlist can consist of multiple songs and a song can have many children.
     # The differences between playlist's songs and song' children is that

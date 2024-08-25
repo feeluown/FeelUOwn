@@ -1,7 +1,50 @@
 from feeluown.library import BaseModel, reverse
 
-from .typename import attach_typename
-from .base import Serializer, SerializerMeta
+from .typename import attach_typename, get_type_by_name, model_cls_list
+from .base import Serializer, SerializerMeta, DeserializerError
+
+
+class PythonDeserializer:
+    _mapping = {}
+
+    def deserialize(self, obj):
+        if isinstance(obj, dict):
+            typename = obj['__type__']
+            deserializer_cls = self.get_deserializer_cls(typename)
+            return deserializer_cls().deserialize(obj)
+        elif isinstance(obj, list):
+            return [self.deserialize(each) for each in obj]
+        if isinstance(obj, (str, int, float, type(None))):
+            return obj
+        raise DeserializerError(f'no deserializer for type:{type(obj)}')
+
+    @classmethod
+    def get_deserializer_cls(cls, typename):
+        clz = get_type_by_name(typename)
+        if clz is None:
+            raise DeserializerError(f'no deserializer for type:{typename}')
+        for obj_clz, deserializer_cls in cls._mapping.items():
+            if obj_clz == clz:
+                return deserializer_cls
+        raise DeserializerError(f'no deserializer for type:{clz}')
+
+
+class ModelDeserializer(PythonDeserializer, metaclass=SerializerMeta):
+    class Meta:
+        types = model_cls_list
+
+    def deserialize(self, obj):
+        from typing import Annotated
+        from pydantic import RootModel
+        from feeluown.library.models import BeforeValidator, model_validate
+
+        model_cls = get_type_by_name(obj['__type__'])
+
+        class M(RootModel):
+            root: Annotated[model_cls, BeforeValidator(model_validate)]
+
+        # return M.model_validate(obj).root
+        return model_cls.model_validate(obj)
 
 
 class PythonSerializer(Serializer):
@@ -32,8 +75,9 @@ class ModelSerializer(PythonSerializer, metaclass=SerializerMeta):
 
     def _get_items(self, model):
         modelcls = type(model)
-        fields = [field for field in model.__fields__
-                  if field not in BaseModel.__fields__]
+        fields = [field for field in model.model_fields
+                  if ((field not in BaseModel.model_fields)
+                      or field in ('identifier', 'source', 'state'))]
         # Include properties.
         pydantic_fields = ("__values__", "fields", "__fields_set__",
                            "model_computed_fields", "model_extra",

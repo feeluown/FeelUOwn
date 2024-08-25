@@ -12,6 +12,17 @@ class SerializerError(Exception):
     pass
 
 
+class DeserializerError(Exception):
+    """
+    this error will be raised when
+
+    * Deserializer initialization failed
+    * Deserializer not found
+    * Deserializer serialization failed
+    """
+    pass
+
+
 class Serializer:
     """Serializer abstract base class
 
@@ -58,6 +69,42 @@ class Serializer:
 
     @classmethod
     def get_serializer_cls(cls, model):
+        for model_cls, serialize_cls in cls._mapping.items():
+            # FIXME: remove me when model v2 has its own serializer
+            if isinstance(model, model_cls):
+                return serialize_cls
+        raise SerializerError(f"no serializer for {type(model)}")
+
+
+class Deserializer:
+    def __init__(self, **options):
+        """
+        Subclass should validate and parse options by themselves, here,
+        we list three commonly used options.
+
+        as_line is a *format* option:
+
+        - as_line: line format of a object (mainly designed for PlainSerializer)
+
+        brief and fetch are *representation* options:
+
+        - brief: a minimum human readable representation of the object.
+          we hope that people can *identify which object it is* through
+          this representation.
+          For example, if an object has ten attributes, this representation
+          may only contain three attributes.
+
+        - fetch: if this option is specified, the attribute value
+          should be authoritative.
+        """
+        self.options = copy.deepcopy(options)
+
+    def deserialize(self, obj):
+        deserializer_cls = self.get_deserializer_cls(obj)
+        return deserializer_cls(**self.options).deserialize(obj)
+
+    @classmethod
+    def get_deserializer_cls(cls, model):
         for model_cls, serialize_cls in cls._mapping.items():
             # FIXME: remove me when model v2 has its own serializer
             if isinstance(model, model_cls):
