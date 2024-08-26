@@ -10,8 +10,7 @@ from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
 
 from feeluown.excs import ResourceNotFound
 from feeluown.library import (
-    SupportsSongHotComments, SupportsSongSimilar, SupportsSongWebUrl,
-    ModelFlags,
+    SupportsSongHotComments, SupportsSongSimilar, ModelFlags,
 )
 from feeluown.player import Lyric
 from feeluown.library import reverse, resolve
@@ -278,13 +277,11 @@ class SongExploreView(QWidget):
         self._right_layout.addWidget(self.lyric_view)
 
     async def maybe_show_web_url_btn(self, provider, song):
-        if isinstance(provider, SupportsSongWebUrl):
-            async def copy_song_web_url():
-                web_url = await aio.run_fn(provider.song_get_web_url, song)
-                QGuiApplication.clipboard().setText(web_url)
-                self._app.show_msg(f'已经复制：{web_url}')
-
-            self.copy_web_url_btn.clicked.connect(lambda: aio.run_afn(copy_song_web_url))
+        try:
+            web_url = self._app.library.song_get_web_url(song)
+        except ResourceNotFound:
+            self.copy_web_url_btn.hide()
+        else:
             # TODO: Open url in browser when alt key is pressed. Use
             # QDesktopServices.openUrl to open url in browser, and
             # you may use QGuiApplication::keyboardModifiers to check
@@ -292,8 +289,12 @@ class SongExploreView(QWidget):
             #
             # NOTE(cosven): Since switching from applications is inconvenience,
             # the default behaviour of button is url-copy instead of url-open.
-        else:
-            self.copy_web_url_btn.hide()
+
+            async def copy_song_web_url():
+                QGuiApplication.clipboard().setText(web_url)
+                self._app.show_msg(f'已经复制：{web_url}')
+
+            self.copy_web_url_btn.clicked.connect(lambda: aio.run_afn(copy_song_web_url))
 
     async def show_song_wiki(self, song, album):
         aio.run_afn(self.song_wiki_label.show_song, song, album)
