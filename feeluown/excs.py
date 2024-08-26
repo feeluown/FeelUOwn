@@ -69,6 +69,7 @@ class ModelNotFound(ResourceNotFound):
     """Model is not found
 
     For example, a model identifier is invalid.
+    Maybe ResourceNotFound is enough and this exception should be removed.
 
     .. versionadded:: 3.7.7
     """

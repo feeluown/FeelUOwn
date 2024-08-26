@@ -298,6 +298,21 @@ class Library:
                 raise MediaNotFound('provider returns empty media')
         return media
 
+    def song_get_web_url(self, song: BriefSongModel) -> str:
+        """Get song web url
+
+        :raises ResourceNotFound: provider/song/web_url is not found
+        :raises ProviderIOError: provider raises error during get_web_url
+
+        .. versionadded:: 4.1.8
+        """
+        provider = self.get(song.source)
+        if provider is None:
+            raise ResourceNotFound(f'provider({song.source}) not found')
+        if isinstance(provider, SupportsSongWebUrl):
+            return provider.song_get_web_url(song)
+        raise ResourceNotFound(reason=ResourceNotFound.Reason.not_supported)
+
     def song_prepare_mv_media(self, song: BriefSongModel, policy) -> Media:
         """
 
