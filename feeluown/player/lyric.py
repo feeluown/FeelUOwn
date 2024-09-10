@@ -56,18 +56,21 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
     >>> list(r.items())[-1]
     (90000, '再等直至再吻到你')
     """
-    def to_mileseconds(time_str):
+    def to_mileseconds(time_str: str):
         mileseconds = 0
         unit = 1000
-        t_seq = time_str.split(':')
+
+        t_seq = time_str.split(":", 1)
+        t_seq[1] = t_seq[1].replace(":", ".")
         t_seq.reverse()
+
         for num in t_seq:
             mileseconds += int(float(num) * unit)
             unit *= 60
         return mileseconds
 
     ms_sentence_map = OrderedDict()
-    sentence_pattern = re.compile(r'\[(\d+(:\d+){0,2}(\.\d+)?)\]')
+    sentence_pattern = re.compile(r'\[(\d+(:\d+){0,2}([:\.]\d+)?)\]')
     lines = content.splitlines()
     for line in lines:
         m = sentence_pattern.search(line, 0)
