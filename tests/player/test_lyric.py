@@ -1,7 +1,7 @@
 import asyncio
 import pytest
 
-from feeluown.player import LiveLyric
+from feeluown.player import LiveLyric, parse_lyric_text
 from feeluown.library import LyricModel
 
 
@@ -106,3 +106,14 @@ def test_live_lyric_with_trans(app_mock):
     assert live_lyric.current_sentence == ''
     assert live_lyric.current_line[0] == ''
     assert live_lyric.current_line[2] is False
+
+
+def test_parse_ill_formed_lyric():
+    result = parse_lyric_text('''
+[00:00.00] 作词 : シャノン
+[00:00.05] 作曲 : シャノン
+[00:00:10]僕らの最後は死別にしよう
+[00:05:64]嫌いになりそうな日差しの中
+''')
+    assert result[50] == ' 作曲 : シャノン'
+    assert result[100] == '僕らの最後は死別にしよう'

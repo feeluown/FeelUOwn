@@ -52,7 +52,7 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
     >>> r = parse_lyric_text("[00:00.00] 作曲 : 周杰伦\\n[00:01.00] 作词 : 周杰伦\\n")
     >>> list(r.items())[0]
     (0, ' 作曲 : 周杰伦')
-    >>> r = parse_lyric_text("[01:30][00:01:10][01:00]再等直至再吻到你")
+    >>> r = parse_lyric_text("[01:30][01:10][01:00]再等直至再吻到你")
     >>> list(r.items())[-1]
     (90000, '再等直至再吻到你')
     """
@@ -60,7 +60,10 @@ def parse_lyric_text(content: str) -> Dict[int, str]:
         mileseconds = 0
         unit = 1000
 
+        # According to wikipedia, the time_str should have the foramt [mm:ss.xx]
         t_seq = time_str.split(":", 1)
+        # Many lyrics have wrong time-tag, and they may look like 'mm:ss:xx'.
+        # They should be changed to 'mm:ss.xx'. Check #863 for details.
         t_seq[1] = t_seq[1].replace(":", ".")
         t_seq.reverse()
 
