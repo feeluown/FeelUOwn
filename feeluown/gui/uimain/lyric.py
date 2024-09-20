@@ -303,16 +303,14 @@ class InnerLyricWindow(QWidget):
             self.set_line(LyricLine('未找到可用歌词', '', False))
 
     def zoomin(self):
-        label = self.line_label
-        font = label.font()
+        font = self.font()
         resize_font(font, +1)
-        label.setFont(font)
+        self.setFont(font)
 
     def zoomout(self):
-        label = self.line_label
-        font = label.font()
+        font = self.font()
         resize_font(font, - 1)
-        label.setFont(font)
+        self.setFont(font)
 
     def on_font_size_changed(self):
         self._border_radius = self.fontMetrics().height() // 3
