@@ -1,5 +1,7 @@
 [MASTER]
 disable=
+    unknown-option-value,  # some options are only valid in latest pylint
+
     missing-docstring,
     too-few-public-methods,
     no-name-in-module,  # seems not working for PyQt5
