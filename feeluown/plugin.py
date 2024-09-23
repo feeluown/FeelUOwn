@@ -32,6 +32,7 @@ class Plugin:
     `enable(app)` and `disable(app)` function. It can also implements
     `init_config(config)` and initialize its configurations.
     """
+    # pylint: disable=too-many-positional-arguments
     def __init__(self, module, alias='', version='', desc='',
                  author='', homepage='', dist_name=''):
         """插件对象

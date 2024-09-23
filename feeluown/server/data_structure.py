@@ -10,7 +10,7 @@ class SessionOptions:
 
 class Request:
     """fuo 协议请求对象"""
-    # pylint: disable=too-many-arguments
+    # pylint: disable=too-many-arguments,too-many-positional-arguments
     # FIXME: maybe add a property 'stdin_content' for Request.
     def __init__(self, cmd, cmd_args=None,
                  cmd_options=None, options=None,
