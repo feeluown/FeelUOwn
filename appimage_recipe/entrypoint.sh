@@ -1,0 +1,1 @@
+{{ python-executable }} -m feeluown "$@"
