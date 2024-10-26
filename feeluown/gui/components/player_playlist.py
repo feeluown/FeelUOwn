@@ -64,17 +64,17 @@ class PlayerPlaylistView(SongMiniCardListView):
         self.setModel(PlayerPlaylistView._model)
 
     def contextMenuEvent(self, e):
-        index = self.indexAt(e.pos())
-        if not index.isValid():
+        indexes = self.selectedIndexes()
+        if not indexes:
             return
 
-        song = index.data(Qt.UserRole)[0]
+        songs = [index.data(Qt.UserRole)[0] for index in indexes]
         menu = QMenu()
         action = menu.addAction('从播放队列中移除')
-        menu.addSeparator()
-        SongMenuInitializer(self._app, song).apply(menu)
-
-        action.triggered.connect(lambda: self._app.playlist.remove(song))
+        action.triggered.connect(lambda: self._remove_songs(songs))
+        if len(songs) == 1:
+            menu.addSeparator()
+            SongMenuInitializer(self._app, songs).apply(menu)
         menu.exec_(e.globalPos())
 
     def scroll_to_current_song(self):
@@ -88,3 +88,7 @@ class PlayerPlaylistView(SongMiniCardListView):
             # In order to highlight the current song.
             self.selectionModel().select(index, QItemSelectionModel.SelectCurrent)
             self.scrollTo(index, QAbstractItemView.PositionAtCenter)
+
+    def _remove_songs(self, songs):
+        for song in songs:
+            self._app.playlist.remove(song)

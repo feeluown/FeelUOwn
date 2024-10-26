@@ -282,6 +282,7 @@ class SongMiniCardListView(ItemViewNoScrollMixin, QListView):
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
+        self.setSelectionMode(QListView.ContiguousSelection)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.setMouseTracking(True)
