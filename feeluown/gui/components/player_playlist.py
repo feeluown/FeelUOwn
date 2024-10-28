@@ -74,7 +74,7 @@ class PlayerPlaylistView(SongMiniCardListView):
         action.triggered.connect(lambda: self._remove_songs(songs))
         if len(songs) == 1:
             menu.addSeparator()
-            SongMenuInitializer(self._app, songs).apply(menu)
+            SongMenuInitializer(self._app, songs[0]).apply(menu)
         menu.exec_(e.globalPos())
 
     def scroll_to_current_song(self):
