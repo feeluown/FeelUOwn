@@ -53,6 +53,7 @@ class Ui:
         self.forward_btn = self.bottom_panel.forward_btn
 
         self.toolbar.settings_btn.clicked.connect(self._open_settings_dialog)
+        self.songs_table.about_to_show_menu.connect(self._open_standby_list_overlay)
 
         self._setup_ui()
 
@@ -84,6 +85,20 @@ class Ui:
     def _open_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)
         dialog.exec()
+
+    def _open_standby_list_overlay(self, ctx):
+        from feeluown.gui.uimain.standby import StandbyListOverlay
+
+        models = ctx['models']
+        add_action = ctx['add_action']
+        song = models[0]
+
+        def callback(_):
+            overlay = StandbyListOverlay(self._app)
+            overlay.show_song(song)
+            overlay.exec()
+
+        add_action('寻找可播放资源', callback)
 
     def toggle_player_bar(self):
         if self.top_panel.isVisible():
