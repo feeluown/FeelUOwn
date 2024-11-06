@@ -52,7 +52,11 @@ class ServerApp(App):
                 self.config.PUBSUB_PORT,
             ))
         if self.config.ENABLE_WEB_SERVER:
-            from feeluown.webserver import run_web_server
-            asyncio.create_task(
-                run_web_server(self.get_listen_addr(), self.config.WEB_PORT))
+            try:
+                from feeluown.webserver import run_web_server
+            except ImportError as e:
+                logger.error(f"can't enable webserver, err: {e}")
+            else:
+                asyncio.create_task(
+                    run_web_server(self.get_listen_addr(), self.config.WEB_PORT))
         asyncio.create_task(run_nowplaying_server(self))
