@@ -1,10 +1,13 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
+from PyQt5.QtCore import Qt, QPoint
+
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
-from feeluown.library import SongModel, VideoModel
+from feeluown.library import SongModel, VideoModel, SearchType
+from feeluown.gui.widgets.magicbox import KeySourceIn
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -55,6 +58,8 @@ class SongMenuInitializer:
                 self._app.show_msg('该歌曲没有专辑信息')
 
         menu.hovered.connect(self.on_action_hovered)
+        menu.addAction('搜索相似资源').triggered.connect(
+            lambda: self.show_similar_resource(song))
         artist_menu = menu.addMenu('查看歌手')
         artist_menu.menuAction().setData({'artists': None, 'song': song})
         mv_menu = menu.addMenu(MV_BTN_TEXT)
@@ -66,6 +71,34 @@ class SongMenuInitializer:
             lambda: enter_song_radio(song))
         menu.addAction('歌曲详情').triggered.connect(
             lambda: goto_song_explore(song))
+
+    def show_similar_resource(self, song):
+        from feeluown.gui.components.search import SearchResultView
+
+        class SearchResultViewWithEsc(SearchResultView):
+            def keyPressEvent(self, event):
+                if event.key() == Qt.Key_Escape:
+                    self.close()
+                else:
+                    super().keyPressEvent(event)
+
+        q = f'{song.title} {song.artists_name}'
+        view = SearchResultViewWithEsc(self._app, parent=self._app)
+        source_in = self._app.browser.local_storage.get(KeySourceIn, None)
+        run_afn(view.search_and_render, q, SearchType.so, source_in)
+
+        width = self._app.width() - self._app.ui.sidebar.width()
+        height = self._app.height() * 3 // 5
+        x = self._app.ui.sidebar.width()
+        y = self._app.height() - height - self._app.ui.player_bar.height()
+
+        # Set the size using resize() and position using move()
+        view.resize(width, height)
+        pos = self._app.mapToGlobal(QPoint(0, 0))
+        view.move(pos.x() + x, pos.y() + y)
+        view.setWindowFlags(Qt.Popup)
+        view.show()
+        view.raise_()
 
     def on_action_hovered(self, action):
         """
