@@ -58,6 +58,8 @@ class SongMenuInitializer:
                 self._app.show_msg('该歌曲没有专辑信息')
 
         menu.hovered.connect(self.on_action_hovered)
+        menu.addAction('搜索相似资源').triggered.connect(
+            lambda: self.show_similar_resource(song))
         artist_menu = menu.addMenu('查看歌手')
         artist_menu.menuAction().setData({'artists': None, 'song': song})
         mv_menu = menu.addMenu(MV_BTN_TEXT)
@@ -69,14 +71,19 @@ class SongMenuInitializer:
             lambda: enter_song_radio(song))
         menu.addAction('歌曲详情').triggered.connect(
             lambda: goto_song_explore(song))
-        menu.addAction('搜索相似资源').triggered.connect(
-            lambda: self.show_similar_resource(song))
 
     def show_similar_resource(self, song):
         from feeluown.gui.components.search import SearchResultView
 
+        class SearchResultViewWithEsc(SearchResultView):
+            def keyPressEvent(self, event):
+                if event.key() == Qt.Key_Escape:
+                    self.close()
+                else:
+                    super().keyPressEvent(event)
+
         q = f'{song.title} {song.artists_name}'
-        view = SearchResultView(self._app, parent=self._app)
+        view = SearchResultViewWithEsc(self._app, parent=self._app)
         source_in = self._app.browser.local_storage.get(KeySourceIn, None)
         run_afn(view.search_and_render, q, SearchType.so, source_in)
 
