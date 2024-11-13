@@ -78,8 +78,7 @@ setup(
         'webengine': ['PyQtWebEngine'],
         # Load cookies from chrome/firefox/...
         'cookies': [
-            'secretstorage',
-            'pycryptodome',
+            'yt-dlp',
         ],
         'ytdl': [
             'yt-dlp',
