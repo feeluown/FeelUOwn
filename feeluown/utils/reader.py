@@ -12,6 +12,7 @@ from typing import (
     Sequence,
     AsyncIterable,
 )
+from threading import Lock
 
 logger = logging.getLogger(__name__)
 
@@ -162,6 +163,7 @@ class SequentialReader(Reader[T]):
         self._count = count
         self.offset = offset
         self._objects: List[T] = []
+        self._lock = Lock()
 
     @property
     def count(self):
@@ -189,7 +191,8 @@ class SequentialReader(Reader[T]):
     def _read_next(self) -> T:
         if self._count is None or self.offset < self.count:
             try:
-                obj = next(self._g)
+                with self._lock:
+                    obj = next(self._g)
             except StopIteration:
                 if self._count is None:
                     self._count = self.offset + 1
@@ -218,6 +221,7 @@ class RandomSequentialReader(Reader[T]):
         self._ranges: List[Tuple[int, int]] = []  # list of tuple
         self._objects: List[Optional[T]] = [None] * count
         self._read_func = read_func
+        self._lock = Lock()
 
         assert max_per_read > 0, 'max_per_read must big than 0'
         self._max_per_read = max_per_read
@@ -269,7 +273,12 @@ class RandomSequentialReader(Reader[T]):
         return cast(List[T], self._objects[start:end])
 
     def _read_range(self, start, end):
-        # TODO: make this method thread safe
+        # Though this method is thread safe now, _read_range_unsafe may read
+        # the same range multiple times.
+        with self._lock:
+            self._read_range_unsafe(start, end)
+
+    def _read_range_unsafe(self, start, end):
         assert start <= end, 'start should less than end'
         logger.debug('trigger read_func(%d, %d)', start, end)
         objs = list(self._read_func(start, end))
