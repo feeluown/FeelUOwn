@@ -221,6 +221,7 @@ class RandomSequentialReader(Reader[T]):
         self._ranges: List[Tuple[int, int]] = []  # list of tuple
         self._objects: List[Optional[T]] = [None] * count
         self._read_func = read_func
+        self._lock = Lock()
 
         assert max_per_read > 0, 'max_per_read must big than 0'
         self._max_per_read = max_per_read
