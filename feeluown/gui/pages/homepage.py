@@ -17,6 +17,9 @@ from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListModel,
     PlaylistFilterProxyModel,
     PlaylistCardListDelegate,
+    VideoCardListView,
+    VideoCardListModel,
+    VideoCardListDelegate,
 )
 from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListView,
@@ -71,6 +74,8 @@ class Panel(QWidget):
         if provider_id in cls._id_pixmap_cache:
             return cls._id_pixmap_cache[provider_id]
         pvd_ui = app.pvd_ui_mgr.get(provider_id)
+        if pvd_ui is None:
+            return QPixmap()
         svg = pvd_ui.get_colorful_svg()
         return QPixmap(svg).scaledToWidth(20, Qt.SmoothTransformation)
 
@@ -174,6 +179,23 @@ class RecSongsPanel(SongsBasePanel[SupportsRecACollectionOfSongs]):
         coll: Collection = await run_fn(self._provider.rec_a_collection_of_songs)
         self.set_reader(coll.models)
         self.header.setText(coll.name)
+
+
+class RecVideosPanel(Panel):
+    def __init__(self, app: 'GuiApp', provider):
+        self._app = app
+        self._provider = provider
+        self.video_list_view = video_list_view = VideoCardListView()
+        video_list_view.setItemDelegate(VideoCardListDelegate(video_list_view))
+        pixmap = Panel.get_provider_pixmap(app, provider.identifier)
+        super().__init__('热门视频', video_list_view, pixmap)
+
+        video_list_view.play_video_needed.connect(self._app.playlist.play_model)
+
+    async def render(self):
+        videos = await run_fn(self._provider.rec_a_collection_of_videos)
+        model = VideoCardListModel.create(videos[:8], self._app)
+        self.video_list_view.setModel(model)
 
 
 class View(QWidget, BgTransparentMixin):
