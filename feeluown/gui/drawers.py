@@ -2,7 +2,10 @@ import math
 from typing import Optional
 
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
-from PyQt5.QtGui import QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette
+from PyQt5.QtGui import (
+    QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette,
+    QPainterPath
+)
 from PyQt5.QtWidgets import QWidget
 
 from feeluown.gui.helpers import random_solarized_color, painter_save
@@ -413,3 +416,53 @@ class VolumeIconDrawer:
             painter.setPen(pen)
             for line in disabled_lines:
                 painter.drawLine(*line)
+
+
+class FireIconDrawer:
+    def __init__(self, width, padding):
+        self.width = width
+        self.padding = padding
+
+    def draw(self, painter):
+        # flake8: noqa: E501
+        # The following path is copied from a SVG file.
+        path = QPainterPath()
+        path.moveTo(495.466219, 1024)
+        path.cubicTo(256.335982, 1024, 86.993753, 856.408725, 86.993753, 625.658051)
+        path.cubicTo(86.993753, 503.091298, 159.658328, 370.019367, 162.785031, 364.641439)
+        path.cubicTo(169.163505, 353.385309, 181.670316, 347.006835, 194.552333, 348.507652)
+        path.cubicTo(207.434349, 350.258606, 217.689934, 359.638714, 221.31691, 372.020458)
+        path.cubicTo(221.567046, 372.645799, 241.202876, 447.5616, 266.966908, 488.70901)
+        path.cubicTo(284.226308, 516.474132, 301.98598, 535.85969, 321.746742, 549.617182)
+        path.cubicTo(308.364454, 490.83501, 298.108868, 402.411852, 314.742928, 311.862536)
+        path.cubicTo(360.392654, 63.226735, 554.248234, 3.569244, 562.502729, 1.19295)
+        path.cubicTo(573.133519, -1.808685, 584.639785, 0.942814, 592.769213, 8.4469)
+        path.cubicTo(600.898641, 15.950986, 603.398641, 27.446525, 601.147415, 38.327452)
+        path.cubicTo(600.897279, 40.078406, 568.504541, 215.423167, 636.416528, 363.87902)
+        path.cubicTo(642.544866, 377.386376, 651.174556, 393.019891, 660.429596, 408.778474)
+        path.cubicTo(663.056026, 386.266213, 667.43341, 364.379293, 673.561748, 342.492373)
+        path.cubicTo(698.575371, 254.44442, 762.985451, 224.303004, 765.736949, 223.17739)
+        path.cubicTo(776.492807, 218.424802, 788.999618, 220.675301, 798.254659, 227.929252)
+        path.cubicTo(807.634768, 235.183203, 812.012152, 247.189742, 809.885993, 258.946145)
+        path.cubicTo(809.510789, 261.197371, 800.505884, 321.105, 851.158472, 406.151318)
+        path.cubicTo(896.071545, 482.827503, 909.078629, 532.479545, 909.078629, 628.156654)
+        path.cubicTo(908.953561, 858.782259, 734.358471, 1026.248466, 495.466219, 1026.248466)
+        path.closeSubpath()
+
+        # Calculate scaling factor
+        scale_factor = 1024 / (self.width - 2 * self.padding)
+        painter_sf = 1 / scale_factor
+
+        # Scale and translate the path
+        transform = painter.transform()
+        transform.scale(painter_sf, painter_sf)
+        transform.translate(self.padding * scale_factor, self.padding * scale_factor)
+        painter.setTransform(transform)
+
+        # Set the brush and pen
+        pen = painter.pen()
+        pen.setWidthF(1.5 * scale_factor)
+        painter.setPen(pen)
+
+        # Draw the fire shape
+        painter.drawPath(path)

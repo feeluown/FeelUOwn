@@ -11,6 +11,7 @@ from feeluown.gui.drawers import (
     StarIconDrawer,
     VolumeIconDrawer,
     SearchIconDrawer,
+    FireIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -516,6 +517,18 @@ class VolumeButton(SelfPaintAbstractSquareButton):
         self.drawer.draw(painter, self.palette())
 
 
+class FireButton(SelfPaintAbstractSquareButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.drawer = FireIconDrawer(self.width(), self._padding)
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self.drawer.draw(painter)
+
+
 if __name__ == '__main__':
     from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
 
@@ -550,4 +563,5 @@ if __name__ == '__main__':
         volume_button = VolumeButton(length=length)
         volume_button.set_volume(60)
         l2.addWidget(volume_button)
+        l2.addWidget(FireButton(length=100))
         l2.addStretch(0)
