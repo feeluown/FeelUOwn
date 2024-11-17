@@ -210,7 +210,7 @@ class PluginsManager:
                     .select(group='fuo.plugins_v1')
             except AttributeError:  # old version does not has `select` method
                 entry_points = importlib.metadata.entry_points() \
-                    .get('fuo.plugins_v1', [])
+                    .get('fuo.plugins_v1', [])  # pylint: disable=no-member
         except ImportError:
             import pkg_resources
             entry_points = pkg_resources.iter_entry_points('fuo.plugins_v1')

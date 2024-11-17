@@ -343,6 +343,21 @@ class StarButton(SelfPaintAbstractIconTextButton):
         self.star_icon.paint(painter)
 
 
+class PlayButton(SelfPaintAbstractSquareButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.drawer = TriangleIconDrawer(
+            self.width(), self._padding, direction='right', brush=True
+        )
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self.drawer.draw(painter)
+
+
 class PlayPauseButton(SelfPaintAbstractSquareButton):
 
     def __init__(self, *args, draw_circle=True, **kwargs):

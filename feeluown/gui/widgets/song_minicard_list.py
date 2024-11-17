@@ -1,5 +1,6 @@
 import logging
 import random
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import (
     pyqtSignal, Qt, QSize, QRect, QRectF,
@@ -14,10 +15,15 @@ from PyQt5.QtWidgets import (
 )
 
 from feeluown.utils import aio
+from feeluown.utils.reader import create_reader
 from feeluown.library import reverse
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, ReaderFetchMoreMixin, resize_font, SOLARIZED_COLORS
+    ItemViewNoScrollMixin, ReaderFetchMoreMixin, resize_font, SOLARIZED_COLORS,
+    fetch_cover_wrapper,
 )
+
+if TYPE_CHECKING:
+    from feeluown.gui import GuiApp
 
 
 logger = logging.getLogger(__name__)
@@ -103,6 +109,11 @@ class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
         self._reader = reader
         self._fetch_more_step = 10
         self._is_fetching = False
+
+    @classmethod
+    def create(cls, reader, app: 'GuiApp'):
+        return cls(create_reader(reader),
+                   fetch_image=fetch_cover_wrapper(app))
 
 
 class SongMiniCardListDelegate(QStyledItemDelegate):

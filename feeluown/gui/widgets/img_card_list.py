@@ -12,7 +12,7 @@ resized, the cover width and the margin should make a few adjustment.
 # pylint: disable=unused-argument
 import logging
 import random
-from typing import TypeVar, Optional, List, cast, Union
+from typing import TypeVar, Optional, List, cast, Union, TYPE_CHECKING
 
 from PyQt5.QtCore import (
     QAbstractListModel, QModelIndex, Qt, QObject, QEvent,
@@ -28,13 +28,16 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils import aio
 from feeluown.library import AlbumModel, AlbumType, PlaylistModel, VideoModel
-from feeluown.utils.reader import wrap
+from feeluown.utils.reader import wrap, create_reader
 from feeluown.utils.utils import int_to_human_readable
 from feeluown.library import reverse
 from feeluown.gui.helpers import (
     ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin, painter_save,
-    secondary_text_color
+    secondary_text_color, fetch_cover_wrapper
 )
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
@@ -71,6 +74,11 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.fetch_image = fetch_image
         self.colors = []
         self.images = {}  # {uri: QImage}
+
+    @classmethod
+    def create(cls, reader, app: 'GuiApp'):
+        return cls(create_reader(reader),
+                   fetch_image=fetch_cover_wrapper(app))
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
