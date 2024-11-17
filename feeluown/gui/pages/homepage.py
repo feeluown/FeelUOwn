@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, TypeVar, Generic
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
@@ -7,9 +7,10 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
 from feeluown.library import (
     SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs, Collection,
+    SupportsRecListDailySongs, Provider
 )
 from feeluown.utils.reader import create_reader
-from feeluown.utils.aio import run_fn, gather
+from feeluown.utils.aio import run_fn, gather, run_afn
 from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
@@ -22,6 +23,7 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate,
     SongMiniCardListModel,
 )
+from feeluown.gui.widgets.selfpaint_btn import PlayButton
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.helpers import fetch_cover_wrapper, BgTransparentMixin
 
@@ -97,6 +99,7 @@ class RecPlaylistsPanel(Panel):
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
+        print(playlists)
         if not playlists:
             return
         playlist_list_view = self.playlist_list_view
@@ -119,26 +122,57 @@ class RecPlaylistsPanel(Panel):
         playlist_list_view.setModel(filter_model)
 
 
-class RecSongsPanel(Panel):
+P = TypeVar('P', bound=Provider)
 
-    def __init__(self, app: 'GuiApp', provider: SupportsRecACollectionOfSongs):
+
+class SongsBasePanel(Panel, Generic[P]):
+    """
+    Base panel class for show a list of songs.
+    """
+
+    def __init__(self, title: str, app: 'GuiApp', provider: P):
         self._app = app
         self._provider = provider
-
-        title = '随便听听'
         self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True)
         songs_list_view.setItemDelegate(SongMiniCardListDelegate(songs_list_view, ))
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, songs_list_view, pixmap)
+
+        self.play_all_btn = PlayButton()
+        self._h_layout.addWidget(self.play_all_btn)
+        self._h_layout.addStretch(0)
+
+        self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
         songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
+
+    async def _play_all(self):
+        songs = await run_fn(self.songs_list_view.model().get_reader().readall)
+        self._app.playlist.set_models(songs, next_=True)
+        self._app.player.resume()
+
+    def set_reader(self, reader):
+        songs_model = SongMiniCardListModel.create(reader, self._app)
+        self.songs_list_view.setModel(songs_model)
+
+
+class RecDailySongsPanel(SongsBasePanel[SupportsRecListDailySongs]):
+
+    def __init__(self, app: 'GuiApp', provider: SupportsRecListDailySongs):
+        super().__init__('每日推荐', app, provider)
+
+    async def render(self):
+        songs = await run_fn(self._provider.rec_list_daily_songs)
+        self.set_reader(songs)
+
+
+class RecSongsPanel(SongsBasePanel[SupportsRecACollectionOfSongs]):
+
+    def __init__(self, app: 'GuiApp', provider: SupportsRecACollectionOfSongs):
+        super().__init__('随便听听', app, provider)
 
     async def render(self):
         coll: Collection = await run_fn(self._provider.rec_a_collection_of_songs)
-        songs_model = SongMiniCardListModel(
-            create_reader(coll.models),
-            fetch_image=fetch_cover_wrapper(self._app),
-        )
-        self.songs_list_view.setModel(songs_model)
+        self.set_reader(coll.models)
         self.header.setText(coll.name)
 
 
@@ -154,14 +188,48 @@ class View(QWidget, BgTransparentMixin):
 
     async def render(self):
         panels = []
-        providers = self._app.library.list()
-        for provider in providers:
-            if isinstance(provider, SupportsRecListDailyPlaylists):
-                panel = RecPlaylistsPanel(self._app, provider)
-                panels.append(panel)
-            if isinstance(provider, SupportsRecACollectionOfSongs):
-                panel = RecSongsPanel(self._app, provider)
-                panels.append(panel)
+        settings = self._app.config.NEW_HOMEPAGE_SETTINGS
+        for content in settings.get('contents', []):
+            name = content['name']
+            if name == 'RecListDailySongs':
+                panel = self._handle_rec_list_daily_songs(content)
+                if panel is not None:
+                    panels.append(panel)
+            elif name == 'RecListDailyPlaylists':
+                panel = self._handle_rec_list_daily_playlists(content)
+                if panel is not None:
+                    panels.append(panel)
+            elif name == 'RecACollectionOfSongs':
+                panel = self._handle_rec_a_collection_of_songs(content)
+                if panel is not None:
+                    panels.append(panel)
         for panel in panels:
             self._layout.addWidget(panel)
         gather(*[panel.render() for panel in panels])
+
+    def _handle_rec_list_daily_songs(self, content: dict) -> Optional[Panel]:
+        source = content['provider']
+        provider = self._app.library.get(source)
+        if isinstance(provider, SupportsRecListDailySongs):
+            return RecDailySongsPanel(self._app, provider)
+        logger.warning(f'Invalid homepage content: {content}, '
+                       f'provider {source} not found or not supported')
+        return None
+
+    def _handle_rec_list_daily_playlists(self, content: dict) -> Optional[Panel]:
+        source = content['provider']
+        provider = self._app.library.get(source)
+        if isinstance(provider, SupportsRecListDailyPlaylists):
+            return RecPlaylistsPanel(self._app, provider)
+        logger.warning(f'Invalid homepage content: {content}, '
+                       f'provider {source} not found or not supported')
+        return None
+
+    def _handle_rec_a_collection_of_songs(self, content: dict) -> Optional[Panel]:
+        source = content['provider']
+        provider = self._app.library.get(source)
+        if isinstance(provider, SupportsRecACollectionOfSongs):
+            return RecSongsPanel(self._app, provider)
+        logger.warning(f'Invalid homepage content: {content}, '
+                       f'provider {source} not found or not supported')
+        return None

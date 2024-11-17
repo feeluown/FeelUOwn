@@ -392,6 +392,9 @@ class ReaderFetchMoreMixin(Generic[T]):
     """
     no_more_item = pyqtSignal()
 
+    def get_reader(self: ModelUsingReader[T]):
+        return self._reader
+
     def canFetchMore(self: ModelUsingReader[T], _):
         return self.can_fetch_more()
 
