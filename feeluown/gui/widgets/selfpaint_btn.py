@@ -344,6 +344,15 @@ class StarButton(SelfPaintAbstractIconTextButton):
         self.star_icon.paint(painter)
 
 
+class HotButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, text='热门', *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.hot_icon = FireIconDrawer(self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.hot_icon.paint(painter)
+
+
 class PlayButton(SelfPaintAbstractSquareButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -517,18 +526,6 @@ class VolumeButton(SelfPaintAbstractSquareButton):
         self.drawer.draw(painter, self.palette())
 
 
-class FireButton(SelfPaintAbstractSquareButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.drawer = FireIconDrawer(self.width(), self._padding)
-
-    def paintEvent(self, _):
-        painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        self.paint_round_bg_when_hover(painter)
-        self.drawer.draw(painter)
-
-
 if __name__ == '__main__':
     from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
 
@@ -563,5 +560,5 @@ if __name__ == '__main__':
         volume_button = VolumeButton(length=length)
         volume_button.set_volume(60)
         l2.addWidget(volume_button)
-        l2.addWidget(FireButton(length=100))
+        l2.addWidget(HotButton(height=100))
         l2.addStretch(0)

@@ -38,6 +38,16 @@ mypy:
 	mypy ${MYPY_PKGS}
 	mypy --check-untyped-defs ${MYPY_STRICT_PKGS}
 
+# mypy has several issues:
+# 1. mypy behaves inconsistently between local and CI environments.
+# 2. mypy checks other files even if only one file is specified.
+#
+# So give pyright a try.
+PYRIGHT_PKGS=
+PYRIGHT_PKGS+=feeluown/gui/uimain/sidebar.py
+pyright:
+	pyright ${PYRIGHT_PKGS}
+
 flake8:
 	flake8 feeluown/ tests/
 

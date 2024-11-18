@@ -419,11 +419,11 @@ class VolumeIconDrawer:
 
 
 class FireIconDrawer:
-    def __init__(self, width, padding):
-        self.width = width
+    def __init__(self, length, padding):
+        self.length = length
         self.padding = padding
 
-    def draw(self, painter):
+    def paint(self, painter):
         # flake8: noqa: E501
         # The following path is copied from a SVG file.
         path = QPainterPath()
@@ -450,19 +450,21 @@ class FireIconDrawer:
         path.closeSubpath()
 
         # Calculate scaling factor
-        scale_factor = 1024 / (self.width - 2 * self.padding)
+        scale_factor = 1024 / (self.length - 2 * self.padding)
         painter_sf = 1 / scale_factor
 
         # Scale and translate the path
         transform = painter.transform()
         transform.scale(painter_sf, painter_sf)
         transform.translate(self.padding * scale_factor, self.padding * scale_factor)
-        painter.setTransform(transform)
 
-        # Set the brush and pen
-        pen = painter.pen()
-        pen.setWidthF(1.5 * scale_factor)
-        painter.setPen(pen)
+        with painter_save(painter):
+            painter.setTransform(transform)
 
-        # Draw the fire shape
-        painter.drawPath(path)
+            # Set the brush and pen
+            pen = painter.pen()
+            pen.setWidthF(1.5 * scale_factor)
+            painter.setPen(pen)
+
+            # Draw the fire shape
+            painter.drawPath(path)
