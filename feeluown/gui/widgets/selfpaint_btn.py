@@ -11,6 +11,7 @@ from feeluown.gui.drawers import (
     StarIconDrawer,
     VolumeIconDrawer,
     SearchIconDrawer,
+    FireIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -343,6 +344,15 @@ class StarButton(SelfPaintAbstractIconTextButton):
         self.star_icon.paint(painter)
 
 
+class HotButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, text='热门', *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.hot_icon = FireIconDrawer(self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.hot_icon.paint(painter)
+
+
 class PlayButton(SelfPaintAbstractSquareButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -550,4 +560,5 @@ if __name__ == '__main__':
         volume_button = VolumeButton(length=length)
         volume_button.set_volume(60)
         l2.addWidget(volume_button)
+        l2.addWidget(HotButton(height=100))
         l2.addStretch(0)
