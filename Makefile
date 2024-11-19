@@ -45,6 +45,7 @@ mypy:
 # So give pyright a try.
 PYRIGHT_PKGS=
 PYRIGHT_PKGS+=feeluown/gui/uimain/sidebar.py
+PYRIGHT_PKGS+=feeluown/gui/uimain/provider_bar.py
 pyright:
 	pyright ${PYRIGHT_PKGS}
 

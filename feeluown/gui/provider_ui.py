@@ -1,5 +1,8 @@
 from abc import abstractmethod, ABC
-from typing import TYPE_CHECKING, runtime_checkable, Protocol, Dict, Optional, List
+from dataclasses import dataclass
+from typing import (
+    TYPE_CHECKING, runtime_checkable, Protocol, Dict, Optional, List, Callable, Any,
+)
 
 from PyQt5.QtCore import pyqtSignal, QObject
 
@@ -9,6 +12,13 @@ from feeluown.utils.dispatch import Signal
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+
+@dataclass
+class NavBtn:
+    icon: str
+    text: str
+    cb: Callable[[], Any]
 
 
 @runtime_checkable
@@ -41,6 +51,28 @@ class UISupportsDiscovery(Protocol):
 
     @abstractmethod
     def discovery(self):
+        ...
+
+
+@runtime_checkable
+class UISupportsNavBtns(Protocol):
+    """
+    Provider UI can add its own navigation buttons to the sidebar.
+    """
+
+    @abstractmethod
+    def list_nav_btns(self) -> List[NavBtn]:
+        ...
+
+
+@runtime_checkable
+class UISupportsCreatePlaylist(Protocol):
+    """
+    Provider UI can create playlist.
+    """
+
+    @abstractmethod
+    def create_playlist(self):
         ...
 
 

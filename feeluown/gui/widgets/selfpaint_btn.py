@@ -12,6 +12,7 @@ from feeluown.gui.drawers import (
     VolumeIconDrawer,
     SearchIconDrawer,
     FireIconDrawer,
+    EmojiIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -353,6 +354,15 @@ class HotButton(SelfPaintAbstractIconTextButton):
         self.hot_icon.paint(painter)
 
 
+class EmojiButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, emoji: str, text='表情', *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.emoji_icon = EmojiIconDrawer(emoji, self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.emoji_icon.paint(painter)
+
+
 class PlayButton(SelfPaintAbstractSquareButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -536,8 +546,10 @@ if __name__ == '__main__':
     with simple_layout(QVBoxLayout) as layout:
         l1 = QHBoxLayout()
         l2 = QHBoxLayout()
+        l3 = QVBoxLayout()
         layout.addLayout(l1)
         layout.addLayout(l2)
+        layout.addLayout(l3)
 
         l1.addWidget(LeftArrowButton(length=length))
         right = RightArrowButton(length=length)
@@ -546,19 +558,23 @@ if __name__ == '__main__':
         l1.addWidget(SearchSwitchButton(length=length))
         l1.addWidget(SettingsButton(length=length))
         l1.addWidget(RecentlyPlayedButton(height=length))
-        l1.addWidget(HomeButton(height=length))
-        l1.addWidget(DiscoveryButton(height=length))
 
         l1.addWidget(TriagleButton(length=length, direction='up'))
         l1.addWidget(CalendarButton(height=length))
-        l1.addWidget(RankButton(height=length))
-        l1.addWidget(StarButton(height=length))
 
         l2.addWidget(PlayPreviousButton(length=length))
-        l2.addWidget(PlayPauseButton(length=100))
+        l2.addWidget(PlayPauseButton(length=60))
         l2.addWidget(PlayNextButton(length=length))
         volume_button = VolumeButton(length=length)
         volume_button.set_volume(60)
         l2.addWidget(volume_button)
-        l2.addWidget(HotButton(height=100))
         l2.addStretch(0)
+
+        l3.addWidget(HotButton(height=length))
+        l3.addWidget(HomeButton(height=length))
+        l3.addWidget(DiscoveryButton(height=length))
+        l3.addWidget(RankButton(height=length))
+        l3.addWidget(StarButton(height=length))
+        l3.addWidget(EmojiButton('😁', '开心', height=length))
+        l3.addWidget(EmojiButton('🔥', '热门', height=length))
+        l3.addStretch(0)
