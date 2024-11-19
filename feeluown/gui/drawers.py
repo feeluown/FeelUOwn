@@ -8,7 +8,7 @@ from PyQt5.QtGui import (
 )
 from PyQt5.QtWidgets import QWidget
 
-from feeluown.gui.helpers import random_solarized_color, painter_save
+from feeluown.gui.helpers import random_solarized_color, painter_save, IS_MACOS
 
 
 class SizedPixmapDrawer:
@@ -483,6 +483,11 @@ class EmojiIconDrawer:
         with painter_save(painter):
             painter.translate(self._padding, self._padding)
             font = painter.font()
-            font.setPixelSize(width - 3)
+            if IS_MACOS:
+                # -4 works well on macOS when length is in range(30, 200)
+                font.setPixelSize(width - 4)
+            else:
+                # -1 works well on KDE when length is in range(30, 200)
+                font.setPixelSize(width - (self._length//20))
             painter.setFont(font)
-            painter.drawText(0, 0, width, width, Qt.AlignCenter, self._emoji)
+            painter.drawText(0, 0, width, width, Qt.AlignHCenter | Qt.AlignVCenter, self._emoji)

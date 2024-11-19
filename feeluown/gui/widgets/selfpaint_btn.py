@@ -563,7 +563,7 @@ if __name__ == '__main__':
         l1.addWidget(CalendarButton(height=length))
 
         l2.addWidget(PlayPreviousButton(length=length))
-        l2.addWidget(PlayPauseButton(length=100))
+        l2.addWidget(PlayPauseButton(length=60))
         l2.addWidget(PlayNextButton(length=length))
         volume_button = VolumeButton(length=length)
         volume_button.set_volume(60)
@@ -576,4 +576,5 @@ if __name__ == '__main__':
         l3.addWidget(RankButton(height=length))
         l3.addWidget(StarButton(height=length))
         l3.addWidget(EmojiButton('😁', '开心', height=length))
+        l3.addWidget(EmojiButton('🔥', '热门', height=length))
         l3.addStretch(0)
