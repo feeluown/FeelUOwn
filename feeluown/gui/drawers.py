@@ -476,11 +476,13 @@ class EmojiIconDrawer:
         self._length = length
         self._padding = padding
 
+        self._emoji_width = self._length - 2 * self._padding
+
     def paint(self, painter: QPainter):
+        width = self._emoji_width
         with painter_save(painter):
             painter.translate(self._padding, self._padding)
-            width = self._length - 2 * self._padding
             font = painter.font()
-            font.setPixelSize(width)
+            font.setPixelSize(width - 3)
             painter.setFont(font)
             painter.drawText(0, 0, width, width, Qt.AlignCenter, self._emoji)
