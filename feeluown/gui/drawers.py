@@ -468,3 +468,19 @@ class FireIconDrawer:
 
             # Draw the fire shape
             painter.drawPath(path)
+
+
+class EmojiIconDrawer:
+    def __init__(self, emoji: str, length: int, padding: int):
+        self._emoji = emoji
+        self._length = length
+        self._padding = padding
+
+    def paint(self, painter: QPainter):
+        with painter_save(painter):
+            painter.translate(self._padding, self._padding)
+            width = self._length - 2 * self._padding
+            font = painter.font()
+            font.setPixelSize(width)
+            painter.setFont(font)
+            painter.drawText(0, 0, width, width, Qt.AlignCenter, self._emoji)

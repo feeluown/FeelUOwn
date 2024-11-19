@@ -8,17 +8,14 @@ from PyQt5.QtWidgets import (
 
 from feeluown.excs import ProviderIOError, NoUserLoggedIn
 from feeluown.library import (
-    SupportsPlaylistDelete,
-    SupportsPlaylistCreateByName,
-    SupportsCurrentUser,
+    SupportsPlaylistDelete, SupportsPlaylistCreateByName, SupportsCurrentUser,
 )
 from feeluown.utils import aio
+from feeluown.gui.provider_ui import UISupportsNavBtns, UISupportsCreatePlaylist
 from feeluown.gui.components import Avatar
 from feeluown.gui.widgets import (
-    DiscoveryButton,
-    StarButton,
-    PlusButton,
-    TriagleButton,
+    DiscoveryButton, StarButton, PlusButton, TriagleButton,
+    EmojiButton,
 )
 from feeluown.gui.widgets.playlists import PlaylistsView
 from feeluown.gui.widgets.my_music import MyMusicView
@@ -142,17 +139,33 @@ class ProviderBar(QWidget):
         self.discovery_btn.setToolTip('当前资源提供方未知')
         self.fold_top_btn.setToolTip('折叠/打开“主页和本地收藏集”功能')
 
-    def add_btn(self, btn):
-        self._btn_layout.addWidget(btn)
-
     def on_current_pvd_ui_changed(self, pvd_ui, _):
+        self._clear_btns()
         if pvd_ui:
             self.discovery_btn.setEnabled(True)
             self.fav_btn.setEnabled(True)
             self.discovery_btn.setToolTip(f'点击进入 {pvd_ui.provider.name} 推荐页')
+            if isinstance(pvd_ui, UISupportsNavBtns):
+                for btn in pvd_ui.list_nav_btns():
+                    qt_btn = EmojiButton(btn.icon, btn.text, height=30, parent=self)
+                    qt_btn.clicked.connect(btn.cb)
+                    self._add_btn(qt_btn)
+
+            if isinstance(pvd_ui, UISupportsCreatePlaylist):
+                self.playlists_con.create_btn.show()
+                self.playlists_con.create_btn.clicked.connect(pvd_ui.create_playlist)
+            else:
+                self.playlists_con.create_btn.hide()
         else:
             self.discovery_btn.setEnabled(False)
             self.fav_btn.setEnabled(False)
+
+    def _add_btn(self, btn):
+        self._btn_layout.addWidget(btn)
+
+    def _clear_btns(self):
+        for btn in self._btn_layout.children():
+            btn.deleteLater()
 
     def _create_playlist(self):
         provider_ui = self._app.current_pvd_ui_mgr.get()

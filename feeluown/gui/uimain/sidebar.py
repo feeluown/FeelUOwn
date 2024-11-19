@@ -2,9 +2,10 @@ import sys
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import (QFrame, QLabel, QVBoxLayout, QScrollArea,
-                            QFormLayout, QDialog, QLineEdit, QDialogButtonBox,
-                            QMessageBox)
+from PyQt5.QtWidgets import (
+    QFrame, QLabel, QVBoxLayout, QScrollArea, QMessageBox,
+    QFormLayout, QDialog, QLineEdit, QDialogButtonBox,
+)
 
 from feeluown.collection import CollectionAlreadyExists, CollectionType
 from feeluown.utils.reader import create_reader, Reader
@@ -69,8 +70,7 @@ class _LeftPanel(QFrame):
                                            '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
                                            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。')
         self.collections_view = CollectionListView(self._app)
-        self.collections_con = LVC(self.collections_header,
-                                                 self.collections_view)
+        self.collections_con = LVC(self.collections_header, self.collections_view)
         self._top_separator = Separator(self._app)
         self.provider_bar = ProviderBar(self._app)
 

@@ -12,6 +12,7 @@ from feeluown.gui.drawers import (
     VolumeIconDrawer,
     SearchIconDrawer,
     FireIconDrawer,
+    EmojiIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -351,6 +352,15 @@ class HotButton(SelfPaintAbstractIconTextButton):
 
     def draw_icon(self, painter):
         self.hot_icon.paint(painter)
+
+
+class EmojiButton(SelfPaintAbstractIconTextButton):
+    def __init__(self, emoji: str, text='表情', *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        self.emoji_icon = EmojiIconDrawer(emoji, self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.emoji_icon.paint(painter)
 
 
 class PlayButton(SelfPaintAbstractSquareButton):
