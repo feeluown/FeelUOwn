@@ -82,6 +82,9 @@ class Avatar(SelfPaintAbstractIconTextButton):
         menu.exec_(e.globalPos())
 
     def on_provider_ui_login_event(self, provider_ui, event):
+        current_pvd_ui = self._app.current_pvd_ui_mgr.get()
+        if current_pvd_ui == provider_ui and event == 2:
+            return
         if event in (1, 2):
             run_afn(self.show_pvd_ui_current_user)
             run_afn(
@@ -90,12 +93,13 @@ class Avatar(SelfPaintAbstractIconTextButton):
             )
 
     def on_pvd_ui_selected(self, pvd_ui):
-        self._app.current_pvd_ui_mgr.set(pvd_ui)
         if isinstance(pvd_ui, UISupportsLoginEvent):
             pvd_ui.login_event.connect(self.on_provider_ui_login_event)
         if isinstance(pvd_ui, UISupportsLoginOrGoHome):
             pvd_ui.login_or_go_home()
-        run_afn(self.show_pvd_ui_current_user)
+        # Set current provider ui at the very last.
+        # Must not set it before handling login event.
+        self._app.current_pvd_ui_mgr.set(pvd_ui)
 
     def on_provider_selected(self, provider: ProviderUiItem):
         self._app.current_pvd_ui_mgr.set_item(provider)
