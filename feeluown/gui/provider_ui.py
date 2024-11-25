@@ -23,14 +23,24 @@ class NavBtn:
 
 @runtime_checkable
 class UISupportsLoginOrGoHome(Protocol):
-
     @abstractmethod
     def login_or_go_home(self):
-        ...
+        """This method is called when the avatar is clicked.
+
+        Typically, ProviderUI can implement this method as follows:
+        - When no user is logged in, ProviderUI MAY show a login dialog.
+        - When a user is logged in, ProviderUI MAY show the homepage.
+          At the same time, ProviderUI MAY emit a login success event.
+        """
 
 
 @runtime_checkable
 class UISupportsLoginEvent(Protocol):
+    """
+    When the user is logged in, ProviderUI MAY emit a login success event.
+    This allows FeelUOwn to perform certain actions based on this event,
+    for example, fetching and show the user's playlist.
+    """
 
     @property
     @abstractmethod
