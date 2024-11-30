@@ -25,9 +25,9 @@ def create_config() -> Config:
         default={
             'contents': [
                 {'name': 'RecACollectionOfVideos', 'provider': 'bilibili'},
-                #{'name': 'RecListDailySongs', 'provider': 'netease'},
+                # {'name': 'RecListDailySongs', 'provider': 'netease'},
                 {'name': 'RecListDailyPlaylists', 'provider': 'qqmusic'},
-                #{'name': 'RecACollectionOfSongs', 'provider': 'qqmusic'},
+                # {'name': 'RecACollectionOfSongs', 'provider': 'qqmusic'},
             ]
         },
         desc='主页配置'

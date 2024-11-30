@@ -4,7 +4,7 @@ from typing import Optional
 from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
 from PyQt5.QtGui import (
     QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette,
-    QPainterPath
+    QPainterPath, QGuiApplication,
 )
 from PyQt5.QtWidgets import QWidget
 
@@ -12,13 +12,17 @@ from feeluown.gui.helpers import random_solarized_color, painter_save, IS_MACOS
 
 
 class SizedPixmapDrawer:
-    def __init__(self, img, rect: QRect, radius: int = 0):
-        """
-        :param widget: a object which has width() and height() method.
-        """
+    """
+    Draw pixmap on a specific rect (on a fixed area).
+
+    Note that if device_pixel_ratio is not properly set, the drawed image
+    quality may be poor.
+    """
+    def __init__(self, img: Optional[QImage], rect: QRect, radius: int = 0):
         self._rect = rect
         self._img_old_width = rect.width()
         self._radius = radius
+        self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
 
         if img is None:
             self._color = random_solarized_color()
@@ -27,8 +31,13 @@ class SizedPixmapDrawer:
         else:
             self._img = img
             self._color = None
-            new_img = img.scaledToWidth(self._img_old_width, Qt.SmoothTransformation)
+            new_img = self._scale_image(img)
             self._pixmap = QPixmap(new_img)
+            self._pixmap.setDevicePixelRatio(self._device_pixel_ratio)
+
+    def _scale_image(self, img: QImage) -> QImage:
+        return img.scaledToWidth(int(self._img_old_width * self._device_pixel_ratio),
+                                 Qt.SmoothTransformation)
 
     def get_radius(self):
         return self._radius if self._radius >= 1 else \
@@ -36,9 +45,6 @@ class SizedPixmapDrawer:
 
     def get_rect(self):
         return self._rect
-
-    def maybe_update_pixmap(self):
-        pass
 
     @classmethod
     def from_img_data(cls, img_data, *args, **kwargs):
@@ -53,14 +59,11 @@ class SizedPixmapDrawer:
         return self._pixmap
 
     def draw(self, painter: QPainter):
-        painter.save()
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
-        if self._pixmap is None:
-            self._draw_random_color(painter)
-        else:
-            self._draw_pixmap(painter)
-        painter.restore()
+        with painter_save(painter):
+            if self._pixmap is None:
+                self._draw_random_color(painter)
+            else:
+                self._draw_pixmap(painter)
 
     def _draw_random_color(self, painter: QPainter):
         brush = QBrush(self._color)
@@ -76,23 +79,21 @@ class SizedPixmapDrawer:
     def _draw_pixmap(self, painter: QPainter):
         assert self._pixmap is not None
 
-        self.maybe_update_pixmap()
         brush = QBrush(self._pixmap)
         painter.setBrush(brush)
         painter.setPen(Qt.NoPen)
         radius = self.get_radius()
-        size = self._pixmap.size()
+        size = self._pixmap.size() / self._pixmap.devicePixelRatio()
         target_rect = self.get_rect()
         y = (size.height() - target_rect.height()) // 2
-        painter.save()
-        painter.translate(target_rect.x(), target_rect.y())
-        painter.translate(0, -y)
-        rect = QRect(0, 0, target_rect.width(), size.height())
-        if radius == 0:
-            painter.drawRect(rect)
-        else:
-            painter.drawRoundedRect(rect, radius, radius)
-        painter.restore()
+        with painter_save(painter):
+            painter.translate(target_rect.x(), target_rect.y())
+            painter.translate(0, -y)
+            rect = QRect(0, 0, target_rect.width(), size.height())
+            if radius == 0:
+                painter.drawRect(rect)
+            else:
+                painter.drawRoundedRect(rect, radius, radius)
 
 
 class PixmapDrawer(SizedPixmapDrawer):
@@ -119,6 +120,10 @@ class PixmapDrawer(SizedPixmapDrawer):
             new_img = self._img.scaledToWidth(self._img_old_width,
                                               Qt.SmoothTransformation)
             self._pixmap = QPixmap(new_img)
+
+    def _draw_pixmap(self, painter: QPainter):
+        self.maybe_update_pixmap()
+        super()._draw_pixmap(painter)
 
 
 class AvatarIconDrawer:

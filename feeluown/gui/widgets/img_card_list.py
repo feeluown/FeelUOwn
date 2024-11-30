@@ -236,7 +236,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         border_radius = 3
         if self.as_circle:
             border_radius = draw_width // 2
-        cover_rect = QRectF(0, 0, draw_width, height)
+        cover_rect = QRect(0, 0, draw_width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
 
     def draw_title(self, painter, index, text_rect):
