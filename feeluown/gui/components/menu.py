@@ -101,6 +101,9 @@ class SongMenuInitializer:
         x = self._app.ui.sidebar.width()
         y = self._app.height() - height - self._app.ui.player_bar.height()
 
+        # Do not use Qt.Popup, because it behaves differently on different
+        # platforms. For example, on macOS, it will pop up a window with a
+        # shadow, while on Linux(KDE) it won't.
         view.setGeometry(x, y, width, height)
         view.show()
         view.raise_()
