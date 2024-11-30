@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt
 
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
@@ -75,6 +75,7 @@ class SongMenuInitializer:
     def show_similar_resource(self, song):
         from feeluown.gui.components.search import SearchResultView
 
+        # TODO: add a close button, and rename it to ClosableSearchResultView
         class SearchResultViewWithEsc(SearchResultView):
             def keyPressEvent(self, event):
                 if event.key() == Qt.Key_Escape:
@@ -83,7 +84,15 @@ class SongMenuInitializer:
                     super().keyPressEvent(event)
 
         q = f'{song.title} {song.artists_name}'
-        view = SearchResultViewWithEsc(self._app, parent=self._app)
+        view = SearchResultViewWithEsc(self._app, transparent_bg=False, parent=self._app)
+
+        view.setStyleSheet('''
+            SearchResultView {
+                border: 1px solid gray;
+                border-radius: 2px;
+            }
+        ''')
+
         source_in = self._app.browser.local_storage.get(KeySourceIn, None)
         run_afn(view.search_and_render, q, SearchType.so, source_in)
 
@@ -92,11 +101,10 @@ class SongMenuInitializer:
         x = self._app.ui.sidebar.width()
         y = self._app.height() - height - self._app.ui.player_bar.height()
 
-        # Set the size using resize() and position using move()
-        view.resize(width, height)
-        pos = self._app.mapToGlobal(QPoint(0, 0))
-        view.move(pos.x() + x, pos.y() + y)
-        view.setWindowFlags(Qt.Popup)
+        # Do not use Qt.Popup, because it behaves differently on different
+        # platforms. For example, on macOS, it will pop up a window with a
+        # shadow, while on Linux(KDE) it won't.
+        view.setGeometry(x, y, width, height)
         view.show()
         view.raise_()
 

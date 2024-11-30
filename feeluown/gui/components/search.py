@@ -1,14 +1,14 @@
 from datetime import datetime
 
-from PyQt5.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout
+from PyQt5.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout, QScrollArea
 
 from feeluown.library import SearchType
 from feeluown.gui.page_containers.table import TableContainer, Renderer
-from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.widgets.img_card_list import ImgCardListDelegate
 from feeluown.gui.widgets.songs import SongsTableView, ColumnsMode
 from feeluown.gui.base_renderer import TabBarRendererMixin
-from feeluown.gui.helpers import BgTransparentMixin
+from feeluown.gui.helpers import BgTransparentMixin, unify_scroll_area_style, \
+    set_widget_bg_transparent
 from feeluown.gui.widgets.magicbox import KeySourceIn, KeyType
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.accordion import Accordion
@@ -30,9 +30,20 @@ def get_tab_idx(search_type):
     raise ValueError("unknown search type")
 
 
-class SearchResultView(ScrollArea):
-    def __init__(self, app, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class SearchResultView(QScrollArea):
+    """
+    Usage:
+        view = SearchResultView(app)
+        await view.search_and_render(q, search_type, source_in)
+    """
+    def __init__(self, app, transparent_bg=True, parent=None):
+        super().__init__(parent=parent)
+
+        self.setWidgetResizable(True)
+        self.setFrameShape(QFrame.NoFrame)
+        unify_scroll_area_style(self)
+        if transparent_bg:
+            set_widget_bg_transparent(self)
 
         self.body = Body(app)
         self.setWidget(self.body)
@@ -41,15 +52,11 @@ class SearchResultView(ScrollArea):
         """Implement VFillableBg protocol"""
         return self.body.height() - self.body.accordion.height()
 
-    async def search_and_render(self, *args, **kwargs):
-        await self.body.search_and_render(*args, **kwargs)
+    async def search_and_render(self, q, search_type, source_in):
+        await self.body.search_and_render(q, search_type, source_in)
 
 
 class Body(QFrame, BgTransparentMixin):
-    """
-    view = SearchResultView(app, q)
-    await view.render()
-    """
     def __init__(self, app, **kwargs):
         super().__init__(**kwargs)
 
