@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import Qt
 
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
@@ -75,6 +75,7 @@ class SongMenuInitializer:
     def show_similar_resource(self, song):
         from feeluown.gui.components.search import SearchResultView
 
+        # TODO: add a close button, and rename it to ClosableSearchResultView
         class SearchResultViewWithEsc(SearchResultView):
             def keyPressEvent(self, event):
                 if event.key() == Qt.Key_Escape:
@@ -100,10 +101,7 @@ class SongMenuInitializer:
         x = self._app.ui.sidebar.width()
         y = self._app.height() - height - self._app.ui.player_bar.height()
 
-        # Set the size using resize() and position using move()
-        view.resize(width, height)
-        pos = self._app.mapToGlobal(QPoint(0, 0))
-        view.move(pos.x() + x, pos.y() + y)
+        view.setGeometry(x, y, width, height)
         view.show()
         view.raise_()
 
