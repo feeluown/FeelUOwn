@@ -24,10 +24,10 @@ def create_config() -> Config:
         type_=dict,
         default={
             'contents': [
-                {'name': 'RecACollectionOfVideos', 'provider': 'bilibili'},
-                # {'name': 'RecListDailySongs', 'provider': 'netease'},
-                {'name': 'RecListDailyPlaylists', 'provider': 'qqmusic'},
+                {'name': 'RecListDailySongs', 'provider': 'netease'},
                 # {'name': 'RecACollectionOfSongs', 'provider': 'qqmusic'},
+                {'name': 'RecListDailyPlaylists', 'provider': 'qqmusic'},
+                {'name': 'RecACollectionOfVideos', 'provider': 'bilibili'},
             ]
         },
         desc='主页配置'

@@ -93,4 +93,4 @@ if __name__ == '__main__':
         label = CoverLabel()
         layout.addWidget(label)
         label.resize(100, 100)
-        label.show_img(QImage('/Users/cosven/Desktop/test.png'))
+        label.show_img(QImage('/path/to/test.png'))

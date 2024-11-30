@@ -196,11 +196,13 @@ class RecVideosPanel(Panel):
         video_list_view.play_video_needed.connect(self._app.playlist.play_model)
 
     async def render(self):
-        videos = await run_fn(self._provider.rec_a_collection_of_videos)
+        coll = await run_fn(self._provider.rec_a_collection_of_videos)
+        videos = coll.models
         if videos:
             # TODO: maybe show all videos
             model = VideoCardListModel.create(videos[:8], self._app)
             self.video_list_view.setModel(model)
+            self.header.setText(coll.name)
         else:
             self.header.setText('暂无推荐视频')
             self.video_list_view.hide()
@@ -214,7 +216,7 @@ class View(QWidget, BgTransparentMixin):
 
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(20, 10, 20, 0)
-        self._layout.setSpacing(0)
+        self._layout.setSpacing(10)
 
     async def render(self):
         panels = []
