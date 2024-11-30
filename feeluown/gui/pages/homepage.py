@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
 from feeluown.library import (
     SupportsRecListDailyPlaylists, SupportsRecACollectionOfSongs, Collection,
-    SupportsRecListDailySongs, Provider
+    SupportsRecListDailySongs, Provider, SupportsRecACollectionOfVideos,
 )
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
@@ -182,20 +182,28 @@ class RecSongsPanel(SongsBasePanel[SupportsRecACollectionOfSongs]):
 
 
 class RecVideosPanel(Panel):
-    def __init__(self, app: 'GuiApp', provider):
+    def __init__(self, app: 'GuiApp', provider: SupportsRecACollectionOfVideos):
         self._app = app
         self._provider = provider
         self.video_list_view = video_list_view = VideoCardListView()
-        video_list_view.setItemDelegate(VideoCardListDelegate(video_list_view))
+        video_list_view.setItemDelegate(VideoCardListDelegate(
+            video_list_view,
+            card_min_width=200,
+        ))
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
-        super().__init__('热门视频', video_list_view, pixmap)
+        super().__init__('瞅瞅', video_list_view, pixmap)
 
         video_list_view.play_video_needed.connect(self._app.playlist.play_model)
 
     async def render(self):
         videos = await run_fn(self._provider.rec_a_collection_of_videos)
-        model = VideoCardListModel.create(videos[:8], self._app)
-        self.video_list_view.setModel(model)
+        if videos:
+            # TODO: maybe show all videos
+            model = VideoCardListModel.create(videos[:8], self._app)
+            self.video_list_view.setModel(model)
+        else:
+            self.header.setText('暂无推荐视频')
+            self.video_list_view.hide()
 
 
 class View(QWidget, BgTransparentMixin):
@@ -225,9 +233,22 @@ class View(QWidget, BgTransparentMixin):
                 panel = self._handle_rec_a_collection_of_songs(content)
                 if panel is not None:
                     panels.append(panel)
+            elif name == 'RecACollectionOfVideos':
+                panel = self._handle_rec_a_collection_of_videos(content)
+                if panel is not None:
+                    panels.append(panel)
         for panel in panels:
             self._layout.addWidget(panel)
         gather(*[panel.render() for panel in panels])
+
+    def _handle_rec_a_collection_of_videos(self, content: dict) -> Optional[Panel]:
+        source = content['provider']
+        provider = self._app.library.get(source)
+        if isinstance(provider, SupportsRecACollectionOfVideos):
+            return RecVideosPanel(self._app, provider)
+        logger.warning(f'Invalid homepage content: {content}, '
+                       f'provider {source} not found or not supported')
+        return None
 
     def _handle_rec_list_daily_songs(self, content: dict) -> Optional[Panel]:
         source = content['provider']

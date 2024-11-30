@@ -420,6 +420,17 @@ class SupportsRecACollectionOfSongs(Protocol):
 
 
 @runtime_checkable
+class SupportsRecACollectionOfVideos(Protocol):
+    @abstractmethod
+    def rec_a_collection_of_videos(self) -> Collection:
+        """
+        For example, providers may recommend a list of videos.
+        For different user, this API may return different result.
+        This API MAY return different result at different time.
+        """
+
+
+@runtime_checkable
 class SupportsRecListDailyPlaylists(Protocol):
     @abstractmethod
     def rec_list_daily_playlists(self) -> List[PlaylistModel]:
