@@ -29,7 +29,8 @@ from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyMod
     QAbstractListModel, QPoint
 from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent, \
     QKeySequence
-from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QShortcut
+from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QShortcut, \
+    QAbstractScrollArea
 
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
@@ -113,6 +114,17 @@ def palette_set_bg_color(palette, color):
         # macOS use the QPalette.Window as background color
         palette.setColor(QPalette.Active, QPalette.Window, color)
         palette.setColor(QPalette.Inactive, QPalette.Window, color)
+
+
+def unify_scroll_area_style(scroll_area: QAbstractScrollArea):
+    if not IS_MACOS:
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+
+
+def set_widget_bg_transparent(widget: QWidget):
+    palette = widget.palette()
+    palette_set_bg_color(palette, Qt.transparent)
+    widget.setPalette(palette)
 
 
 class BgTransparentMixin:

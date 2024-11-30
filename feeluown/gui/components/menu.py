@@ -83,7 +83,15 @@ class SongMenuInitializer:
                     super().keyPressEvent(event)
 
         q = f'{song.title} {song.artists_name}'
-        view = SearchResultViewWithEsc(self._app, parent=self._app)
+        view = SearchResultViewWithEsc(self._app, transparent_bg=False, parent=self._app)
+
+        view.setStyleSheet('''
+            SearchResultView {
+                border: 1px solid gray;
+                border-radius: 2px;
+            }
+        ''')
+
         source_in = self._app.browser.local_storage.get(KeySourceIn, None)
         run_afn(view.search_and_render, q, SearchType.so, source_in)
 
@@ -96,7 +104,6 @@ class SongMenuInitializer:
         view.resize(width, height)
         pos = self._app.mapToGlobal(QPoint(0, 0))
         view.move(pos.x() + x, pos.y() + y)
-        view.setWindowFlags(Qt.Popup)
         view.show()
         view.raise_()
 
