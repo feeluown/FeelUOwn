@@ -164,8 +164,10 @@ class ProviderBar(QWidget):
         self._btn_layout.addWidget(btn)
 
     def _clear_btns(self):
-        for btn in self._btn_layout.children():
-            btn.deleteLater()
+        for _ in range(self._btn_layout.count()):
+            item = self._btn_layout.takeAt(0)
+            item.widget().deleteLater()
+            del item
 
     def _create_playlist(self):
         provider_ui = self._app.current_pvd_ui_mgr.get()
