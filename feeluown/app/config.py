@@ -59,12 +59,7 @@ def create_config() -> Config:
     #            },
     #        },
     #    ]
-    config.deffield(
-        'YTDL_RULES',
-        type_=list,
-        default=[],
-        desc=''
-    )
+    config.deffield('YTDL_RULES', type_=list, default=None, desc='')
     # TODO(cosven): maybe
     # 1. when it is set to 2, find standby from other providers first.
     # 2. when it is set to 3, play it's MV model instead of using MV's media.
