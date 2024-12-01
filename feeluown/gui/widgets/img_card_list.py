@@ -19,7 +19,7 @@ from PyQt5.QtCore import (
     QRectF, QRect, QSize, QSortFilterProxyModel, pyqtSignal
 )
 from PyQt5.QtGui import (
-    QImage, QColor, QResizeEvent,
+    QImage, QColor, QResizeEvent, QGuiApplication,
     QBrush, QPainter, QTextOption, QFontMetrics
 )
 from PyQt5.QtWidgets import (
@@ -162,6 +162,8 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.as_circle = True
         self.w_h_ratio = 1.0
 
+        self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
+
         self.card_min_width = card_min_width
         self.card_spacing = card_spacing
         self.card_text_height = card_text_height
@@ -186,7 +188,9 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             return
 
         with painter_save(painter):
-            painter.setRenderHint(QPainter.Antialiasing)
+            painter.setRenderHints(QPainter.Antialiasing |
+                                   QPainter.SmoothPixmapTransform |
+                                   QPainter.LosslessImageRendering)
             painter.translate(option.rect.x(), option.rect.y())
 
             if not self.is_leftmost(index):
@@ -225,10 +229,13 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             brush = QBrush(color)
             painter.setBrush(brush)
         else:
-            if obj.height() < obj.width():
-                img = obj.scaledToHeight(height, Qt.SmoothTransformation)
+            if obj.width() / obj.height() > draw_width / height:
+                img = obj.scaledToHeight(int(height * self._device_pixel_ratio),
+                                         Qt.SmoothTransformation)
             else:
-                img = obj.scaledToWidth(draw_width, Qt.SmoothTransformation)
+                img = obj.scaledToWidth(int(draw_width * self._device_pixel_ratio),
+                                        Qt.SmoothTransformation)
+            img.setDevicePixelRatio(self._device_pixel_ratio)
             brush = QBrush(img)
             painter.setBrush(brush)
         border_radius = 3

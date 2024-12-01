@@ -84,3 +84,13 @@ class CoverLabelV2(CoverLabel):
         img = QImage()
         img.loadFromData(content)
         self.show_img(img)
+
+
+if __name__ == '__main__':
+    from feeluown.gui.debug import simple_layout
+
+    with simple_layout() as layout:
+        label = CoverLabel()
+        layout.addWidget(label)
+        label.resize(100, 100)
+        label.show_img(QImage('/path/to/test.png'))
