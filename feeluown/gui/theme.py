@@ -4,13 +4,11 @@ from __future__ import annotations
 import logging
 import json
 import os
-import sys
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import pyqtSignal, QObject
 from PyQt5.QtGui import QGuiApplication, QPalette, QColor
-from feeluown.utils.utils import get_osx_theme
 from feeluown.gui.helpers import get_qapp
 
 if TYPE_CHECKING:
@@ -60,15 +58,7 @@ class ThemeManager(QObject):
 
     def autoload(self):
         if self._app.config.THEME == 'auto':
-            if sys.platform == 'darwin':
-                if get_osx_theme() == 1:
-                    theme = DARK
-                else:
-                    theme = LIGHT
-            else:
-                theme = self.guess_system_theme()
-                if theme == DARK:
-                    theme = Dark
+            theme = self.guess_system_theme()
         else:  # user settings have highest priority
             theme = self._app.config.THEME
         self.load_theme(theme)

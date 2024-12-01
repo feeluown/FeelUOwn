@@ -48,9 +48,16 @@ def create_config() -> Config:
         'ENABLE_YTDL_AS_MEDIA_PROVIDER', type_=bool, default=True, desc='YTDL 作为备用资源'
     )
     # For example::
-    #    [{'name': 'match_by_source',
-    #      'source': 'xxx',
-    #      'http_proxy': 'http://127.0.0.1:7890'},]
+    #    [
+    #        {
+    #            'name': 'match_source',
+    #            'pattern': 'ytmusic',
+    #            'http_proxy': 'http://127.0.0.1:7890',
+    #            'ytdl_options': {
+    #                'socket_timeout': 2,
+    #            },
+    #        },
+    #    ]
     config.deffield('YTDL_RULES', type_=list, default=None, desc='')
     # TODO(cosven): maybe
     # 1. when it is set to 2, find standby from other providers first.

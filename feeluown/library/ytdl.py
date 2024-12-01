@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, List, Any
 
-from yt_dlp import YoutubeDL
+from yt_dlp import YoutubeDL, DownloadError
 
 from feeluown.media import Media, VideoAudioManifest
 
@@ -11,14 +11,19 @@ logger = logging.getLogger(__name__)
 class Ytdl:
 
     def __init__(self, rules: Optional[List[Any]] = None):
-        self._default_audio_ytdl_opts = {
+        self._default_ytdl_opts = {
             'logger': logger,
+            'socket_timeout': 2,
+            'extractor_retries': 0,  # reduce retry
+        }
+        self._default_audio_ytdl_opts = {
             # The following two options may be only valid for select_audio API.
             # Remove these two options if needed.
             'format': 'm4a/bestaudio/best',
+            **self._default_ytdl_opts,
         }
         self._default_video_ytdl_opts = {
-            'logger': logger,
+            **self._default_ytdl_opts,
         }
         # For example::
         #    [
@@ -53,8 +58,13 @@ class Ytdl:
         ytdl_opts = {}
         ytdl_opts.update(self._default_audio_ytdl_opts)
         ytdl_opts['proxy'] = http_proxy
+        ytdl_opts.update(matched_rule.get('ytdl_options', {}))
         with YoutubeDL(ytdl_opts) as inner:
-            info = inner.extract_info(url, download=False)
+            try:
+                info = inner.extract_info(url, download=False)
+            except DownloadError:  # noqa
+                logger.warning(f"extract_info failed for {url}")
+                info = None
             if info:
                 media_url = info['url']
                 if media_url:
@@ -76,11 +86,16 @@ class Ytdl:
         ytdl_opts = {}
         ytdl_opts.update(self._default_video_ytdl_opts)
         ytdl_opts['proxy'] = http_proxy
+        ytdl_opts.update(matched_rule.get('ytdl_options', {}))
 
         audio_candidates = []  # [(url, abr)]  abr: average bitrate
         video_candidates = []  # [(url, width)]
         with YoutubeDL(ytdl_opts) as inner:
-            info = inner.extract_info(url, download=False)
+            try:
+                info = inner.extract_info(url, download=False)
+            except DownloadError as e:  # noqa
+                logger.warning(f"extract_info failed for {url}")
+                info = None
             if info:
                 for f in info['formats']:
                     if f.get('acodec', 'none') not in ('none', None):

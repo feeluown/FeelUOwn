@@ -215,6 +215,10 @@ def parse_line(line):
     >>> model, _ = parse_line(line)
     >>> model.source, model.title_display
     ('xxx', '没有人知道')
+    >>> line = 'fuo://xxx/songs/1-1'
+    >>> model, _ = parse_line(line)
+    >>> model.identifier
+    '1-1'
     """
     line = line.strip()
     parts = line.split('#', maxsplit=1)
@@ -223,7 +227,7 @@ def parse_line(line):
     else:
         uri, model_str = parts[0], ''
     ns_list = list(TYPE_NS_MAP.values())
-    p = re.compile(r'^fuo://(\w+)/({})/(\w+)'.format('|'.join(ns_list)))
+    p = re.compile(r'^fuo://(\w+)/({})/([\w-]+)'.format('|'.join(ns_list)))
     uri = uri.strip()
     m = p.match(uri)
     if not m:

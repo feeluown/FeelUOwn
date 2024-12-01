@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import os
 import sys
 import socket
 import time
@@ -78,13 +77,6 @@ def elfhash(s):
             hash ^= (x >> 24)
             hash &= ~x
     return (hash & 0x7FFFFFFF)
-
-
-def get_osx_theme():
-    """1 for dark, -1 for light"""
-    with os.popen('defaults read -g AppleInterfaceStyle') as pipe:
-        theme = pipe.read().strip()
-    return 1 if theme == 'Dark' else -1
 
 
 class DedupList(list):

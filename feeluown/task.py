@@ -129,12 +129,14 @@ class TaskManager:
         if not name:
             name = get_fn_name(afn)
         task_spec = self.get_or_create(name)
+        task_spec.disable_default_cb()
         return task_spec.bind_coro(afn(*args))
 
     def run_fn_preemptive(self, fn, *args, name=''):
         if not name:
             name = get_fn_name(fn)
         task_spec = self.get_or_create(name)
+        task_spec.disable_default_cb()
         return task_spec.bind_blocking_io(fn, *args)
 
 
