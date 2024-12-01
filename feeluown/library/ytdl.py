@@ -11,14 +11,19 @@ logger = logging.getLogger(__name__)
 class Ytdl:
 
     def __init__(self, rules: Optional[List[Any]] = None):
-        self._default_audio_ytdl_opts = {
+        self._default_ytdl_opts = {
             'logger': logger,
+            'socket_timeout': 2,
+            'extractor_retries': 0,  # reduce retry
+        }
+        self._default_audio_ytdl_opts = {
             # The following two options may be only valid for select_audio API.
             # Remove these two options if needed.
             'format': 'm4a/bestaudio/best',
+            **self._default_ytdl_opts,
         }
         self._default_video_ytdl_opts = {
-            'logger': logger,
+            **self._default_ytdl_opts,
         }
         # For example::
         #    [

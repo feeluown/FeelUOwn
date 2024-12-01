@@ -55,7 +55,6 @@ def create_config() -> Config:
     #            'http_proxy': 'http://127.0.0.1:7890',
     #            'ytdl_options': {
     #                'socket_timeout': 2,
-    #                'extractor_retries': 1,  # reduce retry
     #            },
     #        },
     #    ]
