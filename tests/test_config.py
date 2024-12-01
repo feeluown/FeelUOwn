@@ -17,10 +17,15 @@ def test_config_set_known_field(config):
 
 
 def test_config_set_unknown_field(config):
-    """Set unknown field should cause no effects"""
+    """
+    Set unknown field should cause no effects.
+    Access unknown field should return a Config object.
+    """
     config.hey = 0
-    with pytest.raises(AttributeError):
-        config.hey
+    assert isinstance(config.hey, Config)
+    config.plugin.X = 0  # should not raise error
+    assert isinstance(config.plugin.X, Config)
+    assert config.plugin.X._is_undeclared is True
 
 
 def test_config_set_subconfig(config):

@@ -91,7 +91,7 @@ class Plugin:
 
         .. versionadded: 3.7.15
         """
-        myconfig = Config()
+        myconfig = Config(name=self.name, parent=config)
 
         names = [self.name]
         # Currently, plugin name looks like fuo_xxx and xxx is the real name.
