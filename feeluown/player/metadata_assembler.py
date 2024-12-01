@@ -37,8 +37,11 @@ class MetadataAssembler:
             )
         except ResourceNotFound:
             return empty_result
+        except TimeoutError:  # noqa
+            logger.warning(f"fetching song's meta timeout, song:'{song.title}'")
+            return empty_result
         except:  # noqa
-            logger.exception(f"fetching song's meta failed, song:'{song.title_display}'")
+            logger.exception(f"fetching song's meta failed, song:'{song.title}'")
             return empty_result
         return usong.pic_url, usong.date, usong.album
 
@@ -51,9 +54,11 @@ class MetadataAssembler:
             )
         except ResourceNotFound:
             return empty_result
+        except TimeoutError:  # noqa
+            logger.warning(f"fetching album's meta timeout, album:'{album.name}'")
+            return empty_result
         except:  # noqa
-            logger.warning(
-                f"fetching album meta failed, album:{album.name}")
+            logger.exception(f"fetching album meta failed, album:'{album.name}'")
             return empty_result
         return album.cover, album.released
 
