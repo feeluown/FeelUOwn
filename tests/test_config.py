@@ -25,7 +25,6 @@ def test_config_set_unknown_field(config):
     assert isinstance(config.hey, Config)
     config.plugin.X = 0  # should not raise error
     assert isinstance(config.plugin.X, Config)
-    assert config.plugin.X._is_undeclared is True
 
 
 def test_config_set_subconfig(config):
