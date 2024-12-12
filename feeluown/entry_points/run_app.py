@@ -72,6 +72,9 @@ def before_start_app(args):
     # Run.
     #
     if AppMode.gui in AppMode(config.MODE):
+        # Disable sandbox so that webpage can be loaded (in some cases)
+        #   https://stackoverflow.com/a/74325318/4302892
+        os.environ.setdefault('QTWEBENGINE_DISABLE_SANDBOX', '1')
         if sys.platform == 'win32':
             # Enable auto scale by default so that it can work well with HiDPI display.
             os.environ.setdefault('QT_AUTO_SCREEN_SCALE_FACTOR', '1')
