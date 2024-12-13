@@ -15,9 +15,9 @@
 *.swo
 *.whl
 
-*.desktop
 *.md~
 *.py~
+/*.AppImage
 
 sphinx_doc/build
 test.py
@@ -33,7 +33,6 @@ __pycache__
 .ipynb_checkpoints
 *.DS_Store
 *.un~
-*.desktop
 app.command
 *.log
 
