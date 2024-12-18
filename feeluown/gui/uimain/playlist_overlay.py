@@ -7,7 +7,7 @@ from PyQt5.QtGui import (
     QColor, QLinearGradient, QPalette, QPainter,
 )
 
-from feeluown.player import PlaybackMode
+from feeluown.player import PlaybackMode, SongsRadio
 from feeluown.gui.helpers import fetch_cover_wrapper, esc_hide_widget
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.widgets.textbtn import TextButton
@@ -45,10 +45,14 @@ class PlaylistOverlay(QWidget):
         self._clear_playlist_btn = TextButton('清空播放队列')
         self._playback_mode_switch = PlaybackModeSwitch(app)
         self._goto_current_song_btn = TextButton('跳转到当前歌曲')
+        self._songs_radio_btn = TextButton('自动续歌')
         # Please update the list when you add new buttons.
-        self._btns = [self._clear_playlist_btn,
-                      self._playback_mode_switch,
-                      self._goto_current_song_btn]
+        self._btns = [
+            self._clear_playlist_btn,
+            self._playback_mode_switch,
+            self._goto_current_song_btn,
+            self._songs_radio_btn,
+        ]
         self._stacked_layout = QStackedLayout()
         self._shadow_width = 15
         self._view_options = dict(row_height=60, no_scroll_v=False)
@@ -60,6 +64,7 @@ class PlaylistOverlay(QWidget):
 
         self._clear_playlist_btn.clicked.connect(self._app.playlist.clear)
         self._goto_current_song_btn.clicked.connect(self.goto_current_song)
+        self._songs_radio_btn.clicked.connect(self.enter_songs_radio)
         esc_hide_widget(self)
         q_app = QApplication.instance()
         assert q_app is not None  # make type checker happy.
@@ -72,22 +77,28 @@ class PlaylistOverlay(QWidget):
     def setup_ui(self):
         self._layout = QVBoxLayout(self)
         self._btn_layout = QHBoxLayout()
+        self._btn_layout2 = QHBoxLayout()
         self._layout.setContentsMargins(self._shadow_width, 0, 0, 0)
         self._layout.setSpacing(0)
         self._btn_layout.setContentsMargins(7, 7, 7, 7)
         self._btn_layout.setSpacing(7)
+        self._btn_layout2.setContentsMargins(7, 0, 7, 7)
+        self._btn_layout2.setSpacing(7)
 
         self._tabbar.setDocumentMode(True)
         self._tabbar.addTab('播放列表')
         self._tabbar.addTab('最近播放')
         self._layout.addWidget(self._tabbar)
         self._layout.addLayout(self._btn_layout)
+        self._layout.addLayout(self._btn_layout2)
         self._layout.addLayout(self._stacked_layout)
 
         self._btn_layout.addWidget(self._clear_playlist_btn)
         self._btn_layout.addWidget(self._playback_mode_switch)
         self._btn_layout.addWidget(self._goto_current_song_btn)
+        self._btn_layout2.addWidget(self._songs_radio_btn)
         self._btn_layout.addStretch(0)
+        self._btn_layout2.addStretch(0)
 
     def on_focus_changed(self, _, new):
         """
@@ -104,6 +115,15 @@ class PlaylistOverlay(QWidget):
         view = self._stacked_layout.currentWidget()
         assert isinstance(view, PlayerPlaylistView)
         view.scroll_to_current_song()
+
+    def enter_songs_radio(self):
+        songs = self._app.playlist.list()
+        if not songs:
+            self._app.show_msg('播放队列为空，不能激活“自动续歌”功能')
+        else:
+            radio = SongsRadio(self._app, songs)
+            self._app.fm.activate(radio.fetch_songs_func, reset=False)
+            self._app.show_msg('“自动续歌”功能已激活')
 
     def show_tab(self, index):
         if not self.isVisible():
