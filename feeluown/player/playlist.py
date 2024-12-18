@@ -104,6 +104,8 @@ class Playlist:
 
         #: playlist mode changed signal
         self.mode_changed = Signal()
+        #: playback mode before changed to fm mode
+        self._normal_mode_playback_mode = playback_mode
 
         #: store value for ``current_song`` property
         self._current_song = None
@@ -161,7 +163,10 @@ class Playlist:
         """set playlist mode"""
         if self._mode is not mode:
             if mode is PlaylistMode.fm:
+                self._normal_mode_playback_mode = self.playback_mode
                 self.playback_mode = PlaybackMode.sequential
+            else:
+                self.playback_mode = self._normal_mode_playback_mode
             # we should change _mode at the very end
             self._mode = mode
             self.mode_changed.emit(mode)

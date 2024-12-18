@@ -1,9 +1,13 @@
+from typing import TYPE_CHECKING
+
 import asyncio
 import logging
-from collections import deque
 
 from feeluown.excs import ProviderIOError
 from feeluown.player import PlaylistMode
+
+if TYPE_CHECKING:
+    from feeluown.app import App
 
 logger = logging.getLogger(__name__)
 
@@ -23,18 +27,16 @@ class FM:
         maybe a bit confusing.
     """
 
-    def __init__(self, app):
+    def __init__(self, app: 'App'):
         """
         :type app: feeluown.app.App
         """
         self._app = app
 
-        # store songs that are going to be added to playlist
-        self._queue = deque()
         self._activated = False
         self._is_fetching_songs = False
         self._fetch_songs_task_name = 'fm-fetch-songs'
-        self._fetch_songs_func = None
+        self._fetch_songs_func = None  # fn(number_to_fetch)
         self._minimum_per_fetch = 3
 
         self._app.playlist.mode_changed.connect(self._on_playlist_mode_changed)
@@ -78,10 +80,6 @@ class FM:
         return self._app.playlist.mode is PlaylistMode.fm
 
     def _on_playlist_eof_reached(self):
-        if self._queue:
-            self._feed_playlist()
-            return
-
         if self._is_fetching_songs:
             return
 
@@ -102,9 +100,8 @@ class FM:
         self._fetch_songs_func = None
         logger.info('fm mode deactivated')
 
-    def _feed_playlist(self):
-        while self._queue:
-            song = self._queue.popleft()
+    def _feed_playlist(self, songs):
+        for song in songs:
             self._app.playlist.fm_add(song)
         self._app.playlist.next()
 
@@ -120,8 +117,6 @@ class FM:
                 logger.info('No enough songs, exit fm mode now')
                 self.deactivate()
             else:
-                for song in songs:
-                    self._queue.append(song)
-                self._feed_playlist()
+                self._feed_playlist(songs)
         finally:
             self._is_fetching_songs = False

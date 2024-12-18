@@ -190,11 +190,13 @@ async def test_playlist_change_mode(app_mock, mocker):
     # from normal to fm
     pl = Playlist(app_mock)
     pl.mode = PlaylistMode.fm
+    old_playback_mode = pl.playback_mode
     assert pl.playback_mode is PlaybackMode.sequential
 
     # from fm to normal
     pl.mode = PlaylistMode.normal
     assert pl.mode is PlaylistMode.normal
+    assert pl.playback_mode == old_playback_mode
 
 
 @pytest.mark.asyncio
