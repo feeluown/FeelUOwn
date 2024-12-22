@@ -294,13 +294,13 @@ class Playlist:
                 next_song = self.next_song
                 # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
                 if next_song == self.current_song:
-                    self.current_song = None
+                    self.set_current_song(None)
                     self._songs.remove(song)
-                    self.current_song = self.next_song
+                    self.set_current_song(self.next_song)
                 else:
                     next_song = self.next_song
                     self._songs.remove(song)
-                    self.current_song = next_song
+                    self.set_current_song(next_song)
             else:
                 self._songs.remove(song)
             self.songs_removed.emit(index, 1)
