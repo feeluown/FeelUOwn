@@ -298,6 +298,35 @@ class Playlist:
             self._songs.insert(index + 1, song)
             self.songs_added.emit(index + 1, 1)
 
+    def remove_no_lock(self, song):
+        try:
+            index = self._songs.index(song)
+        except ValueError:
+            logger.debug('Remove failed: {} not in playlist'.format(song))
+        else:
+            if self._current_song is None:
+                self._songs.remove(song)
+            elif song == self._current_song:
+                next_song = self._get_next_song_no_lock()
+                # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
+                if next_song == self.current_song:
+                    # Should set current song immediately.
+                    # Should not use set_current_song, because it is an async task.
+                    self.set_current_song_none()
+                    self._songs.remove(song)
+                    new_next_song = self._get_next_song_no_lock()
+                    self.set_existing_song_as_current_song(new_next_song)
+                else:
+                    next_song = self._get_next_song_no_lock()
+                    self._songs.remove(song)
+                    self.set_existing_song_as_current_song(next_song)
+            else:
+                self._songs.remove(song)
+            self.songs_removed.emit(index, 1)
+            logger.debug('Remove {} from player playlist'.format(song))
+        if song in self._bad_songs:
+            self._bad_songs.remove(song)
+
     def remove(self, song):
         """Remove song from playlist. O(n)
 
@@ -305,33 +334,7 @@ class Playlist:
         just remove it.
         """
         with self._songs_lock:
-            try:
-                index = self._songs.index(song)
-            except ValueError:
-                logger.debug('Remove failed: {} not in playlist'.format(song))
-            else:
-                if self._current_song is None:
-                    self._songs.remove(song)
-                elif song == self._current_song:
-                    next_song = self._get_next_song_no_lock()
-                    # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
-                    if next_song == self.current_song:
-                        # Should set current song immediately.
-                        # Should not use set_current_song, because it is an async task.
-                        self.set_current_song_none()
-                        self._songs.remove(song)
-                        new_next_song = self._get_next_song_no_lock()
-                        self.set_existing_song_as_current_song(new_next_song)
-                    else:
-                        next_song = self._get_next_song_no_lock()
-                        self._songs.remove(song)
-                        self.set_existing_song_as_current_song(next_song)
-                else:
-                    self._songs.remove(song)
-                self.songs_removed.emit(index, 1)
-                logger.debug('Remove {} from player playlist'.format(song))
-            if song in self._bad_songs:
-                self._bad_songs.remove(song)
+            self.remove_no_lock(song)
 
     def init_from(self, songs):
         warnings.warn(
@@ -741,13 +744,28 @@ class Playlist:
         else:
             fn = self.a_set_current_model
             upgrade_fn = self._app.library.video_upgrade
+
         try:
             # Try to upgrade the model.
-            model = await aio.run_fn(upgrade_fn, model)
+            umodel = await aio.run_fn(upgrade_fn, model)
         except ModelNotFound:
             pass
         except:  # noqa
             logger.exception(f'upgrade model:{model} failed')
+        else:
+            # Replace the brief model with the upgraded model
+            # when user try to play a brief model that is already in the playlist.
+            if isinstance(model, BriefSongModel):
+                with self._songs_lock:
+                    if model in self._songs:
+                        index = self._songs.index(model)
+                        self._songs.insert(index+1, umodel)
+                        if self.current_song == model:
+                            self.set_current_song_none()
+                        else:
+                            self._songs.remove(model)
+                        model = umodel
+
         try:
             await self._app.task_mgr.run_afn_preemptive(
                 fn, model, name=TASK_SET_CURRENT_MODEL

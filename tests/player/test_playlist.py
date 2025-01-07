@@ -99,6 +99,20 @@ async def test_play_model(pl, app_mock, song, mocker):
     assert pl._app.player.resume.called
 
 
+@pytest.mark.asyncio
+async def test_play_a_brief_song_model(
+        pl, app_mock, library, ekaf_song0, ekaf_brief_song0, mocker):
+    app_mock.library = library
+    pl.add(ekaf_brief_song0)
+    mocker.patch.object(pl, 'a_set_current_song')
+    await pl.a_play_model(ekaf_brief_song0)
+    # The song should be upgraded to a normal model
+    assert ekaf_brief_song0 not in pl.current_song
+    # Should called with the upgraded song model
+    app_mock.task_mgr.run_afn_preemptive.assert_called_once_with(
+        pl.a_set_current_song, ekaf_song0, name='playlist.set_current_model')
+
+
 def test_set_models(pl, song1, song2):
     # Set a nonexisting song as current song
     # The song should be inserted after current_song
