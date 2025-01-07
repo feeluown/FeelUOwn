@@ -78,7 +78,8 @@ def test_remove_song(mocker, pl, song, song1, song2):
     assert pl.current_song == song1
 
 
-def test_set_current_song_with_media(pl, song2):
+@pytest.mark.asyncio
+async def test_set_current_song_with_media(pl, song2):
     """
     Set a non-existing song as current song,
     and the song should be inserted after current_song.
