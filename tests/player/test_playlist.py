@@ -72,12 +72,10 @@ def test_remove_song(mocker, pl, song, song1, song2):
 
     # remove the current_song
     # song1 should be set as the current_song
-    with mock.patch.object(Playlist, 'current_song',
-                           new_callable=mock.PropertyMock) as mock_s:
-        mock_s.return_value = song
-        pl.remove(song)
-        mock_s.assert_called_with(song1)
-        assert len(pl) == 1
+    pl._current_song = song
+    pl.remove(song)
+    assert len(pl) == 1
+    assert pl.current_song == song1
 
 
 def test_set_current_song_with_media(pl, song2):
@@ -270,8 +268,8 @@ async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker,
     pl = Playlist(app_mock)
 
     def feed_playlist():
-        pl.fm_add(song)
-        pl.next()
+        pl._fm_add_no_lock(song)
+        pl._next_no_lock()
 
     pl.eof_reached.connect(feed_playlist)
     pl.mode = PlaylistMode.fm
