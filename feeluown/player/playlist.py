@@ -4,6 +4,7 @@ import logging
 import random
 from enum import IntEnum, Enum
 from typing import Optional, TYPE_CHECKING
+from threading import Lock
 
 from feeluown.excs import ProviderIOError
 from feeluown.utils import aio
@@ -104,6 +105,8 @@ class Playlist:
 
         #: playlist mode changed signal
         self.mode_changed = Signal()
+        #: playback mode before changed to fm mode
+        self._normal_mode_playback_mode = playback_mode
 
         #: store value for ``current_song`` property
         self._current_song = None
@@ -114,6 +117,12 @@ class Playlist:
 
         #: store value for ``songs`` property
         self._songs = DedupList(songs or [])
+        # Acquire this lock before changing _current_song or _songs.
+        # NOTE: some methods emit some signal while holding the lock,
+        #   the signal handler should pay much attention to avoid deadlock.
+        #   One thing is that the signal handler should not call any method
+        #   that requires the lock!!!
+        self._songs_lock = Lock()
 
         self.audio_select_policy = audio_select_policy
 
@@ -160,10 +169,13 @@ class Playlist:
     def mode(self, mode):
         """set playlist mode"""
         if self._mode is not mode:
-            if mode is PlaylistMode.fm:
-                self.playback_mode = PlaybackMode.sequential
             # we should change _mode at the very end
             self._mode = mode
+            if mode is PlaylistMode.fm:
+                self._normal_mode_playback_mode = self.playback_mode
+                self.playback_mode = PlaybackMode.sequential
+            else:
+                self.playback_mode = self._normal_mode_playback_mode
             self.mode_changed.emit(mode)
             logger.info('playlist mode changed to %s', mode)
 
@@ -213,6 +225,9 @@ class Playlist:
         return song in self._bad_songs
 
     def _add(self, song):
+        """
+        Requires: acquire `_songs_lock` before calling this method.
+        """
         if song in self._songs:
             return
         self._songs.append(song)
@@ -236,11 +251,12 @@ class Playlist:
         """
         .. versionadded: v3.7.13
         """
-        start_index = len(self._songs)
-        for model in models:
-            self._songs.append(model)
-        end_index = len(self._songs)
-        self.songs_added.emit(start_index, end_index - start_index)
+        with self._songs_lock:
+            start_index = len(self._songs)
+            for model in models:
+                self._songs.append(model)
+            end_index = len(self._songs)
+            self.songs_added.emit(start_index, end_index - start_index)
 
     def add(self, song):
         """add song to playlist
@@ -251,20 +267,30 @@ class Playlist:
         """
         if self._mode is PlaylistMode.fm:
             self.mode = PlaylistMode.normal
-        self._add(song)
+        with self._songs_lock:
+            self._add(song)
 
     def fm_add(self, song):
+        with self._songs_lock:
+            self._fm_add_no_lock(song)
+
+    def _fm_add_no_lock(self, song):
+        """
+        Only for unittest and internal usage.
+        """
         self._add(song)
 
-    def insert(self, song):
+    def insert_after_current_song(self, song):
         """Insert song after current song
+
+        Requires: acquire `_songs_lock` before calling this method.
 
         When current song is none, the song is appended.
         """
-        if self._mode is PlaylistMode.fm:
-            self.mode = PlaylistMode.normal
         if song in self._songs:
             return
+        if self._mode is PlaylistMode.fm:
+            self.mode = PlaylistMode.normal
         if self._current_song is None:
             self._add(song)
         else:
@@ -272,12 +298,7 @@ class Playlist:
             self._songs.insert(index + 1, song)
             self.songs_added.emit(index + 1, 1)
 
-    def remove(self, song):
-        """Remove song from playlist. O(n)
-
-        If song is current song, remove the song and play next. Otherwise,
-        just remove it.
-        """
+    def remove_no_lock(self, song):
         try:
             index = self._songs.index(song)
         except ValueError:
@@ -286,22 +307,34 @@ class Playlist:
             if self._current_song is None:
                 self._songs.remove(song)
             elif song == self._current_song:
-                next_song = self.next_song
+                next_song = self._get_next_song_no_lock()
                 # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
                 if next_song == self.current_song:
-                    self.current_song = None
+                    # Should set current song immediately.
+                    # Should not use set_current_song, because it is an async task.
+                    self.set_current_song_none()
                     self._songs.remove(song)
-                    self.current_song = self.next_song
+                    new_next_song = self._get_next_song_no_lock()
+                    self.set_existing_song_as_current_song(new_next_song)
                 else:
-                    next_song = self.next_song
+                    next_song = self._get_next_song_no_lock()
                     self._songs.remove(song)
-                    self.current_song = next_song
+                    self.set_existing_song_as_current_song(next_song)
             else:
                 self._songs.remove(song)
             self.songs_removed.emit(index, 1)
             logger.debug('Remove {} from player playlist'.format(song))
         if song in self._bad_songs:
             self._bad_songs.remove(song)
+
+    def remove(self, song):
+        """Remove song from playlist. O(n)
+
+        If song is current song, remove the song and play next. Otherwise,
+        just remove it.
+        """
+        with self._songs_lock:
+            self.remove_no_lock(song)
 
     def init_from(self, songs):
         warnings.warn(
@@ -312,13 +345,14 @@ class Playlist:
 
     def clear(self):
         """remove all songs from playlists"""
-        if self.current_song is not None:
-            self.set_current_song_none()
-        length = len(self._songs)
-        self._songs.clear()
-        if length > 0:
-            self.songs_removed.emit(0, length)
-        self._bad_songs.clear()
+        with self._songs_lock:
+            if self.current_song is not None:
+                self.set_current_song_none()
+            length = len(self._songs)
+            self._songs.clear()
+            if length > 0:
+                self.songs_removed.emit(0, length)
+            self._bad_songs.clear()
 
     def list(self):
         """Get all songs in playlists"""
@@ -338,7 +372,9 @@ class Playlist:
         self.playback_mode_changed.emit(self.playback_mode)
 
     def _get_good_song(self, base=0, random_=False, direction=1, loop=True):
-        """从播放列表中获取一首可以播放的歌曲
+        """Get a good song from playlist.
+
+        Requires: acquire `_songs_lock` before calling this method.
 
         :param base: base index
         :param random_: random strategy or not
@@ -384,10 +420,12 @@ class Playlist:
         else:
             return good_songs[0]
 
-    @property
-    def next_song(self):
-        """next song for player, calculated based on playback_mode"""
-        # 如果没有正在播放的歌曲，找列表里面第一首能播放的
+    def _get_next_song_no_lock(self):
+        """
+        Requires: acquire `_songs_lock` before calling this method.
+        """
+        assert self._songs_lock.locked()
+
         if self.current_song is None:
             return self._get_good_song()
 
@@ -408,11 +446,13 @@ class Playlist:
         return next_song
 
     @property
-    def previous_song(self):
-        """previous song for player to play
+    def next_song(self):
+        """next song for player, calculated based on playback_mode"""
+        # 如果没有正在播放的歌曲，找列表里面第一首能播放的
+        with self._songs_lock:
+            return self._get_next_song_no_lock()
 
-        NOTE: not the last played song
-        """
+    def _get_previous_song_no_lock(self):
         if self.current_song is None:
             return self._get_good_song(base=-1, direction=-1)
 
@@ -423,20 +463,49 @@ class Playlist:
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
         return previous_song
 
+    @property
+    def previous_song(self):
+        """previous song for player to play
+
+        NOTE: not the last played song
+        """
+        with self._songs_lock:
+            return self._get_previous_song_no_lock()
+
     async def a_next(self):
         self.next()
 
-    def next(self) -> Optional[asyncio.Task]:
-        if self.next_song is None:
+    def _next_no_lock(self):
+        """
+        Requires: acquire `_songs_lock` before calling this method.
+        Only for unittest and internal usage.
+        """
+        next_song = self._get_next_song_no_lock()
+        if next_song is None:
             self.eof_reached.emit()
             return None
-        else:
-            return self.set_current_song(self.next_song)
+        return self.set_existing_song_as_current_song(next_song)
+
+    def next(self) -> Optional[asyncio.Task]:
+        """
+        Why _songs_lock is needed? Think about the following scenario:
+
+            [A, B, C, D] is the playlist, and the current song is B.
+
+            Timeline    t1             t2              t3      t4
+            User:      play_next                     play D
+            Player:                next_song is C
+
+            The expected song to play is D. So lock is needed here.
+        """
+        with self._songs_lock:
+            return self._next_no_lock()
 
     def _on_media_finished(self):
         # Play next model when current media is finished.
         if self.playback_mode == PlaybackMode.one_loop:
-            return self.set_current_song(self.current_song)
+            with self._songs_lock:
+                return self.set_existing_song_as_current_song(self.current_song)
         else:
             self.next()
 
@@ -458,7 +527,9 @@ class Playlist:
 
     def previous(self) -> Optional[asyncio.Task]:
         """return to the previous song in playlist"""
-        return self.set_current_song(self.previous_song)
+        with self._songs_lock:
+            song = self._get_previous_song_no_lock()
+            return self.set_existing_song_as_current_song(song)
 
     @property
     def current_song(self) -> Optional[SongModel]:
@@ -567,10 +638,12 @@ class Playlist:
             logger.info(f'song standby was found in {standby.source} ✅')
             self._app.show_msg(f'在 {standby.source} 平台找到 {song} 的备用歌曲 ✅')
             # Insert the standby song after the song
-            if song in self._songs and standby not in self._songs:
-                index = self._songs.index(song)
-                self._songs.insert(index + 1, standby)
-                self.songs_added.emit(index + 1, 1)
+            # TODO: 或许这里可以优化一下？用 self.insert 函数？
+            with self._songs_lock:
+                if song in self._songs and standby not in self._songs:
+                    index = self._songs.index(song)
+                    self._songs.insert(index + 1, standby)
+                    self.songs_added.emit(index + 1, 1)
             return standby, media
 
         logger.info(f'{song} song standby not found')
@@ -582,11 +655,12 @@ class Playlist:
             self.set_current_song_none()
             return
         # Add it to playlist if song not in playlist.
-        if song not in self._songs:
-            self.insert(song)
-        self._current_song = song
-        self.song_changed.emit(song)
-        self.song_changed_v2.emit(song, media)
+        with self._songs_lock:
+            self.insert_after_current_song(song)
+            self._current_song = song
+            # TODO: 这里可能有点问题。比如 current_song 怎样和 media 保持一致呢？
+            self.song_changed.emit(song)
+            self.song_changed_v2.emit(song, media)
         if media is None:
             self._app.show_msg("没找到可用的播放链接，播放下一首...")
             run_afn(self.a_next)
@@ -670,13 +744,28 @@ class Playlist:
         else:
             fn = self.a_set_current_model
             upgrade_fn = self._app.library.video_upgrade
+
         try:
             # Try to upgrade the model.
-            model = await aio.run_fn(upgrade_fn, model)
+            umodel = await aio.run_fn(upgrade_fn, model)
         except ModelNotFound:
             pass
         except:  # noqa
             logger.exception(f'upgrade model:{model} failed')
+        else:
+            # Replace the brief model with the upgraded model
+            # when user try to play a brief model that is already in the playlist.
+            if isinstance(model, BriefSongModel):
+                with self._songs_lock:
+                    if model in self._songs:
+                        index = self._songs.index(model)
+                        self._songs.insert(index+1, umodel)
+                        if self.current_song == model:
+                            self.set_current_song_none()
+                        else:
+                            self._songs.remove(model)
+                        model = umodel
+
         try:
             await self._app.task_mgr.run_afn_preemptive(
                 fn, model, name=TASK_SET_CURRENT_MODEL
@@ -710,6 +799,13 @@ class Playlist:
         return self._app.task_mgr.run_afn_preemptive(
             self.a_set_current_model, model, name=TASK_SET_CURRENT_MODEL,
         )
+
+    def set_existing_song_as_current_song(self, song):
+        """
+        Requires: acquire `_songs_lock` before calling this method.
+        """
+        self._current_song = song
+        return self.set_current_song(song)
 
     def set_current_song(self, song):
         """

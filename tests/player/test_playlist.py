@@ -2,6 +2,7 @@ import asyncio
 from unittest import mock
 
 import pytest
+import pytest_asyncio
 
 from feeluown.library.excs import MediaNotFound
 from feeluown.player import (
@@ -26,23 +27,23 @@ def pl(app_mock, song, song1):
     return playlist
 
 
-@pytest.fixture()
-def pl_prepare_media_none(mocker, pl):
+@pytest_asyncio.fixture
+async def pl_prepare_media_none(mocker, pl):
     f = asyncio.Future()
     f.set_exception(MediaNotFound())
     mocker.patch.object(Playlist, '_prepare_media', side_effect=f)
 
 
-@pytest.fixture()
-def pl_list_standby_return_empty(mocker, pl):
+@pytest_asyncio.fixture
+async def pl_list_standby_return_empty(mocker, pl):
     f2 = asyncio.Future()
     f2.set_result([])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
     mock_a_list_standby.return_value = f2
 
 
-@pytest.fixture()
-def pl_list_standby_return_song2(mocker, pl, song2):
+@pytest_asyncio.fixture
+async def pl_list_standby_return_song2(mocker, pl, song2):
     f2 = asyncio.Future()
     f2.set_result([(song2, SONG2_URL)])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
@@ -72,19 +73,21 @@ def test_remove_song(mocker, pl, song, song1, song2):
 
     # remove the current_song
     # song1 should be set as the current_song
-    with mock.patch.object(Playlist, 'current_song',
-                           new_callable=mock.PropertyMock) as mock_s:
-        mock_s.return_value = song
-        pl.remove(song)
-        mock_s.assert_called_with(song1)
-        assert len(pl) == 1
+    pl._current_song = song
+    pl.remove(song)
+    assert len(pl) == 1
+    assert pl.current_song == song1
 
 
-def test_set_current_song_with_media(pl, song2):
+@pytest.mark.asyncio
+async def test_set_current_song_with_media(pl, song2):
     """
     Set a non-existing song as current song,
     and the song should be inserted after current_song.
     """
+    # Mock the a_next coroutine to avoid resource leak::
+    #   RuntimeWarning: coroutine 'Playlist.a_next' was never awaited
+    pl.a_next = mock.MagicMock(return_value=asyncio.Future())
     pl.set_current_song_with_media(song2, None)
     assert pl.current_song == song2
     assert pl.list()[1] == song2
@@ -94,11 +97,24 @@ def test_set_current_song_with_media(pl, song2):
 async def test_play_model(pl, app_mock, song, mocker):
     f = asyncio.Future()
     f.set_result(None)
-    mocker.patch.object(pl, 'set_current_model', return_value=f)
     app_mock.task_mgr.run_afn_preemptive.return_value = f
     await pl.a_play_model(song)
     # The player.resume method must be called.
-    assert pl._app.player.resume.called
+    assert app_mock.player.resume.called
+
+
+@pytest.mark.asyncio
+async def test_play_a_brief_song_model(
+        pl, app_mock, library, ekaf_song0, ekaf_brief_song0, mocker):
+    app_mock.library = library
+    pl.add(ekaf_brief_song0)
+    mocker.patch.object(pl, 'a_set_current_song')
+    await pl.a_play_model(ekaf_brief_song0)
+    # The song should be upgraded to a normal model
+    assert ekaf_brief_song0 not in pl.current_song
+    # Should called with the upgraded song model
+    app_mock.task_mgr.run_afn_preemptive.assert_called_once_with(
+        pl.a_set_current_song, ekaf_song0, name='playlist.set_current_model')
 
 
 def test_set_models(pl, song1, song2):
@@ -189,12 +205,14 @@ def mock_prepare_metadata(mocker):
 async def test_playlist_change_mode(app_mock, mocker):
     # from normal to fm
     pl = Playlist(app_mock)
+    old_playback_mode = pl.playback_mode
     pl.mode = PlaylistMode.fm
     assert pl.playback_mode is PlaybackMode.sequential
 
     # from fm to normal
     pl.mode = PlaylistMode.normal
     assert pl.mode is PlaylistMode.normal
+    assert pl.playback_mode == old_playback_mode
 
 
 @pytest.mark.asyncio
@@ -268,8 +286,8 @@ async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker,
     pl = Playlist(app_mock)
 
     def feed_playlist():
-        pl.fm_add(song)
-        pl.next()
+        pl._fm_add_no_lock(song)
+        pl._next_no_lock()
 
     pl.eof_reached.connect(feed_playlist)
     pl.mode = PlaylistMode.fm

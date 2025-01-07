@@ -31,7 +31,7 @@ jobs:
         if: startsWith(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get -y install libmpv1
+          sudo apt-get -y install libmpv2
 
       - name: Install macOS Dependencies
         if: startsWith(matrix.os, 'macos')
