@@ -187,8 +187,8 @@ def mock_prepare_metadata(mocker):
 async def test_playlist_change_mode(app_mock, mocker):
     # from normal to fm
     pl = Playlist(app_mock)
-    pl.mode = PlaylistMode.fm
     old_playback_mode = pl.playback_mode
+    pl.mode = PlaylistMode.fm
     assert pl.playback_mode is PlaybackMode.sequential
 
     # from fm to normal

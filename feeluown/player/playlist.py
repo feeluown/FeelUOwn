@@ -118,7 +118,10 @@ class Playlist:
         #: store value for ``songs`` property
         self._songs = DedupList(songs or [])
         # Acquire this lock before changing _current_song or _songs.
-        # TODO: use emit_nowait???
+        # NOTE: some methods emit some signal while holding the lock,
+        #   the signal handler should pay much attention to avoid deadlock.
+        #   One thing is that the signal handler should not call any method
+        #   that requires the lock!!!
         self._songs_lock = Lock()
 
         self.audio_select_policy = audio_select_policy
@@ -166,13 +169,13 @@ class Playlist:
     def mode(self, mode):
         """set playlist mode"""
         if self._mode is not mode:
+            # we should change _mode at the very end
+            self._mode = mode
             if mode is PlaylistMode.fm:
                 self._normal_mode_playback_mode = self.playback_mode
                 self.playback_mode = PlaybackMode.sequential
             else:
                 self.playback_mode = self._normal_mode_playback_mode
-            # we should change _mode at the very end
-            self._mode = mode
             self.mode_changed.emit(mode)
             logger.info('playlist mode changed to %s', mode)
 
