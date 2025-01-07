@@ -2,6 +2,7 @@ import asyncio
 from unittest import mock
 
 import pytest
+import pytest_asyncio
 
 from feeluown.library.excs import MediaNotFound
 from feeluown.player import (
@@ -26,23 +27,23 @@ def pl(app_mock, song, song1):
     return playlist
 
 
-@pytest.fixture()
-def pl_prepare_media_none(mocker, pl):
+@pytest_asyncio.fixture
+async def pl_prepare_media_none(mocker, pl):
     f = asyncio.Future()
     f.set_exception(MediaNotFound())
     mocker.patch.object(Playlist, '_prepare_media', side_effect=f)
 
 
-@pytest.fixture()
-def pl_list_standby_return_empty(mocker, pl):
+@pytest_asyncio.fixture
+async def pl_list_standby_return_empty(mocker, pl):
     f2 = asyncio.Future()
     f2.set_result([])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
     mock_a_list_standby.return_value = f2
 
 
-@pytest.fixture()
-def pl_list_standby_return_song2(mocker, pl, song2):
+@pytest_asyncio.fixture
+async def pl_list_standby_return_song2(mocker, pl, song2):
     f2 = asyncio.Future()
     f2.set_result([(song2, SONG2_URL)])
     mock_a_list_standby = pl._app.library.a_list_song_standby_v2
