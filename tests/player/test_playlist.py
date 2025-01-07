@@ -83,6 +83,9 @@ def test_set_current_song_with_media(pl, song2):
     Set a non-existing song as current song,
     and the song should be inserted after current_song.
     """
+    # Mock the a_next coroutine to avoid resource leak::
+    #   RuntimeWarning: coroutine 'Playlist.a_next' was never awaited
+    pl.a_next = mock.MagicMock(return_value=asyncio.Future())
     pl.set_current_song_with_media(song2, None)
     assert pl.current_song == song2
     assert pl.list()[1] == song2
@@ -92,11 +95,10 @@ def test_set_current_song_with_media(pl, song2):
 async def test_play_model(pl, app_mock, song, mocker):
     f = asyncio.Future()
     f.set_result(None)
-    mocker.patch.object(pl, 'set_current_model', return_value=f)
     app_mock.task_mgr.run_afn_preemptive.return_value = f
     await pl.a_play_model(song)
     # The player.resume method must be called.
-    assert pl._app.player.resume.called
+    assert app_mock.player.resume.called
 
 
 @pytest.mark.asyncio
