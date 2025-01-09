@@ -1,6 +1,9 @@
+from typing import TYPE_CHECKING
+
 from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel
 from PyQt5.QtWidgets import QMenu, QAbstractItemView
 
+from feeluown.player import PlaylistMode
 from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.helpers import fetch_cover_wrapper
 from feeluown.gui.widgets.song_minicard_list import (
@@ -8,6 +11,10 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListModel,
 )
 from feeluown.utils.reader import create_reader
+
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 
 class PlayerPlaylistModel(SongMiniCardListModel):
@@ -51,7 +58,7 @@ class PlayerPlaylistView(SongMiniCardListView):
 
     _model = None
 
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, app: 'GuiApp', *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
 
@@ -70,7 +77,11 @@ class PlayerPlaylistView(SongMiniCardListView):
 
         songs = [index.data(Qt.UserRole)[0] for index in indexes]
         menu = QMenu()
-        action = menu.addAction('从播放队列中移除')
+        if self._app.playlist.mode is PlaylistMode.fm:
+            btn_text = '不想听'
+        else:
+            btn_text = '从播放队列中移除'
+        action = menu.addAction(btn_text)
         action.triggered.connect(lambda: self._remove_songs(songs))
         if len(songs) == 1:
             menu.addSeparator()
