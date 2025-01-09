@@ -1,5 +1,4 @@
 import asyncio
-import warnings
 import logging
 import random
 from enum import IntEnum, Enum
@@ -336,12 +335,14 @@ class Playlist:
         with self._songs_lock:
             self.remove_no_lock(song)
 
-    def init_from(self, songs):
-        warnings.warn(
-            'use set_models instead, this will be removed in v3.8',
-            DeprecationWarning
-        )
-        self.set_models(songs, fm=False)
+    def _replace_song_no_lock(self, model, umodel):
+        index = self._songs.index(model)
+        self._songs.insert(index+1, umodel)
+        self.songs_added.emit(index+1, 1)
+        if self.current_song == model:
+            self.set_current_song_none()
+        self._songs.remove(model)
+        self.songs_removed.emit(index, 1)
 
     def clear(self):
         """remove all songs from playlists"""
@@ -755,16 +756,11 @@ class Playlist:
         else:
             # Replace the brief model with the upgraded model
             # when user try to play a brief model that is already in the playlist.
-            if isinstance(model, BriefSongModel):
+            if isinstance(model, BriefSongModel) and not isinstance(model, SongModel):
                 with self._songs_lock:
                     if model in self._songs:
-                        index = self._songs.index(model)
-                        self._songs.insert(index+1, umodel)
-                        if self.current_song == model:
-                            self.set_current_song_none()
-                        else:
-                            self._songs.remove(model)
-                        model = umodel
+                        self._replace_song_no_lock(model, umodel)
+            model = umodel
 
         try:
             await self._app.task_mgr.run_afn_preemptive(
