@@ -87,6 +87,7 @@ async def signal(request, ws: Websocket):
 
 async def run_web_server(host, port):
     initialize()
+    sanic_app.config.MOTD = False
     server = await sanic_app.create_server(host, port, return_asyncio_server=True)
     await server.startup()
     await server.serve_forever()
