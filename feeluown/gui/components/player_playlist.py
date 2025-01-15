@@ -102,4 +102,15 @@ class PlayerPlaylistView(SongMiniCardListView):
 
     def _remove_songs(self, songs):
         for song in songs:
-            self._app.playlist.remove(song)
+            playlist_songs = self._app.playlist.list()
+            if (
+                self._app.playlist.mode is PlaylistMode.fm
+                # playlist_songs should not be empty, just for robustness
+                and playlist_songs
+                and song == self._app.playlist.current_song
+                and playlist_songs[-1] == song
+            ):
+                self._app.show_msg("FM 模式下，如果当前歌曲是最后一首歌，则无法移除，请稍后再尝试移除", timeout=3000)
+                self._app.playlist.next()
+            else:
+                self._app.playlist.remove(song)
