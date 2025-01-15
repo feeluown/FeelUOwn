@@ -6,8 +6,7 @@ from feeluown.app import create_app, AppMode
 
 
 @skip("No easy way to simulate QEventLoop.")
-@pytest.mark.asyncio
-async def test_create_gui_app(args):
+def test_create_gui_app():
     pass
 
 

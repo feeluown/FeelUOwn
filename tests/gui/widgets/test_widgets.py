@@ -20,7 +20,7 @@ def test_comment_list_view(qtbot):
                            content=content,
                            time=int(time.time()),
                            parent=brief_comment,)
-    comment2 = comment.copy()
+    comment2 = comment.model_copy()
     comment2.content = 'hello world'
 
     reader = create_reader([comment, comment2, comment])

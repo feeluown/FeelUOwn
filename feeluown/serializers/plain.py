@@ -28,8 +28,8 @@ class ModelSerializerMixin:
         # initialize fields that need to be serialized
         # if as_line option is set, we always use fields_display
         modelcls = type(model)
-        fields = [field for field in model.__fields__
-                  if field not in BaseModel.__fields__]
+        fields = [field for field in model.model_fields
+                  if field not in BaseModel.model_fields]
         # Include properties.
         pydantic_fields = ("__values__", "fields", "__fields_set__",
                            "model_computed_fields", "model_extra",

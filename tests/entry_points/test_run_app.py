@@ -1,6 +1,6 @@
 import asyncio
 import sys
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -10,6 +10,7 @@ from feeluown.entry_points.run_app import run_app, before_start_app, start_app
 from feeluown.app import App, AppMode, get_app
 from feeluown.app.cli_app import CliApp
 from feeluown.plugin import PluginsManager
+from feeluown.version import VersionManager
 
 
 @pytest.fixture
@@ -72,6 +73,7 @@ def test_run_app_with_no_window_mode(argsparser, mocker, noqt, noharm):
 
 @pytest.mark.asyncio
 async def test_start_app(argsparser, mocker, noharm):
+    VersionManager.check_release = MagicMock(return_value=asyncio.Future())
     mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
     # fuoexec_init can be only called once, mock it here.
     mocker.patch('feeluown.entry_points.run_app.fuoexec_init')
