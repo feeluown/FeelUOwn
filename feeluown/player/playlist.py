@@ -315,8 +315,13 @@ class Playlist:
                     self._songs.remove(song)
                     new_next_song = self._get_next_song_no_lock()
                     self.set_existing_song_as_current_song(new_next_song)
+                elif next_song is None and self.mode is PlaylistMode.fm:
+                    # The caller should not remove the current song when it
+                    # is the last song in fm mode.
+                    logger.error("Can't remove the last song in fm mode, will play next")
+                    self._next_no_lock()
+                    return
                 else:
-                    next_song = self._get_next_song_no_lock()
                     self._songs.remove(song)
                     self.set_existing_song_as_current_song(next_song)
             else:

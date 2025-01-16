@@ -1,10 +1,16 @@
+import asyncio
+from unittest import mock
+
 import pytest
+import pytest_asyncio
 
 from feeluown.library import BriefArtistModel, BriefAlbumModel, SongModel, \
     PlaylistModel
 from feeluown.utils.router import Request
 from feeluown.gui.pages.model import render as render_model
-from feeluown.gui.pages.song_explore import render as render_song_explore
+from feeluown.gui.pages.song_explore import (
+    render as render_song_explore, SongWikiLabel, CoverLabelV2,
+)
 from feeluown.gui.page_containers.table import TableContainer
 from feeluown.gui.uimain.page_view import RightPanel
 
@@ -19,6 +25,14 @@ def guiapp(qtbot, app_mock, library):
     qtbot.addWidget(tc)
     qtbot.addWidget(rp)
     return app_mock
+
+
+@pytest_asyncio.fixture
+async def no_warning():
+    # To avoid such warning::
+    #   RuntimeWarning: coroutine 'CoverLabelV2.show_cover' was never awaited
+    SongWikiLabel.show_song = mock.MagicMock(return_value=asyncio.Future())
+    CoverLabelV2.show_cover = mock.MagicMock(return_value=asyncio.Future())
 
 
 @pytest.mark.asyncio
@@ -42,7 +56,7 @@ async def test_render_album_v2(guiapp, ekaf_provider, ekaf_album0, ):
 
 
 @pytest.mark.asyncio
-async def test_render_song_v2(guiapp, ekaf_provider):
+async def test_render_song_v2(guiapp, ekaf_provider, no_warning):
     song = SongModel(source=ekaf_provider.identifier,
                      identifier='0',
                      title='',
@@ -56,12 +70,14 @@ async def test_render_song_v2(guiapp, ekaf_provider):
 
 
 @pytest.mark.asyncio
-async def test_render_song_v2_with_non_exists_album(guiapp, ekaf_provider):
+async def test_render_song_v2_with_non_exists_album(guiapp, ekaf_provider, no_warning):
     """
     When the album does not exist, the rendering process should succeed.
     This test case tests that every exceptions, which raised by library, should
     be correctly catched.
     """
+    SongWikiLabel.show_song = mock.MagicMock(return_value=asyncio.Future())
+    CoverLabelV2.show_cover = mock.MagicMock(return_value=asyncio.Future())
     song = SongModel(source=ekaf_provider.identifier,
                      identifier='0',
                      title='',

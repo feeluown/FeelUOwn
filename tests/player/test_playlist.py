@@ -296,8 +296,13 @@ async def test_playlist_resumed_from_eof_reached(app_mock, song, mocker,
 
 
 @pytest.mark.asyncio
-async def test_playlist_remove_current_song(app_mock):
-    pass
+async def test_playlist_remove_current_song(pl, song1, mocker):
+    # Remove the current song, and it is the last song in the playlist.
+    mock_emit = mocker.patch.object(pl.eof_reached, 'emit')
+    pl.mode = PlaylistMode.fm
+    pl._current_song = song1
+    pl.remove(song1)
+    assert mock_emit.called
 
 
 @pytest.mark.asyncio
