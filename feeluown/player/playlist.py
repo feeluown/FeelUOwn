@@ -303,6 +303,7 @@ class Playlist:
         except ValueError:
             logger.debug('Remove failed: {} not in playlist'.format(song))
         else:
+            self.songs_removed.emit(index, 1)
             if self._current_song is None:
                 self._songs.remove(song)
             elif song == self._current_song:
@@ -326,7 +327,6 @@ class Playlist:
                     self.set_existing_song_as_current_song(next_song)
             else:
                 self._songs.remove(song)
-            self.songs_removed.emit(index, 1)
             logger.debug('Remove {} from player playlist'.format(song))
         if song in self._bad_songs:
             self._bad_songs.remove(song)
@@ -346,8 +346,8 @@ class Playlist:
         self.songs_added.emit(index+1, 1)
         if self.current_song == model:
             self.set_current_song_none()
-        self._songs.remove(model)
         self.songs_removed.emit(index, 1)
+        self._songs.remove(model)
 
     def clear(self):
         """remove all songs from playlists"""
@@ -355,9 +355,9 @@ class Playlist:
             if self.current_song is not None:
                 self.set_current_song_none()
             length = len(self._songs)
-            self._songs.clear()
             if length > 0:
                 self.songs_removed.emit(0, length)
+            self._songs.clear()
             self._bad_songs.clear()
 
     def list(self):
@@ -601,12 +601,6 @@ class Playlist:
                 self._app.show_msg('使用音乐视频作为其播放资源 ✅')
             else:
                 self._app.show_msg('未找到可用的音乐视频资源 🙁')
-                # if mode is fm mode, do not find standby song, just skip the song.
-                if self.mode is PlaylistMode.fm:
-                    self.mark_as_bad(song)
-                    run_afn(self.a_next)
-                    return
-
                 logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
                 self.play_model_stage_changed.emit(PlaylistPlayModelStage.find_standby)
