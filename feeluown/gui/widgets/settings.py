@@ -1,6 +1,6 @@
 from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import QDialog, QWidget, QCheckBox, \
-    QVBoxLayout, QHBoxLayout
+    QVBoxLayout, QHBoxLayout, QPlainTextEdit, QPushButton
 
 from feeluown.gui.widgets.magicbox import KeySourceIn
 from feeluown.gui.widgets.header import MidHeader
@@ -65,6 +65,26 @@ class PlayerSettings(QWidget):
         self._layout.addStretch(0)
 
 
+class AISettings(QWidget):
+    def __init__(self, app, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self._app = app
+        self._prompt_editor = QPlainTextEdit(self)
+        self._save_btn = QPushButton('保存', self)
+
+        self._layout = QHBoxLayout(self)
+        self._layout.addWidget(self._prompt_editor)
+        self._layout.addWidget(self._save_btn)
+        self._prompt_editor.setPlainText(self._app.config.AI_RADIO_PROMPT)
+        self._prompt_editor.setMaximumHeight(200)
+
+        self._save_btn.clicked.connect(self.save_prompt)
+
+    def save_prompt(self):
+        self._app.config.AI_RADIO_PROMPT = self._prompt_editor.toPlainText()
+
+
 class SettingsDialog(QDialog):
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
@@ -86,6 +106,8 @@ class SettingsDialog(QDialog):
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(MidHeader('搜索来源'))
         self._layout.addWidget(toolbar)
+        self._layout.addWidget(MidHeader('AI 电台（PROMPT）'))
+        self._layout.addWidget(AISettings(self._app))
         self._layout.addWidget(MidHeader('播放器'))
         self._layout.addWidget(PlayerSettings(self._app))
         self._layout.addStretch(0)

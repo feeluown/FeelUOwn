@@ -54,12 +54,18 @@ def default_score_fn(origin, standby):
         return int(h) * 3600 + int(m) * 60 + int(s)
 
     score = FULL_SCORE
+    unsure_score = 0
     if origin.artists_name != standby.artists_name:
         score -= 3
     if origin.title != standby.title:
         score -= 2
-    if origin.album_name != standby.album_name:
-        score -= 2
+    # Only compare album_name when it is not empty.
+    if origin.album_name:
+        if origin.album_name != standby.album_name:
+            score -= 2
+    else:
+        score -= 1
+        unsure_score += 2
 
     if isinstance(origin, SongModel):
         origin_duration = origin.duration
@@ -69,15 +75,20 @@ def default_score_fn(origin, standby):
         standby_duration = standby.duration
     else:
         standby_duration = duration_ms_to_duration(standby.duration_ms)
-    if abs(origin_duration - standby_duration) / max(origin_duration, 1) > 0.1:
-        score -= 3
+    # Only compare duration when it is not empty.
+    if origin_duration:
+        if abs(origin_duration - standby_duration) / max(origin_duration, 1) > 0.1:
+            score -= 3
+    else:
+        score -= 1
+        unsure_score += 3
 
     # Debug code for score function
     # print(f"{score}\t('{standby.title}', "
     #       f"'{standby.artists_name}', "
     #       f"'{standby.album_name}', "
     #       f"'{standby.duration_ms}')")
-    return score
+    return ((score - unsure_score) / (FULL_SCORE - unsure_score)) * FULL_SCORE
 
 
 class Library:
