@@ -44,8 +44,13 @@ def create_config() -> Config:
     config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
     config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
     config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
+
+    # YTDL related fields are deprecated since v4.1.9. Disable them by default.
     config.deffield(
-        'ENABLE_YTDL_AS_MEDIA_PROVIDER', type_=bool, default=True, desc='YTDL 作为备用资源'
+        'ENABLE_YTDL_AS_MEDIA_PROVIDER',
+        type_=bool,
+        default=False,
+        desc='(Deprecated) YTDL 作为备用资源'
     )
     # For example::
     #    [
@@ -58,7 +63,8 @@ def create_config() -> Config:
     #            },
     #        },
     #    ]
-    config.deffield('YTDL_RULES', type_=list, default=None, desc='')
+    config.deffield('YTDL_RULES', type_=list, default=None, desc='(Deprecated)')
+
     # TODO(cosven): maybe
     # 1. when it is set to 2, find standby from other providers first.
     # 2. when it is set to 3, play it's MV model instead of using MV's media.
