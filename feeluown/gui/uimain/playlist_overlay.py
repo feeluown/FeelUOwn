@@ -83,7 +83,7 @@ class PlaylistOverlay(QWidget):
         ):
             self._ai_radio_btn.clicked.connect(self.enter_ai_radio)
         else:
-            self._ai_radio_btn.setDisabled()
+            self._ai_radio_btn.setDisabled(True)
         self.setup_ui()
 
     def setup_ui(self):
