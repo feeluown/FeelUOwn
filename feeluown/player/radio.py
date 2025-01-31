@@ -7,10 +7,6 @@ if TYPE_CHECKING:
     from feeluown.app import App
 
 
-def calc_song_similarity(base, song):
-    return 10
-
-
 class Radio:
     def __init__(self, app: 'App', songs: List[BriefSongModel]):
         self._app = app
