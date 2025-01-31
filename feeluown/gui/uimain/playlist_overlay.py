@@ -75,7 +75,12 @@ class PlaylistOverlay(QWidget):
         self._app.installEventFilter(self)
         self._tabbar.currentChanged.connect(self.show_tab)
 
-        if AI_RADIO_SUPPORTED is True:
+        if (
+            AI_RADIO_SUPPORTED is True
+            and self._app.config.OPENAI_API_KEY
+            and self._app.config.OPENAI_MODEL
+            and self._app.config.OPENAI_API_BASEURL
+        ):
             self._ai_radio_btn.clicked.connect(self.enter_ai_radio)
         else:
             self._ai_radio_btn.setDisabled()
