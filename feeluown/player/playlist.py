@@ -303,7 +303,6 @@ class Playlist:
         except ValueError:
             logger.debug('Remove failed: {} not in playlist'.format(song))
         else:
-            self.songs_removed.emit(index, 1)
             if self._current_song is None:
                 self._songs.remove(song)
             elif song == self._current_song:
@@ -327,6 +326,7 @@ class Playlist:
                     self.set_existing_song_as_current_song(next_song)
             else:
                 self._songs.remove(song)
+            self.songs_removed.emit(index, 1)
             logger.debug('Remove {} from player playlist'.format(song))
         if song in self._bad_songs:
             self._bad_songs.remove(song)
@@ -346,8 +346,8 @@ class Playlist:
         self.songs_added.emit(index+1, 1)
         if self.current_song == model:
             self.set_current_song_none()
-        self.songs_removed.emit(index, 1)
         self._songs.remove(model)
+        self.songs_removed.emit(index, 1)
 
     def clear(self):
         """remove all songs from playlists"""
@@ -355,9 +355,9 @@ class Playlist:
             if self.current_song is not None:
                 self.set_current_song_none()
             length = len(self._songs)
+            self._songs.clear()
             if length > 0:
                 self.songs_removed.emit(0, length)
-            self._songs.clear()
             self._bad_songs.clear()
 
     def list(self):
