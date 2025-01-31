@@ -7,7 +7,7 @@ from PyQt5.QtGui import (
     QColor, QLinearGradient, QPalette, QPainter,
 )
 
-from feeluown.player import PlaybackMode, SongsRadio
+from feeluown.player import PlaybackMode, SongsRadio, AIRadio, AI_RADIO_SUPPORTED
 from feeluown.gui.helpers import fetch_cover_wrapper, esc_hide_widget
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.widgets.textbtn import TextButton
@@ -46,6 +46,7 @@ class PlaylistOverlay(QWidget):
         self._playback_mode_switch = PlaybackModeSwitch(app)
         self._goto_current_song_btn = TextButton('跳转到当前歌曲')
         self._songs_radio_btn = TextButton('自动续歌')
+        self._ai_radio_btn = TextButton('AI电台')
         # Please update the list when you add new buttons.
         self._btns = [
             self._clear_playlist_btn,
@@ -65,6 +66,7 @@ class PlaylistOverlay(QWidget):
         self._clear_playlist_btn.clicked.connect(self._app.playlist.clear)
         self._goto_current_song_btn.clicked.connect(self.goto_current_song)
         self._songs_radio_btn.clicked.connect(self.enter_songs_radio)
+        self._ai_radio_btn.clicked.connect(self.enter_ai_radio)
         esc_hide_widget(self)
         q_app = QApplication.instance()
         assert q_app is not None  # make type checker happy.
@@ -72,6 +74,16 @@ class PlaylistOverlay(QWidget):
         q_app.focusChanged.connect(self.on_focus_changed)  # type: ignore
         self._app.installEventFilter(self)
         self._tabbar.currentChanged.connect(self.show_tab)
+
+        if (
+            AI_RADIO_SUPPORTED is True
+            and self._app.config.OPENAI_API_KEY
+            and self._app.config.OPENAI_MODEL
+            and self._app.config.OPENAI_API_BASEURL
+        ):
+            self._ai_radio_btn.clicked.connect(self.enter_ai_radio)
+        else:
+            self._ai_radio_btn.setDisabled(True)
         self.setup_ui()
 
     def setup_ui(self):
@@ -97,6 +109,7 @@ class PlaylistOverlay(QWidget):
         self._btn_layout.addWidget(self._playback_mode_switch)
         self._btn_layout.addWidget(self._goto_current_song_btn)
         self._btn_layout2.addWidget(self._songs_radio_btn)
+        self._btn_layout2.addWidget(self._ai_radio_btn)
         self._btn_layout.addStretch(0)
         self._btn_layout2.addStretch(0)
 
@@ -124,6 +137,14 @@ class PlaylistOverlay(QWidget):
             radio = SongsRadio(self._app, songs)
             self._app.fm.activate(radio.fetch_songs_func, reset=False)
             self._app.show_msg('“自动续歌”功能已激活')
+
+    def enter_ai_radio(self):
+        if self._app.playlist.list():
+            radio = AIRadio(self._app)
+            self._app.fm.activate(radio.fetch_songs_func, reset=False)
+            self._app.show_msg('已经进入 AI 电台模式 ~')
+        else:
+            self._app.show_msg('播放列表为空，暂时不能开启 AI 电台')
 
     def show_tab(self, index):
         if not self.isVisible():

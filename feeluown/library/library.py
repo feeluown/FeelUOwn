@@ -22,6 +22,7 @@ from .provider_protocol import (
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
 )
+from .similarity import get_standby_origin_similarity, FULL_SCORE
 
 if TYPE_CHECKING:
     from .ytdl import Ytdl
@@ -29,55 +30,12 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-FULL_SCORE = 10
 MIN_SCORE = 5
 T_p = TypeVar('T_p')
 
 
 def raise_(e):
     raise e
-
-
-def default_score_fn(origin, standby):
-
-    # TODO: move this function to utils module
-    def duration_ms_to_duration(ms):
-        if not ms:  # ms is empty
-            return 0
-        parts = ms.split(':')
-        assert len(parts) in (2, 3), f'invalid duration format: {ms}'
-        if len(parts) == 3:
-            h, m, s = parts
-        else:
-            m, s = parts
-            h = 0
-        return int(h) * 3600 + int(m) * 60 + int(s)
-
-    score = FULL_SCORE
-    if origin.artists_name != standby.artists_name:
-        score -= 3
-    if origin.title != standby.title:
-        score -= 2
-    if origin.album_name != standby.album_name:
-        score -= 2
-
-    if isinstance(origin, SongModel):
-        origin_duration = origin.duration
-    else:
-        origin_duration = duration_ms_to_duration(origin.duration_ms)
-    if isinstance(standby, SongModel):
-        standby_duration = standby.duration
-    else:
-        standby_duration = duration_ms_to_duration(standby.duration_ms)
-    if abs(origin_duration - standby_duration) / max(origin_duration, 1) > 0.1:
-        score -= 3
-
-    # Debug code for score function
-    # print(f"{score}\t('{standby.title}', "
-    #       f"'{standby.artists_name}', "
-    #       f"'{standby.album_name}', "
-    #       f"'{standby.duration_ms}')")
-    return score
 
 
 class Library:
@@ -214,7 +172,7 @@ class Library:
         else:
             pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
         if score_fn is None:
-            score_fn = default_score_fn
+            score_fn = get_standby_origin_similarity
         limit = max(limit, 1)
 
         q = '{} {}'.format(song.title_display, song.artists_name_display)

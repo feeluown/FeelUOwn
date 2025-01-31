@@ -72,4 +72,26 @@ def create_config() -> Config:
     config.deffield(
         'PLAYBACK_CROSSFADE_DURATION', type_=int, default=500, desc='淡入淡出持续时间'
     )
+    config.deffield(
+        'OPENAI_API_BASEURL',
+        type_=str,
+        default='',
+        desc='OpenAI API base url'
+    )
+    config.deffield('OPENAI_API_KEY', type_=str, default='', desc='OpenAI API key')
+    config.deffield('OPENAI_MODEL', type_=str, default='', desc='OpenAI model name')
+    config.deffield(
+        'AI_RADIO_PROMPT',
+        type_=str,
+        default='''\
+你是一个音乐推荐系统。你根据用户的歌曲列表分析用户的喜好，给用户推荐一些歌。默认推荐5首歌。
+
+有几个注意点
+1. 不要推荐与用户播放列表中一模一样的歌曲。不要推荐用户不喜欢的歌曲。不要重复推荐。
+2. 你返回的内容只应该有 JSON，其它信息都不需要。也不要用 markdown 格式返回。
+3. 你推荐的歌曲需要使用类似这样的 JSON 格式
+    [{"title": "xxx", "artists_name": "yyy", "description": "推荐理由"}]
+''',
+        desc='AI 电台功能的提示词'
+    )
     return config

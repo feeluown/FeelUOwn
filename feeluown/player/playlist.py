@@ -601,12 +601,6 @@ class Playlist:
                 self._app.show_msg('使用音乐视频作为其播放资源 ✅')
             else:
                 self._app.show_msg('未找到可用的音乐视频资源 🙁')
-                # if mode is fm mode, do not find standby song, just skip the song.
-                if self.mode is PlaylistMode.fm:
-                    self.mark_as_bad(song)
-                    run_afn(self.a_next)
-                    return
-
                 logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
                 self.play_model_stage_changed.emit(PlaylistPlayModelStage.find_standby)
