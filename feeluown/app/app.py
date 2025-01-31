@@ -60,6 +60,7 @@ class App:
             except ImportError as e:
                 logger.warning(f"can't enable ytdl as standby due to {e}")
             else:
+                logger.warning('ytdl-as-standby is deprecated since v4.1.9')
                 logger.info(f"enable ytdl as standby succeed"
                             f" with rules:{config.YTDL_RULES}")
         # TODO: initialization should be moved into initialize
