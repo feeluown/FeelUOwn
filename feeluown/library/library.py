@@ -4,25 +4,26 @@ import warnings
 from functools import partial
 from typing import Optional, TypeVar, List, TYPE_CHECKING
 
+from feeluown.ai import AI
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
-from .base import SearchType, ModelType
-from .provider import Provider
-from .excs import MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound
-from .flags import Flags as PF
-from .models import (
+from feeluown.library.base import SearchType, ModelType
+from feeluown.library.provider import Provider
+from feeluown.library.excs import MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound
+from feeluown.library.flags import Flags as PF
+from feeluown.library.models import (
     ModelFlags as MF, BaseModel,
     BriefVideoModel, BriefSongModel, SongModel,
     LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel
 )
-from .model_state import ModelState
-from .provider_protocol import (
+from feeluown.library.model_state import ModelState
+from feeluown.library.provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
 )
-from .similarity import get_standby_origin_similarity, FULL_SCORE
+from feeluown.library.similarity import get_standby_origin_similarity, FULL_SCORE
 
 if TYPE_CHECKING:
     from .ytdl import Ytdl
@@ -49,6 +50,7 @@ class Library:
         self._providers_standby = providers_standby
         self._providers = set()
         self.ytdl: Optional['Ytdl'] = None
+        self.ai: Optional['AI'] = None
 
         self.provider_added = Signal()  # emit(AbstractProvider)
         self.provider_removed = Signal()  # emit(AbstractProvider)
@@ -178,11 +180,14 @@ class Library:
         q = '{} {}'.format(song.title_display, song.artists_name_display)
         standby_score_list = []  # [(standby, score), (standby, score)]
         song_media_list = []     # [(standby, media), (standby, media)]
+        top3_standby = []
         async for result in self.a_search(q, source_in=pvd_ids):
             if result is None:
                 continue
             # Only check the first 3 songs
-            for standby in result.songs:
+            for i, standby in enumerate(result.songs):
+                if i < 3:
+                    top3_standby.append(standby)
                 score = score_fn(song, standby)
                 if score == FULL_SCORE:
                     media = await prepare_media(standby, audio_select_policy)
@@ -195,20 +200,43 @@ class Library:
                         return song_media_list
                 elif score >= min_score:
                     standby_score_list.append((standby, score))
-        standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
-        logger.debug(f"find {len(standby_score_list)} similar songs "
-                     f"from {','.join(standby_pvd_id_set)}")
-        # Limit try times since prapare_media is an expensive IO operation
-        max_try = len(pvd_ids) * 2
-        for standby, score in sorted(standby_score_list,
-                                     key=lambda song_score: song_score[1],
-                                     reverse=True)[:max_try]:
-            media = await prepare_media(standby, audio_select_policy)
-            if media is not None:
-                song_media_list.append((standby, media))
-                if len(song_media_list) >= limit:
-                    return song_media_list
+        if standby_score_list:
+            standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
+            logger.debug(f"find {len(standby_score_list)} similar songs "
+                         f"from {','.join(standby_pvd_id_set)}")
+            # Limit try times since prapare_media is an expensive IO operation
+            max_try = len(pvd_ids) * 2
+            for standby, score in sorted(standby_score_list,
+                                         key=lambda song_score: song_score[1],
+                                         reverse=True)[:max_try]:
+                media = await prepare_media(standby, audio_select_policy)
+                if media is not None:
+                    song_media_list.append((standby, media))
+                    if len(song_media_list) >= limit:
+                        return song_media_list
+            return song_media_list
+        if self.ai is not None:
+            return await self.a_ai_list_song_standby(song, top3_standby)
         return song_media_list
+
+    async def a_ai_list_song_standby(self, song, standby_list):
+        from feeluown.ai import STANDBY_MATCH_PROMPT, standby_list_as_jsonlines, song_as_jsonline
+        sys_msg = {'role': 'system', 'content': STANDBY_MATCH_PROMPT}
+        user_msg = {
+            'role': 'user',
+            'content': (f'我搜索了 `{song_as_jsonline(song)}`\n\n'
+                        '应用返回的候选项如下：\n\n'
+                        f'{standby_list_as_jsonlines(standby_list)}')
+        }
+        client = self.ai.get_async_client()
+        stream = await client.chat.completions.create(
+            model=self.ai.model,
+            messages=[sys_msg, user_msg],
+            stream=True,
+        )
+        async for chunk in stream:
+            print(chunk.choices[0].delta.content, end='')
+
 
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
         """Check if a provider satisfies the specific ability for a model type
@@ -433,3 +461,46 @@ class Library:
             if not media:
                 raise
         return media
+
+
+if __name__ == '__main__':
+    # noqa
+    import asyncio
+    import os
+
+    from feeluown.library.uri import resolve, Resolver
+
+    library = Library()
+    Resolver.library = library
+    library.ai = AI(
+        base_url='https://api.deepseek.com',
+        api_key=os.environ.get('DEEPSEEK_API_KEY'),
+        model='deepseek-chat',
+        #base_url='https://open.bigmodel.cn/api/paas/v4/',
+        #api_key=os.environ.get('GLM_API_KEY'),
+        #model='GLM-4-Air',
+        #api_key=os.environ.get('MOONSHOT_API_KEY'),
+        #base_url='https://api.moonshot.cn/v1',
+        #model='moonshot-v1-8k',
+    )
+    standby_text = '''\
+fuo://qqmusic/songs/409175284   # "下雨天 - 鱼天邻制作" - 南拳妈妈 - "" - 00:51
+fuo://qqmusic/songs/463631892   # 下雨天 (DJ阿智版) - 南拳妈妈 & DJ阿智 - "" - 01:28
+fuo://qqmusic/songs/102697748   # 下雨天 - 南拳妈妈 - 优の良曲 南搞小孩 - 04:13
+fuo://ytmusic/songs/XkcKycMblaE # 下雨天 - 芝麻Mochi - 下雨天 - 04:26
+fuo://ytmusic/songs/F-YMyH74748 # 下雨天 - "" - 下雨天 - 04:14
+fuo://ytmusic/songs/BBe-Zwb7ElM # Rainy Day (下雨天) - Nan Quan Mama - 優的良曲南搞小孩 - 04:14
+fuo://netease/songs/1382202727  # 下雨天（翻自 南拳妈妈NQMM） - 33没事儿 - 翻唱 - 04:10
+fuo://netease/songs/2135170282  # 下雨天（Alqas 版） - Kk - 南拳妈妈-下雨天 - 03:26
+fuo://netease/songs/1905457762  # 下雨天（Cover 南拳妈妈） - 张贤静 - For you - 04:36
+'''
+    standby_list = []
+    for line in standby_text.splitlines():
+        l = line.strip()
+        if l:
+            standby_list.append(resolve(l))
+
+    print(standby_text)
+
+    song = BriefSongModel(source='dummy', identifier='xxx', title='下雨天', artists_name='南拳妈妈')
+    asyncio.run(library.a_ai_list_song_standby(song, standby_list))

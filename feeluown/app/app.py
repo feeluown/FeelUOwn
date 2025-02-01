@@ -52,6 +52,11 @@ class App:
         self.version_mgr = VersionManager(self)
         self.task_mgr = TaskManager(self)
 
+        try:
+            from feeluown.ai import AISimpleAsyncClient
+        except ImportError:
+            self.ai = AISimpleAsyncClient.create_client(config)
+
         # Library.
         self.library = Library(config.PROVIDERS_STANDBY)
         if config.ENABLE_YTDL_AS_MEDIA_PROVIDER:
