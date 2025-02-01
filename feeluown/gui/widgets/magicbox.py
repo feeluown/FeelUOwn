@@ -1,10 +1,15 @@
 import io
 import sys
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.fuoexec import fuoexec
+from feeluown.utils.aio import run_afn
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 _KeyPrefix = 'search_'  # local storage key prefix
 KeySourceIn = _KeyPrefix + 'source_in'
@@ -20,7 +25,7 @@ class MagicBox(QLineEdit):
     # this filter signal is designed for table (songs_table & albums_table)
     filter_text_changed = pyqtSignal(str)
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
 
         self._app = app
@@ -101,6 +106,12 @@ class MagicBox(QLineEdit):
         text = self.text()
         if text.startswith('>>> '):
             self._exec_code(text[4:])
+        elif text.startswith('--- ') or text.startswith('=== '):
+            if self._app.ui.ai_chat_overlay is not None:
+                run_afn(self._app.ui.ai_chat_overlay.body.exec_user_query, text[4:])
+                self._app.ui.ai_chat_overlay.show()
+            else:
+                self._app.show_msg('AI 聊天功能不可用')
         else:
             local_storage = self._app.browser.local_storage
             type_ = local_storage.get(KeyType)

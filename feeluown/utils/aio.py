@@ -39,6 +39,8 @@ gather = asyncio.gather
 #: wait_for is an alias of `asyncio.wait_for`
 wait_for = asyncio.wait_for
 
+bg_tasks = set()
+
 
 def run_in_executor(executor, func, *args):
     """alias for loop.run_in_executor"""
@@ -52,6 +54,17 @@ def run_afn(afn, *args):
     .. versionadded:: 3.7.8
     """
     return create_task(afn(*args))
+
+
+def run_afn_ref(afn, *args):
+    """Create a background task and keep a reference.
+
+    .. versionadded:: 4.1.9
+    """
+    task = create_task(afn(*args))
+    bg_tasks.add(task)
+    task.add_done_callback(bg_tasks.discard)
+    return task
 
 
 def run_fn(fn, *args):

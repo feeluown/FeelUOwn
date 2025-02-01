@@ -41,7 +41,14 @@ class Ui:
         self.mpv_widget = MpvOpenGLWidget(self._app)
         self.playlist_overlay = PlaylistOverlay(app, parent=app)
         self.nowplaying_overlay = NowplayingOverlay(app, parent=app)
-
+        try:
+            from feeluown.gui.uimain.ai_chat import AIChatOverlay
+        except ImportError as e:
+            logger.warning(f'AIChatOverlay is not available: {e}')
+            self.ai_chat_overlay = None
+        else:
+            self.ai_chat_overlay = AIChatOverlay(app, parent=app)
+            self.ai_chat_overlay.hide()
         # alias
         self.magicbox = self.bottom_panel.magicbox
         self.player_bar = self.pc_panel = self.top_panel.pc_panel
