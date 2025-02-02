@@ -1,9 +1,9 @@
 import asyncio
 import logging
 import json
-import socket
 from typing import List, TYPE_CHECKING
 
+from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn, as_completed
 
 if TYPE_CHECKING:
@@ -11,24 +11,6 @@ if TYPE_CHECKING:
     from feeluown.library import BriefSongModel
 
 logger = logging.getLogger(__name__)
-
-
-async def a_handle_stream(stream):
-    rsock, wsock = socket.socketpair()
-    rr, rw = await asyncio.open_connection(sock=rsock)
-    _, ww = await asyncio.open_connection(sock=wsock)
-
-    async def write_task():
-        async for chunk in stream:
-            content = chunk.choices[0].delta.content or ''
-            ww.write(content.encode('utf-8'))
-        ww.write_eof()
-        await ww.drain()
-        ww.close()
-        await ww.wait_closed()
-
-    task = run_afn(write_task)
-    return rr, rw, task
 
 
 class AIStandbyMatcher:
@@ -44,8 +26,8 @@ class AIStandbyMatcher:
 你要重点考虑原唱这个因素,类似“重制、翻唱、非原创”的歌曲，排序都应该靠后。\
 排序完之后，你需要用类似下面的格式来返回，每行一个 JSON，你返回的内容不能包含其它内容
 
-    {"song_id": "xxx", "score": 100, "reason": ""}
-    {"song_id": "yyy", "score": 95, "reason": ""}
+    {"song_id": "xxx", "score": 100}
+    {"song_id": "yyy", "score": 95}
 '''
 
     def __init__(self, ai: 'AI', a_prepare_media, min_score, audio_select_policy):
@@ -111,14 +93,15 @@ class AIStandbyMatcher:
             for standby in standby_list:
                 if standby.source == source and standby.identifier == identifier:
                     self.song_by_source[source] = standby
-                    task = run_afn(self._prepare_media, standby, self.audio_select_policy)
+                    task = run_afn(
+                        self._prepare_media, standby, self.audio_select_policy)
                     self.fetch_media_tasks[source] = task
 
         try:
             await wtask
-        except:
+        except:  # noqa
             if not source_media_pair:
-                logger.exception('write task error')
+                logger.exception('Stream consumer error')
         rw.close()
         await rw.wait_closed()
 
@@ -201,8 +184,7 @@ class AIStandbyMatcher:
 if __name__ == '__main__':
     import os
 
-    from feeluown.ai import AI
-    from feeluown.library import Library, BriefSongModel
+    from feeluown.library import Library
     from feeluown.library.uri import resolve, Resolver
     from fuo_ytmusic.provider import provider as p1
     from fuo_qqmusic import provider as p2
@@ -243,15 +225,20 @@ fuo://netease/songs/1905457762  # 下雨天（Cover 南拳妈妈） - 张贤静 
 '''
     standby_list = []
     for line in standby_text.splitlines():
-        l = line.strip()
-        if l:
-            standby_list.append(resolve(l))
+        l_nospace = line.strip()
+        if l_nospace:
+            standby_list.append(resolve(l_nospace))
 
     print(standby_text)
 
     matcher = AIStandbyMatcher(
         library.ai, library.a_song_prepare_media_no_exc, 60, '>>>')
 
-    song = BriefSongModel(source='dummy', identifier='xxx', title='下雨天', artists_name='南拳妈妈')
+    song = BriefSongModel(
+        source='dummy',
+        identifier='xxx',
+        title='下雨天',
+        artists_name='南拳妈妈'
+    )
     pair = asyncio.run(matcher.match(song, standby_list))
     print(pair)

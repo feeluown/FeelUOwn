@@ -7,7 +7,7 @@ from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.library.text2song import create_dummy_brief_song
 from feeluown.fuoexec import fuoexec
-from feeluown.utils.aio import run_afn, run_afn_ref
+from feeluown.utils.aio import run_afn
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -117,7 +117,7 @@ class MagicBox(QLineEdit):
                 or text.startswith('--》') or text.startswith('==》'):
             body = text[4:]
             if not body:
-               return
+                return
             delimiters = ('|', '-')
             title = artists_name = ''
             for delimiter in delimiters:

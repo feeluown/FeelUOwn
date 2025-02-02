@@ -70,7 +70,7 @@ class App:
                 )
                 self.library.setup_ai(self.ai)
             else:
-                logger.warning(f"AI is not available, no valid settings")
+                logger.warning("AI is not available, no valid settings")
 
         if config.ENABLE_YTDL_AS_MEDIA_PROVIDER:
             try:

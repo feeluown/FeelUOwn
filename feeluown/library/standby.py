@@ -1,9 +1,10 @@
 from .models import SongModel
 
-FULL_SCORE = 10
+STANDBY_DEFAULT_MIN_SCORE = 0.5
+STANDBY_FULL_SCORE = 1
 
 
-def get_standby_origin_similarity(origin, standby):
+def get_standby_score(origin, standby):
 
     # TODO: move this function to utils module
     def duration_ms_to_duration(ms):
@@ -47,4 +48,4 @@ def get_standby_origin_similarity(origin, standby):
     #       f"'{standby.artists_name}', "
     #       f"'{standby.album_name}', "
     #       f"'{standby.duration_ms}')")
-    return score
+    return score / 10

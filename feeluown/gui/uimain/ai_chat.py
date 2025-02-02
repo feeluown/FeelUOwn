@@ -1,29 +1,23 @@
-import asyncio
 import json
-import uuid
-import socket
 import logging
 from typing import TYPE_CHECKING, cast, List
 from dataclasses import dataclass
 
 from openai import AsyncOpenAI
 from PyQt5.QtCore import QEvent, QSize, Qt
-from PyQt5.QtGui import QResizeEvent, QColor, QFontDatabase, QPainter
+from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
-    QFrame,
-    QPlainTextEdit,
     QLabel,
     QScrollArea,
 )
 
-from feeluown.utils.aio import run_afn_ref, run_afn
-from feeluown.library import BriefSongModel, ModelState
-from feeluown.library.text2song import analyze_text, create_dummy_brief_song
+from feeluown.ai import a_handle_stream
+from feeluown.utils.aio import run_afn_ref
+from feeluown.library.text2song import create_dummy_brief_song
 from feeluown.gui.widgets.textbtn import TextButton
-from feeluown.utils.utils import elfhash
 
 
 if TYPE_CHECKING:
@@ -93,8 +87,10 @@ class Body(QWidget):
 
         self.setup_ui()
         self._hide_btn.clicked.connect(self._hide)
-        self._extract_and_play_btn.clicked.connect(lambda: run_afn_ref(self.extract_and_play))
-        self._extract_10_and_play_btn.clicked.connect(lambda: run_afn_ref(self.extract_10_and_play))
+        self._extract_and_play_btn.clicked.connect(
+            lambda: run_afn_ref(self.extract_and_play))
+        self._extract_10_and_play_btn.clicked.connect(
+            lambda: run_afn_ref(self.extract_10_and_play))
 
         self._chat_context = None
         self.setAutoFillBackground(True)
@@ -127,10 +123,7 @@ class Body(QWidget):
 
     async def exec_user_query(self, query):
         self.set_msg('等待 AI 返回中...', level='hint')
-        client = AsyncOpenAI(
-            base_url=self._app.config.OPENAI_API_BASEURL,
-            api_key=self._app.config.OPENAI_API_KEY,
-        )
+        client = self._app.ai.get_async_client()
         messages = [
             {'role': 'system', 'content': QUERY_PROMPT},
             {'role': 'user', 'content': query}
@@ -177,25 +170,13 @@ class Body(QWidget):
             messages=self._chat_context.messages,
             stream=True,
         )
-        rsock, wsock = socket.socketpair()
-        reader1, writer1 = await asyncio.open_connection(sock=rsock)
-        _, writer2 = await asyncio.open_connection(sock=wsock)
 
-        async def write_task():
-            async for chunk in stream:
-                content = chunk.choices[0].delta.content or ''
-                writer2.write(content.encode('utf-8'))
-            writer2.write_eof()
-            await writer2.drain()
-            writer2.close()
-            await writer2.wait_closed()
-
-        task = run_afn(write_task)
+        rr, rw, wtask = await a_handle_stream(stream)
         ok_count = 0
         fail_count = 0
         while True:
             try:
-                line = await reader1.readline()
+                line = await rr.readline()
                 line = line.decode('utf-8')
                 logger.debug(f'read a line: {line}')
                 if not line:
@@ -205,7 +186,7 @@ class Body(QWidget):
                 try:
                     jline = json.loads(line)
                     title, artists_name = jline['title'], jline['artists_name']
-                except:
+                except:  # noqa
                     fail_count += 1
                     logger.exception(f'failed to parse a line: {line}')
                     self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
@@ -218,13 +199,13 @@ class Body(QWidget):
                     self._app.playlist.add(song)
                     if ok_count == 1:
                         self._app.playlist.play_model(song)
-            except:
+            except:  # noqa
                 logger.exception('extract and play failed')
                 break
 
-        await task
-        writer1.close()
-        await writer1.wait_closed()
+        await wtask
+        rw.close()
+        await rw.wait_closed()
         self._hide()
 
     def _hide(self):
