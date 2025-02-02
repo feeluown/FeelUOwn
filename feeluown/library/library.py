@@ -1,6 +1,7 @@
 # mypy: disable-error-code=type-abstract
 import logging
 import warnings
+from collections import Counter
 from functools import partial
 from typing import Optional, TypeVar, List, TYPE_CHECKING
 
@@ -193,7 +194,9 @@ class Library:
                 continue
             # Only check the first 3 songs
             for i, standby in enumerate(result.songs):
-                if i < 2:
+                # HACK(cosven): I think the local provider should not be included,
+                #   because the search algorithm of local provider is so bad.
+                if i < 2 and standby.source != 'local':
                     top2_standby.append(standby)
                 score = score_fn(song, standby)
                 if score == STANDBY_FULL_SCORE:
@@ -212,13 +215,25 @@ class Library:
                     standby_score_list.append((standby, score))
         if standby_score_list:
             standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
-            logger.debug(f"Find {len(standby_score_list)} similar songs "
-                         f"from {','.join(standby_pvd_id_set)}, try to find the best")
-            # Limit try times since prapare_media is an expensive IO operation
-            max_try = len(pvd_ids) * 2
-            for standby, score in sorted(standby_score_list,
-                                         key=lambda song_score: song_score[1],
-                                         reverse=True)[:max_try]:
+            logger.info(f"Find {len(standby_score_list)} similar songs "
+                        f"from {','.join(standby_pvd_id_set)}. Try to get a valid media")
+            max_per_source = 2
+            standby_score_list_2 = []
+            counter = Counter()
+            for s, score in standby_score_list:
+                if counter[s.source] >= max_per_source:
+                    continue
+                counter[s.source] += 1
+                standby_score_list_2.append((s, score))
+
+            assert len(standby_score_list_2) <= max_per_source * len(standby_pvd_id_set)
+            sorted_standby_score_list = sorted(
+                standby_score_list_2,
+                key=lambda song_score: song_score[1],
+                reverse=True,
+            )
+            for standby, _ in sorted_standby_score_list:
+                # TODO: send multiple requests at a time.
                 media = await self.a_song_prepare_media_no_exc(
                     standby,
                     audio_select_policy
@@ -229,12 +244,12 @@ class Library:
                         return song_media_list
             return song_media_list
         if self.enable_ai_standby_matcher and self.ai and top2_standby:
-            logger.info(f'Try to use AI to match standby for song:{song}')
+            logger.info(f'Try to use AI to match standby for song {song}')
             matcher = AIStandbyMatcher(
                 self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)
             song_media_list = await matcher.match(song, top2_standby)
             word = 'found a' if song_media_list else 'found no'
-            logger.info(f'AI ${word} standby for song:{song}')
+            logger.info(f'AI {word} standby for song:{song}')
             return song_media_list
         return song_media_list
 

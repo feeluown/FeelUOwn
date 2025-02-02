@@ -132,7 +132,7 @@ class MagicBox(QLineEdit):
                     title, artists_name = parts
                     break
             if title and artists_name:
-                song = create_dummy_brief_song(title, artists_name)
+                song = create_dummy_brief_song(title.strip(), artists_name.strip())
                 self._app.playlist.play_model(song)
                 self._app.show_msg(f'尝试播放：{song}')
             else:
