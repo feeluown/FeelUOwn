@@ -1,36 +1,43 @@
 # mypy: disable-error-code=type-abstract
 import logging
 import warnings
+from collections import Counter
 from functools import partial
 from typing import Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
-from .base import SearchType, ModelType
-from .provider import Provider
-from .excs import MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound
-from .flags import Flags as PF
-from .models import (
+from feeluown.library.ai_standby import AIStandbyMatcher
+from feeluown.library.base import SearchType, ModelType
+from feeluown.library.provider import Provider
+from feeluown.library.excs import (
+    MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound,
+)
+from feeluown.library.flags import Flags as PF
+from feeluown.library.models import (
     ModelFlags as MF, BaseModel,
     BriefVideoModel, BriefSongModel, SongModel,
     LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel
 )
-from .model_state import ModelState
-from .provider_protocol import (
+from feeluown.library.model_state import ModelState
+from feeluown.library.provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
 )
-from .similarity import get_standby_origin_similarity, FULL_SCORE
+from feeluown.library.standby import (
+    get_standby_score,
+    STANDBY_DEFAULT_MIN_SCORE,
+    STANDBY_FULL_SCORE,
+)
 
 if TYPE_CHECKING:
-    from .ytdl import Ytdl
-
+    from feeluown.ai import AI
+    from feeluown.library.ytdl import Ytdl
 
 logger = logging.getLogger(__name__)
 
-MIN_SCORE = 5
 T_p = TypeVar('T_p')
 
 
@@ -41,7 +48,7 @@ def raise_(e):
 class Library:
     """Resource entrypoints."""
 
-    def __init__(self, providers_standby=None):
+    def __init__(self, providers_standby=None, enable_ai_standby_matcher=True):
         """
 
         :type app: feeluown.app.App
@@ -49,14 +56,19 @@ class Library:
         self._providers_standby = providers_standby
         self._providers = set()
         self.ytdl: Optional['Ytdl'] = None
+        self.ai: Optional['AI'] = None
 
         self.provider_added = Signal()  # emit(AbstractProvider)
         self.provider_removed = Signal()  # emit(AbstractProvider)
+        self.enable_ai_standby_matcher = enable_ai_standby_matcher
 
     def setup_ytdl(self, *args, **kwargs):
         from .ytdl import Ytdl
 
         self.ytdl = Ytdl(*args, **kwargs)
+
+    def setup_ai(self, ai):
+        self.ai = ai
 
     def register(self, provider):
         """register provider
@@ -148,66 +160,97 @@ class Library:
                 if result is not None:
                     yield result
 
-    async def a_list_song_standby_v2(self, song,
-                                     audio_select_policy='>>>', source_in=None,
-                                     score_fn=None, min_score=MIN_SCORE, limit=1):
+    async def a_song_prepare_media_no_exc(self, standby, policy):
+        media = None
+        try:
+            media = await run_fn(self.song_prepare_media, standby, policy)
+        except MediaNotFound as e:
+            logger.debug(f'standby media not found: {e}')
+        except:  # noqa
+            logger.exception(f'get standby:{standby} media failed')
+        return media
+
+    async def a_list_song_standby_v2(
+            self, song, audio_select_policy='>>>', source_in=None,
+            score_fn=None, min_score=STANDBY_DEFAULT_MIN_SCORE, limit=1):
         """list song standbys and their media
 
         .. versionadded:: 3.7.8
-
         """
-
-        async def prepare_media(standby, policy):
-            media = None
-            try:
-                media = await run_fn(self.song_prepare_media, standby, policy)
-            except MediaNotFound as e:
-                logger.debug(f'standby media not found: {e}')
-            except:  # noqa
-                logger.exception(f'get standby:{standby} media failed')
-            return media
-
         if source_in is None:
             pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
         else:
             pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
         if score_fn is None:
-            score_fn = get_standby_origin_similarity
+            score_fn = get_standby_score
         limit = max(limit, 1)
 
         q = '{} {}'.format(song.title_display, song.artists_name_display)
         standby_score_list = []  # [(standby, score), (standby, score)]
-        song_media_list = []     # [(standby, media), (standby, media)]
+        song_media_list = []  # [(standby, media), (standby, media)]
+        top2_standby = []
         async for result in self.a_search(q, source_in=pvd_ids):
             if result is None:
                 continue
             # Only check the first 3 songs
-            for standby in result.songs:
+            for i, standby in enumerate(result.songs):
+                # HACK(cosven): I think the local provider should not be included,
+                #   because the search algorithm of local provider is so bad.
+                if i < 2 and standby.source != 'local':
+                    top2_standby.append(standby)
                 score = score_fn(song, standby)
-                if score == FULL_SCORE:
-                    media = await prepare_media(standby, audio_select_policy)
+                if score == STANDBY_FULL_SCORE:
+                    media = await self.a_song_prepare_media_no_exc(
+                        standby,
+                        audio_select_policy
+                    )
                     if media is None:
                         continue
-                    logger.debug(f'find full mark standby for song:{q}')
+                    logger.info(f'Find full score standby for song:{q}')
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
                         # Return as early as possible to get better performance
                         return song_media_list
                 elif score >= min_score:
                     standby_score_list.append((standby, score))
-        standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
-        logger.debug(f"find {len(standby_score_list)} similar songs "
-                     f"from {','.join(standby_pvd_id_set)}")
-        # Limit try times since prapare_media is an expensive IO operation
-        max_try = len(pvd_ids) * 2
-        for standby, score in sorted(standby_score_list,
-                                     key=lambda song_score: song_score[1],
-                                     reverse=True)[:max_try]:
-            media = await prepare_media(standby, audio_select_policy)
-            if media is not None:
-                song_media_list.append((standby, media))
-                if len(song_media_list) >= limit:
-                    return song_media_list
+        if standby_score_list:
+            standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
+            logger.info(f"Find {len(standby_score_list)} similar songs "
+                        f"from {','.join(standby_pvd_id_set)}. Try to get a valid media")
+            max_per_source = 2
+            standby_score_list_2 = []
+            counter = Counter()
+            for s, score in standby_score_list:
+                if counter[s.source] >= max_per_source:
+                    continue
+                counter[s.source] += 1
+                standby_score_list_2.append((s, score))
+
+            assert len(standby_score_list_2) <= max_per_source * len(standby_pvd_id_set)
+            sorted_standby_score_list = sorted(
+                standby_score_list_2,
+                key=lambda song_score: song_score[1],
+                reverse=True,
+            )
+            for standby, _ in sorted_standby_score_list:
+                # TODO: send multiple requests at a time.
+                media = await self.a_song_prepare_media_no_exc(
+                    standby,
+                    audio_select_policy
+                )
+                if media is not None:
+                    song_media_list.append((standby, media))
+                    if len(song_media_list) >= limit:
+                        return song_media_list
+            return song_media_list
+        if self.enable_ai_standby_matcher and self.ai and top2_standby:
+            logger.info(f'Try to use AI to match standby for song {song}')
+            matcher = AIStandbyMatcher(
+                self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)
+            song_media_list = await matcher.match(song, top2_standby)
+            word = 'found a' if song_media_list else 'found no'
+            logger.info(f'AI {word} standby for song:{song}')
+            return song_media_list
         return song_media_list
 
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:

@@ -6,5 +6,5 @@ from .selfpaint_btn import (  # noqa
     PlusButton, TriagleButton, DiscoveryButton,
     SelfPaintAbstractIconTextButton, CalendarButton, RankButton,
     StarButton, PlayPauseButton, PlayNextButton, PlayPreviousButton,
-    MVButton, VolumeButton, HotButton, EmojiButton
+    MVButton, VolumeButton, HotButton, EmojiButton, AIButton
 )

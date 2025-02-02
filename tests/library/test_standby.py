@@ -1,8 +1,11 @@
 import random
 
-from feeluown.library.similarity import get_standby_origin_similarity, FULL_SCORE
+from feeluown.library.standby import (
+    get_standby_score,
+    STANDBY_DEFAULT_MIN_SCORE,
+    STANDBY_FULL_SCORE,
+)
 from feeluown.library import BriefSongModel
-from feeluown.library.library import MIN_SCORE
 
 
 def test_get_standby_origin_similarity_1():
@@ -12,20 +15,28 @@ def test_get_standby_origin_similarity_1():
         title='x',
         artists_name='y',
     )
-    standby = BriefSongModel(
+    standby1 = BriefSongModel(
         source='',
         identifier='',
         title='z',
         artists_name='y',
     )
-    # 对于上面这种情况，不应该匹配上。
-    assert get_standby_origin_similarity(origin, standby) < MIN_SCORE
+    # Should not match
+    assert get_standby_score(origin, standby1) < STANDBY_DEFAULT_MIN_SCORE
+    standby2 = BriefSongModel(
+        source='',
+        identifier='',
+        title='x',
+        artists_name='y',
+    )
+    # Should match
+    assert get_standby_score(origin, standby2) >= STANDBY_DEFAULT_MIN_SCORE
 
 
 def test_get_standby_origin_similarity_2():
     """A test to check if our score fn works well
     """
-    score_fn = get_standby_origin_similarity
+    score_fn = get_standby_score
 
     def create_song(title, artists_name, album_name, duration_ms):
         return BriefSongModel(identifier=random.randint(0, 1000),
@@ -56,7 +67,7 @@ def test_get_standby_origin_similarity_2():
     # 字符串上一模一样，理应返回满分
     song = create_song('我很想爱他', 'Twins', '八十块环游世界', '04:27')
     candidates = [create_song('我很想爱他', 'Twins', '八十块环游世界', '04:27')]
-    assert score_fn(song, candidates[0]) == FULL_SCORE
+    assert score_fn(song, candidates[0]) == STANDBY_FULL_SCORE
 
     # 根据人工判断，分数应该有 9 分，期望目标算法最起码不能忽略这首歌曲
     song = create_song('很爱很爱你 (Live)', '刘若英',
@@ -64,4 +75,4 @@ def test_get_standby_origin_similarity_2():
     candidates = [
         create_song('很爱很爱你', '刘若英', '脱掉高跟鞋世界巡回演唱会', '05:24')
     ]
-    assert score_fn(song, candidates[0]) >= MIN_SCORE
+    assert score_fn(song, candidates[0]) >= STANDBY_DEFAULT_MIN_SCORE

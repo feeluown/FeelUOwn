@@ -67,6 +67,9 @@ setup(
                     # https://github.com/BruceZhang1993/feeluown-bilibili
                     'feeluown-bilibili>=0.4.1',
                     ],
+        'ai': [
+            'openai>=1.50',
+        ],
         'macOS': [
             'aionowplaying>=0.10',
         ],

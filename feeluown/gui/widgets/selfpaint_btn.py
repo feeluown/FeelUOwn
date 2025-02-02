@@ -13,6 +13,7 @@ from feeluown.gui.drawers import (
     SearchIconDrawer,
     FireIconDrawer,
     EmojiIconDrawer,
+    AIIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
 
@@ -265,6 +266,16 @@ class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
         pen.setWidthF(pen_width * 2)
         painter.setPen(pen)
         painter.drawPoint(QPoint(self._padding, center))
+
+
+class AIButton(SelfPaintAbstractIconTextButton):
+
+    def __init__(self, *args, **kwargs):
+        super().__init__('AI', *args, **kwargs)
+        self.ai_icon = AIIconDrawer(self.height(), self._padding)
+
+    def draw_icon(self, painter):
+        self.ai_icon.draw(painter, self.palette())
 
 
 class DiscoveryButton(SelfPaintAbstractIconTextButton):
@@ -572,6 +583,7 @@ if __name__ == '__main__':
 
         l3.addWidget(HotButton(height=length))
         l3.addWidget(HomeButton(height=length))
+        l3.addWidget(AIButton(height=length))
         l3.addWidget(DiscoveryButton(height=length))
         l3.addWidget(RankButton(height=length))
         l3.addWidget(StarButton(height=length))

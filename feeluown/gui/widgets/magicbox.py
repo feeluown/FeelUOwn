@@ -1,10 +1,16 @@
 import io
 import sys
+from typing import TYPE_CHECKING
 
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
+from feeluown.library.text2song import create_dummy_brief_song
 from feeluown.fuoexec import fuoexec
+from feeluown.utils.aio import run_afn
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 _KeyPrefix = 'search_'  # local storage key prefix
 KeySourceIn = _KeyPrefix + 'source_in'
@@ -20,15 +26,19 @@ class MagicBox(QLineEdit):
     # this filter signal is designed for table (songs_table & albums_table)
     filter_text_changed = pyqtSignal(str)
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(parent)
 
         self._app = app
         self.setPlaceholderText('搜索歌曲、歌手、专辑、用户')
-        self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
-                        '输入 >>> 前缀之后，可以执行 Python 代码\n'
-                        '输入 # 前缀之后，可以过滤表格内容\n'
-                        '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
+        self.setToolTip(
+            '直接输入文字可以进行过滤，按 Enter 可以搜索\n'
+            '输入 >>> 前缀之后，可以执行 Python 代码\n'
+            '输入 “==> 执迷不悔 | 王菲”，可以直接播放歌曲\n'
+            '输入 “=== 下雨天听点啥？”，可以和 AI 互动\n'
+            '输入 # 前缀之后，可以过滤表格内容\n'
+            '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）'
+        )
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedHeight(32)
         self.setFrame(False)
@@ -101,6 +111,32 @@ class MagicBox(QLineEdit):
         text = self.text()
         if text.startswith('>>> '):
             self._exec_code(text[4:])
+        elif text.startswith('---') or text.startswith('==='):
+            if self._app.ui.ai_chat_overlay is not None:
+                body = text[4:] if len(text) > 4 else ''
+                if body:
+                    run_afn(self._app.ui.ai_chat_overlay.body.exec_user_query, body)
+                self._app.ui.ai_chat_overlay.show()
+            else:
+                self._app.show_msg('AI 聊天功能不可用')
+        elif text.startswith('--> ') or text.startswith('==> ') \
+                or text.startswith('--》') or text.startswith('==》'):
+            body = text[4:]
+            if not body:
+                return
+            delimiters = ('|', '-')
+            title = artists_name = ''
+            for delimiter in delimiters:
+                parts = body.split(delimiter)
+                if len(parts) == 2:
+                    title, artists_name = parts
+                    break
+            if title and artists_name:
+                song = create_dummy_brief_song(title.strip(), artists_name.strip())
+                self._app.playlist.play_model(song)
+                self._app.show_msg(f'尝试播放：{song}')
+            else:
+                self._app.show_msg('你输入的内容需要符合格式：“歌曲标题 | 歌手名”')
         else:
             local_storage = self._app.browser.local_storage
             type_ = local_storage.get(KeyType)

@@ -91,10 +91,11 @@ class AIRadio:
 
 # For debugging.
 if __name__ == '__main__':
+    import os
     from unittest.mock import MagicMock
 
     app = MagicMock()
-    app.config.OPENAI_API_KEY = 'xxx'
+    app.config.OPENAI_API_KEY = os.environ.get('DEEPSEEK_API_KEY', '')
     app.config.OPENAI_API_BASEURL = 'https://api.deepseek.com'
     app.config.OPENAI_MODEL = 'deepseek-chat'
     app.config.AI_RADIO_PROMPT = '''\
@@ -104,7 +105,7 @@ if __name__ == '__main__':
 1. 不要推荐与用户播放列表中一模一样的歌曲。不要推荐用户不喜欢的歌曲。不要重复推荐。
 2. 你返回的内容只应该有 JSON，其它信息都不需要。也不要用 markdown 格式返回。
 3. 你推荐的歌曲需要使用类似这样的 JSON 格式
-    [{"title": "xxx", "artists_name": "yyy", "description": "推荐理由"}]
+    [{"title": "xxx", "artists": ["yyy", "zzz"], "description": "推荐理由"}]
 '''
     radio = AIRadio(app)
     radio.get_msg = MagicMock(return_value='''

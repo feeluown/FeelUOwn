@@ -11,7 +11,7 @@ from feeluown.collection import CollectionAlreadyExists, CollectionType
 from feeluown.utils.reader import create_reader, Reader
 from feeluown.utils.aio import run_fn
 from feeluown.gui.components import CollectionListView
-from feeluown.gui.widgets import HomeButton
+from feeluown.gui.widgets import HomeButton, AIButton
 from feeluown.gui.widgets.separator import Separator
 from .provider_bar import ProviderBar, ListViewContainer as LVC
 
@@ -63,12 +63,15 @@ class _LeftPanel(QFrame):
         self._app = app
 
         self.home_btn = HomeButton(height=30, parent=self)
+        self.ai_btn = AIButton(height=30, padding=0.2, parent=self)
         self.collections_header = QLabel('本地收藏集', self)
-        self.collections_header.setToolTip('我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
-                                           '每个收藏集都以一个独立 .fuo 文件的存在，'
-                                           '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
-                                           '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
-                                           '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。')
+        self.collections_header.setToolTip(
+            '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
+            '每个收藏集都以一个独立 .fuo 文件的存在，'
+            '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
+            '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
+            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。'
+        )
         self.collections_view = CollectionListView(self._app)
         self.collections_con = LVC(self.collections_header, self.collections_view)
         self._top_separator = Separator(self._app)
@@ -84,6 +87,7 @@ class _LeftPanel(QFrame):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(16, 10, 16, 0)
         self._layout.addWidget(self.home_btn)
+        self._layout.addWidget(self.ai_btn)
         self._layout.addWidget(self.collections_con)
         self._layout.addWidget(self._top_separator)
         self._layout.addWidget(self.provider_bar)
@@ -103,9 +107,18 @@ class _LeftPanel(QFrame):
                 lambda: self._app.browser.goto(page='/homepage'))
         else:
             self.home_btn.clicked.connect(self.show_library)
+        self.ai_btn.clicked.connect(self._app.ui.ai_chat_overlay.show)
+        if self._app.ai is None:
+            self.ai_btn.setDisabled(True)
+            self.ai_btn.setToolTip(
+                '你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了\n'
+                'config.OPENAI_API_KEY = "sk-xxx"\n'
+                'config.OPENAI_API_BASEURL = "http://xxx"\n'
+                'config.OPENAI_API_MODEL = "model name"\n'
+            )
 
     def _toggle_top_layout(self, checked):
-        widgets = [self._top_separator, self.collections_con, self.home_btn]
+        widgets = [self._top_separator, self.collections_con, self.home_btn, self.ai_btn]
         if checked:
             self.provider_bar.fold_top_btn.set_direction('down')
             for w in widgets:
