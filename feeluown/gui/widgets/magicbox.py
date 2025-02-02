@@ -5,8 +5,9 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import Qt, QTimer, pyqtSignal
 from PyQt5.QtWidgets import QLineEdit, QSizePolicy
 
+from feeluown.library.text2song import create_dummy_brief_song
 from feeluown.fuoexec import fuoexec
-from feeluown.utils.aio import run_afn
+from feeluown.utils.aio import run_afn, run_afn_ref
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -112,6 +113,24 @@ class MagicBox(QLineEdit):
                 self._app.ui.ai_chat_overlay.show()
             else:
                 self._app.show_msg('AI 聊天功能不可用')
+        elif text.startswith('--> ') or text.startswith('==> ') \
+                or text.startswith('--》') or text.startswith('==》'):
+            body = text[4:]
+            if not body:
+               return
+            delimiters = ('|', '-')
+            title = artists_name = ''
+            for delimiter in delimiters:
+                parts = body.split(delimiter)
+                if len(parts) == 2:
+                    title, artists_name = parts
+                    break
+            if title and artists_name:
+                song = create_dummy_brief_song(title, artists_name)
+                self._app.playlist.play_model(song)
+                self._app.show_msg(f'尝试播放：{song}')
+            else:
+                self._app.show_msg('你输入的内容需要符合格式：“歌曲标题 | 歌手名”')
         else:
             local_storage = self._app.browser.local_storage
             type_ = local_storage.get(KeyType)

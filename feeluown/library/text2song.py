@@ -1,4 +1,3 @@
-import uuid
 import json
 
 from .models import BriefSongModel, ModelState
@@ -7,6 +6,17 @@ from feeluown.utils.utils import elfhash
 
 class AnalyzeError(Exception):
     pass
+
+
+def create_dummy_brief_song(title, artists_name):
+    identifier = elfhash(f'{title}-{artists_name}'.encode('utf-8'))
+    return BriefSongModel(
+        source='dummy',
+        identifier=identifier,
+        title=title,
+        artists_name=artists_name,
+        state=ModelState.not_exists,
+    )
 
 
 def analyze_text(text):
@@ -52,7 +62,7 @@ def analyze_text(text):
         result = parse_each_fn(each)
         if result is not None:
             title, artists_name = result
-            song = new_song_model(title, artists_name)
+            song = create_dummy_brief_song(title, artists_name)
             songs.append(song)
         else:
             err_count += 1

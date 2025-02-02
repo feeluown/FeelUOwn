@@ -21,7 +21,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.utils.aio import run_afn_ref, run_afn
 from feeluown.library import BriefSongModel, ModelState
-from feeluown.library.text2song import analyze_text
+from feeluown.library.text2song import analyze_text, create_dummy_brief_song
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.utils.utils import elfhash
 
@@ -40,17 +40,6 @@ EXTRACT_PROMPT = '''\
 
 注意，你返回的内容只应该有几行 JSON，其它信息都不需要。也不要用 markdown 格式返回。
 '''
-
-
-def new_song_model(title, artists_name):
-    identifier = elfhash(f'{title}-{artists_name}'.encode('utf-8'))
-    return BriefSongModel(
-        source='dummy',
-        identifier=identifier,
-        title=title,
-        artists_name=artists_name,
-        state=ModelState.not_exists,
-    )
 
 
 @dataclass
@@ -222,7 +211,7 @@ class Body(QWidget):
                     self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
                                  level='yellow')
                 else:
-                    song = new_song_model(title, artists_name)
+                    song = create_dummy_brief_song(title, artists_name)
                     ok_count += 1
                     self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
                                  level='hint')

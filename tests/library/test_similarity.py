@@ -12,14 +12,22 @@ def test_get_standby_origin_similarity_1():
         title='x',
         artists_name='y',
     )
-    standby = BriefSongModel(
+    standby1 = BriefSongModel(
         source='',
         identifier='',
         title='z',
         artists_name='y',
     )
-    # 对于上面这种情况，不应该匹配上。
-    assert get_standby_origin_similarity(origin, standby) < MIN_SCORE
+    # Should not match
+    assert get_standby_origin_similarity(origin, standby1) < MIN_SCORE
+    standby2 = BriefSongModel(
+        source='',
+        identifier='',
+        title='x',
+        artists_name='y',
+    )
+    # Should match
+    assert get_standby_origin_similarity(origin, standby2) >= MIN_SCORE
 
 
 def test_get_standby_origin_similarity_2():

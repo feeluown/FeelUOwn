@@ -4,13 +4,15 @@ import warnings
 from functools import partial
 from typing import Optional, TypeVar, List, TYPE_CHECKING
 
-from feeluown.ai import AI
 from feeluown.media import Media
-from feeluown.utils.aio import run_fn, as_completed
+from feeluown.utils.aio import run_fn, run_afn, as_completed
 from feeluown.utils.dispatch import Signal
+from feeluown.library.ai_standby import AIStandbyMatcher
 from feeluown.library.base import SearchType, ModelType
 from feeluown.library.provider import Provider
-from feeluown.library.excs import MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound
+from feeluown.library.excs import (
+    MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound,
+)
 from feeluown.library.flags import Flags as PF
 from feeluown.library.models import (
     ModelFlags as MF, BaseModel,
@@ -59,6 +61,9 @@ class Library:
         from .ytdl import Ytdl
 
         self.ytdl = Ytdl(*args, **kwargs)
+
+    def setup_ai(self, ai):
+        self.ai = ai
 
     def register(self, provider):
         """register provider
@@ -150,25 +155,23 @@ class Library:
                 if result is not None:
                     yield result
 
+    async def a_song_prepare_media_no_exc(self, standby, policy):
+        media = None
+        try:
+            media = await run_fn(self.song_prepare_media, standby, policy)
+        except MediaNotFound as e:
+            logger.debug(f'standby media not found: {e}')
+        except:  # noqa
+            logger.exception(f'get standby:{standby} media failed')
+        return media
+
     async def a_list_song_standby_v2(self, song,
                                      audio_select_policy='>>>', source_in=None,
                                      score_fn=None, min_score=MIN_SCORE, limit=1):
         """list song standbys and their media
 
         .. versionadded:: 3.7.8
-
         """
-
-        async def prepare_media(standby, policy):
-            media = None
-            try:
-                media = await run_fn(self.song_prepare_media, standby, policy)
-            except MediaNotFound as e:
-                logger.debug(f'standby media not found: {e}')
-            except:  # noqa
-                logger.exception(f'get standby:{standby} media failed')
-            return media
-
         if source_in is None:
             pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
         else:
@@ -180,17 +183,17 @@ class Library:
         q = '{} {}'.format(song.title_display, song.artists_name_display)
         standby_score_list = []  # [(standby, score), (standby, score)]
         song_media_list = []     # [(standby, media), (standby, media)]
-        top3_standby = []
+        top2_standby = []
         async for result in self.a_search(q, source_in=pvd_ids):
             if result is None:
                 continue
             # Only check the first 3 songs
             for i, standby in enumerate(result.songs):
-                if i < 3:
-                    top3_standby.append(standby)
+                if i < 2:
+                    top2_standby.append(standby)
                 score = score_fn(song, standby)
                 if score == FULL_SCORE:
-                    media = await prepare_media(standby, audio_select_policy)
+                    media = await self.a_song_prepare_media_no_exc(standby, audio_select_policy)
                     if media is None:
                         continue
                     logger.debug(f'find full mark standby for song:{q}')
@@ -209,34 +212,21 @@ class Library:
             for standby, score in sorted(standby_score_list,
                                          key=lambda song_score: song_score[1],
                                          reverse=True)[:max_try]:
-                media = await prepare_media(standby, audio_select_policy)
+                media = await self.a_song_prepare_media_no_exc(standby, audio_select_policy)
                 if media is not None:
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
                         return song_media_list
             return song_media_list
         if self.ai is not None:
-            return await self.a_ai_list_song_standby(song, top3_standby)
+            logger.info(f'Try to use AI to match standby for song:{song}')
+            matcher = AIStandbyMatcher(
+                self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)
+            song_media_list = matcher.match(song, top2_standby)
+            word = 'found a' if song_media_list else 'found no'
+            logger.info(f'AI ${word} standby for song:{song}')
+            return song_media_list
         return song_media_list
-
-    async def a_ai_list_song_standby(self, song, standby_list):
-        from feeluown.ai import STANDBY_MATCH_PROMPT, standby_list_as_jsonlines, song_as_jsonline
-        sys_msg = {'role': 'system', 'content': STANDBY_MATCH_PROMPT}
-        user_msg = {
-            'role': 'user',
-            'content': (f'我搜索了 `{song_as_jsonline(song)}`\n\n'
-                        '应用返回的候选项如下：\n\n'
-                        f'{standby_list_as_jsonlines(standby_list)}')
-        }
-        client = self.ai.get_async_client()
-        stream = await client.chat.completions.create(
-            model=self.ai.model,
-            messages=[sys_msg, user_msg],
-            stream=True,
-        )
-        async for chunk in stream:
-            print(chunk.choices[0].delta.content, end='')
-
 
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
         """Check if a provider satisfies the specific ability for a model type
@@ -461,46 +451,3 @@ class Library:
             if not media:
                 raise
         return media
-
-
-if __name__ == '__main__':
-    # noqa
-    import asyncio
-    import os
-
-    from feeluown.library.uri import resolve, Resolver
-
-    library = Library()
-    Resolver.library = library
-    library.ai = AI(
-        base_url='https://api.deepseek.com',
-        api_key=os.environ.get('DEEPSEEK_API_KEY'),
-        model='deepseek-chat',
-        #base_url='https://open.bigmodel.cn/api/paas/v4/',
-        #api_key=os.environ.get('GLM_API_KEY'),
-        #model='GLM-4-Air',
-        #api_key=os.environ.get('MOONSHOT_API_KEY'),
-        #base_url='https://api.moonshot.cn/v1',
-        #model='moonshot-v1-8k',
-    )
-    standby_text = '''\
-fuo://qqmusic/songs/409175284   # "下雨天 - 鱼天邻制作" - 南拳妈妈 - "" - 00:51
-fuo://qqmusic/songs/463631892   # 下雨天 (DJ阿智版) - 南拳妈妈 & DJ阿智 - "" - 01:28
-fuo://qqmusic/songs/102697748   # 下雨天 - 南拳妈妈 - 优の良曲 南搞小孩 - 04:13
-fuo://ytmusic/songs/XkcKycMblaE # 下雨天 - 芝麻Mochi - 下雨天 - 04:26
-fuo://ytmusic/songs/F-YMyH74748 # 下雨天 - "" - 下雨天 - 04:14
-fuo://ytmusic/songs/BBe-Zwb7ElM # Rainy Day (下雨天) - Nan Quan Mama - 優的良曲南搞小孩 - 04:14
-fuo://netease/songs/1382202727  # 下雨天（翻自 南拳妈妈NQMM） - 33没事儿 - 翻唱 - 04:10
-fuo://netease/songs/2135170282  # 下雨天（Alqas 版） - Kk - 南拳妈妈-下雨天 - 03:26
-fuo://netease/songs/1905457762  # 下雨天（Cover 南拳妈妈） - 张贤静 - For you - 04:36
-'''
-    standby_list = []
-    for line in standby_text.splitlines():
-        l = line.strip()
-        if l:
-            standby_list.append(resolve(l))
-
-    print(standby_text)
-
-    song = BriefSongModel(source='dummy', identifier='xxx', title='下雨天', artists_name='南拳妈妈')
-    asyncio.run(library.a_ai_list_song_standby(song, standby_list))

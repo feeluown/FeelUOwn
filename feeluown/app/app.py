@@ -21,7 +21,6 @@ from feeluown.task import TaskManager
 
 from .mode import AppMode
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -51,14 +50,28 @@ class App:
         self.request = Request()  # TODO: rename request to http
         self.version_mgr = VersionManager(self)
         self.task_mgr = TaskManager(self)
-
-        try:
-            from feeluown.ai import AISimpleAsyncClient
-        except ImportError:
-            self.ai = AISimpleAsyncClient.create_client(config)
-
         # Library.
         self.library = Library(config.PROVIDERS_STANDBY)
+        try:
+            from feeluown.ai import AI
+        except ImportError as e:
+            logger.warning(f"AI is not available, err: {e}")
+            self.ai = None
+        else:
+            if (
+                    config.OPENAI_API_BASEURL
+                    and config.OPENAI_API_KEY
+                    and config.OPENAI_MODEL
+            ):
+                self.ai = AI(
+                    config.OPENAI_API_BASEURL,
+                    config.OPENAI_API_KEY,
+                    config.OPENAI_MODEL,
+                )
+                self.library.setup_ai(self.ai)
+            else:
+                logger.warning(f"AI is not available, no valid settings")
+
         if config.ENABLE_YTDL_AS_MEDIA_PROVIDER:
             try:
                 self.library.setup_ytdl(rules=config.YTDL_RULES)
