@@ -13,6 +13,7 @@ from PyQt5.QtWidgets import (
 
 from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn_ref
+from feeluown.library import fmt_artists_names
 from feeluown.library.text2song import create_dummy_brief_song
 from feeluown.gui.helpers import esc_hide_widget
 from feeluown.gui.widgets.textbtn import TextButton
@@ -28,8 +29,8 @@ logger = logging.getLogger(__name__)
 QUERY_PROMPT = '''你是一个音乐播放器助手。'''
 EXTRACT_PROMPT = '''\
 提取歌曲信息，歌手名为空的话，你需要补全，每首歌一行 JSON，用类似下面这样的格式返回
-    {"title": "xxx", "artists_name": "yyy", "description": "推荐理由1"}
-    {"title": "aaa", "artists_name": "bbb", "description": "推荐理由2"}
+    {"title": "t1", "artists": ["a1", "a11"], "description": "推荐理由1"}
+    {"title": "t2", "artists": ["a11"], "description": "推荐理由2"}
 
 注意，你返回的内容只应该有几行 JSON，其它信息都不需要。也不要用 markdown 格式返回。
 '''
@@ -144,19 +145,24 @@ class Body(QWidget):
             {'role': 'user', 'content': query}
         ]
         self._chat_context = ChatContext(client, messages)
-        stream = await client.chat.completions.create(
-            model=self._app.config.OPENAI_MODEL,
-            messages=messages,
-            stream=True,
-        )
-        content = ''
-        async for chunk in stream:
-            self.set_msg('AI 返回中...', level='hint')
-            content += chunk.choices[0].delta.content or ''
-            self.show_chat_message(content)
-        assistant_message = {"role": "assistant", "content": content}
-        self._chat_context.messages.append(assistant_message)
-        self.set_msg('AI 内容返回结束', level='hint')
+        try:
+            stream = await client.chat.completions.create(
+                model=self._app.config.OPENAI_MODEL,
+                messages=messages,
+                stream=True,
+            )
+        except:  # noqa
+            self._app.show_msg('OpenAI 接口调用失败')
+            logger.exception('OpenAI API request failed')
+        else:
+            content = ''
+            async for chunk in stream:
+                self.set_msg('AI 返回中...', level='hint')
+                content += chunk.choices[0].delta.content or ''
+                self.show_chat_message(content)
+            assistant_message = {"role": "assistant", "content": content}
+            self._chat_context.messages.append(assistant_message)
+            self.set_msg('AI 内容返回结束', level='hint')
 
     def show_chat_message(self, text):
         self._editor.setPlainText(text)
@@ -209,7 +215,8 @@ class Body(QWidget):
                     break
                 try:
                     jline = json.loads(line)
-                    title, artists_name = jline['title'], jline['artists_name']
+                    title, artists = jline['title'], jline['artists']
+                    artists_name = fmt_artists_names(artists)
                 except:  # noqa
                     fail_count += 1
                     logger.exception(f'failed to parse a line: {line}')

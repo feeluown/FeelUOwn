@@ -47,7 +47,7 @@ def raise_(e):
 class Library:
     """Resource entrypoints."""
 
-    def __init__(self, providers_standby=None):
+    def __init__(self, providers_standby=None, enable_ai_standby_matcher=True):
         """
 
         :type app: feeluown.app.App
@@ -59,6 +59,7 @@ class Library:
 
         self.provider_added = Signal()  # emit(AbstractProvider)
         self.provider_removed = Signal()  # emit(AbstractProvider)
+        self.enable_ai_standby_matcher = enable_ai_standby_matcher
 
     def setup_ytdl(self, *args, **kwargs):
         from .ytdl import Ytdl
@@ -227,7 +228,7 @@ class Library:
                     if len(song_media_list) >= limit:
                         return song_media_list
             return song_media_list
-        if self.ai is not None and top2_standby:
+        if self.enable_ai_standby_matcher and self.ai and top2_standby:
             logger.info(f'Try to use AI to match standby for song:{song}')
             matcher = AIStandbyMatcher(
                 self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)

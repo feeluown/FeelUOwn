@@ -86,6 +86,7 @@ def create_config() -> Config:
     )
     config.deffield('OPENAI_API_KEY', type_=str, default='', desc='OpenAI API key')
     config.deffield('OPENAI_MODEL', type_=str, default='', desc='OpenAI model name')
+    config.deffield('ENABLE_AI_STANDBY_MATCHER', type_=bool, default=True, desc='')
     config.deffield(
         'AI_RADIO_PROMPT',
         type_=str,
@@ -96,7 +97,7 @@ def create_config() -> Config:
 1. 不要推荐与用户播放列表中一模一样的歌曲。不要推荐用户不喜欢的歌曲。不要重复推荐。
 2. 你返回的内容只应该有 JSON，其它信息都不需要。也不要用 markdown 格式返回。
 3. 你推荐的歌曲需要使用类似这样的 JSON 格式
-    [{"title": "xxx", "artists_name": "yyy", "description": "推荐理由"}]
+    [{"title": "xxx", "artists": ["yyy", "zzz"], "description": "推荐理由"}]
 ''',
         desc='AI 电台功能的提示词'
     )

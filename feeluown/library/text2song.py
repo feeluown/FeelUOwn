@@ -1,6 +1,6 @@
 import json
 
-from .models import BriefSongModel, ModelState
+from .models import BriefSongModel, ModelState, fmt_artists_names
 from feeluown.utils.utils import elfhash
 
 
@@ -22,7 +22,7 @@ def create_dummy_brief_song(title, artists_name):
 def analyze_text(text):
     def json_fn(each):
         try:
-            return each['title'], each['artists_name']
+            return each['title'], fmt_artists_names(each['artists'])
         except KeyError:
             return None
 

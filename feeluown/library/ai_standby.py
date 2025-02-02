@@ -51,11 +51,15 @@ class AIStandbyMatcher:
         }
         logger.info(f"Try to find {song} standby, user msg: {user_msg['content']}")
         client = self.ai.get_async_client()
-        stream = await client.chat.completions.create(
-            model=self.ai.model,
-            messages=[sys_msg, user_msg],
-            stream=True,
-        )
+        try:
+            stream = await client.chat.completions.create(
+                model=self.ai.model,
+                messages=[sys_msg, user_msg],
+                stream=True,
+            )
+        except:  # noqa
+            logger.exception('OpenAI API request failed')
+            return []
 
         rr, rw, wtask = await a_handle_stream(stream)
         source_media_pair = None

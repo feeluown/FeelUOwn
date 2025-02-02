@@ -51,7 +51,10 @@ class App:
         self.version_mgr = VersionManager(self)
         self.task_mgr = TaskManager(self)
         # Library.
-        self.library = Library(config.PROVIDERS_STANDBY)
+        self.library = Library(
+            config.PROVIDERS_STANDBY,
+            config.ENABLE_AI_STANDBY_MATCHER
+        )
         self.ai = None
         try:
             from feeluown.ai import AI
