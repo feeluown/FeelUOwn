@@ -7,17 +7,16 @@ from openai import AsyncOpenAI
 from PyQt5.QtCore import QEvent, QSize, Qt
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import (
-    QHBoxLayout,
-    QVBoxLayout,
-    QWidget,
-    QLabel,
-    QScrollArea,
+    QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
+    QFrame,
 )
 
 from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn_ref
 from feeluown.library.text2song import create_dummy_brief_song
+from feeluown.gui.helpers import esc_hide_widget
 from feeluown.gui.widgets.textbtn import TextButton
+from feeluown.gui.widgets.header import MidHeader
 
 
 if TYPE_CHECKING:
@@ -28,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 QUERY_PROMPT = '''你是一个音乐播放器助手。'''
 EXTRACT_PROMPT = '''\
-提取上面的歌曲信息，并补全每首歌的歌曲名和歌手名。每首歌一行 JSON，用类似下面这样的格式返回
+提取歌曲信息，歌手名为空的话，你需要补全，每首歌一行 JSON，用类似下面这样的格式返回
     {"title": "xxx", "artists_name": "yyy", "description": "推荐理由1"}
     {"title": "aaa", "artists_name": "bbb", "description": "推荐理由2"}
 
@@ -51,6 +50,11 @@ class AIChatOverlay(QWidget):
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(100, 80, 100, 80)
         self._layout.addWidget(self.body)
+        self.setFocusPolicy(Qt.ClickFocus)
+        # Add ClickFocus for the body so that when Overlay will not
+        # get focus when user click the body.
+        self.body.setFocusPolicy(Qt.ClickFocus)
+        esc_hide_widget(self)
 
     def paintEvent(self, a0):
         painter = QPainter(self)
@@ -78,12 +82,19 @@ class Body(QWidget):
         self._app = app
 
         self._scrollarea = QScrollArea(self)
-        self._label = QLabel()
-        self._scrollarea.setWidget(self._label)
+        self._scrollarea.setFrameShape(QFrame.NoFrame)
+        self._editor = QPlainTextEdit(self)
+        self._editor.setPlaceholderText(
+            '这里可以填写一些歌曲相关的信息，然后配合功能按键来自动提取歌曲。\n\n'
+            '注：暂时还不支持对话，欢迎 PR 啦 ~'
+        )
+        self._editor.setFrameShape(QFrame.NoFrame)
+        self._scrollarea.setWidget(self._editor)
         self._msg_label = QLabel(self)
         self._hide_btn = TextButton('关闭窗口', self)
         self._extract_and_play_btn = TextButton('提取歌曲并播放', self)
         self._extract_10_and_play_btn = TextButton('提取10首并播放', self)
+        self._welcome_pr = TextButton('来，一起调教 AI')
 
         self.setup_ui()
         self._hide_btn.clicked.connect(self._hide)
@@ -91,28 +102,31 @@ class Body(QWidget):
             lambda: run_afn_ref(self.extract_and_play))
         self._extract_10_and_play_btn.clicked.connect(
             lambda: run_afn_ref(self.extract_10_and_play))
+        self._welcome_pr.clicked.connect(lambda: self.set_msg('那来个 PR 呗 :)'))
 
         self._chat_context = None
         self.setAutoFillBackground(True)
 
     def setup_ui(self):
-        self._label.setWordWrap(True)
-        self._label.setAlignment(Qt.AlignTop | Qt.AlignLeft)
         self._msg_label.setWordWrap(True)
         self._scrollarea.setWidgetResizable(True)
         self._app.installEventFilter(self)
         self._msg_label.setTextFormat(Qt.RichText)
 
-        self._layout = QHBoxLayout(self)
+        self._root_layout = QVBoxLayout(self)
+        self._layout = QHBoxLayout()
         self._v_layout = QVBoxLayout()
         self._btn_layout = QVBoxLayout()
+
+        self._root_layout.addWidget(MidHeader('AI 助手'))
+        self._root_layout.addLayout(self._layout)
         self._layout.addStretch(0)
         self._layout.addLayout(self._v_layout)
         self._layout.setStretch(1, 1)
         self._layout.addLayout(self._btn_layout)
         self._layout.addStretch(0)
-        self._layout.setContentsMargins(10, 10, 10, 10)
-        self._layout.setSpacing(10)
+        self._root_layout.setContentsMargins(10, 10, 10, 10)
+        self._root_layout.setSpacing(10)
 
         self._v_layout.addWidget(self._scrollarea)
         self._v_layout.addWidget(self._msg_label)
@@ -120,6 +134,7 @@ class Body(QWidget):
         self._btn_layout.addWidget(self._extract_10_and_play_btn)
         self._btn_layout.addWidget(self._hide_btn)
         self._btn_layout.addStretch(0)
+        self._btn_layout.addWidget(self._welcome_pr)
 
     async def exec_user_query(self, query):
         self.set_msg('等待 AI 返回中...', level='hint')
@@ -144,7 +159,7 @@ class Body(QWidget):
         self.set_msg('AI 内容返回结束', level='hint')
 
     def show_chat_message(self, text):
-        self._label.setText(text)
+        self._editor.setPlainText(text)
 
     def set_msg(self, text, level='hint'):
         if level == 'hint':
@@ -162,8 +177,17 @@ class Body(QWidget):
         await self._extract_and_play(f'{EXTRACT_PROMPT}\n随机提取最多10首即可')
 
     async def _extract_and_play(self, extract_prompt):
-        message = {'role': 'user', 'content': extract_prompt}
-        self._chat_context.messages.append(message)
+        if self._chat_context is None:
+            self._chat_context = ChatContext(
+                client=self._app.ai.get_async_client(),
+                messages=[
+                    {'role': 'system', 'content': extract_prompt},
+                    {'role': 'user', 'content': self._editor.toPlainText()},
+                ],
+            )
+        else:
+            message = {'role': 'user', 'content': extract_prompt}
+            self._chat_context.messages.append(message)
         self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
         stream = await self._chat_context.client.chat.completions.create(
             model=self._app.config.OPENAI_MODEL,
@@ -206,10 +230,14 @@ class Body(QWidget):
         await wtask
         rw.close()
         await rw.wait_closed()
-        self._hide()
 
     def _hide(self):
+        self._chat_context = None
         self.parent().hide()
+
+    def hide(self):
+        self._hide()
+        super().hide()
 
 
 if __name__ == '__main__':

@@ -202,7 +202,7 @@ class Library:
                     )
                     if media is None:
                         continue
-                    logger.debug(f'find full mark standby for song:{q}')
+                    logger.info(f'Find full score standby for song:{q}')
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
                         # Return as early as possible to get better performance
@@ -211,8 +211,8 @@ class Library:
                     standby_score_list.append((standby, score))
         if standby_score_list:
             standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
-            logger.debug(f"find {len(standby_score_list)} similar songs "
-                         f"from {','.join(standby_pvd_id_set)}")
+            logger.debug(f"Find {len(standby_score_list)} similar songs "
+                         f"from {','.join(standby_pvd_id_set)}, try to find the best")
             # Limit try times since prapare_media is an expensive IO operation
             max_try = len(pvd_ids) * 2
             for standby, score in sorted(standby_score_list,
@@ -227,11 +227,11 @@ class Library:
                     if len(song_media_list) >= limit:
                         return song_media_list
             return song_media_list
-        if self.ai is not None:
+        if self.ai is not None and top2_standby:
             logger.info(f'Try to use AI to match standby for song:{song}')
             matcher = AIStandbyMatcher(
                 self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)
-            song_media_list = matcher.match(song, top2_standby)
+            song_media_list = await matcher.match(song, top2_standby)
             word = 'found a' if song_media_list else 'found no'
             logger.info(f'AI ${word} standby for song:{song}')
             return song_media_list

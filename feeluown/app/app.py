@@ -52,17 +52,15 @@ class App:
         self.task_mgr = TaskManager(self)
         # Library.
         self.library = Library(config.PROVIDERS_STANDBY)
+        self.ai = None
         try:
             from feeluown.ai import AI
         except ImportError as e:
             logger.warning(f"AI is not available, err: {e}")
-            self.ai = None
         else:
-            if (
-                    config.OPENAI_API_BASEURL
-                    and config.OPENAI_API_KEY
-                    and config.OPENAI_MODEL
-            ):
+            if (config.OPENAI_API_BASEURL and
+                    config.OPENAI_API_KEY and
+                    config.OPENAI_MODEL):
                 self.ai = AI(
                     config.OPENAI_API_BASEURL,
                     config.OPENAI_API_KEY,

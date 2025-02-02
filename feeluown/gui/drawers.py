@@ -1,14 +1,17 @@
 import math
+import random
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QRect, QPoint, QPointF
+from PyQt5.QtCore import Qt, QRect, QPoint, QPointF, QRectF
 from PyQt5.QtGui import (
     QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette,
     QPainterPath, QGuiApplication,
 )
 from PyQt5.QtWidgets import QWidget
 
-from feeluown.gui.helpers import random_solarized_color, painter_save, IS_MACOS
+from feeluown.gui.helpers import (
+    random_solarized_color, painter_save, IS_MACOS, SOLARIZED_COLORS,
+)
 
 
 class SizedPixmapDrawer:
@@ -18,6 +21,7 @@ class SizedPixmapDrawer:
     Note that if device_pixel_ratio is not properly set, the drawed image
     quality may be poor.
     """
+
     def __init__(self, img: Optional[QImage], rect: QRect, radius: int = 0):
         self._rect = rect
         self._img_old_width = rect.width()
@@ -103,6 +107,7 @@ class PixmapDrawer(SizedPixmapDrawer):
 
     TODO: rename this drawer to WidgetPixmapDrawer?
     """
+
     def __init__(self, img, widget: QWidget, radius: int = 0):
         """
         :param widget: a object which has width() and height() method.
@@ -147,16 +152,16 @@ class AvatarIconDrawer:
         # Draw body.
         x, y = self._padding, self._length // 2
         width, height = self._length // 2, self._length // 2
-        painter.drawArc(x, y, width, height, 0, 60*16)
-        painter.drawArc(x, y, width, height, 120*16, 60*16)
+        painter.drawArc(x, y, width, height, 0, 60 * 16)
+        painter.drawArc(x, y, width, height, 120 * 16, 60 * 16)
 
 
 class PlusIconDrawer:
     def __init__(self, length, padding):
-        self.top = QPoint(length//2, padding)
-        self.bottom = QPoint(length//2, length - padding)
-        self.left = QPoint(padding, length//2)
-        self.right = QPoint(length-padding, length//2)
+        self.top = QPoint(length // 2, padding)
+        self.bottom = QPoint(length // 2, length - padding)
+        self.left = QPoint(padding, length // 2)
+        self.right = QPoint(length - padding, length // 2)
 
     def draw(self, painter):
         pen = painter.pen()
@@ -208,7 +213,7 @@ class TriangleIconDrawer:
         right = QPointF(real_padding + diameter, half)
 
         d60 = diameter / 2 * 0.87  # sin60
-        d30 = diameter / 2 / 2    # sin30
+        d30 = diameter / 2 / 2  # sin30
 
         if direction in ('left', 'right'):
             left_x = half - d30
@@ -247,14 +252,81 @@ class TriangleIconDrawer:
             painter.drawPolygon(self.triangle)
 
 
+class AIIconDrawer:
+    def __init__(self, length, padding, colorful=False):
+
+        sr = length / 12  # small circle radius
+        sd = sr * 2
+
+        half = length / 2
+        diameter = length - 2 * padding - sd
+        real_padding = (length - diameter) / 2
+        d60 = diameter / 2 * 0.87  # sin60
+        d30 = diameter / 2 / 2  # sin30
+        left_x = half - d60
+        bottom_y = half + d30
+        right_x = half + d60
+
+        self._center_rect = QRectF(real_padding, real_padding, diameter, diameter)
+        self._top_circle = QRectF(half - sr, padding, sd, sd)
+        self._left_circle = QRectF(left_x - sr, bottom_y - sr, sd, sd)
+        self._right_circle = QRectF(right_x - sr, bottom_y - sr, sd, sd)
+
+        self.colorful = colorful
+        self._colors = [QColor(e) for e in SOLARIZED_COLORS.values()]
+        self._colors_count = len(self._colors)
+
+    def draw(self, painter, palette):
+        if self.colorful:
+            self._draw_colorful(painter, palette)
+        else:
+            self._draw_bw(painter, palette)
+
+    def _draw_bw(self, painter, palette):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        painter.setPen(pen)
+        with painter_save(painter):
+            painter.drawEllipse(self._center_rect)
+            painter.setBrush(palette.color(QPalette.Window))
+            painter.drawEllipse(self._top_circle)
+            painter.drawEllipse(self._left_circle)
+            painter.drawEllipse(self._right_circle)
+
+    def _draw_colorful(self, painter, palette):
+        pen = painter.pen()
+        pen.setWidthF(1.5)
+        pen.setColor(self._colors[random.randint(0, self._colors_count - 1)])
+        painter.setPen(pen)
+        with painter_save(painter):
+            start_alen = 120 * 16
+            pen.setColor(self._colors[5])
+            painter.setPen(pen)
+            painter.drawArc(self._center_rect, 0, start_alen)
+            pen.setColor(self._colors[1])
+            painter.setPen(pen)
+            painter.drawArc(self._center_rect, start_alen, start_alen)
+            pen.setColor(self._colors[4])
+            painter.setPen(pen)
+            painter.drawArc(self._center_rect, start_alen * 2, start_alen)
+
+            painter.setPen(Qt.NoPen)
+            painter.setBrush(self._colors[5])
+            painter.drawEllipse(self._top_circle)
+            painter.setBrush(self._colors[1])
+            painter.drawEllipse(self._left_circle)
+            painter.setBrush(self._colors[4])
+            painter.drawEllipse(self._right_circle)
+
+
 class HomeIconDrawer:
     def __init__(self, length, padding):
         icon_length = length
         diff = 1  # root/body width diff
         h_padding = v_padding = padding
 
-        body_left_x = h_padding + diff*2
-        body_right_x = icon_length - h_padding - diff*2
+        body_left_x = h_padding + diff * 2
+        body_right_x = icon_length - h_padding - diff * 2
         body_top_x = icon_length // 2
 
         self._roof = QPoint(icon_length // 2, v_padding)
@@ -296,7 +368,7 @@ class CalendarIconDrawer:
 
 class RankIconDrawer:
     def __init__(self, length, padding):
-        body = length - 2*padding
+        body = length - 2 * padding
         body_2 = body // 2
         body_8 = body // 8
         body_3 = body // 3
@@ -324,8 +396,7 @@ class RankIconDrawer:
 
 class StarIconDrawer:
     def __init__(self, length, padding):
-
-        radius_outer = (length - 2*padding)//2
+        radius_outer = (length - 2 * padding) // 2
         length_half = length // 2
         radius_inner = radius_outer // 2
         center = QPointF(length_half, length_half)
@@ -339,8 +410,8 @@ class StarIconDrawer:
             )
             self._star_polygon.append(outer_point)
             inner_point = center + QPointF(
-                radius_inner * math.cos(angle + math.pi/5),
-                -radius_inner * math.sin(angle + math.pi/5)
+                radius_inner * math.cos(angle + math.pi / 5),
+                -radius_inner * math.sin(angle + math.pi / 5)
             )
             self._star_polygon.append(inner_point)
             angle += 2 * math.pi / 5
@@ -407,9 +478,9 @@ class VolumeIconDrawer:
                 disabled_lines = ()
             elif self._volume >= 33:
                 lines = (self._line2, self._line3)
-                disabled_lines = (self._line1, )
+                disabled_lines = (self._line1,)
             elif self._volume > 0:
-                lines = (self._line3, )
+                lines = (self._line3,)
                 disabled_lines = (self._line1, self._line2)
             else:
                 lines = ()
@@ -493,6 +564,6 @@ class EmojiIconDrawer:
                 font.setPixelSize(width - 4)
             else:
                 # -1 works well on KDE when length is in range(30, 200)
-                font.setPixelSize(width - (self._length//20))
+                font.setPixelSize(width - (self._length // 20))
             painter.setFont(font)
             painter.drawText(0, 0, width, width, Qt.AlignHCenter | Qt.AlignVCenter, self._emoji)

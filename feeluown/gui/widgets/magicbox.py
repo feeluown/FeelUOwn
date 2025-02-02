@@ -31,10 +31,14 @@ class MagicBox(QLineEdit):
 
         self._app = app
         self.setPlaceholderText('搜索歌曲、歌手、专辑、用户')
-        self.setToolTip('直接输入文字可以进行过滤，按 Enter 可以搜索\n'
-                        '输入 >>> 前缀之后，可以执行 Python 代码\n'
-                        '输入 # 前缀之后，可以过滤表格内容\n'
-                        '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）')
+        self.setToolTip(
+            '直接输入文字可以进行过滤，按 Enter 可以搜索\n'
+            '输入 >>> 前缀之后，可以执行 Python 代码\n'
+            '输入 “==> 执迷不悔 | 王菲”，可以直接播放歌曲\n'
+            '输入 “=== 下雨天听点啥？”，可以和 AI 互动\n'
+            '输入 # 前缀之后，可以过滤表格内容\n'
+            '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）'
+        )
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.setFixedHeight(32)
         self.setFrame(False)
@@ -107,9 +111,11 @@ class MagicBox(QLineEdit):
         text = self.text()
         if text.startswith('>>> '):
             self._exec_code(text[4:])
-        elif text.startswith('--- ') or text.startswith('=== '):
+        elif text.startswith('---') or text.startswith('==='):
             if self._app.ui.ai_chat_overlay is not None:
-                run_afn(self._app.ui.ai_chat_overlay.body.exec_user_query, text[4:])
+                body = text[4:] if len(text) > 4 else ''
+                if body:
+                    run_afn(self._app.ui.ai_chat_overlay.body.exec_user_query, body)
                 self._app.ui.ai_chat_overlay.show()
             else:
                 self._app.show_msg('AI 聊天功能不可用')
