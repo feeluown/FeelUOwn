@@ -61,6 +61,10 @@ VIDEO_SELECT_POLICY         ``str``    ``hd<>``       :class:`feeluown.media.Qua
 NOTIFY_ON_TRACK_CHANGED     ``bool``   ``False``      切换歌曲时显示桌面通知
 NOTIFY_DURATION             ``int``    ``3000``       桌面通知保留时长(ms)
 PROVIDERS_STANDBY           ``list``   ``None``       候选歌曲提供方（默认：所有提供方）
+OPENAI_API_KEY              ``str``    ``''``         OpenAI API Key
+OPENAI_API_BASEURL          ``str``    ``''``         OpenAI API Base URL
+OPENAI_MODEL                ``str``    ``''``         大模型名字
+AI_RADIO_PROMPT             ``str``    ``...``        AI Radio 功能的 PROMPT
 =======================    =========  ============    =========
 
 实验特性的配置项
@@ -89,6 +93,43 @@ MPV_AUDIO_DEVICE            ``str``    ``auto``       MPV 播放设备
 你可以查看下述函数的源代码来查看完整列表。
 
 .. autofunction:: feeluown.app.config.create_config
+
+
+AI 助手配置
+--------------
+
+要使用 AI 助手，你需要首先做两件事
+
+1. 确保已经安装了 OpenAI 的 Python 包
+2. 并且自己有 OpenAI/DeepSeek/Kimi/豆包/智谱AI 等大模型平台（任意一个）的 的 API Key
+
+安装 OpenAI 的 Python 包比较简单，如果你是使用 pipx 安装的，你可以运行::
+
+    pipx inject feeluown openai
+
+如果你使用的是 Linux 系统包管理器，你只需要在系统环境中安装 openai 包即可。
+
+获取 API Key 的方法需要参考各个 AI 平台方的文档。以 DeepSeek 为例，你需要在 DeepSeek
+“API 开放平台”注册并申请一个 API KEY。然后在 ``~/.furoc`` 中进行如下配置。
+
+.. code:: python
+
+    # deepseek
+    config.OPENAI_API_BASEURL = 'https://api.deepseek.com'
+    config.OPENAI_MODEL = 'deepseek-chat'
+    config.OPENAI_API_KEY = '---API KEY---'
+
+    # import os
+
+    # 豆包
+    # config.OPENAI_API_BASEURL = 'https://ark.cn-beijing.volces.com/api/v3'
+    # config.OPENAI_MODEL = 'ep-20250202091715-vwjw2'
+    # config.OPENAI_API_KEY = os.environ.get('ARK_API_KEY', '')
+
+    # kimi
+    # config.OPENAI_API_BASEURL = 'https://api.moonshot.cn/v1'
+    # config.OPENAI_MODEL = 'moonshot-v1-8k'
+    # config.OPENAI_API_KEY = os.environ.get('MOONSHOT_API_KEY', '')
 
 
 功能定制

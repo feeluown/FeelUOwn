@@ -6,18 +6,29 @@
 
   参考 :doc:`quickstart` 文档进行安装。
 
-提供国内各音乐平台插件
+提供各音乐平台插件
 ---------------------------
 
+  - `Youtube Music <https://github.com/feeluown/feeluown-ytmusic>`_
   - `网易云音乐 <https://github.com/feeluown/feeluown-netease>`_
-  - `虾米音乐 <https://github.com/feeluown/feeluown-xiami>`_
   - `QQ 音乐 <https://github.com/feeluown/feeluown-qqmusic>`_
+  - `Bilibili <https://github.com/feeluown/feeluown-bilibili>`_
 
+自动寻找播放资源
+----------------------------
+
+  在搜索框输入 ``==> 我怀念的 - 孙燕姿`` ，播放器会自动匹配歌曲并进行播放。
+  当你播放 A 平台的 VIP/收费歌曲时，播放器会尝试从其它平台为你寻找免费资源（你需要安装各音乐平台插件）。
+
+自然语言转歌单（AI）
+----------------------------
+
+    .. image:: https://github.com/user-attachments/assets/8afa13e6-8ff9-4b4f-9ca7-ad1f5661d8cb
 
 基于文本的歌单
 ----------------------------
 
-  将下面内容拷贝到文件 ``~/.FeelUOwn/collections/favorite.fuo`` 中，重启 FeelUOwn 就可以看到此歌单::
+  将下面内容拷贝到文件 ``~/.FeelUOwn/collections/library.fuo`` 中，重启 FeelUOwn 就可以看到此歌单::
 
      fuo://netease/songs/16841667  # No Matter What - Boyzone
      fuo://netease/songs/65800     # 最佳损友 - 陈奕迅
