@@ -32,6 +32,9 @@ jobs:
     - name: Install libmpv
       run: |
         brew install mpv
+    - name: Setup OS version and ARCH
+      run: |
+        echo "FUO_MACOS_VERSION=`sw_vers --productVersion`" >> $GITHUB_ENV
     - name: Setup DYLD path for macos-arm64
       if: matrix.os == 'macos-latest'
       run: |
@@ -54,7 +57,7 @@ jobs:
     - name: Upload artifact
       uses: actions/upload-artifact@v4
       with:
-        name: FeelUOwnX-macOS${{ env.DIST_MACOS_VERSION }}-${{ env.DIST_ARCH }}.zip
+        name: FeelUOwnX-macOS${{ env.FUO_MACOS_VERSION }}-${{ env.RUNNER_ARCH }}.zip
         path: dist/FeelUOwnX*.zip
     - name: Upload to release page
       if: startsWith(github.ref, 'refs/tags/v')
