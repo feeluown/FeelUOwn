@@ -38,7 +38,7 @@ jobs:
         ls dist/
         powershell Compress-Archive dist/FeelUOwn dist/FeelUOwn-windows.zip
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: FeelUOwn-windows.zip
         path: dist/FeelUOwn-windows.zip
