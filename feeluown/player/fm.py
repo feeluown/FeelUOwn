@@ -115,6 +115,7 @@ class FM:
         else:
             if len(songs) < self._minimum_per_fetch:
                 logger.info('No enough songs, exit fm mode now')
+                self._app.show_msg('电台返回歌曲不足，退出 FM 模式')
                 self.deactivate()
             else:
                 self._feed_playlist(songs)
