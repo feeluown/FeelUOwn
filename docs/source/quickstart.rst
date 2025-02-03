@@ -15,25 +15,27 @@ Ubuntu
 
 .. sourcecode:: sh
 
-    # 安装 Python 3 和 pip3（大部分系统已经安装好了）
-    sudo apt-get install python3 python3-pip
+    # 安装 Python 3 和 pipx （大部分系统已经安装好了）
+    sudo apt-get install python3 python3-pip pipx
+
+    # 配置 pipx
+    # pipx 的安装配置教程可以参考：https://github.com/pypa/pipx?tab=readme-ov-file#on-linux
+    pipx ensurepath
+    sudo pipx ensurepath --global
 
     # 安装 libmpv1
     sudo apt-get install libmpv1
 
     # 安装 PyQt5
-    sudo apt-get install python3-pyqt5
-    sudo apt-get install python3-pyqt5.qtopengl
-    sudo apt-get install python3-pyqt5.qtsvg
+    sudo apt-get install python3-pyqt5 python3-pyqt5.qtopengl python3-pyqt5.qtsvg
 
     # 安装 dbus-python
-    sudo apt-get install python3-dbus
-    sudo apt-get install python3-dbus.mainloop.pyqt5
+    sudo apt-get install python3-dbus python3-dbus.mainloop.pyqt5
 
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
-    pip3 install 'feeluown>=3.0[battery]' --upgrade --user
-    pip3 install pyopengl
+    pipx install 'feeluown[battery,cookies,webengine]'
+    pipx inject feeluown pyopengl
 
     # 运行 feeluown -h 来测试安装是否成功
     # 如果提示 Commmand Not Found，请查看文档「常见问题」部分
