@@ -92,6 +92,7 @@ class Body(QWidget):
         self._editor.setFrameShape(QFrame.NoFrame)
         self._scrollarea.setWidget(self._editor)
         self._msg_label = QLabel(self)
+        self._msg_label.setWordWrap(True)
         self._hide_btn = TextButton('关闭窗口', self)
         self._extract_and_play_btn = TextButton('提取歌曲并播放', self)
         self._extract_10_and_play_btn = TextButton('提取10首并播放', self)
@@ -151,9 +152,9 @@ class Body(QWidget):
                 messages=messages,
                 stream=True,
             )
-        except:  # noqa
-            self._app.show_msg('OpenAI 接口调用失败')
-            logger.exception('OpenAI API request failed')
+        except Exception as e:  # noqa
+            self.set_msg(f'调用 AI 接口失败: {e}', level='err')
+            logger.exception('AI request failed')
         else:
             content = ''
             async for chunk in stream:
@@ -173,7 +174,7 @@ class Body(QWidget):
         elif level == 'warn':
             color = 'yellow'
         else:  # err
-            color = 'red'
+            color = 'magenta'
         self._msg_label.setText(f'<span style="color: {color}">{text}</span>')
 
     async def extract_and_play(self):
@@ -195,11 +196,16 @@ class Body(QWidget):
             message = {'role': 'user', 'content': extract_prompt}
             self._chat_context.messages.append(message)
         self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
-        stream = await self._chat_context.client.chat.completions.create(
-            model=self._app.config.OPENAI_MODEL,
-            messages=self._chat_context.messages,
-            stream=True,
-        )
+        try:
+            stream = await self._chat_context.client.chat.completions.create(
+                model=self._app.config.OPENAI_MODEL,
+                messages=self._chat_context.messages,
+                stream=True,
+            )
+        except Exception as e:  # noqa
+            self.set_msg(f'调用 AI 接口失败: {e}', level='err')
+            logger.exception('AI request failed')
+            return
 
         rr, rw, wtask = await a_handle_stream(stream)
         ok_count = 0
@@ -262,3 +268,4 @@ if __name__ == '__main__':
         layout.addWidget(widget)
         widget.show()
         widget.body.show_chat_message('Hello, feeluown!' * 100)
+        widget.body.set_msg('error', level='err')

@@ -58,7 +58,7 @@ class AIStandbyMatcher:
                 stream=True,
             )
         except:  # noqa
-            logger.exception('OpenAI API request failed')
+            logger.exception('AI request failed')
             return []
 
         rr, rw, wtask = await a_handle_stream(stream)

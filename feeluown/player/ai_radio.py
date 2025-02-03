@@ -59,12 +59,10 @@ class AIRadio:
                 messages=self._messages,
             )
         except AuthenticationError:
-            logger.exception('OpenAI authentication failed')
-            self._app.show_msg('OpenAI API key 验证失败')
+            logger.exception('AI authentication failed')
             return []
         except Exception:
-            self._app.show_msg('OpenAI API 接口调用失败')
-            logger.exception('OpenAI request failed')
+            logger.exception('AI request failed')
             return []
         msg = response.choices[0].message
         self._messages.append(msg)
