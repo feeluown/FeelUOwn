@@ -450,6 +450,8 @@ class SimpleSearchResult(_BaseModel):
     artists: List[TArtist] = []
     playlists: List[TPlaylist] = []
     videos: List[TVideo] = []
+    source: str = ''
+    err_msg: str = ''
 
 
 _type_modelcls_mapping = {

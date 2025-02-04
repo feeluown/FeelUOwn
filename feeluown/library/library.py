@@ -2,7 +2,6 @@
 import logging
 import warnings
 from collections import Counter
-from functools import partial
 from typing import Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media
@@ -16,7 +15,7 @@ from feeluown.library.excs import (
 )
 from feeluown.library.flags import Flags as PF
 from feeluown.library.models import (
-    ModelFlags as MF, BaseModel,
+    ModelFlags as MF, BaseModel, SimpleSearchResult,
     BriefVideoModel, BriefSongModel, SongModel,
     LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel
 )
@@ -135,30 +134,53 @@ class Library:
                         yield result
 
     async def a_search(self, keyword, source_in=None, timeout=None,
-                       type_in=None,
+                       type_in=None, return_err=False,
                        **_):
         """async version of search
+
+        .. versionchanged:: 4.1.9
+            Add `return_err` parameter.
 
         TODO: add Happy Eyeballs requesting strategy if needed
         """
         type_in = SearchType.batch_parse(type_in) if type_in else [SearchType.so]
 
+        # Wrap the search function to associate the result with source.
+        def wrap_search(pvd, kw, t):
+            def search():
+                try:
+                    res = pvd.search(kw, type_=t)
+                except Exception as e:  # noqa
+                    if return_err:
+                        logger.exception('One provider search failed')
+                        return SimpleSearchResult(
+                            q=keyword,
+                            source=pvd.identifier,  # noqa
+                            err_msg=f'{type(e)}',
+                        )
+                    raise e
+                # When a provider does not implement search method, it returns None.
+                if res is not None and (
+                    res.songs or res.albums or
+                    res.artists or res.videos or res.playlists
+                ):
+                    return res
+                return SimpleSearchResult(
+                    q=keyword, source=pvd.identifier, err_msg='结果为空')
+            return search
+
         fs = []  # future list
         for provider in self._filter(identifier_in=source_in):
             for type_ in type_in:
-                future = run_fn(partial(provider.search, keyword, type_=type_))
+                future = run_fn(wrap_search(provider, keyword, type_))
                 fs.append(future)
-
-        for future in as_completed(fs, timeout=timeout):
+        for task_ in as_completed(fs, timeout=timeout):
             try:
-                result = await future
-            except:  # noqa
-                logger.exception('search task failed')
-                continue
+                result = await task_
+            except Exception as e:  # noqa
+                logger.exception('One search task failed due to asyncio')
             else:
-                # When a provider does not implement search method, it returns None.
-                if result is not None:
-                    yield result
+                yield result
 
     async def a_song_prepare_media_no_exc(self, standby, policy):
         media = None

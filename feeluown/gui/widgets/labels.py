@@ -1,4 +1,5 @@
 from PyQt5.QtCore import QTime, Qt
+from PyQt5.QtGui import QPalette, QColor
 from PyQt5.QtWidgets import QLabel, QSizePolicy
 
 from feeluown.utils.utils import parse_ms
@@ -83,7 +84,7 @@ class MessageLabel(QLabel):
     def __init__(self, text='', level=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setTextFormat(Qt.RichText)
+        self.setWordWrap(True)
         self.show_msg(text, level)
 
     def show_msg(self, text, level=None):
@@ -96,4 +97,8 @@ class MessageLabel(QLabel):
         else:
             hint = '️'
             color = SOLARIZED_COLORS['blue']
-        self.setText(f"<span style='color: {color};'>{hint}{text}<span>")
+        palette = self.palette()
+        palette.setColor(QPalette.Text, QColor(color))
+        palette.setColor(QPalette.WindowText, QColor(color))
+        self.setPalette(palette)
+        self.setText(f"{hint}{text}")
