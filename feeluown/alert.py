@@ -26,11 +26,12 @@ class AlertManager:
     def on_exception(self, e):
         if isinstance(e, ConnectTimeout):
             if e.request is not None:
-                assert isinstance(e.request, Request)
                 url = e.request.url
                 hostname = urlparse(url).hostname
-                msg = f'与 {hostname} 的网络差，请检查你的网络或者代理设置',
-                self.show_alert(msg)
+            else:
+                hostname = ''
+            msg = f"链接'{hostname}'超时，请检查你的网络或者代理设置"
+            self.show_alert(msg)
 
     def on_media_loading_failed(self, *_):
         assert self._app is not None

@@ -751,7 +751,7 @@ class Playlist:
         except ModelNotFound:
             pass
         except Exception as e:  # noqa
-            logger.exception(f'upgrade model:{model} failed')
+            logger.exception(f'upgrade model({model}) failed')
             self._app.alert_mgr.on_exception(e)
         else:
             # Replace the brief model with the upgraded model
@@ -767,7 +767,7 @@ class Playlist:
                 fn, model, name=TASK_SET_CURRENT_MODEL
             )
         except:  # noqa
-            logger.exception('play model failed')
+            logger.exception(f'play model({model}) failed')
         else:
             self._app.player.resume()
             logger.info(f'play a model ({model}) succeed')
