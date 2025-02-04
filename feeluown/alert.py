@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Optional
 from urllib.parse import urlparse
 
-from requests import ConnectTimeout, Request
+from requests import ConnectTimeout
 
 
 if TYPE_CHECKING:

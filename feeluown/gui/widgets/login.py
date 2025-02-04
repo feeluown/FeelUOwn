@@ -90,6 +90,7 @@ class CookiesLoginDialog(LoginDialog):
 
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
+        self.hint_label.setWordWrap(True)
         self.login_btn = QPushButton('登录', self)
         self.weblogin_btn = QPushButton('网页登录', self)
         self.chrome_btn = QPushButton('从 Chrome 中读取 Cookie')
