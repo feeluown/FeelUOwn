@@ -78,7 +78,7 @@ class Body(QFrame, BgTransparentMixin):
         self._layout.addStretch(0)
 
     async def search_and_render(self, q, search_type, source_in):
-        # pylint: disable=too-many-locals
+        # pylint: disable=too-many-locals,too-many-statements
         view = self
         app = self._app
 
@@ -88,9 +88,19 @@ class Body(QFrame, BgTransparentMixin):
         succeed = 0
         start = datetime.now()
         is_first = True  # Is first search result.
-        view.hint.show_msg('正在搜索...')
+        if source_in is not None:
+            source_count = len(source_in)
+        else:
+            source_count = len(app.library.list())
+        hint_msgs = [f'正在搜索 {source_count} 个资源提供方...']
+        view.hint.show_msg('\n'.join(hint_msgs))
         async for result in app.library.a_search(
-                q, type_in=search_type, source_in=source_in):
+                q, type_in=search_type, source_in=source_in, return_err=True):
+            if result.err_msg:
+                hint_msgs.append(f'搜索 {result.source} 的资源出错：{result.err_msg}')
+                view.hint.show_msg('\n'.join(hint_msgs))
+                continue
+
             table_container = TableContainer(app, view.accordion)
             table_container.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -112,6 +122,8 @@ class Body(QFrame, BgTransparentMixin):
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
             objects = getattr(result, attrname) or []
             if not objects:  # Result is empty.
+                hint_msgs.append(f'搜索 {result.source} 资源，提供方返回空')
+                view.hint.show_msg('\n'.join(hint_msgs))
                 continue
 
             succeed += 1
@@ -130,7 +142,9 @@ class Body(QFrame, BgTransparentMixin):
             renderer.toolbar.hide()
             is_first = False
         time_cost = (datetime.now() - start).total_seconds()
-        view.hint.show_msg(f'搜索完成，共有 {succeed} 个有效的结果，花费 {time_cost:.2f}s')
+        hint_msgs.pop(0)
+        hint_msgs.insert(0, f'搜索完成，共有 {succeed} 个有效的结果，花费 {time_cost:.2f}s')
+        view.hint.show_msg('\n'.join(hint_msgs))
 
 
 class SearchResultRenderer(Renderer, TabBarRendererMixin):

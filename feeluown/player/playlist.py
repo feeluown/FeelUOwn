@@ -750,8 +750,9 @@ class Playlist:
             umodel = await aio.run_fn(upgrade_fn, model)
         except ModelNotFound:
             pass
-        except:  # noqa
-            logger.exception(f'upgrade model:{model} failed')
+        except Exception as e:  # noqa
+            logger.exception(f'upgrade model({model}) failed')
+            self._app.alert_mgr.on_exception(e)
         else:
             # Replace the brief model with the upgraded model
             # when user try to play a brief model that is already in the playlist.
@@ -766,7 +767,7 @@ class Playlist:
                 fn, model, name=TASK_SET_CURRENT_MODEL
             )
         except:  # noqa
-            logger.exception('play model failed')
+            logger.exception(f'play model({model}) failed')
         else:
             self._app.player.resume()
             logger.info(f'play a model ({model}) succeed')
