@@ -18,6 +18,7 @@ from feeluown.player import (
 from feeluown.plugin import plugins_mgr
 from feeluown.version import VersionManager
 from feeluown.task import TaskManager
+from feeluown.alert import AlertManager
 
 from .mode import AppMode
 
@@ -47,6 +48,7 @@ class App:
         self.started = Signal()  # App is ready to use, for example, UI is available.
         self.about_to_shutdown = Signal()
 
+        self.alert_mgr = AlertManager()
         self.request = Request()  # TODO: rename request to http
         self.version_mgr = VersionManager(self)
         self.task_mgr = TaskManager(self)
@@ -109,12 +111,11 @@ class App:
         self.about_to_shutdown.connect(lambda _: self.dump_and_save_state(), weak=False)
 
     def initialize(self):
+        self.alert_mgr.initialize(self)
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(self.live_lyric.on_song_changed,
                                            aioqueue=True)
-        self.player.media_loading_failed.connect(
-            lambda *args: self.show_msg('播放器加载资源失败'), weak=False, aioqueue=True)
         self.plugin_mgr.enable_plugins(self)
 
     def run(self):

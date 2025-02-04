@@ -750,8 +750,9 @@ class Playlist:
             umodel = await aio.run_fn(upgrade_fn, model)
         except ModelNotFound:
             pass
-        except:  # noqa
+        except Exception as e:  # noqa
             logger.exception(f'upgrade model:{model} failed')
+            self._app.alert_mgr.on_exception(e)
         else:
             # Replace the brief model with the upgraded model
             # when user try to play a brief model that is already in the playlist.
