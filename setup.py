@@ -72,6 +72,9 @@ setup(
         'ai': [
             'openai>=1.50',
         ],
+        'qt': [
+            'PyQt5',
+        ],
         'macOS': [
             'aionowplaying>=0.10',
         ],

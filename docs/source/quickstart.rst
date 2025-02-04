@@ -34,7 +34,7 @@ Ubuntu
 
     # 安装 feeluown （是一个 Python 包）
     # --upgrade 代表安装最新版，--user 代表不安装到系统目录
-    pipx install 'feeluown[battery,cookies,webengine]'
+    pipx install 'feeluown[battery,cookies,webengine,ai]'
     pipx inject feeluown pyopengl
 
     # 运行 feeluown -h 来测试安装是否成功
