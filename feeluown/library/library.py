@@ -264,7 +264,8 @@ class Library:
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
                         return song_media_list
-            return song_media_list
+            if song_media_list:
+                return song_media_list
         if self.enable_ai_standby_matcher and self.ai and top2_standby:
             logger.info(f'Try to use AI to match standby for song {song}')
             matcher = AIStandbyMatcher(
