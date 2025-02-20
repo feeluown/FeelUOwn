@@ -86,7 +86,9 @@ def create_config() -> Config:
     )
     config.deffield('OPENAI_API_KEY', type_=str, default='', desc='OpenAI API key')
     config.deffield('OPENAI_MODEL', type_=str, default='', desc='OpenAI model name')
-    config.deffield('ENABLE_AI_STANDBY_MATCHER', type_=bool, default=True, desc='')
+    # Not sure if AI_STANDBY_MATCHER may be activated unexpectedly.
+    # And it may burn some money, let user enable it manually.
+    config.deffield('ENABLE_AI_STANDBY_MATCHER', type_=bool, default=False, desc='')
     config.deffield(
         'AI_RADIO_PROMPT',
         type_=str,
