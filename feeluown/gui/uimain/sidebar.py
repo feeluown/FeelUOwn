@@ -107,7 +107,6 @@ class _LeftPanel(QFrame):
                 lambda: self._app.browser.goto(page='/homepage'))
         else:
             self.home_btn.clicked.connect(self.show_library)
-        self.ai_btn.clicked.connect(self._app.ui.ai_chat_overlay.show)
         if self._app.ai is None:
             self.ai_btn.setDisabled(True)
             self.ai_btn.setToolTip(
@@ -116,6 +115,8 @@ class _LeftPanel(QFrame):
                 'config.OPENAI_API_BASEURL = "http://xxx"\n'
                 'config.OPENAI_API_MODEL = "model name"\n'
             )
+        else:
+            self.ai_btn.clicked.connect(self._app.ui.ai_chat_overlay.show)
 
     def _toggle_top_layout(self, checked):
         widgets = [self._top_separator, self.collections_con, self.home_btn, self.ai_btn]

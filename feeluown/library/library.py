@@ -7,7 +7,6 @@ from typing import Optional, TypeVar, List, TYPE_CHECKING
 from feeluown.media import Media
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
-from feeluown.library.ai_standby import AIStandbyMatcher
 from feeluown.library.base import SearchType, ModelType
 from feeluown.library.provider import Provider
 from feeluown.library.excs import (
@@ -267,6 +266,8 @@ class Library:
             if song_media_list:
                 return song_media_list
         if self.enable_ai_standby_matcher and self.ai and top2_standby:
+            from feeluown.library.ai_standby import AIStandbyMatcher  # noqa
+
             logger.info(f'Try to use AI to match standby for song {song}')
             matcher = AIStandbyMatcher(
                 self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)
