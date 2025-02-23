@@ -63,6 +63,7 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
     remove_parser = add_parser('remove', help='从播放列表移除歌曲')
     add_parser_ = add_parser('add', help='添加歌曲到播放列表')
     exec_parser = add_parser('exec')
+    jsonrpc_parser = add_parser('jsonrpc')
     add_parser('pause', help='暂停播放')
     add_parser('resume', help='回复播放')
     add_parser('toggle', help='')
@@ -88,6 +89,7 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
         choices=['song', 'album', 'artist', 'video', 'playlist']
     )
     exec_parser.add_argument('code', nargs='?', help='Python 代码')
+    jsonrpc_parser.add_argument('body')
 
 
 def add_cli_cmds(subparsers: argparse._SubParsersAction):

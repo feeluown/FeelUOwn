@@ -1,9 +1,11 @@
+import json
 from functools import wraps
 
 from jsonrpc import JSONRPCResponseManager, Dispatcher
 
 from feeluown.fuoexec.fuoexec import fuoexec_get_globals
 from feeluown.serializers import serialize, deserialize
+from .base import AbstractHandler
 
 
 class DynamicDispatcher(Dispatcher):
@@ -11,7 +13,7 @@ class DynamicDispatcher(Dispatcher):
         try:
             return self.method_map[key]
         except KeyError:
-            method = eval(key, fuoexec_get_globals())
+            method = eval(key, fuoexec_get_globals())  # pylint: disable=eval-used
             return method_wrapper(method)
 
 
@@ -31,10 +33,7 @@ def method_wrapper(func):
 
 
 dispatcher = DynamicDispatcher()
-
-
-def initialize():
-    dispatcher.add_method(lambda: "pong", name="ping")
+dispatcher.add_method(lambda: "pong", name="ping")
 
 
 def handle(data):
@@ -43,3 +42,11 @@ def handle(data):
         result = serialize('python', response.result)
         response.result = result
     return response.data
+
+
+class JsonRPCHandler(AbstractHandler):
+    cmds = 'jsonrpc'
+
+    def handle(self, cmd):
+        payload = cmd.args[0]
+        return json.dumps(handle(payload))

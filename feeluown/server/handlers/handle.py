@@ -69,3 +69,4 @@ from .show import ShowHandler  # noqa
 from .exec_ import ExecHandler  # noqa
 from .sub import SubHandler  # noqa
 from .set_ import SetHandler  # noqa
+from .jsonrpc_ import JsonRPCHandler  # noqa
