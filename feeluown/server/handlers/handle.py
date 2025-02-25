@@ -69,3 +69,7 @@ from .show import ShowHandler  # noqa
 from .exec_ import ExecHandler  # noqa
 from .sub import SubHandler  # noqa
 from .set_ import SetHandler  # noqa
+try:
+    from .jsonrpc_ import JsonRPCHandler  # noqa
+except ImportError as e:
+    logger.warning(f'jsonrpc handler is not available: {e}')

@@ -10,7 +10,7 @@ from feeluown.server.pubsub import Gateway as PubsubGateway
 from feeluown.server.handlers.cmd import Cmd
 from feeluown.server.handlers.status import StatusHandler
 from feeluown.server.handlers.player import PlayerHandler
-from .jsonrpc_ import initialize, handle
+from feeluown.server.handlers.jsonrpc_ import handle
 
 
 logger = logging.getLogger(__name__)
@@ -86,7 +86,6 @@ async def signal(request, ws: Websocket):
 
 
 async def run_web_server(host, port):
-    initialize()
     sanic_app.config.MOTD = False
     server = await sanic_app.create_server(host, port, return_asyncio_server=True)
     await server.startup()

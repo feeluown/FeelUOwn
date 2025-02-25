@@ -178,13 +178,17 @@ class ExecHandler(BaseHandler):
 
     def before_request(self):
         code = self.args.code
-        if code is None:
+        self._req.cmd_args = (code, )
+
+
+class JsonRPCHandler(BaseHandler):
+    cmds = ('jsonrpc', )
+
+    def before_request(self):
+        body = self.args.body
+        if body is None:
             body = sys.stdin.read()
-            self._req.has_heredoc = True
-            self._req.heredoc_word = 'EOF'
-            self._req.set_heredoc_body(body)
-        else:
-            self._req.cmd_args = (code, )
+        self._req.cmd_args = (body, )
 
 
 class OnceClient:
