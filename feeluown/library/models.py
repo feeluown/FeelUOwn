@@ -56,7 +56,7 @@ from typing import List, Optional, Tuple, Any, Union
 
 from pydantic import (
     ConfigDict, BaseModel as _BaseModel, PrivateAttr,
-    model_validator, model_serializer,
+    model_validator, model_serializer, Field,
 )
 
 try:
@@ -149,7 +149,9 @@ class BaseModel(_BaseModel):
 
     # For pydantic v2.
     if pydantic_version == 2:
-        model_config = ConfigDict(from_attributes=False, extra='forbid')
+        model_config = ConfigDict(from_attributes=False,
+                                  extra='forbid',
+                                  use_enum_values=True)
     else:
         # For pydantic v1.
         class Config:
@@ -382,7 +384,7 @@ class AlbumModel(BriefAlbumModel, BaseNormalModel):
     meta: Any = ModelMeta.create(ModelType.album, is_normal=True)
     name: str
     cover: str
-    type_: AlbumType = AlbumType.standard
+    type_: AlbumType = Field(default=AlbumType.standard, validate_default=True)
     artists: List[BriefArtistModel]
     # One album usually has limited songs, and many providers' album_detail API
     # can return songs list. UPDATE(3.8.12): However, we found that albums

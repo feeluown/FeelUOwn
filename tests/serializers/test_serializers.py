@@ -51,6 +51,7 @@ def test_serialize_model():
     assert song_js['__type__'] == 'feeluown.library.SongModel'
     assert song_js['album']['__type__'] == 'feeluown.library.AlbumModel'
     assert song_js['album']['uri'] == 'fuo://dummy/albums/1'
+    assert song_js['album']['type_'] == 'standard'
 
 
 def test_serialize_search_result():

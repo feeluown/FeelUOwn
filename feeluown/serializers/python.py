@@ -61,7 +61,7 @@ class ModelSerializer(PythonSerializer, metaclass=SerializerMeta):
     class Meta:
         types = (BaseModel, )
 
-    def serialize(self, model):
+    def serialize(self, model: BaseModel):
         return model.model_dump()
 
 
