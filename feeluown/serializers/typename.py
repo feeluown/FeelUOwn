@@ -16,7 +16,6 @@ from feeluown.library import (
     BriefAlbumModel,
     BriefPlaylistModel,
     BriefUserModel,
-    AlbumType,
 )
 
 model_cls_list = [
@@ -39,7 +38,6 @@ _sys_typenames = {  # for unittest.
 _typenames = {
     'player.Metadata': Metadata,
     'app.App': App,  # TODO: remove this
-    'library.AlbumType': AlbumType,
 }
 for model_cls in model_cls_list:
     _typenames[f'library.{model_cls.__name__}'] = model_cls

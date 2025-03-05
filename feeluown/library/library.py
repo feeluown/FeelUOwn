@@ -392,7 +392,7 @@ class Library:
         :raises ResourceNotFound:
         :raises ProviderIOError:
 
-        .. versionadded:: 4.1.10
+        .. versionadded:: 4.1.11
         """
         if not isinstance(album, AlbumModel):
             ualbum = self.album_upgrade(album)
