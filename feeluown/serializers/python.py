@@ -1,4 +1,4 @@
-from feeluown.library import BaseModel
+from feeluown.library import BaseModel, AlbumType
 
 from .typename import attach_typename, get_type_by_name, model_cls_list
 from .base import Serializer, SerializerMeta, DeserializerError
@@ -61,7 +61,7 @@ class ModelSerializer(PythonSerializer, metaclass=SerializerMeta):
     class Meta:
         types = (BaseModel, )
 
-    def serialize(self, model):
+    def serialize(self, model: BaseModel):
         return model.model_dump()
 
 
@@ -101,3 +101,11 @@ class SimpleTypeSerializer(PythonSerializer, metaclass=SerializerMeta):
 
     def serialize(self, object):
         return object
+
+
+class EnumSerializer(PythonSerializer, metaclass=SerializerMeta):
+    class Meta:
+        types = (AlbumType, )
+
+    def serialize(self, obj):
+        return obj.value

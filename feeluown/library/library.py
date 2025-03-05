@@ -16,13 +16,15 @@ from feeluown.library.flags import Flags as PF
 from feeluown.library.models import (
     ModelFlags as MF, BaseModel, SimpleSearchResult,
     BriefVideoModel, BriefSongModel, SongModel,
-    LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel
+    LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel,
+    AlbumModel,
 )
 from feeluown.library.model_state import ModelState
 from feeluown.library.provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
+    SupportsAlbumSongsReader,
 )
 from feeluown.library.standby import (
     get_standby_score,
@@ -384,6 +386,26 @@ class Library:
     # --------
     def album_upgrade(self, album: BriefAlbumModel):
         return self._model_upgrade(album)
+
+    def album_list_songs(self, album: BriefAlbumModel):
+        """
+        :raises ResourceNotFound:
+        :raises ProviderIOError:
+
+        .. versionadded:: 4.1.10
+        """
+        if not isinstance(album, AlbumModel):
+            ualbum = self.album_upgrade(album)
+        else:
+            ualbum = album
+        if ualbum.song_count == 0:
+            return []
+        if ualbum.songs:
+            return ualbum.songs
+        provider = self.get(ualbum.source)
+        if isinstance(provider, SupportsAlbumSongsReader):
+            return list(provider.album_create_songs_rd(ualbum))
+        raise ResourceNotFound(reason=ResourceNotFound.Reason.not_supported)
 
     # --------
     # Artist
