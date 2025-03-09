@@ -251,7 +251,7 @@ class BaseSongsTableModel(QAbstractTableModel):
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
         incomplete = False
-        if song.state in (ModelState.not_exists, ModelState.cant_upgrade):
+        if ModelState(song.state) in (ModelState.not_exists, ModelState.cant_upgrade):
             incomplete = True
         if incomplete:
             if index.column() != Column.song:
@@ -516,7 +516,8 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def paint_vip_tag(self, painter, option, index):
         song = index.data(Qt.UserRole)
-        if ModelFlags.normal in song.meta.flags and MediaFlags.vip in song.media_flags:
+        song_flags = ModelFlags(song.meta.flags)
+        if ModelFlags.normal in song_flags and MediaFlags.vip in song_flags:
             with painter_save(painter):
                 fm = option.fontMetrics
                 title = index.data(Qt.DisplayRole)
