@@ -35,7 +35,7 @@ yay -S feeluown-netease  # 按需安装其它扩展
 yay -S feeluown-ytmusic
 yay -S feeluown-bilibili
 
-# macOS（也可以下载打包好的二进制）
+# macOS（推荐优先尝试在 Release 页面下载打包好的安装包！）
 brew tap feeluown/feeluown
 brew install feeluown --with-battery # 安装 FeelUOwn 以及扩展
 feeluown genicon                     # 在桌面生成 FeelUOwn 图标

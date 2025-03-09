@@ -7,6 +7,40 @@ FeelUOwn 使用 Python 3 进行开发，目前默认使用 mpv 作为其播放�
 安装
 ----
 
+如果你有一定折腾经验，你可以参考“通用安装办法”，它可控性强、行为可预期。
+你也可以参考各个平台的安装教程来安装 FeelUOwn。你可以在两种方法中灵活选择。
+
+通用安装办法
+~~~~~~~~~~~~~~~~
+
+安装 FeelUOwn 分两步。一步是安装 libmpv；一步是安装 FeelUOwn 及其依赖的 Python 包。
+
+1. libmpv 通常可以使用系统包管理器安装
+2. FeelUOwn 及其依赖的 Python 包可以使用 Python 包管理工具来安装（如 pipx 或者 uv）。
+
+libmpv, pipx 通常可以通过系统包管理器来安装，如 Debian Linux 可以使用 apt-get 命令，
+macOS 可以 brew 命令等。
+
+.. sourcecode:: sh
+
+    # macOS
+    brew install mpv pipx
+
+    # Ubuntu
+    sudo apt-get install libmpv1 pipx
+
+在安装好 libmpv 和 Python 包管理工具后。你可以运行如下命令来安装 FeelUOwn 及其依赖的 Python 包：
+
+.. sourcecode:: sh
+
+    # Linux 用户可以使用如下命令
+    pipx install feeluown[battery,ai,cookies,webengine,qt] -v
+
+    # macOS 和 Windows 用户可以分别使用如下命令
+    # 建议优先使用 Python 3.10/3.11 版本（部分依赖包没有适配 3.12 和 3.13 版本）
+    pipx install feeluown[battery,ai,cookies,webengine,qt,macos] --python `which python3.11` -v
+    pipx install feeluown[battery,ai,cookies,webengine,qt,win32] --python `which python3.11` -v
+
 Ubuntu
 ~~~~~~
 
