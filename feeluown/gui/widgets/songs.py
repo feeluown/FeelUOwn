@@ -516,7 +516,8 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def paint_vip_tag(self, painter, option, index):
         song = index.data(Qt.UserRole)
-        if ModelFlags.normal in ModelFlags(song.meta.flags) and MediaFlags.vip in MediaFlags(song.media_flags):
+        song_flags = ModelFlags(song.meta.flags)
+        if ModelFlags.normal in song_flags and MediaFlags.vip in song_flags:
             with painter_save(painter):
                 fm = option.fontMetrics
                 title = index.data(Qt.DisplayRole)
