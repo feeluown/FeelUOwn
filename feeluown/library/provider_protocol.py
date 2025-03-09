@@ -2,6 +2,7 @@ from typing import runtime_checkable, Protocol, List, Tuple, Optional, Dict
 from abc import abstractmethod
 from feeluown.media import Quality, Media
 from feeluown.excs import NoUserLoggedIn
+from feeluown.utils.dispatch import Signal
 from .models import (
     BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
     PlaylistModel, UserModel, ModelType, BriefArtistModel, BriefSongModel,
@@ -330,6 +331,31 @@ class SupportsCurrentUser(Protocol):
             return self.get_current_user()
         except NoUserLoggedIn:
             return None
+
+
+@runtime_checkable
+class SupportsUserAutoLogin(Protocol):
+    """Protocol for providers that support automatic login using cached credentials."""
+
+    @abstractmethod
+    def auto_login(self) -> bool:
+        """Try to automatically login using cached credentials.
+
+        Returns:
+            bool: True if auto login succeeded, False otherwise
+        """
+
+
+@runtime_checkable
+class SupportsCurrentUserChanged(Protocol):
+    @property
+    @abstractmethod
+    def current_user_changed(self) -> Signal:
+        """
+
+        :return: Signal(UserModel)
+        """
+        ...
 
 
 @runtime_checkable

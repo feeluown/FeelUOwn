@@ -24,7 +24,7 @@ from feeluown.library.provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
-    SupportsAlbumSongsReader,
+    SupportsAlbumSongsReader, SupportsUserAutoLogin, SupportsCurrentUserChanged,
 )
 from feeluown.library.standby import (
     get_standby_score,
@@ -84,6 +84,14 @@ class Library:
         self._providers.add(provider)
         self.provider_added.emit(provider)
 
+        if isinstance(provider, SupportsCurrentUserChanged):
+            provider.current_user_changed.connect(
+                self._create_current_user_changed_cb(provider), weak=False)
+
+        if isinstance(provider, SupportsUserAutoLogin):
+            logger.debug(f"Auto login for {provider.identifier} ...")
+            run_fn(provider.auto_login)
+
     def deregister(self, provider) -> bool:
         """deregister provider
 
@@ -95,6 +103,11 @@ class Library:
             self.provider_removed.emit(provider)
             return True
         return False
+
+    def _create_current_user_changed_cb(self, provider: Provider):
+        def cb(user):
+            logger.info(f"{provider.identifier} current user changed to {user}")
+        return cb
 
     def get(self, identifier) -> Optional[Provider]:
         """通过资源提供方唯一标识获取提供方实例"""
