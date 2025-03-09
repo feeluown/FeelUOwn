@@ -4,7 +4,8 @@ from PyQt5.QtCore import QRect
 from PyQt5.QtWidgets import QMenu, QAction
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
 
-from feeluown.library import UserModel, SupportsCurrentUser
+from feeluown.library import UserModel, SupportsCurrentUser, Provider, \
+    SupportsCurrentUserChanged
 from feeluown.library import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
@@ -29,6 +30,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
         super().__init__('未登录', *args, **kwargs)
 
         self._app = app
+        self._logging_state = {}
         self._avatar_drawer = None
         # In order to make the avatar/icon align to the left edge,
         # translate the painter to -self._padding and set different padding
@@ -40,7 +42,9 @@ class Avatar(SelfPaintAbstractIconTextButton):
         self._avatar_translate_x = -self._avatar_padding
         self._icon_drawer = AvatarIconDrawer(self.height(), self._padding)
         self.clicked.connect(self.on_clicked)
-        self.setToolTip('点击登陆资源提供方')
+        self.setToolTip('点击切换平台')
+
+        self._app.library.provider_added.connect(self.on_provider_added)
 
     def on_clicked(self):
         pvd_ui = self._app.current_pvd_ui_mgr.get()
@@ -56,6 +60,25 @@ class Avatar(SelfPaintAbstractIconTextButton):
             pos = self.cursor().pos()
             e = QContextMenuEvent(QContextMenuEvent.Mouse, pos, pos)
             self.contextMenuEvent(e)
+
+    def on_provider_added(self, provider: Provider):
+        if isinstance(provider, SupportsCurrentUserChanged):
+            provider.current_user_changed.connect(
+                self.create_provider_current_user_changed_cb(provider), weak=False)
+
+    def create_provider_current_user_changed_cb(self, provider: Provider):
+        def cb(user: UserModel):
+            if user is not None:
+                self._logging_state[provider.identifier] = user.name
+            else:
+                self._logging_state.pop(provider.identifier, None)
+            if not self._app.current_pvd_ui_mgr.get():
+                if self._logging_state:
+                    self._text = '部分已登录'
+                else:
+                    self._text = '未登录'
+                self.setToolTip(self._text)  # refresh tooltip
+        return cb
 
     def contextMenuEvent(self, e) -> None:
         # pylint: disable=unnecessary-direct-lambda-call
@@ -146,6 +169,10 @@ class Avatar(SelfPaintAbstractIconTextButton):
 
     def paint_border_bg_when_hover(self, *_, **__):
         pass
+
+    def setToolTip(self, text):
+        notes = f"后台已登录：{','.join(self._logging_state.keys()) or '无'}"
+        super().setToolTip(text + '\n\n' + notes)
 
     def draw_text(self, painter):
         with painter_save(painter):
