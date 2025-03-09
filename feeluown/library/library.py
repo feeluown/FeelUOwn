@@ -24,7 +24,7 @@ from feeluown.library.provider_protocol import (
     check_flag as check_flag_impl,
     SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
     SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
-    SupportsAlbumSongsReader,
+    SupportsAlbumSongsReader, SupportsUserAutoLogin,
 )
 from feeluown.library.standby import (
     get_standby_score,
@@ -83,6 +83,10 @@ class Library:
                 raise ProviderAlreadyExists
         self._providers.add(provider)
         self.provider_added.emit(provider)
+
+        if isinstance(provider, SupportsUserAutoLogin):
+            logger.debug(f"Auto login for {provider.identifier} ...")
+            run_fn(provider.auto_login)
 
     def deregister(self, provider) -> bool:
         """deregister provider
