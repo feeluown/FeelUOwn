@@ -152,7 +152,7 @@ class SongWikiLabel(QLabel):
         # Only show the date, like yyyy-mm-dd. Do not show hour/minutes/seconds.
         if song.date:
             date = song.date
-        elif album is not None and ModelFlags.normal in album.meta.flags:
+        elif album is not None and ModelFlags.normal in ModelFlags(album.meta.flags):
             date = album.released
         else:
             date = ''
