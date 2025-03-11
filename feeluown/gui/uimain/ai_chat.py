@@ -16,7 +16,7 @@ from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn_ref
 from feeluown.library import fmt_artists_names
 from feeluown.library.text2song import create_dummy_brief_song
-from feeluown.gui.helpers import esc_hide_widget
+from feeluown.gui.helpers import esc_hide_widget, palette_set_bg_color
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.header import MidHeader
 
@@ -163,32 +163,20 @@ class Body(QWidget):
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
+
         if role == 'user':
             label.setPalette(self.palette())
             label.setAutoFillBackground(True)
             pal = label.palette()
-            pal.setColor(pal.Background, pal.color(pal.Highlight))
-            pal.setColor(pal.Foreground, pal.color(pal.HighlightedText))
+            palette_set_bg_color(pal, pal.color(pal.Highlight))
+            pal.setColor(pal.Text, pal.color(pal.HighlightedText))
             label.setPalette(pal)
-        else:
-            label.setPalette(self.palette())
-            label.setAutoFillBackground(True)
-            pal = label.palette() 
-            pal.setColor(pal.Background, pal.color(pal.Base))
-            pal.setColor(pal.Foreground, pal.color(pal.Text))
-            label.setPalette(pal)
-            
-        label.setStyleSheet("""
-            padding: 8px;
-            border-radius: 4px;
-            margin: 4px;
-        """)
-        
+
         if role == 'user':
             label.setAlignment(Qt.AlignRight)
         else:
             label.setAlignment(Qt.AlignLeft)
-        
+
         self._history_layout.addWidget(label)
         # 滚动到底部
         self._history_area.verticalScrollBar().setValue(
@@ -198,10 +186,10 @@ class Body(QWidget):
     async def exec_user_query(self, query):
         self.set_msg('等待 AI 返回中...', level='hint')
         client = self._app.ai.get_async_client()
-        
+
         # 添加用户消息到历史
         self._add_message_to_history('user', query)
-        
+
         # 初始化或更新对话上下文
         if self._chat_context is None:
             messages = [
@@ -212,7 +200,7 @@ class Body(QWidget):
         else:
             messages = self._chat_context.messages
             messages.append({'role': 'user', 'content': query})
-        
+
         try:
             stream = await client.chat.completions.create(
                 model=self._app.config.OPENAI_MODEL,
@@ -230,19 +218,9 @@ class Body(QWidget):
             ai_label.setFrameStyle(QFrame.NoFrame)
             ai_label.setPalette(self.palette())
             ai_label.setAutoFillBackground(True)
-            pal = ai_label.palette()
-            pal.setColor(pal.Background, pal.color(pal.Base))
-            pal.setColor(pal.Foreground, pal.color(pal.Text))
-            ai_label.setPalette(pal)
-            
-            ai_label.setStyleSheet("""
-                padding: 8px;
-                border-radius: 4px;
-                margin: 4px;
-            """)
             ai_label.setAlignment(Qt.AlignLeft)
             self._history_layout.addWidget(ai_label)
-            
+
             content = ''
             async for chunk in stream:
                 self.set_msg('AI 返回中...', level='hint')
@@ -254,12 +232,12 @@ class Body(QWidget):
                 self._history_area.verticalScrollBar().setValue(
                     self._history_area.verticalScrollBar().maximum()
                 )
-            
+
             # 更新对话上下文
             assistant_message = {"role": "assistant", "content": content}
             self._chat_context.messages.append(assistant_message)
             self.set_msg('AI 内容返回结束', level='hint')
-            
+
             # 清空输入框
             self._editor.clear()
 
@@ -377,3 +355,6 @@ if __name__ == '__main__':
         widget.show()
         widget.body.show_chat_message('Hello, feeluown!' * 100)
         widget.body.set_msg('error', level='err')
+
+        widget.body._add_message_to_history('user', '哈哈哈')
+        widget.body._add_message_to_history('xxx', '哈哈哈')
