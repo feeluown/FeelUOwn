@@ -210,7 +210,7 @@ class Body(QWidget):
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
 
-        width_factor = 0.6 if role in ('user', 'system') else 0.8
+        width_factor = 0.6 if role in ('user', 'system') else 1
         label.setMaximumWidth(int(self._history_area.width() * width_factor))
         label.setAlignment(Qt.AlignLeft)
 
@@ -301,7 +301,7 @@ class Body(QWidget):
 
     async def _extract_and_play(self, extract_prompt):
         """Main entry point for extracting and playing songs"""
-        self._chat_context = self._prepare_extract_context(extract_prompt)
+        self._prepare_extract_context(extract_prompt)
         self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
         try:
             stream = await self._chat_context.send_message()
@@ -321,13 +321,7 @@ class Body(QWidget):
         """Prepare chat context for song extraction"""
         if self._chat_context is None:
             self._chat_context = self.create_chat_context()
-            self._add_message_to_history('user', extract_prompt)
-            self._add_message_to_history('user', self._editor.toPlainText())
-        else:
-            self._add_message_to_history('user', extract_prompt)
-            message = {'role': 'user', 'content': extract_prompt}
-            self._chat_context.messages.append(message)
-            return self._chat_context
+        self._add_message_to_history('user', extract_prompt)
 
     async def _process_extract_stream(self, stream):
         """Process the stream of extracted songs"""
@@ -335,13 +329,20 @@ class Body(QWidget):
         ok_count = 0
         fail_count = 0
 
-        lines = []
+        # 创建AI回复的标签
+        ai_label = self._create_message_label('assistant', '')
+        self._history_layout.addWidget(ai_label)
+        content = ''
         try:
             while True:
                 try:
                     line = await rr.readline()
                     line = line.decode('utf-8')
-                    lines.append(line)
+                    content += f'{line}\n'  # add newline
+                    ai_label.setText(content)
+                    self._history_area.verticalScrollBar().setValue(
+                        self._history_area.verticalScrollBar().maximum()
+                    )
                     logger.debug(f'read a line: {line}')
                     if not line:
                         self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
@@ -370,8 +371,8 @@ class Body(QWidget):
                     logger.exception('Error processing song')
                     break
         finally:
-            content = '\n'.join(lines)
-            self._add_message_to_history('assistant', content)
+            assistant_message = {"role": "assistant", "content": content}
+            self._chat_context.messages.append(assistant_message)
             chunk = await wtask
             self.show_tokens_usage(chunk)
             rw.close()
@@ -390,6 +391,7 @@ class Body(QWidget):
     def hide(self):
         self.clear_history()
         super().hide()
+        self.parent().hide()
 
 
 if __name__ == '__main__':
