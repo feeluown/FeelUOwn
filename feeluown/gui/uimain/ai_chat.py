@@ -183,26 +183,29 @@ class Body(QWidget):
         self._btn_layout.addWidget(self._hide_btn)
         self._btn_layout.addStretch(0)
 
-    def _add_message_to_history(self, role, content):
-        """将消息添加到对话历史"""
+    def _create_message_label(self, role, content):
+        """创建消息标签"""
         label = RoundedLabel()
         label.setText(content)
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
+        label.setPalette(self.palette())
 
+        pal = label.palette()
         if role == 'user':
-            label.setPalette(self.palette())
-            pal = label.palette()
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
-            label.setPalette(pal)
-
-        if role == 'user':
             label.setAlignment(Qt.AlignRight)
         else:
             label.setAlignment(Qt.AlignLeft)
+        
+        label.setPalette(pal)
+        return label
 
+    def _add_message_to_history(self, role, content):
+        """将消息添加到对话历史"""
+        label = self._create_message_label(role, content)
         self._history_layout.addWidget(label)
         # 滚动到底部
         self._history_area.verticalScrollBar().setValue(
@@ -238,12 +241,7 @@ class Body(QWidget):
             logger.exception('AI request failed')
         else:
             # 创建AI回复的标签
-            ai_label = RoundedLabel()
-            ai_label.setWordWrap(True)
-            ai_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-            ai_label.setFrameStyle(QFrame.NoFrame)
-            ai_label.setPalette(self.palette())
-            ai_label.setAlignment(Qt.AlignLeft)
+            ai_label = self._create_message_label('assistant', '')
             self._history_layout.addWidget(ai_label)
 
             content = ''
