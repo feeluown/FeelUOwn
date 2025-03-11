@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from openai import AsyncOpenAI
 from PyQt5.QtCore import QEvent, QSize, Qt, QRectF
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
+from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
     QFrame, QTextEdit,
@@ -86,6 +87,8 @@ class RoundedLabel(QLabel):
         self._padding = 8
         self.setContentsMargins(self._padding, self._padding,
                               self._padding, self._padding)
+        # Set size policy to shrink vertically
+        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
 
     def paintEvent(self, event):
         painter = QPainter(self)
