@@ -13,12 +13,20 @@ async def a_handle_stream(stream):
 
     async def write_task():
         async for chunk in stream:
-            content = chunk.choices[0].delta.content or ''
-            ww.write(content.encode('utf-8'))
+            # When stream_options={'include_usage': True},
+            # the last chunk.choices is empty.
+            if chunk.choices:
+                content = chunk.choices[0].delta.content or ''
+                ww.write(content.encode('utf-8'))
+
         ww.write_eof()
         await ww.drain()
         ww.close()
         await ww.wait_closed()
+        try:
+            return chunk  # chunk may be undefined
+        except NameError:
+            return
 
     task = run_afn(write_task)
     return rr, rw, task

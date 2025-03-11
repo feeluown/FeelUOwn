@@ -39,16 +39,17 @@ EXTRACT_PROMPT = '''\
 
 
 class ChatContext:
-    def __init__(self, client: AsyncOpenAI, messages: List):
+    def __init__(self, model: str, client: AsyncOpenAI, messages: List):
+        self.model = model
         self.client = client
         self.messages = messages
 
-    async def send_message(self, model: str, stream: bool = False):
+    async def send_message(self):
         return await self.client.chat.completions.create(
-            model=model,
+            model=self.model,
             messages=self.messages,
-            stream=stream,
-            stream_options={'include_usage': True} if stream else None
+            stream=True,
+            stream_options={'include_usage': True},
         )
 
 
@@ -111,9 +112,8 @@ class RoundedLabel(QLabel):
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        rect = self.rect().adjusted(1, 1, -1, -1)
         path = QPainterPath()
-        path.addRoundedRect(QRectF(rect), self._radius, self._radius)
+        path.addRoundedRect(QRectF(self.rect()), self._radius, self._radius)
         # Fill background
         painter.fillPath(path, self.palette().color(self.backgroundRole()))
         super().paintEvent(event)
@@ -210,12 +210,12 @@ class Body(QWidget):
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
 
-        width_factor = 0.6 if role == 'user' else 0.8
+        width_factor = 0.6 if role in ('user', 'system') else 0.8
         label.setMaximumWidth(int(self._history_area.width() * width_factor))
         label.setAlignment(Qt.AlignLeft)
 
         pal = label.palette()
-        if role == 'user':
+        if role in ('user', 'system'):
             origin_window = pal.color(pal.Window)
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
@@ -226,6 +226,7 @@ class Body(QWidget):
 
     def _add_message_to_history(self, role, content):
         """将消息添加到对话历史"""
+        self._chat_context.messages.append({'role': role, 'content': content})
         label = self._create_message_label(role, content)
         self._history_layout.addWidget(label)
         # 滚动到底部
@@ -237,19 +238,12 @@ class Body(QWidget):
         self.set_msg('等待 AI 返回中...', level='hint')
 
         if self._chat_context is None:
-            self._chat_context = ChatContext(
-                self._app.ai.get_async_client(),
-                [{'role': 'system', 'content': QUERY_PROMPT}]
-            )
+            self._chat_context = self.create_chat_context()
+            self._add_message_to_history('system', QUERY_PROMPT)
 
         self._add_message_to_history('user', query)
-        self._chat_context.messages.append({'role': 'user', 'content': query})
-
         try:
-            stream = await self._chat_context.send_message(
-                self._app.config.OPENAI_MODEL,
-                stream=True
-            )
+            stream = await self._chat_context.send_message()
         except Exception as e:  # noqa
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
@@ -275,15 +269,20 @@ class Body(QWidget):
             # 更新对话上下文并显示token使用情况
             assistant_message = {"role": "assistant", "content": content}
             self._chat_context.messages.append(assistant_message)
-
-            prompt_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
-            completion_tokens = chunk.usage.completion_tokens if chunk.usage else 0
-            total_tokens = chunk.usage.total_tokens if chunk.usage else 0
-            token_msg = f"Tokens: Prompt {prompt_tokens}, Completion {completion_tokens}, Total {total_tokens}"
-            self.set_msg(f'AI 内容返回结束 ({token_msg})', level='hint')
-
+            self.show_tokens_usage(chunk)
             # 清空输入框
             self._editor.clear()
+
+    def show_tokens_usage(self, chunk):
+        if not chunk:
+            self.set_msg(f'AI 内容返回结束', level='hint')
+            return
+
+        prompt_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
+        completion_tokens = chunk.usage.completion_tokens if chunk.usage else 0
+        total_tokens = chunk.usage.total_tokens if chunk.usage else 0
+        token_msg = f"Tokens: 输入 {prompt_tokens}, 输出 {completion_tokens}, 合计 {total_tokens}"
+        self.set_msg(f'AI 内容返回结束 ({token_msg})', level='hint')
 
     def set_msg(self, text, level='hint'):
         if level == 'hint':
@@ -304,30 +303,26 @@ class Body(QWidget):
         """Main entry point for extracting and playing songs"""
         self._chat_context = self._prepare_extract_context(extract_prompt)
         self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
-
         try:
-            stream = await self._chat_context.client.chat.completions.create(
-                model=self._app.config.OPENAI_MODEL,
-                messages=self._chat_context.messages,
-                stream=True,
-            )
+            stream = await self._chat_context.send_message()
             await self._process_extract_stream(stream)
         except Exception as e:
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
 
+    def create_chat_context(self):
+        return ChatContext(
+            model=self._app.config.OPENAI_MODEL,
+            client=self._app.ai.get_async_client(),
+            messages=[]
+        )
+
     def _prepare_extract_context(self, extract_prompt):
         """Prepare chat context for song extraction"""
         if self._chat_context is None:
+            self._chat_context = self.create_chat_context()
             self._add_message_to_history('user', extract_prompt)
             self._add_message_to_history('user', self._editor.toPlainText())
-            return ChatContext(
-                client=self._app.ai.get_async_client(),
-                messages=[
-                    {'role': 'system', 'content': extract_prompt},
-                    {'role': 'user', 'content': self._editor.toPlainText()},
-                ],
-            )
         else:
             self._add_message_to_history('user', extract_prompt)
             message = {'role': 'user', 'content': extract_prompt}
@@ -340,11 +335,13 @@ class Body(QWidget):
         ok_count = 0
         fail_count = 0
 
+        lines = []
         try:
             while True:
                 try:
                     line = await rr.readline()
                     line = line.decode('utf-8')
+                    lines.append(line)
                     logger.debug(f'read a line: {line}')
                     if not line:
                         self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
@@ -373,7 +370,10 @@ class Body(QWidget):
                     logger.exception('Error processing song')
                     break
         finally:
-            await wtask
+            content = '\n'.join(lines)
+            self._add_message_to_history('assistant', content)
+            chunk = await wtask
+            self.show_tokens_usage(chunk)
             rw.close()
             await rw.wait_closed()
             self._editor.clear()
