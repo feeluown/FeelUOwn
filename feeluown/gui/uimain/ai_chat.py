@@ -141,10 +141,14 @@ class Body(QWidget):
             '例如：推荐一些周杰伦的经典歌曲'
         )
         self._editor.setFrameShape(QFrame.NoFrame)
-        self._editor.keyPressEvent = lambda event: (
-            self._editor.defaultKeyPressEvent(event) if event.key() != Qt.Key_Return
-            else run_afn_ref(self.exec_user_query, self._editor.toPlainText())
-        )
+        def handle_key_press(event):
+            if event.key() == Qt.Key_Return and not event.modifiers():
+                run_afn_ref(self.exec_user_query, self._editor.toPlainText())
+                event.accept()
+            else:
+                QPlainTextEdit.keyPressEvent(self._editor, event)
+                
+        self._editor.keyPressEvent = handle_key_press
         self._input_area.setWidget(self._editor)
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
