@@ -8,7 +8,7 @@ from PyQt5.QtCore import QEvent, QSize, Qt, QRectF, pyqtSignal
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
-    QFrame, QTextEdit,
+    QFrame,
 )
 from PyQt5.QtGui import QPainterPath
 from PyQt5.QtGui import QTextOption
@@ -145,7 +145,7 @@ class Body(QWidget):
         self._hide_btn = TextButton('关闭窗口', self)
         self._extract_and_play_btn = TextButton('提取歌曲并播放', self)
         self._extract_10_and_play_btn = TextButton('提取10首并播放', self)
-        self._send_btn = TextButton('发送', self)
+        self._send_btn = TextButton('发送（回车）', self)
         self._clear_history_btn = TextButton('清空对话', self)
 
         self.setup_ui()
@@ -185,8 +185,8 @@ class Body(QWidget):
         # 调整布局，增加对话历史区域
         self._v_layout.addWidget(self._history_area)
         self._input_area.setMaximumHeight(80)
-        self._v_layout.addWidget(self._input_area)
         self._v_layout.addWidget(self._msg_label)
+        self._v_layout.addWidget(self._input_area)
         self._btn_layout.addWidget(self._extract_and_play_btn)
         self._btn_layout.addWidget(self._extract_10_and_play_btn)
         self._btn_layout.addWidget(self._clear_history_btn)
@@ -207,8 +207,10 @@ class Body(QWidget):
         pal = label.palette()
         if role == 'user':
             label.setMaximumWidth(int(self._history_area.width() * 0.6))
+            origin_window = pal.color(pal.Window)
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
+            pal.setColor(pal.Highlight, origin_window)
             label.setAlignment(Qt.AlignLeft)  # Keep text left aligned
         else:
             label.setMaximumWidth(int(self._history_area.width() * 0.8))
