@@ -225,6 +225,7 @@ class Body(QWidget):
         label.setPalette(self.palette())
 
         # Set width to half of history area width for user messages
+        pal = label.palette()
         if role == 'user':
             label.setMaximumWidth(int(self._history_area.width() * 0.6))
             palette_set_bg_color(pal, pal.color(pal.Highlight))
