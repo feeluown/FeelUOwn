@@ -98,38 +98,17 @@ class RoundedLabel(QLabel):
         self._radius = 8
         self._padding = 8
         self.setContentsMargins(self._padding, self._padding,
-                              self._padding, self._padding)
+                                self._padding, self._padding)
         self.setWordWrap(True)
-
-    def sizeHint(self):
-        # Calculate minimum height based on text content
-        fm = self.fontMetrics()
-        text_width = self.width() - 2 * self._padding
-        text = self.text()
-        height = fm.boundingRect(0, 0, text_width, 0,
-                               Qt.TextWordWrap, text).height()
-        return QSize(text_width + 2*self._padding,
-                    height + 2*self._padding)
 
     def paintEvent(self, event):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-
         rect = self.rect().adjusted(1, 1, -1, -1)
         path = QPainterPath()
         path.addRoundedRect(QRectF(rect), self._radius, self._radius)
-
         # Fill background
         painter.fillPath(path, self.palette().color(self.backgroundRole()))
-
-        # Draw text with padding and word wrap
-        text_rect = rect.adjusted(self._padding, self._padding,
-                                -self._padding, -self._padding)
-        painter.setPen(self.palette().color(self.foregroundRole()))
-        text_option = QTextOption()
-        text_option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-        text_option.setAlignment(self.alignment())
-        painter.drawText(QRectF(text_rect), self.text(), text_option)
+        super().paintEvent(event)
 
 
 class Body(QWidget):
