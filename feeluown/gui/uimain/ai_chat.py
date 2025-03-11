@@ -8,8 +8,9 @@ from PyQt5.QtCore import QEvent, QSize, Qt
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
-    QFrame,
+    QFrame, QTextEdit,
 )
+from PyQt5.QtGui import QTextOption
 
 from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn_ref
@@ -157,28 +158,32 @@ class Body(QWidget):
 
     def _add_message_to_history(self, role, content):
         """将消息添加到对话历史"""
-        label = QLabel(content)
-        label.setWordWrap(True)
-        label.setStyleSheet("""
+        text_edit = QTextEdit()
+        text_edit.setPlainText(content)
+        text_edit.setReadOnly(True)
+        text_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+        text_edit.setFrameStyle(QFrame.NoFrame)
+        text_edit.setStyleSheet("""
             padding: 8px;
             border-radius: 4px;
             margin: 4px;
-        """)
+            background-color: %s;
+            color: %s;
+        """ % ('#0078d4' if role == 'user' else '#f0f0f0',
+               'white' if role == 'user' else 'black'))
+        
+        # 设置合适的高度
+        doc = text_edit.document()
+        doc.setTextWidth(text_edit.viewport().width())
+        height = int(doc.size().height())
+        text_edit.setFixedHeight(height + 20)  # 加上 padding
         
         if role == 'user':
-            label.setAlignment(Qt.AlignRight)
-            label.setStyleSheet(label.styleSheet() + """
-                background-color: #0078d4;
-                color: white;
-            """)
+            text_edit.setAlignment(Qt.AlignRight)
         else:
-            label.setAlignment(Qt.AlignLeft)
-            label.setStyleSheet(label.styleSheet() + """
-                background-color: #f0f0f0;
-                color: black;
-            """)
+            text_edit.setAlignment(Qt.AlignLeft)
         
-        self._history_layout.addWidget(label)
+        self._history_layout.addWidget(text_edit)
         # 滚动到底部
         self._history_area.verticalScrollBar().setValue(
             self._history_area.verticalScrollBar().maximum()
@@ -212,18 +217,20 @@ class Body(QWidget):
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
         else:
-            # 创建AI回复的label
-            ai_label = QLabel()
-            ai_label.setWordWrap(True)
-            ai_label.setStyleSheet("""
+            # 创建AI回复的文本框
+            ai_text_edit = QTextEdit()
+            ai_text_edit.setReadOnly(True)
+            ai_text_edit.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+            ai_text_edit.setFrameStyle(QFrame.NoFrame)
+            ai_text_edit.setStyleSheet("""
                 padding: 8px;
                 border-radius: 4px;
                 margin: 4px;
                 background-color: #f0f0f0;
                 color: black;
             """)
-            ai_label.setAlignment(Qt.AlignLeft)
-            self._history_layout.addWidget(ai_label)
+            ai_text_edit.setAlignment(Qt.AlignLeft)
+            self._history_layout.addWidget(ai_text_edit)
             
             content = ''
             async for chunk in stream:
@@ -231,7 +238,12 @@ class Body(QWidget):
                 delta_content = chunk.choices[0].delta.content or ''
                 content += delta_content
                 # 实时更新AI回复内容
-                ai_label.setText(content)
+                ai_text_edit.setPlainText(content)
+                # 自动调整高度
+                doc = ai_text_edit.document()
+                doc.setTextWidth(ai_text_edit.viewport().width())
+                height = int(doc.size().height())
+                ai_text_edit.setFixedHeight(height + 20)
                 # 滚动到底部
                 self._history_area.verticalScrollBar().setValue(
                     self._history_area.verticalScrollBar().maximum()
