@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, cast, List
 from dataclasses import dataclass
 
 from openai import AsyncOpenAI
-from PyQt5.QtCore import QEvent, QSize, Qt
+from PyQt5.QtCore import QEvent, QSize, Qt, QRectF
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
@@ -89,9 +89,10 @@ class RoundedLabel(QLabel):
         # Create rounded corners
         path = QPainterPath()
         rect = self.rect()
-        path.addRoundedRect(rect, self._radius, self._radius)
+        path.addRoundedRect(QRectF(rect), self._radius, self._radius)
         region = QRegion(path.toFillPolygon().toPolygon())
         self.setMask(region)
+
 
 class Body(QWidget):
     def __init__(self, app: 'GuiApp', parent=None):
