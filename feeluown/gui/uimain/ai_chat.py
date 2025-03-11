@@ -91,6 +91,7 @@ class ChatInputEditor(QPlainTextEdit):
         else:
             super().keyPressEvent(event)
 
+
 class RoundedLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -167,7 +168,7 @@ class Body(QWidget):
         self._clear_history_btn = TextButton('清空对话', self)
 
         self.setup_ui()
-        self._hide_btn.clicked.connect(self._hide)
+        self._hide_btn.clicked.connect(self.hide)
         self._extract_and_play_btn.clicked.connect(
             lambda: run_afn_ref(self.extract_and_play))
         self._extract_10_and_play_btn.clicked.connect(
@@ -293,10 +294,6 @@ class Body(QWidget):
             # 清空输入框
             self._editor.clear()
 
-    def show_chat_message(self, text):
-        """这个方法现在只用于显示AI返回的流式内容"""
-        pass
-
     def set_msg(self, text, level='hint'):
         if level == 'hint':
             color = 'green'
@@ -382,12 +379,8 @@ class Body(QWidget):
                 widget.deleteLater()
         self._chat_context = None
 
-    def _hide(self):
-        self.clear_history()
-        self.parent().hide()
-
     def hide(self):
-        self._hide()
+        self.clear_history()
         super().hide()
 
 
@@ -405,7 +398,6 @@ if __name__ == '__main__':
         widget.resize(600, 400)
         layout.addWidget(widget)
         widget.show()
-        widget.body.show_chat_message('Hello, feeluown!' * 100)
         widget.body.set_msg('error', level='err')
 
         widget.body._add_message_to_history('user', '哈哈哈'*10)
