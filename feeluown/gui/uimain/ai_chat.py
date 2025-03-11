@@ -6,12 +6,11 @@ from dataclasses import dataclass
 from openai import AsyncOpenAI
 from PyQt5.QtCore import QEvent, QSize, Qt, QRectF, pyqtSignal
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
-from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
     QFrame, QTextEdit,
 )
-from PyQt5.QtGui import QPainterPath, QRegion
+from PyQt5.QtGui import QPainterPath
 from PyQt5.QtGui import QTextOption
 
 from feeluown.ai import a_handle_stream
@@ -82,9 +81,9 @@ class AIChatOverlay(QWidget):
 
 class ChatInputEditor(QPlainTextEdit):
     """Custom editor for chat input with Enter key handling"""
-    
+
     enter_pressed = pyqtSignal()
-    
+
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and not event.modifiers():
             self.enter_pressed.emit()
@@ -106,9 +105,9 @@ class RoundedLabel(QLabel):
         fm = self.fontMetrics()
         text_width = self.width() - 2 * self._padding
         text = self.text()
-        height = fm.boundingRect(0, 0, text_width, 0, 
+        height = fm.boundingRect(0, 0, text_width, 0,
                                Qt.TextWordWrap, text).height()
-        return QSize(text_width + 2*self._padding, 
+        return QSize(text_width + 2*self._padding,
                     height + 2*self._padding)
 
     def paintEvent(self, event):
@@ -122,11 +121,14 @@ class RoundedLabel(QLabel):
         # Fill background
         painter.fillPath(path, self.palette().color(self.backgroundRole()))
 
-        # Draw text with padding
+        # Draw text with padding and word wrap
         text_rect = rect.adjusted(self._padding, self._padding,
                                 -self._padding, -self._padding)
         painter.setPen(self.palette().color(self.foregroundRole()))
-        painter.drawText(text_rect, self.alignment(), self.text())
+        text_option = QTextOption()
+        text_option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+        text_option.setAlignment(self.alignment())
+        painter.drawText(QRectF(text_rect), self.text(), text_option)
 
 
 class Body(QWidget):
@@ -205,10 +207,10 @@ class Body(QWidget):
         self._v_layout.addWidget(self._msg_label)
         self._btn_layout.addWidget(self._extract_and_play_btn)
         self._btn_layout.addWidget(self._extract_10_and_play_btn)
-        self._btn_layout.addWidget(self._send_btn)
         self._btn_layout.addWidget(self._clear_history_btn)
         self._btn_layout.addWidget(self._hide_btn)
         self._btn_layout.addStretch(0)
+        self._btn_layout.addWidget(self._send_btn)
 
     def _create_message_label(self, role, content):
         """创建消息标签"""
@@ -226,7 +228,7 @@ class Body(QWidget):
             label.setAlignment(Qt.AlignRight)
         else:
             label.setAlignment(Qt.AlignLeft)
-        
+
         label.setPalette(pal)
         return label
 
@@ -406,5 +408,5 @@ if __name__ == '__main__':
         widget.body.show_chat_message('Hello, feeluown!' * 100)
         widget.body.set_msg('error', level='err')
 
-        widget.body._add_message_to_history('user', '哈哈哈')
-        widget.body._add_message_to_history('xxx', '哈哈哈')
+        widget.body._add_message_to_history('user', '哈哈哈'*10)
+        widget.body._add_message_to_history('xxx', '哈哈哈'*100)
