@@ -300,12 +300,12 @@ class Body(QWidget):
     async def extract_10_and_play(self):
         await self._extract_and_play(f'{EXTRACT_PROMPT}\n随机提取最多10首即可')
 
-    async def _extract_and_play(self, extract_prompt):
-        # Add extract prompt to chat history
+    def _prepare_extract_context(self, extract_prompt):
+        """Prepare chat context for song extraction"""
         if self._chat_context is None:
             self._add_message_to_history('user', extract_prompt)
             self._add_message_to_history('user', self._editor.toPlainText())
-            self._chat_context = ChatContext(
+            return ChatContext(
                 client=self._app.ai.get_async_client(),
                 messages=[
                     {'role': 'system', 'content': extract_prompt},
@@ -316,55 +316,67 @@ class Body(QWidget):
             self._add_message_to_history('user', extract_prompt)
             message = {'role': 'user', 'content': extract_prompt}
             self._chat_context.messages.append(message)
+            return self._chat_context
+
+    async def _process_extract_stream(self, stream):
+        """Process the stream of extracted songs"""
+        rr, rw, wtask = await a_handle_stream(stream)
+        ok_count = 0
+        fail_count = 0
+        
+        try:
+            while True:
+                try:
+                    line = await rr.readline()
+                    line = line.decode('utf-8')
+                    logger.debug(f'read a line: {line}')
+                    if not line:
+                        self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
+                                    level='hint')
+                        break
+                    
+                    try:
+                        jline = json.loads(line)
+                        title, artists = jline['title'], jline['artists']
+                        artists_name = fmt_artists_names(artists)
+                        song = create_dummy_brief_song(title, artists_name)
+                    except Exception as e:
+                        fail_count += 1
+                        logger.exception(f'failed to parse a line: {line}')
+                        self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
+                                    level='yellow')
+                        continue
+                        
+                    ok_count += 1
+                    self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
+                                level='hint')
+                    self._app.playlist.add(song)
+                    if ok_count == 1:
+                        self._app.playlist.play_model(song)
+                except Exception as e:
+                    logger.exception('Error processing song')
+                    break
+        finally:
+            await wtask
+            rw.close()
+            await rw.wait_closed()
+            self._editor.clear()
+
+    async def _extract_and_play(self, extract_prompt):
+        """Main entry point for extracting and playing songs"""
+        self._chat_context = self._prepare_extract_context(extract_prompt)
         self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
+        
         try:
             stream = await self._chat_context.client.chat.completions.create(
                 model=self._app.config.OPENAI_MODEL,
                 messages=self._chat_context.messages,
                 stream=True,
             )
-        except Exception as e:  # noqa
+            await self._process_extract_stream(stream)
+        except Exception as e:
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
-            return
-
-        rr, rw, wtask = await a_handle_stream(stream)
-        ok_count = 0
-        fail_count = 0
-        while True:
-            try:
-                line = await rr.readline()
-                line = line.decode('utf-8')
-                logger.debug(f'read a line: {line}')
-                if not line:
-                    self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
-                                 level='hint')
-                    break
-                try:
-                    jline = json.loads(line)
-                    title, artists = jline['title'], jline['artists']
-                    artists_name = fmt_artists_names(artists)
-                except:  # noqa
-                    fail_count += 1
-                    logger.exception(f'failed to parse a line: {line}')
-                    self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
-                                 level='yellow')
-                else:
-                    song = create_dummy_brief_song(title, artists_name)
-                    ok_count += 1
-                    self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
-                                 level='hint')
-                    self._app.playlist.add(song)
-                    if ok_count == 1:
-                        self._app.playlist.play_model(song)
-            except:  # noqa
-                logger.exception('extract and play failed')
-                break
-
-        await wtask
-        rw.close()
-        await rw.wait_closed()
-        self._editor.clear()
 
     def clear_history(self):
         """清空对话历史"""
