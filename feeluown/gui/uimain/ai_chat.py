@@ -319,9 +319,9 @@ class Body(QWidget):
 
     async def _extract_and_play(self, extract_prompt):
         # Add extract prompt to chat history
-        self._add_message_to_history('user', extract_prompt)
-        
         if self._chat_context is None:
+            self._add_message_to_history('user', extract_prompt)
+            self._add_message_to_history('user', self._editor.toPlainText())
             self._chat_context = ChatContext(
                 client=self._app.ai.get_async_client(),
                 messages=[
@@ -330,6 +330,7 @@ class Body(QWidget):
                 ],
             )
         else:
+            self._add_message_to_history('user', extract_prompt)
             message = {'role': 'user', 'content': extract_prompt}
             self._chat_context.messages.append(message)
         self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
@@ -380,6 +381,7 @@ class Body(QWidget):
         await wtask
         rw.close()
         await rw.wait_closed()
+        self._editor.clear()
 
     def clear_history(self):
         """清空对话历史"""
