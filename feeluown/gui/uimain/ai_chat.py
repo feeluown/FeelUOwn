@@ -10,6 +10,7 @@ from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
     QFrame, QTextEdit,
 )
+from PyQt5.QtGui import QPainterPath, QRegion
 from PyQt5.QtGui import QTextOption
 
 from feeluown.ai import a_handle_stream
@@ -77,6 +78,20 @@ class AIChatOverlay(QWidget):
         self.hide()
         super().focusInEvent(event)
 
+
+class RoundedLabel(QLabel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._radius = 8
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        # Create rounded corners
+        path = QPainterPath()
+        rect = self.rect()
+        path.addRoundedRect(rect, self._radius, self._radius)
+        region = QRegion(path.toFillPolygon().toPolygon())
+        self.setMask(region)
 
 class Body(QWidget):
     def __init__(self, app: 'GuiApp', parent=None):
@@ -158,7 +173,7 @@ class Body(QWidget):
 
     def _add_message_to_history(self, role, content):
         """将消息添加到对话历史"""
-        label = QLabel()
+        label = RoundedLabel()
         label.setText(content)
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
@@ -212,7 +227,7 @@ class Body(QWidget):
             logger.exception('AI request failed')
         else:
             # 创建AI回复的标签
-            ai_label = QLabel()
+            ai_label = RoundedLabel()
             ai_label.setWordWrap(True)
             ai_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             ai_label.setFrameStyle(QFrame.NoFrame)
