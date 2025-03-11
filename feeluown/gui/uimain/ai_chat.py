@@ -173,11 +173,11 @@ class Body(QWidget):
                'white' if role == 'user' else 'black'))
         
         if role == 'user':
-            text_edit.setAlignment(Qt.AlignRight)
+            label.setAlignment(Qt.AlignRight)
         else:
-            text_edit.setAlignment(Qt.AlignLeft)
+            label.setAlignment(Qt.AlignLeft)
         
-        self._history_layout.addWidget(text_edit)
+        self._history_layout.addWidget(label)
         # 滚动到底部
         self._history_area.verticalScrollBar().setValue(
             self._history_area.verticalScrollBar().maximum()
