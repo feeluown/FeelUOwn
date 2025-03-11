@@ -212,14 +212,30 @@ class Body(QWidget):
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
         else:
+            # 创建AI回复的label
+            ai_label = QLabel()
+            ai_label.setWordWrap(True)
+            ai_label.setStyleSheet("""
+                padding: 8px;
+                border-radius: 4px;
+                margin: 4px;
+                background-color: #f0f0f0;
+                color: black;
+            """)
+            ai_label.setAlignment(Qt.AlignLeft)
+            self._history_layout.addWidget(ai_label)
+            
             content = ''
             async for chunk in stream:
                 self.set_msg('AI 返回中...', level='hint')
-                content += chunk.choices[0].delta.content or ''
-                self.show_chat_message(content)
-            
-            # 添加AI回复到历史
-            self._add_message_to_history('assistant', content)
+                delta_content = chunk.choices[0].delta.content or ''
+                content += delta_content
+                # 实时更新AI回复内容
+                ai_label.setText(content)
+                # 滚动到底部
+                self._history_area.verticalScrollBar().setValue(
+                    self._history_area.verticalScrollBar().maximum()
+                )
             
             # 更新对话上下文
             assistant_message = {"role": "assistant", "content": content}
@@ -230,7 +246,8 @@ class Body(QWidget):
             self._editor.clear()
 
     def show_chat_message(self, text):
-        self._editor.setPlainText(text)
+        """这个方法现在只用于显示AI返回的流式内容"""
+        pass
 
     def set_msg(self, text, level='hint'):
         if level == 'hint':
