@@ -146,6 +146,8 @@ class Body(QWidget):
         self._history_layout.setSpacing(5)
         self._history_area.setWidget(self._history_widget)
         self._history_area.setWidgetResizable(True)
+        # Adjust spacing between messages
+        self._history_layout.setSpacing(10)
 
         # 用户输入区域
         self._input_area = QScrollArea(self)
@@ -222,12 +224,14 @@ class Body(QWidget):
         label.setFrameStyle(QFrame.NoFrame)
         label.setPalette(self.palette())
 
-        pal = label.palette()
+        # Set width to half of history area width for user messages
         if role == 'user':
+            label.setMaximumWidth(int(self._history_area.width() * 0.6))
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
-            label.setAlignment(Qt.AlignRight)
+            label.setAlignment(Qt.AlignLeft)  # Keep text left aligned
         else:
+            label.setMaximumWidth(int(self._history_area.width() * 0.8))
             label.setAlignment(Qt.AlignLeft)
 
         label.setPalette(pal)
