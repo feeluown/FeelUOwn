@@ -300,6 +300,22 @@ class Body(QWidget):
     async def extract_10_and_play(self):
         await self._extract_and_play(f'{EXTRACT_PROMPT}\n随机提取最多10首即可')
 
+    async def _extract_and_play(self, extract_prompt):
+        """Main entry point for extracting and playing songs"""
+        self._chat_context = self._prepare_extract_context(extract_prompt)
+        self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
+
+        try:
+            stream = await self._chat_context.client.chat.completions.create(
+                model=self._app.config.OPENAI_MODEL,
+                messages=self._chat_context.messages,
+                stream=True,
+            )
+            await self._process_extract_stream(stream)
+        except Exception as e:
+            self.set_msg(f'调用 AI 接口失败: {e}', level='err')
+            logger.exception('AI request failed')
+
     def _prepare_extract_context(self, extract_prompt):
         """Prepare chat context for song extraction"""
         if self._chat_context is None:
@@ -323,7 +339,7 @@ class Body(QWidget):
         rr, rw, wtask = await a_handle_stream(stream)
         ok_count = 0
         fail_count = 0
-        
+
         try:
             while True:
                 try:
@@ -334,7 +350,7 @@ class Body(QWidget):
                         self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
                                     level='hint')
                         break
-                    
+
                     try:
                         jline = json.loads(line)
                         title, artists = jline['title'], jline['artists']
@@ -346,7 +362,7 @@ class Body(QWidget):
                         self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
                                     level='yellow')
                         continue
-                        
+
                     ok_count += 1
                     self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
                                 level='hint')
@@ -361,22 +377,6 @@ class Body(QWidget):
             rw.close()
             await rw.wait_closed()
             self._editor.clear()
-
-    async def _extract_and_play(self, extract_prompt):
-        """Main entry point for extracting and playing songs"""
-        self._chat_context = self._prepare_extract_context(extract_prompt)
-        self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
-        
-        try:
-            stream = await self._chat_context.client.chat.completions.create(
-                model=self._app.config.OPENAI_MODEL,
-                messages=self._chat_context.messages,
-                stream=True,
-            )
-            await self._process_extract_stream(stream)
-        except Exception as e:
-            self.set_msg(f'调用 AI 接口失败: {e}', level='err')
-            logger.exception('AI request failed')
 
     def clear_history(self):
         """清空对话历史"""
