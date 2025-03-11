@@ -84,20 +84,20 @@ class RoundedLabel(QLabel):
         super().__init__(*args, **kwargs)
         self._radius = 8
         self._padding = 8
-        self.setContentsMargins(self._padding, self._padding, 
+        self.setContentsMargins(self._padding, self._padding,
                               self._padding, self._padding)
 
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
-        
+
         rect = self.rect().adjusted(1, 1, -1, -1)
         path = QPainterPath()
         path.addRoundedRect(QRectF(rect), self._radius, self._radius)
-        
+
         # Fill background
         painter.fillPath(path, self.palette().color(self.backgroundRole()))
-        
+
         # Draw text with padding
         text_rect = rect.adjusted(self._padding, self._padding,
                                 -self._padding, -self._padding)
@@ -193,7 +193,6 @@ class Body(QWidget):
 
         if role == 'user':
             label.setPalette(self.palette())
-            label.setAutoFillBackground(True)
             pal = label.palette()
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
@@ -244,7 +243,6 @@ class Body(QWidget):
             ai_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             ai_label.setFrameStyle(QFrame.NoFrame)
             ai_label.setPalette(self.palette())
-            ai_label.setAutoFillBackground(True)
             ai_label.setAlignment(Qt.AlignLeft)
             self._history_layout.addWidget(ai_label)
 
