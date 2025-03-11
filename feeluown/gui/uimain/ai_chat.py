@@ -87,8 +87,6 @@ class RoundedLabel(QLabel):
         self._padding = 8
         self.setContentsMargins(self._padding, self._padding,
                               self._padding, self._padding)
-        # Set size policy 
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.setWordWrap(True)
 
     def sizeHint(self):
