@@ -126,24 +126,15 @@ class Body(QWidget):
 
         # 对话历史显示区域
         self._history_area = QScrollArea(self)
-        self._history_area.setFrameShape(QFrame.NoFrame)
         self._history_widget = QWidget()
-        self._history_layout = QVBoxLayout(self._history_widget)
-        self._history_layout.setContentsMargins(0, 0, 0, 0)
-        self._history_layout.setSpacing(5)
         self._history_area.setWidget(self._history_widget)
-        self._history_area.setWidgetResizable(True)
-        # Adjust spacing between messages
-        self._history_layout.setSpacing(10)
+        self._history_layout = QVBoxLayout(self._history_widget)
 
         # 用户输入区域
         self._input_area = QScrollArea(self)
         self._input_area.setFrameShape(QFrame.NoFrame)
         self._editor = ChatInputEditor(self)
-        self._editor.setPlaceholderText(
-            '在这里输入你的问题...\n\n'
-            '例如：推荐一些周杰伦的经典歌曲'
-        )
+        self._editor.setPlaceholderText('在这里输入你的问题...')
         self._editor.setFrameShape(QFrame.NoFrame)
         self._editor.enter_pressed.connect(
             lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText()))
@@ -170,6 +161,14 @@ class Body(QWidget):
         self.setAutoFillBackground(True)
 
     def setup_ui(self):
+        self._history_area.setFrameShape(QFrame.NoFrame)
+        self._history_area.setAutoFillBackground(True)
+        self._history_layout.setContentsMargins(0, 0, 0, 0)
+        self._history_layout.setSpacing(5)
+        self._history_area.setWidgetResizable(True)
+        # Adjust spacing between messages
+        self._history_layout.setSpacing(10)
+
         self._msg_label.setWordWrap(True)
         self._input_area.setWidgetResizable(True)
         self._app.installEventFilter(self)
@@ -235,13 +234,11 @@ class Body(QWidget):
         )
 
     async def exec_user_query(self, query):
-        self.set_msg('等待 AI 返回中...', level='hint')
-
         if self._chat_context is None:
             self._chat_context = self.create_chat_context()
-            self._add_message_to_history('system', QUERY_PROMPT)
 
         self._add_message_to_history('user', query)
+        self.set_msg('等待 AI 返回中...', level='hint')
         try:
             stream = await self._chat_context.send_message()
         except Exception as e:  # noqa
@@ -293,6 +290,13 @@ class Body(QWidget):
             color = 'magenta'
         self._msg_label.setText(f'<span style="color: {color}">{text}</span>')
 
+    def create_chat_context(self):
+        return ChatContext(
+            model=self._app.config.OPENAI_MODEL,
+            client=self._app.ai.get_async_client(),
+            messages=[{'role': 'system', 'content': QUERY_PROMPT}]
+        )
+
     async def extract_and_play(self):
         await self._extract_and_play(EXTRACT_PROMPT)
 
@@ -310,18 +314,12 @@ class Body(QWidget):
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
 
-    def create_chat_context(self):
-        return ChatContext(
-            model=self._app.config.OPENAI_MODEL,
-            client=self._app.ai.get_async_client(),
-            messages=[]
-        )
-
     def _prepare_extract_context(self, extract_prompt):
         """Prepare chat context for song extraction"""
         if self._chat_context is None:
-            self._chat_context = self.create_chat_context()
-        self._add_message_to_history('user', extract_prompt)
+            self.set_msg('没有对话上下文', level='err')
+        else:
+            self._add_message_to_history('user', extract_prompt)
 
     async def _process_extract_stream(self, stream):
         """Process the stream of extracted songs"""
@@ -386,11 +384,11 @@ class Body(QWidget):
             widget = item.widget()
             if widget:
                 widget.deleteLater()
+        self.set_msg('')
         self._chat_context = None
 
     def hide(self):
         self.clear_history()
-        super().hide()
         self.parent().hide()
 
 
@@ -410,5 +408,6 @@ if __name__ == '__main__':
         widget.show()
         widget.body.set_msg('error', level='err')
 
+        widget.body._chat_context = widget.body.create_chat_context()
         widget.body._add_message_to_history('user', '哈哈哈'*10)
         widget.body._add_message_to_history('xxx', '哈哈哈'*100)
