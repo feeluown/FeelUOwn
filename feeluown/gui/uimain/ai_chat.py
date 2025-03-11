@@ -83,15 +83,26 @@ class RoundedLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._radius = 8
+        self._padding = 8
+        self.setContentsMargins(self._padding, self._padding, 
+                              self._padding, self._padding)
 
-    def resizeEvent(self, event):
-        super().resizeEvent(event)
-        # Create rounded corners
+    def paintEvent(self, event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.Antialiasing)
+        
+        rect = self.rect().adjusted(1, 1, -1, -1)
         path = QPainterPath()
-        rect = self.rect()
         path.addRoundedRect(QRectF(rect), self._radius, self._radius)
-        region = QRegion(path.toFillPolygon().toPolygon())
-        self.setMask(region)
+        
+        # Fill background
+        painter.fillPath(path, self.palette().color(self.backgroundRole()))
+        
+        # Draw text with padding
+        text_rect = rect.adjusted(self._padding, self._padding,
+                                -self._padding, -self._padding)
+        painter.setPen(self.palette().color(self.foregroundRole()))
+        painter.drawText(text_rect, self.alignment(), self.text())
 
 
 class Body(QWidget):
