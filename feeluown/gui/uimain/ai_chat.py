@@ -96,25 +96,23 @@ class ChatInputEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-        # self.setMaximumHeight(100)
-        self.setMinimumHeight(50)
-        self.setMaximumHeight(300)
+        self.setMaximumHeight(300)  # TODO: set maximum height based on parent size
         self.textChanged.connect(self.adjust_height)
+        self.adjust_height()
 
     def adjust_height(self):
         # 获取字体度量
         font_metrics = self.fontMetrics()
         line_height = font_metrics.lineSpacing()
-        
+
         # 计算文档高度
         doc = self.document()
         line_count = doc.lineCount()
         doc_height = line_count * line_height
-        
-        # 添加一些padding
-        padding = 10
-        new_height = min(max(int(doc_height) + padding, 30), 300)
-        
+
+        # 添加一些padding, 10
+        new_height = min(max(int(doc_height) + 10, 30), 300)
+
         # 设置高度
         self.setFixedHeight(new_height)
 
