@@ -318,6 +318,9 @@ class Body(QWidget):
         await self._extract_and_play(f'{EXTRACT_PROMPT}\n随机提取最多10首即可')
 
     async def _extract_and_play(self, extract_prompt):
+        # Add extract prompt to chat history
+        self._add_message_to_history('user', extract_prompt)
+        
         if self._chat_context is None:
             self._chat_context = ChatContext(
                 client=self._app.ai.get_async_client(),
