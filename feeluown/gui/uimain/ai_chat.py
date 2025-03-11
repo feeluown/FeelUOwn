@@ -38,10 +38,18 @@ EXTRACT_PROMPT = '''\
 '''
 
 
-@dataclass
 class ChatContext:
-    client: AsyncOpenAI
-    messages: List
+    def __init__(self, client: AsyncOpenAI, messages: List):
+        self.client = client
+        self.messages = messages
+
+    async def send_message(self, model: str, content: str, stream: bool = False):
+        return await self.client.chat.completions.create(
+            model=model,
+            messages=self.messages,
+            stream=stream,
+            stream_options={'include_usage': True} if stream else None
+        )
 
 
 class AIChatOverlay(QWidget):
@@ -201,22 +209,17 @@ class Body(QWidget):
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
-        label.setPalette(self.palette())
+        
+        width_factor = 0.6 if role == 'user' else 0.8
+        label.setMaximumWidth(int(self._history_area.width() * width_factor))
+        label.setAlignment(Qt.AlignLeft)
 
-        # Set width to half of history area width for user messages
         pal = label.palette()
         if role == 'user':
-            label.setMaximumWidth(int(self._history_area.width() * 0.6))
-            origin_window = pal.color(pal.Window)
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
-            pal.setColor(pal.Highlight, origin_window)
-            label.setAlignment(Qt.AlignLeft)  # Keep text left aligned
-        else:
-            label.setMaximumWidth(int(self._history_area.width() * 0.8))
-            label.setAlignment(Qt.AlignLeft)
+            label.setPalette(pal)
 
-        label.setPalette(pal)
         return label
 
     def _add_message_to_history(self, role, content):
@@ -230,28 +233,20 @@ class Body(QWidget):
 
     async def exec_user_query(self, query):
         self.set_msg('等待 AI 返回中...', level='hint')
-        client = self._app.ai.get_async_client()
-
-        # 添加用户消息到历史
-        self._add_message_to_history('user', query)
-
-        # 初始化或更新对话上下文
+        
         if self._chat_context is None:
-            messages = [
-                {'role': 'system', 'content': QUERY_PROMPT},
-                {'role': 'user', 'content': query}
-            ]
-            self._chat_context = ChatContext(client, messages)
-        else:
-            messages = self._chat_context.messages
-            messages.append({'role': 'user', 'content': query})
+            self._chat_context = ChatContext(
+                self._app.ai.get_async_client(),
+                [{'role': 'system', 'content': QUERY_PROMPT}]
+            )
+        
+        self._add_message_to_history('user', query)
+        self._chat_context.messages.append({'role': 'user', 'content': query})
 
         try:
-            stream = await client.chat.completions.create(
-                model=self._app.config.OPENAI_MODEL,
-                messages=messages,
-                stream=True,
-                stream_options={'include_usage': True},
+            stream = await self._chat_context.send_message(
+                self._app.config.OPENAI_MODEL,
+                stream=True
             )
         except Exception as e:  # noqa
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
