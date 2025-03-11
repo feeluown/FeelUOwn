@@ -142,14 +142,11 @@ class Body(QWidget):
         self._history_layout = QVBoxLayout(self._history_widget)
 
         # 用户输入区域
-        self._input_area = QScrollArea(self)
-        self._input_area.setFrameShape(QFrame.NoFrame)
         self._editor = ChatInputEditor(self)
         self._editor.setPlaceholderText('在这里输入你的问题...')
         self._editor.setFrameShape(QFrame.NoFrame)
         self._editor.enter_pressed.connect(
             lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText()))
-        self._input_area.setWidget(self._editor)
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
         self._hide_btn = TextButton('关闭窗口', self)
@@ -203,7 +200,7 @@ class Body(QWidget):
         # 调整布局，增加对话历史区域
         self._v_layout.addWidget(self._history_area)
         self._v_layout.addWidget(self._msg_label)
-        self._v_layout.addWidget(self._input_area)
+        self._v_layout.addWidget(self._editor)
         self._btn_layout.addWidget(self._extract_and_play_btn)
         self._btn_layout.addWidget(self._extract_10_and_play_btn)
         self._btn_layout.addWidget(self._clear_history_btn)
