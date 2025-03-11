@@ -97,13 +97,6 @@ class ChatInputEditor(QPlainTextEdit):
         super().__init__(parent)
         self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
 
-    def sizeHint(self):
-        doc_height = self.document().size().height()
-        size = super().sizeHint()
-        font_metrics = self.fontMetrics()
-        new_height = int(doc_height + font_metrics.height())
-        return QSize(size.width(), new_height)
-
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and not event.modifiers():
             self.enter_pressed.emit()
@@ -178,7 +171,6 @@ class Body(QWidget):
         self._history_layout.setSpacing(10)
 
         self._msg_label.setWordWrap(True)
-        self._input_area.setWidgetResizable(True)
         self._app.installEventFilter(self)
         self._msg_label.setTextFormat(Qt.RichText)
 
