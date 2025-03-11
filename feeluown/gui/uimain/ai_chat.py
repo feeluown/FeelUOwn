@@ -96,19 +96,17 @@ class ChatInputEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-        self.document().contentsChanged.connect(self.adjustHeight)
 
-    def adjustHeight(self):
+    def sizeHint(self):
         doc_height = self.document().size().height()
+        size = super().sizeHint()
         font_metrics = self.fontMetrics()
         new_height = int(doc_height + font_metrics.height())
-        self.setMaximumHeight(new_height)
+        return QSize(size.width(), new_height)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and not event.modifiers():
             self.enter_pressed.emit()
-            # Reset to default height
-            self.setMaximumHeight(120)
             event.accept()
         else:
             super().keyPressEvent(event)
@@ -204,7 +202,6 @@ class Body(QWidget):
 
         # 调整布局，增加对话历史区域
         self._v_layout.addWidget(self._history_area)
-        self._input_area.setMaximumHeight(120)  # Initial max height
         self._v_layout.addWidget(self._msg_label)
         self._v_layout.addWidget(self._input_area)
         self._btn_layout.addWidget(self._extract_and_play_btn)
