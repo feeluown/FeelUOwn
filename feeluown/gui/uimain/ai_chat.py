@@ -43,7 +43,7 @@ class ChatContext:
         self.client = client
         self.messages = messages
 
-    async def send_message(self, model: str, content: str, stream: bool = False):
+    async def send_message(self, model: str, stream: bool = False):
         return await self.client.chat.completions.create(
             model=model,
             messages=self.messages,
