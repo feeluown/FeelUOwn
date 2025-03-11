@@ -286,12 +286,17 @@ class Body(QWidget):
                     self._history_area.verticalScrollBar().maximum()
                 )
 
-            # 更新对话上下文
+            # 更新对话上下文并显示token使用情况
             assistant_message = {"role": "assistant", "content": content}
             self._chat_context.messages.append(assistant_message)
-            self.set_msg('AI 内容返回结束', level='hint')
+            
+            prompt_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
+            completion_tokens = chunk.usage.completion_tokens if chunk.usage else 0
+            total_tokens = chunk.usage.total_tokens if chunk.usage else 0
+            token_msg = f"Tokens: Prompt {prompt_tokens}, Completion {completion_tokens}, Total {total_tokens}"
+            self.set_msg(f'AI 内容返回结束 ({token_msg})', level='hint')
 
-            # 清空输入框
+            # 清空输入框 
             self._editor.clear()
 
     def set_msg(self, text, level='hint'):
