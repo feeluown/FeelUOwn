@@ -163,14 +163,26 @@ class Body(QWidget):
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
+        if role == 'user':
+            label.setPalette(self.palette())
+            label.setAutoFillBackground(True)
+            pal = label.palette()
+            pal.setColor(pal.Background, pal.color(pal.Highlight))
+            pal.setColor(pal.Foreground, pal.color(pal.HighlightedText))
+            label.setPalette(pal)
+        else:
+            label.setPalette(self.palette())
+            label.setAutoFillBackground(True)
+            pal = label.palette() 
+            pal.setColor(pal.Background, pal.color(pal.Base))
+            pal.setColor(pal.Foreground, pal.color(pal.Text))
+            label.setPalette(pal)
+            
         label.setStyleSheet("""
             padding: 8px;
             border-radius: 4px;
             margin: 4px;
-            background-color: %s;
-            color: %s;
-        """ % ('#0078d4' if role == 'user' else '#f0f0f0',
-               'white' if role == 'user' else 'black'))
+        """)
         
         if role == 'user':
             label.setAlignment(Qt.AlignRight)
@@ -216,12 +228,17 @@ class Body(QWidget):
             ai_label.setWordWrap(True)
             ai_label.setTextInteractionFlags(Qt.TextSelectableByMouse)
             ai_label.setFrameStyle(QFrame.NoFrame)
+            ai_label.setPalette(self.palette())
+            ai_label.setAutoFillBackground(True)
+            pal = ai_label.palette()
+            pal.setColor(pal.Background, pal.color(pal.Base))
+            pal.setColor(pal.Foreground, pal.color(pal.Text))
+            ai_label.setPalette(pal)
+            
             ai_label.setStyleSheet("""
                 padding: 8px;
                 border-radius: 4px;
                 margin: 4px;
-                background-color: #f0f0f0;
-                color: black;
             """)
             ai_label.setAlignment(Qt.AlignLeft)
             self._history_layout.addWidget(ai_label)
