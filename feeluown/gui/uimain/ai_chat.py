@@ -141,6 +141,10 @@ class Body(QWidget):
             '例如：推荐一些周杰伦的经典歌曲'
         )
         self._editor.setFrameShape(QFrame.NoFrame)
+        self._editor.keyPressEvent = lambda event: (
+            self._editor.defaultKeyPressEvent(event) if event.key() != Qt.Key_Return
+            else run_afn_ref(self.exec_user_query, self._editor.toPlainText())
+        )
         self._input_area.setWidget(self._editor)
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
@@ -185,8 +189,9 @@ class Body(QWidget):
         self._root_layout.setSpacing(10)
 
         # 调整布局，增加对话历史区域
-        self._v_layout.addWidget(self._history_area, stretch=3)
-        self._v_layout.addWidget(self._input_area, stretch=1)
+        self._v_layout.addWidget(self._history_area)
+        self._input_area.setMaximumHeight(80)
+        self._v_layout.addWidget(self._input_area)
         self._v_layout.addWidget(self._msg_label)
         self._btn_layout.addWidget(self._extract_and_play_btn)
         self._btn_layout.addWidget(self._extract_10_and_play_btn)
