@@ -96,14 +96,7 @@ class ChatInputEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-        self.setMinimumHeight(50)
-        self.setMaximumHeight(300)
-        self.textChanged.connect(self.adjust_height)
-
-    def adjust_height(self):
-        doc_height = self.document().size().height()
-        new_height = min(max(int(doc_height) + 10, 50), 300)
-        self.setFixedHeight(new_height)
+        self.setMaximumHeight(100)
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and not event.modifiers():
