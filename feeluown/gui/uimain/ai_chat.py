@@ -107,6 +107,8 @@ class ChatInputEditor(QPlainTextEdit):
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and not event.modifiers():
             self.enter_pressed.emit()
+            # Reset to default height
+            self.setMaximumHeight(120)
             event.accept()
         else:
             super().keyPressEvent(event)
