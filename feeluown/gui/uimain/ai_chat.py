@@ -209,15 +209,17 @@ class Body(QWidget):
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
         label.setFrameStyle(QFrame.NoFrame)
-        
+
         width_factor = 0.6 if role == 'user' else 0.8
         label.setMaximumWidth(int(self._history_area.width() * width_factor))
         label.setAlignment(Qt.AlignLeft)
 
         pal = label.palette()
         if role == 'user':
+            origin_window = pal.color(pal.Window)
             palette_set_bg_color(pal, pal.color(pal.Highlight))
             pal.setColor(pal.Text, pal.color(pal.HighlightedText))
+            pal.setColor(pal.Highlight, origin_window)
             label.setPalette(pal)
 
         return label
@@ -233,13 +235,13 @@ class Body(QWidget):
 
     async def exec_user_query(self, query):
         self.set_msg('等待 AI 返回中...', level='hint')
-        
+
         if self._chat_context is None:
             self._chat_context = ChatContext(
                 self._app.ai.get_async_client(),
                 [{'role': 'system', 'content': QUERY_PROMPT}]
             )
-        
+
         self._add_message_to_history('user', query)
         self._chat_context.messages.append({'role': 'user', 'content': query})
 
