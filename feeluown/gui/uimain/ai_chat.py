@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING, cast, List
 from dataclasses import dataclass
 
 from openai import AsyncOpenAI
-from PyQt5.QtCore import QEvent, QSize, Qt, QRectF
+from PyQt5.QtCore import QEvent, QSize, Qt, QRectF, pyqtSignal
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import QSizePolicy
 from PyQt5.QtWidgets import (
@@ -80,6 +80,18 @@ class AIChatOverlay(QWidget):
         super().focusInEvent(event)
 
 
+class ChatInputEditor(QPlainTextEdit):
+    """Custom editor for chat input with Enter key handling"""
+    
+    enter_pressed = pyqtSignal()
+    
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_Return and not event.modifiers():
+            self.enter_pressed.emit()
+            event.accept()
+        else:
+            super().keyPressEvent(event)
+
 class RoundedLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -135,20 +147,14 @@ class Body(QWidget):
         # 用户输入区域
         self._input_area = QScrollArea(self)
         self._input_area.setFrameShape(QFrame.NoFrame)
-        self._editor = QPlainTextEdit(self)
+        self._editor = ChatInputEditor(self)
         self._editor.setPlaceholderText(
             '在这里输入你的问题...\n\n'
             '例如：推荐一些周杰伦的经典歌曲'
         )
         self._editor.setFrameShape(QFrame.NoFrame)
-        def handle_key_press(event):
-            if event.key() == Qt.Key_Return and not event.modifiers():
-                run_afn_ref(self.exec_user_query, self._editor.toPlainText())
-                event.accept()
-            else:
-                QPlainTextEdit.keyPressEvent(self._editor, event)
-                
-        self._editor.keyPressEvent = handle_key_press
+        self._editor.enter_pressed.connect(
+            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText()))
         self._input_area.setWidget(self._editor)
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
