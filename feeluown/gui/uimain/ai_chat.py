@@ -87,8 +87,19 @@ class RoundedLabel(QLabel):
         self._padding = 8
         self.setContentsMargins(self._padding, self._padding,
                               self._padding, self._padding)
-        # Set size policy to shrink vertically
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        # Set size policy 
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setWordWrap(True)
+
+    def sizeHint(self):
+        # Calculate minimum height based on text content
+        fm = self.fontMetrics()
+        text_width = self.width() - 2 * self._padding
+        text = self.text()
+        height = fm.boundingRect(0, 0, text_width, 0, 
+                               Qt.TextWordWrap, text).height()
+        return QSize(text_width + 2*self._padding, 
+                    height + 2*self._padding)
 
     def paintEvent(self, event):
         painter = QPainter(self)
