@@ -285,13 +285,13 @@ class Body(QWidget):
 
     def show_tokens_usage(self, chunk):
         if not chunk:
-            self.set_msg(f'AI 内容返回结束', level='hint')
+            self.set_msg('AI 内容返回结束', level='hint')
             return
 
-        prompt_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
-        completion_tokens = chunk.usage.completion_tokens if chunk.usage else 0
+        in_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
+        out_tokens = chunk.usage.completion_tokens if chunk.usage else 0
         total_tokens = chunk.usage.total_tokens if chunk.usage else 0
-        token_msg = f"Tokens: 输入 {prompt_tokens}, 输出 {completion_tokens}, 合计 {total_tokens}"
+        token_msg = f"Tokens: 输入 {in_tokens}, 输出 {out_tokens}, 合计 {total_tokens}"
         self.set_msg(f'AI 内容返回结束 ({token_msg})', level='hint')
 
     def set_msg(self, text, level='hint'):
@@ -355,7 +355,7 @@ class Body(QWidget):
                     logger.debug(f'read a line: {line}')
                     if not line:
                         self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
-                                    level='hint')
+                                     level='hint')
                         break
 
                     try:
@@ -363,20 +363,20 @@ class Body(QWidget):
                         title, artists = jline['title'], jline['artists']
                         artists_name = fmt_artists_names(artists)
                         song = create_dummy_brief_song(title, artists_name)
-                    except Exception as e:
+                    except Exception:
                         fail_count += 1
                         logger.exception(f'failed to parse a line: {line}')
                         self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
-                                    level='yellow')
+                                     level='yellow')
                         continue
 
                     ok_count += 1
                     self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
-                                level='hint')
+                                 level='hint')
                     self._app.playlist.add(song)
                     if ok_count == 1:
                         self._app.playlist.play_model(song)
-                except Exception as e:
+                except Exception:
                     logger.exception('Error processing song')
                     break
         finally:
