@@ -8,7 +8,7 @@ from PyQt5.QtCore import QEvent, QSize, Qt, QRectF, pyqtSignal
 from PyQt5.QtGui import QResizeEvent, QColor, QPainter
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
-    QFrame,
+    QFrame, QSizePolicy,
 )
 from PyQt5.QtGui import QPainterPath
 from PyQt5.QtGui import QTextOption
@@ -96,9 +96,12 @@ class ChatInputEditor(QPlainTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+        self.setMinimumHeight(30)
         self.setMaximumHeight(300)  # TODO: set maximum height based on parent size
         self.textChanged.connect(self.adjust_height)
         self.adjust_height()
+        # The size policy matters
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def sizeHint(self) -> QSize:
         # 获取字体度量
@@ -111,7 +114,8 @@ class ChatInputEditor(QPlainTextEdit):
         doc_height = line_count * line_height
 
         # 添加一些padding, 10
-        new_height = min(max(int(doc_height) + 10, 30), 300)
+        new_height = min(max(int(doc_height) + 10, self.minimumHeight()),
+                         self.maximumHeight())
 
         # 返回建议大小
         return QSize(super().sizeHint().width(), new_height)
