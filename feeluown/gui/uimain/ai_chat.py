@@ -254,10 +254,7 @@ class Body(QWidget):
         self._chat_context.messages.append({'role': role, 'content': content})
         label = self._create_message_label(role, content)
         self._history_layout.addWidget(label)
-        # 滚动到底部
-        self._history_area.verticalScrollBar().setValue(
-            self._history_area.verticalScrollBar().maximum()
-        )
+        self._scroll_to_bottom()
 
     async def exec_user_query(self, query):
         if self._chat_context is None:
@@ -284,10 +281,7 @@ class Body(QWidget):
                     content += delta_content
                     # 实时更新AI回复内容
                     ai_label.setText(content)
-                    # 滚动到底部
-                    self._history_area.verticalScrollBar().setValue(
-                        self._history_area.verticalScrollBar().maximum()
-                    )
+                    self._scroll_to_bottom()
 
             # 更新对话上下文并显示token使用情况
             assistant_message = {"role": "assistant", "content": content}
@@ -364,9 +358,7 @@ class Body(QWidget):
                     line = line.decode('utf-8')
                     content += f'{line}\n'  # add newline
                     ai_label.setText(content)
-                    self._history_area.verticalScrollBar().setValue(
-                        self._history_area.verticalScrollBar().maximum()
-                    )
+                    self._scroll_to_bottom()
                     logger.debug(f'read a line: {line}')
                     if not line:
                         self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
@@ -402,6 +394,12 @@ class Body(QWidget):
             rw.close()
             await rw.wait_closed()
             self._editor.clear()
+
+    def _scroll_to_bottom(self):
+        """滚动对话历史到底部"""
+        self._history_area.verticalScrollBar().setValue(
+            self._history_area.verticalScrollBar().maximum()
+        )
 
     def clear_history(self):
         """清空对话历史"""
