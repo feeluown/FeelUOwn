@@ -104,24 +104,18 @@ class ChatInputEditor(QPlainTextEdit):
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
     def sizeHint(self) -> QSize:
-        # 获取字体度量
         font_metrics = self.fontMetrics()
         line_height = font_metrics.lineSpacing()
-
-        # 计算文档高度
         doc = self.document()
         line_count = doc.lineCount()
         doc_height = line_count * line_height
 
-        # 添加一些padding, 10
+        # Add some padding, 10
         new_height = min(max(int(doc_height) + 10, self.minimumHeight()),
                          self.maximumHeight())
-
-        # 返回建议大小
         return QSize(super().sizeHint().width(), new_height)
 
     def adjust_height(self):
-        # 更新大小提示并调整大小
         self.updateGeometry()
 
     def keyPressEvent(self, event):
@@ -391,6 +385,7 @@ class Body(QWidget):
             self._chat_context.messages.append(assistant_message)
             chunk = await wtask
             self.show_tokens_usage(chunk)
+            self._scroll_to_bottom()
             rw.close()
             await rw.wait_closed()
             self._editor.clear()
