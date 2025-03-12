@@ -1,7 +1,6 @@
 import json
 import logging
-from typing import TYPE_CHECKING, cast, List
-from dataclasses import dataclass
+from typing import TYPE_CHECKING, cast, List, Optional
 
 from openai import AsyncOpenAI
 from PyQt5.QtCore import QEvent, QSize, Qt, QRectF, pyqtSignal
@@ -54,7 +53,7 @@ class ChatContext:
 
 
 class AIChatOverlay(QWidget):
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: 'GuiApp', parent: Optional[QWidget] = None):
         super().__init__(parent=parent)
         self._app = app
 
@@ -103,7 +102,7 @@ class ChatInputEditor(QPlainTextEdit):
         # The size policy matters
         self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
 
-    def sizeHint(self) -> QSize:
+    def sizeHint(self) -> QSize:  # noqa: D102
         font_metrics = self.fontMetrics()
         line_height = font_metrics.lineSpacing()
         doc = self.document()
@@ -390,8 +389,8 @@ class Body(QWidget):
             await rw.wait_closed()
             self._editor.clear()
 
-    def _scroll_to_bottom(self):
-        """Scroll chat history to bottom"""
+    def _scroll_to_bottom(self) -> None:
+        """Scroll chat history to bottom."""
         self._history_area.verticalScrollBar().setValue(
             self._history_area.verticalScrollBar().maximum()
         )
