@@ -149,13 +149,13 @@ class Body(QWidget):
         super().__init__(parent=parent)
         self._app = app
 
-        # 对话历史显示区域
+        # Chat history display area
         self._history_area = QScrollArea(self)
         self._history_widget = QWidget()
         self._history_area.setWidget(self._history_widget)
         self._history_layout = QVBoxLayout(self._history_widget)
 
-        # 用户输入区域
+        # User input area
         self._editor = ChatInputEditor(self)
         self._editor.setPlaceholderText('在这里输入你的问题...')
         self._editor.setFrameShape(QFrame.NoFrame)
@@ -210,7 +210,7 @@ class Body(QWidget):
         self._root_layout.setContentsMargins(10, 10, 10, 10)
         self._root_layout.setSpacing(10)
 
-        # 调整布局，增加对话历史区域
+        # Adjust layout to add chat history area
         self._v_layout.addWidget(self._history_area)
         self._v_layout.addWidget(self._msg_label)
         self._v_layout.addWidget(self._editor)
@@ -222,7 +222,7 @@ class Body(QWidget):
         self._btn_layout.addWidget(self._send_btn)
 
     def _create_message_label(self, role, content):
-        """创建消息标签"""
+        """Create message label"""
         label = RoundedLabel()
         label.setText(content)
         label.setWordWrap(True)
@@ -244,7 +244,7 @@ class Body(QWidget):
         return label
 
     def _add_message_to_history(self, role, content):
-        """将消息添加到对话历史"""
+        """Add message to chat history"""
         self._chat_context.messages.append({'role': role, 'content': content})
         label = self._create_message_label(role, content)
         self._history_layout.addWidget(label)
@@ -262,7 +262,7 @@ class Body(QWidget):
             self.set_msg(f'调用 AI 接口失败: {e}', level='err')
             logger.exception('AI request failed')
         else:
-            # 创建AI回复的标签
+            # Create label for AI response
             ai_label = self._create_message_label('assistant', '')
             self._history_layout.addWidget(ai_label)
 
@@ -273,15 +273,15 @@ class Body(QWidget):
                 if chunk.choices:
                     delta_content = chunk.choices[0].delta.content or ''
                     content += delta_content
-                    # 实时更新AI回复内容
+                    # Update AI response in real-time
                     ai_label.setText(content)
                     self._scroll_to_bottom()
 
-            # 更新对话上下文并显示token使用情况
+            # Update chat context and show token usage
             assistant_message = {"role": "assistant", "content": content}
             self._chat_context.messages.append(assistant_message)
             self.show_tokens_usage(chunk)
-            # 清空输入框
+            # Clear input box
             self._editor.clear()
 
     def show_tokens_usage(self, chunk):
@@ -391,13 +391,13 @@ class Body(QWidget):
             self._editor.clear()
 
     def _scroll_to_bottom(self):
-        """滚动对话历史到底部"""
+        """Scroll chat history to bottom"""
         self._history_area.verticalScrollBar().setValue(
             self._history_area.verticalScrollBar().maximum()
         )
 
     def clear_history(self):
-        """清空对话历史"""
+        """Clear chat history"""
         while self._history_layout.count():
             item = self._history_layout.takeAt(0)
             widget = item.widget()
