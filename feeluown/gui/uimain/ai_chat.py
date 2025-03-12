@@ -100,7 +100,7 @@ class ChatInputEditor(QPlainTextEdit):
         self.textChanged.connect(self.adjust_height)
         self.adjust_height()
 
-    def adjust_height(self):
+    def sizeHint(self) -> QSize:
         # 获取字体度量
         font_metrics = self.fontMetrics()
         line_height = font_metrics.lineSpacing()
@@ -113,8 +113,12 @@ class ChatInputEditor(QPlainTextEdit):
         # 添加一些padding, 10
         new_height = min(max(int(doc_height) + 10, 30), 300)
 
-        # 设置高度
-        self.setFixedHeight(new_height)
+        # 返回建议大小
+        return QSize(super().sizeHint().width(), new_height)
+
+    def adjust_height(self):
+        # 更新大小提示并调整大小
+        self.updateGeometry()
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return and not event.modifiers():
