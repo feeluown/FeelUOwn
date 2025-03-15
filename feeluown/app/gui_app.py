@@ -96,7 +96,6 @@ class GuiApp(App, QWidget):
         if self.config.ENABLE_TRAY:
             self.tray.initialize()
             self.tray.show()
-        self.coll_mgr.scan()
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)

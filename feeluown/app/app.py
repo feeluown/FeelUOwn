@@ -113,6 +113,7 @@ class App:
         self.about_to_shutdown.connect(lambda _: self.dump_and_save_state(), weak=False)
 
     def initialize(self):
+        self.coll_mgr.scan()
         self.alert_mgr.initialize(self)
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
