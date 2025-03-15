@@ -17,8 +17,6 @@ from feeluown.gui.provider_ui import ProviderUiManager, CurrentProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
 
-from feeluown.collection import CollectionManager
-
 from .app import App
 
 
@@ -72,7 +70,6 @@ class GuiApp(App, QWidget):
         self.setObjectName('app')
 
         # GUI 的一些辅助管理模块
-        self.coll_mgr = CollectionManager(self)
         self.theme_mgr = ThemeManager(self, parent=self)
         self.tips_mgr = TipsManager(self)
         self.hotkey_mgr = HotkeyManager(self)
@@ -99,7 +96,6 @@ class GuiApp(App, QWidget):
         if self.config.ENABLE_TRAY:
             self.tray.initialize()
             self.tray.show()
-        self.coll_mgr.scan()
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)

@@ -43,8 +43,12 @@ def fuoexec_load_rcfile(config: Config):
 
 
 def fuoexec_init(app):
+    from feeluown.library import resolve, reverse
+
     signal_mgr.initialize(app)
     fuoexec_get_globals()['app'] = app
+    fuoexec_get_globals()['resolve'] = resolve
+    fuoexec_get_globals()['reverse'] = reverse
 
 
 def fuoexec(obj):

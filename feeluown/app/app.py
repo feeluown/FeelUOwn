@@ -15,6 +15,7 @@ from feeluown.player import (
     PlaybackMode, Playlist, LiveLyric,
     FM, Player, RecentlyPlayed, PlayerPositionDelegate
 )
+from feeluown.collection import CollectionManager
 from feeluown.plugin import plugins_mgr
 from feeluown.version import VersionManager
 from feeluown.task import TaskManager
@@ -57,6 +58,7 @@ class App:
             config.PROVIDERS_STANDBY,
             config.ENABLE_AI_STANDBY_MATCHER
         )
+        self.coll_mgr = CollectionManager(self)
         self.ai = None
         try:
             from feeluown.ai import AI
@@ -111,6 +113,7 @@ class App:
         self.about_to_shutdown.connect(lambda _: self.dump_and_save_state(), weak=False)
 
     def initialize(self):
+        self.coll_mgr.scan()
         self.alert_mgr.initialize(self)
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)

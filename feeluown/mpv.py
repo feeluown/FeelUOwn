@@ -863,8 +863,7 @@ class MPV(object):
             self._event_thread.start()
         else:
             self._event_thread = None
-        if m := re.search(r'(\d+)\.(\d+)\.(\d+)', self.mpv_version):
-            self.mpv_version_tuple = tuple(map(int, m.groups()))
+        self.client_api_version = _mpv_client_api_version()
 
     def _loop(self):
         for event in _event_generator(self._event_handle):
@@ -1156,7 +1155,7 @@ class MPV(object):
 
     def loadfile(self, filename, mode='replace', index=None, **options):
         """Mapped mpv loadfile command, see man mpv(1)."""
-        if self.mpv_version_tuple >= (0, 38, 0):
+        if self.client_api_version >= (2, 3):
             if index is None:
                 index = -1
             self.command('loadfile', filename.encode(fs_enc), mode, index, MPV._encode_options(options))
