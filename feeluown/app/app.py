@@ -15,6 +15,7 @@ from feeluown.player import (
     PlaybackMode, Playlist, LiveLyric,
     FM, Player, RecentlyPlayed, PlayerPositionDelegate
 )
+from feeluown.collection import CollectionManager
 from feeluown.plugin import plugins_mgr
 from feeluown.version import VersionManager
 from feeluown.task import TaskManager
@@ -57,6 +58,7 @@ class App:
             config.PROVIDERS_STANDBY,
             config.ENABLE_AI_STANDBY_MATCHER
         )
+        self.coll_mgr = CollectionManager(self)
         self.ai = None
         try:
             from feeluown.ai import AI

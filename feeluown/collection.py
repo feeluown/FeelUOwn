@@ -11,7 +11,7 @@ import tomlkit
 from feeluown.consts import COLLECTIONS_DIR
 from feeluown.utils.dispatch import Signal
 from feeluown.library import resolve, reverse, ResolverNotFound, \
-    ResolveFailed, ModelState, CollectionType
+    ResolveFailed, ModelState, CollectionType, ModelType
 from feeluown.utils.utils import elfhash
 
 logger = logging.getLogger(__name__)
@@ -110,6 +110,16 @@ class Collection:
                     if model.state is ModelState.not_exists:
                         self._has_nonexistent_models = True
                     self.models.append(model)
+
+    def list_latest_n(self, n, model_type=None):
+        latest_n = []
+        for model in self.models:
+            if n <= 0:
+                break
+            if ModelType(model.meta.model_type) == ModelType(model_type):
+                latest_n.append(model)
+                n -= 1
+        return latest_n
 
     @classmethod
     def create_empty(cls, fpath, title=''):
