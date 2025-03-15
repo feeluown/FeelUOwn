@@ -56,10 +56,13 @@ class MpvPlayer(AbstractPlayer):
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'
         # the default version of libmpv on Ubuntu 18.04 is (1, 25)
-        self._mpv = MPV(ytdl=False,
-                        input_default_bindings=True,
+        self._mpv = MPV(input_default_bindings=True,
                         input_vo_keyboard=True,
                         **mpvkwargs)
+        try:
+            _mpv_set_option_string(self._mpv.handle, b'ytdl', b'no')
+        except:  # noqa
+            logger.info('ytdl option is not supported in this version of libmpv')
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
         # old version libmpv(for example: (1, 20)) should set option by using
         # _mpv_set_option_string, while newer version can use _mpv_set_property_string

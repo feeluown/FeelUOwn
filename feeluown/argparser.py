@@ -89,7 +89,7 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
         choices=['song', 'album', 'artist', 'video', 'playlist']
     )
     exec_parser.add_argument('code', nargs='?', help='Python 代码')
-    jsonrpc_parser.add_argument('body')
+    jsonrpc_parser.add_argument('body', nargs='?', help='JSON-RPC 请求体')
 
 
 def add_cli_cmds(subparsers: argparse._SubParsersAction):
