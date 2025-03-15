@@ -1,4 +1,5 @@
-from feeluown.app.gui_app import GuiApp, CollectionManager
+from feeluown.collection import CollectionManager
+from feeluown.app.gui_app import GuiApp
 
 
 def test_gui_app_initialize(qtbot, mocker, args, config, noharm):
