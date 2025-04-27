@@ -97,7 +97,7 @@ class ListSerializer(PythonSerializer, metaclass=SerializerMeta):
 
 class SimpleTypeSerializer(PythonSerializer, metaclass=SerializerMeta):
     class Meta:
-        types = (str, int, float, type(None))
+        types = (str, int, float, type(None), dict)
 
     def serialize(self, object):
         return object
