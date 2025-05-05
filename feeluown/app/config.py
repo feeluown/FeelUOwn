@@ -16,6 +16,7 @@ def create_config() -> Config:
     config.deffield('PUBSUB_PORT', default=23334, type_=int, desc='PUBSUB 端口')
     config.deffield('WEB_PORT', default=23332, type_=int, desc='WEB 服务端口')
     config.deffield('ENABLE_WEB_SERVER', default=False, type_=bool)
+    config.deffield('ENABLE_MCP_SERVER', default=False, type_=bool)
     config.deffield('MODE', default=0x0000, desc='CLI or GUI 模式')
     config.deffield('THEME', default='auto', desc='auto/light/dark')
     config.deffield('ENABLE_NEW_HOMEPAGE', default=True, type_=bool)
