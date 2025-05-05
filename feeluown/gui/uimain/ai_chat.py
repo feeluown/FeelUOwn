@@ -52,7 +52,7 @@ class ChatContext:
         )
 
 
-class AIChatOverlay(QWidget):
+class AIChatOverlay(Overlay):
     def __init__(self, app: 'GuiApp', parent: Optional[QWidget] = None):
         super().__init__(parent=parent)
         self._app = app
@@ -66,25 +66,6 @@ class AIChatOverlay(QWidget):
         # get focus when user click the body.
         self.body.setFocusPolicy(Qt.ClickFocus)
         esc_hide_widget(self)
-
-    def paintEvent(self, a0):
-        painter = QPainter(self)
-        painter.fillRect(self.rect(), QColor(0, 0, 0, 100))
-
-    def showEvent(self, e):
-        self.resize(self._app.size())
-        super().showEvent(e)
-        self.raise_()
-
-    def eventFilter(self, obj, event):
-        if self.isVisible() and obj is self._app and event.type() == QEvent.Resize:
-            event = cast(QResizeEvent, event)
-            self.resize(event.size())
-        return False
-
-    def focusInEvent(self, event):
-        self.hide()
-        super().focusInEvent(event)
 
 
 class ChatInputEditor(QPlainTextEdit):
