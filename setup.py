@@ -84,6 +84,7 @@ setup(
         ],
         'jsonrpc': ['json-rpc'],
         'webserver': ['sanic', 'json-rpc'],
+        'mcpserver': ['mcp'],
         'webengine': ['PyQtWebEngine'],
         # Load cookies from chrome/firefox/...
         'cookies': [
