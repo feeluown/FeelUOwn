@@ -242,9 +242,14 @@ class BaseModel(_BaseModel):
         # So the `js` may not have `meta` and `state` field sometimes.
         # What's even more buggy is that it does not raise exception when
         # `js` does not have `meta` and `state`.
+        #
         # For example, SongModel has a field album with TAlbum type,
         # pydantic may try to serialize the model with BriefAlbumModel even
         # if the model is actually AlbumModel.
+        #
+        # Without this workaround, the test case `test_serialize_model`
+        # will fail with pydantic >=2.11. See
+        # https://github.com/feeluown/FeelUOwn/pull/922 for more details.
         js.pop('meta', None)
         js.pop('state', None)
         js['provider'] = js['source']
