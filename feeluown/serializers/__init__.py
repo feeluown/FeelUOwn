@@ -19,8 +19,6 @@ def register_deserializer(type_, deserializer_cls):
 
 
 def get_serializer(format_):
-    global _MAPPING
-
     if not _MAPPING:
         register_serializer('plain', PlainSerializer)
         register_serializer('json', JsonSerializer)
@@ -31,8 +29,6 @@ def get_serializer(format_):
 
 
 def get_deserializer(format_: str):
-    global _DE_MAPPING
-
     if not _DE_MAPPING:
         register_deserializer('python', PythonDeserializer)
     if format_ not in _DE_MAPPING:
