@@ -17,11 +17,15 @@ class AppOverlayContainer(QWidget):
     - Semi-transparent background
     - Auto-resizing to parent
     - Click outside to close
+
+    :param adhoc: If True, the overlay is destroyed when hidden.
     """
 
-    def __init__(self, app: 'GuiApp', body: QWidget, parent: Optional[QWidget] = None):
+    def __init__(self, app: 'GuiApp', body: QWidget, parent: Optional[QWidget] = None,
+                 adhoc=False):
         super().__init__(parent=parent)
         self._app = app
+        self._adhoc = adhoc
 
         self.body = body
         self._layout = QHBoxLayout(self)
@@ -40,6 +44,12 @@ class AppOverlayContainer(QWidget):
         self.resize(self._app.size())
         super().showEvent(event)
         self.raise_()
+
+    def hideEvent(self, event):
+        """Uninstall event filter when hidden"""
+        super().hideEvent(event)
+        if self._adhoc is True:
+            self.deleteLater()
 
     def paintEvent(self, event):
         """Draw semi-transparent background"""

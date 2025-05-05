@@ -1,13 +1,10 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
-
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
-from feeluown.library import SongModel, VideoModel, SearchType
-from feeluown.gui.widgets.magicbox import KeySourceIn
+from feeluown.library import SongModel, VideoModel
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -73,40 +70,10 @@ class SongMenuInitializer:
             lambda: goto_song_explore(song))
 
     def show_similar_resource(self, song):
-        from feeluown.gui.components.search import SearchResultView
+        from feeluown.gui.components.search import create_search_result_view
 
-        # TODO: add a close button, and rename it to ClosableSearchResultView
-        class SearchResultViewWithEsc(SearchResultView):
-            def keyPressEvent(self, event):
-                if event.key() == Qt.Key_Escape:
-                    self.close()
-                else:
-                    super().keyPressEvent(event)
-
-        q = f'{song.title} {song.artists_name}'
-        view = SearchResultViewWithEsc(self._app, transparent_bg=False, parent=self._app)
-
-        view.setStyleSheet('''
-            SearchResultView {
-                border: 1px solid gray;
-                border-radius: 2px;
-            }
-        ''')
-
-        source_in = self._app.browser.local_storage.get(KeySourceIn, None)
-        run_afn(view.search_and_render, q, SearchType.so, source_in)
-
-        width = self._app.width() - self._app.ui.sidebar.width()
-        height = self._app.height() * 3 // 5
-        x = self._app.ui.sidebar.width()
-        y = self._app.height() - height - self._app.ui.player_bar.height()
-
-        # Do not use Qt.Popup, because it behaves differently on different
-        # platforms. For example, on macOS, it will pop up a window with a
-        # shadow, while on Linux(KDE) it won't.
-        view.setGeometry(x, y, width, height)
+        view = create_search_result_view(self._app, song)
         view.show()
-        view.raise_()
 
     def on_action_hovered(self, action):
         """
