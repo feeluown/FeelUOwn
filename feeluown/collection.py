@@ -220,6 +220,23 @@ class Collection:
                 f.write('\n')
             f.write(TOML_DELIMLF)
 
+    def raw_data(self):
+        """Return the raw data of the collection file.
+
+        .. versionadded:: 4.1.11
+        """
+        with open(self.fpath, encoding='utf-8') as f:
+            return f.read()
+
+    def overwrite_with_raw_data(self, raw_data):
+        """Overwrite the collection file with the provided raw data.
+
+        .. versionadded:: 4.1.11
+        """
+        with open(self.fpath, 'w', encoding='utf-8') as f:
+            f.write(raw_data)
+        self.load()
+
 
 class CollectionManager:
 
