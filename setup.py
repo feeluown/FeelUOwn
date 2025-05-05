@@ -58,10 +58,7 @@ setup(
         'qasync',
         'tomlkit',
         'packaging',
-        # pydantic 2.11 may serialize a model multiple times
-        # and cause incorrect result.
-        # https://github.com/pydantic/pydantic/issues/11505
-        'pydantic>=1.10,<2.11',  # v1 and v2 are both ok.
+        'pydantic>=1.10',  # v1 and v2 are both ok.
         'mutagen>=1.37',
     ],
     extras_require={

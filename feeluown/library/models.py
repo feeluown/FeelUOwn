@@ -237,8 +237,16 @@ class BaseModel(_BaseModel):
         from feeluown.library import reverse
 
         js = f(self)
-        js.pop('meta')
-        js.pop('state')
+        # FIXME: pydantic >=2.11 has a bug that it may call this method
+        # multiple times -> https://github.com/pydantic/pydantic/issues/11505
+        # So the `js` may not have `meta` and `state` field sometimes.
+        # What's even more buggy is that it does not raise exception when
+        # `js` does not have `meta` and `state`.
+        # For example, SongModel has a field album with TAlbum type,
+        # pydantic may try to serialize the model with BriefAlbumModel even
+        # if the model is actually AlbumModel.
+        js.pop('meta', None)
+        js.pop('state', None)
         js['provider'] = js['source']
         js['uri'] = reverse(self)
         js['__type__'] = f'feeluown.library.{self.__class__.__name__}'
