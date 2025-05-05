@@ -1,10 +1,10 @@
 import json
 import logging
-from typing import TYPE_CHECKING, cast, List, Optional
+from typing import TYPE_CHECKING, List
 
 from openai import AsyncOpenAI
-from PyQt5.QtCore import QEvent, QSize, Qt, QRectF, pyqtSignal
-from PyQt5.QtGui import QResizeEvent, QColor, QPainter
+from PyQt5.QtCore import QSize, Qt, QRectF, pyqtSignal
+from PyQt5.QtGui import QPainter
 from PyQt5.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
     QFrame, QSizePolicy,
@@ -16,9 +16,10 @@ from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn_ref
 from feeluown.library import fmt_artists_names
 from feeluown.library.text2song import create_dummy_brief_song
-from feeluown.gui.helpers import esc_hide_widget, palette_set_bg_color
+from feeluown.gui.helpers import palette_set_bg_color
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.header import MidHeader
+from feeluown.gui.components.overlay import AppOverlayContainer
 
 
 if TYPE_CHECKING:
@@ -50,22 +51,6 @@ class ChatContext:
             stream=True,
             stream_options={'include_usage': True},
         )
-
-
-class AIChatOverlay(Overlay):
-    def __init__(self, app: 'GuiApp', parent: Optional[QWidget] = None):
-        super().__init__(parent=parent)
-        self._app = app
-
-        self.body = Body(app, self)
-        self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(100, 80, 100, 80)
-        self._layout.addWidget(self.body)
-        self.setFocusPolicy(Qt.ClickFocus)
-        # Add ClickFocus for the body so that when Overlay will not
-        # get focus when user click the body.
-        self.body.setFocusPolicy(Qt.ClickFocus)
-        esc_hide_widget(self)
 
 
 class ChatInputEditor(QPlainTextEdit):
@@ -391,6 +376,13 @@ class Body(QWidget):
         self.parent().hide()
 
 
+def create_aichat_overlay(app: 'GuiApp', parent=None) -> AppOverlayContainer:
+    """Create an overlay for the AI chat"""
+    body = Body(app)
+    overlay = AppOverlayContainer(app, body, parent=parent)
+    return overlay
+
+
 if __name__ == '__main__':
     import os
     from PyQt5.QtWidgets import QWidget
@@ -401,7 +393,7 @@ if __name__ == '__main__':
         app.config.OPENAI_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
         app.config.OPENAI_API_BASEURL = 'https://api.deepseek.com'
         app.config.OPENAI_MODEL = 'deepseek-chat'
-        widget = AIChatOverlay(app)
+        widget = create_aichat_overlay(app)
         widget.resize(600, 400)
         layout.addWidget(widget)
         widget.show()
