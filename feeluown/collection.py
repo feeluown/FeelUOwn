@@ -303,16 +303,12 @@ class CollectionManager:
             else:
                 colls.append(coll)
 
-        if CollectionType.sys_pool not in self._sys_colls:
-            pool_fpath = os.path.join(self.default_dir, POOL_FILENAME)
-            assert not os.path.exists(pool_fpath)
-            logger.info('Generating collection pool.')
-            coll = Collection.create_empty(pool_fpath, '想听')
-            self._sys_colls[CollectionType.sys_pool] = coll
-
-        pool_coll = self._sys_colls[CollectionType.sys_pool]
+        # Before, the collection sys_pool is auto created. Now, it is not created
+        # automatically. Only load it if it exists.
+        pool_coll = self._sys_colls.get(CollectionType.sys_pool)
         library_coll = self._sys_colls[CollectionType.sys_library]
-        colls.insert(0, pool_coll)
+        if pool_coll is not None:
+            colls.insert(0, pool_coll)
         colls.insert(0, library_coll)
         for collection in colls:
             coll_id = collection.identifier
