@@ -46,6 +46,11 @@ def create_config() -> Config:
         type_=bool,
     )
     config.deffield(
+        "ENABLE_MCP_SERVER",
+        default=False,
+        type_=bool,
+    )
+    config.deffield(
         "MODE",
         default=0x0000,
         desc=t("mode-desc"),

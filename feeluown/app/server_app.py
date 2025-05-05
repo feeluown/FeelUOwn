@@ -59,4 +59,11 @@ class ServerApp(App):
             else:
                 asyncio.create_task(
                     run_web_server(self.get_listen_addr(), self.config.WEB_PORT))
+        if self.config.ENABLE_MCP_SERVER:
+            try:
+                from feeluown.mcpserver import run_mcp_server
+            except ImportError as e:
+                logger.error(f"can't enable mcp server, err: {e}")
+            else:
+                asyncio.create_task(run_mcp_server(self.get_listen_addr()))
         asyncio.create_task(run_nowplaying_server(self))
