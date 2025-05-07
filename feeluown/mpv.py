@@ -859,7 +859,7 @@ class MPV(object):
             self.set_loglevel(loglevel or 'terminal-default')
         if start_event_thread:
             self._event_thread = threading.Thread(target=self._loop, name='MPVEventHandlerThread')
-            self._event_thread.setDaemon(True)
+            self._event_thread.daemon = True
             self._event_thread.start()
         else:
             self._event_thread = None
@@ -1037,7 +1037,7 @@ class MPV(object):
     def set_loglevel(self, level):
         """Set MPV's log level. This adjusts which output will be sent to this object's log handlers. If you just want
         mpv's regular terminal output, you don't need to adjust this but just need to pass a log handler to the MPV
-        constructur such as ``MPV(log_handler=print)``.
+        constructor such as ``MPV(log_handler=print)``.
         Valid log levels are "no", "fatal", "error", "warn", "info", "v" "debug" and "trace". For details see your mpv's
         client.h header file.
         """
@@ -1494,7 +1494,7 @@ class MPV(object):
         a binding multiple times older bindings will be overwritten and there is a possibility of references leaking. So
         don't do that.
         BIG FAT WARNING: mpv's key binding mechanism is pretty powerful.  This means, you essentially get arbitrary code
-        exectution through key bindings. This interface makes some limited effort to sanitize the keydef given in the
+        execution through key bindings. This interface makes some limited effort to sanitize the keydef given in the
         first parameter, but YOU SHOULD NOT RELY ON THIS IN FOR SECURITY. If your input comes from config files, this is
         completely fine--but, if you are about to pass untrusted input into this parameter, better double-check whether
         this is secure in your case.
