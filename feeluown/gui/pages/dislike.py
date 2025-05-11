@@ -1,0 +1,3 @@
+from typing import TYPE_CHECKING
+
+from feeluown.library import SupportsCurrentUserDislikeSongsReader
