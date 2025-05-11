@@ -31,15 +31,17 @@ def playlist_list() -> List[dict]:
 
 
 @mcp.tool()
-def player_play_media_by_uri(uri: str):
+def player_play_media_by_uri(uri: str) -> bool:
     """
     Play a song by its uri.
+    Return True if the song is played successfully.
     """
     app = get_app()
     for model in app.playlist.list():
         if reverse(model) == uri:
             app.playlist.play_model(model)
-            break
+            return True
+    return False
 
 
 async def run_mcp_server(host='127.0.0.1', port=23335):
