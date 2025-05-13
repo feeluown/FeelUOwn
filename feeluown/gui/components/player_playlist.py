@@ -3,6 +3,10 @@ from typing import TYPE_CHECKING
 from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel
 from PyQt5.QtWidgets import QMenu, QAbstractItemView
 
+from feeluown.utils.aio import run_fn, run_afn
+from feeluown.library import (
+    BriefSongModel, SupportsCurrentUserDislikeAddSong, SupportsCurrentUser,
+)
 from feeluown.player import PlaylistMode
 from feeluown.gui.components import SongMenuInitializer
 from feeluown.gui.helpers import fetch_cover_wrapper
@@ -83,6 +87,22 @@ class PlayerPlaylistView(SongMiniCardListView):
             btn_text = '从播放队列中移除'
         action = menu.addAction(btn_text)
         action.triggered.connect(lambda: self._remove_songs(songs))
+
+        # Just hide the action instead of making it disabled when conditions are not met.
+        # Because this function is not supported by most providers,
+        # and (I think) most users do not use it frequently.
+        if len(songs) == 1:
+            song = songs[0]
+            provider = self._app.library.get(song.source)
+            if (
+                isinstance(provider, SupportsCurrentUserDislikeAddSong)
+                and isinstance(provider, SupportsCurrentUser)
+                and provider.has_current_user()
+            ):
+                action_dislike = menu.addAction('加入资源提供方的黑名单')
+                action_dislike.triggered.connect(
+                    lambda: run_afn(self._dislike_and_remove_songs, songs))
+
         if len(songs) == 1:
             menu.addSeparator()
             SongMenuInitializer(self._app, songs[0]).apply(menu)
@@ -99,6 +119,18 @@ class PlayerPlaylistView(SongMiniCardListView):
             # In order to highlight the current song.
             self.selectionModel().select(index, QItemSelectionModel.SelectCurrent)
             self.scrollTo(index, QAbstractItemView.PositionAtCenter)
+
+    async def _dislike_and_remove_songs(self, songs):
+        song: BriefSongModel = songs[0]
+        provider = self._app.library.get(song.source)
+        assert isinstance(provider, SupportsCurrentUserDislikeAddSong)
+        self._app.show_msg('正在加入黑名单，请稍等...', timeout=3000)
+        ok = await run_fn(provider.current_user_dislike_add_song, song)
+        if ok:
+            self._app.show_msg('已加入黑名单')
+        else:
+            self._app.show_msg('加入黑名单失败', timeout=3000)
+        self._remove_songs(songs)
 
     def _remove_songs(self, songs):
         for song in songs:

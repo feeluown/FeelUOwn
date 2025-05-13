@@ -67,7 +67,7 @@ class DislikeRenderer(Renderer, TabBarRendererMixin):
         if err:
             return await render_error_message(
                 self._app,
-                f'当前资源提供方（{self._provider.name}）不支持获取 {err}'
+                f'当前资源提供方（{self._provider.name}）不支持展示 {err} 的黑名单'
             )
         else:
             show_handler(reader)
