@@ -11,9 +11,12 @@ from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListDelegate,
 )
 
-from feeluown.library import SupportsRecListDailyPlaylists, SupportsRecListDailySongs
+from feeluown.library import (
+    SupportsRecListDailyPlaylists, SupportsRecListDailySongs,
+    SupportsCurrentUserDislikeSongsReader,
+)
 
-from feeluown.gui.widgets import CalendarButton, RankButton
+from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
 from feeluown.gui.helpers import fetch_cover_wrapper
 
 
@@ -42,8 +45,11 @@ class View(QWidget):
                                      card_min_width=100,))
         self.daily_songs_btn = CalendarButton('每日推荐', parent=self)
         self.rank_btn = RankButton(parent=self)
+        # FIXME: design a new button for dislike
+        self.dislike_btn = EmojiButton('🚫', '音乐黑名单', parent=self)
         self.daily_songs_btn.setMinimumWidth(150)
         self.rank_btn.setMinimumWidth(150)
+        self.dislike_btn.setMinimumWidth(150)
 
         self.header_title.setText('发现音乐')
         self.header_playlist_list.setText('个性化推荐')
@@ -57,12 +63,16 @@ class View(QWidget):
             lambda: self._app.browser.goto(page='/rec/daily_songs'))
         self.rank_btn.clicked.connect(
             lambda: self._app.browser.goto(page='/toplist'))
+        self.dislike_btn.clicked.connect(
+            lambda: self._app.browser.goto(page='/my_dislike'))
 
     def _setup_ui(self):
         self._h_layout = QHBoxLayout()
         self._h_layout.addWidget(self.daily_songs_btn)
         self._h_layout.addSpacing(10)
         self._h_layout.addWidget(self.rank_btn)
+        self._h_layout.addSpacing(10)
+        self._h_layout.addWidget(self.dislike_btn)
         self._h_layout.addStretch(0)
 
         self._layout.setContentsMargins(20, 10, 20, 0)
@@ -95,3 +105,5 @@ class View(QWidget):
 
         self.daily_songs_btn.setEnabled(isinstance(provider, SupportsRecListDailySongs))
         self.rank_btn.setEnabled(isinstance(provider, SupportsToplist))
+        self.dislike_btn.setEnabled(
+            isinstance(provider, SupportsCurrentUserDislikeSongsReader))

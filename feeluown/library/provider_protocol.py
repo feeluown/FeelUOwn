@@ -408,6 +408,34 @@ class SupportsCurrentUserFavVideosReader(Protocol):
 
 
 @runtime_checkable
+class SupportsCurrentUserDislikeSongsReader(Protocol):
+    """Support reading the song dislike list."""
+    @abstractmethod
+    def current_user_dislike_create_songs_rd(self) -> List[BriefSongModel]:
+        pass
+
+
+@runtime_checkable
+class SupportsCurrentUserDislikeAddSong(Protocol):
+    """Support adding a song to the song dislike list."""
+    @abstractmethod
+    def current_user_dislike_add_song(self, song: BriefSongModel) -> bool:
+        """
+        :return: True if the song is added to the dislike list, False otherwise.
+        """
+
+
+@runtime_checkable
+class SupportsCurrentUserDislikeRemoveSong(Protocol):
+    """Support removing a song from the song dislike list."""
+    @abstractmethod
+    def current_user_dislike_remove_song(self, song: BriefSongModel) -> bool:
+        """
+        :return: True if the song is removed from the dislike list, False otherwise.
+        """
+
+
+@runtime_checkable
 class SupportsToplist(Protocol):
     @abstractmethod
     def toplist_list(self) -> List[BriefPlaylistModel]:

@@ -595,7 +595,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self._least_row_count = 6
 
         # slot functions
-        self.remove_song_func = None
+        self.remove_song_func = None  # fn(song)
 
         self.delegate = SongsTableDelegate(app, self)
         self.setItemDelegate(self.delegate)
