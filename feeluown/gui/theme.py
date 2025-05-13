@@ -54,7 +54,12 @@ class ThemeManager(QObject):
         # to make it work well on Linux(GNOME)
         self.autoload()
         self._app.started.connect(lambda app: self.autoload(), weak=False)
-        get_qapp().paletteChanged.connect(lambda p: self.autoload())
+        get_qapp().paletteChanged.connect(self.on_palette_changed)
+
+    def on_palette_changed(self, p: QPalette):
+        if self._app.config.THEME == 'auto':
+            theme = self.guess_theme_by_palette(p)
+            self.load_theme(theme)
 
     def autoload(self):
         if self._app.config.THEME == 'auto':
@@ -73,12 +78,15 @@ class ThemeManager(QObject):
         self.theme = theme
         self.theme_changed.emit(theme)
 
-    def guess_system_theme(self):
-        palette = self._app.palette()
+    def guess_theme_by_palette(self, palette):
         bg_color = palette.color(QPalette.Window)
         if bg_color.lightness() > 150:
             return LIGHT
         return DARK
+
+    def guess_system_theme(self):
+        palette = self._app.palette()
+        return self.guess_theme_by_palette(palette)
 
     def load_light(self):
         common = read_resource('common.qss')
