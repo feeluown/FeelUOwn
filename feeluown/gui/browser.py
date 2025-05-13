@@ -197,6 +197,7 @@ class Browser:
         from feeluown.gui.pages.recommendation_daily_songs import \
             render as render_rec_daily_songs
         from feeluown.gui.pages.my_fav import render as render_my_fav
+        from feeluown.gui.pages.my_dislike import render as render_my_dislike
         from feeluown.gui.pages.homepage import render as render_homepage
         from feeluown.gui.pages.toplist import render as render_toplist
 
@@ -219,6 +220,7 @@ class Browser:
             ('/homepage', render_homepage),
             ('/rec/daily_songs', render_rec_daily_songs),
             ('/my_fav', render_my_fav),
+            ('/my_dislike', render_my_dislike),
             ('/toplist', render_toplist),
         ]
         for url, renderer in urlpatterns:

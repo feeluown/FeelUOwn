@@ -44,7 +44,7 @@ class Renderer:
         self.desc_widget = container.desc_widget
         self.toolbar = container.toolbar
         self.tabbar = container.tabbar
-        self.songs_table = container.songs_table
+        self.songs_table: SongsTableView = container.songs_table
         self.albums_table = container.albums_table
         self.artists_table = container.artists_table
         self.videos_table = container.videos_table
