@@ -42,6 +42,7 @@ Contributors = [
     ('xssss1', ''),
     ('williamherry', ''),
     ('seiuneko', ''),
+    ('emmanuel-ferdman', ''),
 ]
 
 
