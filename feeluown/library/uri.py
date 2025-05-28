@@ -314,7 +314,7 @@ def reverse(model, path='', as_line=False):
             video = model
             fields = [video.title_display]
         else:
-            logger.warn('The display fields are dropped during reverse')
+            logger.warning('The display fields are dropped during reverse')
             fields = []
 
         # strip emtpy suffix
