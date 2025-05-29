@@ -260,7 +260,7 @@ class MpvPlayer(AbstractPlayer):
             self._position = position
             self.seeked.emit(position)
         else:
-            logger.warn("can't set position when current media is empty")
+            logger.warning("can't set position when current media is empty")
 
     @AbstractPlayer.volume.setter  # type: ignore
     def volume(self, value):
