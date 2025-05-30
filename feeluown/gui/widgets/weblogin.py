@@ -24,12 +24,14 @@ class WebLoginView(QWebEngineView):
     def __init__(self, uri: str, required_cookies: List[Union[str, List[str]]],
                  parent=None):
         """
-        此工具类用于 QtWebEngine 自动化 Cookie 登录过程
-        Example: QtWebEngine('https://y.qq.com', ['qqmusic_key'])
+        This utility class is used for automating the cookie login process.
+        Example: QtWebEngine('https://y.xx.com', ['xxmusic_key'])
 
-        :param uri: 初始化登录地址 获取到的 Cookie 也会按照此地址筛选
-        :rtype uri: str
-        :param required_cookies: 必需包含的 Cookie key 当全部获取到将发送 succeed 信号并自动关闭
+        :param uri: The initial login URL.
+        :param required_cookies: List of required Cookie keys. When all are obtained,
+            the succeed signal will be emitted and the window will close automatically.
+            You can also use a list of lists, for example:
+               [['xx_key', 'xx_wxuin'], ['xx_key', 'xx_uin]]
         :param parent:
         """
         super().__init__(parent)
