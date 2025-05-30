@@ -1,4 +1,5 @@
-from typing import List
+import logging
+from typing import List, Union
 from urllib.parse import urlparse
 
 from PyQt5.QtCore import pyqtSignal, QUrl, QRect
@@ -9,6 +10,9 @@ from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, \
 from PyQt5.QtWidgets import QApplication, QDesktopWidget
 
 
+logger = logging.getLogger(__name__)
+
+
 class NoOutputWebPage(QWebEnginePage):
     def javaScriptConsoleMessage(self, level, msg, line, sourceID):
         pass
@@ -17,15 +21,17 @@ class NoOutputWebPage(QWebEnginePage):
 class WebLoginView(QWebEngineView):
     succeed = pyqtSignal(dict)
 
-    def __init__(self, uri: str, required_cookies: List[str], parent=None):
+    def __init__(self, uri: str, required_cookies: List[Union[str, List[str]]],
+                 parent=None):
         """
-        此工具类用于 QtWebEngine 自动化 Cookie 登录过程
-        Example: QtWebEngine('https://y.qq.com', ['qqmusic_key'])
+        This utility class is used for automating the cookie login process.
+        Example: QtWebEngine('https://y.xx.com', ['xxmusic_key'])
 
-        :param uri: 初始化登录地址 获取到的 Cookie 也会按照此地址筛选
-        :rtype uri: str
-        :param required_cookies: 必需包含的 Cookie key 当全部获取到将发送 succeed 信号并自动关闭
-        :type required_cookies: List[str]
+        :param uri: The initial login URL.
+        :param required_cookies: List of required Cookie keys. When all are obtained,
+            the succeed signal will be emitted and the window will close automatically.
+            You can also use a list of lists, for example:
+               [['xx_key', 'xx_wxuin'], ['xx_key', 'xx_uin]]
         :param parent:
         """
         super().__init__(parent)
@@ -37,7 +43,13 @@ class WebLoginView(QWebEngineView):
         cookie_store.cookieAdded.connect(self.cookie_added)
         cookie_store.cookieRemoved.connect(self.cookie_removed)
         self.saved_cookies = dict()  # type: ignore
-        self.required_cookies = required_cookies
+        self.required_cookies_options = []
+        if required_cookies:
+            if isinstance(required_cookies[0], list):
+                for option in required_cookies:
+                    self.required_cookies_options.append(option)
+            else:
+                self.required_cookies_options.append(option)
         self.setPage(NoOutputWebPage(self))
         self.load(QUrl(uri))
 
@@ -70,12 +82,29 @@ class WebLoginView(QWebEngineView):
             name = cookie.name().data().decode()
             value = cookie.value().data().decode()
             self.saved_cookies[name] = value
-            for _name in self.required_cookies:
-                if _name not in self.saved_cookies:
+            for required_cookies in self.required_cookies_options:
+                ok = True
+                one_ok = False
+                for _name in required_cookies:
+                    if _name not in self.saved_cookies:
+                        ok = False
+                        if one_ok is True:  # log for debugging
+                            logger.debug(
+                                f"not enough cookies for login, "
+                                f"required: {required_cookies}, "
+                                f"not satisfied: {_name}"
+                            )
+                        break
+                    one_ok = True
+
+                if ok is True:
+                    logger.debug(
+                        f"enough cookies for login, "
+                        f"required: {self.required_cookies_options}, "
+                        f"acture: {self.saved_cookies}"
+                    )
+                    self.succeed.emit(self.saved_cookies)
                     break
-            else:
-                print(self.required_cookies, self.saved_cookies)
-                self.succeed.emit(self.saved_cookies)
 
     def cookie_removed(self, cookie: QNetworkCookie):
         if cookie.name().data().decode() in self.saved_cookies.keys():
