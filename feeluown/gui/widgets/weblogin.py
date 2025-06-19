@@ -49,7 +49,7 @@ class WebLoginView(QWebEngineView):
                 for option in required_cookies:
                     self.required_cookies_options.append(option)
             else:
-                self.required_cookies_options.append(option)
+                self.required_cookies_options.append(required_cookies)
         self.setPage(NoOutputWebPage(self))
         self.load(QUrl(uri))
 
