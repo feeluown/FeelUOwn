@@ -1,6 +1,8 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
+from PyQt5.QtGui import QGuiApplication
+
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
@@ -68,6 +70,18 @@ class SongMenuInitializer:
             lambda: enter_song_radio(song))
         menu.addAction('歌曲详情').triggered.connect(
             lambda: goto_song_explore(song))
+
+        menu.addSeparator()
+        ai_menu = menu.addMenu('AI')
+        ai_menu.addAction('拷贝 AI Prompt').triggered.connect(
+            lambda: self.copy_ai_prompt(song))
+
+    def copy_ai_prompt(self, song):
+        prompt = '你是一个音乐播放器助手。\n'
+        prompt += '【填入你的需求】\n'
+        prompt += f'歌曲信息如下 -> 歌曲名：{song.title}, 歌手名：{song.artists_name}'
+        QGuiApplication.clipboard().setText(prompt)
+        self._app.show_msg('已经复制到剪贴板')
 
     def show_similar_resource(self, song):
         from feeluown.gui.components.search import create_search_result_view
