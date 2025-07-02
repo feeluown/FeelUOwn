@@ -1,12 +1,12 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
+from PyQt5.QtGui import QGuiApplication
+
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
 from feeluown.library import SongModel, VideoModel
-
-from PyQt5.QtGui import QGuiApplication
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
