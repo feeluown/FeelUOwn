@@ -6,7 +6,10 @@ from PyQt5.QtGui import QGuiApplication
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
-from feeluown.library import SongModel, VideoModel
+from feeluown.library import (
+    SongModel, VideoModel, BriefSongModel,
+    SupportsPlaylistAddSong, SupportsCurrentUserListPlaylists, SupportsCurrentUser,
+)
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -27,6 +30,7 @@ class SongMenuInitializer:
         self._song = song
         self._fetching_artists = False
         self._fetching_mv = False
+        self._fetching_user_playlists = False
 
     def apply(self, menu):
 
@@ -72,6 +76,10 @@ class SongMenuInitializer:
             lambda: goto_song_explore(song))
 
         menu.addSeparator()
+        playlist_add_menu = menu.addMenu('加入到播放列表')
+        playlist_add_menu.menuAction().setData(
+            {'menu_id': 'playlist_add', 'playlists': None, 'song': song})
+
         ai_menu = menu.addMenu('AI')
         ai_menu.addAction('拷贝 AI Prompt').triggered.connect(
             lambda: self.copy_ai_prompt(song))
@@ -101,6 +109,57 @@ class SongMenuInitializer:
             self._hover_artists(action, data)
         elif 'mvs' in data:
             self._hover_mv(action, data)
+        elif 'menu_id' in data and data['menu_id'] == 'playlist_add':
+            if self._fetching_user_playlists is False:
+                self._fetching_user_playlists = True
+                self._app.task_mgr.run_afn_preemptive(
+                    self._hover_playlist_add, action, data)
+
+    async def _hover_playlist_add(self, action, data):
+        # pylint: disable=unnecessary-direct-lambda-call
+        logger.info('playlist-add action is hovered')
+        if data['playlists'] is not None:
+            return
+
+        song: BriefSongModel = data['song']
+        provider = self._app.library.get(song.source)
+
+        async def add2p(provider: SupportsPlaylistAddSong, playlist, song):
+            try:
+                ok = await run_fn(provider.playlist_add_song, playlist, song)
+            except ProviderIOError as e:
+                logger.error(f"add song to playlist failed {e}")
+                ok = False
+            if ok:
+                self._app.show_msg(f'已加入到 {playlist.name} ✅')
+            else:
+                self._app.show_msg(f'加入到 {playlist.name} 失败 ❌')
+
+        if (
+            isinstance(provider, SupportsPlaylistAddSong)
+            and isinstance(provider, SupportsCurrentUser)
+            and isinstance(provider, SupportsCurrentUserListPlaylists)
+            and provider.has_current_user()
+        ):
+            try:
+                playlists = await run_fn(provider.current_user_list_playlists)
+            except ProviderIOError as e:
+                logger.error(f"fetch user playlists failed {e}")
+                playlists = []
+            data['playlists'] = playlists
+            action.setData(data)
+            action.setEnabled(len(playlists) > 0)
+            for playlist in playlists:
+                try:
+                    action_ = action.menu().addAction(playlist.name)
+                    action_.triggered.connect(
+                        (lambda p: lambda: run_afn(add2p, provider, p, song))(playlist))
+                except RuntimeError:
+                    # action may have been deleted.
+                    return
+        else:
+            action.setEnabled(False)
+        self._fetching_user_playlists = False
 
     def _hover_mv(self, action, data):
 
