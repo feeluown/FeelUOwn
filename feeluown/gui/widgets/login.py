@@ -76,10 +76,11 @@ class CookiesLoginDialog(LoginDialog):
     def __init__(self, uri=None, required_cookies_fields=None, domain=None):
         if has_webengine and uri and required_cookies_fields:
             use_webview = True
-            flags = Qt.Window
         else:
             use_webview = False
-            flags = Qt.Popup
+        # Use Qt.Window so that the dialog will not be hidden unexpectedly.
+        # https://github.com/feeluown/FeelUOwn/issues/878#issuecomment-2975105843
+        flags = Qt.Window
 
         super().__init__(None, flags)
         self._use_webview = use_webview
