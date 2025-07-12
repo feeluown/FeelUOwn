@@ -111,9 +111,9 @@ class CookiesLoginDialog(LoginDialog):
 
         self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
-            '请从浏览器中复制 Cookie：\n\n'
-            'Chrome 复制的 cookie 格式类似：key1=value1; key2=value2\n\n'
-            'Firefox 复制的 cookie 格式类似：{"key1": value1, "key1": value2}'
+            '请从浏览器中复制 Cookie：建议找到一个 Post 请求，'
+            '然后从请求的 Request Header 里面把 cookie 字段的值拷贝出来\n\n'
+            '这个值的格式类似：key1=value1; key2=value2\n\n'
         )
 
         if self._use_webview is True:
