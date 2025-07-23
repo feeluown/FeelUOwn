@@ -76,12 +76,26 @@ class UISupportsNavBtns(Protocol):
 
 
 @runtime_checkable
+class UISupportsContextMenu(Protocol):
+    """
+    Provider UI can add custom actions/submenus to the context menu.
+    """
+    
+    @abstractmethod
+    def add_to_context_menu(self, menu: 'QMenu'):
+        """
+        Add custom actions/submenus to the given menu.
+        """
+        ...
+
+
+@runtime_checkable
 class UISupportsCreatePlaylist(Protocol):
     """
     Provider UI can create playlist.
     """
 
-    @abstractmethod
+    @abstractmethod        
     def create_playlist(self):
         ...
 
