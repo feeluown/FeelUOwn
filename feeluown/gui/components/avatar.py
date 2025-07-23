@@ -9,7 +9,7 @@ from feeluown.library import UserModel, SupportsCurrentUser, Provider, \
 from feeluown.library import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
-    UISupportsLoginEvent
+    UISupportsLoginEvent, UISupportsContextMenuAddItems
 from feeluown.gui.widgets import SelfPaintAbstractIconTextButton
 from feeluown.gui.drawers import SizedPixmapDrawer, AvatarIconDrawer
 from feeluown.gui.helpers import painter_save
@@ -83,25 +83,38 @@ class Avatar(SelfPaintAbstractIconTextButton):
     def contextMenuEvent(self, e) -> None:
         # pylint: disable=unnecessary-direct-lambda-call
         menu = QMenu()
-        action = menu.addSection('切换账号')
-        action.setDisabled(True)
+
+        # Let provider UI add custom actions if supported
+        current_pvd_ui = self._app.current_pvd_ui_mgr.get()
+        if (
+            current_pvd_ui is not None and
+            isinstance(current_pvd_ui, UISupportsContextMenuAddItems)
+        ):
+            menu.addSection(current_pvd_ui.provider.name)
+            current_pvd_ui.context_menu_add_items(menu)
+
+        # Create a submenu for "切换账号"
+        menu.addSection('切换账号')
+        switch_account_menu = menu
+
         for item in self._app.pvd_uimgr.list_items():
             action = QAction(QIcon(item.colorful_svg or 'icons:feeluown.png'),
                              item.text,
-                             parent=menu)
+                             parent=switch_account_menu)
             action.setToolTip(item.desc)
             action.triggered.connect(
                 (lambda item: lambda _: self.on_provider_selected(item))(item))
-            menu.addAction(action)
+            switch_account_menu.addAction(action)
 
         for pvd_ui in self._app.pvd_ui_mgr.list_all():
             action = QAction(QIcon(pvd_ui.get_colorful_svg() or 'icons:feeluown.png'),
                              pvd_ui.provider.meta.name,
-                             parent=menu)
+                             parent=switch_account_menu)
             action.triggered.connect(
                 (lambda pvd_ui: lambda _: self.on_pvd_ui_selected(pvd_ui))(pvd_ui))
-            menu.addAction(action)
+            switch_account_menu.addAction(action)
 
+        # Show menu
         menu.exec_(e.globalPos())
 
     def on_provider_ui_login_event(self, provider_ui, event):
