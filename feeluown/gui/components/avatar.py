@@ -83,25 +83,28 @@ class Avatar(SelfPaintAbstractIconTextButton):
     def contextMenuEvent(self, e) -> None:
         # pylint: disable=unnecessary-direct-lambda-call
         menu = QMenu()
-        action = menu.addSection('切换账号')
-        action.setDisabled(True)
+        
+        # Create a submenu for "切换账号"
+        switch_account_menu = QMenu('切换账号', parent=menu)
+        
         for item in self._app.pvd_uimgr.list_items():
             action = QAction(QIcon(item.colorful_svg or 'icons:feeluown.png'),
                              item.text,
-                             parent=menu)
+                             parent=switch_account_menu)
             action.setToolTip(item.desc)
             action.triggered.connect(
                 (lambda item: lambda _: self.on_provider_selected(item))(item))
-            menu.addAction(action)
+            switch_account_menu.addAction(action)
 
         for pvd_ui in self._app.pvd_ui_mgr.list_all():
             action = QAction(QIcon(pvd_ui.get_colorful_svg() or 'icons:feeluown.png'),
                              pvd_ui.provider.meta.name,
-                             parent=menu)
+                             parent=switch_account_menu)
             action.triggered.connect(
                 (lambda pvd_ui: lambda _: self.on_pvd_ui_selected(pvd_ui))(pvd_ui))
-            menu.addAction(action)
-
+            switch_account_menu.addAction(action)
+        
+        menu.addMenu(switch_account_menu)
         menu.exec_(e.globalPos())
 
     def on_provider_ui_login_event(self, provider_ui, event):
