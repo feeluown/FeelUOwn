@@ -5,6 +5,7 @@ from typing import (
 )
 
 from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtWidgets import QMenu
 
 from feeluown.library import ProviderV2
 from feeluown.gui.widgets.provider import ProvidersModel
@@ -53,7 +54,6 @@ class UISupportsLoginEvent(Protocol):
 
         :return: Signal(provider_ui, event)
         """
-        ...
 
 
 @runtime_checkable
@@ -76,17 +76,16 @@ class UISupportsNavBtns(Protocol):
 
 
 @runtime_checkable
-class UISupportsContextMenu(Protocol):
+class UISupportsContextMenuAddItems(Protocol):
     """
     Provider UI can add custom actions/submenus to the context menu.
     """
-    
+
     @abstractmethod
-    def add_to_context_menu(self, menu: 'QMenu'):
+    def context_menu_add_items(self, menu: QMenu):
         """
         Add custom actions/submenus to the given menu.
         """
-        ...
 
 
 @runtime_checkable
@@ -95,7 +94,7 @@ class UISupportsCreatePlaylist(Protocol):
     Provider UI can create playlist.
     """
 
-    @abstractmethod        
+    @abstractmethod
     def create_playlist(self):
         ...
 
@@ -180,7 +179,7 @@ class ProviderUiManager:
     # The following are Deprecated APIs.
     ####################################
     def create_item(self, name, text, symbol='♬ ', desc='', colorful_svg=None):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
         provider = self._app.library.get(name)
         return ProviderUiItem(name,
                               text,
@@ -220,7 +219,7 @@ class ProviderUiItem:
     """
 
     def __init__(self, name, text, symbol, desc, colorful_svg=None, provider=None):
-        # pylint: disable=too-many-arguments
+        # pylint: disable=too-many-arguments,too-many-positional-arguments
         # 如果需要，可以支持右键弹出菜单
         self._name = name
         self.text = text

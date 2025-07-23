@@ -9,7 +9,7 @@ from feeluown.library import UserModel, SupportsCurrentUser, Provider, \
 from feeluown.library import reverse
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
-    UISupportsLoginEvent
+    UISupportsLoginEvent, UISupportsContextMenuAddItems
 from feeluown.gui.widgets import SelfPaintAbstractIconTextButton
 from feeluown.gui.drawers import SizedPixmapDrawer, AvatarIconDrawer
 from feeluown.gui.helpers import painter_save
@@ -83,10 +83,20 @@ class Avatar(SelfPaintAbstractIconTextButton):
     def contextMenuEvent(self, e) -> None:
         # pylint: disable=unnecessary-direct-lambda-call
         menu = QMenu()
-        
+
+        # Let provider UI add custom actions if supported
+        current_pvd_ui = self._app.current_pvd_ui_mgr.get()
+        if (
+            current_pvd_ui is not None and
+            isinstance(current_pvd_ui, UISupportsContextMenuAddItems)
+        ):
+            menu.addSection(current_pvd_ui.provider.name)
+            current_pvd_ui.context_menu_add_items(menu)
+
         # Create a submenu for "切换账号"
-        switch_account_menu = QMenu('切换账号', parent=menu)
-        
+        menu.addSection('切换账号')
+        switch_account_menu = menu
+
         for item in self._app.pvd_uimgr.list_items():
             action = QAction(QIcon(item.colorful_svg or 'icons:feeluown.png'),
                              item.text,
@@ -103,15 +113,8 @@ class Avatar(SelfPaintAbstractIconTextButton):
             action.triggered.connect(
                 (lambda pvd_ui: lambda _: self.on_pvd_ui_selected(pvd_ui))(pvd_ui))
             switch_account_menu.addAction(action)
-        
-        menu.addMenu(switch_account_menu)
-        
-        # Let provider UI add custom actions if supported
-        current_pvd_ui = self._app.current_pvd_ui_mgr.get()
-        if current_pvd_ui is not None and isinstance(current_pvd_ui, UISupportsContextMenu):
-            menu.addSeparator()
-            current_pvd_ui.add_to_context_menu(menu)
-            
+
+        # Show menu
         menu.exec_(e.globalPos())
 
     def on_provider_ui_login_event(self, provider_ui, event):
