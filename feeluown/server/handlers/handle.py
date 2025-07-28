@@ -72,4 +72,4 @@ from .set_ import SetHandler  # noqa
 try:
     from .jsonrpc_ import JsonRPCHandler  # noqa
 except ImportError as e:
-    logger.warning(f'jsonrpc handler is not available: {e}')
+    logger.info(f'jsonrpc handler is not available: {e}')
