@@ -11,7 +11,7 @@ from typing import Tuple, cast
 
 from feeluown.media import Media, Quality
 from .base import ModelType
-from .models import V2SupportedModelTypes
+from .models import V2SupportedModelTypes, BaseModel, BaseNormalModel
 from .flags import Flags
 from .excs import MediaNotFound, ModelNotFound, NoUserLoggedIn  # noqa
 
@@ -80,7 +80,7 @@ class Provider:
         """Check whether model v2 is used for the specified model_type."""
         return Flags.model_v2 in self.meta.flags.get(model_type, Flags.none)
 
-    def model_get(self, model_type, model_id):
+    def model_get(self, model_type, model_id) -> BaseNormalModel:
         if model_type in V2SupportedModelTypes:
             if model_type == ModelType.song:
                 return self.song_get(model_id)
@@ -94,7 +94,7 @@ class Provider:
                 return self.playlist_get(model_id)
         raise ModelNotFound(reason=ModelNotFound.Reason.not_supported)
 
-    def _model_cache_get_or_fetch(self, model, cache_key):
+    def _model_cache_get_or_fetch(self, model: BaseModel, cache_key, ttl=None):
         """Util method for getting value of cached field
 
         .. versionadded: 3.7.12
@@ -104,7 +104,7 @@ class Provider:
             upgrade_model = self.model_get(model.meta.model_type, model.identifier)
             value, exists = upgrade_model.cache_get(cache_key)
             assert exists is True
-            model.cache_set(cache_key, value)
+            model.cache_set(cache_key, value, ttl=ttl)
         return value
 
     def song_select_media(self, song, policy=None) -> Tuple[Media, Quality.Audio]:
