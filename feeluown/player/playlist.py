@@ -488,6 +488,7 @@ class Playlist:
         """
         next_song = self._get_next_song_no_lock()
         if next_song is None:
+            logger.debug('No next song in playlist, emit eof_reached.')
             self.eof_reached.emit()
             return None
         return self.set_existing_song_as_current_song(next_song)

@@ -47,7 +47,6 @@ class ImgManager(object):
             return provider.handle_with_path(img_url[11:])
         fpath = self.cache.get(img_name)
         if fpath is not None:
-            logger.debug('read image:%s from cache', img_name)
             with open(fpath, 'rb') as f:
                 content = f.read()
             self.cache.update(img_name)
