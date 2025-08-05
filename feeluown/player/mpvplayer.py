@@ -287,10 +287,7 @@ class MpvPlayer(AbstractPlayer):
         self.video_format_changed.emit(vformat)
 
     def _stop_mpv(self):
-        # Remove current media.
-        self._mpv.play("")
-        # Clear the playlist so that no other media will be played.
-        self._mpv.playlist_clear()
+        self._mpv.stop()
 
     def _on_position_changed(self, position):
         self._position = max(0, position or 0)
