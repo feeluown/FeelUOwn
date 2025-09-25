@@ -1,7 +1,7 @@
 import logging
 import sys
 
-from PyQt6.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent
+from PyQt6.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent, QPointF
 from PyQt6.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
 from PyQt6.QtWidgets import QAbstractScrollArea, QFrame, QVBoxLayout, QStackedLayout
 
@@ -242,7 +242,7 @@ class RightPanel(QFrame):
         painter.save()
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
-        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        gradient = QLinearGradient(QPointF(rect.topLeft()), QPointF(rect.bottomLeft()))
         color = self.palette().color(QPalette.ColorRole.Base)
         if draw_height == self.height():
             gradient.setColorAt(0, add_alpha(color, 180))
@@ -270,7 +270,7 @@ class RightPanel(QFrame):
         painter.save()
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
-        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
+        gradient = QLinearGradient(QPointF(rect.topLeft()), QPointF(rect.bottomLeft()))
         gradient.setColorAt(0, self.palette().color(QPalette.ColorRole.Window))
         gradient.setColorAt(1, self.palette().color(QPalette.ColorRole.Base))
         painter.setBrush(gradient)
@@ -287,7 +287,7 @@ class RightPanel(QFrame):
         if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
             scaled_pixmap = self._pixmap.scaledToHeight(
                 draw_height,
-                mode=Qt.SmoothTransformation)
+                mode=Qt.TransformationMode.SmoothTransformation)
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
             pixmap_size = scaled_pixmap.size()
@@ -297,7 +297,7 @@ class RightPanel(QFrame):
         else:
             scaled_pixmap = self._pixmap.scaledToWidth(
                 draw_width,
-                mode=Qt.SmoothTransformation)
+                mode=Qt.TransformationMode.SmoothTransformation)
             pixmap_size = scaled_pixmap.size()
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)

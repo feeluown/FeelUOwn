@@ -102,8 +102,11 @@ class GuiApp(App, QWidget):
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
 
     def run(self):
+        print('before show')
         self.show()
+        print('after show')
         super().run()
+        print('after run')
 
     def apply_state(self, state):
         super().apply_state(state)
@@ -133,9 +136,9 @@ class GuiApp(App, QWidget):
     def mouseReleaseEvent(self, e):
         if not self.rect().contains(e.pos()):
             return
-        if e.button() == Qt.BackButton:
+        if e.button() == Qt.MouseButton.BackButton:
             self.browser.back()
-        elif e.button() == Qt.ForwardButton:
+        elif e.button() == Qt.MouseButton.ForwardButton:
             self.browser.forward()
 
     def exit_player(self):

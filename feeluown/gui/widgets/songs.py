@@ -161,7 +161,7 @@ class SongListDelegate(QStyledItemDelegate):
         # Draw song number or play_btn when it is hovered
         no_bottom_right = QPoint(no_x, bottom)
         no_rect = QRect(option.rect.topLeft(), no_bottom_right)
-        if option.state & QStyle.State_MouseOver:  # type: ignore
+        if option.state & QStyle.StateFlag.State_MouseOver:  # type: ignore
             painter.drawText(no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, '►')
         else:
             painter.drawText(no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
@@ -246,7 +246,9 @@ class BaseSongsTableModel(QAbstractTableModel):
             return no_item_flags
 
         # Default flags.
-        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemIsDragEnabled
+        flags = (Qt.ItemFlag.ItemIsSelectable
+                  | Qt.ItemFlag.ItemIsEnabled
+                  | Qt.ItemFlag.ItemIsDragEnabled)
         song = index.data(Qt.ItemDataRole.UserRole)
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
@@ -258,9 +260,9 @@ class BaseSongsTableModel(QAbstractTableModel):
                 flags = no_item_flags
         else:
             if index.column() == Column.album:
-                flags |= Qt.ItemIsDragEnabled
+                flags |= Qt.ItemFlag.ItemIsDragEnabled
             elif index.column() == Column.artist:
-                flags |= Qt.ItemIsEditable
+                flags |= Qt.ItemFlag.ItemIsEditable
 
         return flags
 
@@ -296,9 +298,9 @@ class BaseSongsTableModel(QAbstractTableModel):
             return QVariant()
 
         song = self._items[index.row()]
-        if role in (Qt.ItemDataRole.DisplayRole, Qt.ToolTipRole):
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole):
             # Only show tooltip for song/artist/album fields.
-            if role == Qt.ToolTipRole and index.column() not in \
+            if role == Qt.ItemDataRole.ToolTipRole and index.column() not in \
                (Column.song, Column.artist, Column.album, Column.duration):
                 return QVariant()
             if index.column() == Column.index:
@@ -314,12 +316,12 @@ class BaseSongsTableModel(QAbstractTableModel):
                 return song.artists_name_display
             elif index.column() == Column.album:
                 return song.album_name_display
-        elif role == Qt.TextAlignmentRole:
+        elif role == Qt.ItemDataRole.TextAlignmentRole:
             if index.column() == Column.index:
                 return Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
             elif index.column() == Column.source:
-                return Qt.AlignmentFlag.AlignLeft | Qt.AlignBaseline | Qt.AlignmentFlag.AlignVCenter
-        elif role == Qt.EditRole:
+                return Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBaseline | Qt.AlignmentFlag.AlignVCenter
+        elif role == Qt.ItemDataRole.EditRole:
             return 1
         elif role == Qt.ItemDataRole.UserRole:
             return song

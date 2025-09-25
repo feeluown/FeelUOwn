@@ -94,7 +94,9 @@ class CollectionListModel(TextlistModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemIsDropEnabled
+        flags = (Qt.ItemFlag.ItemIsSelectable
+                 | Qt.ItemFlag.ItemIsEnabled
+                 | Qt.ItemFlag.ItemIsDropEnabled)
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

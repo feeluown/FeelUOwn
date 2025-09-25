@@ -231,10 +231,10 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         else:
             if obj.width() / obj.height() > draw_width / height:
                 img = obj.scaledToHeight(int(height * self._device_pixel_ratio),
-                                         Qt.SmoothTransformation)
+                                         Qt.TransformationMode.SmoothTransformation)
             else:
                 img = obj.scaledToWidth(int(draw_width * self._device_pixel_ratio),
-                                        Qt.SmoothTransformation)
+                                        Qt.TransformationMode.SmoothTransformation)
             img.setDevicePixelRatio(self._device_pixel_ratio)
             brush = QBrush(img)
             painter.setBrush(brush)

@@ -77,7 +77,7 @@ class Panel(QWidget):
         if pvd_ui is None:
             return QPixmap()
         svg = pvd_ui.get_colorful_svg()
-        return QPixmap(svg).scaledToWidth(20, Qt.SmoothTransformation)
+        return QPixmap(svg).scaledToWidth(20, Qt.TransformationMode.SmoothTransformation)
 
     async def render(self):
         pass

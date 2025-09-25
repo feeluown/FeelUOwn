@@ -41,7 +41,7 @@ class SizedPixmapDrawer:
 
     def _scale_image(self, img: QImage) -> QImage:
         return img.scaledToWidth(int(self._img_old_width * self._device_pixel_ratio),
-                                 Qt.SmoothTransformation)
+                                 Qt.TransformationMode.SmoothTransformation)
 
     def get_radius(self):
         return self._radius if self._radius >= 1 else \
@@ -122,8 +122,10 @@ class PixmapDrawer(SizedPixmapDrawer):
         if self._widget.width() != self._img_old_width:
             self._img_old_width = self._widget.width()
             assert self._img is not None
-            new_img = self._img.scaledToWidth(self._img_old_width,
-                                              Qt.SmoothTransformation)
+            new_img = self._img.scaledToWidth(
+                self._img_old_width,
+                Qt.TransformationMode.SmoothTransformation
+            )
             self._pixmap = QPixmap(new_img)
 
     def _draw_pixmap(self, painter: QPainter):

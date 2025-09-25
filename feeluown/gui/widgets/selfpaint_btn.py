@@ -51,7 +51,7 @@ class SelfPaintAbstractButton(QPushButton):
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
 
-        if opt.state & QStyle.State_MouseOver:
+        if opt.state & QStyle.StateFlag.State_MouseOver:
             painter.save()
             painter.setPen(Qt.PenStyle.NoPen)
             color = self.palette().color(QPalette.ColorRole.Window)
@@ -116,7 +116,7 @@ class SelfPaintAbstractSquareButton(SelfPaintAbstractButton):
     def paint_round_bg_when_hover(self, painter):
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
-        if opt.state & QStyle.State_MouseOver:
+        if opt.state & QStyle.StateFlag.State_MouseOver:
             self.paint_round_bg(painter)
 
 
@@ -522,7 +522,7 @@ class MVButton(SelfPaintAbstractSquareButton):
         rect = QRect(1, self.rectangle_y, self.width() - 2, self.rectangle_height)
         with painter_save(painter):
             set_pen_1_5(painter)
-            if opt.state & QStyle.State_MouseOver:
+            if opt.state & QStyle.StateFlag.State_MouseOver:
                 color = self.palette().color(QPalette.ColorRole.Window)
                 painter.setBrush(darker_or_lighter(color, 120))
             painter.drawRoundedRect(rect, 3, 3)

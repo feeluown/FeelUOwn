@@ -190,7 +190,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             painter.setBrush(option.palette.color(QPalette.ColorRole.Highlight))
             painter.drawRect(rect)
             painter.restore()
-        elif option.state & QStyle.State_MouseOver:
+        elif option.state & QStyle.StateFlag.State_MouseOver:
             painter.save()
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(option.palette.color(self.hover_color_role))
@@ -228,7 +228,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         title = index.data(Qt.ItemDataRole.DisplayRole)
         subtitle = f'{song.artists_name_display} • {song.album_name_display}'
         # Note this is not a bool object.
-        is_enabled = option.state & QStyle.State_Enabled
+        is_enabled = option.state & QStyle.StateFlag.State_Enabled
         self.paint_text(
             painter, is_enabled, title, subtitle, text_color, non_text_color, text_width,
             card_height
@@ -280,11 +280,13 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         else:  # QImage
             if decoration.height() < decoration.width():
                 pixmap = decoration.scaledToHeight(
-                    int(height * self._device_pixel_ratio), Qt.SmoothTransformation
+                    int(height * self._device_pixel_ratio),
+                    Qt.TransformationMode.SmoothTransformation
                 )
             else:
                 pixmap = decoration.scaledToWidth(
-                    int(width * self._device_pixel_ratio), Qt.SmoothTransformation
+                    int(width * self._device_pixel_ratio),
+                    Qt.TransformationMode.SmoothTransformation
                 )
             pixmap.setDevicePixelRatio(self._device_pixel_ratio)
             brush = QBrush(pixmap)

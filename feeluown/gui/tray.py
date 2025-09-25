@@ -140,7 +140,7 @@ class Tray(QSystemTrayIcon):
                 self._toggle_player_action.setEnabled(True)
 
     def on_app_state_changed(self, state):
-        if state == Qt.ApplicationActive:
+        if state == Qt.ApplicationState.ApplicationActive:
             # On macOS, when the app is hidden, there will be an icon on the
             # macOS dock, if user click the dock, we should activate the app window.
             # For other platforms(Win32/Linux), the dock icon is not visible if
@@ -153,7 +153,7 @@ class Tray(QSystemTrayIcon):
             if IS_MACOS:
                 self._app.show()
                 self._app.activateWindow()
-        elif state == Qt.ApplicationInactive:
+        elif state == Qt.ApplicationState.ApplicationInactive:
             # when app window is not the top window, it changes to inactive
             if self._toggle_app_action is not None:
                 self._toggle_app_action.setText(TOGGLE_APP_TEXT[0])

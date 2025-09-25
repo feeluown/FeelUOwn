@@ -597,7 +597,7 @@ class ClickableMixin:
         self._down = False
 
     def mousePressEvent(self, e: QMouseEvent):
-        if e.button() != Qt.LeftButton:
+        if e.button() != Qt.MouseButton.LeftButton:
             # Call super.mousePressEvent because the concrete class may do sth inside it.
             super().mousePressEvent(e)
             return
@@ -608,7 +608,7 @@ class ClickableMixin:
             super().mousePressEvent(e)
 
     def mouseReleaseEvent(self, e: QMouseEvent):
-        if e.button() != Qt.LeftButton or not self._down:
+        if e.button() != Qt.MouseButton.LeftButton or not self._down:
             super().mouseReleaseEvent(e)
             return
         self._down = False
