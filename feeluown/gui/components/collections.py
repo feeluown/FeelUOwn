@@ -23,7 +23,7 @@ class CollectionListView(TextlistView):
     def __init__(self, app: 'GuiApp', **kwargs):
         super().__init__(**kwargs)
         self._app = app
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DropOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DropOnly)
         self.setModel(CollectionListModel(self))
 
         self.clicked.connect(self._on_clicked)

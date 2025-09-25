@@ -624,7 +624,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setShowGrid(False)
         self.setDragEnabled(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragOnly)
 
     def setModel(self, model):
         super().setModel(model)

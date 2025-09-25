@@ -101,7 +101,7 @@ class PlaylistsView(TextlistView):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DropOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DropOnly)
         self.clicked.connect(self._on_clicked)
 
     def _on_clicked(self, index):
