@@ -174,19 +174,19 @@ class SongListDelegate(QStyledItemDelegate):
         painter.restore()
 
     def editorEvent(self, event, model, option, index):
-        if event.type() in (QEvent.MouseButtonPress, QEvent.MouseButtonRelease):
+        if event.type() in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
             no_bottom_right = QPoint(self.number_rect_x, option.rect.bottom())
             no_rect = QRect(option.rect.topLeft(), no_bottom_right)
             mouse_event = QMouseEvent(event)
             if no_rect.contains(mouse_event.pos()):
-                if event.type() == QEvent.MouseButtonPress:
+                if event.type() == QEvent.Type.MouseButtonPress:
                     self.play_btn_pressed = True
-                if event.type() == QEvent.MouseButtonRelease:
+                if event.type() == QEvent.Type.MouseButtonRelease:
                     if self.play_btn_pressed is True:
                         parent = self.parent()
                         assert isinstance(parent, SongListView)
                         parent.play_song_needed.emit(index.data(Qt.ItemDataRole.UserRole))
-            if event.type() == QEvent.MouseButtonRelease:
+            if event.type() == QEvent.Type.MouseButtonRelease:
                 self.play_btn_pressed = False
         return super().editorEvent(event, model, option, index)
 
@@ -415,7 +415,7 @@ class SongOpsEditor(QWidget):
 class ArtistsSelectionView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowFlags(Qt.ColorRole.WindowStaysOnTopHint | Qt.Dialog | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setObjectName('artists_selection_view')
 
 
@@ -558,11 +558,11 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def editorEvent(self, event, model, option, index):
         etype = event.type()
-        if etype in (QEvent.MouseButtonPress, QEvent.MouseButtonRelease):
+        if etype in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
             cell = (index.row(), index.column())
-            if etype == QEvent.MouseButtonPress:
+            if etype == QEvent.Type.MouseButtonPress:
                 self.pressed_cell = cell
-            elif etype == QEvent.MouseButtonRelease:
+            elif etype == QEvent.Type.MouseButtonRelease:
                 if cell == self.pressed_cell and cell[1] == Column.index:
                     parent = self.parent()
                     assert isinstance(parent, SongsTableView)

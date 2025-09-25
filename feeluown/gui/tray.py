@@ -161,7 +161,7 @@ class Tray(QSystemTrayIcon):
     def eventFilter(self, obj, event):
         """event filter for app"""
         app_text_idx = None
-        if event.type() == QEvent.WindowStateChange:
+        if event.type() == QEvent.Type.WindowStateChange:
             # when window is maximized before minimized, the window state will
             # be Qt.ColorRole.WindowMinimized | Qt.ColorRole.WindowMaximized
             if obj.windowState() & Qt.ColorRole.WindowMinimized:
@@ -169,9 +169,9 @@ class Tray(QSystemTrayIcon):
                 app_text_idx = 0
             else:
                 app_text_idx = 1
-        elif event.type() == QEvent.Hide:
+        elif event.type() == QEvent.Type.Hide:
             app_text_idx = 0
-        elif event.type() == QEvent.Show:
+        elif event.type() == QEvent.Type.Show:
             app_text_idx = 1
         else:
             # Only handle known event. When QApplication is quiting,

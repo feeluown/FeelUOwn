@@ -42,9 +42,9 @@ class LyricButton(TextButton):
 
     def eventFilter(self, _, event):
         """Event filter for lyric window"""
-        if event.type() == QEvent.Show:
+        if event.type() == QEvent.Type.Show:
             self.setChecked(True)
-        elif event.type() == QEvent.Hide:
+        elif event.type() == QEvent.Type.Hide:
             self.setChecked(False)
         return False
 

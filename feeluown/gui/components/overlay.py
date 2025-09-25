@@ -31,10 +31,10 @@ class AppOverlayContainer(QWidget):
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(100, 80, 100, 80)
         self._layout.addWidget(self.body)
-        self.setFocusPolicy(Qt.ClickFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         # Add ClickFocus for the body so that when Overlay will not
         # get focus when user click the body.
-        self.body.setFocusPolicy(Qt.ClickFocus)
+        self.body.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self._app.installEventFilter(self)
 
         esc_hide_widget(self)

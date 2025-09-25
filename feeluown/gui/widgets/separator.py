@@ -18,12 +18,12 @@ class Separator(QFrame):
         self._app = app
 
         if orientation == 'horizontal':
-            self.setFrameShape(QFrame.HLine)
+            self.setFrameShape(QFrame.Shape.HLine)
         else:
-            self.setFrameShape(QFrame.VLine)
+            self.setFrameShape(QFrame.Shape.VLine)
 
         if self._app.theme_mgr.theme == 'dark':
             self.setStyleSheet(stylesheet.format('#232323'))
             self.setMaximumHeight(1)
         else:
-            self.setFrameShadow(QFrame.Sunken)
+            self.setFrameShadow(QFrame.Shadow.Sunken)

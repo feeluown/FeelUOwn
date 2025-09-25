@@ -2,10 +2,10 @@ import sys
 
 from PyQt6.QtCore import Qt, QRectF, QRect, QSize
 from PyQt6.QtGui import QPalette, QColor, QTextOption, QPainter, \
-    QKeySequence, QFont, QAction
+    QKeySequence, QFont, QAction, QShortcut
 from PyQt6.QtWidgets import QLabel, QWidget, \
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
-    QMenu, QFontDialog, QShortcut, QSpacerItem
+    QMenu, QFontDialog, QSpacerItem
 
 from feeluown.gui.helpers import esc_hide_widget, resize_font, elided_text
 from feeluown.player import LyricLine
@@ -87,12 +87,12 @@ class LyricWindow(QWidget):
             # On macOS, Qt.Tooltip widget can't accept focus and it will hide
             # when the application window is actiavted. Qt.Tool widget can't
             # keep staying on top. Neither of them work well on macOS.
-            flags = Qt.ColorRole.WindowStaysOnTopHint | Qt.FramelessWindowHint
+            flags = Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint
         else:
             # TODO: use proper flags on other platforms, see #413 for more details.
             # User can customize the flags in the .fuorc or searchbox, like
             #    app.ui.lyric_windows.setWindowFlags(Qt.xx | Qt.yy)
-            flags = Qt.ColorRole.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool
+            flags = Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint | Qt.Tool
         self.setWindowFlags(flags)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setToolTip(Tooltip)
@@ -167,7 +167,9 @@ class SentenceLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setAlignment(Qt.AlignBaseline | Qt.AlignmentFlag.AlignVCenter | Qt.AlignHCenter)
+        self.setAlignment(Qt.AlignmentFlag.AlignBaseline
+                          | Qt.AlignmentFlag.AlignVCenter
+                          | Qt.AlignmentFlag.AlignHCenter)
         self.setWordWrap(False)
 
 
@@ -283,7 +285,7 @@ class InnerLyricWindow(QWidget):
         self._layout.setSpacing(0)
         self._layout.addWidget(self.line_label)
         self._layout.addWidget(self._size_grip)
-        self._layout.setAlignment(self._size_grip, Qt.AlignBottom)
+        self._layout.setAlignment(self._size_grip, Qt.AlignmentFlag.AlignBottom)
 
     def set_line(self, line: LyricLine):
         # Ignore updating when the window is invisible.

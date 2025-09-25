@@ -1,7 +1,8 @@
 from PyQt6.QtCore import QTimer, QSize
 from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
-    QHBoxLayout, QOpenGLWidget, QLabel
+    QHBoxLayout, QLabel
+from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from feeluown.player import State
 from feeluown.gui.widgets import PlayPauseButton

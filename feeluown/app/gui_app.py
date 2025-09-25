@@ -27,13 +27,14 @@ class GuiApp(App, QWidget):
         pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
         icons_dir = os.path.join(pkg_root_dir, 'gui/assets/icons')
         QDir.addSearchPath('icons', icons_dir)
-        QGuiApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
+        GuiApp.__q_app = QApplication([])
         # Set desktopFileName so that the window icon is properly shown under wayland.
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
         QApplication.setDesktopFileName('FeelUOwn')
         QApplication.instance().setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         QApplication.instance().setApplicationName('FeelUOwn')
+        QGuiApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
 
         # Note that QApplication.setFont only works for those widgets that created
         # after `QApplication.exec` (tested on macOS).

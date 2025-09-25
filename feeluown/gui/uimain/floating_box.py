@@ -250,7 +250,7 @@ class FloatingBox(QFrame):
             super().mouseReleaseEvent(e)
 
     def eventFilter(self, obj, event):
-        if obj in self.children() and event.type() == QEvent.MouseMove:
+        if obj in self.children() and event.type() == QEvent.Type.MouseMove:
             self.maybe_show_toolbar()
             self._timer.start(1000)
             return False
@@ -281,7 +281,7 @@ if __name__ == '__main__':
     qapp = QApplication([])
     theme_mgr = ThemeManager(app)
     box = FloatingBox(app)
-    box.setWindowFlags(Qt.FramelessWindowHint)
+    box.setWindowFlags(Qt.WindowType.FramelessWindowHint)
     box.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     box.circle.show_img(img)
     box.toolbar.line_song_label.setText('哈哈哈 - 嘿嘿')

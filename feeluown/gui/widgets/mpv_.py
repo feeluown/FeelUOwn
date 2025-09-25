@@ -2,7 +2,7 @@ import sys
 from contextlib import contextmanager
 
 from PyQt6.QtCore import QMetaObject, pyqtSlot, QSize
-from PyQt6.QtOpenGL import QGLContext
+from PyQt6.QtGui import QOpenGLContext
 
 from feeluown.mpv import (
     MpvRenderContext, OpenGlCbGetProcAddrFn, _mpv_set_property_string
@@ -13,7 +13,7 @@ from feeluown.gui.helpers import IS_MACOS
 
 
 def get_proc_addr(_, name):
-    glctx = QGLContext.currentContext()
+    glctx = QOpenGLContext.currentContext()
     if glctx is None:
         return 0
     addr = int(glctx.getProcAddress(name.decode('utf-8')))

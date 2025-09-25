@@ -139,7 +139,7 @@ class TwoLineSongLabel(QWidget):
 
         palette = self._subtitle_label.palette()
         palette.setColor(QPalette.ColorRole.Text, QColor('grey'))
-        palette.setColor(QPalette.ColorRole.Foreground, QColor('Grey'))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor('Grey'))
         self._subtitle_label.setPalette(palette)
 
         self._layout = QVBoxLayout(self)

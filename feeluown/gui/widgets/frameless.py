@@ -1,7 +1,7 @@
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QKeySequence
-from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, \
-    QShortcut
+from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout
+
 
 
 class ResizableFramelessContainer(QWidget):
@@ -21,7 +21,7 @@ class ResizableFramelessContainer(QWidget):
         self._widget = None
 
         # setup window layout
-        self.setWindowFlags(Qt.ColorRole.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)

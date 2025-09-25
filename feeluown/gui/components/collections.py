@@ -23,7 +23,7 @@ class CollectionListView(TextlistView):
     def __init__(self, app: 'GuiApp', **kwargs):
         super().__init__(**kwargs)
         self._app = app
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DropOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setModel(CollectionListModel(self))
 
         self.clicked.connect(self._on_clicked)
@@ -105,6 +105,6 @@ class CollectionListModel(TextlistModel):
             if item.type in (CollectionType.sys_library, CollectionType.sys_pool):
                 icon = '◉  '
             return icon + item.name
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             return item.fpath
         return super().data(index, role)

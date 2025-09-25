@@ -58,7 +58,7 @@ class MVWrapper(QWidget):
         color.setAlpha(150)
         palette_set_bg_color(palette, color)
         palette.setColor(QPalette.ColorRole.Text, QColor('white'))
-        palette.setColor(QPalette.ColorRole.Foreground, QColor('white'))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor('white'))
         palette.setColor(QPalette.ColorRole.ButtonText, QColor('white'))
         self.setPalette(palette)
 

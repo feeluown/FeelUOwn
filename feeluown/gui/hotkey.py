@@ -1,8 +1,7 @@
 from typing import cast
 
 from PyQt6.QtCore import Qt, QObject, QCoreApplication, QEvent
-from PyQt6.QtGui import QKeySequence as KS, QMouseEvent
-from PyQt6.QtWidgets import QShortcut
+from PyQt6.QtGui import QKeySequence as KS, QMouseEvent, QShortcut
 
 
 class HotkeyManager(QObject):
@@ -21,36 +20,36 @@ class HotkeyManager(QObject):
             ui.toolbar.show_and_focus_magicbox)
 
         # player
-        QShortcut(KS(Qt.Key_Space), app).activated.connect(app.player.toggle)
+        QShortcut(KS(Qt.Key.Key_Space), app).activated.connect(app.player.toggle)
 
         def p_shortcut_connect(k, cb):  # an alias to simplify code
             sc = QShortcut(KS(k), ui.pc_panel)
-            sc.setContext(Qt.WidgetWithChildrenShortcut)
+            sc.setContext(Qt.ShortcutContext.WidgetWithChildrenShortcut)
             sc.activated.connect(cb)
 
-        p_shortcut_connect(Qt.Key_Right, self._player_forward_a_little)
-        p_shortcut_connect(Qt.Key_Left, self._player_backward_a_little)
-        p_shortcut_connect(Qt.Key_Up, self._player_volume_up_a_little)
-        p_shortcut_connect(Qt.Key_Down, self._player_volume_down_a_little)
+        p_shortcut_connect(Qt.Key.Key_Right, self._player_forward_a_little)
+        p_shortcut_connect(Qt.Key.Key_Left, self._player_backward_a_little)
+        p_shortcut_connect(Qt.Key.Key_Up, self._player_volume_up_a_little)
+        p_shortcut_connect(Qt.Key.Key_Down, self._player_volume_down_a_little)
 
         # browser
-        QShortcut(KS.Back, app).activated.connect(app.browser.back)
-        QShortcut(KS.Forward, app).activated.connect(app.browser.forward)
+        QShortcut(KS.StandardKey.Back, app).activated.connect(app.browser.back)
+        QShortcut(KS.StandardKey.Forward, app).activated.connect(app.browser.forward)
 
         # install event filter on app
         q_app = cast(QCoreApplication, QCoreApplication.instance())
         q_app.installEventFilter(self)
 
     def eventFilter(self, obj, event):
-        if event.type() == QEvent.MouseButtonPress:
+        if event.type() == QEvent.Type.MouseButtonPress:
             # The event can be QContextMenuEvent.
             if not isinstance(event, QMouseEvent):
                 return False
             button = event.button()
-            if button == Qt.BackButton:
+            if button == Qt.MouseButton.BackButton:
                 self._app.browser.back()
                 return True
-            elif button == Qt.ForwardButton:
+            elif button == Qt.MouseButton.ForwardButton:
                 self._app.browser.forward()
                 return True
         return False
