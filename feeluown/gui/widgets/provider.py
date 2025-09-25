@@ -39,7 +39,7 @@ class ProvidersModel(TextlistModel):
                     return '已登录'
                 return f'{provider_ui_item.desc}'
             return f'[{provider_ui_item.text}] {provider_ui_item.desc}'
-        if role == Qt.UserRole:
+        if role == Qt.ItemDataRole.UserRole:
             return provider_ui_item
         return super().data(index, role)
 
@@ -58,7 +58,7 @@ class ProvidersDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        provider_ui_item = index.data(Qt.UserRole)
+        provider_ui_item = index.data(Qt.ItemDataRole.UserRole)
 
         painter.save()
         painter.translate(self._padding + option.rect.x(),
@@ -141,7 +141,7 @@ class ProvidersView(ItemViewNoScrollMixin, QListView):
         self.clicked.connect(self._on_clicked)
 
     def _on_clicked(self, index):
-        provider_ui_item = index.data(role=Qt.UserRole)
+        provider_ui_item = index.data(role=Qt.ItemDataRole.UserRole)
         provider_ui_item.clicked.emit()
 
     def resizeEvent(self, e):

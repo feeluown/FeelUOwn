@@ -70,7 +70,7 @@ class TextlistModel(QAbstractListModel):
             return QVariant()
         row = index.row()
         item = self.items[row]
-        if role == Qt.UserRole:
+        if role == Qt.ItemDataRole.UserRole:
             return item
         return QVariant()
 

@@ -88,7 +88,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
             return None
         if role == Qt.ItemDataRole.DisplayRole:
             return self._items[offset].title_display
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             song = self._items[offset]
             pixmap = self.get_pixmap_unblocking(song)
             return (song, pixmap)
@@ -179,20 +179,20 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         img_padding = self.img_padding
         cover_height = card_height - 2 * img_padding
         cover_width = cover_height
-        song, obj = index.data(Qt.UserRole)
+        song, obj = index.data(Qt.ItemDataRole.UserRole)
         if obj is None:
             return
 
-        selected = option.state & QStyle.State_Selected
+        selected = option.state & QStyle.StateFlag.State_Selected
         if selected:
             painter.save()
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(option.palette.color(QPalette.ColorRole.Highlight))
             painter.drawRect(rect)
             painter.restore()
         elif option.state & QStyle.State_MouseOver:
             painter.save()
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(option.palette.color(self.hover_color_role))
             painter.drawRect(rect)
             painter.restore()
@@ -243,7 +243,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
     ):
         each_height = text_height // 2
         text_option = QTextOption()
-        text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+        text_option.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
 
         # Draw title.
         title_rect = QRectF(0, 0, text_width, each_height)
@@ -252,13 +252,13 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             painter.setPen(text_color)
         else:
             painter.setPen(non_text_color)
-        elided_title = fm.elidedText(title, Qt.ElideRight, int(text_width))
+        elided_title = fm.elidedText(title, Qt.TextElideMode.ElideRight, int(text_width))
         painter.drawText(title_rect, elided_title, text_option)
 
         # Draw subtitle.
         painter.translate(0, each_height)
         subtitle_rect = QRectF(0, 0, text_width, each_height)
-        elided_title = fm.elidedText(subtitle, Qt.ElideRight, int(text_width))
+        elided_title = fm.elidedText(subtitle, Qt.TextElideMode.ElideRight, int(text_width))
         font = painter.font()
         resize_font(font, -1)
         painter.setFont(font)
@@ -319,4 +319,4 @@ class SongMiniCardListView(ItemViewNoScrollMixin, QListView):
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
-        self.play_song_needed.emit(index.data(Qt.UserRole)[0])
+        self.play_song_needed.emit(index.data(Qt.ItemDataRole.UserRole)[0])

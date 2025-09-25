@@ -22,4 +22,4 @@ class MyMusicView(TextlistView):
     def __init__(self, parent):
         super().__init__(parent)
         self.clicked.connect(
-            lambda index: index.data(role=Qt.UserRole).clicked.emit())
+            lambda index: index.data(role=Qt.ItemDataRole.UserRole).clicked.emit())

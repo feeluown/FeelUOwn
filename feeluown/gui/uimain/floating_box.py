@@ -132,10 +132,10 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.translate(*center)
         painter.rotate(self._angle)
         painter.translate(-center[0], -center[1])
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
 
         # Draw border.
-        color = darker_or_lighter(self.palette().color(QPalette.Background), 115)
+        color = darker_or_lighter(self.palette().color(QPalette.ColorRole.Window), 115)
         painter.setBrush(QBrush(color))
         painter.drawRoundedRect(self.rect(), radius, radius)
 
@@ -196,9 +196,9 @@ class FloatingBox(QFrame):
             return
 
         # Draw background for toolbar.
-        new_bg_color = darker_or_lighter(self.palette().color(QPalette.Background), 115)
+        new_bg_color = darker_or_lighter(self.palette().color(QPalette.ColorRole.Window), 115)
         painter = QPainter(self)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.save()
         painter.setBrush(new_bg_color)
         painter.drawRoundedRect(

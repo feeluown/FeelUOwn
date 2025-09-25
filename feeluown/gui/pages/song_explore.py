@@ -118,14 +118,14 @@ class HeaderLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setTextFormat(Qt.TextFormat.RichText)
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
 
 class LyricLabel(QLabel, BgTransparentMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWordWrap(True)
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         self.setAlignment(Qt.AlignHCenter)
         font = self.font()
         resize_font(font, 0)
@@ -138,7 +138,7 @@ class SongWikiLabel(QLabel):
         super().__init__(*args, **kwargs)
         self._app = app
         self.setTextFormat(Qt.TextFormat.RichText)
-        self.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         self.linkActivated.connect(self.on_link_activated)
         self.setWordWrap(True)
 
@@ -259,13 +259,13 @@ class SongExploreView(QWidget):
         self._left_layout.addWidget(self.similar_songs_view)
         self._left_layout.addSpacing(10)
 
-        self._left_top_layout.addWidget(self.cover_label, alignment=Qt.AlignTop)
+        self._left_top_layout.addWidget(self.cover_label, alignment=Qt.AlignmentFlag.AlignTop)
         self._left_top_layout.addSpacing(10)
         self._left_top_layout.addLayout(self._song_meta_layout)
 
         self._song_meta_layout.addWidget(self.title_label)
         self._song_meta_layout.addStretch(0)
-        self._song_meta_layout.addWidget(self.song_wiki_label, alignment=Qt.AlignTop)
+        self._song_meta_layout.addWidget(self.song_wiki_label, alignment=Qt.AlignmentFlag.AlignTop)
         self._song_meta_layout.addStretch(0)
         self._song_meta_layout.addLayout(self._btns_layout)
 

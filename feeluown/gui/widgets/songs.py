@@ -121,7 +121,7 @@ class SongListModel(QAbstractListModel, ReaderFetchMoreMixin):
         row = index.row()
         if role == Qt.ItemDataRole.DisplayRole:
             return self._items[row].title_display
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return self._items[row]
         return None
 
@@ -138,7 +138,7 @@ class SongListDelegate(QStyledItemDelegate):
         painter.save()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
-        song = index.data(Qt.UserRole)
+        song = index.data(Qt.ItemDataRole.UserRole)
         top = option.rect.top()
         bottom = option.rect.bottom()
         no_x = self.number_rect_x
@@ -148,28 +148,28 @@ class SongListDelegate(QStyledItemDelegate):
         # Draw duration ms
         duration_x = option.rect.topRight().x() - duration_width
         duration_rect = QRect(QPoint(duration_x, top), option.rect.bottomRight())
-        painter.drawText(duration_rect, Qt.AlignRight | Qt.AlignVCenter,
+        painter.drawText(duration_rect, Qt.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                          song.duration_ms_display)
 
         # Draw artists name
         artists_name_x = option.rect.topRight().x() - duration_width - artists_name_width
         artists_name_rect = QRect(QPoint(artists_name_x, top),
                                   QPoint(duration_x, bottom))
-        painter.drawText(artists_name_rect, Qt.AlignRight | Qt.AlignVCenter,
+        painter.drawText(artists_name_rect, Qt.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                          song.artists_name_display)
 
         # Draw song number or play_btn when it is hovered
         no_bottom_right = QPoint(no_x, bottom)
         no_rect = QRect(option.rect.topLeft(), no_bottom_right)
         if option.state & QStyle.State_MouseOver:  # type: ignore
-            painter.drawText(no_rect, Qt.AlignLeft | Qt.AlignVCenter, '►')
+            painter.drawText(no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, '►')
         else:
-            painter.drawText(no_rect, Qt.AlignLeft | Qt.AlignVCenter,
+            painter.drawText(no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
                              str(index.row() + 1))
 
         # Draw title
         title_rect = QRect(QPoint(no_x, top), QPoint(artists_name_x, bottom))
-        painter.drawText(title_rect, Qt.AlignVCenter, song.title_display)
+        painter.drawText(title_rect, Qt.AlignmentFlag.AlignVCenter, song.title_display)
 
         painter.restore()
 
@@ -185,7 +185,7 @@ class SongListDelegate(QStyledItemDelegate):
                     if self.play_btn_pressed is True:
                         parent = self.parent()
                         assert isinstance(parent, SongListView)
-                        parent.play_song_needed.emit(index.data(Qt.UserRole))
+                        parent.play_song_needed.emit(index.data(Qt.ItemDataRole.UserRole))
             if event.type() == QEvent.MouseButtonRelease:
                 self.play_btn_pressed = False
         return super().editorEvent(event, model, option, index)
@@ -214,7 +214,7 @@ class SongListView(ItemViewNoScrollMixin, QListView):
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
-        self.play_song_needed.emit(index.data(Qt.UserRole))
+        self.play_song_needed.emit(index.data(Qt.ItemDataRole.UserRole))
 
 
 class BaseSongsTableModel(QAbstractTableModel):
@@ -247,7 +247,7 @@ class BaseSongsTableModel(QAbstractTableModel):
 
         # Default flags.
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemIsDragEnabled
-        song = index.data(Qt.UserRole)
+        song = index.data(Qt.ItemDataRole.UserRole)
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
         incomplete = False
@@ -274,7 +274,7 @@ class BaseSongsTableModel(QAbstractTableModel):
         if orientation == Qt.Orientation.Horizontal:
             if role == Qt.ItemDataRole.DisplayRole:
                 return get_column_name(section)
-            elif role == Qt.SizeHintRole and self.parent() is not None:
+            elif role == Qt.ItemDataRole.SizeHintRole and self.parent() is not None:
                 # we set height to 25 since the header can be short under macOS.
                 # HELP: set height to fixed value manually is not so elegant
                 height = 25
@@ -316,12 +316,12 @@ class BaseSongsTableModel(QAbstractTableModel):
                 return song.album_name_display
         elif role == Qt.TextAlignmentRole:
             if index.column() == Column.index:
-                return Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter
+                return Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
             elif index.column() == Column.source:
-                return Qt.AlignLeft | Qt.AlignBaseline | Qt.AlignVCenter
+                return Qt.AlignmentFlag.AlignLeft | Qt.AlignBaseline | Qt.AlignmentFlag.AlignVCenter
         elif role == Qt.EditRole:
             return 1
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return song
         return QVariant()
 
@@ -330,10 +330,10 @@ class BaseSongsTableModel(QAbstractTableModel):
         # len(indexes) is equal to length of items which have ItemIsDragEnabled flag.
         indexes = list(indexes)  # Make typing checkers happy.
         if len(indexes) > 1:
-            # UserRole data of all indexes should be the same,
+            # ItemDataRole.UserRole data of all indexes should be the same,
             # so just use the a random one.
             index = indexes[0]
-            song = index.data(Qt.UserRole)
+            song = index.data(Qt.ItemDataRole.UserRole)
             return ModelMimeData(song)
 
 
@@ -371,7 +371,7 @@ class SongFilterProxyModel(QSortFilterProxyModel):
 
         source_model = self.sourceModel()
         index = source_model.index(source_row, Column.song, parent=source_parent)
-        song = index.data(Qt.UserRole)
+        song = index.data(Qt.ItemDataRole.UserRole)
         text = self.text.lower()
         ctx = song.title_display.lower() + \
             song.album_name_display.lower() + \
@@ -391,9 +391,9 @@ class ArtistsModel(QAbstractListModel):
         artist = self.artists[index.row()]
         if role == Qt.ItemDataRole.DisplayRole:
             return artist.name
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return artist
-        elif role == Qt.SizeHintRole:
+        elif role == Qt.ItemDataRole.SizeHintRole:
             return QSize(100, 30)
         return QVariant()
 
@@ -453,7 +453,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                 editor.setCurrentIndex(QModelIndex())
 
         if index.column() == Column.artist:
-            song = index.data(role=Qt.UserRole)
+            song = index.data(role=Qt.ItemDataRole.UserRole)
             future = aio.run_fn(self._app.library.song_upgrade, song)
             future.add_done_callback(cb)
 
@@ -461,7 +461,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         if index.column() == Column.artist:
             index = editor.currentIndex()
             if index.isValid():
-                artist = index.data(Qt.UserRole)
+                artist = index.data(Qt.ItemDataRole.UserRole)
                 self.view.show_artist_needed.emit(artist)
         super().setModelData(editor, model, index)
 
@@ -477,7 +477,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         if hovered and index.column() == Column.index:
             painter.save()
             # Override the content drawed by super().paint.
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             # HELP(cosven): when an item was hovered, super().paint may draw
             # a semi-transparent rect over the item or draw a different color
             # for the text. The rect/text color may not be in the palette.
@@ -509,13 +509,13 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.save()
             mask_color = option.palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Text)
             mask_color.setAlpha(20)
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(mask_color)
             painter.drawRect(option.rect)
             painter.restore()
 
     def paint_vip_tag(self, painter, option, index):
-        song = index.data(Qt.UserRole)
+        song = index.data(Qt.ItemDataRole.UserRole)
         if (ModelFlags.normal in ModelFlags(song.meta.flags) and
                 MediaFlags.vip in MediaFlags(song.media_flags)):
             with painter_save(painter):
@@ -566,7 +566,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                 if cell == self.pressed_cell and cell[1] == Column.index:
                     parent = self.parent()
                     assert isinstance(parent, SongsTableView)
-                    parent.play_song_needed.emit(index.data(Qt.UserRole))
+                    parent.play_song_needed.emit(index.data(Qt.ItemDataRole.UserRole))
                 self.pressed_cell = None
 
         return super().editorEvent(event, model, option, index)
@@ -614,7 +614,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.verticalHeader().hide()
         self.horizontalHeader().hide()
         self.setWordWrap(False)
-        self.setTextElideMode(Qt.ElideRight)
+        self.setTextElideMode(Qt.TextElideMode.ElideRight)
         self.setMouseTracking(True)
         self.setEditTriggers(QAbstractItemView.EditTrigger.SelectedClicked)
         self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
@@ -624,7 +624,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setShowGrid(False)
         self.setDragEnabled(True)
-        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragDropMode.DragOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragOnly)
 
     def setModel(self, model):
         super().setModel(model)
@@ -681,7 +681,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
             remove_song_action.setDisabled(True)
 
         model = self.model()
-        models = [model.data(index, Qt.UserRole) for index in indexes]
+        models = [model.data(index, Qt.ItemDataRole.UserRole) for index in indexes]
 
         def add_action(text, callback):
             action = QAction(text, menu)
@@ -702,7 +702,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         model = self.model()
         songs = []
         for index in indexes:
-            song = model.data(index, Qt.UserRole)
+            song = model.data(index, Qt.ItemDataRole.UserRole)
             songs.append(song)
         self.add_to_playlist_needed.emit(songs)
 
@@ -711,7 +711,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         # We don't use set because song may be a not hashable object.
         songs_to_remove = []
         for index in indexes:
-            song = model.data(index, Qt.UserRole)
+            song = model.data(index, Qt.ItemDataRole.UserRole)
             if song not in songs_to_remove:
                 songs_to_remove.append(song)
         for song in songs_to_remove:
@@ -720,7 +720,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
     def viewportEvent(self, event):
         res = super().viewportEvent(event)
-        if event.type() == QEvent.Leave:
+        if event.type() == QEvent.Type.Leave:
             self.row_hovered.emit(None)
         return res
 

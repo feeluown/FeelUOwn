@@ -1,4 +1,4 @@
-from PyQt6.QtCore import Qt, QRect, QEvent
+from PyQt6.QtCore import Qt, QRect, QEvent, QPointF
 from PyQt6.QtWidgets import (
     QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout,
     QApplication,
@@ -185,13 +185,13 @@ class PlaylistOverlay(QWidget):
         super().paintEvent(e)
 
         painter = QPainter(self)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
 
         # Draw shadow effect on the left side.
         painter.save()
         shadow_width = self._shadow_width
         rect = QRect(0, 0, shadow_width, self.height())
-        gradient = QLinearGradient(rect.topRight(), rect.topLeft())
+        gradient = QLinearGradient(QPointF(rect.topRight()), QPointF(rect.topLeft()))
         gradient.setColorAt(0, acolor('black', 70))
         gradient.setColorAt(0.05, acolor('black', 60))
         gradient.setColorAt(0.1, acolor('black', 30))
@@ -213,7 +213,7 @@ class PlaylistOverlay(QWidget):
         """
         Hide myself when the app is resized.
         """
-        if obj is self._app and event.type() == QEvent.Resize:
+        if obj is self._app and event.type() == QEvent.Type.Resize:
             self.hide()
         return False
 

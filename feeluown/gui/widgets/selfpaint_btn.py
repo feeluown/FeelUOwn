@@ -53,8 +53,8 @@ class SelfPaintAbstractButton(QPushButton):
 
         if opt.state & QStyle.State_MouseOver:
             painter.save()
-            painter.setPen(Qt.NoPen)
-            color = self.palette().color(QPalette.Background)
+            painter.setPen(Qt.PenStyle.NoPen)
+            color = self.palette().color(QPalette.ColorRole.Window)
             painter.setBrush(darker_or_lighter(color, 120))
             painter.drawRoundedRect(self.rect(), radius, radius)
             painter.restore()
@@ -85,7 +85,7 @@ class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
             self.height(), 0,
             self.width() - self.height() - self._padding, self.height()
         )
-        painter.drawText(text_rect, Qt.AlignVCenter | Qt.AlignLeft, self._text)
+        painter.drawText(text_rect, Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft, self._text)
 
     def draw_icon(self, painter):
         raise NotImplementedError
@@ -107,8 +107,8 @@ class SelfPaintAbstractSquareButton(SelfPaintAbstractButton):
 
     def paint_round_bg(self, painter):
         painter.save()
-        painter.setPen(Qt.NoPen)
-        color = self.palette().color(QPalette.Background)
+        painter.setPen(Qt.PenStyle.NoPen)
+        color = self.palette().color(QPalette.ColorRole.Window)
         painter.setBrush(darker_or_lighter(color, 120))
         painter.drawEllipse(self.rect())
         painter.restore()
@@ -523,7 +523,7 @@ class MVButton(SelfPaintAbstractSquareButton):
         with painter_save(painter):
             set_pen_1_5(painter)
             if opt.state & QStyle.State_MouseOver:
-                color = self.palette().color(QPalette.Background)
+                color = self.palette().color(QPalette.ColorRole.Window)
                 painter.setBrush(darker_or_lighter(color, 120))
             painter.drawRoundedRect(rect, 3, 3)
         self.drawer.draw(painter)

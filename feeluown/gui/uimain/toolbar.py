@@ -79,7 +79,7 @@ class BottomPanel(QWidget):
 
         self.setFixedHeight(height + v_margin * 2 + 8)
         self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
-        self._layout.setAlignment(self._stacked_widget, Qt.AlignVCenter)
+        self._layout.setAlignment(self._stacked_widget, Qt.AlignmentFlag.AlignVCenter)
         self._layout.setSpacing(ButtonSpacing)
 
     def _show_next_stacked_widget(self):

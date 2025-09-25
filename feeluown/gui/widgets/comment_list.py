@@ -40,7 +40,7 @@ class CommentListModel(QAbstractListModel):
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
-        if role == Qt.UserRole:
+        if role == Qt.ItemDataRole.UserRole:
             return self._reader.read(index.row())
         return None
 
@@ -70,7 +70,7 @@ class CommentListDelegate(QStyledItemDelegate):
         fm = QFontMetrics(option.font)
 
         painter.save()
-        comment = index.data(Qt.UserRole)
+        comment = index.data(Qt.ItemDataRole.UserRole)
 
         # size for render comment
         body_width = option.rect.width() - self._margin_h_total
@@ -85,7 +85,7 @@ class CommentListDelegate(QStyledItemDelegate):
         font.setBold(True)
         painter.setFont(font)
         name_rect = QRect(0, 0, body_width, self._name_height)
-        painter.drawText(name_rect, Qt.AlignLeft, comment.user.name)
+        painter.drawText(name_rect, Qt.AlignmentFlag.AlignLeft, comment.user.name)
         painter.restore()
 
         # draw comment other metadata
@@ -115,7 +115,7 @@ class CommentListDelegate(QStyledItemDelegate):
         content_height = self._get_text_height(fm, body_width, comment.content)
         content_rect = QRect(0, 0, body_width, content_height)
         painter.drawText(content_rect,
-                         Qt.TextWordWrap,
+                         Qt.TextFlag.TextWordWrap,
                          comment.content)
         parent_comment = comment.parent
         if parent_comment is not None:
@@ -132,7 +132,7 @@ class CommentListDelegate(QStyledItemDelegate):
                                    p_body_rect.height() - p_paddings.height)
             bg_color = option.palette.color(self._quoted_bg_color_role)
             painter.fillRect(p_body_rect, bg_color)
-            painter.drawText(p_content_rect, Qt.TextWordWrap, text)
+            painter.drawText(p_content_rect, Qt.TextFlag.TextWordWrap, text)
 
         painter.restore()
 
@@ -155,7 +155,7 @@ class CommentListDelegate(QStyledItemDelegate):
         super_size_hint = super().sizeHint(option, index)
         parent_width = self.parent().width()  # type: ignore
         fm = QFontMetrics(option.font)
-        comment = index.data(Qt.UserRole)
+        comment = index.data(Qt.ItemDataRole.UserRole)
         content_width = parent_width - self._margin_h_total
         content_height = self._get_text_height(fm, content_width, comment.content)
         height = content_height + self._name_height + \
@@ -172,7 +172,7 @@ class CommentListDelegate(QStyledItemDelegate):
     def _get_text_height(self, fm, width, text):
         return fm.boundingRect(
             QRect(0, 0, width, 0),
-            Qt.TextWordWrap,
+            Qt.TextFlag.TextWordWrap,
             text
         ).height()
 

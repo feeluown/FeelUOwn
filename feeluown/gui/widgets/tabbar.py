@@ -35,13 +35,13 @@ class Tab(Enum):
 
 class TabBarStyle(QProxyStyle):
     def drawControl(self, element, option, painter, widget):
-        if element == QStyle.CE_TabBarTabShape:
+        if element == QStyle.ControlElement.CE_TabBarTabShape:
             # https://code.woboq.org/qt5/qtbase/src/plugins/styles/mac/qmacstyle_mac.mm.html#613
             # On macOS, there will be seperate line between tabs, which looks bad.
             # So we paint the tab shape by ourselves.
             painter.save()
             rect = option.rect
-            is_selected = option.state & QStyle.State_Selected
+            is_selected = option.state & QStyle.StateFlag.State_Selected
             color = widget.palette().color(QPalette.ColorRole.Base)
             if is_selected:
                 color.setAlpha(160)
@@ -50,7 +50,7 @@ class TabBarStyle(QProxyStyle):
                 color.setAlpha(80)
                 painter.fillRect(rect, color)
             painter.restore()
-        elif element == QStyle.CE_TabBarTabLabel:
+        elif element == QStyle.ControlElement.CE_TabBarTabLabel:
             # HELP: Changing font size in QTabBar does not work, so we
             # resize font size here.
             painter.save()

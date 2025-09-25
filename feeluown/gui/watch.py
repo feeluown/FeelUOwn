@@ -40,7 +40,7 @@ class FullWindowContainer(QWidget):
         super().showEvent(e)
 
     def eventFilter(self, obj, event):
-        if self.isVisible() and obj is self._app and event.type() == QEvent.Resize:
+        if self.isVisible() and obj is self._app and event.type() == QEvent.Type.Resize:
             event = cast(QResizeEvent, event)
             self.resize(event.size())
         return False

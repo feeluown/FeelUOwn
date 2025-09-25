@@ -106,13 +106,13 @@ class LineSongLabel(QLabel):
             self._txt = self._raw_text
         else:
             self._txt = self.fontMetrics().elidedText(
-                self._raw_text, Qt.ElideRight, self.width()
+                self._raw_text, Qt.TextElideMode.ElideRight, self.width()
             )
 
         painter.drawText(
             QRect(self._pos, 0,
                   self.width() - self._pos, self.height()),
-            Qt.AlignLeft | Qt.AlignVCenter, self._txt
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, self._txt
         )  # type: ignore[call-overload]
 
     def contextMenuEvent(self, e):
@@ -139,7 +139,7 @@ class TwoLineSongLabel(QWidget):
 
         palette = self._subtitle_label.palette()
         palette.setColor(QPalette.ColorRole.Text, QColor('grey'))
-        palette.setColor(QPalette.Foreground, QColor('Grey'))
+        palette.setColor(QPalette.ColorRole.Foreground, QColor('Grey'))
         self._subtitle_label.setPalette(palette)
 
         self._layout = QVBoxLayout(self)

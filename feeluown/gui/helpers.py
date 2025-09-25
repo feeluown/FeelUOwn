@@ -337,7 +337,7 @@ def elided_text(text, width, font=None):
     if font is None:
         font = QApplication.font()
     font_metrics = QFontMetrics(font)
-    return font_metrics.elidedText(text, Qt.ElideRight, width)
+    return font_metrics.elidedText(text, Qt.TextElideMode.ElideRight, width)
 
 
 class Paddings(tuple):

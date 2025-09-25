@@ -72,7 +72,7 @@ class StatuslineLabel(QLabel):
             return
         radius = self._width // 2
         painter.save()
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QColor(self._app.theme_mgr.get_pressed_color()))
         painter.drawRoundedRect(self.rect(), radius, radius)
         painter.restore()

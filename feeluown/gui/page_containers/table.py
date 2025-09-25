@@ -237,9 +237,9 @@ class DescLabel(QLabel):
 
         self.setContentsMargins(30, 15, 30, 10)
         self.setWordWrap(True)
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
-        self.palette().setColor(QPalette.Background, self.palette().color(QPalette.ColorRole.Base))
+        self.palette().setColor(QPalette.ColorRole.Window, self.palette().color(QPalette.ColorRole.Base))
 
 
 class TableContainer(QFrame, BgTransparentMixin):
@@ -483,7 +483,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         """
         from feeluown.gui.widgets.songs import Column
 
-        song = index.data(Qt.UserRole)
+        song = index.data(Qt.ItemDataRole.UserRole)
         if index.column() == Column.song:
             # .. versionadded:: 3.7.11
             #    Reset playlist with songs in table if Alt key is pressed.

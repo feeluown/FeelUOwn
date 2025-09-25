@@ -37,7 +37,7 @@ class CollectionListView(TextlistView):
             model.add(coll)
 
     def _on_clicked(self, index):
-        collection = index.data(role=Qt.UserRole)
+        collection = index.data(role=Qt.ItemDataRole.UserRole)
         self.show_collection.emit(collection)
 
     def contextMenuEvent(self, event):
@@ -45,7 +45,7 @@ class CollectionListView(TextlistView):
         if len(indexes) != 1:
             return
 
-        collection: Collection = self.model().data(indexes[0], Qt.UserRole)
+        collection: Collection = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
         action = menu.addAction('删除此收藏集')
         action.triggered.connect(lambda: self.remove_collection.emit(collection))
@@ -80,7 +80,7 @@ class CollectionListView(TextlistView):
         mimedata = e.mimeData()
         model = mimedata.model
         index = self.indexAt(e.pos())
-        coll = index.data(Qt.UserRole)
+        coll = index.data(Qt.ItemDataRole.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()
         is_success = coll.add(model)

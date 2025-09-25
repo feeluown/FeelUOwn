@@ -16,7 +16,7 @@ class LyricView(QListWidget):
         super().__init__(parent)
 
         self._lyric = None
-        self._alignment = Qt.AlignLeft
+        self._alignment = Qt.AlignmentFlag.AlignLeft
         self._highlight_font_size = 18
 
         self.setFrameShape(QFrame.Shape.NoFrame)

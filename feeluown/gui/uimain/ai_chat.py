@@ -191,12 +191,12 @@ class Body(QWidget):
         label = RoundedLabel()
         label.setText(content)
         label.setWordWrap(True)
-        label.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         label.setFrameStyle(QFrame.Shape.NoFrame)
 
         width_factor = 0.6 if role in ('user', 'system') else 1
         label.setMaximumWidth(int(self._history_area.width() * width_factor))
-        label.setAlignment(Qt.AlignLeft)
+        label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         pal = label.palette()
         if role in ('user', 'system'):

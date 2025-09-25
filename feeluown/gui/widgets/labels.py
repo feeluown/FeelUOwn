@@ -32,7 +32,7 @@ class ElidedLineLabel(QLabel):
         super().__init__(text, **kwargs)
         self._src_text = text
         self.setWordWrap(False)
-        self.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
+        self.setAlignment(Qt.AlignmentFlag.AlignVCenter | Qt.AlignmentFlag.AlignLeft)
         # Set horizental size policy to Preferred so that this label
         # can shrink or expand when the parent is resized.
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)

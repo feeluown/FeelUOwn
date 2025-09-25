@@ -130,7 +130,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             return color
         elif role == Qt.ItemDataRole.DisplayRole:
             return item.name_display
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return item
         elif role == Qt.WhatsThisRole:
             return self.source_name_map.get(item.source, item.source)
@@ -247,20 +247,20 @@ class ImgCardListDelegate(QAbstractItemDelegate):
     def draw_title(self, painter, index, text_rect):
         text_option = QTextOption()
         if self.as_circle:
-            text_option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            text_option.setAlignment(Qt.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         else:
-            text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
+            text_option.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         name = index.data(Qt.ItemDataRole.DisplayRole)
         fm = QFontMetrics(painter.font())
-        elided_name = fm.elidedText(name, Qt.ElideRight, int(text_rect.width()))
+        elided_name = fm.elidedText(name, Qt.TextElideMode.ElideRight, int(text_rect.width()))
         painter.drawText(text_rect, elided_name, text_option)
 
     def draw_whats_this(self, painter, index, non_text_color, whats_this_rect):
         source_option = QTextOption()
         if self.as_circle:
-            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         else:
-            source_option.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+            source_option.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         whats_this = index.data(Qt.WhatsThisRole)
         pen = painter.pen()
         font = painter.font()
@@ -328,7 +328,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         return self.h_spacing
 
     def eventFilter(self, _: QObject, event: QEvent):
-        if event.type() == QEvent.Resize:
+        if event.type() == QEvent.Type.Resize:
             event = cast(QResizeEvent, event)
             self.on_view_resized(event.size(), event.oldSize())
         return False
@@ -350,7 +350,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
         accepted = True
         source_model = cast(ImgCardListModel, self.sourceModel())
         index = source_model.index(source_row, parent=source_parent)
-        artist = index.data(Qt.UserRole)
+        artist = index.data(Qt.ItemDataRole.UserRole)
         if self.text:
             accepted = self.text.lower() in artist.name_display.lower()
         return accepted
@@ -422,7 +422,7 @@ class VideoCardListView(ImgCardListView):
     play_video_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        video = index.data(Qt.UserRole)
+        video = index.data(Qt.ItemDataRole.UserRole)
         self.play_video_needed.emit(video)
 
 
@@ -458,7 +458,7 @@ class PlaylistCardListView(ImgCardListView):
     show_playlist_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        artist = index.data(Qt.UserRole)
+        artist = index.data(Qt.ItemDataRole.UserRole)
         self.show_playlist_needed.emit(artist)
 
 
@@ -481,7 +481,7 @@ class ArtistCardListView(ImgCardListView):
     show_artist_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        artist = index.data(Qt.UserRole)
+        artist = index.data(Qt.ItemDataRole.UserRole)
         self.show_artist_needed.emit(artist)
 
 
@@ -526,7 +526,7 @@ class AlbumFilterProxyModel(ImgFilterProxyModel):
         source_model = self.sourceModel()
         assert isinstance(source_model, AlbumCardListModel)
         index = source_model.index(source_row, parent=source_parent)
-        album = index.data(Qt.UserRole)
+        album = index.data(Qt.ItemDataRole.UserRole)
         if accepted and self.types:
             accepted = AlbumType(album.type_) in self.types
         return accepted
@@ -536,5 +536,5 @@ class AlbumCardListView(ImgCardListView):
     show_album_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        album = index.data(Qt.UserRole)
+        album = index.data(Qt.ItemDataRole.UserRole)
         self.show_album_needed.emit(album)

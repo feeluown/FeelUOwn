@@ -167,7 +167,7 @@ class SentenceLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setAlignment(Qt.AlignBaseline | Qt.AlignVCenter | Qt.AlignHCenter)
+        self.setAlignment(Qt.AlignBaseline | Qt.AlignmentFlag.AlignVCenter | Qt.AlignHCenter)
         self.setWordWrap(False)
 
 
@@ -325,7 +325,7 @@ class InnerLyricWindow(QWidget):
         """
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), self._border_radius, self._border_radius)
 
@@ -335,7 +335,7 @@ class InnerLyricWindow(QWidget):
         painter.save()
         painter.setPen(QColor('white'))
         option = QTextOption()
-        option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        option.setAlignment(Qt.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         rect = QRect(self.mapToParent(self._size_grip.pos()), self._size_grip.size())
         painter.drawText(QRectF(rect), '●', option)
         painter.restore()

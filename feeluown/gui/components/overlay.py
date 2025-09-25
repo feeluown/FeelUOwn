@@ -58,7 +58,7 @@ class AppOverlayContainer(QWidget):
 
     def eventFilter(self, obj, event):
         """Handle parent resize events"""
-        if self.isVisible() and obj == self._app and event.type() == QEvent.Resize:
+        if self.isVisible() and obj == self._app and event.type() == QEvent.Type.Resize:
             event = cast(QResizeEvent, event)
             self.resize(event.size())
         return super().eventFilter(obj, event)

@@ -36,7 +36,7 @@ class PlayerPlaylistModel(SongMiniCardListModel):
 
     def flags(self, index):
         flags = super().flags(index)
-        song = index.data(Qt.UserRole)[0]
+        song = index.data(Qt.ItemDataRole.UserRole)[0]
         if self._playlist.is_bad(song):
             # Disable bad song.
             flags &= ~Qt.ItemFlag.ItemIsEnabled
@@ -79,7 +79,7 @@ class PlayerPlaylistView(SongMiniCardListView):
         if not indexes:
             return
 
-        songs = [index.data(Qt.UserRole)[0] for index in indexes]
+        songs = [index.data(Qt.ItemDataRole.UserRole)[0] for index in indexes]
         menu = QMenu()
         if self._app.playlist.mode is PlaylistMode.fm:
             btn_text = '不想听'

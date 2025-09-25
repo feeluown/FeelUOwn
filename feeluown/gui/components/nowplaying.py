@@ -58,7 +58,7 @@ class MVWrapper(QWidget):
         color.setAlpha(150)
         palette_set_bg_color(palette, color)
         palette.setColor(QPalette.ColorRole.Text, QColor('white'))
-        palette.setColor(QPalette.Foreground, QColor('white'))
+        palette.setColor(QPalette.ColorRole.Foreground, QColor('white'))
         palette.setColor(QPalette.ColorRole.ButtonText, QColor('white'))
         self.setPalette(palette)
 
@@ -73,7 +73,7 @@ class MVWrapper(QWidget):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), 3, 3)
 
@@ -99,7 +99,7 @@ class NowplayingArtwork(QWidget):
         self.layout().setContentsMargins(0, 0, 0, 0)
         self.layout().setSpacing(0)
         self._stacked_layout.addWidget(self._inner)
-        self.layout().setAlignment(self._inner, Qt.AlignVCenter)
+        self.layout().setAlignment(self._inner, Qt.AlignmentFlag.AlignVCenter)
 
         self._mv_wrapper.raise_()
 
@@ -112,7 +112,7 @@ class NowplayingArtwork(QWidget):
         else:
             self._stacked_layout.addWidget(widget)
             self._stacked_layout.setCurrentWidget(widget)
-            self._stacked_layout.setAlignment(widget, Qt.AlignVCenter)
+            self._stacked_layout.setAlignment(widget, Qt.AlignmentFlag.AlignVCenter)
             self._mv_wrapper.hide()
 
     def on_current_song_mv_changed(self, _, mv):
@@ -172,7 +172,7 @@ class NowplayingLyricView(LyricView):
         item = super()._create_item(line)
         rect = QFontMetrics(item.font()).boundingRect(line)
         size = QSize(rect.width(), rect.height() + self._item_spacing)
-        item.setData(Qt.UserRole, (line, size))
+        item.setData(Qt.ItemDataRole.UserRole, (line, size))
         item.setSizeHint(size)
         return item
 
@@ -180,7 +180,7 @@ class NowplayingLyricView(LyricView):
         super().on_item_changed(current, previous)
 
         if current:
-            line, size_hint = current.data(Qt.UserRole)
+            line, size_hint = current.data(Qt.ItemDataRole.UserRole)
             rect = QFontMetrics(current.font()).boundingRect(line)
             current.setSizeHint(
                 QSize(
@@ -192,7 +192,7 @@ class NowplayingLyricView(LyricView):
     def reset_item(self, item):
         super().reset_item(item)
         if item:
-            item.setSizeHint(item.data(Qt.UserRole)[1])
+            item.setSizeHint(item.data(Qt.ItemDataRole.UserRole)[1])
 
 
 class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):

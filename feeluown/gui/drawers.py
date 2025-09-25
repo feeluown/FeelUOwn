@@ -72,7 +72,7 @@ class SizedPixmapDrawer:
     def _draw_random_color(self, painter: QPainter):
         brush = QBrush(self._color)
         painter.setBrush(brush)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         rect = self.get_rect()
         radius = self.get_radius()
         if radius == 0:
@@ -85,7 +85,7 @@ class SizedPixmapDrawer:
 
         brush = QBrush(self._pixmap)
         painter.setBrush(brush)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         radius = self.get_radius()
         size = self._pixmap.size() / self._pixmap.devicePixelRatio()
         target_rect = self.get_rect()
@@ -310,7 +310,7 @@ class AIIconDrawer:
             painter.setPen(pen)
             painter.drawArc(self._center_rect, start_alen * 2, start_alen)
 
-            painter.setPen(Qt.NoPen)
+            painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(self._colors[5])
             painter.drawEllipse(self._top_circle)
             painter.setBrush(self._colors[1])
@@ -566,4 +566,4 @@ class EmojiIconDrawer:
                 # -1 works well on KDE when length is in range(30, 200)
                 font.setPixelSize(width - (self._length // 20))
             painter.setFont(font)
-            painter.drawText(0, 0, width, width, Qt.AlignHCenter | Qt.AlignVCenter, self._emoji)
+            painter.drawText(0, 0, width, width, Qt.AlignHCenter | Qt.AlignmentFlag.AlignVCenter, self._emoji)

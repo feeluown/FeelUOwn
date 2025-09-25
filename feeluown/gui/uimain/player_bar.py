@@ -74,7 +74,7 @@ class PlayerControlPanel(QFrame):
         self.position_label = ProgressLabel(app, parent=self)
 
         # we should enable focus since we want to have shortcut keys
-        self.setFocusPolicy(Qt.StrongFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.volume_btn.change_volume_needed.connect(
             lambda volume: setattr(self._app.player, 'volume', volume))

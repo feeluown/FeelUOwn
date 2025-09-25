@@ -105,7 +105,7 @@ class PlaylistsView(TextlistView):
         self.clicked.connect(self._on_clicked)
 
     def _on_clicked(self, index):
-        playlist = index.data(role=Qt.UserRole)
+        playlist = index.data(role=Qt.ItemDataRole.UserRole)
         self.show_playlist.emit(playlist)
 
     def contextMenuEvent(self, event):
@@ -113,7 +113,7 @@ class PlaylistsView(TextlistView):
         if len(indexes) != 1:
             return
 
-        playlist = self.model().data(indexes[0], Qt.UserRole)
+        playlist = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
         action = menu.addAction('删除此歌单')
         action.triggered.connect(lambda: self.remove_playlist.emit(playlist))
@@ -123,7 +123,7 @@ class PlaylistsView(TextlistView):
         mimedata = e.mimeData()
         song = mimedata.model
         index = self.indexAt(e.pos())
-        playlist = index.data(Qt.UserRole)
+        playlist = index.data(Qt.ItemDataRole.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()
 
@@ -149,7 +149,7 @@ class PlaylistsView(TextlistView):
         mimedata = e.mimeData()
         song = mimedata.model
         index = self.indexAt(e.pos())
-        playlist = index.data(Qt.UserRole)
+        playlist = index.data(Qt.ItemDataRole.UserRole)
         if song.source == playlist.source:
             e.accept()
             return

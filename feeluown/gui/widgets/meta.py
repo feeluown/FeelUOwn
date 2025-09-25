@@ -89,7 +89,7 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._h_layout.addWidget(self.cover_label)
-        self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
+        self._h_layout.setAlignment(self.cover_label, Qt.AlignmentFlag.AlignTop)
         self._h_layout.addLayout(self._right_layout)
         self._h_layout.setStretchFactor(self._right_layout, 2)
         self._h_layout.setStretchFactor(self.cover_label, 1)
@@ -106,7 +106,7 @@ class TableMetaWidget(MetaWidget):
 
     def add_tabbar(self, tabbar):
         self._right_layout.addWidget(tabbar)
-        self._right_layout.setAlignment(tabbar, Qt.AlignLeft)
+        self._right_layout.setAlignment(tabbar, Qt.AlignmentFlag.AlignLeft)
 
     def set_cover_image(self, image):
         if image is not None:

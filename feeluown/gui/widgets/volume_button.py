@@ -43,8 +43,8 @@ class VolumeButton(QAbstractSlider):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         if self.__checked is True:
             with painter_save(painter):
-                painter.setPen(Qt.NoPen)
-                color = self.palette().color(QPalette.Background)
+                painter.setPen(Qt.PenStyle.NoPen)
+                color = self.palette().color(QPalette.ColorRole.Window)
                 painter.setBrush(darker_or_lighter(color, 120))
                 painter.drawEllipse(self.rect())
             painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, f'{self.value()}%')

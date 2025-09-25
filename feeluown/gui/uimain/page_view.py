@@ -56,7 +56,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         return height
 
     def eventFilter(self, _, event):
-        if event.type() == QEvent.Resize:
+        if event.type() == QEvent.Type.Resize:
             self.maybe_resize_itemview()
         return False
 
@@ -127,7 +127,7 @@ class RightPanel(QFrame):
 
     def eventFilter(self, _, event):
         # Refresh when the body is scrolled.
-        if event.type() == QEvent.Wheel:
+        if event.type() == QEvent.Type.Wheel:
             self.update()
         return False
 
@@ -171,7 +171,7 @@ class RightPanel(QFrame):
         HELP: currently, this cost much CPU
         """
         painter = QPainter(self)
-        painter.setPen(Qt.NoPen)
+        painter.setPen(Qt.PenStyle.NoPen)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 

@@ -30,7 +30,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         # refer to pixelator.py
-        if option.state & QStyle.State_Selected:
+        if option.state & QStyle.StateFlag.State_Selected:
             painter.fillRect(option.rect, option.palette.highlight())
 
         painter.save()
@@ -38,7 +38,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
 
         text_pen = QPen(option.palette.color(QPalette.Text))
         hl_text_pen = QPen(option.palette.color(QPalette.HighlightedText))
-        if option.state & QStyle.State_Selected:
+        if option.state & QStyle.StateFlag.State_Selected:
             painter.setPen(hl_text_pen)
         else:
             painter.setPen(text_pen)
@@ -95,7 +95,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
         text = index.data(Qt.ItemDataRole.DisplayRole)
         topleft = option.rect.topLeft()
         topleft = QPoint(topleft.x() + 2*r + 15, topleft.y())
-        painter.drawText(QRect(topleft, option.rect.bottomRight()), Qt.AlignVCenter, text)
+        painter.drawText(QRect(topleft, option.rect.bottomRight()), Qt.AlignmentFlag.AlignVCenter, text)
         painter.restore()
 
     def sizeHint(self, option, index):
