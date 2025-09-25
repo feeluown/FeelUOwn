@@ -1,8 +1,8 @@
 from typing import cast
 
-from PyQt5.QtCore import Qt, QObject, QCoreApplication, QEvent
-from PyQt5.QtGui import QKeySequence as KS, QMouseEvent
-from PyQt5.QtWidgets import QShortcut
+from PyQt6.QtCore import Qt, QObject, QCoreApplication, QEvent
+from PyQt6.QtGui import QKeySequence as KS, QMouseEvent
+from PyQt6.QtWidgets import QShortcut
 
 
 class HotkeyManager(QObject):

@@ -1,9 +1,9 @@
 from enum import Enum
 
-from PyQt5.QtCore import pyqtSignal, QSize
-from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
+from PyQt6.QtCore import pyqtSignal, QSize
+from PyQt6.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
         QStyle, QProxyStyle
-from PyQt5.QtGui import QPalette
+from PyQt6.QtGui import QPalette
 
 from feeluown.gui.helpers import resize_font
 

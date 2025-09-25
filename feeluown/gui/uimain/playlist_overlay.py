@@ -1,9 +1,9 @@
-from PyQt5.QtCore import Qt, QRect, QEvent
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt, QRect, QEvent
+from PyQt6.QtWidgets import (
     QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout,
     QApplication,
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QColor, QLinearGradient, QPalette, QPainter,
 )
 

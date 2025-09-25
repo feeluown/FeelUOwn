@@ -3,14 +3,14 @@ import logging
 from enum import IntEnum, Enum
 from functools import partial
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     pyqtSignal, Qt, QVariant, QEvent,
     QAbstractTableModel, QAbstractListModel, QModelIndex,
     QSize, QRect, QPoint, QPointF, QSortFilterProxyModel,
 )
-from PyQt5.QtGui import QPainter, QPalette, QMouseEvent, QPolygonF
-from PyQt5.QtWidgets import (
-    QAction, QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
+from PyQt6.QtGui import QPainter, QPalette, QMouseEvent, QPolygonF, QAction
+from PyQt6.QtWidgets import (
+    QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
     QPushButton, QTableView, QWidget, QMenu, QListView,
     QStyle, QSizePolicy, QStyledItemDelegate
 )
@@ -117,9 +117,9 @@ class SongListModel(QAbstractListModel, ReaderFetchMoreMixin):
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return self._items[row].title_display
         elif role == Qt.UserRole:
             return self._items[row]
@@ -206,11 +206,11 @@ class SongListView(ItemViewNoScrollMixin, QListView):
 
         self.delegate = SongListDelegate(self)
         self.setItemDelegate(self.delegate)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setMouseTracking(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.activated.connect(self._on_activated)
 
     def _on_activated(self, index):
@@ -270,9 +270,9 @@ class BaseSongsTableModel(QAbstractTableModel):
     def columnCount(self, _=QModelIndex()):
         return 6
 
-    def headerData(self, section, orientation, role=Qt.DisplayRole):
-        if orientation == Qt.Horizontal:
-            if role == Qt.DisplayRole:
+    def headerData(self, section, orientation, role=Qt.ItemDataRole.DisplayRole):
+        if orientation == Qt.Orientation.Horizontal:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return get_column_name(section)
             elif role == Qt.SizeHintRole and self.parent() is not None:
                 # we set height to 25 since the header can be short under macOS.
@@ -283,20 +283,20 @@ class BaseSongsTableModel(QAbstractTableModel):
                 w = self.columns_config.get_width(section, parent.width())
                 return QSize(w, height)
         else:
-            if role == Qt.DisplayRole:
+            if role == Qt.ItemDataRole.DisplayRole:
                 return section
             elif role == Qt.TextAlignmentRole:
                 return Qt.AlignRight
         return QVariant()
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return QVariant()
         if index.row() >= len(self._items) or index.row() < 0:
             return QVariant()
 
         song = self._items[index.row()]
-        if role in (Qt.DisplayRole, Qt.ToolTipRole):
+        if role in (Qt.ItemDataRole.DisplayRole, Qt.ToolTipRole):
             # Only show tooltip for song/artist/album fields.
             if role == Qt.ToolTipRole and index.column() not in \
                (Column.song, Column.artist, Column.album, Column.duration):
@@ -389,7 +389,7 @@ class ArtistsModel(QAbstractListModel):
 
     def data(self, index, role):
         artist = self.artists[index.row()]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return artist.name
         elif role == Qt.UserRole:
             return artist
@@ -415,7 +415,7 @@ class SongOpsEditor(QWidget):
 class ArtistsSelectionView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.Dialog | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.ColorRole.WindowStaysOnTopHint | Qt.Dialog | Qt.FramelessWindowHint)
         self.setObjectName('artists_selection_view')
 
 
@@ -520,7 +520,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                 MediaFlags.vip in MediaFlags(song.media_flags)):
             with painter_save(painter):
                 fm = option.fontMetrics
-                title = index.data(Qt.DisplayRole)
+                title = index.data(Qt.ItemDataRole.DisplayRole)
                 title_rect = fm.boundingRect(title)
                 if title_rect.width() < option.rect.width():
                     # Tested on (KDE and macOS):
@@ -607,9 +607,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
     def _setup_ui(self):
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.setAlternatingRowColors(True)
         self.verticalHeader().hide()
         self.horizontalHeader().hide()

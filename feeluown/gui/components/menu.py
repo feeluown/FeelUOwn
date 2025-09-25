@@ -1,7 +1,7 @@
 import logging
 from typing import Optional, TYPE_CHECKING
 
-from PyQt5.QtGui import QGuiApplication
+from PyQt6.QtGui import QGuiApplication
 
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn

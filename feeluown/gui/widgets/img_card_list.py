@@ -14,15 +14,15 @@ import logging
 import random
 from typing import TypeVar, Optional, List, cast, Union, TYPE_CHECKING
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QAbstractListModel, QModelIndex, Qt, QObject, QEvent,
     QRectF, QRect, QSize, QSortFilterProxyModel, pyqtSignal
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QImage, QColor, QResizeEvent, QGuiApplication,
     QBrush, QPainter, QTextOption, QFontMetrics
 )
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QAbstractItemDelegate, QListView, QFrame,
 )
 
@@ -128,7 +128,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             color = QColor(color_str)
             color.setAlphaF(0.8)
             return color
-        elif role == Qt.DisplayRole:
+        elif role == Qt.ItemDataRole.DisplayRole:
             return item.name_display
         elif role == Qt.UserRole:
             return item
@@ -250,7 +250,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             text_option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         else:
             text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        name = index.data(Qt.DisplayRole)
+        name = index.data(Qt.ItemDataRole.DisplayRole)
         fm = QFontMetrics(painter.font())
         elided_name = fm.elidedText(name, Qt.ElideRight, int(text_rect.width()))
         painter.drawText(text_rect, elided_name, text_option)
@@ -373,9 +373,9 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         self._row_height = 0
 
         self.setViewMode(QListView.IconMode)
-        self.setResizeMode(QListView.Adjust)
+        self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.initialize()
 
         self.activated.connect(self.on_activated)
@@ -393,7 +393,7 @@ class VideoCardListModel(ImgCardListModel):
         if not index.isValid() or offset >= len(self._items):
             return None
         video = self._items[offset]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return video.title
         elif role == Qt.ToolTipRole:
             return video.title

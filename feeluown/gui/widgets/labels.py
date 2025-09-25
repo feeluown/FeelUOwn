@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QTime, Qt
-from PyQt5.QtGui import QPalette, QColor
-from PyQt5.QtWidgets import QLabel, QSizePolicy
+from PyQt6.QtCore import QTime, Qt
+from PyQt6.QtGui import QPalette, QColor
+from PyQt6.QtWidgets import QLabel, QSizePolicy
 
 from feeluown.utils.utils import parse_ms
 from feeluown.gui.helpers import elided_text, SOLARIZED_COLORS
@@ -35,7 +35,7 @@ class ElidedLineLabel(QLabel):
         self.setAlignment(Qt.AlignVCenter | Qt.AlignLeft)
         # Set horizental size policy to Preferred so that this label
         # can shrink or expand when the parent is resized.
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
     def set_src_text(self, text):
         self._src_text = text
@@ -99,6 +99,6 @@ class MessageLabel(QLabel):
             color = SOLARIZED_COLORS['blue']
         palette = self.palette()
         palette.setColor(QPalette.Text, QColor(color))
-        palette.setColor(QPalette.WindowText, QColor(color))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor(color))
         self.setPalette(palette)
         self.setText(f"{hint}{text}")

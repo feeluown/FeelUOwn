@@ -1,10 +1,10 @@
 import math
 
-from PyQt5.QtCore import Qt, QSize, QRectF, QRect, QPoint
-from PyQt5.QtGui import QPainter, QTextOption, QPalette, QBrush, QColor, \
+from PyQt6.QtCore import Qt, QSize, QRectF, QRect, QPoint
+from PyQt6.QtGui import QPainter, QTextOption, QPalette, QBrush, QColor, \
     QGuiApplication  # noqa
-from PyQt5.QtWidgets import QStyledItemDelegate, QListView
-from PyQt5.QtSvg import QSvgRenderer
+from PyQt6.QtWidgets import QStyledItemDelegate, QListView
+from PyQt6.QtSvg import QSvgRenderer
 
 from feeluown.library import ModelType, ProviderFlags as PF
 from feeluown.gui.helpers import ItemViewNoScrollMixin, SOLARIZED_COLORS
@@ -25,11 +25,11 @@ class ProvidersModel(TextlistModel):
         if not self._association.pop(provider_id, None):
             self.remove(provider_id)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         provider_id = self._items[row]
         provider_ui_item = self._association[provider_id]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return provider_ui_item.symbol + ' ' + provider_ui_item.text
         if role == Qt.ToolTipRole:
             if self._library.check_flags(
@@ -111,7 +111,7 @@ class ProvidersDelegate(QStyledItemDelegate):
                 status_rect = QRect(QPoint(x, y), bottom_right)
                 pen = painter.pen()
                 pen.setWidth(2)
-                pen.setColor(QGuiApplication.palette().color(QPalette.Window))
+                pen.setColor(QGuiApplication.palette().color(QPalette.ColorRole.Window))
                 painter.setPen(pen)
                 painter.setBrush(QColor(SOLARIZED_COLORS['blue']))
                 painter.drawRoundedRect(status_rect, status_radius, status_radius)
@@ -135,7 +135,7 @@ class ProvidersView(ItemViewNoScrollMixin, QListView):
         self.delegate = ProvidersDelegate(self, library=library)
         self.setItemDelegate(self.delegate)
         self.setViewMode(QListView.IconMode)
-        self.setResizeMode(QListView.Adjust)
+        self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
 
         self.clicked.connect(self._on_clicked)

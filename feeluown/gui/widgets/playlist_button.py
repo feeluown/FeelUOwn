@@ -1,6 +1,6 @@
-from PyQt5.QtWidgets import QPushButton
-from PyQt5.QtGui import QPainter, QPolygonF, QColor, QTextOption
-from PyQt5.QtCore import QPointF, QRectF, Qt
+from PyQt6.QtWidgets import QPushButton
+from PyQt6.QtGui import QPainter, QPolygonF, QColor, QTextOption
+from PyQt6.QtCore import QPointF, QRectF, Qt
 
 from feeluown.player import PlaylistMode
 from feeluown.gui.helpers import SOLARIZED_COLORS

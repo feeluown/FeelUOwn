@@ -7,8 +7,8 @@ import os
 from collections import defaultdict
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtGui import QGuiApplication, QPalette, QColor
+from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtGui import QGuiApplication, QPalette, QColor
 from feeluown.gui.helpers import get_qapp
 
 if TYPE_CHECKING:
@@ -79,7 +79,7 @@ class ThemeManager(QObject):
         self.theme_changed.emit(theme)
 
     def guess_theme_by_palette(self, palette):
-        bg_color = palette.color(QPalette.Window)
+        bg_color = palette.color(QPalette.ColorRole.Window)
         if bg_color.lightness() > 150:
             return LIGHT
         return DARK

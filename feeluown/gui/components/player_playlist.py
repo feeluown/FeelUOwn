@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QModelIndex, QItemSelectionModel
-from PyQt5.QtWidgets import QMenu, QAbstractItemView
+from PyQt6.QtCore import Qt, QModelIndex, QItemSelectionModel
+from PyQt6.QtWidgets import QMenu, QAbstractItemView
 
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.library import (

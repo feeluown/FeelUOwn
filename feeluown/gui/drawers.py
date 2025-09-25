@@ -2,12 +2,12 @@ import math
 import random
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QRect, QPoint, QPointF, QRectF
-from PyQt5.QtGui import (
+from PyQt6.QtCore import Qt, QRect, QPoint, QPointF, QRectF
+from PyQt6.QtGui import (
     QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette,
     QPainterPath, QGuiApplication,
 )
-from PyQt5.QtWidgets import QWidget
+from PyQt6.QtWidgets import QWidget
 
 from feeluown.gui.helpers import (
     random_solarized_color, painter_save, IS_MACOS, SOLARIZED_COLORS,
@@ -288,7 +288,7 @@ class AIIconDrawer:
         painter.setPen(pen)
         with painter_save(painter):
             painter.drawEllipse(self._center_rect)
-            painter.setBrush(palette.color(QPalette.Window))
+            painter.setBrush(palette.color(QPalette.ColorRole.Window))
             painter.drawEllipse(self._top_circle)
             painter.drawEllipse(self._left_circle)
             painter.drawEllipse(self._right_circle)

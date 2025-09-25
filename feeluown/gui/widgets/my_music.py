@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 from .textlist import TextlistModel, TextlistView
 
 
@@ -9,10 +9,10 @@ logger = logging.getLogger(__name__)
 
 class MyMusicModel(TextlistModel):
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         item = self._items[row]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return item.text
         return super().data(index, role)
 

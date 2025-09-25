@@ -2,8 +2,8 @@ import os
 from contextlib import contextmanager
 from unittest.mock import MagicMock
 
-from PyQt5.QtCore import QDir
-from PyQt5.QtWidgets import QApplication, QWidget, QHBoxLayout
+from PyQt6.QtCore import QDir
+from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout
 
 
 @contextmanager

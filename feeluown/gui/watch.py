@@ -2,9 +2,9 @@ import logging
 from enum import IntEnum
 from typing import TYPE_CHECKING, cast
 
-from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtGui import QResizeEvent
-from PyQt5.QtWidgets import QWidget, QVBoxLayout
+from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtGui import QResizeEvent
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 
 from feeluown.gui.helpers import esc_hide_widget
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
@@ -170,7 +170,7 @@ class WatchManager:
 
     def toggle_pip_fullscreen(self):
         self._pip_container.setWindowState(
-            self._pip_container.windowState() ^ Qt.WindowFullScreen)
+            self._pip_container.windowState() ^ Qt.ColorRole.WindowFullScreen)
 
     def play_video(self, video):
         self._app.playlist.set_current_model(video)

@@ -3,9 +3,9 @@ import logging
 import sys
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QGuiApplication, QResizeEvent
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QGuiApplication, QResizeEvent
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
     QSizePolicy, QScrollArea, QFrame
 
 from feeluown.excs import ResourceNotFound
@@ -105,13 +105,13 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
         self._app = app
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         # As far as I know, KDE and GNOME can't auto hide the scrollbar,
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
         if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 
 class HeaderLabel(QLabel):
@@ -225,11 +225,11 @@ class SongExploreView(QWidget):
             app.playlist.play_model)
 
     def _setup_ui(self):
-        self.lyric_view.setSizePolicy(QSizePolicy.Preferred,
-                                      QSizePolicy.Expanding)
+        self.lyric_view.setSizePolicy(QSizePolicy.Policy.Preferred,
+                                      QSizePolicy.Policy.Expanding)
         self.cover_label.setFixedSize(160, 160)
-        self.cover_label.setSizePolicy(QSizePolicy.Preferred,
-                                       QSizePolicy.Preferred)
+        self.cover_label.setSizePolicy(QSizePolicy.Policy.Preferred,
+                                       QSizePolicy.Policy.Preferred)
 
         self._left_con = LeftCon(self)  #: left container
         self._left_con_scrollarea = ScrollArea(self._app)

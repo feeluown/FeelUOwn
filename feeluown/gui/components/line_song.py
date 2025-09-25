@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QTimer, QRect, Qt
-from PyQt5.QtGui import QPainter, QPalette, QColor
-from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
+from PyQt6.QtCore import QTimer, QRect, Qt
+from PyQt6.QtGui import QPainter, QPalette, QColor
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
 
 from feeluown.player import PlaylistPlayModelStage
 from feeluown.library import fmt_artists_names
@@ -20,7 +20,7 @@ class LineSongLabel(QLabel):
 
     def __init__(self, app: 'GuiApp', parent=None):
         super().__init__(text=self.default_text, parent=parent)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self._app = app
 
@@ -132,7 +132,7 @@ class TwoLineSongLabel(QWidget):
         super().__init__(parent=parent)
         self._app = app
 
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self._title_label = QLabel()
         self._subtitle_label = QLabel()

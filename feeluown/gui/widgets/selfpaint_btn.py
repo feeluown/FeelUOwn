@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
-from PyQt5.QtWidgets import QPushButton, QStyle, QStyleOptionButton
-from PyQt5.QtGui import QPainter, QPalette, QPainterPath
+from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
+from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton
+from PyQt6.QtGui import QPainter, QPalette, QPainterPath
 
 from feeluown.gui.drawers import (
     HomeIconDrawer,
@@ -35,8 +35,8 @@ class SelfPaintAbstractButton(QPushButton):
         # It seems macOS platform does not turn this attribute on by default.
         # The following two attrs are only needed on macOS, and they don't
         # cause any side effects on other platforms.
-        self.setAttribute(Qt.WA_Hover, True)
-        self.setAttribute(Qt.WA_LayoutUsesWidgetRect, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect, True)
 
     def paintEvent(self, _):
         raise NotImplementedError('paintEvent must be implemented')
@@ -548,7 +548,7 @@ class VolumeButton(SelfPaintAbstractSquareButton):
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QHBoxLayout, QVBoxLayout
+    from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout
 
     from feeluown.gui.debug import simple_layout
 

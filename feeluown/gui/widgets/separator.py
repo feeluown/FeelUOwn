@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QFrame
+from PyQt6.QtWidgets import QFrame
 
 
 stylesheet = '''

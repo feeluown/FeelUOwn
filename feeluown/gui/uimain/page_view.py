@@ -1,9 +1,9 @@
 import logging
 import sys
 
-from PyQt5.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent
-from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
-from PyQt5.QtWidgets import QAbstractScrollArea, QFrame, QVBoxLayout, QStackedLayout
+from PyQt6.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent
+from PyQt6.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
+from PyQt6.QtWidgets import QAbstractScrollArea, QFrame, QVBoxLayout, QStackedLayout
 
 from feeluown.utils import aio
 from feeluown.library import ModelType
@@ -30,7 +30,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         self._app = app
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         self.t = TableContainer(app, self)
         self.setWidget(self.t)
@@ -43,7 +43,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
         if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def get_itemview(self):
         return self.t.current_table
@@ -198,7 +198,7 @@ class RightPanel(QFrame):
         # Do not draw the pixmap or overlay when it scrolled a lot.
         if scrolled > max_scroll_height:
             painter.save()
-            painter.setBrush(self.palette().brush(QPalette.Window))
+            painter.setBrush(self.palette().brush(QPalette.ColorRole.Window))
             painter.drawRect(self.bottom_panel.rect())
             painter.restore()
             return
@@ -213,7 +213,7 @@ class RightPanel(QFrame):
                 alpha_ratio = min(scrolled / max_scroll_height, 1.0)
             alpha = int(250 * curve.valueForProgress(alpha_ratio))
             painter.save()
-            color = self.palette().color(QPalette.Window)
+            color = self.palette().color(QPalette.ColorRole.Window)
             color.setAlpha(alpha)
             painter.setBrush(color)
             painter.drawRect(self.bottom_panel.rect())
@@ -225,7 +225,7 @@ class RightPanel(QFrame):
             # if scrolled height > 30, draw background to seperate bottom_panel and body
             if scrolled >= 30:
                 painter.save()
-                painter.setBrush(self.palette().brush(QPalette.Window))
+                painter.setBrush(self.palette().brush(QPalette.ColorRole.Window))
                 painter.drawRect(self.bottom_panel.rect())
                 painter.restore()
                 return
@@ -271,7 +271,7 @@ class RightPanel(QFrame):
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        gradient.setColorAt(0, self.palette().color(QPalette.Window))
+        gradient.setColorAt(0, self.palette().color(QPalette.ColorRole.Window))
         gradient.setColorAt(1, self.palette().color(QPalette.Base))
         painter.setBrush(gradient)
         painter.drawRect(rect)

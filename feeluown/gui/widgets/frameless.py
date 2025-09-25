@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, \
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence
+from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, \
     QShortcut
 
 
@@ -21,7 +21,7 @@ class ResizableFramelessContainer(QWidget):
         self._widget = None
 
         # setup window layout
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setWindowFlags(Qt.ColorRole.WindowStaysOnTopHint | Qt.FramelessWindowHint)
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
@@ -34,7 +34,7 @@ class ResizableFramelessContainer(QWidget):
     def attach_widget(self, widget):
         """set inner widget"""
         self._widget = widget
-        self._widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
         self._layout.insertWidget(0, self._widget)
 
     def detach(self):
@@ -61,14 +61,14 @@ class ResizableFramelessContainer(QWidget):
         super().resizeEvent(e)
 
     def on_cancel_key_pressed(self):
-        if Qt.WindowFullScreen & self.windowState():
-            self.setWindowState(self.windowState() ^ Qt.WindowFullScreen)
+        if Qt.ColorRole.WindowFullScreen & self.windowState():
+            self.setWindowState(self.windowState() ^ Qt.ColorRole.WindowFullScreen)
         else:
             self.hide()
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication, QLabel
+    from PyQt6.QtWidgets import QApplication, QLabel
 
     app = QApplication([])
     widget = QLabel("hello world!")

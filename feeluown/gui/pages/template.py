@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
+from PyQt6.QtCore import Qt
 
 from feeluown.gui.widgets.labels import MessageLabel
 

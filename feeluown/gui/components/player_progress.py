@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout
 
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.widgets.progress_slider import ProgressSlider

@@ -1,7 +1,7 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QFrame
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QFrame
 
 from feeluown.gui.widgets.my_music import MyMusicView
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
@@ -42,7 +42,7 @@ class View(QWidget):
         self._playlists_scroll = QScrollArea(self)
         self._playlists_scroll.setWidget(self.playlists_view)
         self._playlists_scroll.setWidgetResizable(True)
-        self.playlists_view.setFrameShape(QFrame.NoFrame)
+        self.playlists_view.setFrameShape(QFrame.Shape.NoFrame)
 
         self._layout = QVBoxLayout(self)
         self._body_layout = QHBoxLayout()

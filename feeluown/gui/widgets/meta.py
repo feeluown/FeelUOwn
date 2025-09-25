@@ -2,9 +2,9 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, \
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, \
     QSpacerItem, QFrame, QSizePolicy
 
 from feeluown.gui.helpers import elided_text
@@ -65,7 +65,7 @@ class TableMetaWidget(MetaWidget):
         self.meta_label = QLabel(self)
         # this spacer item is used as a stretch in right layout,
         # it's  width and height is not so important, we set them to 0
-        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Policy.Expanding)
 
         # self.title_label.setTextFormat(Qt.RichText)
         self.meta_label.setTextFormat(Qt.RichText)

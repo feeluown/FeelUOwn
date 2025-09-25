@@ -2,8 +2,8 @@ import json
 from http.cookies import SimpleCookie
 from urllib.parse import urlparse
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QDialog, QTextEdit, QPushButton, \
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtWidgets import QDialog, QTextEdit, QPushButton, \
     QVBoxLayout, QLabel
 
 try:
@@ -78,9 +78,9 @@ class CookiesLoginDialog(LoginDialog):
             use_webview = True
         else:
             use_webview = False
-        # Use Qt.Window so that the dialog will not be hidden unexpectedly.
+        # Use Qt.ColorRole.Window so that the dialog will not be hidden unexpectedly.
         # https://github.com/feeluown/FeelUOwn/issues/878#issuecomment-2975105843
-        flags = Qt.Window
+        flags = Qt.ColorRole.Window
 
         super().__init__(None, flags)
         self._use_webview = use_webview
@@ -283,7 +283,7 @@ class CookiesLoginDialog(LoginDialog):
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QApplication
 
     app = QApplication([])
     widget = CookiesLoginDialog()

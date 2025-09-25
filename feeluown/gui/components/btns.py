@@ -1,8 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QEvent
-from PyQt5.QtWidgets import QPushButton, QWidget, QHBoxLayout
+from PyQt6.QtCore import QEvent
+from PyQt6.QtWidgets import QPushButton, QWidget, QHBoxLayout
 from feeluown.gui.widgets.selfpaint_btn import TriagleButton
 
 from feeluown.player import State

@@ -1,11 +1,11 @@
 import sys
 
-from PyQt5.QtCore import Qt, QRectF, QRect, QSize
-from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
-    QKeySequence, QFont
-from PyQt5.QtWidgets import QLabel, QWidget, \
+from PyQt6.QtCore import Qt, QRectF, QRect, QSize
+from PyQt6.QtGui import QPalette, QColor, QTextOption, QPainter, \
+    QKeySequence, QFont, QAction
+from PyQt6.QtWidgets import QLabel, QWidget, \
     QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
-    QMenu, QAction, QFontDialog, QShortcut, QSpacerItem
+    QMenu, QFontDialog, QShortcut, QSpacerItem
 
 from feeluown.gui.helpers import esc_hide_widget, resize_font, elided_text
 from feeluown.player import LyricLine
@@ -16,16 +16,16 @@ IS_WINDOWS = sys.platform == 'win32'
 
 
 def set_bg_color(palette, color):
-    palette.setColor(QPalette.Active, QPalette.Window, color)
+    palette.setColor(QPalette.Active, QPalette.ColorRole.Window, color)
     palette.setColor(QPalette.Active, QPalette.Base, color)
-    palette.setColor(QPalette.Inactive, QPalette.Window, color)
+    palette.setColor(QPalette.Inactive, QPalette.ColorRole.Window, color)
     palette.setColor(QPalette.Inactive, QPalette.Base, color)
 
 
 def set_fg_color(palette, color):
-    palette.setColor(QPalette.Active, QPalette.WindowText, color)
+    palette.setColor(QPalette.Active, QPalette.ColorRole.WindowText, color)
     palette.setColor(QPalette.Active, QPalette.Text, color)
-    palette.setColor(QPalette.Inactive, QPalette.WindowText, color)
+    palette.setColor(QPalette.Inactive, QPalette.ColorRole.WindowText, color)
     palette.setColor(QPalette.Inactive, QPalette.Text, color)
 
 
@@ -87,14 +87,14 @@ class LyricWindow(QWidget):
             # On macOS, Qt.Tooltip widget can't accept focus and it will hide
             # when the application window is actiavted. Qt.Tool widget can't
             # keep staying on top. Neither of them work well on macOS.
-            flags = Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
+            flags = Qt.ColorRole.WindowStaysOnTopHint | Qt.FramelessWindowHint
         else:
             # TODO: use proper flags on other platforms, see #413 for more details.
             # User can customize the flags in the .fuorc or searchbox, like
             #    app.ui.lyric_windows.setWindowFlags(Qt.xx | Qt.yy)
-            flags = Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool
+            flags = Qt.ColorRole.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool
         self.setWindowFlags(flags)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setToolTip(Tooltip)
 
         self._inner = InnerLyricWindow(self._app, self)
@@ -134,7 +134,7 @@ class LyricWindow(QWidget):
         return {
             'geometry': (geo.x(), geo.y(), geo.width(), geo.height()),
             'font': inner.font().toString(),
-            'bg': p.color(QPalette.Active, QPalette.Window).name(QColor.HexArgb),
+            'bg': p.color(QPalette.Active, QPalette.ColorRole.Window).name(QColor.HexArgb),
             'fg': p.color(QPalette.Active, QPalette.Text).name(QColor.HexArgb),
         }
 
@@ -326,7 +326,7 @@ class InnerLyricWindow(QWidget):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.Antialiasing)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(self.palette().color(QPalette.Window))
+        painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), self._border_radius, self._border_radius)
 
         # Draw an circle button to indicate that the window can be resized.
@@ -362,9 +362,9 @@ class InnerLyricWindow(QWidget):
 
         dialog = QColorDialog(self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if bg:
-            color = self.palette().color(QPalette.Window)
+            color = self.palette().color(QPalette.ColorRole.Window)
         else:
             color = self.palette().color(QPalette.Text)
         dialog.setCurrentColor(color)
@@ -381,7 +381,7 @@ class InnerLyricWindow(QWidget):
     def show_font_dialog(self):
         dialog = QFontDialog(self.font(), self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.currentFontChanged.connect(self.setFont)
         dialog.fontSelected.connect(self.setFont)
         dialog.open()

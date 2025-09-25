@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtGui import QTextOption
+from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtGui import QTextOption
 
 from feeluown.gui.widgets.statusline import StatuslineLabel
 

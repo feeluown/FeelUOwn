@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QRect
-from PyQt5.QtWidgets import QMenu, QAction
-from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
+from PyQt6.QtCore import QRect
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent, QAction
 
 from feeluown.library import UserModel, SupportsCurrentUser, Provider, \
     SupportsCurrentUserChanged
@@ -223,9 +223,9 @@ if __name__ == '__main__':
             ),
             ProviderUiItem(
                 '',
-                'Hello PyQt5',
+                'Hello PyQt6',
                 '',
-                'Hello PyQt5',
+                'Hello PyQt6',
             )
         ])
         layout.addWidget(Avatar(mockapp, height=length))

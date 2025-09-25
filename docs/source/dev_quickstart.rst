@@ -28,8 +28,8 @@
 
 .. note::
 
-   在 Linux 或者 macOS 下，大家一般都是用 apt-get 或者 brew 将 ``PyQt5`` 安装到 Python 系统包目录，
-   也就是说，在虚拟环境里面， **不能 import 到 PyQt5 这个包** 。建议的解决方法是：
+   在 Linux 或者 macOS 下，大家一般都是用 apt-get 或者 brew 将 ``PyQt6`` 安装到 Python 系统包目录，
+   也就是说，在虚拟环境里面， **不能 import 到 PyQt6 这个包** 。建议的解决方法是：
 
    1. 创建一个干净的虚拟环境（不包含系统包）
    2. ``pip3 install -e .`` 安装项目以及依赖

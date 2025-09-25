@@ -1,8 +1,8 @@
 import sys
 from contextlib import contextmanager
 
-from PyQt5.QtCore import QMetaObject, pyqtSlot, QSize
-from PyQt5.QtOpenGL import QGLContext
+from PyQt6.QtCore import QMetaObject, pyqtSlot, QSize
+from PyQt6.QtOpenGL import QGLContext
 
 from feeluown.mpv import (
     MpvRenderContext, OpenGlCbGetProcAddrFn, _mpv_set_property_string

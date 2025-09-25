@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFontMetrics, QPalette, QColor, QPainter
-from PyQt5.QtWidgets import QHBoxLayout, QStackedLayout, QWidget
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFontMetrics, QPalette, QColor, QPainter
+from PyQt6.QtWidgets import QHBoxLayout, QStackedLayout, QWidget
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.helpers import (
@@ -74,7 +74,7 @@ class MVWrapper(QWidget):
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setPen(Qt.NoPen)
-        painter.setBrush(self.palette().color(QPalette.Window))
+        painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), 3, 3)
 
 
@@ -164,7 +164,7 @@ class NowplayingLyricView(LyricView):
         self._item_spacing = 20
 
         palette = self.palette()
-        palette.setColor(QPalette.Highlight, Qt.transparent)
+        palette.setColor(QPalette.Highlight, Qt.GlobalColor.transparent)
         palette.setColor(QPalette.HighlightedText, random_solarized_color())
         self.setPalette(palette)
 

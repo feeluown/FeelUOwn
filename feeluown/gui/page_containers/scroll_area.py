@@ -1,7 +1,7 @@
 import sys
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QScrollArea, QFrame
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QScrollArea, QFrame
 
 from feeluown.gui.helpers import BgTransparentMixin
 
@@ -15,7 +15,7 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
         super().__init__(parent=parent)
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

@@ -2,10 +2,10 @@
 Table of contents view for one collection
 """
 
-from PyQt5.QtCore import (Qt, QAbstractListModel, QModelIndex, QSize,
+from PyQt6.QtCore import (Qt, QAbstractListModel, QModelIndex, QSize,
                           QRectF, QRect, QPoint, )
-from PyQt5.QtGui import (QPainter, QPalette, QPen, QTextOption)
-from PyQt5.QtWidgets import QListView, QStyledItemDelegate, QStyle
+from PyQt6.QtGui import (QPainter, QPalette, QPen, QTextOption)
+from PyQt6.QtWidgets import QListView, QStyledItemDelegate, QStyle
 
 
 class CollectionTOCModel(QAbstractListModel):
@@ -17,9 +17,9 @@ class CollectionTOCModel(QAbstractListModel):
     def rowCount(self, _=QModelIndex()):
         return len(self.items)
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return self.items[row]
         return None
 
@@ -92,7 +92,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
         painter.drawArc(QRect(topleft, bottomright), 16 * start_angle, 16 * span)
         painter.drawArc(QRect(topleft, bottomright), 16 * (start_angle + 180), 16 * span)
 
-        text = index.data(Qt.DisplayRole)
+        text = index.data(Qt.ItemDataRole.DisplayRole)
         topleft = option.rect.topLeft()
         topleft = QPoint(topleft.x() + 2*r + 15, topleft.y())
         painter.drawText(QRect(topleft, option.rect.bottomRight()), Qt.AlignVCenter, text)
@@ -114,7 +114,7 @@ class CollectionTOCView(QListView):
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication
+    from PyQt6.QtWidgets import QApplication
 
     app = QApplication([])
     view = CollectionTOCView()

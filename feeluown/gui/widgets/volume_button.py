@@ -1,6 +1,6 @@
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QPainter, QPalette
-from PyQt5.QtWidgets import QAbstractSlider
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtGui import QPainter, QPalette
+from PyQt6.QtWidgets import QAbstractSlider
 
 from feeluown.gui.drawers import VolumeIconDrawer
 from feeluown.gui.helpers import painter_save, darker_or_lighter

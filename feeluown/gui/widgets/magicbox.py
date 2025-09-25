@@ -2,8 +2,8 @@ import io
 import sys
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QTimer, pyqtSignal
-from PyQt5.QtWidgets import QLineEdit, QSizePolicy
+from PyQt6.QtCore import Qt, QTimer, pyqtSignal
+from PyQt6.QtWidgets import QLineEdit, QSizePolicy
 
 from feeluown.library.text2song import create_dummy_brief_song
 from feeluown.fuoexec import fuoexec
@@ -39,10 +39,10 @@ class MagicBox(QLineEdit):
             '输入 # 前缀之后，可以过滤表格内容\n'
             '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）'
         )
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Fixed)
         self.setFixedHeight(32)
         self.setFrame(False)
-        self.setAttribute(Qt.WA_MacShowFocusRect, False)
+        self.setAttribute(Qt.WidgetAttribute.WA_MacShowFocusRect, False)
         self.setTextMargins(5, 0, 0, 0)
 
         self._timer = QTimer(self)

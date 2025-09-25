@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QListWidget, QListWidgetItem, QAbstractItemView, QFrame
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QListWidget, QListWidgetItem, QAbstractItemView, QFrame
 
 from feeluown.player import Lyric
 
@@ -19,9 +19,9 @@ class LyricView(QListWidget):
         self._alignment = Qt.AlignLeft
         self._highlight_font_size = 18
 
-        self.setFrameShape(QFrame.NoFrame)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setWordWrap(True)
 
         self.currentItemChanged.connect(self.on_item_changed)

@@ -1,8 +1,8 @@
 import sys
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtWidgets import (
     QFrame, QLabel, QVBoxLayout, QScrollArea, QMessageBox,
     QFormLayout, QDialog, QLineEdit, QDialogButtonBox,
 )
@@ -26,16 +26,16 @@ class LeftPanel(QScrollArea):
         self._app = app
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         self.p = _LeftPanel(app, self)
         self.setWidget(self.p)
 
         if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # HELP(cosven): size policy is not working
-        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Policy.Expanding)
         self.setMaximumWidth(280)
 
     def sizeHint(self):
@@ -98,8 +98,8 @@ class _LeftPanel(QFrame):
         self.collections_view.remove_collection.connect(self._remove_coll)
         self.collections_con.create_btn.clicked.connect(
             self.popup_collection_adding_dialog)
-        self.collections_view.setFrameShape(QFrame.NoFrame)
-        self.setFrameShape(QFrame.NoFrame)
+        self.collections_view.setFrameShape(QFrame.Shape.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.collections_con.create_btn.show()
         self.provider_bar.fold_top_btn.clicked.connect(self._toggle_top_layout)
         if self._app.config.ENABLE_NEW_HOMEPAGE is True:
@@ -132,7 +132,7 @@ class _LeftPanel(QFrame):
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         layout = QFormLayout(dialog)
         id_edit = QLineEdit(dialog)
         title_edit = QLineEdit(dialog)

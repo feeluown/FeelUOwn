@@ -1,5 +1,5 @@
 import logging
-from PyQt5.QtWidgets import QSizePolicy, QSplitter, QVBoxLayout
+from PyQt6.QtWidgets import QSizePolicy, QSplitter, QVBoxLayout
 
 from feeluown.gui.widgets.separator import Separator
 from feeluown.gui.widgets.settings import SettingsDialog
@@ -65,7 +65,7 @@ class Ui:
         self._setup_ui()
 
     def _setup_ui(self):
-        self._app.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Preferred)
+        self._app.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
 
         self._splitter.setHandleWidth(0)
         self._splitter.addWidget(self._left_panel_con)
@@ -74,7 +74,7 @@ class Ui:
         self.playlist_overlay.hide()
         self.nowplaying_overlay.hide()
 
-        self.right_panel.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.right_panel.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
 
         self._layout.addWidget(self._splitter)
         self._layout.addWidget(self.mpv_widget)

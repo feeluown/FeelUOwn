@@ -1,9 +1,9 @@
 import os
 import sys
 
-from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt6.QtCore import Qt, QDir
+from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
+from PyQt6.QtWidgets import QApplication, QWidget
 
 from feeluown.gui.browser import Browser
 from feeluown.gui.hotkey import HotkeyManager

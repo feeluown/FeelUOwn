@@ -1,8 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QAbstractItemView, QMenu
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtWidgets import QAbstractItemView, QMenu
 
 from feeluown.collection import CollectionType, Collection
 from feeluown.gui.widgets.textlist import TextlistModel, TextlistView
@@ -97,10 +97,10 @@ class CollectionListModel(TextlistModel):
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDropEnabled
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         item = self._items[row]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             icon = '◎  '
             if item.type in (CollectionType.sys_library, CollectionType.sys_pool):
                 icon = '◉  '

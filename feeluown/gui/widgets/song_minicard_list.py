@@ -2,15 +2,15 @@ import logging
 import random
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     pyqtSignal, Qt, QSize, QRect, QRectF,
     QAbstractListModel, QModelIndex,
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QPainter, QPixmap, QImage, QColor, QPalette, QBrush,
     QFontMetrics, QTextOption, QGuiApplication,
 )
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QFrame, QListView, QStyle, QStyledItemDelegate
 )
 
@@ -82,11 +82,11 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         self.pixmaps[uri] = (Fetching, color)
         return color
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         offset = index.row()
         if not index.isValid() or offset >= len(self._items):
             return None
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return self._items[offset].title_display
         elif role == Qt.UserRole:
             song = self._items[offset]
@@ -126,7 +126,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         card_height=40,
         card_right_spacing=10,
         card_padding=(3, 3, 3, 0),
-        hover_color_role=QPalette.Window,
+        hover_color_role=QPalette.ColorRole.Window,
     ):
         """
         QListView.setSpacing set spacing around the item, however, sometimes
@@ -225,7 +225,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         text_width = rect.width() - cover_width - \
             card_left_padding * 2 - card_right_spacing
         painter.translate(cover_width + card_left_padding, 0)
-        title = index.data(Qt.DisplayRole)
+        title = index.data(Qt.ItemDataRole.DisplayRole)
         subtitle = f'{song.artists_name_display} • {song.album_name_display}'
         # Note this is not a bool object.
         is_enabled = option.state & QStyle.State_Enabled
@@ -307,12 +307,12 @@ class SongMiniCardListView(ItemViewNoScrollMixin, QListView):
         super().__init__(parent=parent, **kwargs)
 
         self.setSelectionMode(QListView.ContiguousSelection)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setMouseTracking(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.setViewMode(QListView.IconMode)
-        self.setResizeMode(QListView.Adjust)
+        self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
         self.initialize()
 

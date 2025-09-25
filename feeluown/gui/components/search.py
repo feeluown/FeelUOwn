@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from PyQt5.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout, QScrollArea
+from PyQt6.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout, QScrollArea
 
 from feeluown.library import SearchType
 from feeluown.utils.aio import run_afn
@@ -52,7 +52,7 @@ class SearchResultView(QScrollArea):
         super().__init__(parent=parent)
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         unify_scroll_area_style(self)
         if transparent_bg:
             set_widget_bg_transparent(self)

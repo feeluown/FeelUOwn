@@ -1,11 +1,11 @@
 import logging
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     pyqtSignal,
     Qt,
     QModelIndex,
 )
-from PyQt5.QtWidgets import (
+from PyQt6.QtWidgets import (
     QAbstractItemView, QMenu
 )
 
@@ -76,10 +76,10 @@ class PlaylistsModel(TextlistModel):
             flags |= Qt.ItemIsDropEnabled
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         playlist = self.items[row]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             if row < len(self._playlists):
                 flag = '♬ '
             else:

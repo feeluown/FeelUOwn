@@ -7,8 +7,8 @@ import uuid
 from functools import partial
 from hashlib import md5
 
-from PyQt5.QtCore import QUrl
-from PyQt5.QtGui import QDesktopServices, QImage
+from PyQt6.QtCore import QUrl
+from PyQt6.QtGui import QDesktopServices, QImage
 
 from feeluown.consts import CACHE_DIR
 

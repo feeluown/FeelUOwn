@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
     QFrame, QLabel, QVBoxLayout, QHBoxLayout, QFormLayout,
     QDialog, QLineEdit, QDialogButtonBox, QMessageBox, QWidget, QSizePolicy
 )
@@ -59,7 +59,7 @@ class ListViewContainer(QFrame):
         self._layout.addLayout(self._t_h_layout)
         self._layout.addLayout(self._b_h_layout)
         # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Maximum)
 
     def toggle_view(self):
         if self._view.isVisible():
@@ -117,8 +117,8 @@ class ProviderBar(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.playlists_view.setFrameShape(QFrame.NoFrame)
-        self.my_music_view.setFrameShape(QFrame.NoFrame)
+        self.playlists_view.setFrameShape(QFrame.Shape.NoFrame)
+        self.my_music_view.setFrameShape(QFrame.Shape.NoFrame)
 
         self._avatar_layout = QHBoxLayout()
         self._avatar_layout.addWidget(Avatar(self._app, height=48))
@@ -183,7 +183,7 @@ class ProviderBar(QWidget):
 
         dialog = QDialog(self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         layout = QFormLayout(dialog)
         title_edit = QLineEdit(dialog)
         layout.addRow('歌单名', title_edit)

@@ -1,5 +1,5 @@
 import pytest
-from PyQt5.QtWidgets import QAbstractSlider
+from PyQt6.QtWidgets import QAbstractSlider
 
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 
@@ -24,7 +24,7 @@ def test_basics(qtbot, app_mock):
 
 
 def test_action_is_triggered(slider, mock_update_player):
-    slider.triggerAction(QAbstractSlider.SliderPageStepAdd)
+    slider.triggerAction(QAbstractSlider.SliderAction.SliderPageStepAdd)
     assert mock_update_player.called
 
 
@@ -57,5 +57,5 @@ def test_media_changed_during_dragging(qtbot, slider, mock_update_player):
 
 def test_when_player_has_no_media(slider):
     slider._app.player.current_media = None
-    slider.triggerAction(QAbstractSlider.SliderPageStepAdd)
+    slider.triggerAction(QAbstractSlider.SliderAction.SliderPageStepAdd)
     assert not slider._app.player.resume.called

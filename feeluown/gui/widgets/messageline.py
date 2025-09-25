@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtGui import QPalette
+from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout
 
 from feeluown.gui.helpers import BgTransparentMixin, elided_text
 

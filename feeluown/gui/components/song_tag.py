@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtWidgets import QLabel, QMenu
+from PyQt6.QtWidgets import QLabel, QMenu
 
 from feeluown.utils.aio import run_afn
 from feeluown.media import MediaType

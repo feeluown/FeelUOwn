@@ -1,4 +1,4 @@
-from PyQt5.QtCore import QMimeData
+from PyQt6.QtCore import QMimeData
 
 from feeluown.library import ModelType
 

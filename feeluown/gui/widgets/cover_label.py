@@ -1,9 +1,9 @@
 import warnings
 from typing import Optional
 
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QPainter, QImage
-from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu
+from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QPainter, QImage
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu
 
 from feeluown.gui.drawers import PixmapDrawer
 from feeluown.gui.image import open_image
@@ -15,7 +15,7 @@ class CoverLabel(QLabel):
 
         self._radius = radius
         self.drawer = PixmapDrawer(None, self, self._radius)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.MinimumExpanding)
 
     def show_pixmap(self, pixmap):
         """

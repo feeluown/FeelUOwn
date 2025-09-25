@@ -4,9 +4,9 @@ import warnings
 from contextlib import suppress
 from typing import List
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QImage, QPixmap, QPalette
-from PyQt5.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication, QWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QImage, QPixmap, QPalette
+from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication, QWidget
 from requests.exceptions import RequestException  # type: ignore[import]
 
 from feeluown.utils import aio

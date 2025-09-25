@@ -86,7 +86,7 @@ def before_start_app(args):
             # HELP: QtWebEngineWidgets must be imported before a
             #   QCoreApplication instance is created.
             # TODO: add a command line option to control this import.
-            import PyQt5.QtWebEngineWidgets  # type: ignore # noqa
+            import PyQt6.QtWebEngineWidgets  # type: ignore # noqa
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
         from feeluown.utils.compat import DefaultQEventLoopPolicy
@@ -194,7 +194,7 @@ def precheck(args, config):
 
     if err_msg:
         if AppMode.gui in AppMode(config.MODE):
-            from PyQt5.QtWidgets import QMessageBox, QApplication
+            from PyQt6.QtWidgets import QMessageBox, QApplication
             qapp = QApplication([])
             w = QMessageBox()
             w.setText(err_msg)

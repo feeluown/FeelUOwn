@@ -25,11 +25,11 @@ import logging
 from contextlib import contextmanager
 from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
-from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
+from PyQt6.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
     QAbstractListModel, QPoint
-from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent, \
-    QKeySequence
-from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QShortcut, \
+from PyQt6.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent, \
+    QKeySequence, QShortcut
+from PyQt6.QtWidgets import QApplication, QScrollArea, QWidget, \
     QAbstractScrollArea
 
 from feeluown.utils.aio import run_afn, run_fn
@@ -107,30 +107,30 @@ def palette_set_bg_color(palette, color):
         # KDE use the QPalette.Base as background color
         palette.setColor(QPalette.Active, QPalette.Base, color)
         palette.setColor(QPalette.Inactive, QPalette.Base, color)
-        # GNOME use the QPalette.Window as background color
-        palette.setColor(QPalette.Active, QPalette.Window, color)
-        palette.setColor(QPalette.Inactive, QPalette.Window, color)
+        # GNOME use the QPalette.ColorRole.Window as background color
+        palette.setColor(QPalette.Active, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.Inactive, QPalette.ColorRole.Window, color)
     else:
-        # macOS use the QPalette.Window as background color
-        palette.setColor(QPalette.Active, QPalette.Window, color)
-        palette.setColor(QPalette.Inactive, QPalette.Window, color)
+        # macOS use the QPalette.ColorRole.Window as background color
+        palette.setColor(QPalette.Active, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.Inactive, QPalette.ColorRole.Window, color)
 
 
 def unify_scroll_area_style(scroll_area: QAbstractScrollArea):
     if not IS_MACOS:
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 
 def set_widget_bg_transparent(widget: QWidget):
     palette = widget.palette()
-    palette_set_bg_color(palette, Qt.transparent)
+    palette_set_bg_color(palette, Qt.GlobalColor.transparent)
     widget.setPalette(palette)
 
 
 class BgTransparentMixin:
     def __init__(self: QWidget, *args, **kwargs):  # type: ignore[misc]
         palette = self.palette()
-        palette_set_bg_color(palette, Qt.transparent)
+        palette_set_bg_color(palette, Qt.GlobalColor.transparent)
         self.setPalette(palette)
 
 
@@ -229,7 +229,7 @@ class ItemViewNoScrollMixin:
         .. versionadded:: 3.7.7
         """
         if self._no_scroll_v is True:
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     # def set_no_scroll_v(self, no_scroll_v):
     #     """
@@ -238,7 +238,7 @@ class ItemViewNoScrollMixin:
     #     self._no_scroll_v = no_scroll_v
     #     if no_scroll_v is True:
     #         self.adjust_height()
-    #         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    #         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def adjust_height(self):
         if self.model() is None:

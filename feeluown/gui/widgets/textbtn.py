@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QPushButton
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QPushButton
 
 
 class TextButton(QPushButton):
@@ -10,6 +10,6 @@ class TextButton(QPushButton):
         """
         super().__init__(*args, **kwargs)
 
-        self.setAttribute(Qt.WA_LayoutUsesWidgetRect, True)
+        self.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect, True)
         if height:
             self.setFixedHeight(height)

@@ -2,12 +2,12 @@ import logging
 from typing import List, Union
 from urllib.parse import urlparse
 
-from PyQt5.QtCore import pyqtSignal, QUrl, QRect
-from PyQt5.QtNetwork import QNetworkCookie
-from PyQt5.QtWebEngineCore import QWebEngineCookieStore
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, \
+from PyQt6.QtCore import pyqtSignal, QUrl, QRect
+from PyQt6.QtNetwork import QNetworkCookie
+from PyQt6.QtWebEngineCore import QWebEngineCookieStore
+from PyQt6.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, \
     QWebEnginePage
-from PyQt5.QtWidgets import QApplication, QDesktopWidget
+from PyQt6.QtWidgets import QApplication, QDesktopWidget
 
 
 logger = logging.getLogger(__name__)

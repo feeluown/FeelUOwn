@@ -1,5 +1,5 @@
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QDialog, QWidget, QCheckBox, \
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QDialog, QWidget, QCheckBox, \
     QVBoxLayout, QHBoxLayout, QPlainTextEdit, QPushButton
 
 from feeluown.gui.widgets.magicbox import KeySourceIn

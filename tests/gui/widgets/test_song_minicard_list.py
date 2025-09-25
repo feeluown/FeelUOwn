@@ -1,5 +1,5 @@
 import pytest
-from PyQt5.QtCore import QModelIndex
+from PyQt6.QtCore import QModelIndex
 
 from feeluown.utils import aio
 from feeluown.utils.reader import create_reader

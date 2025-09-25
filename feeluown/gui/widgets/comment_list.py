@@ -1,9 +1,9 @@
 from datetime import datetime
 
-from PyQt5.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
+from PyQt6.QtCore import QAbstractListModel, QModelIndex, Qt, QSize, \
     QPoint, QRect
-from PyQt5.QtGui import QPalette, QPen, QFontMetrics
-from PyQt5.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame, QWidget
+from PyQt6.QtGui import QPalette, QPen, QFontMetrics
+from PyQt6.QtWidgets import QStyledItemDelegate, QListView, QSizePolicy, QFrame, QWidget
 
 from feeluown.gui.consts import ScrollBarWidth
 from feeluown.gui.helpers import ItemViewNoScrollMixin, Paddings, Margins
@@ -39,14 +39,14 @@ class CommentListModel(QAbstractListModel):
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if role == Qt.UserRole:
             return self._reader.read(index.row())
         return None
 
 
 class CommentListDelegate(QStyledItemDelegate):
-    def __init__(self, parent: QWidget, quoted_bg_color_role=QPalette.Window):
+    def __init__(self, parent: QWidget, quoted_bg_color_role=QPalette.ColorRole.Window):
         super().__init__(parent=parent)
 
         # macOS scrollbar may overlap with the content.
@@ -185,12 +185,12 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
 
         self._delegate = CommentListDelegate(self, **delegate_options)
         self.setItemDelegate(self._delegate)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setMouseTracking(True)
-        self.setFrameShape(QFrame.NoFrame)
-        self.setResizeMode(QListView.Adjust)
+        self.setFrameShape(QFrame.Shape.NoFrame)
+        self.setResizeMode(QListView.ResizeMode.Adjust)
 
     def min_height(self):
         """

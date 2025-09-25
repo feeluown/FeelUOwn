@@ -1,11 +1,11 @@
 import sys
 from typing import Optional
 
-from PyQt5.QtCore import QTimer, QEvent, Qt, QRect
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QTimer, QEvent, Qt, QRect
+from PyQt6.QtWidgets import (
     QWidget, QFrame, QHBoxLayout, QVBoxLayout, QPushButton,
 )
-from PyQt5.QtGui import (
+from PyQt6.QtGui import (
     QMouseEvent, QCursor, QPainter, QPalette, QBrush,
 )
 
@@ -260,9 +260,9 @@ class FloatingBox(QFrame):
 if __name__ == '__main__':
     import os
 
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtCore import QDir
-    from PyQt5.QtGui import QImage
+    from PyQt6.QtWidgets import QApplication
+    from PyQt6.QtCore import QDir
+    from PyQt6.QtGui import QImage
     from unittest.mock import MagicMock
 
     from feeluown.gui.theme import ThemeManager
@@ -282,7 +282,7 @@ if __name__ == '__main__':
     theme_mgr = ThemeManager(app)
     box = FloatingBox(app)
     box.setWindowFlags(Qt.FramelessWindowHint)
-    box.setAttribute(Qt.WA_TranslucentBackground)
+    box.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     box.circle.show_img(img)
     box.toolbar.line_song_label.setText('哈哈哈 - 嘿嘿')
     box.show()

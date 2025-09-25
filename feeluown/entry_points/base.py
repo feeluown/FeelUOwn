@@ -39,9 +39,9 @@ def setup_config(args, config):
     else:
         if not args.no_window:
             try:
-                import PyQt5  # noqa, pylint: disable=unused-import
+                import PyQt6  # noqa, pylint: disable=unused-import
             except ImportError:
-                logger.warning('PyQt5 is not installed, fallback to daemon mode.')
+                logger.warning('PyQt6 is not installed, fallback to daemon mode.')
             else:
                 try:
                     from feeluown.utils.compat import QEventLoop  # noqa

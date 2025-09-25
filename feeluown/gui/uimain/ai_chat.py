@@ -3,14 +3,14 @@ import logging
 from typing import TYPE_CHECKING, List
 
 from openai import AsyncOpenAI
-from PyQt5.QtCore import QSize, Qt, QRectF, pyqtSignal
-from PyQt5.QtGui import QPainter
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QSize, Qt, QRectF, pyqtSignal
+from PyQt6.QtGui import QPainter
+from PyQt6.QtWidgets import (
     QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
     QFrame, QSizePolicy,
 )
-from PyQt5.QtGui import QPainterPath
-from PyQt5.QtGui import QTextOption
+from PyQt6.QtGui import QPainterPath
+from PyQt6.QtGui import QTextOption
 
 from feeluown.ai import a_handle_stream
 from feeluown.utils.aio import run_afn_ref
@@ -66,7 +66,7 @@ class ChatInputEditor(QPlainTextEdit):
         self.textChanged.connect(self.adjust_height)
         self.adjust_height()
         # The size policy matters
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
     def sizeHint(self) -> QSize:  # noqa: D102
         font_metrics = self.fontMetrics()
@@ -123,7 +123,7 @@ class Body(QWidget):
         # User input area
         self._editor = ChatInputEditor(self)
         self._editor.setPlaceholderText('在这里输入你的问题...')
-        self._editor.setFrameShape(QFrame.NoFrame)
+        self._editor.setFrameShape(QFrame.Shape.NoFrame)
         self._editor.enter_pressed.connect(
             lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText()))
         self._msg_label = QLabel(self)
@@ -148,7 +148,7 @@ class Body(QWidget):
         self.setAutoFillBackground(True)
 
     def setup_ui(self):
-        self._history_area.setFrameShape(QFrame.NoFrame)
+        self._history_area.setFrameShape(QFrame.Shape.NoFrame)
         self._history_area.setAutoFillBackground(True)
         self._history_layout.setContentsMargins(0, 0, 0, 0)
         self._history_layout.setSpacing(5)
@@ -192,7 +192,7 @@ class Body(QWidget):
         label.setText(content)
         label.setWordWrap(True)
         label.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        label.setFrameStyle(QFrame.NoFrame)
+        label.setFrameStyle(QFrame.Shape.NoFrame)
 
         width_factor = 0.6 if role in ('user', 'system') else 1
         label.setMaximumWidth(int(self._history_area.width() * width_factor))
@@ -385,7 +385,7 @@ def create_aichat_overlay(app: 'GuiApp', parent=None) -> AppOverlayContainer:
 
 if __name__ == '__main__':
     import os
-    from PyQt5.QtWidgets import QWidget
+    from PyQt6.QtWidgets import QWidget
     from feeluown.gui.debug import simple_layout, mock_app
 
     with simple_layout(theme='dark') as layout, mock_app() as app:

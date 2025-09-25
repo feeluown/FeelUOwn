@@ -1,8 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 
 from feeluown.utils.aio import run_afn
@@ -104,8 +104,8 @@ class PlayerControlPanel(QFrame):
         self.mv_btn.setFixedHeight(16)
         self.toggle_watch_btn.setFixedHeight(16)
 
-        self.progress_slider.setSizePolicy(QSizePolicy.Expanding,
-                                           QSizePolicy.Preferred)
+        self.progress_slider.setSizePolicy(QSizePolicy.Policy.Expanding,
+                                           QSizePolicy.Policy.Preferred)
         self._sub_layout = QVBoxLayout()
         self._sub_top_layout = QHBoxLayout()
         self._progress_v_layout = QVBoxLayout()

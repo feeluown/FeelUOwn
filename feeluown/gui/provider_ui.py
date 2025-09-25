@@ -4,8 +4,8 @@ from typing import (
     TYPE_CHECKING, runtime_checkable, Protocol, Dict, Optional, List, Callable, Any,
 )
 
-from PyQt5.QtCore import pyqtSignal, QObject
-from PyQt5.QtWidgets import QMenu
+from PyQt6.QtCore import pyqtSignal, QObject
+from PyQt6.QtWidgets import QMenu
 
 from feeluown.library import ProviderV2
 from feeluown.gui.widgets.provider import ProvidersModel

@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QRectF
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel
-from PyQt5.QtGui import QTextOption, QColor, QPalette, QPainter
+from PyQt6.QtCore import Qt, QRectF
+from PyQt6.QtWidgets import QWidget, QHBoxLayout, QLabel
+from PyQt6.QtGui import QTextOption, QColor, QPalette, QPainter
 
 from feeluown.gui.helpers import SOLARIZED_COLORS
 
@@ -86,7 +86,7 @@ class StatuslineLabel(QLabel):
         font.setPixelSize(self._status_font_size)
         painter.setFont(font)
         pen = painter.pen()
-        border_color = self.palette().color(QPalette.Window)
+        border_color = self.palette().color(QPalette.ColorRole.Window)
         pen.setColor(QColor(border_color))
         painter.setPen(pen)
         w = h = self._width // 2 - 2

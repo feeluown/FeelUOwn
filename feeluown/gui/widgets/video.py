@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QTimer, QSize
-from PyQt5.QtGui import QColor, QPalette
-from PyQt5.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
+from PyQt6.QtCore import QTimer, QSize
+from PyQt6.QtGui import QColor, QPalette
+from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
     QHBoxLayout, QOpenGLWidget, QLabel
 
 from feeluown.player import State
@@ -102,10 +102,10 @@ class VideoPlayerCtlBar(QWidget):
         palette = self.palette()
         palette.setColor(QPalette.Text, QColor('white'))
         palette.setColor(QPalette.ButtonText, QColor('white'))
-        palette.setColor(QPalette.WindowText, QColor('white'))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor('white'))
         bg_color = QColor('black')
         bg_color.setAlpha(180)  # Make it semi-transparent.
-        palette.setColor(QPalette.Window, bg_color)
+        palette.setColor(QPalette.ColorRole.Window, bg_color)
         self.setPalette(palette)
         # It seems children don't inherit the palette, so we set palette for
         # children explicitly.

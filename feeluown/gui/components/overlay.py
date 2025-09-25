@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Optional, cast
 
-from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtGui import QColor, QPainter, QResizeEvent
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtGui import QColor, QPainter, QResizeEvent
+from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
 from feeluown.gui.helpers import esc_hide_widget
 

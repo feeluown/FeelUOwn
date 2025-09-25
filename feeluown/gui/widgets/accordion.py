@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.helpers import ClickableMixin

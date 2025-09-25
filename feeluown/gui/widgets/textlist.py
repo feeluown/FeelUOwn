@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QAbstractListModel,
     Qt,
     QModelIndex,
@@ -9,8 +9,8 @@ from PyQt5.QtCore import (
     QTimer,
     QVariant,
 )
-from PyQt5.QtGui import QPainter, QFontMetrics
-from PyQt5.QtWidgets import QListView, QStyledItemDelegate
+from PyQt6.QtGui import QPainter, QFontMetrics
+from PyQt6.QtWidgets import QListView, QStyledItemDelegate
 
 
 logger = logging.getLogger(__name__)
@@ -65,7 +65,7 @@ class TextlistModel(QAbstractListModel):
         flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return QVariant()
         row = index.row()
@@ -105,9 +105,9 @@ class TextlistView(QListView):
         self._result_timer.timeout.connect(self.__on_timeout)
         self._results = {}  # {row: [index, True]}
 
-        self.setAttribute(Qt.WA_MacShowFocusRect, False)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setAttribute(Qt.WidgetAttribute.WA_MacShowFocusRect, False)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def __on_timeout(self):
         self._result_timer.stop()

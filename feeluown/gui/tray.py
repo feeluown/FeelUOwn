@@ -2,9 +2,9 @@ import logging
 import sys
 from typing import Optional
 
-from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QSystemTrayIcon, QAction, QMenu
+from PyQt6.QtCore import Qt, QEvent
+from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
 
 from feeluown.player import State
 from feeluown.gui.helpers import elided_text, get_qapp
@@ -149,7 +149,7 @@ class Tray(QSystemTrayIcon):
             # When the state will be changed to QApplicationActive?
             # * the dock icon is clicked (on macOS)
             # * the Qt.Tool widget got focus (on macOS and Linux)
-            # * the Qt.Window widget got focus (on Linux)
+            # * the Qt.ColorRole.Window widget got focus (on Linux)
             if IS_MACOS:
                 self._app.show()
                 self._app.activateWindow()
@@ -163,8 +163,8 @@ class Tray(QSystemTrayIcon):
         app_text_idx = None
         if event.type() == QEvent.WindowStateChange:
             # when window is maximized before minimized, the window state will
-            # be Qt.WindowMinimized | Qt.WindowMaximized
-            if obj.windowState() & Qt.WindowMinimized:
+            # be Qt.ColorRole.WindowMinimized | Qt.ColorRole.WindowMaximized
+            if obj.windowState() & Qt.ColorRole.WindowMinimized:
                 self._app_old_state = event.oldState()
                 app_text_idx = 0
             else:

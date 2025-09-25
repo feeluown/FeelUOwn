@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, cast
 
-from PyQt5.QtCore import QEvent, QSize
-from PyQt5.QtGui import QResizeEvent
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QEvent, QSize
+from PyQt6.QtGui import QResizeEvent
+from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
@@ -203,7 +203,7 @@ class NowplayingOverlay(QWidget):
 
 
 if __name__ == '__main__':
-    from PyQt5.QtWidgets import QWidget
+    from PyQt6.QtWidgets import QWidget
 
     from feeluown.gui.debug import simple_layout, mock_app
     from feeluown.player import Metadata
