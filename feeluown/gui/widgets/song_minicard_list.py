@@ -45,7 +45,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def _fetch_image_callback(self, item):
@@ -187,7 +187,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         if selected:
             painter.save()
             painter.setPen(Qt.NoPen)
-            painter.setBrush(option.palette.color(QPalette.Highlight))
+            painter.setBrush(option.palette.color(QPalette.ColorRole.Highlight))
             painter.drawRect(rect)
             painter.restore()
         elif option.state & QStyle.State_MouseOver:
@@ -201,11 +201,11 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         painter.translate(rect.x() + card_left_padding, rect.y() + card_top_padding)
 
         if selected:
-            text_color = option.palette.color(QPalette.HighlightedText)
+            text_color = option.palette.color(QPalette.ColorRole.HighlightedText)
             non_text_color = QColor(text_color)
             non_text_color.setAlpha(200)
         else:
-            text_color = option.palette.color(QPalette.Text)
+            text_color = option.palette.color(QPalette.ColorRole.Text)
             if text_color.lightness() > 150:
                 non_text_color = text_color.darker(140)
             else:
@@ -269,7 +269,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
     def paint_pixmap(
         self, painter, border_color, decoration, width, height, border_radius
     ):
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         pen = painter.pen()
         pen.setColor(border_color)
         painter.setPen(pen)
@@ -306,12 +306,12 @@ class SongMiniCardListView(ItemViewNoScrollMixin, QListView):
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
-        self.setSelectionMode(QListView.ContiguousSelection)
+        self.setSelectionMode(QListView.SelectionMode.ContiguousSelection)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
         self.setMouseTracking(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
-        self.setViewMode(QListView.IconMode)
+        self.setViewMode(QListView.ViewMode.IconMode)
         self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
         self.initialize()

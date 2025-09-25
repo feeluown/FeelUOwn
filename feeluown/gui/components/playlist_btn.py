@@ -40,7 +40,7 @@ class PlaylistButton(SelfPaintAbstractSquareButton):
         # pylint: disable=too-many-locals
         width = height = self.width() - self._padding * 2
         painter = QPainter(self)
-        painter.setRenderHints(QPainter.Antialiasing)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
 
         painter.save()
@@ -82,7 +82,7 @@ class PlaylistButton(SelfPaintAbstractSquareButton):
             painter.setFont(font)
             rect = QRectF(width // 2 + rect_h_half, h3 - rect_h_half,
                           width // 2 - rect_h_half, rect_h_half * 2)
-            painter.drawText(rect, "FM", QTextOption(Qt.AlignCenter))
+            painter.drawText(rect, "FM", QTextOption(Qt.AlignmentFlag.AlignCenter))
         else:
             painter.drawLine(QPointF(0, h3), QPointF(width, h3))
 

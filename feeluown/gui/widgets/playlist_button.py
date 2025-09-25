@@ -19,7 +19,7 @@ class PlaylistButton(QPushButton):
         width = height = 18
         painter = QPainter(self)
         painter.save()
-        painter.setRenderHints(QPainter.Antialiasing)
+        painter.setRenderHints(QPainter.RenderHint.Antialiasing)
         painter.translate((self.width() - width) // 2, (self.height() - height) // 2)
 
         line_height = 1.3
@@ -59,7 +59,7 @@ class PlaylistButton(QPushButton):
             painter.setFont(font)
             rect = QRectF(width // 2 + rect_h_half, h3 - rect_h_half,
                           width // 2 - rect_h_half, rect_h_half * 2)
-            painter.drawText(rect, "FM", QTextOption(Qt.AlignCenter))
+            painter.drawText(rect, "FM", QTextOption(Qt.AlignmentFlag.AlignCenter))
         else:
             painter.drawLine(QPointF(0, h3), QPointF(width, h3))
 

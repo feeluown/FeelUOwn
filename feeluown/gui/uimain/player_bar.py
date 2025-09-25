@@ -66,7 +66,7 @@ class PlayerControlPanel(QFrame):
         self.download_btn.setCheckable(True)
 
         self.song_title_label = LineSongLabel(self._app)
-        self.song_title_label.setAlignment(Qt.AlignCenter)
+        self.song_title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.song_source_label = SongSourceTag(self._app, parent=self)
 
         self.cover_label = ClickableCover(app)
@@ -97,8 +97,8 @@ class PlayerControlPanel(QFrame):
             self.progress_slider.setFixedHeight(20)  # half of parent height
         self.position_label.setFixedWidth(50)
         self.duration_label.setFixedWidth(50)
-        self.position_label.setAlignment(Qt.AlignCenter)
-        self.duration_label.setAlignment(Qt.AlignCenter)
+        self.position_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.duration_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.download_btn.setFixedSize(15, 15)
         self.download_btn.hide()
         self.mv_btn.setFixedHeight(16)

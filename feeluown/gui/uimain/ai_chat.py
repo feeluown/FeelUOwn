@@ -60,7 +60,7 @@ class ChatInputEditor(QPlainTextEdit):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWordWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
+        self.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
         self.setMinimumHeight(30)
         self.setMaximumHeight(300)  # TODO: set maximum height based on parent size
         self.textChanged.connect(self.adjust_height)
@@ -158,7 +158,7 @@ class Body(QWidget):
 
         self._msg_label.setWordWrap(True)
         self._app.installEventFilter(self)
-        self._msg_label.setTextFormat(Qt.RichText)
+        self._msg_label.setTextFormat(Qt.TextFormat.RichText)
 
         self._root_layout = QVBoxLayout(self)
         self._layout = QHBoxLayout()

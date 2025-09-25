@@ -202,7 +202,7 @@ class PlaylistOverlay(QWidget):
         painter.restore()
 
         # Draw a rect to fill the remain background.
-        painter.setBrush(self.palette().color(QPalette.Base))
+        painter.setBrush(self.palette().color(QPalette.ColorRole.Base))
         painter.drawRect(shadow_width, 0, self.width()-shadow_width, self.height())
 
     def showEvent(self, e):

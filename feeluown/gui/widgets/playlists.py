@@ -71,7 +71,7 @@ class PlaylistsModel(TextlistModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         if index.row() < len(self._playlists):
             flags |= Qt.ItemIsDropEnabled
         return flags
@@ -101,7 +101,7 @@ class PlaylistsView(TextlistView):
     def __init__(self, parent):
         super().__init__(parent)
 
-        self.setDragDropMode(QAbstractItemView.DropOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DropOnly)
         self.clicked.connect(self._on_clicked)
 
     def _on_clicked(self, index):

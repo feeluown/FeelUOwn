@@ -51,7 +51,7 @@ class StatuslineLabel(QLabel):
 
     def paintEvent(self, e):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.drawBg(painter)
 
@@ -97,7 +97,7 @@ class StatuslineLabel(QLabel):
         painter.setBrush(text_bg_color)
         radius = 4
         painter.drawRoundedRect(text_rect, radius, radius)
-        painter.drawText(text_rect, self.text(), QTextOption(Qt.AlignCenter))
+        painter.drawText(text_rect, self.text(), QTextOption(Qt.AlignmentFlag.AlignCenter))
         painter.restore()
 
 

@@ -65,10 +65,10 @@ class TableMetaWidget(MetaWidget):
         self.meta_label = QLabel(self)
         # this spacer item is used as a stretch in right layout,
         # it's  width and height is not so important, we set them to 0
-        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Policy.Expanding)
+        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
 
-        # self.title_label.setTextFormat(Qt.RichText)
-        self.meta_label.setTextFormat(Qt.RichText)
+        # self.title_label.setTextFormat(Qt.TextFormat.RichText)
+        self.meta_label.setTextFormat(Qt.TextFormat.RichText)
 
         self._setup_ui()
         self._refresh()
@@ -76,7 +76,7 @@ class TableMetaWidget(MetaWidget):
     def _setup_ui(self):
         font = self.font()
         font.setPixelSize(20)
-        font.setWeight(QFont.DemiBold)
+        font.setWeight(QFont.Weight.DemiBold)
 
         self.cover_label.setMinimumWidth(150)
         self.cover_label.setMaximumWidth(200)

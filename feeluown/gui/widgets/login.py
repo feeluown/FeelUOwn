@@ -98,7 +98,7 @@ class CookiesLoginDialog(LoginDialog):
         self.firefox_btn = QPushButton('从 Firefox 中读取 Cookie')
         self.edge_btn = QPushButton('从 Edge 中读取 Cookie')
 
-        self.hint_label.setTextFormat(Qt.RichText)
+        self.hint_label.setTextFormat(Qt.TextFormat.RichText)
 
         self._layout = QVBoxLayout(self)
         self._layout.addWidget(self.cookies_text_edit)
@@ -109,7 +109,7 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.firefox_btn)
         self._layout.addWidget(self.edge_btn)
 
-        self.cookies_text_edit.setAcceptRichText(False)
+        self.cookies_text_edit.setAcceptTextFormat.RichText(False)
         self.cookies_text_edit.setPlaceholderText(
             '请从浏览器中复制 Cookie：\n\n'
             'Chrome 复制的 cookie 格式类似：key1=value1; key2=value2\n\n'

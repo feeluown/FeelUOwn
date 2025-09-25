@@ -104,16 +104,16 @@ def resize_font(font, delta):
 def palette_set_bg_color(palette, color):
     """set palette background color"""
     if sys.platform == 'linux':
-        # KDE use the QPalette.Base as background color
-        palette.setColor(QPalette.Active, QPalette.Base, color)
-        palette.setColor(QPalette.Inactive, QPalette.Base, color)
+        # KDE use the QPalette.ColorRole.Base as background color
+        palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, color)
+        palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, color)
         # GNOME use the QPalette.ColorRole.Window as background color
-        palette.setColor(QPalette.Active, QPalette.ColorRole.Window, color)
-        palette.setColor(QPalette.Inactive, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, color)
     else:
         # macOS use the QPalette.ColorRole.Window as background color
-        palette.setColor(QPalette.Active, QPalette.ColorRole.Window, color)
-        palette.setColor(QPalette.Inactive, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, color)
 
 
 def unify_scroll_area_style(scroll_area: QAbstractScrollArea):
@@ -579,7 +579,7 @@ def painter_save(painter: QPainter):
 
 
 def secondary_text_color(palette: QPalette):
-    text_color: QColor = palette.color(QPalette.Text)
+    text_color: QColor = palette.color(QPalette.ColorRole.Text)
     if text_color.lightness() > 150:
         non_text_color = text_color.darker(140)
     else:
@@ -632,7 +632,7 @@ def set_default_font_families(widget):
 
 
 def esc_hide_widget(widget):
-    QShortcut(QKeySequence.Cancel, widget).activated.connect(widget.hide)
+    QShortcut(QKeySequence.StandardKey.Cancel, widget).activated.connect(widget.hide)
 
 
 # https://ethanschoonover.com/solarized/

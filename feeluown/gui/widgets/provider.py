@@ -57,7 +57,7 @@ class ProvidersDelegate(QStyledItemDelegate):
         self.__text_rect_width = 2 * (self.__body_radius / math.sqrt(2))
 
     def paint(self, painter, option, index):
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         provider_ui_item = index.data(Qt.UserRole)
 
         painter.save()
@@ -73,7 +73,7 @@ class ProvidersDelegate(QStyledItemDelegate):
         else:
             # draw rounded rect
             painter.save()
-            text_color = option.palette.color(QPalette.Text)
+            text_color = option.palette.color(QPalette.ColorRole.Text)
             if text_color.lightness() > 150:
                 non_text_color = text_color.darker(140)
             else:
@@ -90,8 +90,8 @@ class ProvidersDelegate(QStyledItemDelegate):
             font.setPixelSize(10)
             painter.setFont(font)
             text_option = QTextOption()
-            text_option.setWrapMode(QTextOption.WrapAtWordBoundaryOrAnywhere)
-            text_option.setAlignment(Qt.AlignCenter)
+            text_option.setWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
+            text_option.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
             text_rect = QRectF(self.__text_rect_x, self.__text_rect_x,
                                self.__text_rect_width, self.__text_rect_width)
@@ -134,7 +134,7 @@ class ProvidersView(ItemViewNoScrollMixin, QListView):
 
         self.delegate = ProvidersDelegate(self, library=library)
         self.setItemDelegate(self.delegate)
-        self.setViewMode(QListView.IconMode)
+        self.setViewMode(QListView.ViewMode.IconMode)
         self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
 

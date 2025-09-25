@@ -15,7 +15,7 @@ class CoverLabel(QLabel):
 
         self._radius = radius
         self.drawer = PixmapDrawer(None, self, self._radius)
-        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding)
 
     def show_pixmap(self, pixmap):
         """

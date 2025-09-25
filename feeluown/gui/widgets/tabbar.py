@@ -42,7 +42,7 @@ class TabBarStyle(QProxyStyle):
             painter.save()
             rect = option.rect
             is_selected = option.state & QStyle.State_Selected
-            color = widget.palette().color(QPalette.Base)
+            color = widget.palette().color(QPalette.ColorRole.Base)
             if is_selected:
                 color.setAlpha(160)
                 painter.fillRect(rect, color)
@@ -194,7 +194,7 @@ class TableTabBar(QTabBar):
         self.tabBarClicked.connect(self.on_index_changed)
         self.setExpanding(False)
         # self.setDrawBase(False)
-        self.setShape(QTabBar.TriangularNorth)
+        self.setShape(QTabBar.Shape.TriangularNorth)
 
     def use(self, *tabs):
         i = self.count() - 1

@@ -25,4 +25,4 @@ class PluginStatus(StatuslineLabel):
 
     def drawInner(self, painter):
         inner_rect = QRectF(0, 0, self._inner_width, self._inner_height)
-        painter.drawText(inner_rect, '☯', QTextOption(Qt.AlignCenter))
+        painter.drawText(inner_rect, '☯', QTextOption(Qt.AlignmentFlag.AlignCenter))

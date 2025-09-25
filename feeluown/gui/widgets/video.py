@@ -100,8 +100,8 @@ class VideoPlayerCtlBar(QWidget):
 
         # Customize the palette.
         palette = self.palette()
-        palette.setColor(QPalette.Text, QColor('white'))
-        palette.setColor(QPalette.ButtonText, QColor('white'))
+        palette.setColor(QPalette.ColorRole.Text, QColor('white'))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor('white'))
         palette.setColor(QPalette.ColorRole.WindowText, QColor('white'))
         bg_color = QColor('black')
         bg_color.setAlpha(180)  # Make it semi-transparent.

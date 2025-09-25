@@ -39,7 +39,7 @@ class MagicBox(QLineEdit):
             '输入 # 前缀之后，可以过滤表格内容\n'
             '输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）'
         )
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Fixed)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self.setFixedHeight(32)
         self.setFrame(False)
         self.setAttribute(Qt.WidgetAttribute.WA_MacShowFocusRect, False)

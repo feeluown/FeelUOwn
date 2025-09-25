@@ -59,7 +59,7 @@ class ListViewContainer(QFrame):
         self._layout.addLayout(self._t_h_layout)
         self._layout.addLayout(self._b_h_layout)
         # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
-        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Maximum)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
 
     def toggle_view(self):
         if self._view.isVisible():
@@ -187,7 +187,7 @@ class ProviderBar(QWidget):
         layout = QFormLayout(dialog)
         title_edit = QLineEdit(dialog)
         layout.addRow('歌单名', title_edit)
-        button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Yes)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Yes)
         layout.addRow('', button_box)
         button_box.accepted.connect(dialog.accept)
         button_box.rejected.connect(dialog.reject)
@@ -225,7 +225,7 @@ class ProviderBar(QWidget):
             else:
                 self._app.show_msg(f'资源提供方({playlist.source})不支持删除歌单')
 
-        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
+        box = QMessageBox(QMessageBox.Icon.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
                           QMessageBox.Yes | QMessageBox.No, self)
         box.accepted.connect(lambda: aio.run_afn(do))
         box.open()

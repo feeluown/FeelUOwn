@@ -40,14 +40,14 @@ class VolumeButton(QAbstractSlider):
 
     def paintEvent(self, _) -> None:
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         if self.__checked is True:
             with painter_save(painter):
                 painter.setPen(Qt.NoPen)
                 color = self.palette().color(QPalette.Background)
                 painter.setBrush(darker_or_lighter(color, 120))
                 painter.drawEllipse(self.rect())
-            painter.drawText(self.rect(), Qt.AlignCenter, f'{self.value()}%')
+            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, f'{self.value()}%')
         else:
             self.drawer.draw(painter, self.palette())
 

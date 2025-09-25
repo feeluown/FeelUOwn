@@ -62,7 +62,7 @@ class TextlistModel(QAbstractListModel):
     def flags(self, index):  # pylint: disable=no-self-use
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -137,7 +137,7 @@ class TextlistView(QListView):
             return
         painter = QPainter(self.viewport())
         option = self.viewOptions()
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         fm = QFontMetrics(option.font)
         for _, result in self._results.items():
             index, state = result

@@ -176,7 +176,7 @@ class NowplayingOverlay(QWidget):
     def setup_ui(self):
         set_default_font_families(self.comments_view)
         self.tabbar.setDocumentMode(True)
-        self.tabbar.setShape(QTabBar.TriangularEast)
+        self.tabbar.setShape(QTabBar.Shape.TriangularEast)
         self.setAutoFillBackground(True)
         self.lyric_view.viewport().setAutoFillBackground(False)
         self.comments_view.viewport().setAutoFillBackground(False)

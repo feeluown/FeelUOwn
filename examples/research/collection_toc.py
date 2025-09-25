@@ -52,7 +52,7 @@ class CollectionTOCDelegate(QStyledItemDelegate):
         circle_center = QPoint(center_x, center_y)
         # painter.drawEllipse(circle_center, r, r)
 
-        flags = Qt.AlignCenter
+        flags = Qt.AlignmentFlag.AlignmentFlag.AlignCenter
         circle_rect = QRect(x, y, 2*r, 2*r)
         font = painter.font()
         font.setPointSize(r//2)

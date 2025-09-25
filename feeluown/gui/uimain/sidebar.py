@@ -35,7 +35,7 @@ class LeftPanel(QScrollArea):
             self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # HELP(cosven): size policy is not working
-        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Policy.Expanding)
+        # self.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         self.setMaximumWidth(280)
 
     def sizeHint(self):
@@ -138,7 +138,7 @@ class _LeftPanel(QFrame):
         title_edit = QLineEdit(dialog)
         layout.addRow('ID', id_edit)
         layout.addRow('标题', title_edit)
-        button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Save)
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Save)
         layout.addRow('', button_box)
         button_box.accepted.connect(dialog.accept)
         button_box.rejected.connect(dialog.reject)
@@ -170,7 +170,7 @@ class _LeftPanel(QFrame):
             self._app.coll_mgr.remove(coll)
             self._app.coll_mgr.refresh()
 
-        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除收藏集 '{coll.name}' 吗？",
+        box = QMessageBox(QMessageBox.Icon.Warning, '提示', f"确认删除收藏集 '{coll.name}' 吗？",
                           QMessageBox.Yes | QMessageBox.No, self)
         box.accepted.connect(do)
         box.open()

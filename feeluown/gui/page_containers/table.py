@@ -239,7 +239,7 @@ class DescLabel(QLabel):
         self.setWordWrap(True)
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
-        self.palette().setColor(QPalette.Background, self.palette().color(QPalette.Base))
+        self.palette().setColor(QPalette.Background, self.palette().color(QPalette.ColorRole.Base))
 
 
 class TableContainer(QFrame, BgTransparentMixin):

@@ -36,7 +36,7 @@ class CommentListModel(QAbstractListModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -99,7 +99,7 @@ class CommentListDelegate(QStyledItemDelegate):
             liked_count_text = human_readable_number_v1(comment.liked_count)
             text_list.append(f'♥ {liked_count_text}')
         text = '  |  '.join(text_list)
-        text_color = option.palette.color(QPalette.Text)
+        text_color = option.palette.color(QPalette.ColorRole.Text)
         text_color.setAlpha(100)
         pen = QPen()
         pen.setColor(text_color)
@@ -139,7 +139,7 @@ class CommentListDelegate(QStyledItemDelegate):
         # draw a dotted line under each row
         painter.save()
         painter.translate(QPoint(0, body_height + self._margin_v))
-        text_color = option.palette.color(QPalette.Text)
+        text_color = option.palette.color(QPalette.ColorRole.Text)
         if text_color.lightness() > 150:
             non_text_color = text_color.darker(140)
         else:

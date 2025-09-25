@@ -16,7 +16,7 @@ class LargeHeader(BaseHeader):
         super().__init__(*args, font_size=20, **kwargs)
 
         font = self.font()
-        font.setWeight(QFont.DemiBold)
+        font.setWeight(QFont.Weight.DemiBold)
         self.setFont(font)
 
 

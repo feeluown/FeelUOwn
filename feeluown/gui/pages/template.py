@@ -10,5 +10,5 @@ if TYPE_CHECKING:
 
 async def render_error_message(app: 'GuiApp', msg: str):
     label = MessageLabel(msg, MessageLabel.ERROR)
-    label.setAlignment(Qt.AlignCenter)
+    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     app.ui.page_view.set_body(label)

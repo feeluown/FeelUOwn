@@ -98,7 +98,7 @@ setup(
             'pylint',
             'mypy',
             # pyqt5-stubs seems more accurate than the stubs packaged in PyQt6 package.
-            # For example, the stubs in PyQt6 has wrong type hint for Qt.ItemIsSelectable.
+            # For example, the stubs in PyQt6 has wrong type hint for Qt.ItemFlag.ItemIsSelectable.
             # Some pyqt5 package installed by system package manager may not contain stubs.
             'pyqt5-stubs',
 

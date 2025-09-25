@@ -79,7 +79,7 @@ class Tray(QSystemTrayIcon):
         self._menu.addAction(self._quit_action)
         self._status_action.setEnabled(False)
 
-    def _on_activated(self, reason=QSystemTrayIcon.Unknown):
+    def _on_activated(self, reason=QSystemTrayIcon.ActivationReason.Unknown):
         """
         NOTE(cosven): Theoretically, we need not give default value for param reason.
         However, we connect activated signal with `_toggle_app_state method` before,
@@ -87,8 +87,8 @@ class Tray(QSystemTrayIcon):
         works well. So we give an default value to avoid potential strange errors.
         """
         # On Ubuntu 18.04, when we double left click the tray icon, the activated
-        # signal is emitted and the reason is `QSystemTrayIcon.Trigger`.
-        if reason not in (QSystemTrayIcon.Context, ):
+        # signal is emitted and the reason is `QSystemTrayIcon.ActivationReason.Trigger`.
+        if reason not in (QSystemTrayIcon.ActivationReason.Context, ):
             self._toggle_app_state()
         logger.info(f'tray icon activated, reason:{reason}')
 

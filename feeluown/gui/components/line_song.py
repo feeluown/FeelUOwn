@@ -100,7 +100,7 @@ class LineSongLabel(QLabel):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setFont(self.font())
-        painter.setPen(self.palette().color(QPalette.Text))
+        painter.setPen(self.palette().color(QPalette.ColorRole.Text))
 
         if self._timer.isActive():
             self._txt = self._raw_text
@@ -138,7 +138,7 @@ class TwoLineSongLabel(QWidget):
         self._subtitle_label = QLabel()
 
         palette = self._subtitle_label.palette()
-        palette.setColor(QPalette.Text, QColor('grey'))
+        palette.setColor(QPalette.ColorRole.Text, QColor('grey'))
         palette.setColor(QPalette.Foreground, QColor('Grey'))
         self._subtitle_label.setPalette(palette)
 

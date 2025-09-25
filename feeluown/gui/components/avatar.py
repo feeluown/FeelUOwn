@@ -58,7 +58,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             item.clicked.emit()
         else:
             pos = self.cursor().pos()
-            e = QContextMenuEvent(QContextMenuEvent.Mouse, pos, pos)
+            e = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, pos, pos)
             self.contextMenuEvent(e)
 
     def on_provider_added(self, provider: Provider):
@@ -203,7 +203,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 painter.translate(self._translate_x, 0)
                 # If a provider is selected, draw a highlight circle.
                 if self._app.current_pvd_ui_mgr.get_either() is not None:
-                    self._icon_drawer.fg_color = self.palette().color(QPalette.Highlight)
+                    self._icon_drawer.fg_color = self.palette().color(QPalette.ColorRole.Highlight)
                 self._icon_drawer.draw(painter)
 
 

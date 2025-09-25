@@ -39,7 +39,7 @@ class PlayerPlaylistModel(SongMiniCardListModel):
         song = index.data(Qt.UserRole)[0]
         if self._playlist.is_bad(song):
             # Disable bad song.
-            flags &= ~Qt.ItemIsEnabled
+            flags &= ~Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def on_songs_added(self, index, count):
@@ -117,8 +117,8 @@ class PlayerPlaylistView(SongMiniCardListView):
             row = songs.index(current_song)
             index = model.index(row, 0)
             # In order to highlight the current song.
-            self.selectionModel().select(index, QItemSelectionModel.SelectCurrent)
-            self.scrollTo(index, QAbstractItemView.PositionAtCenter)
+            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.SelectionFlag.SelectCurrent)
+            self.scrollTo(index, QAbstractItemView.ScrollHint.PositionAtCenter)
 
     async def _dislike_and_remove_songs(self, songs):
         song: BriefSongModel = songs[0]

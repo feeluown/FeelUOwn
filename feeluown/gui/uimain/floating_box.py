@@ -123,8 +123,8 @@ class AnimatedCoverLabel(CoverLabelV2):
     def paintEvent(self, e):
         radius = self._radius
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         center = (self.width()//2, self.height()//2)
 

@@ -114,7 +114,7 @@ class SongListModel(QAbstractListModel, ReaderFetchMoreMixin):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -136,7 +136,7 @@ class SongListDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         painter.save()
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         song = index.data(Qt.UserRole)
         top = option.rect.top()
@@ -241,12 +241,12 @@ class BaseSongsTableModel(QAbstractTableModel):
 
     def flags(self, index):
         # Qt.NoItemFlags is ItemFlag and we should return ItemFlags
-        no_item_flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        no_item_flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         if index.column() in (Column.index, Column.source, Column.duration):
             return no_item_flags
 
         # Default flags.
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDragEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemIsDragEnabled
         song = index.data(Qt.UserRole)
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
@@ -316,7 +316,7 @@ class BaseSongsTableModel(QAbstractTableModel):
                 return song.album_name_display
         elif role == Qt.TextAlignmentRole:
             if index.column() == Column.index:
-                return Qt.AlignCenter | Qt.AlignVCenter
+                return Qt.AlignmentFlag.AlignCenter | Qt.AlignVCenter
             elif index.column() == Column.source:
                 return Qt.AlignLeft | Qt.AlignBaseline | Qt.AlignVCenter
         elif role == Qt.EditRole:
@@ -326,7 +326,7 @@ class BaseSongsTableModel(QAbstractTableModel):
         return QVariant()
 
     def mimeData(self, indexes):
-        # When the selection behaviour is set to QAbstractItemView.SelectRows,
+        # When the selection behaviour is set to QAbstractItemView.SelectionBehavior.SelectRows,
         # len(indexes) is equal to length of items which have ItemIsDragEnabled flag.
         indexes = list(indexes)  # Make typing checkers happy.
         if len(indexes) > 1:
@@ -467,7 +467,7 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def paint(self, painter, option, index):
         super().paint(painter, option, index)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         hovered = index.row() == self.row_hovered
 
         if index.column() == Column.song:
@@ -485,12 +485,12 @@ class SongsTableDelegate(QStyledItemDelegate):
             # platform indenpent.It is drawed by something like KDE, kvantum.
             # We have no way to draw a similar look (or please help find a way).
             if index.row() % 2 == 0:
-                painter.setBrush(option.palette.color(QPalette.Base))
+                painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
             else:
-                painter.setBrush(option.palette.color(QPalette.AlternateBase))
+                painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
             painter.drawRect(option.rect)
             # Draw play button.
-            painter.setBrush(option.palette.color(QPalette.Text))
+            painter.setBrush(option.palette.color(QPalette.ColorRole.Text))
             triangle_edge = 12
             triangle_height = 10
             # Move the triangle right 2px and it looks better.
@@ -507,7 +507,7 @@ class SongsTableDelegate(QStyledItemDelegate):
         # Since the selection behaviour is SelectRows, so draw the mask over the row.
         if hovered:
             painter.save()
-            mask_color = option.palette.color(QPalette.Active, QPalette.Text)
+            mask_color = option.palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Text)
             mask_color.setAlpha(20)
             painter.setPen(Qt.NoPen)
             painter.setBrush(mask_color)
@@ -537,7 +537,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                     x = option.rect.x() + title_rect.width() + 10
                     text_rect = QRect(x, y, text_width, text_height)
                     painter.drawRoundedRect(text_rect, 3, 3)
-                    painter.drawText(text_rect, Qt.AlignCenter, 'VIP')
+                    painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, 'VIP')
 
     def sizeHint(self, option, index):
         """set proper width for each column
@@ -606,7 +606,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.entered.connect(lambda index: self.row_hovered.emit(index.row()))
 
     def _setup_ui(self):
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.Shape.NoFrame)
@@ -616,19 +616,19 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.setWordWrap(False)
         self.setTextElideMode(Qt.ElideRight)
         self.setMouseTracking(True)
-        self.setEditTriggers(QAbstractItemView.SelectedClicked)
-        self.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.setEditTriggers(QAbstractItemView.EditTrigger.SelectedClicked)
+        self.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
         # Note that the selection behavior affects drop behavior.
         # You may need to to change the Model.flags and mimeData methods
         # if you want to change this behavior.
-        self.setSelectionBehavior(QAbstractItemView.SelectRows)
+        self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setShowGrid(False)
         self.setDragEnabled(True)
-        self.setDragDropMode(QAbstractItemView.DragOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DragOnly)
 
     def setModel(self, model):
         super().setModel(model)
-        self.horizontalHeader().setSectionResizeMode(Column.song, QHeaderView.Stretch)
+        self.horizontalHeader().setSectionResizeMode(Column.song, QHeaderView.ResizeMode.Stretch)
 
     def set_columns_mode(self, mode):
         mode = ColumnsMode(mode)

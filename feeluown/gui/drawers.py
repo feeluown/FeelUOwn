@@ -488,7 +488,7 @@ class VolumeIconDrawer:
             for line in lines:
                 painter.drawLine(*line)
             pen = painter.pen()
-            pen.setColor(palette.color(QPalette.Disabled, QPalette.ButtonText))
+            pen.setColor(palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText))
             painter.setPen(pen)
             for line in disabled_lines:
                 painter.drawLine(*line)

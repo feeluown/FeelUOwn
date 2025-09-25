@@ -55,7 +55,7 @@ class DurationLabel(QLabel):
         super().__init__('00:00', parent=parent)
         self._app = app
 
-        self.setAlignment(Qt.AlignCenter)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._app.player.duration_changed.connect(
             self.on_duration_changed, aioqueue=True)
 
@@ -68,7 +68,7 @@ class ProgressLabel(QLabel):
         super().__init__('00:00', parent=parent)
         self._app = app
 
-        self.setAlignment(Qt.AlignCenter)
+        self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._app.player_pos_per300ms.changed.connect(self.on_position_changed)
 
     def on_position_changed(self, position):
@@ -98,7 +98,7 @@ class MessageLabel(QLabel):
             hint = '️'
             color = SOLARIZED_COLORS['blue']
         palette = self.palette()
-        palette.setColor(QPalette.Text, QColor(color))
+        palette.setColor(QPalette.ColorRole.Text, QColor(color))
         palette.setColor(QPalette.ColorRole.WindowText, QColor(color))
         self.setPalette(palette)
         self.setText(f"{hint}{text}")

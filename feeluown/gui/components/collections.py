@@ -23,7 +23,7 @@ class CollectionListView(TextlistView):
     def __init__(self, app: 'GuiApp', **kwargs):
         super().__init__(**kwargs)
         self._app = app
-        self.setDragDropMode(QAbstractItemView.DropOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DragDropMode.DragDropMode.DropOnly)
         self.setModel(CollectionListModel(self))
 
         self.clicked.connect(self._on_clicked)
@@ -94,7 +94,7 @@ class CollectionListModel(TextlistModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDropEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled | Qt.ItemIsDropEnabled
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

@@ -16,17 +16,17 @@ IS_WINDOWS = sys.platform == 'win32'
 
 
 def set_bg_color(palette, color):
-    palette.setColor(QPalette.Active, QPalette.ColorRole.Window, color)
-    palette.setColor(QPalette.Active, QPalette.Base, color)
-    palette.setColor(QPalette.Inactive, QPalette.ColorRole.Window, color)
-    palette.setColor(QPalette.Inactive, QPalette.Base, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, color)
 
 
 def set_fg_color(palette, color):
-    palette.setColor(QPalette.Active, QPalette.ColorRole.WindowText, color)
-    palette.setColor(QPalette.Active, QPalette.Text, color)
-    palette.setColor(QPalette.Inactive, QPalette.ColorRole.WindowText, color)
-    palette.setColor(QPalette.Inactive, QPalette.Text, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, color)
 
 
 Tooltip = """
@@ -134,8 +134,8 @@ class LyricWindow(QWidget):
         return {
             'geometry': (geo.x(), geo.y(), geo.width(), geo.height()),
             'font': inner.font().toString(),
-            'bg': p.color(QPalette.Active, QPalette.ColorRole.Window).name(QColor.HexArgb),
-            'fg': p.color(QPalette.Active, QPalette.Text).name(QColor.HexArgb),
+            'bg': p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Window).name(QColor.NameFormat.HexArgb),
+            'fg': p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Text).name(QColor.NameFormat.HexArgb),
         }
 
     def apply_state(self, state):
@@ -268,8 +268,8 @@ class InnerLyricWindow(QWidget):
 
         self._app.live_lyric.line_changed.connect(self.set_line)
         self._app.live_lyric.lyrics_changed.connect(self.on_lyrics_changed)
-        QShortcut(QKeySequence.ZoomIn, self).activated.connect(self.zoomin)
-        QShortcut(QKeySequence.ZoomOut, self).activated.connect(self.zoomout)
+        QShortcut(QKeySequence.StandardKey.ZoomIn, self).activated.connect(self.zoomin)
+        QShortcut(QKeySequence.StandardKey.ZoomOut, self).activated.connect(self.zoomout)
         QShortcut(QKeySequence('Ctrl+='), self).activated.connect(self.zoomin)
 
         self._layout = QHBoxLayout(self)
@@ -324,7 +324,7 @@ class InnerLyricWindow(QWidget):
         due to it sets the attribute WA_TranslucentBackground.
         """
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setPen(Qt.NoPen)
         painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), self._border_radius, self._border_radius)
@@ -366,11 +366,11 @@ class InnerLyricWindow(QWidget):
         if bg:
             color = self.palette().color(QPalette.ColorRole.Window)
         else:
-            color = self.palette().color(QPalette.Text)
+            color = self.palette().color(QPalette.ColorRole.Text)
         dialog.setCurrentColor(color)
         dialog.currentColorChanged.connect(set_color)
         dialog.colorSelected.connect(set_color)
-        dialog.setOption(QColorDialog.ShowAlphaChannel, True)
+        dialog.setOption(QColorDialog.ColorDialogOption.ShowAlphaChannel, True)
         # On KDE(with Xorg), if the dialog is in modal state,
         # the window is dimming.
         if sys.platform == 'linux':

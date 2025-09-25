@@ -28,7 +28,7 @@ class ResizableFramelessContainer(QWidget):
 
         self.setMouseTracking(True)
 
-        QShortcut(QKeySequence.Cancel, self).activated.connect(
+        QShortcut(QKeySequence.StandardKey.Cancel, self).activated.connect(
             self.on_cancel_key_pressed)
 
     def attach_widget(self, widget):

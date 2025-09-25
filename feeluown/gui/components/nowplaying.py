@@ -57,9 +57,9 @@ class MVWrapper(QWidget):
         color = QColor('black')
         color.setAlpha(150)
         palette_set_bg_color(palette, color)
-        palette.setColor(QPalette.Text, QColor('white'))
+        palette.setColor(QPalette.ColorRole.Text, QColor('white'))
         palette.setColor(QPalette.Foreground, QColor('white'))
-        palette.setColor(QPalette.ButtonText, QColor('white'))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor('white'))
         self.setPalette(palette)
 
         self._layout = QHBoxLayout(self)
@@ -159,13 +159,13 @@ class NowplayingLyricView(LyricView):
         font.setPixelSize(17)
         self.setFont(font)
 
-        self._alignment = Qt.AlignCenter
+        self._alignment = Qt.AlignmentFlag.AlignCenter
         self._highlight_font_size = 25
         self._item_spacing = 20
 
         palette = self.palette()
-        palette.setColor(QPalette.Highlight, Qt.GlobalColor.transparent)
-        palette.setColor(QPalette.HighlightedText, random_solarized_color())
+        palette.setColor(QPalette.ColorRole.Highlight, Qt.GlobalColor.transparent)
+        palette.setColor(QPalette.ColorRole.HighlightedText, random_solarized_color())
         self.setPalette(palette)
 
     def _create_item(self, line):
@@ -202,7 +202,7 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
         super().__init__(
             parent=parent,
             no_scroll_v=False,
-            delegate_options={'quoted_bg_color_role': QPalette.Base}
+            delegate_options={'quoted_bg_color_role': QPalette.ColorRole.Base}
         )
 
     async def refresh(self):
@@ -228,7 +228,7 @@ class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView
                 card_height=40,
                 card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
                 card_right_spacing=10,
-                hover_color_role=QPalette.Base,
+                hover_color_role=QPalette.ColorRole.Base,
             )
         )
 
@@ -256,6 +256,6 @@ class NowplayingPlayerPlaylistView(PlayerPlaylistView):
             card_height=40,
             card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
             card_right_spacing=10,
-            hover_color_role=QPalette.Base,
+            hover_color_role=QPalette.ColorRole.Base,
         )
         self.setItemDelegate(delegate)

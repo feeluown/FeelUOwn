@@ -188,9 +188,9 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             return
 
         with painter_save(painter):
-            painter.setRenderHints(QPainter.Antialiasing |
-                                   QPainter.SmoothPixmapTransform |
-                                   QPainter.LosslessImageRendering)
+            painter.setRenderHints(QPainter.RenderHint.Antialiasing |
+                                   QPainter.RenderHint.SmoothPixmapTransform |
+                                   QPainter.RenderHint.LosslessImageRendering)
             painter.translate(option.rect.x(), option.rect.y())
 
             if not self.is_leftmost(index):
@@ -372,7 +372,7 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         self._least_row_count = 1
         self._row_height = 0
 
-        self.setViewMode(QListView.IconMode)
+        self.setViewMode(QListView.ViewMode.IconMode)
         self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
         self.setFrameShape(QFrame.Shape.NoFrame)

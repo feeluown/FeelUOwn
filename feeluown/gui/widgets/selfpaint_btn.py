@@ -74,7 +74,7 @@ class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
 
         self.paint_border_bg_when_hover(painter)
         self.draw_icon(painter)
@@ -141,7 +141,7 @@ class ArrowAbstractButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
         set_pen_1_5(painter)
         for vertex in self.vertexes:
@@ -175,7 +175,7 @@ class SearchSwitchButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
 
         # When the button size is very large, the line and the ellipse
@@ -198,7 +198,7 @@ class SettingsButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
 
         pen = painter.pen()
@@ -219,7 +219,7 @@ class PlusButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
         self.drawer.draw(painter)
 
@@ -237,7 +237,7 @@ class TriagleButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
         self.drawer.draw(painter)
 
@@ -384,7 +384,7 @@ class PlayButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
         self.drawer.draw(painter)
 
@@ -434,7 +434,7 @@ class PlayPauseButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         set_pen_width(painter, self._pen_width)
         self.paint_round_bg_when_hover(painter)
         if self.isChecked():
@@ -480,7 +480,7 @@ class _PlayXButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
         with painter_save(painter):
             painter.translate(self._body_translate * self._body_width, 0)
@@ -516,7 +516,7 @@ class MVButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         opt = QStyleOptionButton()
         self.initStyleOption(opt)
         rect = QRect(1, self.rectangle_y, self.width() - 2, self.rectangle_height)
@@ -542,7 +542,7 @@ class VolumeButton(SelfPaintAbstractSquareButton):
 
     def paintEvent(self, _):
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         self.paint_round_bg_when_hover(painter)
         self.drawer.draw(painter, self.palette())
 

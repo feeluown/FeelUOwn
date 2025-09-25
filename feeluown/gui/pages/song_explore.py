@@ -117,7 +117,7 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
 class HeaderLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setTextFormat(Qt.RichText)
+        self.setTextFormat(Qt.TextFormat.RichText)
         self.setTextInteractionFlags(Qt.TextSelectableByMouse)
 
 
@@ -130,14 +130,14 @@ class LyricLabel(QLabel, BgTransparentMixin):
         font = self.font()
         resize_font(font, 0)
         self.setFont(font)
-        self.setTextFormat(Qt.RichText)
+        self.setTextFormat(Qt.TextFormat.RichText)
 
 
 class SongWikiLabel(QLabel):
     def __init__(self, app: GuiApp, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
-        self.setTextFormat(Qt.RichText)
+        self.setTextFormat(Qt.TextFormat.RichText)
         self.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.linkActivated.connect(self.on_link_activated)
         self.setWordWrap(True)

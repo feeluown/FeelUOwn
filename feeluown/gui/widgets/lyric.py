@@ -54,7 +54,7 @@ class LyricView(QListWidget):
         if index is not None:
             item = self.item(index)
             self.setCurrentItem(item)
-            self.scrollToItem(item, QAbstractItemView.PositionAtCenter)
+            self.scrollToItem(item, QAbstractItemView.ScrollHint.PositionAtCenter)
         else:
             self.setCurrentItem(None)
 

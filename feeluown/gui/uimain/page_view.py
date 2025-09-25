@@ -172,8 +172,8 @@ class RightPanel(QFrame):
         """
         painter = QPainter(self)
         painter.setPen(Qt.NoPen)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         # calculate available size
         draw_width = self.width()
@@ -189,9 +189,9 @@ class RightPanel(QFrame):
             scrolled = 0
         max_scroll_height = draw_height - self.bottom_panel.height()
 
-        # Draw the whole background with QPalette.Base color.
+        # Draw the whole background with QPalette.ColorRole.Base color.
         painter.save()
-        painter.setBrush(self.palette().brush(QPalette.Base))
+        painter.setBrush(self.palette().brush(QPalette.ColorRole.Base))
         painter.drawRect(self.rect())
         painter.restore()
 
@@ -206,7 +206,7 @@ class RightPanel(QFrame):
         if self._pixmap is not None:
             self._draw_pixmap(painter, draw_width, draw_height, scrolled)
             self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
-            curve = QEasingCurve(QEasingCurve.OutCubic)
+            curve = QEasingCurve(QEasingCurve.Type.OutCubic)
             if max_scroll_height == 0:
                 alpha_ratio = 1.0
             else:
@@ -233,7 +233,7 @@ class RightPanel(QFrame):
             # since the body's background color is palette(base), we use
             # the color to draw background for remain empty area
             painter.save()
-            painter.setBrush(self.palette().brush(QPalette.Base))
+            painter.setBrush(self.palette().brush(QPalette.ColorRole.Base))
             painter.drawRect(0, draw_height, draw_width, self.height() - draw_height)
             painter.restore()
         painter.end()
@@ -243,7 +243,7 @@ class RightPanel(QFrame):
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        color = self.palette().color(QPalette.Base)
+        color = self.palette().color(QPalette.ColorRole.Base)
         if draw_height == self.height():
             gradient.setColorAt(0, add_alpha(color, 180))
             gradient.setColorAt(1, add_alpha(color, 230))
@@ -272,7 +272,7 @@ class RightPanel(QFrame):
         painter.translate(0, -scrolled)
         gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
         gradient.setColorAt(0, self.palette().color(QPalette.ColorRole.Window))
-        gradient.setColorAt(1, self.palette().color(QPalette.Base))
+        gradient.setColorAt(1, self.palette().color(QPalette.ColorRole.Base))
         painter.setBrush(gradient)
         painter.drawRect(rect)
         painter.restore()
