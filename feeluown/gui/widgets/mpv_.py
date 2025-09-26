@@ -12,11 +12,11 @@ from feeluown.gui.widgets.video import VideoOpenGLWidget
 from feeluown.gui.helpers import IS_MACOS
 
 
-def get_proc_addr(_, name):
+def get_proc_addr(_, name: bytes):
     glctx = QOpenGLContext.currentContext()
     if glctx is None:
         return 0
-    addr = int(glctx.getProcAddress(name.decode('utf-8')))
+    addr = int(glctx.getProcAddress(name))
     return addr
 
 

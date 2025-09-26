@@ -53,12 +53,12 @@ class VolumeButton(QAbstractSlider):
 
     def mousePressEvent(self, e) -> None:
         super().mousePressEvent(e)
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             self.__pressed = True
 
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             if self.__pressed is True:
                 self.__pressed = False
                 self.__checked = not self.__checked

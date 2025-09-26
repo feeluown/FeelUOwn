@@ -119,7 +119,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         if not index.isValid() or offset >= len(self._items):
             return None
         item = self._items[offset]
-        if role == Qt.DecorationRole:
+        if role == Qt.ItemDataRole.DecorationRole:
             uri = reverse(item)
             image = self.images.get(uri)
             if image is not None:
@@ -132,9 +132,9 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             return item.name_display
         elif role == Qt.ItemDataRole.UserRole:
             return item
-        elif role == Qt.WhatsThisRole:
+        elif role == Qt.ItemDataRole.WhatsThisRole:
             return self.source_name_map.get(item.source, item.source)
-        elif role == Qt.ToolTipRole:
+        elif role == Qt.ItemDataRole.ToolTipRole:
             return item.name
         return None
 
@@ -183,7 +183,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.view.update()
 
     def paint(self, painter, option, index):
-        obj: Optional[Union[QImage, QColor]] = index.data(Qt.DecorationRole)
+        obj: Optional[Union[QImage, QColor]] = index.data(Qt.ItemDataRole.DecorationRole)
         if obj is None:
             return
 
@@ -247,7 +247,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
     def draw_title(self, painter, index, text_rect):
         text_option = QTextOption()
         if self.as_circle:
-            text_option.setAlignment(Qt.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+            text_option.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         else:
             text_option.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter)
         name = index.data(Qt.ItemDataRole.DisplayRole)
@@ -258,10 +258,10 @@ class ImgCardListDelegate(QAbstractItemDelegate):
     def draw_whats_this(self, painter, index, non_text_color, whats_this_rect):
         source_option = QTextOption()
         if self.as_circle:
-            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignmentFlag.AlignTop)
+            source_option.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop)
         else:
             source_option.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
-        whats_this = index.data(Qt.WhatsThisRole)
+        whats_this = index.data(Qt.ItemDataRole.WhatsThisRole)
         pen = painter.pen()
         font = painter.font()
         resize_font(font, -2)
@@ -395,10 +395,10 @@ class VideoCardListModel(ImgCardListModel):
         video = self._items[offset]
         if role == Qt.ItemDataRole.DisplayRole:
             return video.title
-        elif role == Qt.ToolTipRole:
+        elif role == Qt.ItemDataRole.ToolTipRole:
             return video.title
         elif (
-            role == Qt.WhatsThisRole
+            role == Qt.ItemDataRole.WhatsThisRole
             and isinstance(video, VideoModel)
             and video.play_count > 0
         ):
@@ -434,7 +434,7 @@ class PlaylistCardListModel(ImgCardListModel):
 
         playlist = self._items[offset]
         if (
-            role == Qt.WhatsThisRole
+            role == Qt.ItemDataRole.WhatsThisRole
             and isinstance(playlist, PlaylistModel)
             and playlist.play_count > 0
         ):
@@ -492,7 +492,7 @@ class AlbumCardListModel(ImgCardListModel):
             return None
 
         album = self._items[offset]
-        if role == Qt.WhatsThisRole:
+        if role == Qt.ItemDataRole.WhatsThisRole:
             if isinstance(album, AlbumModel):
                 if album.song_count >= 0:
                     # Like: 1991-01-01 10首

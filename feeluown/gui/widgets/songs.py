@@ -148,14 +148,14 @@ class SongListDelegate(QStyledItemDelegate):
         # Draw duration ms
         duration_x = option.rect.topRight().x() - duration_width
         duration_rect = QRect(QPoint(duration_x, top), option.rect.bottomRight())
-        painter.drawText(duration_rect, Qt.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        painter.drawText(duration_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                          song.duration_ms_display)
 
         # Draw artists name
         artists_name_x = option.rect.topRight().x() - duration_width - artists_name_width
         artists_name_rect = QRect(QPoint(artists_name_x, top),
                                   QPoint(duration_x, bottom))
-        painter.drawText(artists_name_rect, Qt.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+        painter.drawText(artists_name_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
                          song.artists_name_display)
 
         # Draw song number or play_btn when it is hovered
@@ -287,8 +287,8 @@ class BaseSongsTableModel(QAbstractTableModel):
         else:
             if role == Qt.ItemDataRole.DisplayRole:
                 return section
-            elif role == Qt.TextAlignmentRole:
-                return Qt.AlignRight
+            elif role == Qt.ItemDataRole.TextAlignmentRole:
+                return Qt.AlignmentFlag.AlignRight
         return QVariant()
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -417,7 +417,7 @@ class SongOpsEditor(QWidget):
 class ArtistsSelectionView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.Dialog | Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
         self.setObjectName('artists_selection_view')
 
 

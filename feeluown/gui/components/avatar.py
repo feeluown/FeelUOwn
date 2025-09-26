@@ -115,7 +115,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             switch_account_menu.addAction(action)
 
         # Show menu
-        menu.exec_(e.globalPos())
+        menu.exec(e.globalPos())
 
     def on_provider_ui_login_event(self, provider_ui, event):
         current_pvd_ui = self._app.current_pvd_ui_mgr.get()

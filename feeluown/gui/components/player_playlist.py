@@ -106,7 +106,7 @@ class PlayerPlaylistView(SongMiniCardListView):
         if len(songs) == 1:
             menu.addSeparator()
             SongMenuInitializer(self._app, songs[0]).apply(menu)
-        menu.exec_(e.globalPos())
+        menu.exec(e.globalPos())
 
     def scroll_to_current_song(self):
         """Scroll to the current song, and select it to highlight it."""

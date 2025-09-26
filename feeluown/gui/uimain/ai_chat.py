@@ -84,7 +84,7 @@ class ChatInputEditor(QPlainTextEdit):
         self.updateGeometry()
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return and not event.modifiers():
+        if event.key() == Qt.Key.Key_Return and not event.modifiers():
             self.enter_pressed.emit()
             event.accept()
         else:

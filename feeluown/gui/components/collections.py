@@ -71,7 +71,7 @@ class CollectionListView(TextlistView):
         """
         # pylint: disable=all
         index = self.indexAt(e.pos())
-        if index.isValid() and index.flags() & Qt.ItemIsDropEnabled:
+        if index.isValid() and index.flags() & Qt.ItemFlag.ItemIsDropEnabled:
             e.accept()
         else:
             e.ignore()

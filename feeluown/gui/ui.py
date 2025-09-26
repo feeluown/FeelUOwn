@@ -48,7 +48,7 @@ class Ui:
         self.left_panel = self._left_panel_con.p
         self.page_view = self.right_panel = RightPanel(self._app, self._splitter)
         self.toolbar = self.bottom_panel = self.right_panel.bottom_panel
-        self.mpv_widget = Separator(self._app)  # MpvOpenGLWidget(self._app)
+        self.mpv_widget = MpvOpenGLWidget(self._app)
 
         # alias
         self.magicbox = self.bottom_panel.magicbox

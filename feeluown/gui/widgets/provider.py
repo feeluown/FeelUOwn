@@ -31,7 +31,7 @@ class ProvidersModel(TextlistModel):
         provider_ui_item = self._association[provider_id]
         if role == Qt.ItemDataRole.DisplayRole:
             return provider_ui_item.symbol + ' ' + provider_ui_item.text
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             if self._library.check_flags(
                     provider_id, ModelType.none, PF.current_user):
                 provider = provider_ui_item.provider

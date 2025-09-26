@@ -78,9 +78,9 @@ class CookiesLoginDialog(LoginDialog):
             use_webview = True
         else:
             use_webview = False
-        # Use Qt.ColorRole.Window so that the dialog will not be hidden unexpectedly.
+        # Use Qt.WindowType.Window so that the dialog will not be hidden unexpectedly.
         # https://github.com/feeluown/FeelUOwn/issues/878#issuecomment-2975105843
-        flags = Qt.ColorRole.Window
+        flags = Qt.WindowType.Window
 
         super().__init__(None, flags)
         self._use_webview = use_webview

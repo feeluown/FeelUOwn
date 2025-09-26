@@ -233,7 +233,7 @@ class FloatingBox(QFrame):
         self.maybe_show_toolbar()
         self._timer.start(1000)
 
-        # NOTE: e.button() == Qt.LeftButton don't work on Windows
+        # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._mouse_state is not None:

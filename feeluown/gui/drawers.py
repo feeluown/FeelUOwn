@@ -568,4 +568,4 @@ class EmojiIconDrawer:
                 # -1 works well on KDE when length is in range(30, 200)
                 font.setPixelSize(width - (self._length // 20))
             painter.setFont(font)
-            painter.drawText(0, 0, width, width, Qt.AlignHCenter | Qt.AlignmentFlag.AlignVCenter, self._emoji)
+            painter.drawText(0, 0, width, width, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter, self._emoji)

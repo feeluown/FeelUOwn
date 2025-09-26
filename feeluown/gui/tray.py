@@ -163,8 +163,8 @@ class Tray(QSystemTrayIcon):
         app_text_idx = None
         if event.type() == QEvent.Type.WindowStateChange:
             # when window is maximized before minimized, the window state will
-            # be Qt.ColorRole.WindowMinimized | Qt.ColorRole.WindowMaximized
-            if obj.windowState() & Qt.ColorRole.WindowMinimized:
+            # be Qt.WindowMinimized | Qt.WindowMaximized
+            if obj.windowState() & Qt.WindowState.WindowMinimized:
                 self._app_old_state = event.oldState()
                 app_text_idx = 0
             else:

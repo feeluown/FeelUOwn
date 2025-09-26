@@ -170,7 +170,7 @@ class WatchManager:
 
     def toggle_pip_fullscreen(self):
         self._pip_container.setWindowState(
-            self._pip_container.windowState() ^ Qt.ColorRole.WindowFullScreen)
+            self._pip_container.windowState() ^ Qt.WindowState.WindowFullScreen)
 
     def play_video(self, video):
         self._app.playlist.set_current_model(video)

@@ -105,7 +105,7 @@ class CommentListDelegate(QStyledItemDelegate):
         pen.setColor(text_color)
         painter.setPen(pen)
         if text:
-            painter.drawText(metadata_rect, Qt.AlignRight, text)
+            painter.drawText(metadata_rect, Qt.AlignmentFlag.AlignRight, text)
         painter.restore()
 
         # draw comment content
@@ -145,7 +145,7 @@ class CommentListDelegate(QStyledItemDelegate):
         else:
             non_text_color = text_color.lighter(150)
         non_text_color.setAlpha(30)
-        painter.setPen(QPen(non_text_color, 1, Qt.DotLine))
+        painter.setPen(QPen(non_text_color, 1, Qt.PenStyle.DotLine))
         painter.drawLine(QPoint(0, 0),  QPoint(body_width, 0))
         painter.restore()
 

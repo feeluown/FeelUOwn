@@ -487,7 +487,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         if index.column() == Column.song:
             # .. versionadded:: 3.7.11
             #    Reset playlist with songs in table if Alt key is pressed.
-            if QApplication.keyboardModifiers() & Qt.AltModifier:
+            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier:
                 model = self.songs_table.model()
                 if isinstance(model, SongFilterProxyModel):
                     model = model.sourceModel()

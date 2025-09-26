@@ -92,7 +92,7 @@ class LyricWindow(QWidget):
             # TODO: use proper flags on other platforms, see #413 for more details.
             # User can customize the flags in the .fuorc or searchbox, like
             #    app.ui.lyric_windows.setWindowFlags(Qt.xx | Qt.yy)
-            flags = Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint | Qt.Tool
+            flags = Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint | Qt.WindowType.Tool
         self.setWindowFlags(flags)
         self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setToolTip(Tooltip)
@@ -111,7 +111,7 @@ class LyricWindow(QWidget):
         self._old_pos = e.globalPos()
 
     def mouseMoveEvent(self, e):
-        # NOTE: e.button() == Qt.LeftButton don't work on Windows
+        # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._old_pos is not None:
@@ -122,9 +122,9 @@ class LyricWindow(QWidget):
     def mouseReleaseEvent(self, e):
         if not self.rect().contains(e.pos()):
             return
-        if e.button() == Qt.BackButton:
+        if e.button() == Qt.MouseButton.BackButton:
             self._app.playlist.previous()
-        elif e.button() == Qt.ForwardButton:
+        elif e.button() == Qt.MouseButton.ForwardButton:
             self._app.playlist.next()
 
     def dump_state(self):
@@ -337,7 +337,7 @@ class InnerLyricWindow(QWidget):
         painter.save()
         painter.setPen(QColor('white'))
         option = QTextOption()
-        option.setAlignment(Qt.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
+        option.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
         rect = QRect(self.mapToParent(self._size_grip.pos()), self._size_grip.size())
         painter.drawText(QRectF(rect), '●', option)
         painter.restore()

@@ -73,7 +73,7 @@ class PlaylistsModel(TextlistModel):
             return 0
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         if index.row() < len(self._playlists):
-            flags |= Qt.ItemIsDropEnabled
+            flags |= Qt.ItemFlag.ItemIsDropEnabled
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):

@@ -46,7 +46,7 @@ class ResizableFramelessContainer(QWidget):
         self._old_pos = e.globalPos()
 
     def mouseMoveEvent(self, e):
-        # NOTE: e.button() == Qt.LeftButton don't work on Windows
+        # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._old_pos is not None:
@@ -61,8 +61,8 @@ class ResizableFramelessContainer(QWidget):
         super().resizeEvent(e)
 
     def on_cancel_key_pressed(self):
-        if Qt.ColorRole.WindowFullScreen & self.windowState():
-            self.setWindowState(self.windowState() ^ Qt.ColorRole.WindowFullScreen)
+        if Qt.WindowState.WindowFullScreen & self.windowState():
+            self.setWindowState(self.windowState() ^ Qt.WindowState.WindowFullScreen)
         else:
             self.hide()
 

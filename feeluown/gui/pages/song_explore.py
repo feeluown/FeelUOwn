@@ -126,7 +126,7 @@ class LyricLabel(QLabel, BgTransparentMixin):
         super().__init__(*args, **kwargs)
         self.setWordWrap(True)
         self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        self.setAlignment(Qt.AlignHCenter)
+        self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         font = self.font()
         resize_font(font, 0)
         self.setFont(font)
