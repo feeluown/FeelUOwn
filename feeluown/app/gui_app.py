@@ -27,7 +27,11 @@ class GuiApp(App, QWidget):
         pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
         icons_dir = os.path.join(pkg_root_dir, 'gui/assets/icons')
         QDir.addSearchPath('icons', icons_dir)
-        GuiApp.__q_app = QApplication([])
+        # Tested on macOS and Arch Linux
+        # macOS: must initialize QApplication before constructing a pixmap object.
+        # Arch Linux: it may core if QApplication is initialized here.
+        if sys.platform == 'darwin':
+            GuiApp.__q_app = QApplication([])
         # Set desktopFileName so that the window icon is properly shown under wayland.
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
