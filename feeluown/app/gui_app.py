@@ -102,11 +102,8 @@ class GuiApp(App, QWidget):
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
 
     def run(self):
-        print('before show')
         self.show()
-        print('after show')
         super().run()
-        print('after run')
 
     def apply_state(self, state):
         super().apply_state(state)
