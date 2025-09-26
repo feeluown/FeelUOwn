@@ -19,9 +19,9 @@ logger = logging.getLogger(__name__)
 
 
 class LyricButton(TextButton):
-    def __init__(self, app: 'GuiApp', **kwargs):
-        kwargs.setdefault('height', 16)
-        super().__init__('词', **kwargs)
+    def __init__(self, app: "GuiApp", **kwargs):
+        kwargs.setdefault("height", 16)
+        super().__init__("词", **kwargs)
         self._app = app
 
         font_size = 9
@@ -50,12 +50,14 @@ class LyricButton(TextButton):
 
 
 class WatchButton(TextButton):
-    def __init__(self, app: 'GuiApp', *args, **kwargs):
-        super().__init__('♨', *args, **kwargs)
+    def __init__(self, app: "GuiApp", *args, **kwargs):
+        super().__init__("♨", *args, **kwargs)
         self._app = app
 
-        self.setToolTip('开启 watch 模式时，播放器会优先尝试为歌曲找一个合适的视频来播放。\n'
-                        '最佳实践：开启 watch 的同时建议开启视频的画中画模式。')
+        self.setToolTip(
+            "开启 watch 模式时，播放器会优先尝试为歌曲找一个合适的视频来播放。\n"
+            "最佳实践：开启 watch 的同时建议开启视频的画中画模式。"
+        )
 
         self.setCheckable(True)
         self._setup_ui()
@@ -80,7 +82,7 @@ class WatchButton(TextButton):
 
 
 class LikeButton(QPushButton):
-    def __init__(self, app: 'GuiApp', size=(15, 15), parent=None):
+    def __init__(self, app: "GuiApp", size=(15, 15), parent=None):
         super().__init__(parent=parent)
         self._app = app
         self.setCheckable(True)
@@ -89,7 +91,7 @@ class LikeButton(QPushButton):
         self._app.playlist.song_changed_v2.connect(self.on_song_changed)
         self.clicked.connect(self.toggle_liked)
         self.toggled.connect(self.on_toggled)
-        self.setObjectName('like_btn')
+        self.setObjectName("like_btn")
 
     def on_song_changed(self, song, media):
         if song is not None:
@@ -100,17 +102,17 @@ class LikeButton(QPushButton):
         coll_library = self._app.coll_mgr.get_coll_library()
         if self.is_song_liked(song):
             coll_library.remove(song)
-            self._app.show_msg('歌曲已经从“本地收藏”中移除')
+            self._app.show_msg("歌曲已经从“本地收藏”中移除")
         else:
             coll_library.add(song)
-            self._app.show_msg('歌曲已经添加到“本地收藏”')
+            self._app.show_msg("歌曲已经添加到“本地收藏”")
 
     def on_toggled(self):
         song = self._app.playlist.current_song
         if self.is_song_liked(song):
-            self.setToolTip('添加到“本地收藏”')
+            self.setToolTip("添加到“本地收藏”")
         else:
-            self.setToolTip('从“本地收藏”中移除')
+            self.setToolTip("从“本地收藏”中移除")
 
     def is_song_liked(self, song):
         coll_library = self._app.coll_mgr.get_coll_library()
@@ -118,7 +120,7 @@ class LikeButton(QPushButton):
 
 
 class SongMVTextButton(TextButton):
-    def __init__(self, app: 'GuiApp', song=None, text='MV', **kwargs):
+    def __init__(self, app: "GuiApp", song=None, text="MV", **kwargs):
         super().__init__(text, **kwargs)
         self._app = app
         self._song = None
@@ -144,7 +146,7 @@ class SongMVTextButton(TextButton):
         try:
             mv = await run_fn(self._app.library.song_get_mv, self._song)
         except ProviderIOError:
-            logger.exception('get song mv info failed')
+            logger.exception("get song mv info failed")
             mv = None
             self.setEnabled(False)
         else:
@@ -158,12 +160,13 @@ class SongMVTextButton(TextButton):
 
 
 class NowplayingMVTextButton(SongMVTextButton):
-    def __init__(self, app: 'GuiApp', parent=None, **kwargs):
+    def __init__(self, app: "GuiApp", parent=None, **kwargs):
         super().__init__(app, song=None, parent=parent, **kwargs)
 
-        self.setObjectName('mv_btn')
+        self.setObjectName("mv_btn")
         self._app.playlist.song_mv_changed.connect(
-            self.on_song_mv_changed, aioqueue=True)
+            self.on_song_mv_changed, aioqueue=True
+        )
 
     def on_song_mv_changed(self, _, mv):
         self.setEnabled(mv is not None)
@@ -171,7 +174,7 @@ class NowplayingMVTextButton(SongMVTextButton):
 
 
 class MediaButtonsV2(QWidget):
-    def __init__(self, app: 'GuiApp', button_width=30, spacing=0, parent=None):
+    def __init__(self, app: "GuiApp", button_width=30, spacing=0, parent=None):
         super().__init__(parent=parent)
         self._app = app
 
@@ -181,7 +184,7 @@ class MediaButtonsV2(QWidget):
         self.toggle_video_btn = TriagleButton(length=button_width)
         self.toggle_video_btn.hide()
         self.pp_btn.setCheckable(True)
-        self.toggle_video_btn.setToolTip('展示视频画面')
+        self.toggle_video_btn.setToolTip("展示视频画面")
 
         self._layout = QHBoxLayout(self)
         self._layout.setSpacing(spacing)

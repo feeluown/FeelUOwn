@@ -12,12 +12,12 @@ if TYPE_CHECKING:
 
 
 class PlaylistButton(SelfPaintAbstractSquareButton):
-    def __init__(self, app: 'GuiApp', *args, **kwargs):
+    def __init__(self, app: "GuiApp", *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self._app = app
 
-        self.setToolTip('显示当前播放列表')
+        self.setToolTip("显示当前播放列表")
         # PlaylistButton show FM text on the button when FM mode is actiavted,
         # so update the button when mode is changed.
         self._app.playlist.mode_changed.connect(lambda *args: self.update(), weak=False)
@@ -60,12 +60,17 @@ class PlaylistButton(SelfPaintAbstractSquareButton):
         # Draw triangle and first line
         triangle_side_length_half = line_margin * 0.6
         triangle_height = triangle_side_length_half * 1.7
-        triangle = QPolygonF([QPointF(0, h1 - triangle_side_length_half),
-                              QPointF(triangle_height, h1),
-                              QPointF(0, h1 + triangle_side_length_half)])
+        triangle = QPolygonF(
+            [
+                QPointF(0, h1 - triangle_side_length_half),
+                QPointF(triangle_height, h1),
+                QPointF(0, h1 + triangle_side_length_half),
+            ]
+        )
         painter.drawPolygon(triangle)
-        painter.drawLine(QPointF(triangle_height + triangle_side_length_half, h1),
-                         QPointF(width, h1))
+        painter.drawLine(
+            QPointF(triangle_height + triangle_side_length_half, h1), QPointF(width, h1)
+        )
 
         # Draw second line
         painter.drawLine(QPointF(0, h2), QPointF(width, h2))
@@ -74,14 +79,18 @@ class PlaylistButton(SelfPaintAbstractSquareButton):
         if self._app.playlist.mode is PlaylistMode.fm:
             painter.drawLine(QPointF(0, h3), QPointF(width // 2, h3))
             painter.pen()
-            pen.setColor(QColor(SOLARIZED_COLORS['blue']))
+            pen.setColor(QColor(SOLARIZED_COLORS["blue"]))
             painter.setPen(pen)
             font = painter.font()
             rect_h_half = line_margin // 2
             font.setPixelSize(int(rect_h_half * 2))
             painter.setFont(font)
-            rect = QRectF(width // 2 + rect_h_half, h3 - rect_h_half,
-                          width // 2 - rect_h_half, rect_h_half * 2)
+            rect = QRectF(
+                width // 2 + rect_h_half,
+                h3 - rect_h_half,
+                width // 2 - rect_h_half,
+                rect_h_half * 2,
+            )
             painter.drawText(rect, "FM", QTextOption(Qt.AlignmentFlag.AlignCenter))
         else:
             painter.drawLine(QPointF(0, h3), QPointF(width, h3))

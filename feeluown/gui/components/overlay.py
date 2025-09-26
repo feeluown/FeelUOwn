@@ -21,8 +21,13 @@ class AppOverlayContainer(QWidget):
     :param adhoc: If True, the overlay is destroyed when hidden.
     """
 
-    def __init__(self, app: 'GuiApp', body: QWidget, parent: Optional[QWidget] = None,
-                 adhoc=False):
+    def __init__(
+        self,
+        app: "GuiApp",
+        body: QWidget,
+        parent: Optional[QWidget] = None,
+        adhoc=False,
+    ):
         super().__init__(parent=parent)
         self._app = app
         self._adhoc = adhoc

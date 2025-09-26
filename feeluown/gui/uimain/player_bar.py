@@ -10,8 +10,14 @@ from feeluown.gui.widgets.volume_button import VolumeButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.components import (
-    LineSongLabel, MediaButtonsV2, LyricButton, WatchButton, LikeButton,
-    NowplayingMVTextButton, PlaylistButton, SongSourceTag,
+    LineSongLabel,
+    MediaButtonsV2,
+    LyricButton,
+    WatchButton,
+    LikeButton,
+    NowplayingMVTextButton,
+    PlaylistButton,
+    SongSourceTag,
 )
 from feeluown.gui.helpers import IS_MACOS, ClickableMixin
 
@@ -27,8 +33,7 @@ class ClickableCover(ClickableMixin, CoverLabelV2):
 
 
 class PlayerControlPanel(QFrame):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -56,13 +61,13 @@ class PlayerControlPanel(QFrame):
         self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)
 
-        self.playlist_btn.setObjectName('playlist_btn')
-        self.download_btn.setObjectName('download_btn')
+        self.playlist_btn.setObjectName("playlist_btn")
+        self.download_btn.setObjectName("download_btn")
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
-        self.playlist_btn.setToolTip('显示当前播放列表')
-        self.download_btn.setToolTip('下载歌曲（未实现，欢迎 PR）')
+        self.playlist_btn.setToolTip("显示当前播放列表")
+        self.download_btn.setToolTip("下载歌曲（未实现，欢迎 PR）")
         self.download_btn.setCheckable(True)
 
         self.song_title_label = LineSongLabel(self._app)
@@ -77,9 +82,11 @@ class PlayerControlPanel(QFrame):
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
 
         self.volume_btn.change_volume_needed.connect(
-            lambda volume: setattr(self._app.player, 'volume', volume))
+            lambda volume: setattr(self._app.player, "volume", volume)
+        )
         self._app.player.video_format_changed.connect(
-            self.on_video_format_changed, aioqueue=True)
+            self.on_video_format_changed, aioqueue=True
+        )
         player = self._app.player
         player.metadata_changed.connect(self.on_metadata_changed, aioqueue=True)
         player.volume_changed.connect(self.volume_btn.on_volume_changed, aioqueue=True)
@@ -104,8 +111,9 @@ class PlayerControlPanel(QFrame):
         self.mv_btn.setFixedHeight(16)
         self.toggle_watch_btn.setFixedHeight(16)
 
-        self.progress_slider.setSizePolicy(QSizePolicy.Policy.Expanding,
-                                           QSizePolicy.Policy.Preferred)
+        self.progress_slider.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
+        )
         self._sub_layout = QVBoxLayout()
         self._sub_top_layout = QHBoxLayout()
         self._progress_v_layout = QVBoxLayout()
@@ -170,14 +178,14 @@ class PlayerControlPanel(QFrame):
 
     def on_metadata_changed(self, metadata):
         metadata = metadata or {}
-        released = metadata.get('released', '')
+        released = metadata.get("released", "")
         if released:
-            self.cover_label.setToolTip(f'专辑发行日期：{released}')
+            self.cover_label.setToolTip(f"专辑发行日期：{released}")
         else:
-            self.cover_label.setToolTip('')
+            self.cover_label.setToolTip("")
         # Set song artwork.
-        artwork = metadata.get('artwork', '')
-        artwork_uid = metadata.get('uri', artwork)
+        artwork = metadata.get("artwork", "")
+        artwork_uid = metadata.get("uri", artwork)
         if artwork:
             run_afn(self.cover_label.show_cover, artwork, artwork_uid)
         else:
@@ -201,7 +209,7 @@ class TopPanel(QFrame):
 
         self._layout = QHBoxLayout(self)
         self.pc_panel = PlayerControlPanel(self._app, self)
-        self.setObjectName('top_panel')
+        self.setObjectName("top_panel")
 
         self.setFixedHeight(60)
 

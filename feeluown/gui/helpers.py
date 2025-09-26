@@ -25,12 +25,25 @@ import logging
 from contextlib import contextmanager
 from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
-from PyQt6.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
-    QAbstractListModel, QPoint
-from PyQt6.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent, \
-    QKeySequence, QShortcut
-from PyQt6.QtWidgets import QApplication, QScrollArea, QWidget, \
-    QAbstractScrollArea
+from PyQt6.QtCore import (
+    QModelIndex,
+    QSize,
+    Qt,
+    pyqtSignal,
+    QSortFilterProxyModel,
+    QAbstractListModel,
+    QPoint,
+)
+from PyQt6.QtGui import (
+    QPalette,
+    QFontMetrics,
+    QColor,
+    QPainter,
+    QMouseEvent,
+    QKeySequence,
+    QShortcut,
+)
+from PyQt6.QtWidgets import QApplication, QScrollArea, QWidget, QAbstractScrollArea
 
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
@@ -48,7 +61,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
-IS_MACOS = sys.platform == 'darwin'
+IS_MACOS = sys.platform == "darwin"
 
 
 def darker_or_lighter(color: QColor, factor):
@@ -84,7 +97,7 @@ def is_macos():
 
     .. versionadded: v3.7.10
     """
-    return sys.platform == 'darwin'
+    return sys.platform == "darwin"
 
 
 def disconnect_slots_if_has(signal):
@@ -103,7 +116,7 @@ def resize_font(font, delta):
 
 def palette_set_bg_color(palette, color):
     """set palette background color"""
-    if sys.platform == 'linux':
+    if sys.platform == "linux":
         # KDE use the QPalette.ColorRole.Base as background color
         palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, color)
         palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, color)
@@ -144,6 +157,7 @@ class BaseScrollAreaForNoScrollItemView(QScrollArea):
 
     .. versionadded:: 3.8.9
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -202,8 +216,17 @@ class ItemViewNoScrollMixin:
         class of QObject. XWidget(ItemViewNoScrollMixin, QObject) is a good choice,
         and XWidget(QObject, ItemViewNoScrollMixin) is not.
     """
-    def __init__(self, *args, no_scroll_v=True, row_height=0, least_row_count=0,
-                 fixed_row_count=0, reserved=30, **kwargs):
+
+    def __init__(
+        self,
+        *args,
+        no_scroll_v=True,
+        row_height=0,
+        least_row_count=0,
+        fixed_row_count=0,
+        reserved=30,
+        **kwargs,
+    ):
         """
         :params no_scroll_v: enable on no_scroll_v feature or not
         :params fixed_row_count: set row_height when fixed_row_count is set
@@ -402,6 +425,7 @@ class ReaderFetchMoreMixin(Generic[T]):
     3. _fetch_more_step
     4. _is_fetching
     """
+
     no_more_item = pyqtSignal()
 
     def get_reader(self: ModelUsingReader[T]):
@@ -426,12 +450,12 @@ class ReaderFetchMoreMixin(Generic[T]):
         return True
 
     def fetch_more_impl(self: ModelUsingReader[T]):
-        """fetch more items from reader
-        """
+        """fetch more items from reader"""
         reader = self._reader
         step = self._fetch_more_step
 
         if isinstance(reader, AsyncReader):
+
             async def fetch():
                 items = []
                 count = 0
@@ -441,6 +465,7 @@ class ReaderFetchMoreMixin(Generic[T]):
                     if count == step:
                         break
                 return items
+
             task = run_afn(fetch)
         else:
             assert isinstance(reader, Reader)
@@ -463,16 +488,16 @@ class ReaderFetchMoreMixin(Generic[T]):
         try:
             items = future.result()
         except ProviderIOError as e:
-            logger.error(f'async fetch more items failed, reason: {e}')
+            logger.error(f"async fetch more items failed, reason: {e}")
             self._fetch_more_cb(None)
         except:  # noqa
-            logger.exception('async fetch more items failed')
+            logger.exception("async fetch more items failed")
             self._fetch_more_cb(None)
         else:
             if not items:
                 # The reader should not return empty list when fetching more items,
                 # maybe something wrong with the reader.
-                logger.warning('async fetch more items return empty list')
+                logger.warning("async fetch more items return empty list")
             self._fetch_more_cb(items)
 
 
@@ -515,8 +540,8 @@ def fetch_cover_wrapper(app: GuiApp):
             return
 
         # v2 song model has its own image(pic_url), check if it is in cache first.
-        cache_key = 'album_cover_uid'
-        song_img_uid = reverse(model) + '/pic_url'
+        cache_key = "album_cover_uid"
+        song_img_uid = reverse(model) + "/pic_url"
         album_img_uid, _ = model.cache_get(cache_key)
         for img_uid in (song_img_uid, album_img_uid):
             if img_uid:
@@ -534,7 +559,7 @@ def fetch_cover_wrapper(app: GuiApp):
             # Try to fetch with pic_url first.
             # Note that some providers may not provide pic_url for songs.
             if upgraded_song.pic_url:
-                img_uid = reverse(model) + '/pic_url'
+                img_uid = reverse(model) + "/pic_url"
                 img_url = upgraded_song.pic_url
                 return await fetch_image_with_cb(img_uid, img_url, cb)
 
@@ -543,12 +568,12 @@ def fetch_cover_wrapper(app: GuiApp):
                 cb(None)
                 return
 
-            album_img_uid = reverse(album) + '/cover'
+            album_img_uid = reverse(album) + "/cover"
             model.cache_set(cache_key, album_img_uid)
             return await fetch_song_pic_from_album(album, cb)
 
     async def fetch_other_model_cover(model, cb):
-        img_uid = reverse(model) + '/cover'
+        img_uid = reverse(model) + "/cover"
 
         # Check image cache with image unique ID.
         content = img_mgr.get_from_cache(img_uid)
@@ -638,12 +663,12 @@ def esc_hide_widget(widget):
 # https://ethanschoonover.com/solarized/
 # Do not change the existing colors if they are used by some widgets/components.
 SOLARIZED_COLORS = {
-    'yellow':    '#b58900',
-    'orange':    '#cb4b16',
-    'red':       '#dc322f',
-    'magenta':   '#d33682',
-    'violet':    '#6c71c4',
-    'blue':      '#268bd2',
-    'cyan':      '#2aa198',
-    'green':     '#859900',
+    "yellow": "#b58900",
+    "orange": "#cb4b16",
+    "red": "#dc322f",
+    "magenta": "#d33682",
+    "violet": "#6c71c4",
+    "blue": "#268bd2",
+    "cyan": "#2aa198",
+    "green": "#859900",
 }

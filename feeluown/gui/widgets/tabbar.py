@@ -1,8 +1,14 @@
 from enum import Enum
 
 from PyQt6.QtCore import pyqtSignal, QSize
-from PyQt6.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
-        QStyle, QProxyStyle
+from PyQt6.QtWidgets import (
+    QTabBar,
+    QWidget,
+    QRadioButton,
+    QHBoxLayout,
+    QStyle,
+    QProxyStyle,
+)
 from PyQt6.QtGui import QPalette
 
 from feeluown.gui.helpers import resize_font
@@ -18,6 +24,7 @@ def mode(func):
         this.contributed_btn.hide()
         this.videos_btn.hide()
         func(this)
+
     return wrapper
 
 
@@ -101,13 +108,13 @@ class TableTabBarV2(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.songs_btn = QRadioButton('歌曲', self)
-        self.albums_btn = QRadioButton('专辑', self)
-        self.artists_btn = QRadioButton('歌手', self)
-        self.playlists_btn = QRadioButton('歌单', self)
-        self.videos_btn = QRadioButton('视频', self)
-        self.desc_btn = QRadioButton('简介', self)
-        self.contributed_btn = QRadioButton('参与作品', self)
+        self.songs_btn = QRadioButton("歌曲", self)
+        self.albums_btn = QRadioButton("专辑", self)
+        self.artists_btn = QRadioButton("歌手", self)
+        self.playlists_btn = QRadioButton("歌单", self)
+        self.videos_btn = QRadioButton("视频", self)
+        self.desc_btn = QRadioButton("简介", self)
+        self.contributed_btn = QRadioButton("参与作品", self)
         self._layout = QHBoxLayout(self)
 
         self.songs_btn.clicked.connect(self.show_songs_needed.emit)
@@ -135,11 +142,11 @@ class TableTabBarV2(QWidget):
         self.songs_btn.setChecked(True)
 
     def restore_default(self):
-        self.songs_btn.setText('歌曲')
-        self.albums_btn.setText('专辑')
-        self.artists_btn.setText('歌手')
-        self.playlists_btn.setText('歌单')
-        self.videos_btn.setText('视频')
+        self.songs_btn.setText("歌曲")
+        self.albums_btn.setText("专辑")
+        self.artists_btn.setText("歌手")
+        self.playlists_btn.setText("歌单")
+        self.videos_btn.setText("视频")
         self.check_default()
 
     def check(self, tab):
@@ -178,10 +185,10 @@ class TableTabBarV2(QWidget):
 
 
 class TableTabBar(QTabBar):
-    song = '歌曲'
-    artist = '歌手'
-    album = '专辑'
-    contributed_albums = '参与作品'
+    song = "歌曲"
+    artist = "歌手"
+    album = "专辑"
+    contributed_albums = "参与作品"
 
     show_songs_needed = pyqtSignal()
     show_artists_needed = pyqtSignal()
@@ -205,15 +212,15 @@ class TableTabBar(QTabBar):
             self.addTab(tab)
 
     def artist_mode(self):
-        self.use(TableTabBar.song,
-                 TableTabBar.album,
-                 TableTabBar.contributed_albums)
+        self.use(TableTabBar.song, TableTabBar.album, TableTabBar.contributed_albums)
 
     def library_mode(self):
-        self.use(TableTabBar.song,
-                 TableTabBar.artist,
-                 TableTabBar.album,
-                 TableTabBar.contributed_albums)
+        self.use(
+            TableTabBar.song,
+            TableTabBar.artist,
+            TableTabBar.album,
+            TableTabBar.contributed_albums,
+        )
 
     def on_index_changed(self, index):
         text = self.tabText(index)

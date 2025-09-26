@@ -42,7 +42,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         # As far as I know, KDE and GNOME can't auto hide the scrollbar,
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
-        if sys.platform.lower() != 'darwin':
+        if sys.platform.lower() != "darwin":
             self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def get_itemview(self):
@@ -115,7 +115,7 @@ class RightPanel(QFrame):
         # remove tmp widgets
         for i in range(self._stacked_layout.count()):
             w = self._stacked_layout.widget(i)
-            if w not in (self.scrollarea, ):
+            if w not in (self.scrollarea,):
                 self._stacked_layout.removeWidget(w)
 
         widget.installEventFilter(self)
@@ -132,7 +132,6 @@ class RightPanel(QFrame):
         return False
 
     def show_collection(self, coll, model_type):
-
         def _show_pure_albums_coll(coll):
             self.set_body(self.scrollarea)
             reader = wrap(coll.models)
@@ -286,8 +285,8 @@ class RightPanel(QFrame):
         painter.save()
         if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
             scaled_pixmap = self._pixmap.scaledToHeight(
-                draw_height,
-                mode=Qt.TransformationMode.SmoothTransformation)
+                draw_height, mode=Qt.TransformationMode.SmoothTransformation
+            )
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
             pixmap_size = scaled_pixmap.size()
@@ -296,8 +295,8 @@ class RightPanel(QFrame):
             rect = QRect(0, 0, pixmap_size.width(), draw_height)
         else:
             scaled_pixmap = self._pixmap.scaledToWidth(
-                draw_width,
-                mode=Qt.TransformationMode.SmoothTransformation)
+                draw_width, mode=Qt.TransformationMode.SmoothTransformation
+            )
             pixmap_size = scaled_pixmap.size()
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
@@ -306,7 +305,7 @@ class RightPanel(QFrame):
             # which causes bad visual effect. So we render the top-center part
             # of the pixmap here.
             y = (pixmap_size.height() - draw_height) // 3
-            painter.translate(0, - y - scrolled)
+            painter.translate(0, -y - scrolled)
             rect = QRect(0, y, draw_width, draw_height)
         painter.drawRect(rect)
         painter.restore()
@@ -326,9 +325,11 @@ class RightPanel(QFrame):
         if self._pixmap is None:
             self.table_container.meta_widget.setMinimumHeight(0)
         else:
-            height = (self._background_image_height_hint() -
-                      self.bottom_panel.height() -
-                      self.table_container.toolbar.height())
+            height = (
+                self._background_image_height_hint()
+                - self.bottom_panel.height()
+                - self.table_container.toolbar.height()
+            )
             self.table_container.meta_widget.setMinimumHeight(height)
 
     def _background_image_height_hint(self):

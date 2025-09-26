@@ -19,6 +19,7 @@ class MyMusicUiManager:
 
         而 Provider 是比较上层的对象，我们会提供 get_item 这种比较精细的控制方法。
     """
+
     def __init__(self, app):
         self._app = app
         self._items = []

@@ -26,6 +26,7 @@ class TextlistModel(QAbstractListModel):
     - clear: clear list
     - __len__: for truth judgement
     """
+
     def __init__(self, parent):
         super().__init__(parent)
         self._items = []
@@ -142,11 +143,11 @@ class TextlistView(QListView):
             index, state = result
             rect = self.rectForIndex(index)
             if state is None:
-                text = '😶'
+                text = "😶"
             elif state is True:
-                text = '👋'
+                text = "👋"
             else:
-                text = '🙁'
+                text = "🙁"
             x = rect.width() - 20 + rect.x()
             # 让字垂直居中
             y = (rect.height() + fm.ascent() - fm.descent()) // 2 + rect.y()

@@ -12,11 +12,9 @@ class NotifyStatus(StatuslineLabel):
 
     def drawInner(self, painter):
         inner_rect = QRectF(0, 0, self._inner_width, self._inner_height)
-        painter.drawText(inner_rect, '✉', QTextOption(Qt.AlignmentFlag.AlignCenter))
+        painter.drawText(inner_rect, "✉", QTextOption(Qt.AlignmentFlag.AlignCenter))
 
     def show_msg(self, text, timeout=1500):
-        QToolTip.showText(self.mapToGlobal(QPoint(0, 0)),
-                          text,
-                          self,
-                          self.rect(),
-                          timeout)
+        QToolTip.showText(
+            self.mapToGlobal(QPoint(0, 0)), text, self, self.rect(), timeout
+        )

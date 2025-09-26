@@ -1,7 +1,14 @@
 from abc import abstractmethod, ABC
 from dataclasses import dataclass
 from typing import (
-    TYPE_CHECKING, runtime_checkable, Protocol, Dict, Optional, List, Callable, Any,
+    TYPE_CHECKING,
+    runtime_checkable,
+    Protocol,
+    Dict,
+    Optional,
+    List,
+    Callable,
+    Any,
 )
 
 from PyQt6.QtCore import pyqtSignal, QObject
@@ -58,10 +65,8 @@ class UISupportsLoginEvent(Protocol):
 
 @runtime_checkable
 class UISupportsDiscovery(Protocol):
-
     @abstractmethod
-    def discovery(self):
-        ...
+    def discovery(self): ...
 
 
 @runtime_checkable
@@ -71,8 +76,7 @@ class UISupportsNavBtns(Protocol):
     """
 
     @abstractmethod
-    def list_nav_btns(self) -> List[NavBtn]:
-        ...
+    def list_nav_btns(self) -> List[NavBtn]: ...
 
 
 @runtime_checkable
@@ -95,8 +99,7 @@ class UISupportsCreatePlaylist(Protocol):
     """
 
     @abstractmethod
-    def create_playlist(self):
-        ...
+    def create_playlist(self): ...
 
 
 class AbstractProviderUi(ABC):
@@ -104,22 +107,19 @@ class AbstractProviderUi(ABC):
 
     def get_colorful_svg(self) -> str:
         """Get provider's svg icon path."""
-        return 'icons:feeluown.png'
+        return "icons:feeluown.png"
 
-    def register_pages(self, route):
-        ...
+    def register_pages(self, route): ...
 
     @property
     @abstractmethod
-    def provider(self) -> ProviderV2:
-        ...
+    def provider(self) -> ProviderV2: ...
 
 
 class CurrentProviderUiManager(QObject):
-
     changed = pyqtSignal([object, object])
 
-    def __init__(self, app: 'GuiApp'):
+    def __init__(self, app: "GuiApp"):
         super().__init__(parent=app)
         self._app = app
         self._current: Optional[AbstractProviderUi] = None
@@ -143,7 +143,7 @@ class CurrentProviderUiManager(QObject):
     def get_item(self):
         return self._current_item
 
-    def set_item(self, item: 'ProviderUiItem'):
+    def set_item(self, item: "ProviderUiItem"):
         self._current = None
         self._current_item = item
 
@@ -153,7 +153,7 @@ class ProviderUiManager:
     Note that `*_item` APIs are deprecated, new code should not use them anymore.
     """
 
-    def __init__(self, app: 'GuiApp'):
+    def __init__(self, app: "GuiApp"):
         self._app = app
 
         self._store: Dict[str, AbstractProviderUi] = {}  # {name: provider_ui}
@@ -164,7 +164,7 @@ class ProviderUiManager:
     def register(self, provider_ui: AbstractProviderUi):
         name = provider_ui.provider.meta.identifier
         if name in self._store or name in self._items:
-            raise ValueError(f'provider_ui {name} already registered.')
+            raise ValueError(f"provider_ui {name} already registered.")
         self._store[name] = provider_ui
 
         provider_ui.register_pages(self._app.browser.route)
@@ -178,15 +178,12 @@ class ProviderUiManager:
     ####################################
     # The following are Deprecated APIs.
     ####################################
-    def create_item(self, name, text, symbol='♬ ', desc='', colorful_svg=None):
+    def create_item(self, name, text, symbol="♬ ", desc="", colorful_svg=None):
         # pylint: disable=too-many-arguments,too-many-positional-arguments
         provider = self._app.library.get(name)
-        return ProviderUiItem(name,
-                              text,
-                              symbol,
-                              desc,
-                              colorful_svg=colorful_svg,
-                              provider=provider)
+        return ProviderUiItem(
+            name, text, symbol, desc, colorful_svg=colorful_svg, provider=provider
+        )
 
     def get_item(self, name):
         return self._items.get(name)

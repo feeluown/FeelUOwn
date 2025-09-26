@@ -16,28 +16,29 @@ logger = logging.getLogger(__name__)
 
 
 async def render(req, identifier, **kwargs):
-    app: 'GuiApp' = req.ctx['app']
+    app: "GuiApp" = req.ctx["app"]
     provider = app.library.get(identifier)
     app.ui.right_panel.set_body(View(app, provider))
 
 
 class View(QWidget):
-    def __init__(self, app: 'GuiApp', provider, *args, **kwargs) -> None:
+    def __init__(self, app: "GuiApp", provider, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
         self._app = app
         self._provider = provider
 
         self.title = LargeHeader(self._provider.name, parent=self)
-        self.my_music_header = MidHeader('我的音乐', parent=self)
+        self.my_music_header = MidHeader("我的音乐", parent=self)
         self.my_music_view = MyMusicView(parent=self)
-        self.playlists_header = MidHeader('歌单列表', parent=self)
+        self.playlists_header = MidHeader("歌单列表", parent=self)
         self.playlists_view = PlaylistsView(parent=self)
 
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)
         self.playlists_view.setModel(self._app.pl_uimgr.model)
 
         self.playlists_view.show_playlist.connect(
-            lambda pl: self._app.browser.goto(model=pl))
+            lambda pl: self._app.browser.goto(model=pl)
+        )
 
         self._playlists_scroll = QScrollArea(self)
         self._playlists_scroll.setWidget(self.playlists_view)

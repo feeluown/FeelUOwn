@@ -20,14 +20,12 @@ ButtonSpacing = int(ButtonSize[0] / 6)
 
 
 class ToolbarButton(QPushButton):
-
     def __init__(self, text, parent=None):
         super().__init__(text, parent=parent)
 
 
 class BottomPanel(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -60,7 +58,7 @@ class BottomPanel(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setObjectName('bottom_panel')
+        self.setObjectName("bottom_panel")
 
         self._layout.addWidget(self.back_btn)
         self._layout.addWidget(self.forward_btn)

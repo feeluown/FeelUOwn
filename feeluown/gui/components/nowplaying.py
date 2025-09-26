@@ -6,14 +6,18 @@ from PyQt6.QtWidgets import QHBoxLayout, QStackedLayout, QWidget
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.helpers import (
-    fetch_cover_wrapper, palette_set_bg_color, random_solarized_color
+    fetch_cover_wrapper,
+    palette_set_bg_color,
+    random_solarized_color,
 )
 from feeluown.gui.widgets import MVButton
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.lyric import LyricView
 from feeluown.gui.widgets.song_minicard_list import (
-    SongMiniCardListDelegate, SongMiniCardListView, SongMiniCardListModel
+    SongMiniCardListDelegate,
+    SongMiniCardListView,
+    SongMiniCardListModel,
 )
 from feeluown.library import SupportsSongHotComments, SupportsSongSimilar
 from feeluown.utils.aio import run_fn, run_afn
@@ -24,7 +28,6 @@ if TYPE_CHECKING:
 
 
 class RefreshOnSongChangedMixin:
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self._need_refresh = True
@@ -49,22 +52,21 @@ class RefreshOnSongChangedMixin:
 
 
 class MVWrapper(QWidget):
-
     def __init__(self, parent):
         super().__init__(parent=parent)
 
         palette = self.palette()
-        color = QColor('black')
+        color = QColor("black")
         color.setAlpha(150)
         palette_set_bg_color(palette, color)
-        palette.setColor(QPalette.ColorRole.Text, QColor('white'))
-        palette.setColor(QPalette.ColorRole.WindowText, QColor('white'))
-        palette.setColor(QPalette.ColorRole.ButtonText, QColor('white'))
+        palette.setColor(QPalette.ColorRole.Text, QColor("white"))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor("white"))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor("white"))
         self.setPalette(palette)
 
         self._layout = QHBoxLayout(self)
         self.mv_btn = MVButton(length=20, parent=self)
-        self.mv_btn.setToolTip('播放歌曲 MV')
+        self.mv_btn.setToolTip("播放歌曲 MV")
 
         self.mv_btn.setPalette(palette)
         self._layout.addWidget(self.mv_btn)
@@ -79,8 +81,7 @@ class MVWrapper(QWidget):
 
 
 class NowplayingArtwork(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
 
         self._app = app
@@ -123,14 +124,14 @@ class NowplayingArtwork(QWidget):
 
     def on_metadata_changed(self, metadata):
         metadata = metadata or {}
-        released = metadata.get('released', '')
+        released = metadata.get("released", "")
         if released:
-            self.setToolTip(f'专辑发行日期：{released}')
+            self.setToolTip(f"专辑发行日期：{released}")
         else:
-            self.setToolTip('')
+            self.setToolTip("")
         # Set song artwork.
-        artwork = metadata.get('artwork', '')
-        artwork_uid = metadata.get('uri', artwork)
+        artwork = metadata.get("artwork", "")
+        artwork_uid = metadata.get("uri", artwork)
         if artwork:
             run_afn(self._inner.show_cover, artwork, artwork_uid)
         else:
@@ -140,7 +141,7 @@ class NowplayingArtwork(QWidget):
         super().resizeEvent(a0)
         self._mv_wrapper.move(
             self.width() - self._mv_wrapper.width() - 10,
-            self.height() - self._mv_wrapper.height() - 10
+            self.height() - self._mv_wrapper.height() - 10,
         )
 
 
@@ -149,10 +150,12 @@ class NowplayingLyricView(LyricView):
     Let user zoom in/out.
     """
 
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
-        self._app.live_lyric.lyrics_changed.connect(self.on_lyric_changed, aioqueue=True)
+        self._app.live_lyric.lyrics_changed.connect(
+            self.on_lyric_changed, aioqueue=True
+        )
         self._app.live_lyric.line_changed.connect(self.on_line_changed, weak=True)
 
         font = self.font()
@@ -196,13 +199,12 @@ class NowplayingLyricView(LyricView):
 
 
 class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         self._app = app
         super().__init__(
             parent=parent,
             no_scroll_v=False,
-            delegate_options={'quoted_bg_color_role': QPalette.ColorRole.Base}
+            delegate_options={"quoted_bg_color_role": QPalette.ColorRole.Base},
         )
 
     async def refresh(self):
@@ -217,8 +219,7 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
 
 
 class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         self._app = app
         super().__init__(parent=parent, no_scroll_v=False)
         self.setItemDelegate(
@@ -244,10 +245,9 @@ class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView
 
 
 class NowplayingPlayerPlaylistView(PlayerPlaylistView):
-
     def __init__(self, app, parent=None, **kwargs):
-        kwargs.setdefault('no_scroll_v', False)
-        kwargs.setdefault('row_height', 60)
+        kwargs.setdefault("no_scroll_v", False)
+        kwargs.setdefault("row_height", 60)
         super().__init__(app, parent=parent, **kwargs)
 
         delegate = SongMiniCardListDelegate(

@@ -4,13 +4,13 @@ from feeluown.library import ModelType
 
 
 model_mimetype_map = {
-    ModelType.dummy.value: 'fuo-model/x-dummy',
-    ModelType.song.value: 'fuo-model/x-song',
-    ModelType.playlist.value: 'fuo-model/x-playlist',
-    ModelType.album.value: 'fuo-model/x-album',
-    ModelType.artist.value: 'fuo-model/x-artist',
-    ModelType.lyric.value: 'fuo-model/x-lyric',
-    ModelType.user.value: 'fuo-model/x-user',
+    ModelType.dummy.value: "fuo-model/x-dummy",
+    ModelType.song.value: "fuo-model/x-song",
+    ModelType.playlist.value: "fuo-model/x-playlist",
+    ModelType.album.value: "fuo-model/x-album",
+    ModelType.artist.value: "fuo-model/x-artist",
+    ModelType.lyric.value: "fuo-model/x-lyric",
+    ModelType.user.value: "fuo-model/x-user",
 }
 
 

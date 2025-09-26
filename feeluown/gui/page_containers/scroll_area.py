@@ -11,11 +11,12 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
     ScrollArea is designed to be used as a container for page_body.
     Be careful when you use it as a container for other widgets.
     """
+
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
         self.setWidgetResizable(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
 
-        if sys.platform.lower() != 'darwin':
+        if sys.platform.lower() != "darwin":
             self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)

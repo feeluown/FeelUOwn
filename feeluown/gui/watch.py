@@ -16,13 +16,13 @@ logger = logging.getLogger(__name__)
 
 
 class Mode(IntEnum):
-    none = 0    # Hide all video related widgets, including controller buttons.
+    none = 0  # Hide all video related widgets, including controller buttons.
     fullwindow = 1  # Show video widget inside the full window coantainer.
-    pip = 2     # Show video widget in a detached container (picture in picture).
+    pip = 2  # Show video widget in a detached container (picture in picture).
 
 
 class FullWindowContainer(QWidget):
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
         self._app.installEventFilter(self)
@@ -47,7 +47,7 @@ class FullWindowContainer(QWidget):
 
 
 class WatchManager:
-    def __init__(self, app: 'GuiApp'):
+    def __init__(self, app: "GuiApp"):
         """video view controller
 
         :type app: feeluown.app.App
@@ -65,7 +65,8 @@ class WatchManager:
 
         self._ui = self._app.ui
         self._ui.pc_panel.media_btns.toggle_video_btn.clicked.connect(
-            lambda: self.keep_and_set_mode(Mode.fullwindow))
+            lambda: self.keep_and_set_mode(Mode.fullwindow)
+        )
         self._app.player.media_changed.connect(self.on_media_changed, aioqueue=True)
         self._app.player.media_loaded_v2.connect(self.on_media_loaded, aioqueue=True)
 
@@ -115,10 +116,10 @@ class WatchManager:
 
         video_widget.overlay_auto_visible = True
         video_widget.ctl_bar.clear_adhoc_btns()
-        pip_btn = video_widget.ctl_bar.add_adhoc_btn('画中画')
+        pip_btn = video_widget.ctl_bar.add_adhoc_btn("画中画")
         pip_btn.clicked.connect(lambda: self.keep_and_set_mode(Mode.pip))
         if go_back is not None:
-            hide_btn = video_widget.ctl_bar.add_adhoc_btn('最小化')
+            hide_btn = video_widget.ctl_bar.add_adhoc_btn("最小化")
             hide_btn.clicked.connect(go_back)
 
     def unkeep_pip_and_enter_fullwindow_mode(self):
@@ -149,15 +150,15 @@ class WatchManager:
             self._pip_container.show()
 
         video_widget.ctl_bar.clear_adhoc_btns()
-        fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn('全屏')
-        hide_btn = video_widget.ctl_bar.add_adhoc_btn('退出画中画')
+        fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn("全屏")
+        hide_btn = video_widget.ctl_bar.add_adhoc_btn("退出画中画")
         fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
         hide_btn.clicked.connect(self.unkeep_pip_and_enter_fullwindow_mode)
         try:
             width = int(self._app.player._mpv.width)  # type: ignore
             height = int(self._app.player._mpv.height)  # type: ignore
         except TypeError:
-            logger.exception('mpv video width/height is not a valid int')
+            logger.exception("mpv video width/height is not a valid int")
         else:
             proper_width = max(min(width, 640), 320)
             proper_height = height * proper_width // width
@@ -170,7 +171,8 @@ class WatchManager:
 
     def toggle_pip_fullscreen(self):
         self._pip_container.setWindowState(
-            self._pip_container.windowState() ^ Qt.WindowState.WindowFullScreen)
+            self._pip_container.windowState() ^ Qt.WindowState.WindowFullScreen
+        )
 
     def play_video(self, video):
         self._app.playlist.set_current_model(video)
@@ -178,11 +180,11 @@ class WatchManager:
 
     def on_media_changed(self, media):
         if not media:
-            logger.debug('media is changed to none, hide video-show')
+            logger.debug("media is changed to none, hide video-show")
             self.set_mode(Mode.none)
 
     def on_media_loaded(self, properties):
-        if bool(properties['video_format']) is True:
+        if bool(properties["video_format"]) is True:
             if self._keep_fullwindow_mode:
                 self.set_mode(Mode.fullwindow)
             elif self._keep_pip_mode:

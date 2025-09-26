@@ -5,7 +5,9 @@ from PyQt6.QtWidgets import QMenu, QAbstractItemView
 
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.library import (
-    BriefSongModel, SupportsCurrentUserDislikeAddSong, SupportsCurrentUser,
+    BriefSongModel,
+    SupportsCurrentUserDislikeAddSong,
+    SupportsCurrentUser,
 )
 from feeluown.player import PlaylistMode
 from feeluown.gui.components import SongMenuInitializer
@@ -59,10 +61,9 @@ class PlayerPlaylistModel(SongMiniCardListModel):
 
 
 class PlayerPlaylistView(SongMiniCardListView):
-
     _model = None
 
-    def __init__(self, app: 'GuiApp', *args, **kwargs):
+    def __init__(self, app: "GuiApp", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
 
@@ -82,9 +83,9 @@ class PlayerPlaylistView(SongMiniCardListView):
         songs = [index.data(Qt.ItemDataRole.UserRole)[0] for index in indexes]
         menu = QMenu()
         if self._app.playlist.mode is PlaylistMode.fm:
-            btn_text = '不想听'
+            btn_text = "不想听"
         else:
-            btn_text = '从播放队列中移除'
+            btn_text = "从播放队列中移除"
         action = menu.addAction(btn_text)
         action.triggered.connect(lambda: self._remove_songs(songs))
 
@@ -99,9 +100,10 @@ class PlayerPlaylistView(SongMiniCardListView):
                 and isinstance(provider, SupportsCurrentUser)
                 and provider.has_current_user()
             ):
-                action_dislike = menu.addAction('加入资源提供方的黑名单')
+                action_dislike = menu.addAction("加入资源提供方的黑名单")
                 action_dislike.triggered.connect(
-                    lambda: run_afn(self._dislike_and_remove_songs, songs))
+                    lambda: run_afn(self._dislike_and_remove_songs, songs)
+                )
 
         if len(songs) == 1:
             menu.addSeparator()
@@ -117,19 +119,21 @@ class PlayerPlaylistView(SongMiniCardListView):
             row = songs.index(current_song)
             index = model.index(row, 0)
             # In order to highlight the current song.
-            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.SelectCurrent)
+            self.selectionModel().select(
+                index, QItemSelectionModel.SelectionFlag.SelectCurrent
+            )
             self.scrollTo(index, QAbstractItemView.ScrollHint.PositionAtCenter)
 
     async def _dislike_and_remove_songs(self, songs):
         song: BriefSongModel = songs[0]
         provider = self._app.library.get(song.source)
         assert isinstance(provider, SupportsCurrentUserDislikeAddSong)
-        self._app.show_msg('正在加入黑名单，请稍等...', timeout=3000)
+        self._app.show_msg("正在加入黑名单，请稍等...", timeout=3000)
         ok = await run_fn(provider.current_user_dislike_add_song, song)
         if ok:
-            self._app.show_msg('已加入黑名单')
+            self._app.show_msg("已加入黑名单")
         else:
-            self._app.show_msg('加入黑名单失败', timeout=3000)
+            self._app.show_msg("加入黑名单失败", timeout=3000)
         self._remove_songs(songs)
 
     def _remove_songs(self, songs):
@@ -142,7 +146,10 @@ class PlayerPlaylistView(SongMiniCardListView):
                 and song == self._app.playlist.current_song
                 and playlist_songs[-1] == song
             ):
-                self._app.show_msg("FM 模式下，如果当前歌曲是最后一首歌，则无法移除，请稍后再尝试移除", timeout=3000)
+                self._app.show_msg(
+                    "FM 模式下，如果当前歌曲是最后一首歌，则无法移除，请稍后再尝试移除",
+                    timeout=3000,
+                )
                 self._app.playlist.next()
             else:
                 self._app.playlist.remove(song)

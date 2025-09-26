@@ -13,14 +13,13 @@ class DraggingContext:
 
 
 class ProgressSlider(QSlider):
-
     def __init__(self, app, parent=None):
         super().__init__(parent)
 
         self._app = app
         self._dragging_ctx: Optional[DraggingContext] = None
 
-        self.setToolTip('拖动调节进度')
+        self.setToolTip("拖动调节进度")
         self.setRange(0, 0)  # User can't drag the slider control when range is empty.
         self.setOrientation(Qt.Orientation.Horizontal)
 
@@ -70,7 +69,10 @@ class ProgressSlider(QSlider):
 
     def on_action_triggered(self, action):
         # SliderAction.SliderMove is handled seperately. Just ignore it.
-        if action not in (QAbstractSlider.SliderAction.SliderNoAction, QAbstractSlider.SliderAction.SliderMove):
+        if action not in (
+            QAbstractSlider.SliderAction.SliderNoAction,
+            QAbstractSlider.SliderAction.SliderMove,
+        ):
             slider_position = self.sliderPosition()
             self.maybe_update_player_position(slider_position)
 

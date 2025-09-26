@@ -3,21 +3,36 @@ from typing import Optional
 
 from PyQt6.QtCore import QTimer, QEvent, Qt, QRect
 from PyQt6.QtWidgets import (
-    QWidget, QFrame, QHBoxLayout, QVBoxLayout, QPushButton,
+    QWidget,
+    QFrame,
+    QHBoxLayout,
+    QVBoxLayout,
+    QPushButton,
 )
 from PyQt6.QtGui import (
-    QMouseEvent, QCursor, QPainter, QPalette, QBrush,
+    QMouseEvent,
+    QCursor,
+    QPainter,
+    QPalette,
+    QBrush,
 )
 
 from feeluown.gui.helpers import darker_or_lighter
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.progress_slider import ProgressSlider
 from feeluown.gui.components import (
-    LineSongLabel, MediaButtonsV2, LyricButton, WatchButton, LikeButton,
-    MVButton, VolumeSlider, SongSourceTag, PlayerProgressRatioLabel
+    LineSongLabel,
+    MediaButtonsV2,
+    LyricButton,
+    WatchButton,
+    LikeButton,
+    MVButton,
+    VolumeSlider,
+    SongSourceTag,
+    PlayerProgressRatioLabel,
 )
 
-IS_MACOS = sys.platform == 'darwin'
+IS_MACOS = sys.platform == "darwin"
 
 
 class MouseState:
@@ -44,16 +59,16 @@ class Toolbar(QWidget):
         self.progress_slider = ProgressSlider(app=self._app)
         self.progress_label = PlayerProgressRatioLabel(app=self._app)
         self.volume_slider = VolumeSlider(app=self._app)
-        self.media_buttons = MediaButtonsV2(app=self._app,
-                                            spacing=0,
-                                            button_width=button_width+5)
+        self.media_buttons = MediaButtonsV2(
+            app=self._app, spacing=0, button_width=button_width + 5
+        )
         self.lyric_button = LyricButton(app=self._app)
         self.like_button = LikeButton(app=self._app, size=self._song_btn_size)
         self.watch_button = WatchButton(app=self._app)
         self.mv_button = MVButton(app=self._app, height=self._song_btn_size[1])
         self.volume_button = QPushButton()
 
-        self.volume_button.setObjectName('volume_btn')
+        self.volume_button.setObjectName("volume_btn")
         self.volume_button.setFixedWidth(button_width)
         self.volume_slider.setMaximumWidth(60)
 
@@ -86,7 +101,7 @@ class Toolbar(QWidget):
             self.progress_slider.setMinimumHeight(24)
             self.volume_slider.setMinimumHeight(24)
 
-        self._song_layout.setSpacing(self._song_btn_size[1]//2)
+        self._song_layout.setSpacing(self._song_btn_size[1] // 2)
         self._song_layout.addWidget(self.song_source_tag)
         self._song_layout.addWidget(self.line_song_label)
         self._song_layout.addWidget(self.mv_button)
@@ -126,7 +141,7 @@ class AnimatedCoverLabel(CoverLabelV2):
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
-        center = (self.width()//2, self.height()//2)
+        center = (self.width() // 2, self.height() // 2)
 
         painter.save()
         painter.translate(*center)
@@ -143,8 +158,12 @@ class AnimatedCoverLabel(CoverLabelV2):
         if pixmap is not None:
             size = pixmap.size()
             y = (size.height() - self.height()) // 2
-            rect = QRect(self._padding, y+self._padding,
-                         self.width()-self._padding*2, self.height()-self._padding*2)
+            rect = QRect(
+                self._padding,
+                y + self._padding,
+                self.width() - self._padding * 2,
+                self.height() - self._padding * 2,
+            )
             brush = QBrush(pixmap)
             painter.setBrush(brush)
             painter.drawRoundedRect(rect, radius, radius)
@@ -169,9 +188,9 @@ class FloatingBox(QFrame):
         self._mouse_state: Optional[MouseState] = None
 
         self.toolbar = Toolbar(app=self._app)
-        self.circle = AnimatedCoverLabel(app=self._app,
-                                         radius=self._height // 2,
-                                         padding=self._padding)
+        self.circle = AnimatedCoverLabel(
+            app=self._app, radius=self._height // 2, padding=self._padding
+        )
         self.toolbar.installEventFilter(self)
         self.circle.installEventFilter(self)
         self.circle.setMouseTracking(True)
@@ -196,13 +215,16 @@ class FloatingBox(QFrame):
             return
 
         # Draw background for toolbar.
-        new_bg_color = darker_or_lighter(self.palette().color(QPalette.ColorRole.Window), 115)
+        new_bg_color = darker_or_lighter(
+            self.palette().color(QPalette.ColorRole.Window), 115
+        )
         painter = QPainter(self)
         painter.setPen(Qt.PenStyle.NoPen)
         painter.save()
         painter.setBrush(new_bg_color)
         painter.drawRoundedRect(
-            QRect(0, 0, self.width()-self._height//2, self._height), 3, 3)
+            QRect(0, 0, self.width() - self._height // 2, self._height), 3, 3
+        )
         # painter.drawEllipse(self.circle.rect())
         painter.restore()
 
@@ -213,7 +235,7 @@ class FloatingBox(QFrame):
         if not self.toolbar.isVisible():
             self.toolbar.show()
             self.setFixedWidth(self.circle.width() + self.toolbar.width())
-            self.move(self.pos().x()-self.toolbar.width(), self.pos().y())
+            self.move(self.pos().x() - self.toolbar.width(), self.pos().y())
 
     def maybe_hide_toolbar(self):
         if self.toolbar.isVisible():
@@ -221,7 +243,7 @@ class FloatingBox(QFrame):
             if self.rect().contains(pos):
                 return
         self.toolbar.hide()
-        self.move(self.pos().x()+self.toolbar.width(), self.pos().y())
+        self.move(self.pos().x() + self.toolbar.width(), self.pos().y())
         self._timer.stop()
         self.setFixedWidth(self.circle.width())
 
@@ -257,7 +279,7 @@ class FloatingBox(QFrame):
         return False
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
 
     from PyQt6.QtWidgets import QApplication
@@ -267,14 +289,14 @@ if __name__ == '__main__':
 
     from feeluown.gui.theme import ThemeManager
 
-    icons_dir = os.path.join('feeluown', 'gui/assets/icons')
-    QDir.addSearchPath('icons', icons_dir)
+    icons_dir = os.path.join("feeluown", "gui/assets/icons")
+    QDir.addSearchPath("icons", icons_dir)
 
     img = QImage()
     # !!! You should change the image filename.
-    img_fn = '7c90bb4edfa99cae1d142a33ebe26673-1685249600'
-    img_fp = os.path.expanduser(f'~/.FeelUOwn/cache/{img_fn}')
-    with open(img_fp, 'rb') as f:
+    img_fn = "7c90bb4edfa99cae1d142a33ebe26673-1685249600"
+    img_fp = os.path.expanduser(f"~/.FeelUOwn/cache/{img_fn}")
+    with open(img_fp, "rb") as f:
         img.loadFromData(f.read())
 
     app = MagicMock()
@@ -284,7 +306,7 @@ if __name__ == '__main__':
     box.setWindowFlags(Qt.WindowType.FramelessWindowHint)
     box.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     box.circle.show_img(img)
-    box.toolbar.line_song_label.setText('哈哈哈 - 嘿嘿')
+    box.toolbar.line_song_label.setText("哈哈哈 - 嘿嘿")
     box.show()
     box.move(600, 400)
     theme_mgr.load_light()

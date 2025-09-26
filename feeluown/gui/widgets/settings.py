@@ -1,6 +1,13 @@
 from PyQt6.QtCore import pyqtSignal
-from PyQt6.QtWidgets import QDialog, QWidget, QCheckBox, \
-    QVBoxLayout, QHBoxLayout, QPlainTextEdit, QPushButton
+from PyQt6.QtWidgets import (
+    QDialog,
+    QWidget,
+    QCheckBox,
+    QVBoxLayout,
+    QHBoxLayout,
+    QPlainTextEdit,
+    QPushButton,
+)
 
 from feeluown.gui.widgets.magicbox import KeySourceIn
 from feeluown.gui.widgets.header import MidHeader
@@ -71,7 +78,7 @@ class AISettings(QWidget):
 
         self._app = app
         self._prompt_editor = QPlainTextEdit(self)
-        self._save_btn = QPushButton('保存', self)
+        self._save_btn = QPushButton("保存", self)
 
         self._layout = QHBoxLayout(self)
         self._layout.addWidget(self._prompt_editor)
@@ -90,13 +97,13 @@ class SettingsDialog(QDialog):
         super().__init__(parent=parent)
         self._app = app
 
-        self.setWindowTitle('应用配置')
+        self.setWindowTitle("应用配置")
         self.render()
 
     def render(self):
         source_in_str = self._app.browser.local_storage.get(KeySourceIn)
         if source_in_str is not None:
-            source_in = source_in_str.split(',')
+            source_in = source_in_str.split(",")
         else:
             source_in = [p.identifier for p in self._app.library.list()]
         toolbar = SearchProvidersFilter(self._app.library.list())
@@ -104,13 +111,13 @@ class SettingsDialog(QDialog):
         toolbar.checked_btn_changed.connect(self.update_source_in)
 
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(MidHeader('搜索来源'))
+        self._layout.addWidget(MidHeader("搜索来源"))
         self._layout.addWidget(toolbar)
-        self._layout.addWidget(MidHeader('AI 电台（PROMPT）'))
+        self._layout.addWidget(MidHeader("AI 电台（PROMPT）"))
         self._layout.addWidget(AISettings(self._app))
-        self._layout.addWidget(MidHeader('播放器'))
+        self._layout.addWidget(MidHeader("播放器"))
         self._layout.addWidget(PlayerSettings(self._app))
         self._layout.addStretch(0)
 
     def update_source_in(self, source_in):
-        self._app.browser.local_storage[KeySourceIn] = ','.join(source_in)
+        self._app.browser.local_storage[KeySourceIn] = ",".join(source_in)

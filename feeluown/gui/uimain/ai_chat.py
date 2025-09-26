@@ -6,8 +6,14 @@ from openai import AsyncOpenAI
 from PyQt6.QtCore import QSize, Qt, QRectF, pyqtSignal
 from PyQt6.QtGui import QPainter
 from PyQt6.QtWidgets import (
-    QHBoxLayout, QVBoxLayout, QWidget, QLabel, QScrollArea, QPlainTextEdit,
-    QFrame, QSizePolicy,
+    QHBoxLayout,
+    QVBoxLayout,
+    QWidget,
+    QLabel,
+    QScrollArea,
+    QPlainTextEdit,
+    QFrame,
+    QSizePolicy,
 )
 from PyQt6.QtGui import QPainterPath
 from PyQt6.QtGui import QTextOption
@@ -28,14 +34,14 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-QUERY_PROMPT = '''你是一个音乐播放器助手。'''
-EXTRACT_PROMPT = '''\
+QUERY_PROMPT = """你是一个音乐播放器助手。"""
+EXTRACT_PROMPT = """\
 提取歌曲信息，歌手名为空的话，你需要补全，每首歌一行 JSON，用类似下面这样的格式返回
     {"title": "t1", "artists": ["a1", "a11"], "description": "推荐理由1"}
     {"title": "t2", "artists": ["a11"], "description": "推荐理由2"}
 
 注意，你返回的内容只应该有几行 JSON，其它信息都不需要。也不要用 markdown 格式返回。
-'''
+"""
 
 
 class ChatContext:
@@ -49,7 +55,7 @@ class ChatContext:
             model=self.model,
             messages=self.messages,
             stream=True,
-            stream_options={'include_usage': True},
+            stream_options={"include_usage": True},
         )
 
 
@@ -76,8 +82,9 @@ class ChatInputEditor(QPlainTextEdit):
         doc_height = line_count * line_height
 
         # Add some padding, 10
-        new_height = min(max(int(doc_height) + 10, self.minimumHeight()),
-                         self.maximumHeight())
+        new_height = min(
+            max(int(doc_height) + 10, self.minimumHeight()), self.maximumHeight()
+        )
         return QSize(super().sizeHint().width(), new_height)
 
     def adjust_height(self):
@@ -96,8 +103,9 @@ class RoundedLabel(QLabel):
         super().__init__(*args, **kwargs)
         self._radius = 8
         self._padding = 8
-        self.setContentsMargins(self._padding, self._padding,
-                                self._padding, self._padding)
+        self.setContentsMargins(
+            self._padding, self._padding, self._padding, self._padding
+        )
         self.setWordWrap(True)
 
     def paintEvent(self, event):
@@ -110,7 +118,7 @@ class RoundedLabel(QLabel):
 
 
 class Body(QWidget):
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
 
@@ -122,26 +130,30 @@ class Body(QWidget):
 
         # User input area
         self._editor = ChatInputEditor(self)
-        self._editor.setPlaceholderText('在这里输入你的问题...')
+        self._editor.setPlaceholderText("在这里输入你的问题...")
         self._editor.setFrameShape(QFrame.Shape.NoFrame)
         self._editor.enter_pressed.connect(
-            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText()))
+            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText())
+        )
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
-        self._hide_btn = TextButton('关闭窗口', self)
-        self._extract_and_play_btn = TextButton('提取歌曲并播放', self)
-        self._extract_10_and_play_btn = TextButton('提取10首并播放', self)
-        self._send_btn = TextButton('发送（回车）', self)
-        self._clear_history_btn = TextButton('清空对话', self)
+        self._hide_btn = TextButton("关闭窗口", self)
+        self._extract_and_play_btn = TextButton("提取歌曲并播放", self)
+        self._extract_10_and_play_btn = TextButton("提取10首并播放", self)
+        self._send_btn = TextButton("发送（回车）", self)
+        self._clear_history_btn = TextButton("清空对话", self)
 
         self.setup_ui()
         self._hide_btn.clicked.connect(self.hide)
         self._extract_and_play_btn.clicked.connect(
-            lambda: run_afn_ref(self.extract_and_play))
+            lambda: run_afn_ref(self.extract_and_play)
+        )
         self._extract_10_and_play_btn.clicked.connect(
-            lambda: run_afn_ref(self.extract_10_and_play))
+            lambda: run_afn_ref(self.extract_10_and_play)
+        )
         self._send_btn.clicked.connect(
-            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText()))
+            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText())
+        )
         self._clear_history_btn.clicked.connect(self.clear_history)
 
         self._chat_context = None
@@ -165,7 +177,7 @@ class Body(QWidget):
         self._v_layout = QVBoxLayout()
         self._btn_layout = QVBoxLayout()
 
-        self._root_layout.addWidget(MidHeader('AI 助手'))
+        self._root_layout.addWidget(MidHeader("AI 助手"))
         self._root_layout.addLayout(self._layout)
         self._layout.addStretch(0)
         self._layout.addLayout(self._v_layout)
@@ -194,12 +206,12 @@ class Body(QWidget):
         label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         label.setFrameStyle(QFrame.Shape.NoFrame)
 
-        width_factor = 0.6 if role in ('user', 'system') else 1
+        width_factor = 0.6 if role in ("user", "system") else 1
         label.setMaximumWidth(int(self._history_area.width() * width_factor))
         label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         pal = label.palette()
-        if role in ('user', 'system'):
+        if role in ("user", "system"):
             origin_window = pal.color(pal.ColorRole.Window)
             palette_set_bg_color(pal, pal.color(pal.ColorRole.Highlight))
             pal.setColor(pal.ColorRole.Text, pal.color(pal.ColorRole.HighlightedText))
@@ -210,7 +222,7 @@ class Body(QWidget):
 
     def _add_message_to_history(self, role, content):
         """Add message to chat history"""
-        self._chat_context.messages.append({'role': role, 'content': content})
+        self._chat_context.messages.append({"role": role, "content": content})
         label = self._create_message_label(role, content)
         self._history_layout.addWidget(label)
         self._scroll_to_bottom()
@@ -219,24 +231,24 @@ class Body(QWidget):
         if self._chat_context is None:
             self._chat_context = self.create_chat_context()
 
-        self._add_message_to_history('user', query)
-        self.set_msg('等待 AI 返回中...', level='hint')
+        self._add_message_to_history("user", query)
+        self.set_msg("等待 AI 返回中...", level="hint")
         try:
             stream = await self._chat_context.send_message()
         except Exception as e:  # noqa
-            self.set_msg(f'调用 AI 接口失败: {e}', level='err')
-            logger.exception('AI request failed')
+            self.set_msg(f"调用 AI 接口失败: {e}", level="err")
+            logger.exception("AI request failed")
         else:
             # Create label for AI response
-            ai_label = self._create_message_label('assistant', '')
+            ai_label = self._create_message_label("assistant", "")
             self._history_layout.addWidget(ai_label)
 
-            content = ''
+            content = ""
             async for chunk in stream:
-                self.set_msg('AI 返回中...', level='hint')
+                self.set_msg("AI 返回中...", level="hint")
                 # 当使用 stream_options 时，最后一个 chunk 的 choices 为空
                 if chunk.choices:
-                    delta_content = chunk.choices[0].delta.content or ''
+                    delta_content = chunk.choices[0].delta.content or ""
                     content += delta_content
                     # Update AI response in real-time
                     ai_label.setText(content)
@@ -251,54 +263,54 @@ class Body(QWidget):
 
     def show_tokens_usage(self, chunk):
         if not chunk:
-            self.set_msg('AI 内容返回结束', level='hint')
+            self.set_msg("AI 内容返回结束", level="hint")
             return
 
         in_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
         out_tokens = chunk.usage.completion_tokens if chunk.usage else 0
         total_tokens = chunk.usage.total_tokens if chunk.usage else 0
         token_msg = f"Tokens: 输入 {in_tokens}, 输出 {out_tokens}, 合计 {total_tokens}"
-        self.set_msg(f'AI 内容返回结束 ({token_msg})', level='hint')
+        self.set_msg(f"AI 内容返回结束 ({token_msg})", level="hint")
 
-    def set_msg(self, text, level='hint'):
-        if level == 'hint':
-            color = 'green'
-        elif level == 'warn':
-            color = 'yellow'
+    def set_msg(self, text, level="hint"):
+        if level == "hint":
+            color = "green"
+        elif level == "warn":
+            color = "yellow"
         else:  # err
-            color = 'magenta'
+            color = "magenta"
         self._msg_label.setText(f'<span style="color: {color}">{text}</span>')
 
     def create_chat_context(self):
         return ChatContext(
             model=self._app.config.OPENAI_MODEL,
             client=self._app.ai.get_async_client(),
-            messages=[{'role': 'system', 'content': QUERY_PROMPT}]
+            messages=[{"role": "system", "content": QUERY_PROMPT}],
         )
 
     async def extract_and_play(self):
         await self._extract_and_play(EXTRACT_PROMPT)
 
     async def extract_10_and_play(self):
-        await self._extract_and_play(f'{EXTRACT_PROMPT}\n随机提取最多10首即可')
+        await self._extract_and_play(f"{EXTRACT_PROMPT}\n随机提取最多10首即可")
 
     async def _extract_and_play(self, extract_prompt):
         """Main entry point for extracting and playing songs"""
         self._prepare_extract_context(extract_prompt)
-        self.set_msg('正在让 AI 解析歌曲信息，这可能会花费一些时间...')
+        self.set_msg("正在让 AI 解析歌曲信息，这可能会花费一些时间...")
         try:
             stream = await self._chat_context.send_message()
             await self._process_extract_stream(stream)
         except Exception as e:
-            self.set_msg(f'调用 AI 接口失败: {e}', level='err')
-            logger.exception('AI request failed')
+            self.set_msg(f"调用 AI 接口失败: {e}", level="err")
+            logger.exception("AI request failed")
 
     def _prepare_extract_context(self, extract_prompt):
         """Prepare chat context for song extraction"""
         if self._chat_context is None:
-            self.set_msg('没有对话上下文', level='err')
+            self.set_msg("没有对话上下文", level="err")
         else:
-            self._add_message_to_history('user', extract_prompt)
+            self._add_message_to_history("user", extract_prompt)
 
     async def _process_extract_stream(self, stream):
         """Process the stream of extracted songs"""
@@ -307,43 +319,48 @@ class Body(QWidget):
         fail_count = 0
 
         # 创建AI回复的标签
-        ai_label = self._create_message_label('assistant', '')
+        ai_label = self._create_message_label("assistant", "")
         self._history_layout.addWidget(ai_label)
-        content = ''
+        content = ""
         try:
             while True:
                 try:
                     line = await rr.readline()
-                    line = line.decode('utf-8')
-                    content += f'{line}\n'  # add newline
+                    line = line.decode("utf-8")
+                    content += f"{line}\n"  # add newline
                     ai_label.setText(content)
                     self._scroll_to_bottom()
-                    logger.debug(f'read a line: {line}')
+                    logger.debug(f"read a line: {line}")
                     if not line:
-                        self.set_msg(f'解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。',
-                                     level='hint')
+                        self.set_msg(
+                            f"解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。",
+                            level="hint",
+                        )
                         break
 
                     try:
                         jline = json.loads(line)
-                        title, artists = jline['title'], jline['artists']
+                        title, artists = jline["title"], jline["artists"]
                         artists_name = fmt_artists_names(artists)
                         song = create_dummy_brief_song(title, artists_name)
                     except Exception:
                         fail_count += 1
-                        logger.exception(f'failed to parse a line: {line}')
-                        self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
-                                     level='yellow')
+                        logger.exception(f"failed to parse a line: {line}")
+                        self.set_msg(
+                            f"成功解析{ok_count}首歌曲，失败{fail_count}首歌",
+                            level="yellow",
+                        )
                         continue
 
                     ok_count += 1
-                    self.set_msg(f'成功解析{ok_count}首歌曲，失败{fail_count}首歌',
-                                 level='hint')
+                    self.set_msg(
+                        f"成功解析{ok_count}首歌曲，失败{fail_count}首歌", level="hint"
+                    )
                     self._app.playlist.add(song)
                     if ok_count == 1:
                         self._app.playlist.play_model(song)
                 except Exception:
-                    logger.exception('Error processing song')
+                    logger.exception("Error processing song")
                     break
         finally:
             assistant_message = {"role": "assistant", "content": content}
@@ -368,7 +385,7 @@ class Body(QWidget):
             widget = item.widget()
             if widget:
                 widget.deleteLater()
-        self.set_msg('')
+        self.set_msg("")
         self._chat_context = None
 
     def hide(self):
@@ -376,29 +393,29 @@ class Body(QWidget):
         self.parent().hide()
 
 
-def create_aichat_overlay(app: 'GuiApp', parent=None) -> AppOverlayContainer:
+def create_aichat_overlay(app: "GuiApp", parent=None) -> AppOverlayContainer:
     """Create an overlay for the AI chat"""
     body = Body(app)
     overlay = AppOverlayContainer(app, body, parent=parent)
     return overlay
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
     from PyQt6.QtWidgets import QWidget
     from feeluown.gui.debug import simple_layout, mock_app
 
-    with simple_layout(theme='dark') as layout, mock_app() as app:
+    with simple_layout(theme="dark") as layout, mock_app() as app:
         app.size.return_value = QSize(600, 400)
-        app.config.OPENAI_API_KEY = os.environ.get('DEEPSEEK_API_KEY')
-        app.config.OPENAI_API_BASEURL = 'https://api.deepseek.com'
-        app.config.OPENAI_MODEL = 'deepseek-chat'
+        app.config.OPENAI_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
+        app.config.OPENAI_API_BASEURL = "https://api.deepseek.com"
+        app.config.OPENAI_MODEL = "deepseek-chat"
         widget = create_aichat_overlay(app)
         widget.resize(600, 400)
         layout.addWidget(widget)
         widget.show()
-        widget.body.set_msg('error', level='err')
+        widget.body.set_msg("error", level="err")
 
         widget.body._chat_context = widget.body.create_chat_context()
-        widget.body._add_message_to_history('user', '哈哈哈'*10)
-        widget.body._add_message_to_history('xxx', '哈哈哈'*100)
+        widget.body._add_message_to_history("user", "哈哈哈" * 10)
+        widget.body._add_message_to_history("xxx", "哈哈哈" * 100)

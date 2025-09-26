@@ -45,8 +45,7 @@ def setup_config(args, config):
             else:
                 try:
                     from feeluown.utils.compat import QEventLoop  # noqa
-                except ImportError as e:
-                    logger.exception('no QEventLoop, fallback to daemon mode.')
+                except ImportError:
                     logger.warning('no QEventLoop, fallback to daemon mode.')
                 else:
                     config.MODE |= App.GuiMode

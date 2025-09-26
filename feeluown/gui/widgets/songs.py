@@ -4,15 +4,33 @@ from enum import IntEnum, Enum
 from functools import partial
 
 from PyQt6.QtCore import (
-    pyqtSignal, Qt, QVariant, QEvent,
-    QAbstractTableModel, QAbstractListModel, QModelIndex,
-    QSize, QRect, QPoint, QPointF, QSortFilterProxyModel,
+    pyqtSignal,
+    Qt,
+    QVariant,
+    QEvent,
+    QAbstractTableModel,
+    QAbstractListModel,
+    QModelIndex,
+    QSize,
+    QRect,
+    QPoint,
+    QPointF,
+    QSortFilterProxyModel,
 )
 from PyQt6.QtGui import QPainter, QPalette, QMouseEvent, QPolygonF, QAction
 from PyQt6.QtWidgets import (
-    QFrame, QHBoxLayout, QAbstractItemView, QHeaderView,
-    QPushButton, QTableView, QWidget, QMenu, QListView,
-    QStyle, QSizePolicy, QStyledItemDelegate
+    QFrame,
+    QHBoxLayout,
+    QAbstractItemView,
+    QHeaderView,
+    QPushButton,
+    QTableView,
+    QWidget,
+    QMenu,
+    QListView,
+    QStyle,
+    QSizePolicy,
+    QStyledItemDelegate,
 )
 
 from feeluown.utils import aio
@@ -21,7 +39,9 @@ from feeluown.library import ModelState, ModelFlags, MediaFlags
 
 from feeluown.gui.mimedata import ModelMimeData
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, ReaderFetchMoreMixin, painter_save
+    ItemViewNoScrollMixin,
+    ReaderFetchMoreMixin,
+    painter_save,
 )
 
 
@@ -32,10 +52,11 @@ class ColumnsMode(Enum):
     """
     Different mode show different columns.
     """
-    normal = 'normal'
-    album = 'album'
-    artist = 'artist'
-    playlist = 'playlist'
+
+    normal = "normal"
+    album = "album"
+    artist = "artist"
+    playlist = "playlist"
 
 
 class Column(IntEnum):
@@ -90,12 +111,12 @@ class ColumnsConfig:
 
 def get_column_name(column):
     return {
-        Column.index: '',
-        Column.song: '歌曲标题',
-        Column.artist: '歌手',
-        Column.album: '专辑',
-        Column.duration: '时长',
-        Column.source: '来源',
+        Column.index: "",
+        Column.song: "歌曲标题",
+        Column.artist: "歌手",
+        Column.album: "专辑",
+        Column.duration: "时长",
+        Column.source: "来源",
     }[column]
 
 
@@ -148,24 +169,38 @@ class SongListDelegate(QStyledItemDelegate):
         # Draw duration ms
         duration_x = option.rect.topRight().x() - duration_width
         duration_rect = QRect(QPoint(duration_x, top), option.rect.bottomRight())
-        painter.drawText(duration_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
-                         song.duration_ms_display)
+        painter.drawText(
+            duration_rect,
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+            song.duration_ms_display,
+        )
 
         # Draw artists name
-        artists_name_x = option.rect.topRight().x() - duration_width - artists_name_width
-        artists_name_rect = QRect(QPoint(artists_name_x, top),
-                                  QPoint(duration_x, bottom))
-        painter.drawText(artists_name_rect, Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
-                         song.artists_name_display)
+        artists_name_x = (
+            option.rect.topRight().x() - duration_width - artists_name_width
+        )
+        artists_name_rect = QRect(
+            QPoint(artists_name_x, top), QPoint(duration_x, bottom)
+        )
+        painter.drawText(
+            artists_name_rect,
+            Qt.AlignmentFlag.AlignRight | Qt.AlignmentFlag.AlignVCenter,
+            song.artists_name_display,
+        )
 
         # Draw song number or play_btn when it is hovered
         no_bottom_right = QPoint(no_x, bottom)
         no_rect = QRect(option.rect.topLeft(), no_bottom_right)
         if option.state & QStyle.StateFlag.State_MouseOver:  # type: ignore
-            painter.drawText(no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, '►')
+            painter.drawText(
+                no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter, "►"
+            )
         else:
-            painter.drawText(no_rect, Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
-                             str(index.row() + 1))
+            painter.drawText(
+                no_rect,
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+                str(index.row() + 1),
+            )
 
         # Draw title
         title_rect = QRect(QPoint(no_x, top), QPoint(artists_name_x, bottom))
@@ -174,7 +209,10 @@ class SongListDelegate(QStyledItemDelegate):
         painter.restore()
 
     def editorEvent(self, event, model, option, index):
-        if event.type() in (QEvent.Type.MouseButtonPress, QEvent.Type.MouseButtonRelease):
+        if event.type() in (
+            QEvent.Type.MouseButtonPress,
+            QEvent.Type.MouseButtonRelease,
+        ):
             no_bottom_right = QPoint(self.number_rect_x, option.rect.bottom())
             no_rect = QRect(option.rect.topLeft(), no_bottom_right)
             mouse_event = QMouseEvent(event)
@@ -185,7 +223,9 @@ class SongListDelegate(QStyledItemDelegate):
                     if self.play_btn_pressed is True:
                         parent = self.parent()
                         assert isinstance(parent, SongListView)
-                        parent.play_song_needed.emit(index.data(Qt.ItemDataRole.UserRole))
+                        parent.play_song_needed.emit(
+                            index.data(Qt.ItemDataRole.UserRole)
+                        )
             if event.type() == QEvent.Type.MouseButtonRelease:
                 self.play_btn_pressed = False
         return super().editorEvent(event, model, option, index)
@@ -198,7 +238,6 @@ class SongListDelegate(QStyledItemDelegate):
 
 
 class SongListView(ItemViewNoScrollMixin, QListView):
-
     play_song_needed = pyqtSignal([object])
 
     def __init__(self, parent=None, **kwargs):
@@ -246,9 +285,11 @@ class BaseSongsTableModel(QAbstractTableModel):
             return no_item_flags
 
         # Default flags.
-        flags = (Qt.ItemFlag.ItemIsSelectable
-                  | Qt.ItemFlag.ItemIsEnabled
-                  | Qt.ItemFlag.ItemIsDragEnabled)
+        flags = (
+            Qt.ItemFlag.ItemIsSelectable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsDragEnabled
+        )
         song = index.data(Qt.ItemDataRole.UserRole)
         # If song's state is `not_exists` or `cant_upgrade`, the album and
         # artist columns are disabled.
@@ -300,8 +341,12 @@ class BaseSongsTableModel(QAbstractTableModel):
         song = self._items[index.row()]
         if role in (Qt.ItemDataRole.DisplayRole, Qt.ItemDataRole.ToolTipRole):
             # Only show tooltip for song/artist/album fields.
-            if role == Qt.ItemDataRole.ToolTipRole and index.column() not in \
-               (Column.song, Column.artist, Column.album, Column.duration):
+            if role == Qt.ItemDataRole.ToolTipRole and index.column() not in (
+                Column.song,
+                Column.artist,
+                Column.album,
+                Column.duration,
+            ):
                 return QVariant()
             if index.column() == Column.index:
                 return index.row() + 1
@@ -320,7 +365,11 @@ class BaseSongsTableModel(QAbstractTableModel):
             if index.column() == Column.index:
                 return Qt.AlignmentFlag.AlignCenter | Qt.AlignmentFlag.AlignVCenter
             elif index.column() == Column.source:
-                return Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignBaseline | Qt.AlignmentFlag.AlignVCenter
+                return (
+                    Qt.AlignmentFlag.AlignLeft
+                    | Qt.AlignmentFlag.AlignBaseline
+                    | Qt.AlignmentFlag.AlignVCenter
+                )
         elif role == Qt.ItemDataRole.EditRole:
             return 1
         elif role == Qt.ItemDataRole.UserRole:
@@ -328,7 +377,7 @@ class BaseSongsTableModel(QAbstractTableModel):
         return QVariant()
 
     def mimeData(self, indexes):
-        # When the selection behaviour is set to QAbstractItemView.SelectionBehavior.SelectRows,
+        # When the selection behaviour is set to SelectRows,
         # len(indexes) is equal to length of items which have ItemIsDragEnabled flag.
         indexes = list(indexes)  # Make typing checkers happy.
         if len(indexes) > 1:
@@ -357,14 +406,14 @@ class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
 
 
 class SongFilterProxyModel(QSortFilterProxyModel):
-    def __init__(self, parent=None, text=''):
+    def __init__(self, parent=None, text=""):
         super().__init__(parent)
 
         self.text = text
 
     def filter_by_text(self, text):
         # if text is an empty string or None, we show all songs
-        self.text = text or ''
+        self.text = text or ""
         self.invalidateFilter()
 
     def filterAcceptsRow(self, source_row, source_parent):
@@ -375,9 +424,11 @@ class SongFilterProxyModel(QSortFilterProxyModel):
         index = source_model.index(source_row, Column.song, parent=source_parent)
         song = index.data(Qt.ItemDataRole.UserRole)
         text = self.text.lower()
-        ctx = song.title_display.lower() + \
-            song.album_name_display.lower() + \
-            song.artists_name_display.lower()
+        ctx = (
+            song.title_display.lower()
+            + song.album_name_display.lower()
+            + song.artists_name_display.lower()
+        )
         return text in ctx
 
 
@@ -405,8 +456,8 @@ class SongOpsEditor(QWidget):
 
     def __init__(self, parent):
         super().__init__(parent)
-        self.download_btn = QPushButton('↧', self)
-        self.play_btn = QPushButton('☊', self)
+        self.download_btn = QPushButton("↧", self)
+        self.play_btn = QPushButton("☊", self)
         self._layout = QHBoxLayout(self)
         self._layout.addWidget(self.play_btn)
         self._layout.addWidget(self.download_btn)
@@ -417,8 +468,12 @@ class SongOpsEditor(QWidget):
 class ArtistsSelectionView(QListView):
     def __init__(self, parent):
         super().__init__(parent)
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.Dialog | Qt.WindowType.FramelessWindowHint)
-        self.setObjectName('artists_selection_view')
+        self.setWindowFlags(
+            Qt.WindowType.WindowStaysOnTopHint
+            | Qt.WindowType.Dialog
+            | Qt.WindowType.FramelessWindowHint
+        )
+        self.setObjectName("artists_selection_view")
 
 
 class SongsTableDelegate(QStyledItemDelegate):
@@ -448,7 +503,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                 song = future.result()
                 artists = song.artists
             except:  # noqa
-                logger.exception('get song.artists failed')
+                logger.exception("get song.artists failed")
             else:
                 model = ArtistsModel(artists)
                 editor.setModel(model)
@@ -497,19 +552,25 @@ class SongsTableDelegate(QStyledItemDelegate):
             triangle_height = 10
             # Move the triangle right 2px and it looks better.
             painter.translate(
-                2 + option.rect.x() + (option.rect.width() - triangle_height)//2,
-                option.rect.y() + (option.rect.height() - triangle_edge)//2
+                2 + option.rect.x() + (option.rect.width() - triangle_height) // 2,
+                option.rect.y() + (option.rect.height() - triangle_edge) // 2,
             )
-            triangle = QPolygonF([QPointF(0, 0),
-                                  QPointF(triangle_height, triangle_edge//2),
-                                  QPointF(0, triangle_edge)])
+            triangle = QPolygonF(
+                [
+                    QPointF(0, 0),
+                    QPointF(triangle_height, triangle_edge // 2),
+                    QPointF(0, triangle_edge),
+                ]
+            )
             painter.drawPolygon(triangle)
             painter.restore()
 
         # Since the selection behaviour is SelectRows, so draw the mask over the row.
         if hovered:
             painter.save()
-            mask_color = option.palette.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Text)
+            mask_color = option.palette.color(
+                QPalette.ColorGroup.Active, QPalette.ColorRole.Text
+            )
             mask_color.setAlpha(20)
             painter.setPen(Qt.PenStyle.NoPen)
             painter.setBrush(mask_color)
@@ -518,8 +579,9 @@ class SongsTableDelegate(QStyledItemDelegate):
 
     def paint_vip_tag(self, painter, option, index):
         song = index.data(Qt.ItemDataRole.UserRole)
-        if (ModelFlags.normal in ModelFlags(song.meta.flags) and
-                MediaFlags.vip in MediaFlags(song.media_flags)):
+        if ModelFlags.normal in ModelFlags(
+            song.meta.flags
+        ) and MediaFlags.vip in MediaFlags(song.media_flags):
             with painter_save(painter):
                 fm = option.fontMetrics
                 title = index.data(Qt.ItemDataRole.DisplayRole)
@@ -539,7 +601,7 @@ class SongsTableDelegate(QStyledItemDelegate):
                     x = option.rect.x() + title_rect.width() + 10
                     text_rect = QRect(x, y, text_width, text_height)
                     painter.drawRoundedRect(text_rect, 3, 3)
-                    painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, 'VIP')
+                    painter.drawText(text_rect, Qt.AlignmentFlag.AlignCenter, "VIP")
 
     def sizeHint(self, option, index):
         """set proper width for each column
@@ -552,8 +614,11 @@ class SongsTableDelegate(QStyledItemDelegate):
             # The way getting the sourceModel seems a little strange.
             parent = self.parent()
             assert isinstance(parent, QWidget)
-            w = index.model().sourceModel().columns_config.get_width(
-                index.column(), parent.width())
+            w = (
+                index.model()
+                .sourceModel()
+                .columns_config.get_width(index.column(), parent.width())
+            )
             h = option.rect.height()
             return QSize(w, h)
         return super().sizeHint(option, index)
@@ -579,7 +644,6 @@ class SongsTableDelegate(QStyledItemDelegate):
 
 
 class SongsTableView(ItemViewNoScrollMixin, QTableView):
-
     show_artist_needed = pyqtSignal([object])
     show_album_needed = pyqtSignal([object])
     play_song_needed = pyqtSignal([object])
@@ -608,7 +672,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.entered.connect(lambda index: self.row_hovered.emit(index.row()))
 
     def _setup_ui(self):
-        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.ResizeToContents
+        )
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.setFrameShape(QFrame.Shape.NoFrame)
@@ -630,7 +696,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
 
     def setModel(self, model):
         super().setModel(model)
-        self.horizontalHeader().setSectionResizeMode(Column.song, QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(
+            Column.song, QHeaderView.ResizeMode.Stretch
+        )
 
     def set_columns_mode(self, mode):
         mode = ColumnsMode(mode)
@@ -669,14 +737,13 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         menu = QMenu()
 
         # add to playlist action
-        add_to_playlist_action = QAction('添加到播放队列', menu)
+        add_to_playlist_action = QAction("添加到播放队列", menu)
         add_to_playlist_action.triggered.connect(lambda: self._add_to_playlist(indexes))
         menu.addAction(add_to_playlist_action)
 
         # remove song action
-        remove_song_action = QAction('移除歌曲', menu)
-        remove_song_action.triggered.connect(
-            lambda: self._remove_by_indexes(indexes))
+        remove_song_action = QAction("移除歌曲", menu)
+        remove_song_action.triggered.connect(lambda: self._remove_by_indexes(indexes))
         menu.addSeparator()
         menu.addAction(remove_song_action)
         if self.remove_song_func is None:
@@ -695,9 +762,9 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         #   The context key *models*
         # .. versionadded: 3.7.11
         #   The context key *menu*
-        self.about_to_show_menu.emit({'add_action': add_action,
-                                      'menu': menu,
-                                      'models': models})
+        self.about_to_show_menu.emit(
+            {"add_action": add_action, "menu": menu, "models": models}
+        )
         menu.exec(event.globalPos())
 
     def _add_to_playlist(self, indexes):

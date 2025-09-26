@@ -5,7 +5,9 @@ from PyQt6.QtCore import QMetaObject, pyqtSlot, QSize
 from PyQt6.QtGui import QOpenGLContext
 
 from feeluown.mpv import (
-    MpvRenderContext, OpenGlCbGetProcAddrFn, _mpv_set_property_string
+    MpvRenderContext,
+    OpenGlCbGetProcAddrFn,
+    _mpv_set_property_string,
 )
 
 from feeluown.gui.widgets.video import VideoOpenGLWidget
@@ -42,10 +44,8 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         self.get_proc_addr_c = OpenGlCbGetProcAddrFn(get_proc_addr)
 
     def initializeGL(self):
-        params = {'get_proc_address': self.get_proc_addr_c}
-        self.ctx = MpvRenderContext(self.mpv,
-                                    'opengl',
-                                    opengl_init_params=params)
+        params = {"get_proc_address": self.get_proc_addr_c}
+        self.ctx = MpvRenderContext(self.mpv, "opengl", opengl_init_params=params)
         self.ctx.update_cb = self.on_update
 
     def shutdown(self):
@@ -63,9 +63,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         ratio = self._app.devicePixelRatio()
         w = int(self.width() * ratio)
         h = int(self.height() * ratio)
-        opengl_fbo = {'w': w,
-                      'h': h,
-                      'fbo': self.defaultFramebufferObject()}
+        opengl_fbo = {"w": w, "h": h, "fbo": self.defaultFramebufferObject()}
         self.ctx.render(flip_y=True, opengl_fbo=opengl_fbo)
 
         for gl_painter in self._gl_painters:
@@ -85,7 +83,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         # maybe_update method should run on the thread that creates the
         # OpenGLContext, which in general is the main thread.
         # QMetaObject.invokeMethod can do this trick.
-        QMetaObject.invokeMethod(self, 'maybe_update')
+        QMetaObject.invokeMethod(self, "maybe_update")
 
     # NOTE(cosven): heightForwidth does not work (tested inside nowplaying_overlay.py)
     def hasHeightForWidth(self) -> bool:
@@ -122,7 +120,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
 
         See mpv mpv_opengl_cb_uninit_gl implementation for more details.
         """
-        _mpv_set_property_string(self.mpv.handle, b'vid', b'no')
+        _mpv_set_property_string(self.mpv.handle, b"vid", b"no")
         self.hide()
         self.shutdown()
 
@@ -148,9 +146,9 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         """
         self.show()
         self.repaint()  # force repaint to trigger re-initialization
-        _mpv_set_property_string(self.mpv.handle, b'vid', b'1')
+        _mpv_set_property_string(self.mpv.handle, b"vid", b"1")
         if not bool(self.mpv.vid):
-            print('WARNING: video widget is not reconfigured properly', file=sys.stderr)
+            print("WARNING: video widget is not reconfigured properly", file=sys.stderr)
 
 
 # TODO: 实现 MpvEmbeddedWidget

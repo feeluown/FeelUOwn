@@ -17,10 +17,11 @@ class CollectionListView(TextlistView):
     """
     Maybe make this a component instead of a widget.
     """
+
     show_collection = pyqtSignal([object])
     remove_collection = pyqtSignal([object])
 
-    def __init__(self, app: 'GuiApp', **kwargs):
+    def __init__(self, app: "GuiApp", **kwargs):
         super().__init__(**kwargs)
         self._app = app
         self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
@@ -47,7 +48,7 @@ class CollectionListView(TextlistView):
 
         collection: Collection = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
-        action = menu.addAction('删除此收藏集')
+        action = menu.addAction("删除此收藏集")
         action.triggered.connect(lambda: self.remove_collection.emit(collection))
         menu.exec(event.globalPos())
 
@@ -58,8 +59,9 @@ class CollectionListView(TextlistView):
         之后 dropMoveEvent 也就不会接收到这个事件。
         """
         mimedata = e.mimeData()
-        if mimedata.hasFormat('fuo-model/x-song') or \
-           mimedata.hasFormat('fuo-model/x-album'):
+        if mimedata.hasFormat("fuo-model/x-song") or mimedata.hasFormat(
+            "fuo-model/x-album"
+        ):
             e.accept()
         else:
             e.ignore()
@@ -94,18 +96,20 @@ class CollectionListModel(TextlistModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = (Qt.ItemFlag.ItemIsSelectable
-                 | Qt.ItemFlag.ItemIsEnabled
-                 | Qt.ItemFlag.ItemIsDropEnabled)
+        flags = (
+            Qt.ItemFlag.ItemIsSelectable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsDropEnabled
+        )
         return flags
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         item = self._items[row]
         if role == Qt.ItemDataRole.DisplayRole:
-            icon = '◎  '
+            icon = "◎  "
             if item.type in (CollectionType.sys_library, CollectionType.sys_pool):
-                icon = '◉  '
+                icon = "◉  "
             return icon + item.name
         if role == Qt.ItemDataRole.ToolTipRole:
             return item.fpath

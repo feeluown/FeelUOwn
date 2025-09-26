@@ -7,14 +7,17 @@ from feeluown.gui.helpers import SOLARIZED_COLORS
 
 class StatusLineItem:
     """状态栏组件"""
+
     def __init__(self, name, widget):
         self.name = name
         self.widget = widget
 
     def __eq__(self, other):
-        return isinstance(other, StatusLineItem) \
-            and other.name == self.name \
+        return (
+            isinstance(other, StatusLineItem)
+            and other.name == self.name
             and other.widget is self.widget
+        )
 
 
 class StatuslineLabel(QLabel):
@@ -24,6 +27,7 @@ class StatuslineLabel(QLabel):
     大概想法如下：Label 由两部分组成，中间和通知部分（参考 chrome 的插件图标）。
     基类会定义好这两个部分的 size，并提供一些预定义好的绘制函数供子类使用。
     """
+
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -34,7 +38,7 @@ class StatuslineLabel(QLabel):
         self._inner_width = self._inner_height = 18
         self._status_width = self._status_height = 13
         self._status_font_size = 8
-        self._status_color = 'red'
+        self._status_color = "red"
         self._pressed = False
 
         self.setFixedSize(self._width, self._height)
@@ -97,7 +101,9 @@ class StatuslineLabel(QLabel):
         painter.setBrush(text_bg_color)
         radius = 4
         painter.drawRoundedRect(text_rect, radius, radius)
-        painter.drawText(text_rect, self.text(), QTextOption(Qt.AlignmentFlag.AlignCenter))
+        painter.drawText(
+            text_rect, self.text(), QTextOption(Qt.AlignmentFlag.AlignCenter)
+        )
         painter.restore()
 
 

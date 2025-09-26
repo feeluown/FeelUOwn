@@ -9,8 +9,11 @@ from feeluown.gui.page_containers.table import TableContainer, Renderer
 from feeluown.gui.widgets.img_card_list import ImgCardListDelegate
 from feeluown.gui.widgets.songs import SongsTableView, ColumnsMode
 from feeluown.gui.base_renderer import TabBarRendererMixin
-from feeluown.gui.helpers import BgTransparentMixin, unify_scroll_area_style, \
-    set_widget_bg_transparent
+from feeluown.gui.helpers import (
+    BgTransparentMixin,
+    unify_scroll_area_style,
+    set_widget_bg_transparent,
+)
 from feeluown.gui.widgets.magicbox import KeySourceIn, KeyType
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.accordion import Accordion
@@ -18,11 +21,13 @@ from feeluown.gui.widgets.labels import MessageLabel
 from feeluown.utils.reader import create_reader
 
 
-Tabs = [('歌曲', SearchType.so),
-        ('专辑', SearchType.al),
-        ('歌手', SearchType.ar),
-        ('歌单', SearchType.pl),
-        ('视频', SearchType.vi)]
+Tabs = [
+    ("歌曲", SearchType.so),
+    ("专辑", SearchType.al),
+    ("歌手", SearchType.ar),
+    ("歌单", SearchType.pl),
+    ("视频", SearchType.vi),
+]
 
 
 def get_tab_idx(search_type):
@@ -33,7 +38,7 @@ def get_tab_idx(search_type):
 
 
 def create_search_result_view(app, song):
-    q = f'{song.title} {song.artists_name}'
+    q = f"{song.title} {song.artists_name}"
     body = SearchResultView(app, transparent_bg=False)
     view = AppOverlayContainer(app, body, parent=app, adhoc=True)
 
@@ -48,6 +53,7 @@ class SearchResultView(QScrollArea):
         view = SearchResultView(app)
         await view.search_and_render(q, search_type, source_in)
     """
+
     def __init__(self, app, transparent_bg=True, parent=None):
         super().__init__(parent=parent)
 
@@ -94,7 +100,7 @@ class Body(QFrame, BgTransparentMixin):
         view = self
         app = self._app
 
-        self.title.setText(f'搜索“{q}”')
+        self.title.setText(f"搜索“{q}”")
 
         tab_index = get_tab_idx(search_type)
         succeed = 0
@@ -104,13 +110,14 @@ class Body(QFrame, BgTransparentMixin):
             source_count = len(source_in)
         else:
             source_count = len(app.library.list())
-        hint_msgs = [f'正在搜索 {source_count} 个资源提供方...']
-        view.hint.show_msg('\n'.join(hint_msgs))
+        hint_msgs = [f"正在搜索 {source_count} 个资源提供方..."]
+        view.hint.show_msg("\n".join(hint_msgs))
         async for result in app.library.a_search(
-                q, type_in=search_type, source_in=source_in, return_err=True):
+            q, type_in=search_type, source_in=source_in, return_err=True
+        ):
             if result.err_msg:
-                hint_msgs.append(f'搜索 {result.source} 的资源出错：{result.err_msg}')
-                view.hint.show_msg('\n'.join(hint_msgs))
+                hint_msgs.append(f"搜索 {result.source} 的资源出错：{result.err_msg}")
+                view.hint.show_msg("\n".join(hint_msgs))
                 continue
 
             table_container = TableContainer(app, view.accordion)
@@ -134,14 +141,15 @@ class Body(QFrame, BgTransparentMixin):
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
             objects = getattr(result, attrname) or []
             if not objects:  # Result is empty.
-                hint_msgs.append(f'搜索 {result.source} 资源，提供方返回空')
-                view.hint.show_msg('\n'.join(hint_msgs))
+                hint_msgs.append(f"搜索 {result.source} 资源，提供方返回空")
+                view.hint.show_msg("\n".join(hint_msgs))
                 continue
 
             succeed += 1
             if search_type is SearchType.so:
                 show_handler(  # type: ignore[operator]
-                    create_reader(objects), columns_mode=ColumnsMode.playlist)
+                    create_reader(objects), columns_mode=ColumnsMode.playlist
+                )
             else:
                 show_handler(create_reader(objects))  # type: ignore[operator]
             source = objects[0].source
@@ -155,8 +163,10 @@ class Body(QFrame, BgTransparentMixin):
             is_first = False
         time_cost = (datetime.now() - start).total_seconds()
         hint_msgs.pop(0)
-        hint_msgs.insert(0, f'搜索完成，共有 {succeed} 个有效的结果，花费 {time_cost:.2f}s')
-        view.hint.show_msg('\n'.join(hint_msgs))
+        hint_msgs.insert(
+            0, f"搜索完成，共有 {succeed} 个有效的结果，花费 {time_cost:.2f}s"
+        )
+        view.hint.show_msg("\n".join(hint_msgs))
 
 
 class SearchResultRenderer(Renderer, TabBarRendererMixin):
@@ -166,11 +176,11 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
         self.source_in = source_in
 
         self.tabs = [
-            (*Tabs[0], 'songs', self.show_songs),
-            (*Tabs[1], 'albums', self.show_albums),
-            (*Tabs[2], 'artists', self.show_artists),
-            (*Tabs[3], 'playlists', self.show_playlists),
-            (*Tabs[4], 'videos', self.show_videos),
+            (*Tabs[0], "songs", self.show_songs),
+            (*Tabs[1], "albums", self.show_albums),
+            (*Tabs[2], "artists", self.show_artists),
+            (*Tabs[3], "playlists", self.show_playlists),
+            (*Tabs[4], "videos", self.show_videos),
         ]
 
     async def render(self):
@@ -179,8 +189,8 @@ class SearchResultRenderer(Renderer, TabBarRendererMixin):
     def render_by_tab_index(self, tab_index):
         search_type = self.tabs[tab_index][1]
         self._app.browser.local_storage[KeyType] = search_type.value
-        query = {'q': self.q, 'type': search_type.value}
+        query = {"q": self.q, "type": search_type.value}
         source_in = self._app.browser.local_storage.get(KeySourceIn, None)
         if source_in is not None:
-            query['source_in'] = source_in
-        self._app.browser.goto(page='/search', query=query)
+            query["source_in"] = source_in
+        self._app.browser.goto(page="/search", query=query)

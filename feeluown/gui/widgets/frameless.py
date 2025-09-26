@@ -3,7 +3,6 @@ from PyQt6.QtGui import QKeySequence, QShortcut
 from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout
 
 
-
 class ResizableFramelessContainer(QWidget):
     """A resizable frameless container
 
@@ -13,7 +12,10 @@ class ResizableFramelessContainer(QWidget):
 
     NOTE: this is mainly designed for picture in picture mode currently.
     """
-    def __init__(self,):
+
+    def __init__(
+        self,
+    ):
         super().__init__(parent=None)
 
         self._widget = None
@@ -21,7 +23,9 @@ class ResizableFramelessContainer(QWidget):
         self._widget = None
 
         # setup window layout
-        self.setWindowFlags(Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint)
+        self.setWindowFlags(
+            Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint
+        )
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
@@ -29,12 +33,15 @@ class ResizableFramelessContainer(QWidget):
         self.setMouseTracking(True)
 
         QShortcut(QKeySequence.StandardKey.Cancel, self).activated.connect(
-            self.on_cancel_key_pressed)
+            self.on_cancel_key_pressed
+        )
 
     def attach_widget(self, widget):
         """set inner widget"""
         self._widget = widget
-        self._widget.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
+        self._widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self._layout.insertWidget(0, self._widget)
 
     def detach(self):
@@ -67,7 +74,7 @@ class ResizableFramelessContainer(QWidget):
             self.hide()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication, QLabel
 
     app = QApplication([])

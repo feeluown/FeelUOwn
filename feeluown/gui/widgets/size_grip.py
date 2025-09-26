@@ -10,5 +10,7 @@ class SizeGrip(QSizeGrip):
     def paintEvent(self, e):
         painter = QPainter(self)
         option = QTextOption()
-        option.setAlignment(Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter)
-        painter.drawText(QRectF(self.rect()), '●', option)
+        option.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        painter.drawText(QRectF(self.rect()), "●", option)

@@ -8,7 +8,7 @@ if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 
-async def render_error_message(app: 'GuiApp', msg: str):
+async def render_error_message(app: "GuiApp", msg: str):
     label = MessageLabel(msg, MessageLabel.ERROR)
     label.setAlignment(Qt.AlignmentFlag.AlignCenter)
     app.ui.page_view.set_body(label)

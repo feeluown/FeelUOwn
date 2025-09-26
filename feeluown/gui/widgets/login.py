@@ -3,8 +3,7 @@ from http.cookies import SimpleCookie
 from urllib.parse import urlparse
 
 from PyQt6.QtCore import pyqtSignal, Qt
-from PyQt6.QtWidgets import QDialog, QTextEdit, QPushButton, \
-    QVBoxLayout, QLabel
+from PyQt6.QtWidgets import QDialog, QTextEdit, QPushButton, QVBoxLayout, QLabel
 
 try:
     from feeluown.gui.widgets.weblogin import WebLoginView
@@ -31,13 +30,13 @@ def try_get_domain_from_uri(uri):
     try:
         result = urlparse(uri)
     except ValueError:
-        return ''
+        return ""
     # When uri is 'xx.yy.com', then netloc is empty.
     netloc = result.netloc
     if not netloc:
         netloc = result.path
     if netloc:
-        return '.'.join(netloc.split('.')[-2:])
+        return ".".join(netloc.split(".")[-2:])
     return netloc
 
 
@@ -47,6 +46,7 @@ class InvalidCookies(Exception):
 
 class LoginDialog(QDialog):
     """Base class for login dialogs"""
+
     #: login succeed signal
     login_succeed = pyqtSignal()
 
@@ -92,11 +92,11 @@ class CookiesLoginDialog(LoginDialog):
         self.cookies_text_edit = QTextEdit(self)
         self.hint_label = QLabel(self)
         self.hint_label.setWordWrap(True)
-        self.login_btn = QPushButton('登录', self)
-        self.weblogin_btn = QPushButton('网页登录', self)
-        self.chrome_btn = QPushButton('从 Chrome 中读取 Cookie')
-        self.firefox_btn = QPushButton('从 Firefox 中读取 Cookie')
-        self.edge_btn = QPushButton('从 Edge 中读取 Cookie')
+        self.login_btn = QPushButton("登录", self)
+        self.weblogin_btn = QPushButton("网页登录", self)
+        self.chrome_btn = QPushButton("从 Chrome 中读取 Cookie")
+        self.firefox_btn = QPushButton("从 Firefox 中读取 Cookie")
+        self.edge_btn = QPushButton("从 Edge 中读取 Cookie")
 
         self.hint_label.setTextFormat(Qt.TextFormat.RichText)
 
@@ -111,8 +111,8 @@ class CookiesLoginDialog(LoginDialog):
 
         self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
-            '请从浏览器中复制 Cookie：\n\n'
-            'Chrome 复制的 cookie 格式类似：key1=value1; key2=value2\n\n'
+            "请从浏览器中复制 Cookie：\n\n"
+            "Chrome 复制的 cookie 格式类似：key1=value1; key2=value2\n\n"
             'Firefox 复制的 cookie 格式类似：{"key1": value1, "key1": value2}'
         )
 
@@ -131,9 +131,9 @@ class CookiesLoginDialog(LoginDialog):
             self.edge_btn.setDisabled(True)
             self.firefox_btn.setDisabled(True)
 
-        self.chrome_btn.clicked.connect(lambda: self._start_keyring_login('chrome'))
-        self.firefox_btn.clicked.connect(lambda: self._start_keyring_login('firefox'))
-        self.edge_btn.clicked.connect(lambda: self._start_keyring_login('edge'))
+        self.chrome_btn.clicked.connect(lambda: self._start_keyring_login("chrome"))
+        self.firefox_btn.clicked.connect(lambda: self._start_keyring_login("firefox"))
+        self.edge_btn.clicked.connect(lambda: self._start_keyring_login("edge"))
         self.login_btn.clicked.connect(lambda: aio.create_task(self.login()))
         self.login_succeed.connect(self.hide)
 
@@ -189,16 +189,20 @@ class CookiesLoginDialog(LoginDialog):
         """
         # We assume users only use firefox and chrome. Cookies from firefox are
         # in json format. Cookies copied from chrome are in text format.
-        parsers = (('json', self._parse_json_cookies),
-                   ('text', self._parse_text_cookies))
+        parsers = (
+            ("json", self._parse_json_cookies),
+            ("text", self._parse_text_cookies),
+        )
         text = self.cookies_text_edit.toPlainText()
         cookies = None
         for name, parse in parsers:
             cookies = parse(text)
             if cookies is None:
-                self.show_hint(f'使用 {name} 解析器解析失败，尝试下一种', color='orange')
+                self.show_hint(
+                    f"使用 {name} 解析器解析失败，尝试下一种", color="orange"
+                )
             else:
-                self.show_hint(f'使用 {name} 解析器解析成功')
+                self.show_hint(f"使用 {name} 解析器解析成功")
                 break
         return cookies
 
@@ -209,7 +213,7 @@ class CookiesLoginDialog(LoginDialog):
             green for success
         """
         if color is None:
-            color = ''
+            color = ""
         self.hint_label.setText(f"<p style='color: {color}'>{text}</p>")
 
     async def login(self):
@@ -226,9 +230,9 @@ class CookiesLoginDialog(LoginDialog):
         try:
             user = await self.user_from_cookies(cookies)
         except InvalidCookies as e:
-            self.show_hint(str(e), color='red')
+            self.show_hint(str(e), color="red")
         else:
-            self.show_hint('保存用户信息到 FeelUOwn 数据目录')
+            self.show_hint("保存用户信息到 FeelUOwn 数据目录")
             self.dump_user_cookies(user, cookies)
             self.setup_user(user)
             self.login_succeed.emit()
@@ -240,7 +244,7 @@ class CookiesLoginDialog(LoginDialog):
         """
         cookies = self.load_user_cookies()
         if cookies is not None:
-            self.show_hint('正在尝试加载已有用户...', color='green')
+            self.show_hint("正在尝试加载已有用户...", color="green")
             self.cookies_text_edit.setText(json.dumps(cookies, indent=2))
             aio.create_task(self.login_with_cookies(cookies))
 
@@ -282,11 +286,11 @@ class CookiesLoginDialog(LoginDialog):
         raise NotImplementedError
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from PyQt6.QtWidgets import QApplication
 
     app = QApplication([])
     widget = CookiesLoginDialog()
     widget.show()
-    widget.show_hint('格式可能不正确', color='orange')
+    widget.show_hint("格式可能不正确", color="orange")
     app.exec()

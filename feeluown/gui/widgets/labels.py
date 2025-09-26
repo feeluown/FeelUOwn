@@ -17,9 +17,9 @@ def format_second(s):
     m = m % 60
     t = QTime(h, m, s)
     if h > 0:
-        text = t.toString('hh:mm:ss')
+        text = t.toString("hh:mm:ss")
     else:
-        text = t.toString('mm:ss')
+        text = t.toString("mm:ss")
     return text
 
 
@@ -28,7 +28,8 @@ class ElidedLineLabel(QLabel):
 
     .. versionadded:: 3.8.15
     """
-    def __init__(self, text='', **kwargs):
+
+    def __init__(self, text="", **kwargs):
         super().__init__(text, **kwargs)
         self._src_text = text
         self.setWordWrap(False)
@@ -52,12 +53,13 @@ class ElidedLineLabel(QLabel):
 
 class DurationLabel(QLabel):
     def __init__(self, app, parent=None):
-        super().__init__('00:00', parent=parent)
+        super().__init__("00:00", parent=parent)
         self._app = app
 
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._app.player.duration_changed.connect(
-            self.on_duration_changed, aioqueue=True)
+            self.on_duration_changed, aioqueue=True
+        )
 
     def on_duration_changed(self, duration):
         self.setText(format_second(duration or 0))
@@ -65,7 +67,7 @@ class DurationLabel(QLabel):
 
 class ProgressLabel(QLabel):
     def __init__(self, app, parent=None):
-        super().__init__('00:00', parent=parent)
+        super().__init__("00:00", parent=parent)
         self._app = app
 
         self.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -76,12 +78,12 @@ class ProgressLabel(QLabel):
 
 
 class MessageLabel(QLabel):
-    """Show warning/error message.
-    """
-    INFO = 'info'
-    ERROR = 'error'
+    """Show warning/error message."""
 
-    def __init__(self, text='', level=None, *args, **kwargs):
+    INFO = "info"
+    ERROR = "error"
+
+    def __init__(self, text="", level=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
         self.setWordWrap(True)
@@ -89,14 +91,14 @@ class MessageLabel(QLabel):
 
     def show_msg(self, text, level=None):
         if level == MessageLabel.ERROR:
-            hint = '错误提示：'
-            color = 'red'
+            hint = "错误提示："
+            color = "red"
         elif level == MessageLabel.INFO:
-            hint = '️提示：'
-            color = SOLARIZED_COLORS['blue']
+            hint = "️提示："
+            color = SOLARIZED_COLORS["blue"]
         else:
-            hint = '️'
-            color = SOLARIZED_COLORS['blue']
+            hint = "️"
+            color = SOLARIZED_COLORS["blue"]
         palette = self.palette()
         palette.setColor(QPalette.ColorRole.Text, QColor(color))
         palette.setColor(QPalette.ColorRole.WindowText, QColor(color))

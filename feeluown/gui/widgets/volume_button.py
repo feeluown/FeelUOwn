@@ -12,7 +12,7 @@ class VolumeButton(QAbstractSlider):
     def __init__(self, length=30, padding=0.25, parent=None):
         super().__init__(parent=parent)
 
-        self.setToolTip('调整音量')
+        self.setToolTip("调整音量")
 
         font = self.font()
         font.setPixelSize(length // 3)
@@ -47,7 +47,9 @@ class VolumeButton(QAbstractSlider):
                 color = self.palette().color(QPalette.ColorRole.Window)
                 painter.setBrush(darker_or_lighter(color, 120))
                 painter.drawEllipse(self.rect())
-            painter.drawText(self.rect(), Qt.AlignmentFlag.AlignCenter, f'{self.value()}%')
+            painter.drawText(
+                self.rect(), Qt.AlignmentFlag.AlignCenter, f"{self.value()}%"
+            )
         else:
             self.drawer.draw(painter, self.palette())
 
@@ -66,7 +68,7 @@ class VolumeButton(QAbstractSlider):
                 self.update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from feeluown.gui.debug import simple_layout
 
     with simple_layout() as layout:

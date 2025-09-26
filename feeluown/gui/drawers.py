@@ -4,13 +4,23 @@ from typing import Optional
 
 from PyQt6.QtCore import Qt, QRect, QPoint, QPointF, QRectF
 from PyQt6.QtGui import (
-    QPainter, QBrush, QPixmap, QImage, QColor, QPolygonF, QPalette,
-    QPainterPath, QGuiApplication,
+    QPainter,
+    QBrush,
+    QPixmap,
+    QImage,
+    QColor,
+    QPolygonF,
+    QPalette,
+    QPainterPath,
+    QGuiApplication,
 )
 from PyQt6.QtWidgets import QWidget
 
 from feeluown.gui.helpers import (
-    random_solarized_color, painter_save, IS_MACOS, SOLARIZED_COLORS,
+    random_solarized_color,
+    painter_save,
+    IS_MACOS,
+    SOLARIZED_COLORS,
 )
 
 
@@ -40,12 +50,17 @@ class SizedPixmapDrawer:
             self._pixmap.setDevicePixelRatio(self._device_pixel_ratio)
 
     def _scale_image(self, img: QImage) -> QImage:
-        return img.scaledToWidth(int(self._img_old_width * self._device_pixel_ratio),
-                                 Qt.TransformationMode.SmoothTransformation)
+        return img.scaledToWidth(
+            int(self._img_old_width * self._device_pixel_ratio),
+            Qt.TransformationMode.SmoothTransformation,
+        )
 
     def get_radius(self):
-        return self._radius if self._radius >= 1 else \
-            self.get_rect().width() * self._radius
+        return (
+            self._radius
+            if self._radius >= 1
+            else self.get_rect().width() * self._radius
+        )
 
     def get_rect(self):
         return self._rect
@@ -123,8 +138,7 @@ class PixmapDrawer(SizedPixmapDrawer):
             self._img_old_width = self._widget.width()
             assert self._img is not None
             new_img = self._img.scaledToWidth(
-                self._img_old_width,
-                Qt.TransformationMode.SmoothTransformation
+                self._img_old_width, Qt.TransformationMode.SmoothTransformation
             )
             self._pixmap = QPixmap(new_img)
 
@@ -191,7 +205,7 @@ class SearchIconDrawer:
 
 
 class TriangleIconDrawer:
-    def __init__(self, length, padding, direction='up', brush=False):
+    def __init__(self, length, padding, direction="up", brush=False):
         self._length = length
         self._padding = padding
         self.brush = brush
@@ -217,7 +231,7 @@ class TriangleIconDrawer:
         d60 = diameter / 2 * 0.87  # sin60
         d30 = diameter / 2 / 2  # sin30
 
-        if direction in ('left', 'right'):
+        if direction in ("left", "right"):
             left_x = half - d30
             top_y = half - d60
             bottom_y = half + d60
@@ -233,16 +247,16 @@ class TriangleIconDrawer:
         right_top = QPointF(right_x, top_y)
         right_bottom = QPointF(right_x, bottom_y)
 
-        if direction == 'up':
+        if direction == "up":
             self.triangle = QPolygonF([center_top, left_bottom, right_bottom])
-        elif direction == 'down':
+        elif direction == "down":
             self.triangle = QPolygonF([center_bottom, right_top, left_top])
-        elif direction == 'left':
+        elif direction == "left":
             self.triangle = QPolygonF([left, right_bottom, right_top])
-        elif direction == 'right':
+        elif direction == "right":
             self.triangle = QPolygonF([right, left_top, left_bottom])
         else:
-            raise ValueError('direction must be one of up/down/left/right')
+            raise ValueError("direction must be one of up/down/left/right")
 
     def draw(self, painter):
         pen = painter.pen()
@@ -256,7 +270,6 @@ class TriangleIconDrawer:
 
 class AIIconDrawer:
     def __init__(self, length, padding, colorful=False):
-
         sr = length / 12  # small circle radius
         sd = sr * 2
 
@@ -362,10 +375,14 @@ class CalendarIconDrawer:
         pen = painter.pen()
         pen.setWidthF(1.5)
         painter.setPen(pen)
-        body_rect = QRect(self._body_x, self._body_x, self._body_width, self._body_width)
+        body_rect = QRect(
+            self._body_x, self._body_x, self._body_width, self._body_width
+        )
         painter.drawRoundedRect(body_rect, self._radius, self._radius)
-        painter.drawLine(QPoint(self._body_x, self._h_line_y),
-                         QPoint(self._body_x + self._body_width, self._h_line_y))
+        painter.drawLine(
+            QPoint(self._body_x, self._h_line_y),
+            QPoint(self._body_x + self._body_width, self._h_line_y),
+        )
 
 
 class RankIconDrawer:
@@ -407,13 +424,12 @@ class StarIconDrawer:
         self._star_polygon = QPolygonF()
         for _ in range(5):
             outer_point = center + QPointF(
-                radius_outer * math.cos(angle),
-                -radius_outer * math.sin(angle)
+                radius_outer * math.cos(angle), -radius_outer * math.sin(angle)
             )
             self._star_polygon.append(outer_point)
             inner_point = center + QPointF(
                 radius_inner * math.cos(angle + math.pi / 5),
-                -radius_inner * math.sin(angle + math.pi / 5)
+                -radius_inner * math.sin(angle + math.pi / 5),
             )
             self._star_polygon.append(inner_point)
             angle += 2 * math.pi / 5
@@ -445,8 +461,7 @@ class VolumeIconDrawer:
         right_top = QPointF(body_length_3_2, 0)
         right_bottom = QPointF(body_length_3_2, body_length)
 
-        for p in (left_top, left_bottom, mid_bottom, right_bottom,
-                  right_top, mid_top):
+        for p in (left_top, left_bottom, mid_bottom, right_bottom, right_top, mid_top):
             self._polygon.append(p)
 
         line_right_top_y = 0.1 * body_length
@@ -454,12 +469,18 @@ class VolumeIconDrawer:
         line_left_top_y = 0.2 * body_length
         line_left_bottom_y = 0.8 * body_length
         line_left_x = 0.85 * body_length
-        self._line1 = (QPointF(line_left_x, line_left_top_y),
-                       QPointF(body_length, line_right_top_y))
-        self._line2 = (QPointF(line_left_x, body_length_2_1),
-                       QPointF(body_length, body_length_2_1))
-        self._line3 = (QPointF(line_left_x, line_left_bottom_y),
-                       QPointF(body_length, line_right_bottom_y))
+        self._line1 = (
+            QPointF(line_left_x, line_left_top_y),
+            QPointF(body_length, line_right_top_y),
+        )
+        self._line2 = (
+            QPointF(line_left_x, body_length_2_1),
+            QPointF(body_length, body_length_2_1),
+        )
+        self._line3 = (
+            QPointF(line_left_x, line_left_bottom_y),
+            QPointF(body_length, line_right_bottom_y),
+        )
 
     def get_volume(self):
         return self._volume
@@ -490,7 +511,11 @@ class VolumeIconDrawer:
             for line in lines:
                 painter.drawLine(*line)
             pen = painter.pen()
-            pen.setColor(palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText))
+            pen.setColor(
+                palette.color(
+                    QPalette.ColorGroup.Disabled, QPalette.ColorRole.ButtonText
+                )
+            )
             painter.setPen(pen)
             for line in disabled_lines:
                 painter.drawLine(*line)
@@ -507,24 +532,56 @@ class FireIconDrawer:
         path = QPainterPath()
         path.moveTo(495.466219, 1024)
         path.cubicTo(256.335982, 1024, 86.993753, 856.408725, 86.993753, 625.658051)
-        path.cubicTo(86.993753, 503.091298, 159.658328, 370.019367, 162.785031, 364.641439)
-        path.cubicTo(169.163505, 353.385309, 181.670316, 347.006835, 194.552333, 348.507652)
-        path.cubicTo(207.434349, 350.258606, 217.689934, 359.638714, 221.31691, 372.020458)
-        path.cubicTo(221.567046, 372.645799, 241.202876, 447.5616, 266.966908, 488.70901)
-        path.cubicTo(284.226308, 516.474132, 301.98598, 535.85969, 321.746742, 549.617182)
-        path.cubicTo(308.364454, 490.83501, 298.108868, 402.411852, 314.742928, 311.862536)
+        path.cubicTo(
+            86.993753, 503.091298, 159.658328, 370.019367, 162.785031, 364.641439
+        )
+        path.cubicTo(
+            169.163505, 353.385309, 181.670316, 347.006835, 194.552333, 348.507652
+        )
+        path.cubicTo(
+            207.434349, 350.258606, 217.689934, 359.638714, 221.31691, 372.020458
+        )
+        path.cubicTo(
+            221.567046, 372.645799, 241.202876, 447.5616, 266.966908, 488.70901
+        )
+        path.cubicTo(
+            284.226308, 516.474132, 301.98598, 535.85969, 321.746742, 549.617182
+        )
+        path.cubicTo(
+            308.364454, 490.83501, 298.108868, 402.411852, 314.742928, 311.862536
+        )
         path.cubicTo(360.392654, 63.226735, 554.248234, 3.569244, 562.502729, 1.19295)
         path.cubicTo(573.133519, -1.808685, 584.639785, 0.942814, 592.769213, 8.4469)
-        path.cubicTo(600.898641, 15.950986, 603.398641, 27.446525, 601.147415, 38.327452)
-        path.cubicTo(600.897279, 40.078406, 568.504541, 215.423167, 636.416528, 363.87902)
-        path.cubicTo(642.544866, 377.386376, 651.174556, 393.019891, 660.429596, 408.778474)
-        path.cubicTo(663.056026, 386.266213, 667.43341, 364.379293, 673.561748, 342.492373)
-        path.cubicTo(698.575371, 254.44442, 762.985451, 224.303004, 765.736949, 223.17739)
-        path.cubicTo(776.492807, 218.424802, 788.999618, 220.675301, 798.254659, 227.929252)
-        path.cubicTo(807.634768, 235.183203, 812.012152, 247.189742, 809.885993, 258.946145)
-        path.cubicTo(809.510789, 261.197371, 800.505884, 321.105, 851.158472, 406.151318)
-        path.cubicTo(896.071545, 482.827503, 909.078629, 532.479545, 909.078629, 628.156654)
-        path.cubicTo(908.953561, 858.782259, 734.358471, 1026.248466, 495.466219, 1026.248466)
+        path.cubicTo(
+            600.898641, 15.950986, 603.398641, 27.446525, 601.147415, 38.327452
+        )
+        path.cubicTo(
+            600.897279, 40.078406, 568.504541, 215.423167, 636.416528, 363.87902
+        )
+        path.cubicTo(
+            642.544866, 377.386376, 651.174556, 393.019891, 660.429596, 408.778474
+        )
+        path.cubicTo(
+            663.056026, 386.266213, 667.43341, 364.379293, 673.561748, 342.492373
+        )
+        path.cubicTo(
+            698.575371, 254.44442, 762.985451, 224.303004, 765.736949, 223.17739
+        )
+        path.cubicTo(
+            776.492807, 218.424802, 788.999618, 220.675301, 798.254659, 227.929252
+        )
+        path.cubicTo(
+            807.634768, 235.183203, 812.012152, 247.189742, 809.885993, 258.946145
+        )
+        path.cubicTo(
+            809.510789, 261.197371, 800.505884, 321.105, 851.158472, 406.151318
+        )
+        path.cubicTo(
+            896.071545, 482.827503, 909.078629, 532.479545, 909.078629, 628.156654
+        )
+        path.cubicTo(
+            908.953561, 858.782259, 734.358471, 1026.248466, 495.466219, 1026.248466
+        )
         path.closeSubpath()
 
         # Calculate scaling factor
@@ -568,4 +625,11 @@ class EmojiIconDrawer:
                 # -1 works well on KDE when length is in range(30, 200)
                 font.setPixelSize(width - (self._length // 20))
             painter.setFont(font)
-            painter.drawText(0, 0, width, width, Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter, self._emoji)
+            painter.drawText(
+                0,
+                0,
+                width,
+                width,
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter,
+                self._emoji,
+            )

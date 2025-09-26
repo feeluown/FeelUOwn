@@ -8,7 +8,6 @@ logger = logging.getLogger(__name__)
 
 
 class MyMusicModel(TextlistModel):
-
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         item = self._items[row]
@@ -18,8 +17,8 @@ class MyMusicModel(TextlistModel):
 
 
 class MyMusicView(TextlistView):
-
     def __init__(self, parent):
         super().__init__(parent)
         self.clicked.connect(
-            lambda index: index.data(role=Qt.ItemDataRole.UserRole).clicked.emit())
+            lambda index: index.data(role=Qt.ItemDataRole.UserRole).clicked.emit()
+        )

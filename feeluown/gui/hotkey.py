@@ -16,8 +16,9 @@ class HotkeyManager(QObject):
         ui = self._app.ui
 
         # magicbox
-        QShortcut(KS('Ctrl+F'), app).activated.connect(
-            ui.toolbar.show_and_focus_magicbox)
+        QShortcut(KS("Ctrl+F"), app).activated.connect(
+            ui.toolbar.show_and_focus_magicbox
+        )
 
         # player
         QShortcut(KS(Qt.Key.Key_Space), app).activated.connect(app.player.toggle)
@@ -66,9 +67,7 @@ class HotkeyManager(QObject):
             self._app.player.position = max(0, old_position - 5)
 
     def _player_volume_up_a_little(self):
-        self._app.player.volume = min(100,
-                                      self._app.player.volume + 10)
+        self._app.player.volume = min(100, self._app.player.volume + 10)
 
     def _player_volume_down_a_little(self):
-        self._app.player.volume = max(0,
-                                      self._app.player.volume - 10)
+        self._app.player.volume = max(0, self._app.player.volume - 10)

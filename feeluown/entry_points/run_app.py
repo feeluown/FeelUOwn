@@ -194,7 +194,7 @@ def precheck(args, config):
 
     if err_msg:
         if AppMode.gui in AppMode(config.MODE):
-            from PyQt6.QtWidgets import QMessageBox, QApplication, QGuiApplication
+            from PyQt6.QtWidgets import QMessageBox, QApplication
             qapp = QApplication([])
             w = QMessageBox()
             w.setText(err_msg)

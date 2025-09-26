@@ -1,7 +1,6 @@
 from PyQt6.QtCore import QTimer, QSize
 from PyQt6.QtGui import QColor, QPalette
-from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QWidget, \
-    QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QLabel
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
 from feeluown.player import State
@@ -28,7 +27,6 @@ class Button(TextButton):
 
 
 class VideoPlayerCtlBar(QWidget):
-
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
 
@@ -51,7 +49,8 @@ class VideoPlayerCtlBar(QWidget):
         self._app.player.state_changed.connect(
             lambda x: self._toggle_btn.setChecked(x == State.playing),
             weak=False,
-            aioqueue=True)
+            aioqueue=True,
+        )
         self._toggle_btn.clicked.connect(self._app.player.toggle)
 
     def add_adhoc_btn(self, text: str) -> QPushButton:
@@ -89,7 +88,7 @@ class VideoPlayerCtlBar(QWidget):
         self._bottom_layout.addWidget(self._toggle_btn)
         self._bottom_layout.addSpacing(6)
         self._bottom_layout.addWidget(self._progress_label)
-        self._bottom_layout.addWidget(QLabel('/', self))
+        self._bottom_layout.addWidget(QLabel("/", self))
         self._bottom_layout.addWidget(self._duration_label)
         self._bottom_layout.addStretch(1)
         self._bottom_layout.addLayout(self._adhoc_btn_layout)
@@ -101,10 +100,10 @@ class VideoPlayerCtlBar(QWidget):
 
         # Customize the palette.
         palette = self.palette()
-        palette.setColor(QPalette.ColorRole.Text, QColor('white'))
-        palette.setColor(QPalette.ColorRole.ButtonText, QColor('white'))
-        palette.setColor(QPalette.ColorRole.WindowText, QColor('white'))
-        bg_color = QColor('black')
+        palette.setColor(QPalette.ColorRole.Text, QColor("white"))
+        palette.setColor(QPalette.ColorRole.ButtonText, QColor("white"))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor("white"))
+        bg_color = QColor("black")
         bg_color.setAlpha(180)  # Make it semi-transparent.
         palette.setColor(QPalette.ColorRole.Window, bg_color)
         self.setPalette(palette)
@@ -119,6 +118,7 @@ class VideoOpenGLWidget(QOpenGLWidget):
 
     This widget has a overlay which currently contains a player control bar.
     """
+
     def __init__(self, app, parent=None):
         super().__init__(parent=parent)
 
@@ -157,8 +157,7 @@ class VideoOpenGLWidget(QOpenGLWidget):
         .. versionadded: 3.7.13
         """
         # Simple validation
-        assert hasattr(painter, 'paint'), \
-            "painter must impl `paint` method."
+        assert hasattr(painter, "paint"), "painter must impl `paint` method."
         self._gl_painters.add(painter)
 
     def hide_overlay(self):
@@ -186,11 +185,11 @@ class VideoOpenGLWidget(QOpenGLWidget):
         self._overlay_visible_timer.start(self._overlay_visible_duration)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from feeluown.gui.debug import simple_layout, mock_app
 
-    with simple_layout(theme='dark') as layout, mock_app() as app:
+    with simple_layout(theme="dark") as layout, mock_app() as app:
         ctl_bar = VideoPlayerCtlBar(app)
-        ctl_bar.add_adhoc_btn('全屏')
-        ctl_bar.add_adhoc_btn('最小化')
+        ctl_bar.add_adhoc_btn("全屏")
+        ctl_bar.add_adhoc_btn("最小化")
         layout.addWidget(ctl_bar)

@@ -1,10 +1,16 @@
 from PyQt6.QtCore import Qt, QRect, QEvent, QPointF
 from PyQt6.QtWidgets import (
-    QWidget, QStackedLayout, QVBoxLayout, QHBoxLayout,
+    QWidget,
+    QStackedLayout,
+    QVBoxLayout,
+    QHBoxLayout,
     QApplication,
 )
 from PyQt6.QtGui import (
-    QColor, QLinearGradient, QPalette, QPainter,
+    QColor,
+    QLinearGradient,
+    QPalette,
+    QPainter,
 )
 
 from feeluown.player import PlaybackMode, SongsRadio, AIRadio, AI_RADIO_SUPPORTED
@@ -21,10 +27,10 @@ from feeluown.utils.reader import create_reader
 
 
 PlaybackModeName = {
-    PlaybackMode.one_loop: '单曲循环',
-    PlaybackMode.sequential: '顺序播放',
-    PlaybackMode.loop: '循环播放',
-    PlaybackMode.random: '随机播放',
+    PlaybackMode.one_loop: "单曲循环",
+    PlaybackMode.sequential: "顺序播放",
+    PlaybackMode.loop: "循环播放",
+    PlaybackMode.random: "随机播放",
 }
 PlaybackModes = list(PlaybackModeName.keys())
 
@@ -42,11 +48,11 @@ class PlaylistOverlay(QWidget):
 
         self._app = app
         self._tabbar = TabBar(self)
-        self._clear_playlist_btn = TextButton('清空播放队列')
+        self._clear_playlist_btn = TextButton("清空播放队列")
         self._playback_mode_switch = PlaybackModeSwitch(app)
-        self._goto_current_song_btn = TextButton('跳转到当前歌曲')
-        self._songs_radio_btn = TextButton('自动续歌')
-        self._ai_radio_btn = TextButton('AI电台')
+        self._goto_current_song_btn = TextButton("跳转到当前歌曲")
+        self._songs_radio_btn = TextButton("自动续歌")
+        self._ai_radio_btn = TextButton("AI电台")
         # Please update the list when you add new buttons.
         self._btns = [
             self._clear_playlist_btn,
@@ -98,8 +104,8 @@ class PlaylistOverlay(QWidget):
         self._btn_layout2.setSpacing(7)
 
         self._tabbar.setDocumentMode(True)
-        self._tabbar.addTab('播放列表')
-        self._tabbar.addTab('最近播放')
+        self._tabbar.addTab("播放列表")
+        self._tabbar.addTab("最近播放")
         self._layout.addWidget(self._tabbar)
         self._layout.addLayout(self._btn_layout)
         self._layout.addLayout(self._btn_layout2)
@@ -132,19 +138,19 @@ class PlaylistOverlay(QWidget):
     def enter_songs_radio(self):
         songs = self._app.playlist.list()
         if not songs:
-            self._app.show_msg('播放队列为空，不能激活“自动续歌”功能')
+            self._app.show_msg("播放队列为空，不能激活“自动续歌”功能")
         else:
             radio = SongsRadio(self._app, songs)
             self._app.fm.activate(radio.fetch_songs_func, reset=False)
-            self._app.show_msg('“自动续歌”功能已激活')
+            self._app.show_msg("“自动续歌”功能已激活")
 
     def enter_ai_radio(self):
         if self._app.playlist.list():
             radio = AIRadio(self._app)
             self._app.fm.activate(radio.fetch_songs_func, reset=False)
-            self._app.show_msg('已经进入 AI 电台模式 ~')
+            self._app.show_msg("已经进入 AI 电台模式 ~")
         else:
-            self._app.show_msg('播放列表为空，暂时不能开启 AI 电台')
+            self._app.show_msg("播放列表为空，暂时不能开启 AI 电台")
 
     def show_tab(self, index):
         if not self.isVisible():
@@ -157,14 +163,14 @@ class PlaylistOverlay(QWidget):
             self._hide_btns()
             model = SongMiniCardListModel(
                 create_reader(self._app.recently_played.list_songs()),
-                fetch_cover_wrapper(self._app)
+                fetch_cover_wrapper(self._app),
             )
             view = SongMiniCardListView(**self._view_options)
             view.setModel(model)
             view.play_song_needed.connect(self._app.playlist.play_model)
         delegate = SongMiniCardListDelegate(
             view,
-            card_min_width=self.width() - self.width()//6,
+            card_min_width=self.width() - self.width() // 6,
             card_height=40,
             card_padding=(5 + SongMiniCardListDelegate.img_padding, 5, 0, 5),
             card_right_spacing=10,
@@ -192,18 +198,18 @@ class PlaylistOverlay(QWidget):
         shadow_width = self._shadow_width
         rect = QRect(0, 0, shadow_width, self.height())
         gradient = QLinearGradient(QPointF(rect.topRight()), QPointF(rect.topLeft()))
-        gradient.setColorAt(0, acolor('black', 70))
-        gradient.setColorAt(0.05, acolor('black', 60))
-        gradient.setColorAt(0.1, acolor('black', 30))
-        gradient.setColorAt(0.2, acolor('black', 5))
-        gradient.setColorAt(1, acolor('black', 0))
+        gradient.setColorAt(0, acolor("black", 70))
+        gradient.setColorAt(0.05, acolor("black", 60))
+        gradient.setColorAt(0.1, acolor("black", 30))
+        gradient.setColorAt(0.2, acolor("black", 5))
+        gradient.setColorAt(1, acolor("black", 0))
         painter.setBrush(gradient)
         painter.drawRect(rect)
         painter.restore()
 
         # Draw a rect to fill the remain background.
         painter.setBrush(self.palette().color(QPalette.ColorRole.Base))
-        painter.drawRect(shadow_width, 0, self.width()-shadow_width, self.height())
+        painter.drawRect(shadow_width, 0, self.width() - shadow_width, self.height())
 
     def showEvent(self, e):
         super().showEvent(e)
@@ -226,8 +232,9 @@ class PlaybackModeSwitch(TextButton):
         self.update_text()
         self.clicked.connect(self.switch_playback_mode)
         self._app.playlist.playback_mode_changed.connect(
-            self.on_playback_mode_changed, aioqueue=True)
-        self.setToolTip('修改播放模式')
+            self.on_playback_mode_changed, aioqueue=True
+        )
+        self.setToolTip("修改播放模式")
 
     def switch_playback_mode(self):
         playlist = self._app.playlist

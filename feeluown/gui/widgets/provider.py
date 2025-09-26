@@ -1,8 +1,7 @@
 import math
 
 from PyQt6.QtCore import Qt, QSize, QRectF, QRect, QPoint
-from PyQt6.QtGui import QPainter, QTextOption, QPalette, QBrush, QColor, \
-    QGuiApplication  # noqa
+from PyQt6.QtGui import QPainter, QTextOption, QPalette, QBrush, QColor, QGuiApplication  # noqa
 from PyQt6.QtWidgets import QStyledItemDelegate, QListView
 from PyQt6.QtSvg import QSvgRenderer
 
@@ -30,15 +29,14 @@ class ProvidersModel(TextlistModel):
         provider_id = self._items[row]
         provider_ui_item = self._association[provider_id]
         if role == Qt.ItemDataRole.DisplayRole:
-            return provider_ui_item.symbol + ' ' + provider_ui_item.text
+            return provider_ui_item.symbol + " " + provider_ui_item.text
         if role == Qt.ItemDataRole.ToolTipRole:
-            if self._library.check_flags(
-                    provider_id, ModelType.none, PF.current_user):
+            if self._library.check_flags(provider_id, ModelType.none, PF.current_user):
                 provider = provider_ui_item.provider
                 if provider.has_current_user():
-                    return '已登录'
-                return f'{provider_ui_item.desc}'
-            return f'[{provider_ui_item.text}] {provider_ui_item.desc}'
+                    return "已登录"
+                return f"{provider_ui_item.desc}"
+            return f"[{provider_ui_item.text}] {provider_ui_item.desc}"
         if role == Qt.ItemDataRole.UserRole:
             return provider_ui_item
         return super().data(index, role)
@@ -61,8 +59,9 @@ class ProvidersDelegate(QStyledItemDelegate):
         provider_ui_item = index.data(Qt.ItemDataRole.UserRole)
 
         painter.save()
-        painter.translate(self._padding + option.rect.x(),
-                          self._padding + option.rect.y())
+        painter.translate(
+            self._padding + option.rect.x(), self._padding + option.rect.y()
+        )
 
         w = h = (self._radius - self._padding) * 2
         body_rect = QRect(0, 0, w, h)
@@ -82,7 +81,7 @@ class ProvidersDelegate(QStyledItemDelegate):
             pen = painter.pen()
             pen.setColor(non_text_color)
             painter.setPen(pen)
-            painter.drawRoundedRect(body_rect, w//2, h//2)
+            painter.drawRoundedRect(body_rect, w // 2, h // 2)
             painter.restore()
 
             painter.save()
@@ -93,15 +92,20 @@ class ProvidersDelegate(QStyledItemDelegate):
             text_option.setWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
             text_option.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
-            text_rect = QRectF(self.__text_rect_x, self.__text_rect_x,
-                               self.__text_rect_width, self.__text_rect_width)
+            text_rect = QRectF(
+                self.__text_rect_x,
+                self.__text_rect_x,
+                self.__text_rect_width,
+                self.__text_rect_width,
+            )
             painter.drawText(QRectF(text_rect), provider_ui_item.text, text_option)
             painter.restore()
 
         # TODO: use library.check_flags instead of provider.check_flags
         provider = provider_ui_item.provider
         if self._library.check_flags(
-                provider.identifier, ModelType.none, PF.current_user):
+            provider.identifier, ModelType.none, PF.current_user
+        ):
             if provider.has_current_user():
                 painter.save()
                 bottom_right = body_rect.bottomRight()
@@ -113,7 +117,7 @@ class ProvidersDelegate(QStyledItemDelegate):
                 pen.setWidth(2)
                 pen.setColor(QGuiApplication.palette().color(QPalette.ColorRole.Window))
                 painter.setPen(pen)
-                painter.setBrush(QColor(SOLARIZED_COLORS['blue']))
+                painter.setBrush(QColor(SOLARIZED_COLORS["blue"]))
                 painter.drawRoundedRect(status_rect, status_radius, status_radius)
                 painter.restore()
 

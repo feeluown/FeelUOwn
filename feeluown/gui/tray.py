@@ -9,16 +9,15 @@ from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
 from feeluown.player import State
 from feeluown.gui.helpers import elided_text, get_qapp
 
-TOGGLE_APP_TEXT = ('激活主窗口', '隐藏主窗口')
-TOGGLE_PLAYER_TEXT = ('播放', '暂停')
+TOGGLE_APP_TEXT = ("激活主窗口", "隐藏主窗口")
+TOGGLE_PLAYER_TEXT = ("播放", "暂停")
 
-IS_MACOS = sys.platform == 'darwin'
+IS_MACOS = sys.platform == "darwin"
 
 logger = logging.getLogger(__name__)
 
 
 class Tray(QSystemTrayIcon):
-
     def __init__(self, app):
         """
         type app: feeluown.app.App
@@ -29,18 +28,18 @@ class Tray(QSystemTrayIcon):
 
         # setup context menu
         self._menu = QMenu()
-        self._status_action = QAction('...')
+        self._status_action = QAction("...")
         self._toggle_player_action = QAction(
-            QIcon.fromTheme('media-play'), TOGGLE_PLAYER_TEXT[0]
+            QIcon.fromTheme("media-play"), TOGGLE_PLAYER_TEXT[0]
         )
-        self._next_action = QAction(QIcon.fromTheme('media-skip-forward'), '下一首')
-        self._prev_action = QAction(QIcon.fromTheme('media-skip-backward'), '上一首')
-        self._quit_action = QAction(QIcon.fromTheme('exit'), '退出')
+        self._next_action = QAction(QIcon.fromTheme("media-skip-forward"), "下一首")
+        self._prev_action = QAction(QIcon.fromTheme("media-skip-backward"), "上一首")
+        self._quit_action = QAction(QIcon.fromTheme("exit"), "退出")
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
         if IS_MACOS:
             self._toggle_app_action: Optional[QAction] = QAction(
-                QIcon.fromTheme('window'), TOGGLE_APP_TEXT[1]
+                QIcon.fromTheme("window"), TOGGLE_APP_TEXT[1]
             )
         else:
             self._toggle_app_action = None
@@ -88,9 +87,9 @@ class Tray(QSystemTrayIcon):
         """
         # On Ubuntu 18.04, when we double left click the tray icon, the activated
         # signal is emitted and the reason is `QSystemTrayIcon.ActivationReason.Trigger`.
-        if reason not in (QSystemTrayIcon.ActivationReason.Context, ):
+        if reason not in (QSystemTrayIcon.ActivationReason.Context,):
             self._toggle_app_state()
-        logger.info(f'tray icon activated, reason:{reason}')
+        logger.info(f"tray icon activated, reason:{reason}")
 
     def _toggle_app_state(self):
         """activate/deactivate app"""
@@ -105,7 +104,7 @@ class Tray(QSystemTrayIcon):
     def _set_icon(self):
         # respect system icon
         icon = QIcon.fromTheme(
-            'feeluown-tray', QIcon(self._app.theme_mgr.get_icon('tray'))
+            "feeluown-tray", QIcon(self._app.theme_mgr.get_icon("tray"))
         )
         self.setIcon(icon)
 
@@ -114,13 +113,13 @@ class Tray(QSystemTrayIcon):
 
     def on_player_song_changed(self, song):
         if song is not None:
-            status = f'{song.title_display} - {song.artists_name_display}'
+            status = f"{song.title_display} - {song.artists_name_display}"
             if self._app.config.NOTIFY_ON_TRACK_CHANGED:
                 # TODO: show song cover if possible
                 self.showMessage(
                     song.title_display,
                     song.artists_name_display,
-                    msecs=self._app.config.NOTIFY_DURATION
+                    msecs=self._app.config.NOTIFY_DURATION,
                 )
             self._status_action.setText(elided_text(status, 120))
             self._status_action.setToolTip(status)
@@ -129,11 +128,11 @@ class Tray(QSystemTrayIcon):
     def on_player_state_changed(self, state):
         if state == State.playing:
             self._toggle_player_action.setText(TOGGLE_PLAYER_TEXT[1])
-            self._toggle_player_action.setIcon(QIcon.fromTheme('media-pause'))
+            self._toggle_player_action.setIcon(QIcon.fromTheme("media-pause"))
             self._toggle_player_action.setEnabled(True)
         else:
             self._toggle_player_action.setText(TOGGLE_PLAYER_TEXT[0])
-            self._toggle_player_action.setIcon(QIcon.fromTheme('media-play'))
+            self._toggle_player_action.setIcon(QIcon.fromTheme("media-play"))
             if state == State.stopped:
                 self._toggle_player_action.setEnabled(False)
             else:
