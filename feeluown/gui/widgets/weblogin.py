@@ -2,12 +2,17 @@ import logging
 from typing import List, Union
 from urllib.parse import urlparse
 
-from PyQt5.QtCore import pyqtSignal, QUrl, QRect
-from PyQt5.QtNetwork import QNetworkCookie
-from PyQt5.QtWebEngineCore import QWebEngineCookieStore
-from PyQt5.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, \
-    QWebEnginePage
-from PyQt5.QtWidgets import QApplication, QDesktopWidget
+from PyQt6.QtCore import pyqtSignal, QUrl, QRect
+from PyQt6.QtGui import QScreen
+from PyQt6.QtNetwork import QNetworkCookie
+from PyQt6.QtWebEngineCore import (
+    QWebEngineCookieStore,
+    QWebEngineProfile,
+    QWebEnginePage,
+)
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+
+from PyQt6.QtWidgets import QApplication
 
 
 logger = logging.getLogger(__name__)
@@ -21,8 +26,9 @@ class NoOutputWebPage(QWebEnginePage):
 class WebLoginView(QWebEngineView):
     succeed = pyqtSignal(dict)
 
-    def __init__(self, uri: str, required_cookies: List[Union[str, List[str]]],
-                 parent=None):
+    def __init__(
+        self, uri: str, required_cookies: List[Union[str, List[str]]], parent=None
+    ):
         """
         This utility class is used for automating the cookie login process.
         Example: QtWebEngine('https://y.xx.com', ['xxmusic_key'])
@@ -54,9 +60,8 @@ class WebLoginView(QWebEngineView):
         self.load(QUrl(uri))
 
     def set_pos(self):
-        desktop: QDesktopWidget = QApplication.desktop()
-        screen = desktop.screenNumber(QApplication.desktop().cursor().pos())
-        geo: QRect = desktop.availableGeometry(screen)
+        screen: QScreen = QApplication.primaryScreen()
+        geo: QRect = screen.availableGeometry()
         self.setFixedWidth(int(geo.width() / 1.5))
         self.setFixedHeight(int(geo.height() / 1.5))
         frame: QRect = self.frameGeometry()
@@ -71,7 +76,7 @@ class WebLoginView(QWebEngineView):
         :return: 是否匹配域名
         :rtype: bool
         """
-        cookie_domain = cookie.domain().lstrip('.')
+        cookie_domain = cookie.domain().lstrip(".")
         urisegs = urlparse(self.init_uri)
         if urisegs.hostname is not None:
             return urisegs.hostname.endswith(cookie_domain)
@@ -111,8 +116,8 @@ class WebLoginView(QWebEngineView):
             self.saved_cookies.pop(cookie.name().data().decode())
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     app = QApplication([])
-    widget = WebLoginView("xxx", ['xxx_key'])
+    widget = WebLoginView("xxx", ["xxx_key"])
     widget.show()
     app.exec()

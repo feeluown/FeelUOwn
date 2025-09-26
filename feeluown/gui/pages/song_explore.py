@@ -3,14 +3,23 @@ import logging
 import sys
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QGuiApplication, QResizeEvent
-from PyQt5.QtWidgets import QWidget, QHBoxLayout, QLabel, QVBoxLayout, \
-    QSizePolicy, QScrollArea, QFrame
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QGuiApplication, QResizeEvent
+from PyQt6.QtWidgets import (
+    QWidget,
+    QHBoxLayout,
+    QLabel,
+    QVBoxLayout,
+    QSizePolicy,
+    QScrollArea,
+    QFrame,
+)
 
 from feeluown.excs import ResourceNotFound
 from feeluown.library import (
-    SupportsSongHotComments, SupportsSongSimilar, ModelFlags,
+    SupportsSongHotComments,
+    SupportsSongSimilar,
+    ModelFlags,
 )
 from feeluown.player import Lyric
 from feeluown.library import reverse, resolve
@@ -18,8 +27,7 @@ from feeluown.utils import aio
 from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader
 from feeluown.gui.components import SongMVTextButton
-from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, \
-    resize_font
+from feeluown.gui.helpers import BgTransparentMixin, fetch_cover_wrapper, resize_font
 from feeluown.gui.widgets.labels import ElidedLineLabel
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.textbtn import TextButton
@@ -27,7 +35,9 @@ from feeluown.gui.widgets.cover_label import CoverLabelV2
 from feeluown.gui.widgets.comment_list import CommentListView, CommentListModel
 from feeluown.gui.widgets.lyric import LyricView
 from feeluown.gui.widgets.song_minicard_list import (
-    SongMiniCardListDelegate, SongMiniCardListModel, SongMiniCardListView
+    SongMiniCardListDelegate,
+    SongMiniCardListModel,
+    SongMiniCardListView,
 )
 from .template import render_error_message
 
@@ -37,22 +47,24 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # Error message template for NotSupported
-err_msg_tpl = ('<p style="color: grey; font: small;">该提供方暂不支持{feature}。'
-               '<br/> 给它实现一下 {interface} 接口来支持该功能吧 ~'
-               '</p>')
+err_msg_tpl = (
+    '<p style="color: grey; font: small;">该提供方暂不支持{feature}。'
+    "<br/> 给它实现一下 {interface} 接口来支持该功能吧 ~"
+    "</p>"
+)
 
 
 def or_unknown(x):
-    return x or '未知'
+    return x or "未知"
 
 
 async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
-    app: GuiApp = req.ctx['app']
-    song = req.ctx['model']
+    app: GuiApp = req.ctx["app"]
+    song = req.ctx["model"]
 
     provider = app.library.get(song.source)
     if provider is None:
-        await render_error_message(app, f'没有相应的资源提供方 {song.source}')
+        await render_error_message(app, f"没有相应的资源提供方 {song.source}")
         return
 
     # TODO: Initialize the view with song object, and it should reduce
@@ -95,7 +107,7 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
     try:
         await view.maybe_show_song_hot_comments(provider, song)
     except:  # noqa
-        logger.exception('show song hot comments failed')
+        logger.exception("show song hot comments failed")
 
 
 class ScrollArea(QScrollArea, BgTransparentMixin):
@@ -105,40 +117,40 @@ class ScrollArea(QScrollArea, BgTransparentMixin):
         self._app = app
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         # As far as I know, KDE and GNOME can't auto hide the scrollbar,
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
-        if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        if sys.platform.lower() != "darwin":
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 
 class HeaderLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setTextFormat(Qt.RichText)
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
+        self.setTextFormat(Qt.TextFormat.RichText)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
 
 
 class LyricLabel(QLabel, BgTransparentMixin):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setWordWrap(True)
-        self.setTextInteractionFlags(Qt.TextSelectableByMouse)
-        self.setAlignment(Qt.AlignHCenter)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
+        self.setAlignment(Qt.AlignmentFlag.AlignHCenter)
         font = self.font()
         resize_font(font, 0)
         self.setFont(font)
-        self.setTextFormat(Qt.RichText)
+        self.setTextFormat(Qt.TextFormat.RichText)
 
 
 class SongWikiLabel(QLabel):
     def __init__(self, app: GuiApp, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._app = app
-        self.setTextFormat(Qt.RichText)
-        self.setTextInteractionFlags(Qt.TextBrowserInteraction)
+        self.setTextFormat(Qt.TextFormat.RichText)
+        self.setTextInteractionFlags(Qt.TextInteractionFlag.TextBrowserInteraction)
         self.linkActivated.connect(self.on_link_activated)
         self.setWordWrap(True)
 
@@ -148,28 +160,29 @@ class SongWikiLabel(QLabel):
             artists_str_list.append(
                 f'<a href="{reverse(artist)}">{artist.name_display}</a>'
             )
-        artists_str = ' / '.join(artists_str_list)
+        artists_str = " / ".join(artists_str_list)
         # Only show the date, like yyyy-mm-dd. Do not show hour/minutes/seconds.
         if song.date:
             date = song.date
         elif album is not None and ModelFlags.normal in ModelFlags(album.meta.flags):
             date = album.released
         else:
-            date = ''
-        date_fmted = date[:10] if date else ''
-        album_str = f'<a href="{reverse(album)}">{album.name_display}</a>' \
-            if album else ''
+            date = ""
+        date_fmted = date[:10] if date else ""
+        album_str = (
+            f'<a href="{reverse(album)}">{album.name_display}</a>' if album else ""
+        )
         kvs = [
-            ('歌手', artists_str),
-            ('所属专辑', or_unknown(album_str)),
-            ('发行日期', or_unknown(date_fmted)),
-            ('曲风', or_unknown(song.genre)),
+            ("歌手", artists_str),
+            ("所属专辑", or_unknown(album_str)),
+            ("发行日期", or_unknown(date_fmted)),
+            ("曲风", or_unknown(song.genre)),
         ]
         lines = []
         for k, v in kvs:
             line = f"<span style='color: grey'>{k}：</span>" + v
             lines.append(line)
-        self.setText('<br/>'.join(lines))
+        self.setText("<br/>".join(lines))
 
     def on_link_activated(self, url):
         model = resolve(url)
@@ -200,12 +213,12 @@ class SongExploreView(QWidget):
         self._title_cover_spacing = 10
         self._left_right_spacing = 30
         self.title_label = Title()
-        self.similar_songs_header = MidHeader('相似歌曲')
-        self.comments_header = MidHeader('热门评论')
+        self.similar_songs_header = MidHeader("相似歌曲")
+        self.comments_header = MidHeader("热门评论")
         self.lyric_view = LyricView(parent=self)
-        self.play_btn = TextButton('播放')
+        self.play_btn = TextButton("播放")
         self.play_mv_btn = SongMVTextButton(self._app)
-        self.copy_web_url_btn = TextButton('复制网页地址')
+        self.copy_web_url_btn = TextButton("复制网页地址")
         self.cover_label = CoverLabelV2(app=app)
         self.song_wiki_label = SongWikiLabel(app)
         self.comments_view = CommentListView(reserved=0)
@@ -221,15 +234,16 @@ class SongExploreView(QWidget):
 
         self._setup_ui()
 
-        self.similar_songs_view.play_song_needed.connect(
-            app.playlist.play_model)
+        self.similar_songs_view.play_song_needed.connect(app.playlist.play_model)
 
     def _setup_ui(self):
-        self.lyric_view.setSizePolicy(QSizePolicy.Preferred,
-                                      QSizePolicy.Expanding)
+        self.lyric_view.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Expanding
+        )
         self.cover_label.setFixedSize(160, 160)
-        self.cover_label.setSizePolicy(QSizePolicy.Preferred,
-                                       QSizePolicy.Preferred)
+        self.cover_label.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred
+        )
 
         self._left_con = LeftCon(self)  #: left container
         self._left_con_scrollarea = ScrollArea(self._app)
@@ -259,13 +273,17 @@ class SongExploreView(QWidget):
         self._left_layout.addWidget(self.similar_songs_view)
         self._left_layout.addSpacing(10)
 
-        self._left_top_layout.addWidget(self.cover_label, alignment=Qt.AlignTop)
+        self._left_top_layout.addWidget(
+            self.cover_label, alignment=Qt.AlignmentFlag.AlignTop
+        )
         self._left_top_layout.addSpacing(10)
         self._left_top_layout.addLayout(self._song_meta_layout)
 
         self._song_meta_layout.addWidget(self.title_label)
         self._song_meta_layout.addStretch(0)
-        self._song_meta_layout.addWidget(self.song_wiki_label, alignment=Qt.AlignTop)
+        self._song_meta_layout.addWidget(
+            self.song_wiki_label, alignment=Qt.AlignmentFlag.AlignTop
+        )
         self._song_meta_layout.addStretch(0)
         self._song_meta_layout.addLayout(self._btns_layout)
 
@@ -292,9 +310,11 @@ class SongExploreView(QWidget):
 
             async def copy_song_web_url():
                 QGuiApplication.clipboard().setText(web_url)
-                self._app.show_msg(f'已经复制：{web_url}')
+                self._app.show_msg(f"已经复制：{web_url}")
 
-            self.copy_web_url_btn.clicked.connect(lambda: aio.run_afn(copy_song_web_url))
+            self.copy_web_url_btn.clicked.connect(
+                lambda: aio.run_afn(copy_song_web_url)
+            )
 
     async def show_song_wiki(self, song, album):
         aio.run_afn(self.song_wiki_label.show_song, song, album)
@@ -302,12 +322,14 @@ class SongExploreView(QWidget):
     async def maybe_show_song_similar(self, provider, song):
         if isinstance(provider, SupportsSongSimilar):
             songs = await aio.run_fn(provider.song_list_similar, song)
-            model = SongMiniCardListModel(create_reader(songs),
-                                          fetch_cover_wrapper(self._app))
+            model = SongMiniCardListModel(
+                create_reader(songs), fetch_cover_wrapper(self._app)
+            )
             self.similar_songs_view.setModel(model)
         else:
-            msg = err_msg_tpl.format(feature='查看相似歌曲',
-                                     interface=SupportsSongSimilar.__name__)
+            msg = err_msg_tpl.format(
+                feature="查看相似歌曲", interface=SupportsSongSimilar.__name__
+            )
             self.similar_songs_header.setText(msg)
 
     async def maybe_show_song_hot_comments(self, provider, song):
@@ -316,8 +338,9 @@ class SongExploreView(QWidget):
             comments_reader = create_reader(comments)
             self.comments_view.setModel(CommentListModel(comments_reader))
         else:
-            msg = err_msg_tpl.format(feature='查看歌曲评论',
-                                     interface=SupportsSongHotComments.__name__)
+            msg = err_msg_tpl.format(
+                feature="查看歌曲评论", interface=SupportsSongHotComments.__name__
+            )
             self.comments_header.setText(msg)
 
     async def maybe_show_mv_btn(self, song):
@@ -329,7 +352,8 @@ class SongExploreView(QWidget):
             lyric = self._app.live_lyric.current_lyrics[0]
             self.lyric_view.set_lyric(lyric)
             self._app.live_lyric.line_changed.connect(
-                self.lyric_view.on_line_changed, weak=True)
+                self.lyric_view.on_line_changed, weak=True
+            )
             return
 
         lyric_model = self._app.library.song_get_lyric(song)
@@ -339,17 +363,18 @@ class SongExploreView(QWidget):
 
     async def maybe_show_song_pic(self, song, album):
         if album:
-            aio.run_afn(self.cover_label.show_cover,
-                        album.cover,
-                        reverse(album) + '/cover')
+            aio.run_afn(
+                self.cover_label.show_cover, album.cover, reverse(album) + "/cover"
+            )
         else:
-            aio.run_afn(self.cover_label.show_cover,
-                        song.pic_url,
-                        reverse(song) + '/pic_url')
+            aio.run_afn(
+                self.cover_label.show_cover, song.pic_url, reverse(song) + "/pic_url"
+            )
 
     def resizeEvent(self, e: QResizeEvent) -> None:
         margins = self.layout().contentsMargins()
         margin_h = margins.left() + margins.right()
         self._left_con.setMaximumWidth(
-            self.width() - margin_h - self._left_right_spacing - self._right_con.width())
+            self.width() - margin_h - self._left_right_spacing - self._right_con.width()
+        )
         return super().resizeEvent(e)

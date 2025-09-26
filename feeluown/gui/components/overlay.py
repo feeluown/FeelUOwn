@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, Optional, cast
 
-from PyQt5.QtCore import QEvent, Qt
-from PyQt5.QtGui import QColor, QPainter, QResizeEvent
-from PyQt5.QtWidgets import QWidget, QHBoxLayout
+from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtGui import QColor, QPainter, QResizeEvent
+from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
 from feeluown.gui.helpers import esc_hide_widget
 
@@ -21,8 +21,13 @@ class AppOverlayContainer(QWidget):
     :param adhoc: If True, the overlay is destroyed when hidden.
     """
 
-    def __init__(self, app: 'GuiApp', body: QWidget, parent: Optional[QWidget] = None,
-                 adhoc=False):
+    def __init__(
+        self,
+        app: "GuiApp",
+        body: QWidget,
+        parent: Optional[QWidget] = None,
+        adhoc=False,
+    ):
         super().__init__(parent=parent)
         self._app = app
         self._adhoc = adhoc
@@ -31,10 +36,10 @@ class AppOverlayContainer(QWidget):
         self._layout = QHBoxLayout(self)
         self._layout.setContentsMargins(100, 80, 100, 80)
         self._layout.addWidget(self.body)
-        self.setFocusPolicy(Qt.ClickFocus)
+        self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         # Add ClickFocus for the body so that when Overlay will not
         # get focus when user click the body.
-        self.body.setFocusPolicy(Qt.ClickFocus)
+        self.body.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         self._app.installEventFilter(self)
 
         esc_hide_widget(self)
@@ -58,7 +63,7 @@ class AppOverlayContainer(QWidget):
 
     def eventFilter(self, obj, event):
         """Handle parent resize events"""
-        if self.isVisible() and obj == self._app and event.type() == QEvent.Resize:
+        if self.isVisible() and obj == self._app and event.type() == QEvent.Type.Resize:
             event = cast(QResizeEvent, event)
             self.resize(event.size())
         return super().eventFilter(obj, event)

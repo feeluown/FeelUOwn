@@ -1,5 +1,5 @@
 from typing import TYPE_CHECKING
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout
 
 from feeluown.gui.widgets.labels import ProgressLabel, DurationLabel
 from feeluown.gui.widgets.progress_slider import ProgressSlider
@@ -27,12 +27,12 @@ class PlayerProgressRatioLabel(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(2)
         self._layout.addWidget(self.progress_label)
-        self._layout.addWidget(QLabel('/'))
+        self._layout.addWidget(QLabel("/"))
         self._layout.addWidget(self.duration_label)
 
 
 class PlayerProgressSliderAndLabel(QWidget):
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
 
         self._app = app

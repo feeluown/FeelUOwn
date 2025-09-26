@@ -26,9 +26,8 @@ jobs:
     - name: Build
       run: |
         python -m pip install --upgrade pip
-        pip install pyqt5
         pip install pyinstaller
-        pip install -e .[macos,battery,cookies,ytdl,ai]
+        pip install -e .[qt,macos,battery,cookies,ytdl,ai]
     - name: Install libmpv
       run: |
         brew install mpv

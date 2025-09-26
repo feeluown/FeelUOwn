@@ -8,9 +8,9 @@ from feeluown.gui.base_renderer import TabBarRendererMixin
 
 
 async def render(req, identifier, **kwargs):
-    app: GuiApp = req.ctx['app']
+    app: GuiApp = req.ctx["app"]
     ui = app.ui
-    tab_index = int(req.query.get('tab_index', 0))
+    tab_index = int(req.query.get("tab_index", 0))
 
     coll = app.coll_mgr.get(identifier)
 
@@ -47,6 +47,7 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
     NOTE(cosven): I think mixed collection should be rendered in single page
     without tab.
     """
+
     def __init__(self, app, tab_index, coll: Collection):
         self._app = app
         self._coll = coll
@@ -57,7 +58,7 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
         coll = self._coll
         self.meta_widget.show()
         if coll.type is CollectionType.sys_library:
-            self.meta_widget.title = '音乐库'
+            self.meta_widget.title = "音乐库"
         else:
             self.meta_widget.title = coll.name
         self.render_tab_bar()
@@ -70,18 +71,20 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
             # the UI is refreshed and the the user needs to scroll to the bottom again.
             self._coll.remove(model)
             self.render_models()
-            self._app.show_msg('移除歌曲成功')
+            self._app.show_msg("移除歌曲成功")
 
         if self.tabs[self.tab_index][1] is ModelType.song:
             self.songs_table.remove_song_func = remove_song
 
     def render_by_tab_index(self, tab_index):
-        self._app.browser.goto(page=f'/colls/{self._coll.identifier}',
-                               query={'tab_index': tab_index})
+        self._app.browser.goto(
+            page=f"/colls/{self._coll.identifier}", query={"tab_index": tab_index}
+        )
 
     def render_models(self):
         _, mtype, show_handler = self.tabs[self.tab_index]
-        models = [model for model in self._coll.models
-                  if model.meta.model_type == mtype]
+        models = [
+            model for model in self._coll.models if model.meta.model_type == mtype
+        ]
         reader = wrap(models)
         show_handler(reader)

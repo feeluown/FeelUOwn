@@ -2,7 +2,7 @@
 ========
 
 FeelUOwn 使用 Python 3 进行开发，目前默认使用 mpv 作为其播放引擎，
-基于 PyQt5 构建 GUI。
+基于 PyQt6 构建 GUI。
 
 安装
 ----
@@ -60,7 +60,7 @@ Ubuntu
     # 安装 libmpv1
     sudo apt-get install libmpv1
 
-    # 安装 PyQt5
+    # 安装 PyQt6
     sudo apt-get install python3-pyqt5 python3-pyqt5.qtopengl python3-pyqt5.qtsvg
 
     # 安装 dbus-python
@@ -102,7 +102,7 @@ Windows
 1. 安装 Python 3，参考 `链接 <https://www.python.org/downloads/windows/>` （请勿从应用商店安装）
 2. 下载 `mpv-1.dll <https://github.com/feeluown/FeelUOwn/releases/latest>`_ ，
    将 mpv-1.dll 放入 ``C:\Windows\System32`` 目录。
-3. 安装 PyQt5，在 cmd 中运行 ``pip3 install PyQt5 -i https://pypi.douban.com/simple``
+3. 安装 PyQt6，在 cmd 中运行 ``pip3 install PyQt6 -i https://pypi.douban.com/simple``
 4. 安装 feeluown，在 cmd 中运行 ``pip3 install feeluown[battery,win32]``
 5. 在 cmd 中运行 ``python -m feeluown genicon`` 命令，可以生成桌面图标
 

@@ -1,9 +1,9 @@
 import warnings
 from typing import Optional
 
-from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QPainter, QImage
-from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu
+from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QPainter, QImage
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu
 
 from feeluown.gui.drawers import PixmapDrawer
 from feeluown.gui.image import open_image
@@ -15,13 +15,15 @@ class CoverLabel(QLabel):
 
         self._radius = radius
         self.drawer = PixmapDrawer(None, self, self._radius)
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.MinimumExpanding)
+        self.setSizePolicy(
+            QSizePolicy.Policy.Preferred, QSizePolicy.Policy.MinimumExpanding
+        )
 
     def show_pixmap(self, pixmap):
         """
         .. versiondeprecated:: 3.8.11
         """
-        warnings.warn('You should use show_img', DeprecationWarning)
+        warnings.warn("You should use show_img", DeprecationWarning)
         self.updateGeometry()
         self.update()  # Schedule a repaint to refresh the UI ASAP.
 
@@ -48,9 +50,8 @@ class CoverLabel(QLabel):
         if self.drawer.get_img() is None:
             return
         menu = QMenu()
-        action = menu.addAction('查看原图')
-        action.triggered.connect(
-            lambda: open_image(self.drawer.get_img()))  # type: ignore
+        action = menu.addAction("查看原图")
+        action.triggered.connect(lambda: open_image(self.drawer.get_img()))
         menu.exec(e.globalPos())
 
     def resizeEvent(self, e):
@@ -74,6 +75,7 @@ class CoverLabelV2(CoverLabel):
 
     .. versionadded:: 3.7.8
     """
+
     def __init__(self, app, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
@@ -86,11 +88,11 @@ class CoverLabelV2(CoverLabel):
         self.show_img(img)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from feeluown.gui.debug import simple_layout
 
     with simple_layout() as layout:
         label = CoverLabel()
         layout.addWidget(label)
         label.resize(100, 100)
-        label.show_img(QImage('/path/to/test.png'))
+        label.show_img(QImage("/path/to/test.png"))

@@ -2,10 +2,16 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, \
-    QSpacerItem, QFrame, QSizePolicy
+from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import (
+    QLabel,
+    QHBoxLayout,
+    QVBoxLayout,
+    QSpacerItem,
+    QFrame,
+    QSizePolicy,
+)
 
 from feeluown.gui.helpers import elided_text
 from .cover_label import CoverLabelV2
@@ -14,7 +20,7 @@ from .cover_label import CoverLabelV2
 class getset_property:
     def __init__(self, name):
         self.name = name
-        self.name_real = '_' + name
+        self.name_real = "_" + name
 
     def __get__(self, instance, owner):
         if hasattr(instance, self.name_real):
@@ -27,7 +33,6 @@ class getset_property:
 
 
 class MetaWidget(QFrame):
-
     def clear(self):
         self.title = None
         self.subtitle = None
@@ -43,19 +48,18 @@ class MetaWidget(QFrame):
         pass
 
     # TODO: use metaclass
-    title = getset_property('title')
-    subtitle = getset_property('subtitle')
-    source = getset_property('source')
-    cover = getset_property('cover')
-    created_at = getset_property('created_at')  # datetime
-    updated_at = getset_property('updated_at')  # datetime
-    songs_count = getset_property('songs_count')
-    creator = getset_property('creator')
-    released_at = getset_property('released_at')  # str
+    title = getset_property("title")
+    subtitle = getset_property("subtitle")
+    source = getset_property("source")
+    cover = getset_property("cover")
+    created_at = getset_property("created_at")  # datetime
+    updated_at = getset_property("updated_at")  # datetime
+    songs_count = getset_property("songs_count")
+    creator = getset_property("creator")
+    released_at = getset_property("released_at")  # str
 
 
 class TableMetaWidget(MetaWidget):
-
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
@@ -65,10 +69,12 @@ class TableMetaWidget(MetaWidget):
         self.meta_label = QLabel(self)
         # this spacer item is used as a stretch in right layout,
         # it's  width and height is not so important, we set them to 0
-        self.text_spacer = QSpacerItem(0, 0, QSizePolicy.Minimum, QSizePolicy.Expanding)
+        self.text_spacer = QSpacerItem(
+            0, 0, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding
+        )
 
-        # self.title_label.setTextFormat(Qt.RichText)
-        self.meta_label.setTextFormat(Qt.RichText)
+        # self.title_label.setTextFormat(Qt.TextFormat.RichText)
+        self.meta_label.setTextFormat(Qt.TextFormat.RichText)
 
         self._setup_ui()
         self._refresh()
@@ -76,7 +82,7 @@ class TableMetaWidget(MetaWidget):
     def _setup_ui(self):
         font = self.font()
         font.setPixelSize(20)
-        font.setWeight(QFont.DemiBold)
+        font.setWeight(QFont.Weight.DemiBold)
 
         self.cover_label.setMinimumWidth(150)
         self.cover_label.setMaximumWidth(200)
@@ -89,7 +95,7 @@ class TableMetaWidget(MetaWidget):
         self._right_layout.addWidget(self.title_label)
         self._right_layout.addWidget(self.meta_label)
         self._h_layout.addWidget(self.cover_label)
-        self._h_layout.setAlignment(self.cover_label, Qt.AlignTop)
+        self._h_layout.setAlignment(self.cover_label, Qt.AlignmentFlag.AlignTop)
         self._h_layout.addLayout(self._right_layout)
         self._h_layout.setStretchFactor(self._right_layout, 2)
         self._h_layout.setStretchFactor(self.cover_label, 1)
@@ -106,7 +112,7 @@ class TableMetaWidget(MetaWidget):
 
     def add_tabbar(self, tabbar):
         self._right_layout.addWidget(tabbar)
-        self._right_layout.setAlignment(tabbar, Qt.AlignLeft)
+        self._right_layout.setAlignment(tabbar, Qt.AlignmentFlag.AlignLeft)
 
     def set_cover_image(self, image):
         if image is not None:
@@ -116,31 +122,43 @@ class TableMetaWidget(MetaWidget):
         self.updateGeometry()
 
     def on_property_updated(self, name):
-        if name in ('created_at', 'updated_at', 'songs_count', 'creator',
-                    'source', 'released_at'):
+        if name in (
+            "created_at",
+            "updated_at",
+            "songs_count",
+            "creator",
+            "source",
+            "released_at",
+        ):
             self._refresh_meta_label()
-        elif name in ('title', 'subtitle'):
+        elif name in ("title", "subtitle"):
             self._refresh_title()
-        elif name == 'cover':
+        elif name == "cover":
             self._refresh_cover()
 
     def _refresh_meta_label(self):
         creator = self.creator
         # icon: 👤
-        creator_part = creator if creator else ''
-        released_part = created_part = updated_part = songs_count_part = source_part = ''
+        creator_part = creator if creator else ""
+        released_part = created_part = updated_part = songs_count_part = source_part = (
+            ""
+        )
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
-            updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'\
-                .format(self.updated_at.strftime('%Y-%m-%d'))
+            updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'.format(
+                self.updated_at.strftime("%Y-%m-%d")
+            )
         if self.created_at:
-            created_part = '🕛 创建于 <code style="font-size: small">{}</code>'\
-                .format(self.created_at.strftime('%Y-%m-%d'))
+            created_part = '🕛 创建于 <code style="font-size: small">{}</code>'.format(
+                self.created_at.strftime("%Y-%m-%d")
+            )
         if self.released_at:
-            released_part = f'🕛 发布于 <code style="font-size: small">{self.released_at}</code>'  # noqa
+            released_part = (
+                f'🕛 发布于 <code style="font-size: small">{self.released_at}</code>'  # noqa
+            )
         if self.songs_count is not None:
-            text = self.songs_count if self.songs_count != -1 else '未知'
+            text = self.songs_count if self.songs_count != -1 else "未知"
             songs_count_part = f'<code style="font-size: small">{text}</code> 首歌曲'
         parts = [
             creator_part,
@@ -152,8 +170,8 @@ class TableMetaWidget(MetaWidget):
         ]
         valid_parts = [p for p in parts if p]
         if valid_parts:
-            content = ' • '.join(valid_parts)
-            text = f'<span>{content}</span>'
+            content = " • ".join(valid_parts)
+            text = f"<span>{content}</span>"
             # TODO: add linkActivated callback for meta_label
             self.meta_label.setText(text)
             self.meta_label.show()
@@ -173,9 +191,9 @@ class TableMetaWidget(MetaWidget):
             self.title_label.show()
             self.title_label.setToolTip(self.title)
             # Please refresh when the widget is resized.
-            title = elided_text(self.title,
-                                self.title_label.width(),
-                                self.title_label.font())
+            title = elided_text(
+                self.title, self.title_label.width(), self.title_label.font()
+            )
             self.title_label.setText(title)
         else:
             self.title_label.hide()

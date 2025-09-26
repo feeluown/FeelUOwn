@@ -1,7 +1,7 @@
 from typing import Optional
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSlider, QAbstractSlider
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QSlider, QAbstractSlider
 
 from feeluown.player import State
 from feeluown.gui.helpers import IS_MACOS
@@ -13,16 +13,15 @@ class DraggingContext:
 
 
 class ProgressSlider(QSlider):
-
     def __init__(self, app, parent=None):
         super().__init__(parent)
 
         self._app = app
         self._dragging_ctx: Optional[DraggingContext] = None
 
-        self.setToolTip('拖动调节进度')
+        self.setToolTip("拖动调节进度")
         self.setRange(0, 0)  # User can't drag the slider control when range is empty.
-        self.setOrientation(Qt.Horizontal)
+        self.setOrientation(Qt.Orientation.Horizontal)
 
         self.sliderPressed.connect(self.on_pressed)
         self.sliderReleased.connect(self.on_released)
@@ -69,8 +68,11 @@ class ProgressSlider(QSlider):
             self._dragging_ctx.is_media_changed = True
 
     def on_action_triggered(self, action):
-        # SliderMove is handled seperately. Just ignore it.
-        if action not in (QAbstractSlider.SliderNoAction, QAbstractSlider.SliderMove):
+        # SliderAction.SliderMove is handled seperately. Just ignore it.
+        if action not in (
+            QAbstractSlider.SliderAction.SliderNoAction,
+            QAbstractSlider.SliderAction.SliderMove,
+        ):
             slider_position = self.sliderPosition()
             self.maybe_update_player_position(slider_position)
 

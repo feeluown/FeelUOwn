@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QRectF, Qt
-from PyQt5.QtWidgets import QSizeGrip
-from PyQt5.QtGui import QTextOption, QPainter
+from PyQt6.QtCore import QRectF, Qt
+from PyQt6.QtWidgets import QSizeGrip
+from PyQt6.QtGui import QTextOption, QPainter
 
 
 class SizeGrip(QSizeGrip):
@@ -10,5 +10,7 @@ class SizeGrip(QSizeGrip):
     def paintEvent(self, e):
         painter = QPainter(self)
         option = QTextOption()
-        option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
-        painter.drawText(QRectF(self.rect()), '●', option)
+        option.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+        )
+        painter.drawText(QRectF(self.rect()), "●", option)

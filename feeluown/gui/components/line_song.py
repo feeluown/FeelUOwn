@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QTimer, QRect, Qt
-from PyQt5.QtGui import QPainter, QPalette, QColor
-from PyQt5.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
+from PyQt6.QtCore import QTimer, QRect, Qt
+from PyQt6.QtGui import QPainter, QPalette, QColor
+from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
 
 from feeluown.player import PlaylistPlayModelStage
 from feeluown.library import fmt_artists_names
@@ -16,11 +16,11 @@ if TYPE_CHECKING:
 class LineSongLabel(QLabel):
     """Show song info in one line (with limited width)."""
 
-    default_text = '...'
+    default_text = "..."
 
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(text=self.default_text, parent=parent)
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self._app = app
 
@@ -42,13 +42,13 @@ class LineSongLabel(QLabel):
 
     def on_metadata_changed(self, metadata):
         if not metadata:
-            self.setText('...')
+            self.setText("...")
             return
 
         # Set main text.
-        text = metadata.get('title', '')
+        text = metadata.get("title", "")
         if text:
-            artists = metadata.get('artists', [])
+            artists = metadata.get("artists", [])
             if artists:
                 # FIXME: use _get_artists_name
                 text += f" • {','.join(artists)}"
@@ -56,15 +56,15 @@ class LineSongLabel(QLabel):
 
     def on_play_model_stage_changed(self, stage):
         if stage == PlaylistPlayModelStage.prepare_media:
-            self.setText('正在获取歌曲播放链接...')
+            self.setText("正在获取歌曲播放链接...")
         elif stage == PlaylistPlayModelStage.find_standby_by_mv:
-            self.setText('正在获取音乐的视频播放链接...')
+            self.setText("正在获取音乐的视频播放链接...")
         elif stage == PlaylistPlayModelStage.find_standby:
-            self.setText('尝试寻找备用播放链接...')
+            self.setText("尝试寻找备用播放链接...")
         elif stage == PlaylistPlayModelStage.prepare_metadata:
-            self.setText('尝试获取完整的歌曲元信息...')
+            self.setText("尝试获取完整的歌曲元信息...")
         elif stage == PlaylistPlayModelStage.load_media:
-            self.setText('正在加载歌曲资源...')
+            self.setText("正在加载歌曲资源...")
 
     def change_text_position(self):
         if not self.parent().isVisible():  # type: ignore
@@ -100,19 +100,19 @@ class LineSongLabel(QLabel):
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.setFont(self.font())
-        painter.setPen(self.palette().color(QPalette.Text))
+        painter.setPen(self.palette().color(QPalette.ColorRole.Text))
 
         if self._timer.isActive():
             self._txt = self._raw_text
         else:
             self._txt = self.fontMetrics().elidedText(
-                self._raw_text, Qt.ElideRight, self.width()
+                self._raw_text, Qt.TextElideMode.ElideRight, self.width()
             )
 
         painter.drawText(
-            QRect(self._pos, 0,
-                  self.width() - self._pos, self.height()),
-            Qt.AlignLeft | Qt.AlignVCenter, self._txt
+            QRect(self._pos, 0, self.width() - self._pos, self.height()),
+            Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            self._txt,
         )  # type: ignore[call-overload]
 
     def contextMenuEvent(self, e):
@@ -126,20 +126,20 @@ class LineSongLabel(QLabel):
 
 
 class TwoLineSongLabel(QWidget):
-    default_text = '...'
+    default_text = "..."
 
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
 
-        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self._title_label = QLabel()
         self._subtitle_label = QLabel()
 
         palette = self._subtitle_label.palette()
-        palette.setColor(QPalette.Text, QColor('grey'))
-        palette.setColor(QPalette.Foreground, QColor('Grey'))
+        palette.setColor(QPalette.ColorRole.Text, QColor("grey"))
+        palette.setColor(QPalette.ColorRole.WindowText, QColor("Grey"))
         self._subtitle_label.setPalette(palette)
 
         self._layout = QVBoxLayout(self)
@@ -161,20 +161,21 @@ class TwoLineSongLabel(QWidget):
 
     def on_metadata_changed(self, metadata):
         if not metadata:
-            self._title_label.setText('...')
+            self._title_label.setText("...")
             return
 
         # Set main text.
-        title = metadata.get('title', '')
+        title = metadata.get("title", "")
         if title:
-            artists = metadata.get('artists', [])
+            artists = metadata.get("artists", [])
             if artists:
                 # FIXME: use _get_artists_name
                 subtitle = fmt_artists_names(artists)
                 self._subtitle_label.setText(
                     elided_text(
-                        subtitle, self._subtitle_label.width(),
-                        self._subtitle_label.font()
+                        subtitle,
+                        self._subtitle_label.width(),
+                        self._subtitle_label.font(),
                     )
                 )
         self._title_label.setText(

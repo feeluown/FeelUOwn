@@ -12,7 +12,7 @@ from feeluown.library import resolve, reverse, ResolveFailed, parse_line
 logger = logging.getLogger(__name__)
 
 
-MODEL_PAGE_PREFIX = '/models/'
+MODEL_PAGE_PREFIX = "/models/"
 
 
 class Browser:
@@ -64,26 +64,26 @@ class Browser:
         """
         # backward compact: old code use goto(uri=page)
         if uri is not None:
-            warnings.warn('please use parameter page', DeprecationWarning)
+            warnings.warn("please use parameter page", DeprecationWarning)
             page = page or uri
 
-        qs = urlencode(query) if query else ''
+        qs = urlencode(query) if query else ""
 
         try:
             if model is not None:
                 if qs:
-                    path = (path or '') + '?' + qs
+                    path = (path or "") + "?" + qs
                 self._goto_model_page(model, path)
             else:
                 # backward compat: old code use goto(path=page) wrongly
                 if path is not None:
-                    warnings.warn('please use parameter page')
+                    warnings.warn("please use parameter page")
                 page = page or path
                 if qs:
-                    page = page + '?' + qs
+                    page = page + "?" + qs
                 self._goto_page(page)
         except NotFound:
-            logger.warning(f'{page} renderer not found')
+            logger.warning(f"{page} renderer not found")
         else:
             # save history records
             if self._last_page is not None and self._last_page != self.current_page:
@@ -122,28 +122,28 @@ class Browser:
         if page.startswith(MODEL_PAGE_PREFIX):
             try:
                 # FIXME: resolve is temporarily too magic
-                uri = 'fuo://' + page[len(MODEL_PAGE_PREFIX):]
+                uri = "fuo://" + page[len(MODEL_PAGE_PREFIX) :]
                 model, path = parse_line(uri)
                 model = resolve(reverse(model))
             except ResolveFailed:
                 model = None
-                logger.warning(f'invalid model page:{page}')
+                logger.warning(f"invalid model page:{page}")
             else:
                 return self._goto_model_page(model, path)
         else:
-            self._goto(page, {'app': self._app})
+            self._goto(page, {"app": self._app})
 
-    def _goto_model_page(self, model, path=''):
+    def _goto_model_page(self, model, path=""):
         """goto model page
 
         The main difference between model page and other pages is that model page
         has different context. It's context has an extra key `model`.
         """
-        path = path or ''
+        path = path or ""
         page = base_page = MODEL_PAGE_PREFIX + reverse(model)[6:]
         if path:
-            page = f'{base_page}{path}'
-        self._goto(page, {'app': self._app, 'model': model})
+            page = f"{base_page}{path}"
+        self._goto(page, {"app": self._app, "model": model})
 
     def _goto(self, page, ctx):
         # Do some initialization
@@ -194,34 +194,35 @@ class Browser:
         from feeluown.gui.pages.provider_home import render as render_provider_home
         from feeluown.gui.pages.recently_played import render as render_recently_played
         from feeluown.gui.pages.recommendation import render as render_rec
-        from feeluown.gui.pages.recommendation_daily_songs import \
-            render as render_rec_daily_songs
+        from feeluown.gui.pages.recommendation_daily_songs import (
+            render as render_rec_daily_songs,
+        )
         from feeluown.gui.pages.my_fav import render as render_my_fav
         from feeluown.gui.pages.my_dislike import render as render_my_dislike
         from feeluown.gui.pages.homepage import render as render_homepage
         from feeluown.gui.pages.toplist import render as render_toplist
 
-        model_prefix = f'{MODEL_PAGE_PREFIX}<provider>'
+        model_prefix = f"{MODEL_PAGE_PREFIX}<provider>"
 
         async def dummy_render(req, *args, **kwargs):
-            warnings.warn(f'This route:{req.rule} will be removed.')
+            warnings.warn(f"This route:{req.rule} will be removed.")
 
         urlpatterns = [
-            (f'{model_prefix}/<ns>/<identifier>', render_model),
+            (f"{model_prefix}/<ns>/<identifier>", render_model),
             # These routes will be removed in v3.9
-            (f'{model_prefix}/songs/<identifier>/similar', dummy_render),
-            (f'{model_prefix}/songs/<identifier>/hot_comments', dummy_render),
-            (f'{model_prefix}/songs/<identifier>/explore', render_song_explore),
-            ('/colls/<identifier>', render_coll_mixed),
-            ('/providers/<identifier>', render_provider_home),
-            ('/recently_played', render_recently_played),
-            ('/search', render_search),
-            ('/rec', render_rec),
-            ('/homepage', render_homepage),
-            ('/rec/daily_songs', render_rec_daily_songs),
-            ('/my_fav', render_my_fav),
-            ('/my_dislike', render_my_dislike),
-            ('/toplist', render_toplist),
+            (f"{model_prefix}/songs/<identifier>/similar", dummy_render),
+            (f"{model_prefix}/songs/<identifier>/hot_comments", dummy_render),
+            (f"{model_prefix}/songs/<identifier>/explore", render_song_explore),
+            ("/colls/<identifier>", render_coll_mixed),
+            ("/providers/<identifier>", render_provider_home),
+            ("/recently_played", render_recently_played),
+            ("/search", render_search),
+            ("/rec", render_rec),
+            ("/homepage", render_homepage),
+            ("/rec/daily_songs", render_rec_daily_songs),
+            ("/my_fav", render_my_fav),
+            ("/my_dislike", render_my_dislike),
+            ("/toplist", render_toplist),
         ]
         for url, renderer in urlpatterns:
             self.route(url)(renderer)

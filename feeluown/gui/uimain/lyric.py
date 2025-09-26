@@ -1,32 +1,48 @@
 import sys
 
-from PyQt5.QtCore import Qt, QRectF, QRect, QSize
-from PyQt5.QtGui import QPalette, QColor, QTextOption, QPainter, \
-    QKeySequence, QFont
-from PyQt5.QtWidgets import QLabel, QWidget, \
-    QVBoxLayout, QSizeGrip, QHBoxLayout, QColorDialog, \
-    QMenu, QAction, QFontDialog, QShortcut, QSpacerItem
+from PyQt6.QtCore import Qt, QRectF, QRect, QSize
+from PyQt6.QtGui import (
+    QPalette,
+    QColor,
+    QTextOption,
+    QPainter,
+    QKeySequence,
+    QFont,
+    QAction,
+    QShortcut,
+)
+from PyQt6.QtWidgets import (
+    QLabel,
+    QWidget,
+    QVBoxLayout,
+    QSizeGrip,
+    QHBoxLayout,
+    QColorDialog,
+    QMenu,
+    QFontDialog,
+    QSpacerItem,
+)
 
 from feeluown.gui.helpers import esc_hide_widget, resize_font, elided_text
 from feeluown.player import LyricLine
 
 
-IS_MACOS = sys.platform == 'darwin'
-IS_WINDOWS = sys.platform == 'win32'
+IS_MACOS = sys.platform == "darwin"
+IS_WINDOWS = sys.platform == "win32"
 
 
 def set_bg_color(palette, color):
-    palette.setColor(QPalette.Active, QPalette.Window, color)
-    palette.setColor(QPalette.Active, QPalette.Base, color)
-    palette.setColor(QPalette.Inactive, QPalette.Window, color)
-    palette.setColor(QPalette.Inactive, QPalette.Base, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, color)
 
 
 def set_fg_color(palette, color):
-    palette.setColor(QPalette.Active, QPalette.WindowText, color)
-    palette.setColor(QPalette.Active, QPalette.Text, color)
-    palette.setColor(QPalette.Inactive, QPalette.WindowText, color)
-    palette.setColor(QPalette.Inactive, QPalette.Text, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.WindowText, color)
+    palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Text, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.WindowText, color)
+    palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Text, color)
 
 
 Tooltip = """
@@ -46,6 +62,7 @@ class SizeGrip(QSizeGrip):
 
     Check https://github.com/feeluown/FeelUOwn/issues/752 for more details.
     """
+
     def mousePressEvent(self, e):
         super().mousePressEvent(e)
         if IS_WINDOWS:
@@ -87,14 +104,20 @@ class LyricWindow(QWidget):
             # On macOS, Qt.Tooltip widget can't accept focus and it will hide
             # when the application window is actiavted. Qt.Tool widget can't
             # keep staying on top. Neither of them work well on macOS.
-            flags = Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint
+            flags = (
+                Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint
+            )
         else:
             # TODO: use proper flags on other platforms, see #413 for more details.
             # User can customize the flags in the .fuorc or searchbox, like
             #    app.ui.lyric_windows.setWindowFlags(Qt.xx | Qt.yy)
-            flags = Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint | Qt.Tool
+            flags = (
+                Qt.WindowType.WindowStaysOnTopHint
+                | Qt.WindowType.FramelessWindowHint
+                | Qt.WindowType.Tool
+            )
         self.setWindowFlags(flags)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
         self.setToolTip(Tooltip)
 
         self._inner = InnerLyricWindow(self._app, self)
@@ -108,23 +131,23 @@ class LyricWindow(QWidget):
         esc_hide_widget(self)
 
     def mousePressEvent(self, e):
-        self._old_pos = e.globalPos()
+        self._old_pos = e.globalPosition()
 
     def mouseMoveEvent(self, e):
-        # NOTE: e.button() == Qt.LeftButton don't work on Windows
+        # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._old_pos is not None:
-            delta = e.globalPos() - self._old_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self._old_pos = e.globalPos()
+            delta = e.globalPosition() - self._old_pos
+            self.move(int(self.x() + delta.x()), int(self.y() + delta.y()))
+            self._old_pos = e.globalPosition()
 
     def mouseReleaseEvent(self, e):
-        if not self.rect().contains(e.pos()):
+        if not self.rect().contains(e.position().toPoint()):
             return
-        if e.button() == Qt.BackButton:
+        if e.button() == Qt.MouseButton.BackButton:
             self._app.playlist.previous()
-        elif e.button() == Qt.ForwardButton:
+        elif e.button() == Qt.MouseButton.ForwardButton:
             self._app.playlist.next()
 
     def dump_state(self):
@@ -132,10 +155,14 @@ class LyricWindow(QWidget):
         p = inner.palette()
         geo = self.geometry()
         return {
-            'geometry': (geo.x(), geo.y(), geo.width(), geo.height()),
-            'font': inner.font().toString(),
-            'bg': p.color(QPalette.Active, QPalette.Window).name(QColor.HexArgb),
-            'fg': p.color(QPalette.Active, QPalette.Text).name(QColor.HexArgb),
+            "geometry": (geo.x(), geo.y(), geo.width(), geo.height()),
+            "font": inner.font().toString(),
+            "bg": p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Window).name(
+                QColor.NameFormat.HexArgb
+            ),
+            "fg": p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Text).name(
+                QColor.NameFormat.HexArgb
+            ),
         }
 
     def apply_state(self, state):
@@ -144,16 +171,16 @@ class LyricWindow(QWidget):
 
         inner = self._inner
 
-        geo = state.get('geometry')
+        geo = state.get("geometry")
         if geo:
             self.resize(geo[2], geo[3])
             self.setGeometry(*geo)
         font = inner.font()
-        font.fromString(state['font'])
+        font.fromString(state["font"])
         inner.setFont(font)
         palette = inner.palette()
-        set_bg_color(palette, QColor(state['bg']))
-        set_fg_color(palette, QColor(state['fg']))
+        set_bg_color(palette, QColor(state["bg"]))
+        set_fg_color(palette, QColor(state["fg"]))
         inner.setPalette(palette)
 
     def sizeHint(self):
@@ -167,7 +194,11 @@ class SentenceLabel(QLabel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setAlignment(Qt.AlignBaseline | Qt.AlignVCenter | Qt.AlignHCenter)
+        self.setAlignment(
+            Qt.AlignmentFlag.AlignBaseline
+            | Qt.AlignmentFlag.AlignVCenter
+            | Qt.AlignmentFlag.AlignHCenter
+        )
         self.setWordWrap(False)
 
 
@@ -191,7 +222,7 @@ class LineLabel(QWidget):
         self._layout.addWidget(self.trans_label)
         self._layout.addSpacing(self.v_spacing // 2)
 
-        line = LyricLine('...', '...', False)
+        line = LyricLine("...", "...", False)
         self.set_line(line)
         # The default size(calculated by Qt) may be different from the size
         # calculated by line_sizehint. Remember to specify size at very first,
@@ -202,18 +233,16 @@ class LineLabel(QWidget):
         self.show_trans = not self.show_trans
         if self.show_trans:
             self.trans_label.show()
-            self.spacer.changeSize(0, self.v_spacing//3)
+            self.spacer.changeSize(0, self.v_spacing // 3)
         else:
             self.trans_label.hide()
             self.spacer.changeSize(0, 0)
 
     def set_line(self, line: LyricLine):
-        self.label.setText(
-            elided_text(line.origin, self.width(), self.font()))
+        self.label.setText(elided_text(line.origin, self.width(), self.font()))
         if self.show_trans and line.has_trans:
             self.trans_label.show()
-            self.trans_label.setText(
-                elided_text(line.trans, self.width(), self.font()))
+            self.trans_label.setText(elided_text(line.trans, self.width(), self.font()))
         else:
             self.trans_label.hide()
 
@@ -268,9 +297,11 @@ class InnerLyricWindow(QWidget):
 
         self._app.live_lyric.line_changed.connect(self.set_line)
         self._app.live_lyric.lyrics_changed.connect(self.on_lyrics_changed)
-        QShortcut(QKeySequence.ZoomIn, self).activated.connect(self.zoomin)
-        QShortcut(QKeySequence.ZoomOut, self).activated.connect(self.zoomout)
-        QShortcut(QKeySequence('Ctrl+='), self).activated.connect(self.zoomin)
+        QShortcut(QKeySequence.StandardKey.ZoomIn, self).activated.connect(self.zoomin)
+        QShortcut(QKeySequence.StandardKey.ZoomOut, self).activated.connect(
+            self.zoomout
+        )
+        QShortcut(QKeySequence("Ctrl+="), self).activated.connect(self.zoomin)
 
         self._layout = QHBoxLayout(self)
         self.setup_ui()
@@ -283,7 +314,7 @@ class InnerLyricWindow(QWidget):
         self._layout.setSpacing(0)
         self._layout.addWidget(self.line_label)
         self._layout.addWidget(self._size_grip)
-        self._layout.setAlignment(self._size_grip, Qt.AlignBottom)
+        self._layout.setAlignment(self._size_grip, Qt.AlignmentFlag.AlignBottom)
 
     def set_line(self, line: LyricLine):
         # Ignore updating when the window is invisible.
@@ -295,12 +326,12 @@ class InnerLyricWindow(QWidget):
             self_size = QSize(size.width(), size.height())
             self.resize(self_size)
             self.parent().resize(self_size)  # type: ignore
-            self.parent().updateGeometry()   # type: ignore
+            self.parent().updateGeometry()  # type: ignore
         self.line_label.set_line(line)
 
     def on_lyrics_changed(self, lyric, *_):
         if lyric is None:
-            self.set_line(LyricLine('未找到可用歌词', '', False))
+            self.set_line(LyricLine("未找到可用歌词", "", False))
 
     def zoomin(self):
         font = self.font()
@@ -309,7 +340,7 @@ class InnerLyricWindow(QWidget):
 
     def zoomout(self):
         font = self.font()
-        resize_font(font, - 1)
+        resize_font(font, -1)
         self.setFont(font)
 
     def on_font_size_changed(self):
@@ -324,20 +355,22 @@ class InnerLyricWindow(QWidget):
         due to it sets the attribute WA_TranslucentBackground.
         """
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setPen(Qt.NoPen)
-        painter.setBrush(self.palette().color(QPalette.Window))
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), self._border_radius, self._border_radius)
 
         # Draw an circle button to indicate that the window can be resized.
         if self._auto_resize:
             return
         painter.save()
-        painter.setPen(QColor('white'))
+        painter.setPen(QColor("white"))
         option = QTextOption()
-        option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        option.setAlignment(
+            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+        )
         rect = QRect(self.mapToParent(self._size_grip.pos()), self._size_grip.size())
-        painter.drawText(QRectF(rect), '●', option)
+        painter.drawText(QRectF(rect), "●", option)
         painter.restore()
 
     def setPalette(self, a0: QPalette) -> None:
@@ -362,18 +395,18 @@ class InnerLyricWindow(QWidget):
 
         dialog = QColorDialog(self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         if bg:
-            color = self.palette().color(QPalette.Window)
+            color = self.palette().color(QPalette.ColorRole.Window)
         else:
-            color = self.palette().color(QPalette.Text)
+            color = self.palette().color(QPalette.ColorRole.Text)
         dialog.setCurrentColor(color)
         dialog.currentColorChanged.connect(set_color)
         dialog.colorSelected.connect(set_color)
-        dialog.setOption(QColorDialog.ShowAlphaChannel, True)
+        dialog.setOption(QColorDialog.ColorDialogOption.ShowAlphaChannel, True)
         # On KDE(with Xorg), if the dialog is in modal state,
         # the window is dimming.
-        if sys.platform == 'linux':
+        if sys.platform == "linux":
             dialog.show()
         else:
             dialog.open()
@@ -381,7 +414,7 @@ class InnerLyricWindow(QWidget):
     def show_font_dialog(self):
         dialog = QFontDialog(self.font(), self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         dialog.currentFontChanged.connect(self.setFont)
         dialog.fontSelected.connect(self.setFont)
         dialog.open()
@@ -395,13 +428,13 @@ class InnerLyricWindow(QWidget):
 
     def contextMenuEvent(self, e):
         menu = QMenu()
-        bg_color_action = QAction('背景颜色', menu)
-        fg_color_action = QAction('文字颜色', menu)
-        font_action = QAction('字体', menu)
-        toggle_trans_action = QAction('双语歌词', menu)
+        bg_color_action = QAction("背景颜色", menu)
+        fg_color_action = QAction("文字颜色", menu)
+        font_action = QAction("字体", menu)
+        toggle_trans_action = QAction("双语歌词", menu)
         toggle_trans_action.setCheckable(True)
         toggle_trans_action.setChecked(self.line_label.show_trans)
-        toggle_fiexed_size_action = QAction('大小自动', menu)
+        toggle_fiexed_size_action = QAction("大小自动", menu)
         toggle_fiexed_size_action.setCheckable(True)
         toggle_fiexed_size_action.setChecked(self._auto_resize)
         menu.addAction(bg_color_action)

@@ -1,5 +1,5 @@
-from PyQt5.QtGui import QFont
-from PyQt5.QtWidgets import QLabel
+from PyQt6.QtGui import QFont
+from PyQt6.QtWidgets import QLabel
 
 
 class BaseHeader(QLabel):
@@ -16,7 +16,7 @@ class LargeHeader(BaseHeader):
         super().__init__(*args, font_size=20, **kwargs)
 
         font = self.font()
-        font.setWeight(QFont.DemiBold)
+        font.setWeight(QFont.Weight.DemiBold)
         self.setFont(font)
 
 

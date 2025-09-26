@@ -9,7 +9,6 @@ from feeluown.gui.widgets.tabbar import Tab, TabBar
 
 
 class LibraryTabRendererMixin:
-
     def init_tabbar_signal_binding(self):
         for tab_id, signal in self.get_tabid_signal_mapping().items():
             signal.connect(self.on_tab_id_activated(tab_id))
@@ -43,6 +42,7 @@ class LibraryTabRendererMixin:
         def cb():
             if tab_id != self.tab_id:
                 self.show_by_tab_id(tab_id)
+
         return cb
 
     def show_by_tab_id(self, tab_id):
@@ -55,6 +55,7 @@ class TabBarRendererMixin:
     1. the instance MUST has `tabs` attribute
     2. the instance MUST implement `render_by_tab_index`
     """
+
     def render_tab_bar(self):
         tab_bar = TabBar()
         ui = self._app.ui
@@ -70,11 +71,11 @@ class TabBarRendererMixin:
 
     def default_tabs(self):
         return [
-            ('歌曲', ModelType.song, self.show_songs),
-            ('专辑', ModelType.album, self.show_albums),
-            ('歌手', ModelType.artist, self.show_artists),
-            ('歌单', ModelType.playlist, self.show_playlists),
-            ('视频', ModelType.video, self.show_videos)
+            ("歌曲", ModelType.song, self.show_songs),
+            ("专辑", ModelType.album, self.show_albums),
+            ("歌手", ModelType.artist, self.show_artists),
+            ("歌单", ModelType.playlist, self.show_playlists),
+            ("视频", ModelType.video, self.show_videos),
         ]
 
 
@@ -87,6 +88,7 @@ class VFillableBg(Protocol):
 
     .. versionadded:: 3.8.9
     """
+
     @abstractmethod
     def fillable_bg_height(self) -> int:
         raise NotImplementedError

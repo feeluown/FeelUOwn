@@ -1,9 +1,9 @@
 import logging
 import sys
 
-from PyQt5.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent
-from PyQt5.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
-from PyQt5.QtWidgets import QAbstractScrollArea, QFrame, QVBoxLayout, QStackedLayout
+from PyQt6.QtCore import Qt, QRect, QSize, QEasingCurve, QEvent, QPointF
+from PyQt6.QtGui import QPainter, QBrush, QColor, QLinearGradient, QPalette
+from PyQt6.QtWidgets import QAbstractScrollArea, QFrame, QVBoxLayout, QStackedLayout
 
 from feeluown.utils import aio
 from feeluown.library import ModelType
@@ -30,7 +30,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         self._app = app
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         self.t = TableContainer(app, self)
         self.setWidget(self.t)
@@ -42,8 +42,8 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         # As far as I know, KDE and GNOME can't auto hide the scrollbar,
         # and they show an old-fation vertical scrollbar.
         # HELP: implement an auto-hide scrollbar for Linux
-        if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        if sys.platform.lower() != "darwin":
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def get_itemview(self):
         return self.t.current_table
@@ -56,7 +56,7 @@ class ScrollArea(BaseScrollAreaForNoScrollItemView, BgTransparentMixin):
         return height
 
     def eventFilter(self, _, event):
-        if event.type() == QEvent.Resize:
+        if event.type() == QEvent.Type.Resize:
             self.maybe_resize_itemview()
         return False
 
@@ -115,7 +115,7 @@ class RightPanel(QFrame):
         # remove tmp widgets
         for i in range(self._stacked_layout.count()):
             w = self._stacked_layout.widget(i)
-            if w not in (self.scrollarea, ):
+            if w not in (self.scrollarea,):
                 self._stacked_layout.removeWidget(w)
 
         widget.installEventFilter(self)
@@ -127,12 +127,11 @@ class RightPanel(QFrame):
 
     def eventFilter(self, _, event):
         # Refresh when the body is scrolled.
-        if event.type() == QEvent.Wheel:
+        if event.type() == QEvent.Type.Wheel:
             self.update()
         return False
 
     def show_collection(self, coll, model_type):
-
         def _show_pure_albums_coll(coll):
             self.set_body(self.scrollarea)
             reader = wrap(coll.models)
@@ -171,9 +170,9 @@ class RightPanel(QFrame):
         HELP: currently, this cost much CPU
         """
         painter = QPainter(self)
-        painter.setPen(Qt.NoPen)
-        painter.setRenderHint(QPainter.Antialiasing)
-        painter.setRenderHint(QPainter.SmoothPixmapTransform)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.SmoothPixmapTransform)
 
         # calculate available size
         draw_width = self.width()
@@ -189,16 +188,16 @@ class RightPanel(QFrame):
             scrolled = 0
         max_scroll_height = draw_height - self.bottom_panel.height()
 
-        # Draw the whole background with QPalette.Base color.
+        # Draw the whole background with QPalette.ColorRole.Base color.
         painter.save()
-        painter.setBrush(self.palette().brush(QPalette.Base))
+        painter.setBrush(self.palette().brush(QPalette.ColorRole.Base))
         painter.drawRect(self.rect())
         painter.restore()
 
         # Do not draw the pixmap or overlay when it scrolled a lot.
         if scrolled > max_scroll_height:
             painter.save()
-            painter.setBrush(self.palette().brush(QPalette.Window))
+            painter.setBrush(self.palette().brush(QPalette.ColorRole.Window))
             painter.drawRect(self.bottom_panel.rect())
             painter.restore()
             return
@@ -206,14 +205,14 @@ class RightPanel(QFrame):
         if self._pixmap is not None:
             self._draw_pixmap(painter, draw_width, draw_height, scrolled)
             self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
-            curve = QEasingCurve(QEasingCurve.OutCubic)
+            curve = QEasingCurve(QEasingCurve.Type.OutCubic)
             if max_scroll_height == 0:
                 alpha_ratio = 1.0
             else:
                 alpha_ratio = min(scrolled / max_scroll_height, 1.0)
             alpha = int(250 * curve.valueForProgress(alpha_ratio))
             painter.save()
-            color = self.palette().color(QPalette.Window)
+            color = self.palette().color(QPalette.ColorRole.Window)
             color.setAlpha(alpha)
             painter.setBrush(color)
             painter.drawRect(self.bottom_panel.rect())
@@ -225,7 +224,7 @@ class RightPanel(QFrame):
             # if scrolled height > 30, draw background to seperate bottom_panel and body
             if scrolled >= 30:
                 painter.save()
-                painter.setBrush(self.palette().brush(QPalette.Window))
+                painter.setBrush(self.palette().brush(QPalette.ColorRole.Window))
                 painter.drawRect(self.bottom_panel.rect())
                 painter.restore()
                 return
@@ -233,7 +232,7 @@ class RightPanel(QFrame):
             # since the body's background color is palette(base), we use
             # the color to draw background for remain empty area
             painter.save()
-            painter.setBrush(self.palette().brush(QPalette.Base))
+            painter.setBrush(self.palette().brush(QPalette.ColorRole.Base))
             painter.drawRect(0, draw_height, draw_width, self.height() - draw_height)
             painter.restore()
         painter.end()
@@ -242,8 +241,8 @@ class RightPanel(QFrame):
         painter.save()
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
-        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        color = self.palette().color(QPalette.Base)
+        gradient = QLinearGradient(QPointF(rect.topLeft()), QPointF(rect.bottomLeft()))
+        color = self.palette().color(QPalette.ColorRole.Base)
         if draw_height == self.height():
             gradient.setColorAt(0, add_alpha(color, 180))
             gradient.setColorAt(1, add_alpha(color, 230))
@@ -270,9 +269,9 @@ class RightPanel(QFrame):
         painter.save()
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
-        gradient = QLinearGradient(rect.topLeft(), rect.bottomLeft())
-        gradient.setColorAt(0, self.palette().color(QPalette.Window))
-        gradient.setColorAt(1, self.palette().color(QPalette.Base))
+        gradient = QLinearGradient(QPointF(rect.topLeft()), QPointF(rect.bottomLeft()))
+        gradient.setColorAt(0, self.palette().color(QPalette.ColorRole.Window))
+        gradient.setColorAt(1, self.palette().color(QPalette.ColorRole.Base))
         painter.setBrush(gradient)
         painter.drawRect(rect)
         painter.restore()
@@ -286,8 +285,8 @@ class RightPanel(QFrame):
         painter.save()
         if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
             scaled_pixmap = self._pixmap.scaledToHeight(
-                draw_height,
-                mode=Qt.SmoothTransformation)
+                draw_height, mode=Qt.TransformationMode.SmoothTransformation
+            )
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
             pixmap_size = scaled_pixmap.size()
@@ -296,8 +295,8 @@ class RightPanel(QFrame):
             rect = QRect(0, 0, pixmap_size.width(), draw_height)
         else:
             scaled_pixmap = self._pixmap.scaledToWidth(
-                draw_width,
-                mode=Qt.SmoothTransformation)
+                draw_width, mode=Qt.TransformationMode.SmoothTransformation
+            )
             pixmap_size = scaled_pixmap.size()
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
@@ -306,7 +305,7 @@ class RightPanel(QFrame):
             # which causes bad visual effect. So we render the top-center part
             # of the pixmap here.
             y = (pixmap_size.height() - draw_height) // 3
-            painter.translate(0, - y - scrolled)
+            painter.translate(0, -y - scrolled)
             rect = QRect(0, y, draw_width, draw_height)
         painter.drawRect(rect)
         painter.restore()
@@ -326,9 +325,11 @@ class RightPanel(QFrame):
         if self._pixmap is None:
             self.table_container.meta_widget.setMinimumHeight(0)
         else:
-            height = (self._background_image_height_hint() -
-                      self.bottom_panel.height() -
-                      self.table_container.toolbar.height())
+            height = (
+                self._background_image_height_hint()
+                - self.bottom_panel.height()
+                - self.table_container.toolbar.height()
+            )
             self.table_container.meta_widget.setMinimumHeight(height)
 
     def _background_image_height_hint(self):

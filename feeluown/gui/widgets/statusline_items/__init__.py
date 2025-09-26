@@ -3,6 +3,6 @@ from .notify import NotifyStatus
 
 
 __all__ = (
-    'PluginStatus',
-    'NotifyStatus',
+    "PluginStatus",
+    "NotifyStatus",
 )

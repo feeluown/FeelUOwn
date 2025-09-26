@@ -30,7 +30,7 @@ setup(
     },
     python_requires=">=3.8",
     url='https://github.com/feeluown/FeelUOwn',
-    keywords=['media', 'player', 'application', 'PyQt5', 'music'],
+    keywords=['media', 'player', 'application', 'PyQt6', 'music'],
     classifiers=[
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
@@ -45,10 +45,10 @@ setup(
         "Operating System :: POSIX :: Linux",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)"
     ],
-    # FIXME: depends on PyQt5
-    # - PyQt5.QtWidgets/QtCore/QtGui
-    # - PyQt5.QtSvg
-    # - PyQt5.QtOpenGL
+    # FIXME: depends on PyQt6
+    # - PyQt6.QtWidgets/QtCore/QtGui
+    # - PyQt6.QtSvg
+    # - PyQt6.QtOpenGL
     #
     # The feeluown.compat module will choose the right package
     # for different python version
@@ -73,7 +73,7 @@ setup(
             'openai>=1.50',
         ],
         'qt': [
-            'PyQt5',
+            'PyQt6',
         ],
         'macOS': [
             'aionowplaying>=0.10',
@@ -97,8 +97,8 @@ setup(
             'flake8',
             'pylint',
             'mypy',
-            # pyqt5-stubs seems more accurate than the stubs packaged in PyQt5 package.
-            # For example, the stubs in PyQt5 has wrong type hint for Qt.ItemIsSelectable.
+            # pyqt5-stubs seems more accurate than the stubs packaged in PyQt6 package.
+            # For example, the stubs in PyQt6 has wrong type hint for Qt.ItemFlag.ItemIsSelectable.
             # Some pyqt5 package installed by system package manager may not contain stubs.
             'pyqt5-stubs',
 

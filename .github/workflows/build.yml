@@ -65,9 +65,8 @@ jobs:
       - name: Install Python Dependencies
         run: |
           pip install --upgrade pip
-          pip install pyqt5
           pip install "pytest<7.2"
-          pip install -e .[dev,cookies,webserver,ytdl,ai]
+          pip install -e .[qt,dev,cookies,webserver,ytdl,ai]
 
       - name: Install Python(macOS) Dependencies
         if: startsWith(matrix.os, 'macos')

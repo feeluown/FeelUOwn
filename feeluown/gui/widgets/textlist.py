@@ -1,6 +1,6 @@
 import logging
 
-from PyQt5.QtCore import (
+from PyQt6.QtCore import (
     QAbstractListModel,
     Qt,
     QModelIndex,
@@ -9,8 +9,8 @@ from PyQt5.QtCore import (
     QTimer,
     QVariant,
 )
-from PyQt5.QtGui import QPainter, QFontMetrics
-from PyQt5.QtWidgets import QListView, QStyledItemDelegate
+from PyQt6.QtGui import QPainter, QFontMetrics
+from PyQt6.QtWidgets import QListView, QStyledItemDelegate
 
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,7 @@ class TextlistModel(QAbstractListModel):
     - clear: clear list
     - __len__: for truth judgement
     """
+
     def __init__(self, parent):
         super().__init__(parent)
         self._items = []
@@ -62,15 +63,15 @@ class TextlistModel(QAbstractListModel):
     def flags(self, index):  # pylint: disable=no-self-use
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled
+        flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         if not index.isValid():
             return QVariant()
         row = index.row()
         item = self.items[row]
-        if role == Qt.UserRole:
+        if role == Qt.ItemDataRole.UserRole:
             return item
         return QVariant()
 
@@ -105,9 +106,9 @@ class TextlistView(QListView):
         self._result_timer.timeout.connect(self.__on_timeout)
         self._results = {}  # {row: [index, True]}
 
-        self.setAttribute(Qt.WA_MacShowFocusRect, False)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setAttribute(Qt.WidgetAttribute.WA_MacShowFocusRect, False)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def __on_timeout(self):
         self._result_timer.stop()
@@ -136,18 +137,17 @@ class TextlistView(QListView):
         if not self._results:
             return
         painter = QPainter(self.viewport())
-        option = self.viewOptions()
-        painter.setRenderHint(QPainter.Antialiasing)
-        fm = QFontMetrics(option.font)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        fm = QFontMetrics(self.font())
         for _, result in self._results.items():
             index, state = result
             rect = self.rectForIndex(index)
             if state is None:
-                text = '😶'
+                text = "😶"
             elif state is True:
-                text = '👋'
+                text = "👋"
             else:
-                text = '🙁'
+                text = "🙁"
             x = rect.width() - 20 + rect.x()
             # 让字垂直居中
             y = (rect.height() + fm.ascent() - fm.descent()) // 2 + rect.y()

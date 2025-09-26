@@ -1,10 +1,17 @@
 import sys
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QSize, Qt
-from PyQt5.QtWidgets import (
-    QFrame, QLabel, QVBoxLayout, QScrollArea, QMessageBox,
-    QFormLayout, QDialog, QLineEdit, QDialogButtonBox,
+from PyQt6.QtCore import QSize, Qt
+from PyQt6.QtWidgets import (
+    QFrame,
+    QLabel,
+    QVBoxLayout,
+    QScrollArea,
+    QMessageBox,
+    QFormLayout,
+    QDialog,
+    QLineEdit,
+    QDialogButtonBox,
 )
 
 from feeluown.collection import CollectionAlreadyExists, CollectionType
@@ -20,22 +27,21 @@ if TYPE_CHECKING:
 
 
 class LeftPanel(QScrollArea):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent)
         self._app = app
 
         self.setWidgetResizable(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
 
         self.p = _LeftPanel(app, self)
         self.setWidget(self.p)
 
-        if sys.platform.lower() != 'darwin':
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        if sys.platform.lower() != "darwin":
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
         # HELP(cosven): size policy is not working
-        # self.setSizePolicy(QSizePolicy.Maximum, QSizePolicy.Expanding)
+        # self.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Expanding)
         self.setMaximumWidth(280)
 
     def sizeHint(self):
@@ -57,20 +63,19 @@ class LeftPanel(QScrollArea):
 
 
 class _LeftPanel(QFrame):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent)
         self._app = app
 
         self.home_btn = HomeButton(height=30, parent=self)
         self.ai_btn = AIButton(height=30, padding=0.2, parent=self)
-        self.collections_header = QLabel('本地收藏集', self)
+        self.collections_header = QLabel("本地收藏集", self)
         self.collections_header.setToolTip(
-            '我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n'
-            '每个收藏集都以一个独立 .fuo 文件的存在，'
-            '将鼠标悬浮在收藏集上，可以查看文件所在路径。\n'
-            '新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n'
-            '手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。'
+            "我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源\n\n"
+            "每个收藏集都以一个独立 .fuo 文件的存在，"
+            "将鼠标悬浮在收藏集上，可以查看文件所在路径。\n"
+            "新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。\n\n"
+            "手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删歌曲。"
         )
         self.collections_view = CollectionListView(self._app)
         self.collections_con = LVC(self.collections_header, self.collections_view)
@@ -94,23 +99,26 @@ class _LeftPanel(QFrame):
         self._layout.addStretch(0)
 
         self.collections_view.show_collection.connect(
-            lambda coll: self._app.browser.goto(page=f'/colls/{coll.identifier}'))
+            lambda coll: self._app.browser.goto(page=f"/colls/{coll.identifier}")
+        )
         self.collections_view.remove_collection.connect(self._remove_coll)
         self.collections_con.create_btn.clicked.connect(
-            self.popup_collection_adding_dialog)
-        self.collections_view.setFrameShape(QFrame.NoFrame)
-        self.setFrameShape(QFrame.NoFrame)
+            self.popup_collection_adding_dialog
+        )
+        self.collections_view.setFrameShape(QFrame.Shape.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.collections_con.create_btn.show()
         self.provider_bar.fold_top_btn.clicked.connect(self._toggle_top_layout)
         if self._app.config.ENABLE_NEW_HOMEPAGE is True:
             self.home_btn.clicked.connect(
-                lambda: self._app.browser.goto(page='/homepage'))
+                lambda: self._app.browser.goto(page="/homepage")
+            )
         else:
             self.home_btn.clicked.connect(self.show_library)
         if self._app.ai is None:
             self.ai_btn.setDisabled(True)
             self.ai_btn.setToolTip(
-                '你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了\n'
+                "你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了\n"
                 'config.OPENAI_API_KEY = "sk-xxx"\n'
                 'config.OPENAI_API_BASEURL = "http://xxx"\n'
                 'config.OPENAI_API_MODEL = "model name"\n'
@@ -119,27 +127,35 @@ class _LeftPanel(QFrame):
             self.ai_btn.clicked.connect(self._app.ui.ai_chat_overlay.show)
 
     def _toggle_top_layout(self, checked):
-        widgets = [self._top_separator, self.collections_con, self.home_btn, self.ai_btn]
+        widgets = [
+            self._top_separator,
+            self.collections_con,
+            self.home_btn,
+            self.ai_btn,
+        ]
         if checked:
-            self.provider_bar.fold_top_btn.set_direction('down')
+            self.provider_bar.fold_top_btn.set_direction("down")
             for w in widgets:
                 w.hide()
         else:
-            self.provider_bar.fold_top_btn.set_direction('up')
+            self.provider_bar.fold_top_btn.set_direction("up")
             for w in widgets:
                 w.show()
 
     def popup_collection_adding_dialog(self):
         dialog = QDialog(self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         layout = QFormLayout(dialog)
         id_edit = QLineEdit(dialog)
         title_edit = QLineEdit(dialog)
-        layout.addRow('ID', id_edit)
-        layout.addRow('标题', title_edit)
-        button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Save)
-        layout.addRow('', button_box)
+        layout.addRow("ID", id_edit)
+        layout.addRow("标题", title_edit)
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Cancel
+            | QDialogButtonBox.StandardButton.Save
+        )
+        layout.addRow("", button_box)
         button_box.accepted.connect(dialog.accept)
         button_box.rejected.connect(dialog.reject)
 
@@ -149,7 +165,7 @@ class _LeftPanel(QFrame):
             try:
                 self._app.coll_mgr.create(fname, title)
             except CollectionAlreadyExists:
-                QMessageBox.warning(self, '警告', f"收藏集 '{fname}' 已存在")
+                QMessageBox.warning(self, "警告", f"收藏集 '{fname}' 已存在")
             else:
                 self._app.coll_mgr.refresh()
 
@@ -158,19 +174,23 @@ class _LeftPanel(QFrame):
 
     def show_library(self):
         coll_library = self._app.coll_mgr.get_coll_library()
-        self._app.browser.goto(page=f'/colls/{coll_library.identifier}')
+        self._app.browser.goto(page=f"/colls/{coll_library.identifier}")
 
     def show_pool(self):
         coll = self._app.coll_mgr.get(CollectionType.sys_pool)
-        self._app.browser.goto(page=f'/colls/{coll.identifier}')
+        self._app.browser.goto(page=f"/colls/{coll.identifier}")
 
     def _remove_coll(self, coll):
-
         def do():
             self._app.coll_mgr.remove(coll)
             self._app.coll_mgr.refresh()
 
-        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除收藏集 '{coll.name}' 吗？",
-                          QMessageBox.Yes | QMessageBox.No, self)
+        box = QMessageBox(
+            QMessageBox.Icon.Warning,
+            "提示",
+            f"确认删除收藏集 '{coll.name}' 吗？",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            self,
+        )
         box.accepted.connect(do)
         box.open()

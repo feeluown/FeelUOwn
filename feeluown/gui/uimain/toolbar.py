@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QWidget, QPushButton, QHBoxLayout, QStackedWidget
 
 from feeluown.gui.widgets import (
     LeftArrowButton,
@@ -20,14 +20,12 @@ ButtonSpacing = int(ButtonSize[0] / 6)
 
 
 class ToolbarButton(QPushButton):
-
     def __init__(self, text, parent=None):
         super().__init__(text, parent=parent)
 
 
 class BottomPanel(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent)
         self._app = app
 
@@ -60,7 +58,7 @@ class BottomPanel(QWidget):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setObjectName('bottom_panel')
+        self.setObjectName("bottom_panel")
 
         self._layout.addWidget(self.back_btn)
         self._layout.addWidget(self.forward_btn)
@@ -79,7 +77,7 @@ class BottomPanel(QWidget):
 
         self.setFixedHeight(height + v_margin * 2 + 8)
         self._layout.setContentsMargins(h_margin, v_margin, h_margin, v_margin)
-        self._layout.setAlignment(self._stacked_widget, Qt.AlignVCenter)
+        self._layout.setAlignment(self._stacked_widget, Qt.AlignmentFlag.AlignVCenter)
         self._layout.setSpacing(ButtonSpacing)
 
     def _show_next_stacked_widget(self):

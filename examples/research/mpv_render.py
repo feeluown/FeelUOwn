@@ -1,6 +1,6 @@
-from PyQt5.QtCore import Qt, QMetaObject, pyqtSlot
-from PyQt5.QtWidgets import QOpenGLWidget, QApplication, QWidget, QHBoxLayout
-from PyQt5.QtOpenGL import QGLContext
+from PyQt6.QtCore import Qt, QMetaObject, pyqtSlot
+from PyQt6.QtWidgets import QOpenGLWidget, QApplication, QWidget, QHBoxLayout
+from PyQt6.QtOpenGL import QGLContext
 
 # HELP: currently, we need import GL module，otherwise it will raise seg fault on Linux(Ubuntu 18.04)
 # from OpenGL import GL  # noqa

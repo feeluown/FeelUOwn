@@ -1,8 +1,8 @@
 from typing import TYPE_CHECKING, cast
 
-from PyQt5.QtCore import QEvent, QSize
-from PyQt5.QtGui import QResizeEvent
-from PyQt5.QtWidgets import (
+from PyQt6.QtCore import QEvent, QSize
+from PyQt6.QtGui import QResizeEvent
+from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
     QWidget,
@@ -28,8 +28,7 @@ if TYPE_CHECKING:
 
 
 class CtlButtons(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent: 'PlayerPanel'):
+    def __init__(self, app: "GuiApp", parent: "PlayerPanel"):
         super().__init__(parent=parent)
         self._app = app
 
@@ -40,8 +39,7 @@ class CtlButtons(QWidget):
 
 
 class PlayerPanel(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
         self.artwork_view = NowplayingArtwork(app, self)
@@ -56,9 +54,7 @@ class PlayerPanel(QWidget):
         self.ctl_btns.media_btns.toggle_video_btn.clicked.connect(
             self.keep_and_enter_video_mode
         )
-        self._app.player.media_loaded_v2.connect(
-            self.on_media_loaded, aioqueue=True
-        )
+        self._app.player.media_loaded_v2.connect(self.on_media_loaded, aioqueue=True)
         self._keep_video_mode = False
 
     def setup_ui(self):
@@ -106,12 +102,13 @@ class PlayerPanel(QWidget):
         self.ctl_btns.hide()
         self.progress.hide()
         video_widget.ctl_bar.clear_adhoc_btns()
-        exit_btn = video_widget.ctl_bar.add_adhoc_btn('退出视频模式')
-        fullwindow_btn = video_widget.ctl_bar.add_adhoc_btn('窗口全屏')
+        exit_btn = video_widget.ctl_bar.add_adhoc_btn("退出视频模式")
+        fullwindow_btn = video_widget.ctl_bar.add_adhoc_btn("窗口全屏")
         exit_btn.clicked.connect(self.unkeep_and_enter_cover_mode)
         fullwindow_btn.clicked.connect(
-            lambda: self._app.watch_mgr.
-            enter_fullwindow_mode(go_back=self.enter_video_mode)
+            lambda: self._app.watch_mgr.enter_fullwindow_mode(
+                go_back=self.enter_video_mode
+            )
         )
 
     def enter_cover_mode(self):
@@ -135,7 +132,7 @@ class PlayerPanel(QWidget):
         return QSize(500, 400)
 
     def on_media_loaded(self, properties):
-        if bool(properties['video_format']) is True:
+        if bool(properties["video_format"]) is True:
             if self._keep_video_mode:
                 self.enter_video_mode()
         else:
@@ -143,8 +140,7 @@ class PlayerPanel(QWidget):
 
 
 class NowplayingOverlay(QWidget):
-
-    def __init__(self, app: 'GuiApp', parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
         self._app.installEventFilter(self)
@@ -158,10 +154,10 @@ class NowplayingOverlay(QWidget):
         self.comments_view = NowplayingCommentListView(app)
         self.player_playlist_view = NowplayingPlayerPlaylistView(app)
         self.similar_songs_view = NowplayingSimilarSongsView(app)
-        self.tabbar.addTab('歌词')
-        self.tabbar.addTab('热门评论')
-        self.tabbar.addTab('相似歌曲')
-        self.tabbar.addTab('播放队列')
+        self.tabbar.addTab("歌词")
+        self.tabbar.addTab("热门评论")
+        self.tabbar.addTab("相似歌曲")
+        self.tabbar.addTab("播放队列")
         self.stacked_widget.addWidget(self.lyric_view)
         self.stacked_widget.addWidget(self.comments_view)
         self.stacked_widget.addWidget(self.similar_songs_view)
@@ -176,7 +172,7 @@ class NowplayingOverlay(QWidget):
     def setup_ui(self):
         set_default_font_families(self.comments_view)
         self.tabbar.setDocumentMode(True)
-        self.tabbar.setShape(QTabBar.TriangularEast)
+        self.tabbar.setShape(QTabBar.Shape.TriangularEast)
         self.setAutoFillBackground(True)
         self.lyric_view.viewport().setAutoFillBackground(False)
         self.comments_view.viewport().setAutoFillBackground(False)
@@ -196,24 +192,24 @@ class NowplayingOverlay(QWidget):
         super().showEvent(e)
 
     def eventFilter(self, obj, event):
-        if self.isVisible() and obj is self._app and event.type() == QEvent.Resize:
+        if self.isVisible() and obj is self._app and event.type() == QEvent.Type.Resize:
             event = cast(QResizeEvent, event)
             self.resize(event.size())
         return False
 
 
-if __name__ == '__main__':
-    from PyQt5.QtWidgets import QWidget
+if __name__ == "__main__":
+    from PyQt6.QtWidgets import QWidget
 
     from feeluown.gui.debug import simple_layout, mock_app
     from feeluown.player import Metadata
 
-    with simple_layout(theme='dark') as layout, mock_app() as app:
+    with simple_layout(theme="dark") as layout, mock_app() as app:
         app.playlist.list.return_value = []
         app.size.return_value = QSize(600, 400)
         widget = NowplayingOverlay(app, None)
         widget.resize(600, 400)
         widget.player_panel.title_label.on_metadata_changed(
-            Metadata(title='我和我的祖国', artists=['王菲'])
+            Metadata(title="我和我的祖国", artists=["王菲"])
         )
         layout.addWidget(widget)

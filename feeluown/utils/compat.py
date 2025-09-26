@@ -2,7 +2,7 @@ import asyncio
 import sys
 
 from qasync import QEventLoop, QThreadExecutor
-from PyQt5.QtWidgets import QApplication
+from PyQt6.QtWidgets import QApplication
 
 try:
     from qasync import DefaultQEventLoopPolicy

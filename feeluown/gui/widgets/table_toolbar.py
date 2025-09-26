@@ -1,5 +1,5 @@
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtWidgets import QHBoxLayout, QComboBox, QWidget
+from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QHBoxLayout, QComboBox, QWidget
 
 from feeluown.library import AlbumType
 from feeluown.gui.widgets import TextButton
@@ -15,16 +15,19 @@ class SongsTableToolbar(QWidget):
 
         self._tmp_buttons = []
 
-        self.play_all_btn = TextButton('播放全部', self)
+        self.play_all_btn = TextButton("播放全部", self)
         self.play_all_btn.clicked.connect(self.play_all_needed.emit)
 
-        self.play_all_btn.setObjectName('play_all')
+        self.play_all_btn.setObjectName("play_all")
 
         # album filters
         self.filter_albums_combobox = QComboBox(self)
-        self.filter_albums_combobox.addItems(['所有专辑', '标准', '单曲与EP', '现场', '合辑'])
+        self.filter_albums_combobox.addItems(
+            ["所有专辑", "标准", "单曲与EP", "现场", "合辑"]
+        )
         self.filter_albums_combobox.currentIndexChanged.connect(
-            self.on_albums_filter_changed)
+            self.on_albums_filter_changed
+        )
         # 8 works on macOS, don't know if it works on various Linux DEs
         self.filter_albums_combobox.setMinimumContentsLength(8)
         self.filter_albums_combobox.hide()
@@ -54,12 +57,12 @@ class SongsTableToolbar(QWidget):
         # currently, this is called only when feeluown is fetching songs,
         # so when we enter state_playall_start, we set play all btn text
         # to this.
-        self.play_all_btn.setText('获取所有歌曲...')
+        self.play_all_btn.setText("获取所有歌曲...")
 
     def enter_state_playall_end(self):
-        self.play_all_btn.setText('获取所有歌曲...done')
+        self.play_all_btn.setText("获取所有歌曲...done")
         self.play_all_btn.setEnabled(True)
-        self.play_all_btn.setText('播放全部')
+        self.play_all_btn.setText("播放全部")
 
     def add_tmp_button(self, button):
         """Append text button"""

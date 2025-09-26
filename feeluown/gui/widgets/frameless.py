@@ -1,7 +1,6 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QWidget, QSizePolicy, QVBoxLayout, \
-    QShortcut
+from PyQt6.QtCore import Qt
+from PyQt6.QtGui import QKeySequence, QShortcut
+from PyQt6.QtWidgets import QWidget, QSizePolicy, QVBoxLayout
 
 
 class ResizableFramelessContainer(QWidget):
@@ -13,7 +12,10 @@ class ResizableFramelessContainer(QWidget):
 
     NOTE: this is mainly designed for picture in picture mode currently.
     """
-    def __init__(self,):
+
+    def __init__(
+        self,
+    ):
         super().__init__(parent=None)
 
         self._widget = None
@@ -21,20 +23,25 @@ class ResizableFramelessContainer(QWidget):
         self._widget = None
 
         # setup window layout
-        self.setWindowFlags(Qt.WindowStaysOnTopHint | Qt.FramelessWindowHint)
+        self.setWindowFlags(
+            Qt.WindowType.WindowStaysOnTopHint | Qt.WindowType.FramelessWindowHint
+        )
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
         self.setMouseTracking(True)
 
-        QShortcut(QKeySequence.Cancel, self).activated.connect(
-            self.on_cancel_key_pressed)
+        QShortcut(QKeySequence.StandardKey.Cancel, self).activated.connect(
+            self.on_cancel_key_pressed
+        )
 
     def attach_widget(self, widget):
         """set inner widget"""
         self._widget = widget
-        self._widget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self._widget.setSizePolicy(
+            QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding
+        )
         self._layout.insertWidget(0, self._widget)
 
     def detach(self):
@@ -43,16 +50,16 @@ class ResizableFramelessContainer(QWidget):
         self._widget = None
 
     def mousePressEvent(self, e):
-        self._old_pos = e.globalPos()
+        self._old_pos = e.globalPosition()
 
     def mouseMoveEvent(self, e):
-        # NOTE: e.button() == Qt.LeftButton don't work on Windows
+        # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._old_pos is not None:
-            delta = e.globalPos() - self._old_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self._old_pos = e.globalPos()
+            delta = e.globalPosition() - self._old_pos
+            self.move(int(self.x() + delta.x()), int(self.y() + delta.y()))
+            self._old_pos = e.globalPosition()
 
     def mouseReleaseEvent(self, e):
         self._old_pos = None
@@ -61,14 +68,14 @@ class ResizableFramelessContainer(QWidget):
         super().resizeEvent(e)
 
     def on_cancel_key_pressed(self):
-        if Qt.WindowFullScreen & self.windowState():
-            self.setWindowState(self.windowState() ^ Qt.WindowFullScreen)
+        if Qt.WindowState.WindowFullScreen & self.windowState():
+            self.setWindowState(self.windowState() ^ Qt.WindowState.WindowFullScreen)
         else:
             self.hide()
 
 
-if __name__ == '__main__':
-    from PyQt5.QtWidgets import QApplication, QLabel
+if __name__ == "__main__":
+    from PyQt6.QtWidgets import QApplication, QLabel
 
     app = QApplication([])
     widget = QLabel("hello world!")

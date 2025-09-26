@@ -1,9 +1,9 @@
 import os
 import sys
 
-from PyQt5.QtCore import Qt, QDir
-from PyQt5.QtGui import QIcon, QPixmap, QGuiApplication
-from PyQt5.QtWidgets import QApplication, QWidget
+from PyQt6.QtCore import Qt, QDir
+from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
+from PyQt6.QtWidgets import QApplication, QWidget
 
 from feeluown.gui.browser import Browser
 from feeluown.gui.hotkey import HotkeyManager
@@ -27,13 +27,18 @@ class GuiApp(App, QWidget):
         pkg_root_dir = os.path.join(os.path.dirname(__file__), '..')
         icons_dir = os.path.join(pkg_root_dir, 'gui/assets/icons')
         QDir.addSearchPath('icons', icons_dir)
-        QGuiApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
+        # Tested on macOS and Arch Linux
+        # macOS: must initialize QApplication before constructing a pixmap object.
+        # Arch Linux: it may core if QApplication is initialized here.
+        if sys.platform == 'darwin':
+            GuiApp.__q_app = QApplication([])
         # Set desktopFileName so that the window icon is properly shown under wayland.
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
         QApplication.setDesktopFileName('FeelUOwn')
         QApplication.instance().setQuitOnLastWindowClosed(not config.ENABLE_TRAY)
         QApplication.instance().setApplicationName('FeelUOwn')
+        QGuiApplication.setWindowIcon(QIcon(QPixmap('icons:feeluown.png')))
 
         # Note that QApplication.setFont only works for those widgets that created
         # after `QApplication.exec` (tested on macOS).
@@ -130,11 +135,11 @@ class GuiApp(App, QWidget):
             self.exit()
 
     def mouseReleaseEvent(self, e):
-        if not self.rect().contains(e.pos()):
+        if not self.rect().contains(e.position().toPoint()):
             return
-        if e.button() == Qt.BackButton:
+        if e.button() == Qt.MouseButton.BackButton:
             self.browser.back()
-        elif e.button() == Qt.ForwardButton:
+        elif e.button() == Qt.MouseButton.ForwardButton:
             self.browser.forward()
 
     def exit_player(self):

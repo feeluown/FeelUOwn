@@ -1,6 +1,6 @@
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtGui import QPainter, QPalette
-from PyQt5.QtWidgets import QAbstractSlider
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtGui import QPainter, QPalette
+from PyQt6.QtWidgets import QAbstractSlider
 
 from feeluown.gui.drawers import VolumeIconDrawer
 from feeluown.gui.helpers import painter_save, darker_or_lighter
@@ -12,7 +12,7 @@ class VolumeButton(QAbstractSlider):
     def __init__(self, length=30, padding=0.25, parent=None):
         super().__init__(parent=parent)
 
-        self.setToolTip('调整音量')
+        self.setToolTip("调整音量")
 
         font = self.font()
         font.setPixelSize(length // 3)
@@ -40,25 +40,27 @@ class VolumeButton(QAbstractSlider):
 
     def paintEvent(self, _) -> None:
         painter = QPainter(self)
-        painter.setRenderHint(QPainter.Antialiasing)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         if self.__checked is True:
             with painter_save(painter):
-                painter.setPen(Qt.NoPen)
-                color = self.palette().color(QPalette.Background)
+                painter.setPen(Qt.PenStyle.NoPen)
+                color = self.palette().color(QPalette.ColorRole.Window)
                 painter.setBrush(darker_or_lighter(color, 120))
                 painter.drawEllipse(self.rect())
-            painter.drawText(self.rect(), Qt.AlignCenter, f'{self.value()}%')
+            painter.drawText(
+                self.rect(), Qt.AlignmentFlag.AlignCenter, f"{self.value()}%"
+            )
         else:
             self.drawer.draw(painter, self.palette())
 
     def mousePressEvent(self, e) -> None:
         super().mousePressEvent(e)
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             self.__pressed = True
 
     def mouseReleaseEvent(self, e):
         super().mouseReleaseEvent(e)
-        if e.button() == Qt.LeftButton:
+        if e.button() == Qt.MouseButton.LeftButton:
             if self.__pressed is True:
                 self.__pressed = False
                 self.__checked = not self.__checked
@@ -66,7 +68,7 @@ class VolumeButton(QAbstractSlider):
                 self.update()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from feeluown.gui.debug import simple_layout
 
     with simple_layout() as layout:

@@ -14,16 +14,32 @@ import logging
 import random
 from typing import TypeVar, Optional, List, cast, Union, TYPE_CHECKING
 
-from PyQt5.QtCore import (
-    QAbstractListModel, QModelIndex, Qt, QObject, QEvent,
-    QRectF, QRect, QSize, QSortFilterProxyModel, pyqtSignal
+from PyQt6.QtCore import (
+    QAbstractListModel,
+    QModelIndex,
+    Qt,
+    QObject,
+    QEvent,
+    QRectF,
+    QRect,
+    QSize,
+    QSortFilterProxyModel,
+    pyqtSignal,
 )
-from PyQt5.QtGui import (
-    QImage, QColor, QResizeEvent, QGuiApplication,
-    QBrush, QPainter, QTextOption, QFontMetrics
+from PyQt6.QtGui import (
+    QImage,
+    QColor,
+    QResizeEvent,
+    QGuiApplication,
+    QBrush,
+    QPainter,
+    QTextOption,
+    QFontMetrics,
 )
-from PyQt5.QtWidgets import (
-    QAbstractItemDelegate, QListView, QFrame,
+from PyQt6.QtWidgets import (
+    QAbstractItemDelegate,
+    QListView,
+    QFrame,
 )
 
 from feeluown.utils import aio
@@ -32,8 +48,12 @@ from feeluown.utils.reader import wrap, create_reader
 from feeluown.utils.utils import int_to_human_readable
 from feeluown.library import reverse
 from feeluown.gui.helpers import (
-    ItemViewNoScrollMixin, resize_font, ReaderFetchMoreMixin, painter_save,
-    secondary_text_color, fetch_cover_wrapper
+    ItemViewNoScrollMixin,
+    resize_font,
+    ReaderFetchMoreMixin,
+    painter_save,
+    secondary_text_color,
+    fetch_cover_wrapper,
 )
 
 if TYPE_CHECKING:
@@ -44,14 +64,14 @@ T = TypeVar("T")
 
 
 COLORS = {
-    'yellow':    '#b58900',
-    'orange':    '#cb4b16',
-    'red':       '#dc322f',
-    'magenta':   '#d33682',
-    'violet':    '#6c71c4',
-    'blue':      '#268bd2',
-    'cyan':      '#2aa198',
-    'green':     '#859900',
+    "yellow": "#b58900",
+    "orange": "#cb4b16",
+    "red": "#dc322f",
+    "magenta": "#d33682",
+    "violet": "#6c71c4",
+    "blue": "#268bd2",
+    "cyan": "#2aa198",
+    "green": "#859900",
 }
 
 
@@ -76,9 +96,12 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.images = {}  # {uri: QImage}
 
     @classmethod
-    def create(cls, reader, app: 'GuiApp'):
-        return cls(create_reader(reader),
-                   fetch_image=fetch_cover_wrapper(app))
+    def create(cls, reader, app: "GuiApp"):
+        return cls(
+            create_reader(reader),
+            fetch_image=fetch_cover_wrapper(app),
+            source_name_map={p.identifier: p.name for p in app.library.list()},
+        )
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
@@ -112,6 +135,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
             self.dataChanged.emit(top_left, bottom_right)
+
         return cb
 
     def data(self, index, role):
@@ -119,7 +143,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         if not index.isValid() or offset >= len(self._items):
             return None
         item = self._items[offset]
-        if role == Qt.DecorationRole:
+        if role == Qt.ItemDataRole.DecorationRole:
             uri = reverse(item)
             image = self.images.get(uri)
             if image is not None:
@@ -128,13 +152,13 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             color = QColor(color_str)
             color.setAlphaF(0.8)
             return color
-        elif role == Qt.DisplayRole:
+        elif role == Qt.ItemDataRole.DisplayRole:
             return item.name_display
-        elif role == Qt.UserRole:
+        elif role == Qt.ItemDataRole.UserRole:
             return item
-        elif role == Qt.WhatsThisRole:
+        elif role == Qt.ItemDataRole.WhatsThisRole:
             return self.source_name_map.get(item.source, item.source)
-        elif role == Qt.ToolTipRole:
+        elif role == Qt.ItemDataRole.ToolTipRole:
             return item.name
         return None
 
@@ -152,12 +176,13 @@ class ImgCardListDelegate(QAbstractItemDelegate):
     and the rightmost cards should have a half_h_spacing on the left side.
     Middle cards should have a half_h_spacing on both sides.
     """
-    def __init__(self, parent=None,
-                 card_min_width=150, card_spacing=20, card_text_height=40,
-                 **_):
+
+    def __init__(
+        self, parent=None, card_min_width=150, card_spacing=20, card_text_height=40, **_
+    ):
         super().__init__(parent)
 
-        self.view: 'ImgCardListView' = parent
+        self.view: "ImgCardListView" = parent
         self.view.installEventFilter(self)
         self.as_circle = True
         self.w_h_ratio = 1.0
@@ -183,14 +208,18 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.view.update()
 
     def paint(self, painter, option, index):
-        obj: Optional[Union[QImage, QColor]] = index.data(Qt.DecorationRole)
+        obj: Optional[Union[QImage, QColor]] = index.data(
+            Qt.ItemDataRole.DecorationRole
+        )
         if obj is None:
             return
 
         with painter_save(painter):
-            painter.setRenderHints(QPainter.Antialiasing |
-                                   QPainter.SmoothPixmapTransform |
-                                   QPainter.LosslessImageRendering)
+            painter.setRenderHints(
+                QPainter.RenderHint.Antialiasing
+                | QPainter.RenderHint.SmoothPixmapTransform
+                | QPainter.RenderHint.LosslessImageRendering
+            )
             painter.translate(option.rect.x(), option.rect.y())
 
             if not self.is_leftmost(index):
@@ -204,7 +233,8 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             img_height = int(draw_width / self.w_h_ratio)
             with painter_save(painter):
                 self.draw_img_or_color(
-                    painter, border_color, obj, draw_width, img_height)
+                    painter, border_color, obj, draw_width, img_height
+                )
 
             # Draw text(album name / artist name / playlist name), and draw source.
             text_title_height = 30
@@ -215,10 +245,12 @@ class ImgCardListDelegate(QAbstractItemDelegate):
                 self.draw_title(painter, index, text_rect)
             painter.translate(0, text_title_height - 5)
             with painter_save(painter):
-                self.draw_whats_this(painter,
-                                     index,
-                                     secondary_color,
-                                     QRectF(0, 0, draw_width, text_source_height + 5))
+                self.draw_whats_this(
+                    painter,
+                    index,
+                    secondary_color,
+                    QRectF(0, 0, draw_width, text_source_height + 5),
+                )
 
     def draw_img_or_color(self, painter, border_color, obj, draw_width, height):
         pen = painter.pen()
@@ -230,11 +262,15 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             painter.setBrush(brush)
         else:
             if obj.width() / obj.height() > draw_width / height:
-                img = obj.scaledToHeight(int(height * self._device_pixel_ratio),
-                                         Qt.SmoothTransformation)
+                img = obj.scaledToHeight(
+                    int(height * self._device_pixel_ratio),
+                    Qt.TransformationMode.SmoothTransformation,
+                )
             else:
-                img = obj.scaledToWidth(int(draw_width * self._device_pixel_ratio),
-                                        Qt.SmoothTransformation)
+                img = obj.scaledToWidth(
+                    int(draw_width * self._device_pixel_ratio),
+                    Qt.TransformationMode.SmoothTransformation,
+                )
             img.setDevicePixelRatio(self._device_pixel_ratio)
             brush = QBrush(img)
             painter.setBrush(brush)
@@ -247,21 +283,31 @@ class ImgCardListDelegate(QAbstractItemDelegate):
     def draw_title(self, painter, index, text_rect):
         text_option = QTextOption()
         if self.as_circle:
-            text_option.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+            text_option.setAlignment(
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+            )
         else:
-            text_option.setAlignment(Qt.AlignLeft | Qt.AlignVCenter)
-        name = index.data(Qt.DisplayRole)
+            text_option.setAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter
+            )
+        name = index.data(Qt.ItemDataRole.DisplayRole)
         fm = QFontMetrics(painter.font())
-        elided_name = fm.elidedText(name, Qt.ElideRight, int(text_rect.width()))
+        elided_name = fm.elidedText(
+            name, Qt.TextElideMode.ElideRight, int(text_rect.width())
+        )
         painter.drawText(text_rect, elided_name, text_option)
 
     def draw_whats_this(self, painter, index, non_text_color, whats_this_rect):
         source_option = QTextOption()
         if self.as_circle:
-            source_option.setAlignment(Qt.AlignHCenter | Qt.AlignTop)
+            source_option.setAlignment(
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignTop
+            )
         else:
-            source_option.setAlignment(Qt.AlignLeft | Qt.AlignTop)
-        whats_this = index.data(Qt.WhatsThisRole)
+            source_option.setAlignment(
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop
+            )
+        whats_this = index.data(Qt.ItemDataRole.WhatsThisRole)
         pen = painter.pen()
         font = painter.font()
         resize_font(font, -2)
@@ -301,8 +347,9 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.view._row_height = self._card_height + self.v_spacing
 
     def column_count(self):
-        return (self._view_width + self.card_spacing) // \
-            (self._card_width + self.card_spacing)
+        return (self._view_width + self.card_spacing) // (
+            self._card_width + self.card_spacing
+        )
 
     def which_column(self, index: QModelIndex):
         if not self.view.isWrapping():
@@ -328,7 +375,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         return self.h_spacing
 
     def eventFilter(self, _: QObject, event: QEvent):
-        if event.type() == QEvent.Resize:
+        if event.type() == QEvent.Type.Resize:
             event = cast(QResizeEvent, event)
             self.on_view_resized(event.size(), event.oldSize())
         return False
@@ -338,7 +385,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
     def __init__(self, parent=None, types=None):
         super().__init__(parent)
 
-        self.text = ''
+        self.text = ""
 
     def filter_by_text(self, text):
         if text == self.text:
@@ -350,7 +397,7 @@ class ImgFilterProxyModel(QSortFilterProxyModel):
         accepted = True
         source_model = cast(ImgCardListModel, self.sourceModel())
         index = source_model.index(source_row, parent=source_parent)
-        artist = index.data(Qt.UserRole)
+        artist = index.data(Qt.ItemDataRole.UserRole)
         if self.text:
             accepted = self.text.lower() in artist.name_display.lower()
         return accepted
@@ -361,6 +408,7 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
     .. versionchanged:: 3.9
        The *card_min_width*, *card_spacing*, *card_text_height* parameter were removed.
     """
+
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
 
@@ -372,10 +420,10 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         self._least_row_count = 1
         self._row_height = 0
 
-        self.setViewMode(QListView.IconMode)
-        self.setResizeMode(QListView.Adjust)
+        self.setViewMode(QListView.ViewMode.IconMode)
+        self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
-        self.setFrameShape(QFrame.NoFrame)
+        self.setFrameShape(QFrame.Shape.NoFrame)
         self.initialize()
 
         self.activated.connect(self.on_activated)
@@ -393,16 +441,16 @@ class VideoCardListModel(ImgCardListModel):
         if not index.isValid() or offset >= len(self._items):
             return None
         video = self._items[offset]
-        if role == Qt.DisplayRole:
+        if role == Qt.ItemDataRole.DisplayRole:
             return video.title
-        elif role == Qt.ToolTipRole:
+        elif role == Qt.ItemDataRole.ToolTipRole:
             return video.title
         elif (
-            role == Qt.WhatsThisRole
+            role == Qt.ItemDataRole.WhatsThisRole
             and isinstance(video, VideoModel)
             and video.play_count > 0
         ):
-            return f'► {int_to_human_readable(video.play_count)}'
+            return f"► {int_to_human_readable(video.play_count)}"
         return super().data(index, role)
 
 
@@ -422,7 +470,7 @@ class VideoCardListView(ImgCardListView):
     play_video_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        video = index.data(Qt.UserRole)
+        video = index.data(Qt.ItemDataRole.UserRole)
         self.play_video_needed.emit(video)
 
 
@@ -434,12 +482,12 @@ class PlaylistCardListModel(ImgCardListModel):
 
         playlist = self._items[offset]
         if (
-            role == Qt.WhatsThisRole
+            role == Qt.ItemDataRole.WhatsThisRole
             and isinstance(playlist, PlaylistModel)
             and playlist.play_count > 0
         ):
             count = int_to_human_readable(playlist.play_count)
-            return f'► {count}'
+            return f"► {count}"
         return super().data(index, role)
 
 
@@ -458,7 +506,7 @@ class PlaylistCardListView(ImgCardListView):
     show_playlist_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        artist = index.data(Qt.UserRole)
+        artist = index.data(Qt.ItemDataRole.UserRole)
         self.show_playlist_needed.emit(artist)
 
 
@@ -481,7 +529,7 @@ class ArtistCardListView(ImgCardListView):
     show_artist_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        artist = index.data(Qt.UserRole)
+        artist = index.data(Qt.ItemDataRole.UserRole)
         self.show_artist_needed.emit(artist)
 
 
@@ -492,11 +540,11 @@ class AlbumCardListModel(ImgCardListModel):
             return None
 
         album = self._items[offset]
-        if role == Qt.WhatsThisRole:
+        if role == Qt.ItemDataRole.WhatsThisRole:
             if isinstance(album, AlbumModel):
                 if album.song_count >= 0:
                     # Like: 1991-01-01 10首
-                    return f'{album.released} {album.song_count}首'
+                    return f"{album.released} {album.song_count}首"
                 return album.released
         return super().data(index, role)
 
@@ -526,7 +574,7 @@ class AlbumFilterProxyModel(ImgFilterProxyModel):
         source_model = self.sourceModel()
         assert isinstance(source_model, AlbumCardListModel)
         index = source_model.index(source_row, parent=source_parent)
-        album = index.data(Qt.UserRole)
+        album = index.data(Qt.ItemDataRole.UserRole)
         if accepted and self.types:
             accepted = AlbumType(album.type_) in self.types
         return accepted
@@ -536,5 +584,5 @@ class AlbumCardListView(ImgCardListView):
     show_album_needed = pyqtSignal([object])
 
     def on_activated(self, index):
-        album = index.data(Qt.UserRole)
+        album = index.data(Qt.ItemDataRole.UserRole)
         self.show_album_needed.emit(album)

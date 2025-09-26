@@ -1,20 +1,34 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import (
-    QFrame, QLabel, QVBoxLayout, QHBoxLayout, QFormLayout,
-    QDialog, QLineEdit, QDialogButtonBox, QMessageBox, QWidget, QSizePolicy
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import (
+    QFrame,
+    QLabel,
+    QVBoxLayout,
+    QHBoxLayout,
+    QFormLayout,
+    QDialog,
+    QLineEdit,
+    QDialogButtonBox,
+    QMessageBox,
+    QWidget,
+    QSizePolicy,
 )
 
 from feeluown.excs import ProviderIOError, NoUserLoggedIn
 from feeluown.library import (
-    SupportsPlaylistDelete, SupportsPlaylistCreateByName, SupportsCurrentUser,
+    SupportsPlaylistDelete,
+    SupportsPlaylistCreateByName,
+    SupportsCurrentUser,
 )
 from feeluown.utils import aio
 from feeluown.gui.provider_ui import UISupportsNavBtns, UISupportsCreatePlaylist
 from feeluown.gui.components import Avatar
 from feeluown.gui.widgets import (
-    DiscoveryButton, StarButton, PlusButton, TriagleButton,
+    DiscoveryButton,
+    StarButton,
+    PlusButton,
+    TriagleButton,
     EmojiButton,
 )
 from feeluown.gui.widgets.playlists import PlaylistsView
@@ -25,7 +39,6 @@ if TYPE_CHECKING:
 
 
 class ListViewContainer(QFrame):
-
     def __init__(self, label, view, parent=None):
         super().__init__(parent)
 
@@ -59,14 +72,14 @@ class ListViewContainer(QFrame):
         self._layout.addLayout(self._t_h_layout)
         self._layout.addLayout(self._b_h_layout)
         # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
-        self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Maximum)
+        self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
 
     def toggle_view(self):
         if self._view.isVisible():
-            self._toggle_btn.set_direction('down')
+            self._toggle_btn.set_direction("down")
             self._view.hide()
         else:
-            self._toggle_btn.set_direction('up')
+            self._toggle_btn.set_direction("up")
             self._view.show()
 
 
@@ -77,17 +90,18 @@ class ProviderBar(QWidget):
     """
     A panel shows provider-specific contents.
     """
-    def __init__(self, app: 'GuiApp', parent=None):
+
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent)
         self._app = app
 
         self.discovery_btn = DiscoveryButton(height=30, padding=0.2, parent=self)
-        self.fav_btn = StarButton('我的收藏', height=30, parent=self)
+        self.fav_btn = StarButton("我的收藏", height=30, parent=self)
         self.fold_top_btn = TriagleButton(length=14, padding=0.2)
         self.fold_top_btn.setCheckable(True)
 
-        self.playlists_header = QLabel('歌单列表', self)
-        self.my_music_header = QLabel('我的音乐', self)
+        self.playlists_header = QLabel("歌单列表", self)
+        self.my_music_header = QLabel("我的音乐", self)
 
         self._layout = QVBoxLayout(self)
         # Layout to let provider add it's own buttons.
@@ -101,15 +115,13 @@ class ProviderBar(QWidget):
         self.my_music_con = LVC(self.my_music_header, self.my_music_view)
 
         self.playlists_view.show_playlist.connect(
-            lambda pl: self._app.browser.goto(model=pl))
+            lambda pl: self._app.browser.goto(model=pl)
+        )
         self.playlists_view.remove_playlist.connect(self._remove_playlist)
         self.playlists_con.create_btn.clicked.connect(self._create_playlist)
-        self._app.current_pvd_ui_mgr.changed.connect(
-            self.on_current_pvd_ui_changed)
-        self.discovery_btn.clicked.connect(
-            lambda: self._app.browser.goto(page='/rec'))
-        self.fav_btn.clicked.connect(
-            lambda: self._app.browser.goto(page='/my_fav'))
+        self._app.current_pvd_ui_mgr.changed.connect(self.on_current_pvd_ui_changed)
+        self.discovery_btn.clicked.connect(lambda: self._app.browser.goto(page="/rec"))
+        self.fav_btn.clicked.connect(lambda: self._app.browser.goto(page="/my_fav"))
 
         self.setup_ui()
 
@@ -117,8 +129,8 @@ class ProviderBar(QWidget):
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 
-        self.playlists_view.setFrameShape(QFrame.NoFrame)
-        self.my_music_view.setFrameShape(QFrame.NoFrame)
+        self.playlists_view.setFrameShape(QFrame.Shape.NoFrame)
+        self.my_music_view.setFrameShape(QFrame.Shape.NoFrame)
 
         self._avatar_layout = QHBoxLayout()
         self._avatar_layout.addWidget(Avatar(self._app, height=48))
@@ -136,15 +148,15 @@ class ProviderBar(QWidget):
         self.my_music_con.hide()
         self.discovery_btn.setDisabled(True)
         self.fav_btn.setDisabled(True)
-        self.discovery_btn.setToolTip('当前资源提供方未知')
-        self.fold_top_btn.setToolTip('折叠/打开“主页和本地收藏集”功能')
+        self.discovery_btn.setToolTip("当前资源提供方未知")
+        self.fold_top_btn.setToolTip("折叠/打开“主页和本地收藏集”功能")
 
     def on_current_pvd_ui_changed(self, pvd_ui, _):
         self._clear_btns()
         if pvd_ui:
             self.discovery_btn.setEnabled(True)
             self.fav_btn.setEnabled(True)
-            self.discovery_btn.setToolTip(f'点击进入 {pvd_ui.provider.name} 推荐页')
+            self.discovery_btn.setToolTip(f"点击进入 {pvd_ui.provider.name} 推荐页")
             if isinstance(pvd_ui, UISupportsNavBtns):
                 for btn in pvd_ui.list_nav_btns():
                     qt_btn = EmojiButton(btn.icon, btn.text, height=30, parent=self)
@@ -172,23 +184,27 @@ class ProviderBar(QWidget):
     def _create_playlist(self):
         provider_ui = self._app.current_pvd_ui_mgr.get()
         if provider_ui is None:
-            self._app.show_msg('当前的资源提供方未注册其 UI')
+            self._app.show_msg("当前的资源提供方未注册其 UI")
             return
         provider = provider_ui.provider
-        if not isinstance(provider, SupportsPlaylistCreateByName) \
-           or not isinstance(provider, SupportsCurrentUser) \
-           or not provider.has_current_user():
-            self._app.show_msg('当前的资源提供方不支持创建歌单')
+        if (
+            not isinstance(provider, SupportsPlaylistCreateByName)
+            or not isinstance(provider, SupportsCurrentUser)
+            or not provider.has_current_user()
+        ):
+            self._app.show_msg("当前的资源提供方不支持创建歌单")
             return
 
         dialog = QDialog(self)
         # Set WA_DeleteOnClose so that the dialog can be deleted (from self.children).
-        dialog.setAttribute(Qt.WA_DeleteOnClose)
+        dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         layout = QFormLayout(dialog)
         title_edit = QLineEdit(dialog)
-        layout.addRow('歌单名', title_edit)
-        button_box = QDialogButtonBox(QDialogButtonBox.Cancel | QDialogButtonBox.Yes)
-        layout.addRow('', button_box)
+        layout.addRow("歌单名", title_edit)
+        button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Yes
+        )
+        layout.addRow("", button_box)
         button_box.accepted.connect(dialog.accept)
         button_box.rejected.connect(dialog.reject)
 
@@ -199,7 +215,9 @@ class ProviderBar(QWidget):
                 try:
                     playlist = await aio.run_fn(provider.playlist_create_by_name, title)
                 except (ProviderIOError, NoUserLoggedIn) as e:
-                    QMessageBox.warning(self._app, '错误', f"创建歌单 '{title}' 失败: {e}")
+                    QMessageBox.warning(
+                        self._app, "错误", f"创建歌单 '{title}' 失败: {e}"
+                    )
                 else:
                     # Add playlist to pl_uimgr is a workaround, which may cause bug.
                     # For example, the order of the newly created playlist should be
@@ -214,18 +232,24 @@ class ProviderBar(QWidget):
         dialog.open()
 
     def _remove_playlist(self, playlist):
-
         async def do():
             provider = self._app.library.get(playlist.source)
             if isinstance(provider, SupportsPlaylistDelete):
                 ok = await aio.run_fn(provider.playlist_delete, playlist.identifier)
-                self._app.show_msg(f"删除歌单 {playlist.name} {'成功' if ok else '失败'}")
+                self._app.show_msg(
+                    f"删除歌单 {playlist.name} {'成功' if ok else '失败'}"
+                )
                 if ok is True:
                     self._app.pl_uimgr.model.remove(playlist)
             else:
-                self._app.show_msg(f'资源提供方({playlist.source})不支持删除歌单')
+                self._app.show_msg(f"资源提供方({playlist.source})不支持删除歌单")
 
-        box = QMessageBox(QMessageBox.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
-                          QMessageBox.Yes | QMessageBox.No, self)
+        box = QMessageBox(
+            QMessageBox.Icon.Warning,
+            "提示",
+            f"确认删除歌单 '{playlist.name}' 吗？",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
+            self,
+        )
         box.accepted.connect(lambda: aio.run_afn(do))
         box.open()

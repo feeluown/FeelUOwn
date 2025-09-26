@@ -1,15 +1,23 @@
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import QRect
-from PyQt5.QtWidgets import QMenu, QAction
-from PyQt5.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent
+from PyQt6.QtCore import QRect
+from PyQt6.QtWidgets import QMenu
+from PyQt6.QtGui import QPainter, QIcon, QPalette, QContextMenuEvent, QAction
 
-from feeluown.library import UserModel, SupportsCurrentUser, Provider, \
-    SupportsCurrentUserChanged
+from feeluown.library import (
+    UserModel,
+    SupportsCurrentUser,
+    Provider,
+    SupportsCurrentUserChanged,
+)
 from feeluown.library import reverse
 from feeluown.utils.aio import run_afn, run_fn
-from feeluown.gui.provider_ui import UISupportsLoginOrGoHome, ProviderUiItem, \
-    UISupportsLoginEvent, UISupportsContextMenuAddItems
+from feeluown.gui.provider_ui import (
+    UISupportsLoginOrGoHome,
+    ProviderUiItem,
+    UISupportsLoginEvent,
+    UISupportsContextMenuAddItems,
+)
 from feeluown.gui.widgets import SelfPaintAbstractIconTextButton
 from feeluown.gui.drawers import SizedPixmapDrawer, AvatarIconDrawer
 from feeluown.gui.helpers import painter_save
@@ -26,8 +34,8 @@ class Avatar(SelfPaintAbstractIconTextButton):
     a current user, this tries to show the user avatar.
     """
 
-    def __init__(self, app: 'GuiApp', *args, **kwargs):
-        super().__init__('未登录', *args, **kwargs)
+    def __init__(self, app: "GuiApp", *args, **kwargs):
+        super().__init__("未登录", *args, **kwargs)
 
         self._app = app
         self._logging_state = {}
@@ -42,7 +50,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
         self._avatar_translate_x = -self._avatar_padding
         self._icon_drawer = AvatarIconDrawer(self.height(), self._padding)
         self.clicked.connect(self.on_clicked)
-        self.setToolTip('点击切换平台')
+        self.setToolTip("点击切换平台")
 
         self._app.library.provider_added.connect(self.on_provider_added)
 
@@ -58,13 +66,14 @@ class Avatar(SelfPaintAbstractIconTextButton):
             item.clicked.emit()
         else:
             pos = self.cursor().pos()
-            e = QContextMenuEvent(QContextMenuEvent.Mouse, pos, pos)
+            e = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, pos, pos)
             self.contextMenuEvent(e)
 
     def on_provider_added(self, provider: Provider):
         if isinstance(provider, SupportsCurrentUserChanged):
             provider.current_user_changed.connect(
-                self.create_provider_current_user_changed_cb(provider), weak=False)
+                self.create_provider_current_user_changed_cb(provider), weak=False
+            )
 
     def create_provider_current_user_changed_cb(self, provider: Provider):
         def cb(user: UserModel):
@@ -74,10 +83,11 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 self._logging_state.pop(provider.identifier, None)
             if not self._app.current_pvd_ui_mgr.get():
                 if self._logging_state:
-                    self._text = '部分已登录'
+                    self._text = "部分已登录"
                 else:
-                    self._text = '未登录'
+                    self._text = "未登录"
                 self.setToolTip(self._text)  # refresh tooltip
+
         return cb
 
     def contextMenuEvent(self, e) -> None:
@@ -86,36 +96,41 @@ class Avatar(SelfPaintAbstractIconTextButton):
 
         # Let provider UI add custom actions if supported
         current_pvd_ui = self._app.current_pvd_ui_mgr.get()
-        if (
-            current_pvd_ui is not None and
-            isinstance(current_pvd_ui, UISupportsContextMenuAddItems)
+        if current_pvd_ui is not None and isinstance(
+            current_pvd_ui, UISupportsContextMenuAddItems
         ):
             menu.addSection(current_pvd_ui.provider.name)
             current_pvd_ui.context_menu_add_items(menu)
 
         # Create a submenu for "切换账号"
-        menu.addSection('切换账号')
+        menu.addSection("切换账号")
         switch_account_menu = menu
 
         for item in self._app.pvd_uimgr.list_items():
-            action = QAction(QIcon(item.colorful_svg or 'icons:feeluown.png'),
-                             item.text,
-                             parent=switch_account_menu)
+            action = QAction(
+                QIcon(item.colorful_svg or "icons:feeluown.png"),
+                item.text,
+                parent=switch_account_menu,
+            )
             action.setToolTip(item.desc)
             action.triggered.connect(
-                (lambda item: lambda _: self.on_provider_selected(item))(item))
+                (lambda item: lambda _: self.on_provider_selected(item))(item)
+            )
             switch_account_menu.addAction(action)
 
         for pvd_ui in self._app.pvd_ui_mgr.list_all():
-            action = QAction(QIcon(pvd_ui.get_colorful_svg() or 'icons:feeluown.png'),
-                             pvd_ui.provider.meta.name,
-                             parent=switch_account_menu)
+            action = QAction(
+                QIcon(pvd_ui.get_colorful_svg() or "icons:feeluown.png"),
+                pvd_ui.provider.meta.name,
+                parent=switch_account_menu,
+            )
             action.triggered.connect(
-                (lambda pvd_ui: lambda _: self.on_pvd_ui_selected(pvd_ui))(pvd_ui))
+                (lambda pvd_ui: lambda _: self.on_pvd_ui_selected(pvd_ui))(pvd_ui)
+            )
             switch_account_menu.addAction(action)
 
         # Show menu
-        menu.exec_(e.globalPos())
+        menu.exec(e.globalPos())
 
     def on_provider_ui_login_event(self, provider_ui, event):
         current_pvd_ui = self._app.current_pvd_ui_mgr.get()
@@ -125,7 +140,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             run_afn(self.show_pvd_ui_current_user)
             run_afn(
                 self._app.ui.sidebar.show_provider_current_user_playlists,
-                provider_ui.provider
+                provider_ui.provider,
             )
 
     def on_pvd_ui_selected(self, pvd_ui):
@@ -139,7 +154,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
 
     def on_provider_selected(self, provider: ProviderUiItem):
         self._app.current_pvd_ui_mgr.set_item(provider)
-        self.setToolTip(provider.text + '\n\n' + provider.desc)
+        self.setToolTip(provider.text + "\n\n" + provider.desc)
         provider.clicked.emit()
         run_afn(self.show_provider_current_user)
 
@@ -148,16 +163,16 @@ class Avatar(SelfPaintAbstractIconTextButton):
         name = pvd_ui.provider.meta.identifier
         user = await self._show_provider_current_user(name)
         if user is not None:
-            self.setToolTip(f'{user.name} ({pvd_ui.provider.meta.name})')
+            self.setToolTip(f"{user.name} ({pvd_ui.provider.meta.name})")
 
     async def show_provider_current_user(self):
         item = self._app.current_pvd_ui_mgr.get_item()
         user = await self._show_provider_current_user(item.name)
         if user is not None:
-            self.setToolTip(f'{user.name} ({item.text})')
+            self.setToolTip(f"{user.name} ({item.text})")
 
     async def _show_provider_current_user(self, source):
-        self.setToolTip('')
+        self.setToolTip("")
         self._avatar_drawer = None
         provider = self._app.library.get(source)
         assert provider is not None
@@ -166,18 +181,20 @@ class Avatar(SelfPaintAbstractIconTextButton):
             user = await run_fn(provider.get_current_user_or_none)
 
         if user is None:
-            self._text = '未登录'
+            self._text = "未登录"
             return None
         if isinstance(user, UserModel) and user.avatar_url:
             self._text = user.name
-            img_data = await run_afn(self._app.img_mgr.get, user.avatar_url,
-                                     reverse(user))
+            img_data = await run_afn(
+                self._app.img_mgr.get, user.avatar_url, reverse(user)
+            )
             if img_data:
                 p = self._avatar_padding
                 w = self.height() - 2 * p
                 rect = QRect(p, p, w, w)
                 self._avatar_drawer = SizedPixmapDrawer.from_img_data(
-                    img_data, rect, radius=0.5)
+                    img_data, rect, radius=0.5
+                )
         return user
 
     def paint_border_bg_when_hover(self, *_, **__):
@@ -185,7 +202,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
 
     def setToolTip(self, text):
         notes = f"后台已登录：{','.join(self._logging_state.keys()) or '无'}"
-        super().setToolTip(text + '\n\n' + notes)
+        super().setToolTip(text + "\n\n" + notes)
 
     def draw_text(self, painter):
         with painter_save(painter):
@@ -203,29 +220,33 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 painter.translate(self._translate_x, 0)
                 # If a provider is selected, draw a highlight circle.
                 if self._app.current_pvd_ui_mgr.get_either() is not None:
-                    self._icon_drawer.fg_color = self.palette().color(QPalette.Highlight)
+                    self._icon_drawer.fg_color = self.palette().color(
+                        QPalette.ColorRole.Highlight
+                    )
                 self._icon_drawer.draw(painter)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     from unittest.mock import MagicMock
     from feeluown.gui.debug import simple_layout, mock_app
 
     length = 400
 
     with simple_layout() as layout, mock_app() as mockapp:
-        mockapp.pvd_uimgr.list_items = MagicMock(return_value=[
-            ProviderUiItem(
-                '',
-                'Hello World',
-                '',
-                'Hello World',
-            ),
-            ProviderUiItem(
-                '',
-                'Hello PyQt5',
-                '',
-                'Hello PyQt5',
-            )
-        ])
+        mockapp.pvd_uimgr.list_items = MagicMock(
+            return_value=[
+                ProviderUiItem(
+                    "",
+                    "Hello World",
+                    "",
+                    "Hello World",
+                ),
+                ProviderUiItem(
+                    "",
+                    "Hello PyQt6",
+                    "",
+                    "Hello PyQt6",
+                ),
+            ]
+        )
         layout.addWidget(Avatar(mockapp, height=length))

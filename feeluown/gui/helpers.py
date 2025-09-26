@@ -25,12 +25,25 @@ import logging
 from contextlib import contextmanager
 from typing import TypeVar, List, Optional, Generic, Union, cast, TYPE_CHECKING
 
-from PyQt5.QtCore import QModelIndex, QSize, Qt, pyqtSignal, QSortFilterProxyModel, \
-    QAbstractListModel, QPoint
-from PyQt5.QtGui import QPalette, QFontMetrics, QColor, QPainter, QMouseEvent, \
-    QKeySequence
-from PyQt5.QtWidgets import QApplication, QScrollArea, QWidget, QShortcut, \
-    QAbstractScrollArea
+from PyQt6.QtCore import (
+    QModelIndex,
+    QSize,
+    Qt,
+    pyqtSignal,
+    QSortFilterProxyModel,
+    QAbstractListModel,
+    QPoint,
+)
+from PyQt6.QtGui import (
+    QPalette,
+    QFontMetrics,
+    QColor,
+    QPainter,
+    QMouseEvent,
+    QKeySequence,
+    QShortcut,
+)
+from PyQt6.QtWidgets import QApplication, QScrollArea, QWidget, QAbstractScrollArea
 
 from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
@@ -48,7 +61,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 T = TypeVar("T")
 
-IS_MACOS = sys.platform == 'darwin'
+IS_MACOS = sys.platform == "darwin"
 
 
 def darker_or_lighter(color: QColor, factor):
@@ -84,7 +97,7 @@ def is_macos():
 
     .. versionadded: v3.7.10
     """
-    return sys.platform == 'darwin'
+    return sys.platform == "darwin"
 
 
 def disconnect_slots_if_has(signal):
@@ -103,34 +116,34 @@ def resize_font(font, delta):
 
 def palette_set_bg_color(palette, color):
     """set palette background color"""
-    if sys.platform == 'linux':
-        # KDE use the QPalette.Base as background color
-        palette.setColor(QPalette.Active, QPalette.Base, color)
-        palette.setColor(QPalette.Inactive, QPalette.Base, color)
-        # GNOME use the QPalette.Window as background color
-        palette.setColor(QPalette.Active, QPalette.Window, color)
-        palette.setColor(QPalette.Inactive, QPalette.Window, color)
+    if sys.platform == "linux":
+        # KDE use the QPalette.ColorRole.Base as background color
+        palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Base, color)
+        palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Base, color)
+        # GNOME use the QPalette.ColorRole.Window as background color
+        palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, color)
     else:
-        # macOS use the QPalette.Window as background color
-        palette.setColor(QPalette.Active, QPalette.Window, color)
-        palette.setColor(QPalette.Inactive, QPalette.Window, color)
+        # macOS use the QPalette.ColorRole.Window as background color
+        palette.setColor(QPalette.ColorGroup.Active, QPalette.ColorRole.Window, color)
+        palette.setColor(QPalette.ColorGroup.Inactive, QPalette.ColorRole.Window, color)
 
 
 def unify_scroll_area_style(scroll_area: QAbstractScrollArea):
     if not IS_MACOS:
-        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
 
 def set_widget_bg_transparent(widget: QWidget):
     palette = widget.palette()
-    palette_set_bg_color(palette, Qt.transparent)
+    palette_set_bg_color(palette, Qt.GlobalColor.transparent)
     widget.setPalette(palette)
 
 
 class BgTransparentMixin:
     def __init__(self: QWidget, *args, **kwargs):  # type: ignore[misc]
         palette = self.palette()
-        palette_set_bg_color(palette, Qt.transparent)
+        palette_set_bg_color(palette, Qt.GlobalColor.transparent)
         self.setPalette(palette)
 
 
@@ -144,6 +157,7 @@ class BaseScrollAreaForNoScrollItemView(QScrollArea):
 
     .. versionadded:: 3.8.9
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -202,8 +216,17 @@ class ItemViewNoScrollMixin:
         class of QObject. XWidget(ItemViewNoScrollMixin, QObject) is a good choice,
         and XWidget(QObject, ItemViewNoScrollMixin) is not.
     """
-    def __init__(self, *args, no_scroll_v=True, row_height=0, least_row_count=0,
-                 fixed_row_count=0, reserved=30, **kwargs):
+
+    def __init__(
+        self,
+        *args,
+        no_scroll_v=True,
+        row_height=0,
+        least_row_count=0,
+        fixed_row_count=0,
+        reserved=30,
+        **kwargs,
+    ):
         """
         :params no_scroll_v: enable on no_scroll_v feature or not
         :params fixed_row_count: set row_height when fixed_row_count is set
@@ -229,7 +252,7 @@ class ItemViewNoScrollMixin:
         .. versionadded:: 3.7.7
         """
         if self._no_scroll_v is True:
-            self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+            self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     # def set_no_scroll_v(self, no_scroll_v):
     #     """
@@ -238,7 +261,7 @@ class ItemViewNoScrollMixin:
     #     self._no_scroll_v = no_scroll_v
     #     if no_scroll_v is True:
     #         self.adjust_height()
-    #         self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    #         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
     def adjust_height(self):
         if self.model() is None:
@@ -337,7 +360,7 @@ def elided_text(text, width, font=None):
     if font is None:
         font = QApplication.font()
     font_metrics = QFontMetrics(font)
-    return font_metrics.elidedText(text, Qt.ElideRight, width)
+    return font_metrics.elidedText(text, Qt.TextElideMode.ElideRight, width)
 
 
 class Paddings(tuple):
@@ -402,6 +425,7 @@ class ReaderFetchMoreMixin(Generic[T]):
     3. _fetch_more_step
     4. _is_fetching
     """
+
     no_more_item = pyqtSignal()
 
     def get_reader(self: ModelUsingReader[T]):
@@ -426,12 +450,12 @@ class ReaderFetchMoreMixin(Generic[T]):
         return True
 
     def fetch_more_impl(self: ModelUsingReader[T]):
-        """fetch more items from reader
-        """
+        """fetch more items from reader"""
         reader = self._reader
         step = self._fetch_more_step
 
         if isinstance(reader, AsyncReader):
+
             async def fetch():
                 items = []
                 count = 0
@@ -441,6 +465,7 @@ class ReaderFetchMoreMixin(Generic[T]):
                     if count == step:
                         break
                 return items
+
             task = run_afn(fetch)
         else:
             assert isinstance(reader, Reader)
@@ -463,16 +488,16 @@ class ReaderFetchMoreMixin(Generic[T]):
         try:
             items = future.result()
         except ProviderIOError as e:
-            logger.error(f'async fetch more items failed, reason: {e}')
+            logger.error(f"async fetch more items failed, reason: {e}")
             self._fetch_more_cb(None)
         except:  # noqa
-            logger.exception('async fetch more items failed')
+            logger.exception("async fetch more items failed")
             self._fetch_more_cb(None)
         else:
             if not items:
                 # The reader should not return empty list when fetching more items,
                 # maybe something wrong with the reader.
-                logger.warning('async fetch more items return empty list')
+                logger.warning("async fetch more items return empty list")
             self._fetch_more_cb(items)
 
 
@@ -515,8 +540,8 @@ def fetch_cover_wrapper(app: GuiApp):
             return
 
         # v2 song model has its own image(pic_url), check if it is in cache first.
-        cache_key = 'album_cover_uid'
-        song_img_uid = reverse(model) + '/pic_url'
+        cache_key = "album_cover_uid"
+        song_img_uid = reverse(model) + "/pic_url"
         album_img_uid, _ = model.cache_get(cache_key)
         for img_uid in (song_img_uid, album_img_uid):
             if img_uid:
@@ -534,7 +559,7 @@ def fetch_cover_wrapper(app: GuiApp):
             # Try to fetch with pic_url first.
             # Note that some providers may not provide pic_url for songs.
             if upgraded_song.pic_url:
-                img_uid = reverse(model) + '/pic_url'
+                img_uid = reverse(model) + "/pic_url"
                 img_url = upgraded_song.pic_url
                 return await fetch_image_with_cb(img_uid, img_url, cb)
 
@@ -543,12 +568,12 @@ def fetch_cover_wrapper(app: GuiApp):
                 cb(None)
                 return
 
-            album_img_uid = reverse(album) + '/cover'
+            album_img_uid = reverse(album) + "/cover"
             model.cache_set(cache_key, album_img_uid)
             return await fetch_song_pic_from_album(album, cb)
 
     async def fetch_other_model_cover(model, cb):
-        img_uid = reverse(model) + '/cover'
+        img_uid = reverse(model) + "/cover"
 
         # Check image cache with image unique ID.
         content = img_mgr.get_from_cache(img_uid)
@@ -579,7 +604,7 @@ def painter_save(painter: QPainter):
 
 
 def secondary_text_color(palette: QPalette):
-    text_color: QColor = palette.color(QPalette.Text)
+    text_color: QColor = palette.color(QPalette.ColorRole.Text)
     if text_color.lightness() > 150:
         non_text_color = text_color.darker(140)
     else:
@@ -597,22 +622,22 @@ class ClickableMixin:
         self._down = False
 
     def mousePressEvent(self, e: QMouseEvent):
-        if e.button() != Qt.LeftButton:
+        if e.button() != Qt.MouseButton.LeftButton:
             # Call super.mousePressEvent because the concrete class may do sth inside it.
             super().mousePressEvent(e)
             return
-        if self._hit_button(e.pos()):
+        if self._hit_button(e.position().toPoint()):
             self._down = True
             e.accept()
         else:
             super().mousePressEvent(e)
 
     def mouseReleaseEvent(self, e: QMouseEvent):
-        if e.button() != Qt.LeftButton or not self._down:
+        if e.button() != Qt.MouseButton.LeftButton or not self._down:
             super().mouseReleaseEvent(e)
             return
         self._down = False
-        if self._hit_button(e.pos()):
+        if self._hit_button(e.position().toPoint()):
             self.clicked.emit()
             e.accept()
         else:
@@ -632,18 +657,18 @@ def set_default_font_families(widget):
 
 
 def esc_hide_widget(widget):
-    QShortcut(QKeySequence.Cancel, widget).activated.connect(widget.hide)
+    QShortcut(QKeySequence.StandardKey.Cancel, widget).activated.connect(widget.hide)
 
 
 # https://ethanschoonover.com/solarized/
 # Do not change the existing colors if they are used by some widgets/components.
 SOLARIZED_COLORS = {
-    'yellow':    '#b58900',
-    'orange':    '#cb4b16',
-    'red':       '#dc322f',
-    'magenta':   '#d33682',
-    'violet':    '#6c71c4',
-    'blue':      '#268bd2',
-    'cyan':      '#2aa198',
-    'green':     '#859900',
+    "yellow": "#b58900",
+    "orange": "#cb4b16",
+    "red": "#dc322f",
+    "magenta": "#d33682",
+    "violet": "#6c71c4",
+    "blue": "#268bd2",
+    "cyan": "#2aa198",
+    "green": "#859900",
 }

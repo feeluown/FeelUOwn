@@ -1,5 +1,5 @@
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QSlider
+from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QSlider
 
 from feeluown.app import App
 
@@ -13,7 +13,7 @@ class VolumeSlider(QSlider):
         self.setMaximum(100)
         self.setValue(100)
         self.sliderMoved.connect(self.on_slider_moved)
-        self.setOrientation(Qt.Horizontal)
+        self.setOrientation(Qt.Orientation.Horizontal)
 
     def on_slider_moved(self, value):
         self._app.player.volume = value

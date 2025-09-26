@@ -1,9 +1,15 @@
 from enum import Enum
 
-from PyQt5.QtCore import pyqtSignal, QSize
-from PyQt5.QtWidgets import QTabBar, QWidget, QRadioButton, QHBoxLayout, \
-        QStyle, QProxyStyle
-from PyQt5.QtGui import QPalette
+from PyQt6.QtCore import pyqtSignal, QSize
+from PyQt6.QtWidgets import (
+    QTabBar,
+    QWidget,
+    QRadioButton,
+    QHBoxLayout,
+    QStyle,
+    QProxyStyle,
+)
+from PyQt6.QtGui import QPalette
 
 from feeluown.gui.helpers import resize_font
 
@@ -18,6 +24,7 @@ def mode(func):
         this.contributed_btn.hide()
         this.videos_btn.hide()
         func(this)
+
     return wrapper
 
 
@@ -35,14 +42,14 @@ class Tab(Enum):
 
 class TabBarStyle(QProxyStyle):
     def drawControl(self, element, option, painter, widget):
-        if element == QStyle.CE_TabBarTabShape:
+        if element == QStyle.ControlElement.CE_TabBarTabShape:
             # https://code.woboq.org/qt5/qtbase/src/plugins/styles/mac/qmacstyle_mac.mm.html#613
             # On macOS, there will be seperate line between tabs, which looks bad.
             # So we paint the tab shape by ourselves.
             painter.save()
             rect = option.rect
-            is_selected = option.state & QStyle.State_Selected
-            color = widget.palette().color(QPalette.Base)
+            is_selected = option.state & QStyle.StateFlag.State_Selected
+            color = widget.palette().color(QPalette.ColorRole.Base)
             if is_selected:
                 color.setAlpha(160)
                 painter.fillRect(rect, color)
@@ -50,7 +57,7 @@ class TabBarStyle(QProxyStyle):
                 color.setAlpha(80)
                 painter.fillRect(rect, color)
             painter.restore()
-        elif element == QStyle.CE_TabBarTabLabel:
+        elif element == QStyle.ControlElement.CE_TabBarTabLabel:
             # HELP: Changing font size in QTabBar does not work, so we
             # resize font size here.
             painter.save()
@@ -101,13 +108,13 @@ class TableTabBarV2(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.songs_btn = QRadioButton('歌曲', self)
-        self.albums_btn = QRadioButton('专辑', self)
-        self.artists_btn = QRadioButton('歌手', self)
-        self.playlists_btn = QRadioButton('歌单', self)
-        self.videos_btn = QRadioButton('视频', self)
-        self.desc_btn = QRadioButton('简介', self)
-        self.contributed_btn = QRadioButton('参与作品', self)
+        self.songs_btn = QRadioButton("歌曲", self)
+        self.albums_btn = QRadioButton("专辑", self)
+        self.artists_btn = QRadioButton("歌手", self)
+        self.playlists_btn = QRadioButton("歌单", self)
+        self.videos_btn = QRadioButton("视频", self)
+        self.desc_btn = QRadioButton("简介", self)
+        self.contributed_btn = QRadioButton("参与作品", self)
         self._layout = QHBoxLayout(self)
 
         self.songs_btn.clicked.connect(self.show_songs_needed.emit)
@@ -135,11 +142,11 @@ class TableTabBarV2(QWidget):
         self.songs_btn.setChecked(True)
 
     def restore_default(self):
-        self.songs_btn.setText('歌曲')
-        self.albums_btn.setText('专辑')
-        self.artists_btn.setText('歌手')
-        self.playlists_btn.setText('歌单')
-        self.videos_btn.setText('视频')
+        self.songs_btn.setText("歌曲")
+        self.albums_btn.setText("专辑")
+        self.artists_btn.setText("歌手")
+        self.playlists_btn.setText("歌单")
+        self.videos_btn.setText("视频")
         self.check_default()
 
     def check(self, tab):
@@ -178,10 +185,10 @@ class TableTabBarV2(QWidget):
 
 
 class TableTabBar(QTabBar):
-    song = '歌曲'
-    artist = '歌手'
-    album = '专辑'
-    contributed_albums = '参与作品'
+    song = "歌曲"
+    artist = "歌手"
+    album = "专辑"
+    contributed_albums = "参与作品"
 
     show_songs_needed = pyqtSignal()
     show_artists_needed = pyqtSignal()
@@ -194,7 +201,7 @@ class TableTabBar(QTabBar):
         self.tabBarClicked.connect(self.on_index_changed)
         self.setExpanding(False)
         # self.setDrawBase(False)
-        self.setShape(QTabBar.TriangularNorth)
+        self.setShape(QTabBar.Shape.TriangularNorth)
 
     def use(self, *tabs):
         i = self.count() - 1
@@ -205,15 +212,15 @@ class TableTabBar(QTabBar):
             self.addTab(tab)
 
     def artist_mode(self):
-        self.use(TableTabBar.song,
-                 TableTabBar.album,
-                 TableTabBar.contributed_albums)
+        self.use(TableTabBar.song, TableTabBar.album, TableTabBar.contributed_albums)
 
     def library_mode(self):
-        self.use(TableTabBar.song,
-                 TableTabBar.artist,
-                 TableTabBar.album,
-                 TableTabBar.contributed_albums)
+        self.use(
+            TableTabBar.song,
+            TableTabBar.artist,
+            TableTabBar.album,
+            TableTabBar.contributed_albums,
+        )
 
     def on_index_changed(self, index):
         text = self.tabText(index)

@@ -16,13 +16,13 @@ from feeluown.version import VersionManager
 @pytest.fixture
 def noqt():
     """
-    HACK: Remove PyQt5 from modules before testcase starts.
+    HACK: Remove PyQt6 from modules before testcase starts.
     """
-    old = sys.modules.get('PyQt5')
+    old = sys.modules.get('PyQt6')
     if old is not None:
-        sys.modules.pop('PyQt5')
+        sys.modules.pop('PyQt6')
         yield
-        sys.modules['PyQt5'] = old
+        sys.modules['PyQt6'] = old
 
 
 @pytest.fixture
@@ -67,8 +67,8 @@ def test_run_app_with_no_window_mode(argsparser, mocker, noqt, noharm):
     # start_app should be called.
     mock_start_app.assert_awaited()
 
-    # PyQt5 should not be imported during the startup.
-    assert 'PyQt5' not in sys.modules
+    # PyQt6 should not be imported during the startup.
+    assert 'PyQt6' not in sys.modules
 
 
 @pytest.mark.asyncio

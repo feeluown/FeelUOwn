@@ -1,8 +1,8 @@
 import logging
 from typing import TYPE_CHECKING
 
-from PyQt5.QtCore import pyqtSignal, Qt
-from PyQt5.QtWidgets import QAbstractItemView, QMenu
+from PyQt6.QtCore import pyqtSignal, Qt
+from PyQt6.QtWidgets import QAbstractItemView, QMenu
 
 from feeluown.collection import CollectionType, Collection
 from feeluown.gui.widgets.textlist import TextlistModel, TextlistView
@@ -17,13 +17,14 @@ class CollectionListView(TextlistView):
     """
     Maybe make this a component instead of a widget.
     """
+
     show_collection = pyqtSignal([object])
     remove_collection = pyqtSignal([object])
 
-    def __init__(self, app: 'GuiApp', **kwargs):
+    def __init__(self, app: "GuiApp", **kwargs):
         super().__init__(**kwargs)
         self._app = app
-        self.setDragDropMode(QAbstractItemView.DropOnly)
+        self.setDragDropMode(QAbstractItemView.DragDropMode.DropOnly)
         self.setModel(CollectionListModel(self))
 
         self.clicked.connect(self._on_clicked)
@@ -37,7 +38,7 @@ class CollectionListView(TextlistView):
             model.add(coll)
 
     def _on_clicked(self, index):
-        collection = index.data(role=Qt.UserRole)
+        collection = index.data(role=Qt.ItemDataRole.UserRole)
         self.show_collection.emit(collection)
 
     def contextMenuEvent(self, event):
@@ -45,9 +46,9 @@ class CollectionListView(TextlistView):
         if len(indexes) != 1:
             return
 
-        collection: Collection = self.model().data(indexes[0], Qt.UserRole)
+        collection: Collection = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
-        action = menu.addAction('删除此收藏集')
+        action = menu.addAction("删除此收藏集")
         action.triggered.connect(lambda: self.remove_collection.emit(collection))
         menu.exec(event.globalPos())
 
@@ -58,8 +59,9 @@ class CollectionListView(TextlistView):
         之后 dropMoveEvent 也就不会接收到这个事件。
         """
         mimedata = e.mimeData()
-        if mimedata.hasFormat('fuo-model/x-song') or \
-           mimedata.hasFormat('fuo-model/x-album'):
+        if mimedata.hasFormat("fuo-model/x-song") or mimedata.hasFormat(
+            "fuo-model/x-album"
+        ):
             e.accept()
         else:
             e.ignore()
@@ -70,8 +72,8 @@ class CollectionListView(TextlistView):
         所以在这里判断当前位置对应的 model index 是否符合条件。
         """
         # pylint: disable=all
-        index = self.indexAt(e.pos())
-        if index.isValid() and index.flags() & Qt.ItemIsDropEnabled:
+        index = self.indexAt(e.position().toPoint())
+        if index.isValid() and index.flags() & Qt.ItemFlag.ItemIsDropEnabled:
             e.accept()
         else:
             e.ignore()
@@ -79,8 +81,8 @@ class CollectionListView(TextlistView):
     def dropEvent(self, e):
         mimedata = e.mimeData()
         model = mimedata.model
-        index = self.indexAt(e.pos())
-        coll = index.data(Qt.UserRole)
+        index = self.indexAt(e.position().toPoint())
+        coll = index.data(Qt.ItemDataRole.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()
         is_success = coll.add(model)
@@ -94,17 +96,21 @@ class CollectionListModel(TextlistModel):
     def flags(self, index):
         if not index.isValid():
             return 0
-        flags = Qt.ItemIsSelectable | Qt.ItemIsEnabled | Qt.ItemIsDropEnabled
+        flags = (
+            Qt.ItemFlag.ItemIsSelectable
+            | Qt.ItemFlag.ItemIsEnabled
+            | Qt.ItemFlag.ItemIsDropEnabled
+        )
         return flags
 
-    def data(self, index, role=Qt.DisplayRole):
+    def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         item = self._items[row]
-        if role == Qt.DisplayRole:
-            icon = '◎  '
+        if role == Qt.ItemDataRole.DisplayRole:
+            icon = "◎  "
             if item.type in (CollectionType.sys_library, CollectionType.sys_pool):
-                icon = '◉  '
+                icon = "◉  "
             return icon + item.name
-        if role == Qt.ToolTipRole:
+        if role == Qt.ItemDataRole.ToolTipRole:
             return item.fpath
         return super().data(index, role)

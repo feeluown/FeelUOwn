@@ -1,6 +1,6 @@
-from PyQt5.QtCore import QTimer, Qt
-from PyQt5.QtGui import QPalette
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt6.QtCore import QTimer, Qt
+from PyQt6.QtGui import QPalette
+from PyQt6.QtWidgets import QWidget, QLabel, QHBoxLayout
 
 from feeluown.gui.helpers import BgTransparentMixin, elided_text
 
@@ -13,17 +13,17 @@ class MessageLine(QWidget, BgTransparentMixin):
         self._timer.timeout.connect(self.hide)
 
         self._label = QLabel(self)
-        self._label.setAlignment(Qt.AlignCenter)
+        self._label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         self._setup_ui()
 
     def _setup_ui(self):
-        # Fill the background with QPalette.Highlight color.
+        # Fill the background with QPalette.ColorRole.Highlight color.
         #
         # Note(@cosven): I found that even the BackgroundRole is set to a
         # color with alpha, the background can't be semi-transparent.
-        self.setBackgroundRole(QPalette.Highlight)
-        self.setForegroundRole(QPalette.HighlightedText)
+        self.setBackgroundRole(QPalette.ColorRole.Highlight)
+        self.setForegroundRole(QPalette.ColorRole.HighlightedText)
         self.setAutoFillBackground(True)
 
         self.setMaximumHeight(25)

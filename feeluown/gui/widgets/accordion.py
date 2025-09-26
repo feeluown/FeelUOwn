@@ -1,12 +1,12 @@
-from PyQt5.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout
 
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.helpers import ClickableMixin
 
 
 class ClickableHeader(ClickableMixin, QWidget):
-    btn_text_fold = '△'
-    btn_text_unfold = '▼'
+    btn_text_fold = "△"
+    btn_text_unfold = "▼"
 
     def __init__(self, header, checked=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,6 +40,7 @@ class Accordion(QWidget):
     TODO: should be able to customize spacing.
     TODO: API will be changed.
     """
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -47,12 +48,13 @@ class Accordion(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
 
-    def add_section(self,
-                    header: QLabel,
-                    content: QWidget,
-                    header_spacing: int,
-                    section_spacing: int):
-
+    def add_section(
+        self,
+        header: QLabel,
+        content: QWidget,
+        header_spacing: int,
+        section_spacing: int,
+    ):
         def toggle_content():
             if content.isVisible():
                 content.hide()
