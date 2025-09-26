@@ -601,7 +601,7 @@ class ClickableMixin:
             # Call super.mousePressEvent because the concrete class may do sth inside it.
             super().mousePressEvent(e)
             return
-        if self._hit_button(e.pos()):
+        if self._hit_button(e.position().toPoint()):
             self._down = True
             e.accept()
         else:
@@ -612,7 +612,7 @@ class ClickableMixin:
             super().mouseReleaseEvent(e)
             return
         self._down = False
-        if self._hit_button(e.pos()):
+        if self._hit_button(e.position().toPoint()):
             self.clicked.emit()
             e.accept()
         else:

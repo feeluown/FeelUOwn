@@ -3,11 +3,12 @@ from typing import List, Union
 from urllib.parse import urlparse
 
 from PyQt6.QtCore import pyqtSignal, QUrl, QRect
+from PyQt6.QtGui import QScreen
 from PyQt6.QtNetwork import QNetworkCookie
-from PyQt6.QtWebEngineCore import QWebEngineCookieStore
-from PyQt6.QtWebEngineWidgets import QWebEngineView, QWebEngineProfile, \
-    QWebEnginePage
-from PyQt6.QtWidgets import QApplication, QDesktopWidget
+from PyQt6.QtWebEngineCore import QWebEngineCookieStore, QWebEngineProfile, QWebEnginePage
+from PyQt6.QtWebEngineWidgets import QWebEngineView
+
+from PyQt6.QtWidgets import QApplication
 
 
 logger = logging.getLogger(__name__)
@@ -54,9 +55,8 @@ class WebLoginView(QWebEngineView):
         self.load(QUrl(uri))
 
     def set_pos(self):
-        desktop: QDesktopWidget = QApplication.desktop()
-        screen = desktop.screenNumber(QApplication.desktop().cursor().pos())
-        geo: QRect = desktop.availableGeometry(screen)
+        screen: QScreen = QApplication.primaryScreen()
+        geo: QRect = screen.availableGeometry()
         self.setFixedWidth(int(geo.width() / 1.5))
         self.setFixedHeight(int(geo.height() / 1.5))
         frame: QRect = self.frameGeometry()

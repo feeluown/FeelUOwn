@@ -117,7 +117,7 @@ class PlayerPlaylistView(SongMiniCardListView):
             row = songs.index(current_song)
             index = model.index(row, 0)
             # In order to highlight the current song.
-            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.SelectionFlag.SelectionFlag.SelectionFlag.SelectionFlag.SelectCurrent)
+            self.selectionModel().select(index, QItemSelectionModel.SelectionFlag.SelectCurrent)
             self.scrollTo(index, QAbstractItemView.ScrollHint.PositionAtCenter)
 
     async def _dislike_and_remove_songs(self, songs):

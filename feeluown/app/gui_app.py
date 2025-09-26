@@ -134,7 +134,7 @@ class GuiApp(App, QWidget):
             self.exit()
 
     def mouseReleaseEvent(self, e):
-        if not self.rect().contains(e.pos()):
+        if not self.rect().contains(e.position().toPoint()):
             return
         if e.button() == Qt.MouseButton.BackButton:
             self.browser.back()

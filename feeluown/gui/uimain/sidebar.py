@@ -171,6 +171,6 @@ class _LeftPanel(QFrame):
             self._app.coll_mgr.refresh()
 
         box = QMessageBox(QMessageBox.Icon.Warning, '提示', f"确认删除收藏集 '{coll.name}' 吗？",
-                          QMessageBox.Yes | QMessageBox.No, self)
+                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         box.accepted.connect(do)
         box.open()

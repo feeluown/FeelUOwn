@@ -43,16 +43,16 @@ class ResizableFramelessContainer(QWidget):
         self._widget = None
 
     def mousePressEvent(self, e):
-        self._old_pos = e.globalPos()
+        self._old_pos = e.globalPosition()
 
     def mouseMoveEvent(self, e):
         # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._old_pos is not None:
-            delta = e.globalPos() - self._old_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self._old_pos = e.globalPos()
+            delta = e.globalPosition() - self._old_pos
+            self.move(int(self.x() + delta.x()), int(self.y() + delta.y()))
+            self._old_pos = e.globalPosition()
 
     def mouseReleaseEvent(self, e):
         self._old_pos = None

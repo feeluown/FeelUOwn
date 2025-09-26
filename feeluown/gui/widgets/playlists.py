@@ -122,7 +122,7 @@ class PlaylistsView(TextlistView):
     def dropEvent(self, e):
         mimedata = e.mimeData()
         song = mimedata.model
-        index = self.indexAt(e.pos())
+        index = self.indexAt(e.position().toPoint())
         playlist = index.data(Qt.ItemDataRole.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()
@@ -148,7 +148,7 @@ class PlaylistsView(TextlistView):
     def dragMoveEvent(self, e):
         mimedata = e.mimeData()
         song = mimedata.model
-        index = self.indexAt(e.pos())
+        index = self.indexAt(e.position().toPoint())
         playlist = index.data(Qt.ItemDataRole.UserRole)
         if song.source == playlist.source:
             e.accept()

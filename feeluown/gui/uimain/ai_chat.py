@@ -200,10 +200,10 @@ class Body(QWidget):
 
         pal = label.palette()
         if role in ('user', 'system'):
-            origin_window = pal.color(pal.Window)
-            palette_set_bg_color(pal, pal.color(pal.Highlight))
-            pal.setColor(pal.Text, pal.color(pal.HighlightedText))
-            pal.setColor(pal.Highlight, origin_window)
+            origin_window = pal.color(pal.ColorRole.Window)
+            palette_set_bg_color(pal, pal.color(pal.ColorRole.Highlight))
+            pal.setColor(pal.ColorRole.Text, pal.color(pal.ColorRole.HighlightedText))
+            pal.setColor(pal.ColorRole.Highlight, origin_window)
             label.setPalette(pal)
 
         return label

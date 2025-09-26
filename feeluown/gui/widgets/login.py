@@ -109,7 +109,7 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.firefox_btn)
         self._layout.addWidget(self.edge_btn)
 
-        self.cookies_text_edit.setAcceptTextFormat.RichText(False)
+        self.cookies_text_edit.setAcceptRichText(False)
         self.cookies_text_edit.setPlaceholderText(
             '请从浏览器中复制 Cookie：\n\n'
             'Chrome 复制的 cookie 格式类似：key1=value1; key2=value2\n\n'

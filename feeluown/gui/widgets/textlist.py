@@ -136,9 +136,8 @@ class TextlistView(QListView):
         if not self._results:
             return
         painter = QPainter(self.viewport())
-        option = self.viewOptions()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        fm = QFontMetrics(option.font)
+        fm = QFontMetrics(self.font())
         for _, result in self._results.items():
             index, state = result
             rect = self.rectForIndex(index)

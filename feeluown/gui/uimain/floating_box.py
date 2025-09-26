@@ -22,7 +22,7 @@ IS_MACOS = sys.platform == 'darwin'
 
 class MouseState:
     def __init__(self, e: QMouseEvent):
-        self.start_pos = e.globalPos()
+        self.start_pos = e.globalPosition()
         self.current_pos = self.start_pos
 
     @property
@@ -237,9 +237,9 @@ class FloatingBox(QFrame):
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
         if self._mouse_state is not None:
-            delta = e.globalPos() - self._mouse_state.current_pos
-            self.move(self.x() + delta.x(), self.y() + delta.y())
-            self._mouse_state.current_pos = e.globalPos()
+            delta = e.globalPosition() - self._mouse_state.current_pos
+            self.move(int(self.x() + delta.x()), int(self.y() + delta.y()))
+            self._mouse_state.current_pos = e.globalPosition()
         super().mouseMoveEvent(e)
 
     def mouseReleaseEvent(self, e):

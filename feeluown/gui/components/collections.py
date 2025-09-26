@@ -70,7 +70,7 @@ class CollectionListView(TextlistView):
         所以在这里判断当前位置对应的 model index 是否符合条件。
         """
         # pylint: disable=all
-        index = self.indexAt(e.pos())
+        index = self.indexAt(e.position().toPoint())
         if index.isValid() and index.flags() & Qt.ItemFlag.ItemIsDropEnabled:
             e.accept()
         else:
@@ -79,7 +79,7 @@ class CollectionListView(TextlistView):
     def dropEvent(self, e):
         mimedata = e.mimeData()
         model = mimedata.model
-        index = self.indexAt(e.pos())
+        index = self.indexAt(e.position().toPoint())
         coll = index.data(Qt.ItemDataRole.UserRole)
         self._results[index.row] = (index, None)
         self.viewport().update()

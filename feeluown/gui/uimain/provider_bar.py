@@ -226,6 +226,6 @@ class ProviderBar(QWidget):
                 self._app.show_msg(f'资源提供方({playlist.source})不支持删除歌单')
 
         box = QMessageBox(QMessageBox.Icon.Warning, '提示', f"确认删除歌单 '{playlist.name}' 吗？",
-                          QMessageBox.Yes | QMessageBox.No, self)
+                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No, self)
         box.accepted.connect(lambda: aio.run_afn(do))
         box.open()
