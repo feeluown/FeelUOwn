@@ -1,8 +1,12 @@
+import os
 from feeluown.utils.patch import patch_janus, patch_qeventloop, patch_mutagen, \
     patch_pydantic
 patch_janus()
 patch_mutagen()
 patch_pydantic()
+
+os.environ.setdefault('QT_API', 'pyqt6')
+os.environ.setdefault('FEELUOWN_QT_API', 'pyqt6')
 
 try:
     patch_qeventloop()
