@@ -8,7 +8,7 @@ def run_mpris2_server(app):
     try:
         import dbus
         import dbus.service
-        import dbus.mainloop.pyqt5
+        import dbus.mainloop.pyqt6
     except ImportError as e:
         logger.error("can't run mpris2 server: %s",  str(e))
     else:
@@ -22,7 +22,7 @@ def run_mpris2_server(app):
             return
 
         # set the mainloop before any dbus operation
-        dbus.mainloop.pyqt5.DBusQtMainLoop(set_as_default=True)
+        dbus.mainloop.pyqt6.DBusQtMainLoop(set_as_default=True)
         session_bus = dbus.SessionBus()
         bus = dbus.service.BusName(BusName, session_bus)
         service = Mpris2Service(app, bus)
