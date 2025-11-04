@@ -359,7 +359,10 @@ class MpvPlayer(AbstractPlayer):
 
 # k: factor between 0 and 1, to represent tick/fade_time
 def fade_curve(k: float, fade_in: bool) -> float:
+    def sigmoid(x: float) -> float:
+        return math.pow(1+math.pow(math.e, -11.4514*(x-0.5)), -1)
+
     if fade_in:
-        return (1-math.cos(k*math.pi)) / 2
+        return sigmoid(k)
     else:
-        return (1+math.cos(k*math.pi)) / 2
+        return 1-sigmoid(k)
