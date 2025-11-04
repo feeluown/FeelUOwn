@@ -77,7 +77,7 @@ class SignalConnector:
                 try:
                     func(*args)
                 except Exception as e:
-                    logger.exception('error during calling slot:%s' % e)
+                    logger.exception('error during calling slot:%s', e)
                 except:  # noqa: E722, pylint: disable=bare-except
                     logger.exception('error during calling slot')
 
