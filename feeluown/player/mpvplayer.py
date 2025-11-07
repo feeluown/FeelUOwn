@@ -20,7 +20,6 @@ from feeluown.media import Media, VideoAudioManifest
 from .base_player import AbstractPlayer, State
 from .metadata import MetadataFields, Metadata
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -32,8 +31,16 @@ class MpvPlayer(AbstractPlayer):
 
     todo: make me singleton
     """
-    def __init__(self, _=None, audio_device=b'auto', winid=None,
-                 fade=False, fade_time_ms=500, **kwargs):
+
+    def __init__(
+        self,
+        _=None,
+        audio_device=b'auto',
+        winid=None,
+        fade=False,
+        fade_time_ms=500,
+        **kwargs
+    ):
         """
         :param _: keep this arg to keep backward compatibility
         """
@@ -56,9 +63,7 @@ class MpvPlayer(AbstractPlayer):
         # mpvkwargs['log_handler'] = self.__log_handler
         # mpvkwargs['msg_level'] = 'all=v'
         # the default version of libmpv on Ubuntu 18.04 is (1, 25)
-        self._mpv = MPV(input_default_bindings=True,
-                        input_vo_keyboard=True,
-                        **mpvkwargs)
+        self._mpv = MPV(input_default_bindings=True, input_vo_keyboard=True, **mpvkwargs)
         try:
             _mpv_set_option_string(self._mpv.handle, b'ytdl', b'no')
         except:  # noqa
@@ -66,24 +71,22 @@ class MpvPlayer(AbstractPlayer):
         _mpv_set_property_string(self._mpv.handle, b'audio-device', audio_device)
         # old version libmpv(for example: (1, 20)) should set option by using
         # _mpv_set_option_string, while newer version can use _mpv_set_property_string
-        _mpv_set_option_string(self._mpv.handle, b'user-agent',
-                               b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)')
+        _mpv_set_option_string(
+            self._mpv.handle, b'user-agent', b'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'
+        )
 
         #: if video_format changes to None, there is no video available
         self.video_format_changed = Signal()  # Optional[str]
         self.audio_bitrate_changed = Signal()  # Optional[int], for example: 128001
 
         self._mpv.observe_property(
-            'time-pos',
-            lambda name, position: self._on_position_changed(position)
+            'time-pos', lambda name, position: self._on_position_changed(position)
         )
         self._mpv.observe_property(
-            'duration',
-            lambda name, duration: self._on_duration_changed(duration)
+            'duration', lambda name, duration: self._on_duration_changed(duration)
         )
         self._mpv.observe_property(
-            'video-format',
-            lambda name, vformat: self._on_video_format_changed(vformat)
+            'video-format', lambda name, vformat: self._on_video_format_changed(vformat)
         )
         self._mpv.observe_property(
             'audio-bitrate',
@@ -185,7 +188,7 @@ class MpvPlayer(AbstractPlayer):
 
         for _tick in range(freq):
             new_volume = math.ceil(
-                fade_curve(_tick/freq, fade_in=fade_in)*max_volume
+                fade_curve(_tick / freq, fade_in=fade_in) * max_volume
             )
             self.volume = new_volume
             time.sleep(interval)
@@ -324,9 +327,11 @@ class MpvPlayer(AbstractPlayer):
             logger.debug('metadata updated to %s', metadata)
             if self._current_metadata.get('__setby__') != 'manual':
                 self._current_metadata['__setby__'] = 'automatic'
-                mapping = Metadata({MetadataFields.title: 'title',
-                                    MetadataFields.album: 'album',
-                                    MetadataFields.artists: 'artist'})
+                mapping = Metadata({
+                    MetadataFields.title: 'title',
+                    MetadataFields.album: 'album',
+                    MetadataFields.artists: 'artist'
+                })
                 for src, tar in mapping.items():
                     if tar in metadata:
                         value = metadata[tar]
@@ -343,15 +348,16 @@ class MpvPlayer(AbstractPlayer):
             headers_text = ','.join(headers)
             headers_bytes = bytes(headers_text, 'utf-8')
             logger.info('play media with headers: %s', headers_text)
-            _mpv_set_option_string(self._mpv.handle, b'http-header-fields',
-                                   headers_bytes)
+            _mpv_set_option_string(
+                self._mpv.handle, b'http-header-fields', headers_bytes
+            )
         else:
-            _mpv_set_option_string(self._mpv.handle, b'http-header-fields',
-                                   b'')
+            _mpv_set_option_string(self._mpv.handle, b'http-header-fields', b'')
 
     def _set_http_proxy(self, http_proxy):
         _mpv_set_option_string(
-            self._mpv.handle, b'http-proxy', bytes(http_proxy, 'utf-8'))
+            self._mpv.handle, b'http-proxy', bytes(http_proxy, 'utf-8')
+        )
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))
@@ -359,7 +365,11 @@ class MpvPlayer(AbstractPlayer):
 
 # k: factor between 0 and 1, to represent tick/fade_time
 def fade_curve(k: float, fade_in: bool) -> float:
+
+    def sigmoid(x: float) -> float:
+        return math.pow(1 + math.pow(math.e, -11.4514 * (x - 0.5)), -1)
+
     if fade_in:
-        return (1-math.cos(k*math.pi)) / 2
+        return sigmoid(k)
     else:
-        return (1+math.cos(k*math.pi)) / 2
+        return 1 - sigmoid(k)
