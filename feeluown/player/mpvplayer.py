@@ -3,6 +3,7 @@ import logging
 import time
 import math
 import os
+import sys
 
 from feeluown.mpv import (  # type: ignore
     MPV,
@@ -178,11 +179,11 @@ class MpvPlayer(AbstractPlayer):
         _mpv_set_option_string(self._mpv.handle, b'end', bytes(end_str, 'utf-8'))
 
     def set_volume(self, max_volume: int, fade_in: bool):
-        # https://bugs.python.org/issue31539#msg302699
-        if os.name == "nt":
-            interval = 0.02
+        # Since Python 3.11 we have high resolution time.sleep()
+        if sys.version_info.minor >= 11 or sys.version_info.major > 3:
+            interval = 0.001
         else:
-            interval = 0.01
+            interval = 0.02 if os.name == "nt" else 0.01
 
         freq = int(self.fade_time_ms / 1000 / interval)
 
