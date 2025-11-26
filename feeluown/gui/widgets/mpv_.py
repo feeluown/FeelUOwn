@@ -11,7 +11,6 @@ from feeluown.mpv import (
 )
 
 from feeluown.gui.widgets.video import VideoOpenGLWidget
-from feeluown.gui.helpers import IS_MACOS
 
 
 def get_proc_addr(_, name: bytes):
@@ -57,6 +56,7 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         # HELP: It seems that `initializeGL` is called by Qt on
         # old version (<= v5.15.2)
         if self.ctx is None:
+            print('in paintGL, self.ctx is None')
             self.initializeGL()
             assert self.ctx is not None
         # compatible with HiDPI display
@@ -101,16 +101,18 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
 
     @contextmanager
     def change_parent(self):
-        # on macOS, changing mpv widget parent cause no side effects.
+        # on macOS (with PyQt5), changing mpv widget parent cause no side effects.
+        #
         # on Linux (wayland), it seems changing mpv widget parent may cause segfault,
         # so do some hack to avoid crash.
-        if not IS_MACOS:
-            self._before_change_mpv_widget_parent()
+        #
+        # on macOS (with PyQt6), changing mpv widget parent also causes
+        # 'RuntimeError: Unspecified error'
+        self._before_change_mpv_widget_parent()
         try:
             yield
         finally:
-            if not IS_MACOS:
-                self._after_change_mpv_widget_parent()
+            self._after_change_mpv_widget_parent()
 
     def _before_change_mpv_widget_parent(self):
         """
