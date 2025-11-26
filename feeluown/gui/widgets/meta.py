@@ -2,6 +2,8 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
+from typing import TYPE_CHECKING
+
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFont
 from PyQt6.QtWidgets import (
@@ -11,10 +13,14 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QFrame,
     QSizePolicy,
+    QPushButton,
 )
 
 from feeluown.gui.helpers import elided_text
 from .cover_label import CoverLabelV2
+
+if TYPE_CHECKING:
+    from feeluown.gui.app import GuiApp
 
 
 class getset_property:
@@ -43,6 +49,7 @@ class MetaWidget(QFrame):
         self.creator = None
         self.songs_count = None
         self.released_at = None
+        self.model = None
 
     def on_property_updated(self, name):
         pass
@@ -57,15 +64,56 @@ class MetaWidget(QFrame):
     songs_count = getset_property("songs_count")
     creator = getset_property("creator")
     released_at = getset_property("released_at")  # str
+    model = getset_property("model")  # feeluown.library.BaseModel
+
+
+class FavButton(QPushButton):
+    def __init__(self, app: "GuiApp", size=(13, 13), parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+        self.setCheckable(True)
+        self.setFixedSize(*size)
+
+        self.clicked.connect(self.toggle_liked)
+        self.toggled.connect(self.on_toggled)
+        self.setObjectName("like_btn")
+        self.setToolTip("添加到“本地收藏")
+
+        self._model = None
+
+    def set_model(self, model):
+        self._model = model
+        self.setDisabled(model is None)
+
+    def toggle_liked(self):
+        coll_library = self._app.coll_mgr.get_coll_library()
+        model = self._model
+        if self.already_in_library(model):
+            coll_library.remove(model)
+            self._app.show_msg("已经从“本地收藏”中移除")
+        else:
+            coll_library.add(model)
+            self._app.show_msg("已经添加到“本地收藏”")
+
+    def on_toggled(self):
+        if self.already_in_library(self._model):
+            self.setToolTip("添加到“本地收藏”")
+        else:
+            self.setToolTip("从“本地收藏”中移除")
+
+    def already_in_library(self, model):
+        coll_library = self._app.coll_mgr.get_coll_library()
+        return model in coll_library.models
 
 
 class TableMetaWidget(MetaWidget):
-    def __init__(self, parent=None):
+    def __init__(self, app, parent=None):
         super().__init__(parent=parent)
 
         self.cover_label = CoverLabelV2(self)
-        # these three widgets are in right layout
+        # these widgets are in right layout
         self.title_label = QLabel(self)
+        self.fav_button = FavButton(app=app, size=(13, 13), parent=self)
         self.meta_label = QLabel(self)
         # this spacer item is used as a stretch in right layout,
         # it's  width and height is not so important, we set them to 0
@@ -92,7 +140,16 @@ class TableMetaWidget(MetaWidget):
         self._h_layout = QHBoxLayout()
         self._right_layout = QVBoxLayout()
         self._right_layout.addStretch(0)
-        self._right_layout.addWidget(self.title_label)
+
+        self._title_row_layout = QHBoxLayout()
+        self._title_row_layout.addWidget(self.title_label)
+        self._title_row_layout.addWidget(self.fav_button)
+        self._title_row_layout.setSpacing(10)
+        self._title_row_layout.addStretch(0)
+        self._title_row_layout.setAlignment(self.fav_button,
+                                            Qt.AlignmentFlag.AlignCenter)
+
+        self._right_layout.addLayout(self._title_row_layout)
         self._right_layout.addWidget(self.meta_label)
         self._h_layout.addWidget(self.cover_label)
         self._h_layout.setAlignment(self.cover_label, Qt.AlignmentFlag.AlignTop)
@@ -109,10 +166,6 @@ class TableMetaWidget(MetaWidget):
         # left margin is same as toolbar left margin
         self.layout().setContentsMargins(0, 0, 30, 0)
         self.layout().setSpacing(0)
-
-    def add_tabbar(self, tabbar):
-        self._right_layout.addWidget(tabbar)
-        self._right_layout.setAlignment(tabbar, Qt.AlignmentFlag.AlignLeft)
 
     def set_cover_image(self, image):
         if image is not None:
@@ -135,6 +188,8 @@ class TableMetaWidget(MetaWidget):
             self._refresh_title()
         elif name == "cover":
             self._refresh_cover()
+        elif name == "model":
+            self._refresh_fav_button()
 
     def _refresh_meta_label(self):
         creator = self.creator
@@ -192,16 +247,24 @@ class TableMetaWidget(MetaWidget):
             self.title_label.setToolTip(self.title)
             # Please refresh when the widget is resized.
             title = elided_text(
-                self.title, self.title_label.width(), self.title_label.font()
+                self.title, self.parent().width(), self.title_label.font()
             )
             self.title_label.setText(title)
         else:
             self.title_label.hide()
 
+    def _refresh_fav_button(self):
+        self.fav_button.set_model(self.model)
+        if self.model:
+            self.fav_button.show()
+        else:
+            self.fav_button.hide()
+
     def _refresh(self):
         self._refresh_title()
         self._refresh_meta_label()
         self._refresh_cover()
+        self._refresh_fav_button()
 
     def sizeHint(self):
         super_size = super().sizeHint()

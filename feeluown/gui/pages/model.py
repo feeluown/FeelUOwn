@@ -73,6 +73,7 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
 
         # fetch and render basic metadata
         self.meta_widget.title = await run_fn(lambda: artist.name)
+        self.meta_widget.model = self.model
         self.meta_widget.source = self._get_source_alias(artist.source)
         self.meta_widget.show()
 
@@ -151,6 +152,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
             self.meta_widget.released_at = album.released
 
         self.meta_widget.title = album.name
+        self.meta_widget.model = self.model
         self.meta_widget.creator = album.artists_name
         self.meta_widget.source = self._get_source_alias(album.source)
         self.meta_widget.show()
@@ -193,6 +195,7 @@ class PlaylistRenderer(Renderer):
         # show playlist title
         self.meta_widget.show()
         self.meta_widget.title = playlist.name
+        self.meta_widget.model = self.playlist
         self.meta_widget.source = self._get_source_alias(playlist.source)
 
         await self._show_songs()
