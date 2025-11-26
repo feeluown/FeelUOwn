@@ -56,7 +56,6 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
         # HELP: It seems that `initializeGL` is called by Qt on
         # old version (<= v5.15.2)
         if self.ctx is None:
-            print('in paintGL, self.ctx is None')
             self.initializeGL()
             assert self.ctx is not None
         # compatible with HiDPI display
