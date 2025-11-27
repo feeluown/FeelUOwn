@@ -108,6 +108,10 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         )
 
     def remove_item(self, item: T):
+        """Remove an item from the model.
+
+        .. versionadded: 5.0
+        """
         try:
             row = self._items.index(item)
         except IndexError:
@@ -438,7 +442,14 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
        The *card_min_width*, *card_spacing*, *card_text_height* parameter were removed.
     """
     # Generic signal emitted when a remove action is requested from context menu.
+    # .. versionadded:: 5.0
+    #
+    # NOTE: Compared to SongsTableView.remove_song_func implementation,
+    # this way does not block the UI when removing an item.
+    # At the same time, it provides a callback to notify the success status.
+    # I'm not sure whether the design of the callback signature is good.
     remove_item_needed = pyqtSignal([object, object])
+    remove_action_text = '移除'
 
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -458,7 +469,6 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         self.activated.connect(self.on_activated)
 
         # Text for the remove action in context menu. Subclasses can override.
-        self.remove_action_text = '移除'
         self.enable_remove_action = False
 
     def on_activated(self, _: QModelIndex):
