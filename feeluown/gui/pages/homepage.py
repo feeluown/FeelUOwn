@@ -12,6 +12,8 @@ from feeluown.library import (
     SupportsRecListDailySongs,
     Provider,
     SupportsRecACollectionOfVideos,
+    SupportsCurrentUserChanged,
+    SupportsCurrentUser,
 )
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
@@ -140,7 +142,8 @@ class Overview(QWidget):
 
         self._welcome_label = QLabel("Feel Your Own!")
         self._welcome_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._welcome_label.setStyleSheet("font-size: 32px; font-weight: bold; margin: 20px 0; letter-spacing: 2px;")
+        self._welcome_label.setStyleSheet(
+            "font-size: 32px; font-weight: bold; margin: 20px 0; letter-spacing: 2px;")
         self._main_layout.addWidget(self._welcome_label)
 
         # 分隔线
@@ -152,7 +155,8 @@ class Overview(QWidget):
         # Title for platform account card area
         self._account_title = QLabel("已连接平台")
         self._account_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._account_title.setStyleSheet("font-size: 15px; font-weight: bold; margin: 8px 0 0 0;")
+        self._account_title.setStyleSheet(
+            "font-size: 15px; font-weight: bold; margin: 8px 0 0 0;")
         self._main_layout.addWidget(self._account_title)
 
         # Platform account card area
@@ -177,10 +181,11 @@ class Overview(QWidget):
         self._refresh()
 
     def _try_listen_provider(self, provider):
-        from feeluown.library import SupportsCurrentUserChanged, UserModel
         if isinstance(provider, SupportsCurrentUserChanged):
             provider.current_user_changed.connect(
-                lambda user, p=provider: self._on_current_user_changed(p, user), weak=False
+                lambda user,
+                p=provider: self._on_current_user_changed(p, user),
+                weak=False
             )
 
     def _on_current_user_changed(self, provider, user):
@@ -191,7 +196,6 @@ class Overview(QWidget):
         self._refresh()
 
     def _update_provider_login_state(self, provider):
-        from feeluown.library import SupportsCurrentUser, UserModel
         if isinstance(provider, SupportsCurrentUser):
             try:
                 user = provider.get_current_user_or_none()

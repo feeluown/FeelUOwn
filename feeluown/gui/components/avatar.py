@@ -183,7 +183,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             user = await run_fn(provider.get_current_user_or_none)
 
         if user is None:
-            self._text = default_text
+            self._text = self.default_text
             return None
         if isinstance(user, UserModel) and user.avatar_url:
             self._text = user.name
