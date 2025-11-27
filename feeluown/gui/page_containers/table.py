@@ -55,7 +55,7 @@ logger = logging.getLogger(__name__)
 
 
 class Renderer:
-    async def setUp(self, container):
+    async def setUp(self, container: 'TableContainer'):
         # pylint: disable=attribute-defined-outside-init
         self.container = container
         self.meta_widget = container.meta_widget
@@ -282,7 +282,7 @@ class TableContainer(QFrame, BgTransparentMixin):
         self._extra = None
         self.toolbar = SongsTableToolbar()
         self.tabbar = TableTabBarV2()
-        self.meta_widget = TableMetaWidget(parent=self)
+        self.meta_widget = TableMetaWidget(app=self._app, parent=self)
         self.songs_table = SongsTableView(app=self._app, parent=self)
         self.albums_table = AlbumCardListView(parent=self)
         self.albums_table.setItemDelegate(
@@ -337,7 +337,6 @@ class TableContainer(QFrame, BgTransparentMixin):
     def _setup_ui(self):
         self.current_table = None
         self.tabbar.hide()
-        self.meta_widget.add_tabbar(self.tabbar)
         self.desc_widget.hide()
 
         self._layout = QVBoxLayout(self)
@@ -432,6 +431,10 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.tabbar.show_artists_needed,
             self.tabbar.show_playlists_needed,
             self.tabbar.show_desc_needed,
+            self.artists_table.remove_item_needed,
+            self.albums_table.remove_item_needed,
+            self.playlists_table.remove_item_needed,
+            self.videos_table.remove_item_needed,
         )
         for signal in signals:
             disconnect_slots_if_has(signal)

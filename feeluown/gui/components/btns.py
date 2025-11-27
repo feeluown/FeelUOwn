@@ -81,42 +81,55 @@ class WatchButton(TextButton):
         super().showEvent(e)
 
 
-class LikeButton(QPushButton):
-    def __init__(self, app: "GuiApp", size=(15, 15), parent=None):
+class FavButton(QPushButton):
+    def __init__(self, app: "GuiApp", size=(13, 13), parent=None):
         super().__init__(parent=parent)
         self._app = app
         self.setCheckable(True)
         self.setFixedSize(*size)
 
-        self._app.playlist.song_changed_v2.connect(self.on_song_changed)
         self.clicked.connect(self.toggle_liked)
         self.toggled.connect(self.on_toggled)
         self.setObjectName("like_btn")
+        self.setToolTip("添加到“本地收藏")
 
-    def on_song_changed(self, song, media):
-        if song is not None:
-            self.setChecked(self.is_song_liked(song))
+        self._model = None
+
+    def set_model(self, model):
+        self._model = model
+        self.setDisabled(model is None)
+        if model is not None:
+            self.setChecked(self.already_in_library(model))
 
     def toggle_liked(self):
-        song = self._app.playlist.current_song
         coll_library = self._app.coll_mgr.get_coll_library()
-        if self.is_song_liked(song):
-            coll_library.remove(song)
-            self._app.show_msg("歌曲已经从“本地收藏”中移除")
+        model = self._model
+        if self.already_in_library(model):
+            coll_library.remove(model)
+            self._app.show_msg("已经从“本地收藏”中移除")
         else:
-            coll_library.add(song)
-            self._app.show_msg("歌曲已经添加到“本地收藏”")
+            coll_library.add(model)
+            self._app.show_msg("已经添加到“本地收藏”")
 
     def on_toggled(self):
-        song = self._app.playlist.current_song
-        if self.is_song_liked(song):
+        if self.already_in_library(self._model):
             self.setToolTip("添加到“本地收藏”")
         else:
             self.setToolTip("从“本地收藏”中移除")
 
-    def is_song_liked(self, song):
+    def already_in_library(self, model):
         coll_library = self._app.coll_mgr.get_coll_library()
-        return song in coll_library.models
+        return model in coll_library.models
+
+
+class LikeButton(FavButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setFixedSize(15, 15)
+        self._app.playlist.song_changed_v2.connect(self.on_song_changed)
+
+    def on_song_changed(self, song, media):
+        self.set_model(song)
 
 
 class SongMVTextButton(TextButton):

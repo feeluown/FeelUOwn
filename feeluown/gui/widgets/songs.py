@@ -660,7 +660,10 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         # override ItemViewNoScrollMixin variables
         self._least_row_count = 6
 
-        # slot functions
+        # NOTE: compared to ImgCardView.remove_item_needed solution,
+        # here we use functions instead of signals. The pro is that
+        # we can easily check that whether the remove operation succeed or not.
+        # I think neither way is satisfied.
         self.remove_song_func = None  # fn(song)
 
         self.delegate = SongsTableDelegate(app, self)

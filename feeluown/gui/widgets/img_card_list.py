@@ -35,16 +35,18 @@ from PyQt6.QtGui import (
     QPainter,
     QTextOption,
     QFontMetrics,
+    QAction,
 )
 from PyQt6.QtWidgets import (
     QAbstractItemDelegate,
     QListView,
     QFrame,
+    QMenu,
 )
 
 from feeluown.utils import aio
 from feeluown.library import AlbumModel, AlbumType, PlaylistModel, VideoModel
-from feeluown.utils.reader import wrap, create_reader
+from feeluown.utils.reader import wrap, create_reader, Reader
 from feeluown.utils.utils import int_to_human_readable
 from feeluown.library import reverse
 from feeluown.gui.helpers import (
@@ -90,6 +92,8 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self._items: List[T] = []
         self._is_fetching = False
 
+        self._deleted_items: List[T] = []
+
         self.source_name_map = source_name_map or {}
         self.fetch_image = fetch_image
         self.colors = []
@@ -102,6 +106,35 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
             fetch_image=fetch_cover_wrapper(app),
             source_name_map={p.identifier: p.name for p in app.library.list()},
         )
+
+    def remove_item(self, item: T):
+        """Remove an item from the model.
+
+        .. versionadded: 5.0
+        """
+        try:
+            row = self._items.index(item)
+        except IndexError:
+            return
+        else:
+            self.beginRemoveRows(QModelIndex(), row, row)
+            self._items.remove(item)
+            self._deleted_items.append(item)
+            self.endRemoveRows()
+
+    def can_fetch_more(self, _=None):
+        """
+        In order to handle the situation where items are removed from the model,
+        the deleted items list should be considered. So override this method.
+        """
+        reader = cast(Reader, self._reader)
+        count = reader.count
+        if count is not None:
+            return count > self.rowCount() + len(self._deleted_items)
+
+        # The reader sets the count when it has no more items,
+        # so it is safe to return True here
+        return True
 
     def rowCount(self, _=QModelIndex()):
         return len(self._items)
@@ -408,6 +441,15 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
     .. versionchanged:: 3.9
        The *card_min_width*, *card_spacing*, *card_text_height* parameter were removed.
     """
+    # Generic signal emitted when a remove action is requested from context menu.
+    # .. versionadded:: 5.0
+    #
+    # NOTE: Compared to SongsTableView.remove_song_func implementation,
+    # this way does not block the UI when removing an item.
+    # At the same time, it provides a callback to notify the success status.
+    # I'm not sure whether the design of the callback signature is good.
+    remove_item_needed = pyqtSignal([object, object])
+    remove_action_text = '移除'
 
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -415,8 +457,6 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         # Override ItemViewNoScrollMixin variables. Actually, there variables are
         # not important because ItemViewNoScrollMixin use QListView.sizeHint() to
         # calculate the size and it works well.
-        #
-        #
         self._least_row_count = 1
         self._row_height = 0
 
@@ -428,11 +468,45 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
 
         self.activated.connect(self.on_activated)
 
+        # Text for the remove action in context menu. Subclasses can override.
+        self.enable_remove_action = False
+
     def on_activated(self, _: QModelIndex):
         """
         Subclass can implement this method if needed.
         """
         pass
+
+    def contextMenuEvent(self, event):
+        """Generic context menu that provides a remove action when available.
+
+        Subclasses may set `remove_action_text` to a non-empty string to enable
+        the remove action. When selected, `remove_item_needed` will be emitted
+        with the item (from UserRole) at the clicked index.
+        """
+        if not self.enable_remove_action:
+            return
+
+        index = self.indexAt(event.pos())
+        if not index.isValid():
+            return
+
+        # If no remove action text is provided, do nothing (no menu by default).
+        item = index.data(Qt.ItemDataRole.UserRole)
+        menu = QMenu(self)
+        remove_action = QAction(self.remove_action_text, self)
+        remove_action.triggered.connect(
+            lambda: self.remove_item_needed.emit(item, self.remove_item_cb))
+        menu.addAction(remove_action)
+        menu.exec(event.globalPos())
+
+    def remove_item_cb(self, item, success: bool):
+        logger.info(f"remove item({item}) cb {'ok' if success else 'fail'}")
+        if success:
+            model = self.model()
+            if isinstance(model, QSortFilterProxyModel):
+                model = model.sourceModel()
+            model.remove_item(item)
 
 
 class VideoCardListModel(ImgCardListModel):
@@ -468,6 +542,8 @@ class VideoFilterProxyModel(ImgFilterProxyModel):
 
 class VideoCardListView(ImgCardListView):
     play_video_needed = pyqtSignal([object])
+    # Use base class remove behavior; subclasses keep a convenient alias
+    remove_action_text = "移除视频"
 
     def on_activated(self, index):
         video = index.data(Qt.ItemDataRole.UserRole)
@@ -504,6 +580,7 @@ class PlaylistFilterProxyModel(ImgFilterProxyModel):
 
 class PlaylistCardListView(ImgCardListView):
     show_playlist_needed = pyqtSignal([object])
+    remove_action_text = "移除歌单"
 
     def on_activated(self, index):
         artist = index.data(Qt.ItemDataRole.UserRole)
@@ -527,6 +604,7 @@ class ArtistFilterProxyModel(ImgFilterProxyModel):
 
 class ArtistCardListView(ImgCardListView):
     show_artist_needed = pyqtSignal([object])
+    remove_action_text = "移除歌手"
 
     def on_activated(self, index):
         artist = index.data(Qt.ItemDataRole.UserRole)
@@ -582,6 +660,7 @@ class AlbumFilterProxyModel(ImgFilterProxyModel):
 
 class AlbumCardListView(ImgCardListView):
     show_album_needed = pyqtSignal([object])
+    remove_action_text = "移除专辑"
 
     def on_activated(self, index):
         album = index.data(Qt.ItemDataRole.UserRole)

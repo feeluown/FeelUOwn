@@ -9,8 +9,8 @@ from feeluown.gui.widgets.meta import TableMetaWidget
 # TODO: use xvfb in travis env
 # example: https://github.com/pytest-dev/pytest-qt/blob/master/.travis.yml
 @pytest.mark.skipif(is_travis_env, reason="travis env has no display")
-def test_table_meta(qtbot):
-    widget = TableMetaWidget()
+def test_table_meta(qtbot, app_mock):
+    widget = TableMetaWidget(app_mock)
     qtbot.addWidget(widget)
     widget.title = '我喜欢的音乐'
     widget.subtitle = '嘿嘿'
