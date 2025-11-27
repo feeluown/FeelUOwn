@@ -431,6 +431,10 @@ class TableContainer(QFrame, BgTransparentMixin):
             self.tabbar.show_artists_needed,
             self.tabbar.show_playlists_needed,
             self.tabbar.show_desc_needed,
+            self.artists_table.remove_item_needed,
+            self.albums_table.remove_item_needed,
+            self.playlists_table.remove_item_needed,
+            self.videos_table.remove_item_needed,
         )
         for signal in signals:
             disconnect_slots_if_has(signal)

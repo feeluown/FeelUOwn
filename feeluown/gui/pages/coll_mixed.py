@@ -71,10 +71,23 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
             # the UI is refreshed and the the user needs to scroll to the bottom again.
             self._coll.remove(model)
             self.render_models()
-            self._app.show_msg("移除歌曲成功")
+            self._app.show_msg(f"移除 {model} 成功")
+
+        def remove_model(model, cb):
+            self._coll.remove(model)
+            cb(model, True)
+            self._app.show_msg(f"移除 {model} 成功")
 
         if self.tabs[self.tab_index][1] is ModelType.song:
             self.songs_table.remove_song_func = remove_song
+        self.artists_table.enable_remove_action = True
+        self.albums_table.enable_remove_action = True
+        self.playlists_table.enable_remove_action = True
+        self.videos_table.enable_remove_action = True
+        self.artists_table.remove_item_needed.connect(remove_model)
+        self.albums_table.remove_item_needed.connect(remove_model)
+        self.playlists_table.remove_item_needed.connect(remove_model)
+        self.videos_table.remove_item_needed.connect(remove_model)
 
     def render_by_tab_index(self, tab_index):
         self._app.browser.goto(

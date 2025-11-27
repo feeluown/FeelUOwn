@@ -290,16 +290,25 @@ class BriefVideoModel(BaseBriefModel):
     artists_name: str = ''
     duration_ms: str = ''
 
+    def __str__(self):
+        return f'{self.source}:{self.title}•{self.artists_name}'
+
 
 class BriefAlbumModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.album, is_brief=True)
     name: str = ''
     artists_name: str = ''
 
+    def __str__(self):
+        return f'{self.source}:{self.name}•{self.artists_name}'
+
 
 class BriefArtistModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.artist, is_brief=True)
     name: str = ''
+
+    def __str__(self):
+        return f'{self.source}:{self.name}'
 
 
 class BriefPlaylistModel(BaseBriefModel):
@@ -307,10 +316,16 @@ class BriefPlaylistModel(BaseBriefModel):
     name: str = ''
     creator_name: str = ''
 
+    def __str__(self):
+        return f'{self.source}:{self.name}•{self.creator_name}'
+
 
 class BriefUserModel(BaseBriefModel):
     meta: Any = ModelMeta.create(ModelType.user, is_brief=True)
     name: str = ''
+
+    def __str__(self):
+        return f'{self.source}:{self.name}'
 
 
 class SongModel(BriefSongModel, BaseNormalModel):
@@ -346,9 +361,6 @@ class SongModel(BriefSongModel, BaseNormalModel):
         self.artists_name = fmt_artists(self.artists)
         self.album_name = self.album.name if self.album else ''
         self.duration_ms = get_duration_ms(self.duration)
-
-    def __str__(self):
-        return f'{self.source}:{self.title}•{self.artists_name}'
 
 
 class UserModel(BriefUserModel, BaseNormalModel):
