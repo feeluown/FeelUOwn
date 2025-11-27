@@ -13,10 +13,10 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QFrame,
     QSizePolicy,
-    QPushButton,
 )
 
 from feeluown.gui.helpers import elided_text
+from feeluown.gui.components import FavButton
 from .cover_label import CoverLabelV2
 
 if TYPE_CHECKING:
@@ -67,47 +67,8 @@ class MetaWidget(QFrame):
     model = getset_property("model")  # feeluown.library.BaseModel
 
 
-class FavButton(QPushButton):
-    def __init__(self, app: "GuiApp", size=(13, 13), parent=None):
-        super().__init__(parent=parent)
-        self._app = app
-        self.setCheckable(True)
-        self.setFixedSize(*size)
-
-        self.clicked.connect(self.toggle_liked)
-        self.toggled.connect(self.on_toggled)
-        self.setObjectName("like_btn")
-        self.setToolTip("添加到“本地收藏")
-
-        self._model = None
-
-    def set_model(self, model):
-        self._model = model
-        self.setDisabled(model is None)
-
-    def toggle_liked(self):
-        coll_library = self._app.coll_mgr.get_coll_library()
-        model = self._model
-        if self.already_in_library(model):
-            coll_library.remove(model)
-            self._app.show_msg("已经从“本地收藏”中移除")
-        else:
-            coll_library.add(model)
-            self._app.show_msg("已经添加到“本地收藏”")
-
-    def on_toggled(self):
-        if self.already_in_library(self._model):
-            self.setToolTip("添加到“本地收藏”")
-        else:
-            self.setToolTip("从“本地收藏”中移除")
-
-    def already_in_library(self, model):
-        coll_library = self._app.coll_mgr.get_coll_library()
-        return model in coll_library.models
-
-
 class TableMetaWidget(MetaWidget):
-    def __init__(self, app, parent=None):
+    def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
 
         self.cover_label = CoverLabelV2(self)
