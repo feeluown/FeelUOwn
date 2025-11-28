@@ -33,6 +33,7 @@ from feeluown.gui.helpers import (
     resize_font,
     SOLARIZED_COLORS,
     fetch_cover_wrapper,
+    painter_save,
 )
 
 if TYPE_CHECKING:
@@ -148,7 +149,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         """
         super().__init__(parent=view)
 
-        self.view = view
+        self.view: ItemViewNoScrollMixin = view
         self.card_min_width = card_min_width
         self.card_height = card_height
         self.card_right_spacing = card_right_spacing
@@ -156,6 +157,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.card_top_padding = card_padding[1]
         self.card_bottom_padding = card_padding[3]
         self.card_left_padding = card_padding[0]
+        self.view.set_row_height(card_height + card_padding[1] + card_padding[3])
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
 
@@ -199,64 +201,66 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
 
         selected = option.state & QStyle.StateFlag.State_Selected
         if selected:
-            painter.save()
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(option.palette.color(QPalette.ColorRole.Highlight))
-            painter.drawRect(rect)
-            painter.restore()
+            with painter_save(painter):
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(option.palette.color(QPalette.ColorRole.Highlight))
+                painter.drawRect(rect)
         elif option.state & QStyle.StateFlag.State_MouseOver:
-            painter.save()
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(option.palette.color(self.hover_color_role))
-            painter.drawRect(rect)
-            painter.restore()
+            with painter_save(painter):
+                painter.setPen(Qt.PenStyle.NoPen)
+                painter.setBrush(option.palette.color(self.hover_color_role))
+                painter.drawRect(rect)
 
-        painter.save()
-        painter.translate(rect.x() + card_left_padding, rect.y() + card_top_padding)
+        with painter_save(painter):
+            painter.translate(rect.x() + card_left_padding, rect.y() + card_top_padding)
 
-        if selected:
-            text_color = option.palette.color(QPalette.ColorRole.HighlightedText)
-            non_text_color = QColor(text_color)
-            non_text_color.setAlpha(200)
-        else:
-            text_color = option.palette.color(QPalette.ColorRole.Text)
-            if text_color.lightness() > 150:
-                non_text_color = text_color.darker(140)
+            if selected:
+                text_color = option.palette.color(QPalette.ColorRole.HighlightedText)
+                non_text_color = QColor(text_color)
+                non_text_color.setAlpha(200)
             else:
-                non_text_color = text_color.lighter(150)
-            non_text_color.setAlpha(100)
+                text_color = option.palette.color(QPalette.ColorRole.Text)
+                if text_color.lightness() > 150:
+                    non_text_color = text_color.darker(140)
+                else:
+                    non_text_color = text_color.lighter(150)
+                non_text_color.setAlpha(100)
 
-        # Draw image.
-        painter.save()
-        painter.translate(0, img_padding)
-        self.paint_pixmap(
-            painter, non_text_color, obj, cover_width, cover_height, border_radius
-        )
-        painter.restore()
+            # Draw image.
+            with painter_save(painter):
+                painter.translate(0, img_padding)
+                self.paint_pixmap(
+                    painter,
+                    non_text_color,
+                    obj,
+                    cover_width,
+                    cover_height,
+                    border_radius
+                )
 
-        # Draw text.
-        painter.save()
-        text_width = (
-            rect.width() - cover_width - card_left_padding * 2 - card_right_spacing
-        )
-        painter.translate(cover_width + card_left_padding, 0)
-        title = index.data(Qt.ItemDataRole.DisplayRole)
-        subtitle = f"{song.artists_name_display} • {song.album_name_display}"
-        # Note this is not a bool object.
-        is_enabled = option.state & QStyle.StateFlag.State_Enabled
-        self.paint_text(
-            painter,
-            is_enabled,
-            title,
-            subtitle,
-            text_color,
-            non_text_color,
-            text_width,
-            card_height,
-        )
-        painter.restore()
-
-        painter.restore()
+            # Draw text.
+            with painter_save(painter):
+                text_width = (
+                    rect.width() -
+                    cover_width -
+                    card_left_padding * 2 -
+                    card_right_spacing
+                )
+                painter.translate(cover_width + card_left_padding, 0)
+                title = index.data(Qt.ItemDataRole.DisplayRole)
+                subtitle = f"{song.artists_name_display} • {song.album_name_display}"
+                # Note this is not a bool object.
+                is_enabled = option.state & QStyle.StateFlag.State_Enabled
+                self.paint_text(
+                    painter,
+                    is_enabled,
+                    title,
+                    subtitle,
+                    text_color,
+                    non_text_color,
+                    text_width,
+                    card_height,
+                )
 
     def paint_text(
         self,

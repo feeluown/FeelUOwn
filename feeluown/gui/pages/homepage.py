@@ -12,13 +12,10 @@ from feeluown.library import (
     SupportsRecListDailySongs,
     Provider,
     SupportsRecACollectionOfVideos,
-    SupportsCurrentUserChanged,
-    SupportsCurrentUser,
 )
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
 from feeluown.gui.widgets.header import LargeHeader
-from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
     PlaylistCardListModel,
@@ -41,6 +38,12 @@ if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
+
+
+PlaylistCardMinWidth = 140
+PlaylistCardSpacing = 25
+SongCardHeight = 50
+SongCardPadding = (5, 5, 5, 5)  # left, top, right, bottom
 
 
 async def render(req, **kwargs):
@@ -160,11 +163,9 @@ class RecPlaylistsPanel(Panel):
 
     def _show_more_or_less(self, checked):
         if checked:
-            self.playlist_list_view._fixed_row_count = self._initial_row_count
-            self.playlist_list_view.adjust_height()
+            self.playlist_list_view.set_fixed_row_count(self._initial_row_count)
         else:
-            self.playlist_list_view._fixed_row_count = 0
-            self.playlist_list_view.adjust_height()
+            self.playlist_list_view.unset_fixed_row_count()
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
@@ -177,7 +178,8 @@ class RecPlaylistsPanel(Panel):
         playlist_list_view.setItemDelegate(
             PlaylistCardListDelegate(
                 playlist_list_view,
-                card_min_width=150,
+                card_min_width=PlaylistCardMinWidth,
+                card_spacing=PlaylistCardSpacing,
             )
         )
         model = PlaylistCardListModel.create(create_reader(playlists), self._app)
@@ -201,11 +203,12 @@ class SongsBasePanel(Panel, Generic[P]):
         self.songs_list_view = songs_list_view = SongMiniCardListView(
             no_scroll_v=True,
             fixed_row_count=self._initial_row_count,
-            row_height=43
         )
         songs_list_view.setItemDelegate(
             SongMiniCardListDelegate(
                 songs_list_view,
+                card_height=SongCardHeight,
+                card_padding=SongCardPadding,
             )
         )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
@@ -223,11 +226,9 @@ class SongsBasePanel(Panel, Generic[P]):
 
     def _show_more_or_less(self, checked):
         if checked:
-            self.songs_list_view._fixed_row_count = self._initial_row_count
-            self.songs_list_view.adjust_height()
+            self.songs_list_view.set_fixed_row_count(self._initial_row_count)
         else:
-            self.songs_list_view._fixed_row_count = 0
-            self.songs_list_view.adjust_height()
+            self.songs_list_view.set_fixed_row_count(0)
 
     async def _play_all(self):
         songs = await run_fn(self.songs_list_view.model().get_reader().readall)
@@ -282,11 +283,9 @@ class RecVideosPanel(Panel):
 
     def _show_more_or_less(self, checked):
         if checked:
-            self.video_list_view._fixed_row_count = self._initial_row_count
-            self.video_list_view.adjust_height()
+            self.video_list_view.set_fixed_row_count(self._initial_row_count)
         else:
-            self.video_list_view._fixed_row_count = 0
-            self.video_list_view.adjust_height()
+            self.video_list_view.unset_fixed_row_count()
 
     async def render(self):
         coll = await run_fn(self._provider.rec_a_collection_of_videos)
@@ -309,7 +308,7 @@ class View(QWidget, BgTransparentMixin):
 
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(20, 10, 20, 0)
-        self._layout.setSpacing(10)
+        self._layout.setSpacing(20)
         self._layout.addWidget(self._overview)
         self._layout.addSpacing(20)
 

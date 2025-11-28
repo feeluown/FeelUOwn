@@ -111,7 +111,7 @@ class GuiApp(App, QWidget):
 
     def apply_state(self, state):
         super().apply_state(state)
-        self.browser.goto(page=f'/homepage')
+        self.browser.goto(page='/homepage')
 
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})

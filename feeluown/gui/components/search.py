@@ -129,12 +129,11 @@ class Body(QFrame, BgTransparentMixin):
                 assert isinstance(table, QAbstractItemView)
                 delegate = table.itemDelegate()
                 if isinstance(delegate, ImgCardListDelegate):
-                    # FIXME: set fixed_row_count in better way.
-                    table._fixed_row_count = 2  # type: ignore[attr-defined]
+                    table.set_fixed_row_count(2)
                     delegate.update_settings("card_min_width", 140)
                 elif isinstance(table, SongsTableView):
-                    table._fixed_row_count = 8
-                    table._row_height = table.verticalHeader().defaultSectionSize()
+                    table.set_fixed_row_count(8)
+                    table.set_row_height(table.verticalHeader().defaultSectionSize())
 
             renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
             await table_container.set_renderer(renderer)
