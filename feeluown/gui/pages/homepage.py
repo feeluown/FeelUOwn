@@ -147,17 +147,24 @@ class RecPlaylistsPanel(Panel):
         self._provider = provider
         self._app = app
         title = "推荐歌单"
-        self.playlist_list_view = PlaylistCardListView(no_scroll_v=True)
+        self._initial_row_count = 2
+        self.playlist_list_view = PlaylistCardListView(
+            no_scroll_v=True,
+            fixed_row_count=self._initial_row_count
+        )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, self.playlist_list_view, pixmap)
 
-        # Connect the fold_unfold_btn to show all recommended playlists
-        self.fold_unfold_btn.clicked.connect(self._show_all_playlists)
+        # Connect the fold_unfold_btn to show more or less playlists
+        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
 
-    def _show_all_playlists(self):
-        # TODO: Implement showing all recommended playlists in a dedicated page
-        # For now, we can just log or show a message
-        self._app.show_msg('查看全部推荐歌单功能待实现')
+    def _show_more_or_less(self, checked):
+        if checked:
+            self.playlist_list_view._fixed_row_count = self._initial_row_count
+            self.playlist_list_view.adjust_height()
+        else:
+            self.playlist_list_view._fixed_row_count = 0
+            self.playlist_list_view.adjust_height()
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
@@ -255,7 +262,11 @@ class RecVideosPanel(Panel):
     def __init__(self, app: "GuiApp", provider: SupportsRecACollectionOfVideos):
         self._app = app
         self._provider = provider
-        self.video_list_view = video_list_view = VideoCardListView()
+        self._initial_row_count = 2
+        self.video_list_view = video_list_view = VideoCardListView(
+            no_scroll_v=True,
+            fixed_row_count=self._initial_row_count
+        )
         video_list_view.setItemDelegate(
             VideoCardListDelegate(
                 video_list_view,
@@ -265,20 +276,23 @@ class RecVideosPanel(Panel):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__("瞅瞅", video_list_view, pixmap)
 
-        # Connect the fold_unfold_btn
-        self.fold_unfold_btn.clicked.connect(self._show_all_videos)
+        # Connect the fold_unfold_btn to show more or less videos
+        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
         video_list_view.play_video_needed.connect(self._app.playlist.play_model)
 
-    def _show_all_videos(self):
-        # TODO: Implement showing all recommended videos in a dedicated page
-        self._app.show_msg('查看全部视频功能待实现')
+    def _show_more_or_less(self, checked):
+        if checked:
+            self.video_list_view._fixed_row_count = self._initial_row_count
+            self.video_list_view.adjust_height()
+        else:
+            self.video_list_view._fixed_row_count = 0
+            self.video_list_view.adjust_height()
 
     async def render(self):
         coll = await run_fn(self._provider.rec_a_collection_of_videos)
         videos = coll.models
         if videos:
-            # TODO: maybe show all videos
-            model = VideoCardListModel.create(videos[:8], self._app)
+            model = VideoCardListModel.create(videos, self._app)
             self.video_list_view.setModel(model)
             self.header.setText(coll.name)
         else:
