@@ -69,13 +69,25 @@ class Panel(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(10)
+        
+        # Create header layout with icon, title, and buttons
         self._h_layout = QHBoxLayout()
         self._h_layout.setSpacing(5)
         self._layout.addLayout(self._h_layout)
+        
+        # Add icon and header to the left
         self._h_layout.addWidget(self.icon_label)
         self._h_layout.addWidget(self.header)
-        self._h_layout.addStretch(1)  # Add stretch to push the button to the right
-        # Add "查看全部" button
+        
+        # Add stretch to push buttons to the right
+        self._h_layout.addStretch(1)
+        
+        # Create a separate layout for buttons
+        self._buttons_layout = QHBoxLayout()
+        self._buttons_layout.setSpacing(5)
+        self._h_layout.addLayout(self._buttons_layout)
+        
+        # Add "查看全部" button to the buttons layout
         self.view_all_btn = TextButton('查看全部', height=24)
         self.view_all_btn.setStyleSheet("""
             TextButton {
@@ -89,7 +101,8 @@ class Panel(QWidget):
                 background: palette(light);
             }
         """)
-        self._h_layout.addWidget(self.view_all_btn)
+        self._buttons_layout.addWidget(self.view_all_btn)
+        
         self._layout.addWidget(self.body)
 
     @classmethod
@@ -189,19 +202,11 @@ class SongsBasePanel(Panel, Generic[P]):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, songs_list_view, pixmap)
 
-        # Remove the view_all_btn from the base Panel and add play_all_btn
-        # We need to adjust the layout to place buttons properly
-        # First, remove the view_all_btn added by the parent class
-        self._h_layout.removeWidget(self.view_all_btn)
-        self.view_all_btn.setParent(None)
-
-        # Add play_all_btn and view_all_btn in a specific order
+        # Add play_all_btn to the buttons layout before the view_all_btn
         self.play_all_btn = PlayButton()
-        self._h_layout.addWidget(self.play_all_btn)
-        self._h_layout.addWidget(self.view_all_btn)
-        self._h_layout.addStretch(0)
-
-
+        # Insert the play button before the view_all_btn
+        self._buttons_layout.insertWidget(0, self.play_all_btn)
+        
         # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
         self.view_all_btn.clicked.connect(self._show_all_songs)
