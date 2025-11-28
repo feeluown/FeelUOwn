@@ -61,6 +61,15 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
             self.meta_widget.title = "音乐库"
         else:
             self.meta_widget.title = coll.name
+
+        if not coll.models:
+            # HACK: show a message by meta widget
+            if coll.type is CollectionType.sys_library:
+                self.meta_widget.source = "音乐库暂无收藏，快去添加一些吧！"
+            else:
+                self.meta_widget.source = "该收藏集暂无内容，快去添加一些吧！"
+            return
+
         self.render_tab_bar()
         self.render_models()
 

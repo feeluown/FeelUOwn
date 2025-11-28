@@ -263,6 +263,27 @@ class ItemViewNoScrollMixin:
     #         self.adjust_height()
     #         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
 
+    def set_fixed_row_count(self, count: int):
+        """Dynamically set fixed row count.
+
+        Usage example: you want to show only N rows when user click "show less".
+
+        .. versionadded:: 5.0
+        """
+        self._fixed_row_count = count
+        self.adjust_height()
+
+    def unset_fixed_row_count(self):
+        self.set_fixed_row_count(0)
+
+    def set_row_height(self, height: int):
+        """Dynamically set row height.
+
+        .. versionadded:: 5.0
+        """
+        self._row_height = height
+        self.adjust_height()
+
     def adjust_height(self):
         if self.model() is None:
             return

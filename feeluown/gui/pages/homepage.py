@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING, Optional, TypeVar, Generic
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap
+from PyQt6.QtGui import QPixmap, QGuiApplication
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
 from feeluown.library import (
@@ -30,7 +30,7 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate,
     SongMiniCardListModel,
 )
-from feeluown.gui.widgets.selfpaint_btn import PlayButton
+from feeluown.gui.widgets.selfpaint_btn import PlayButton, TriagleButton
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.helpers import BgTransparentMixin
 
@@ -38,6 +38,12 @@ if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
+
+
+PlaylistCardMinWidth = 140
+PlaylistCardSpacing = 25
+SongCardHeight = 50
+SongCardPadding = (5, 5, 5, 5)  # left, top, right, bottom
 
 
 async def render(req, **kwargs):
@@ -48,6 +54,20 @@ async def render(req, **kwargs):
     scroll_area.setWidget(view)
     app.ui.right_panel.set_body(scroll_area)
     await view.render()
+
+
+class FoldButton(TriagleButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setToolTip("展开/收起")
+        self.setCheckable(True)
+        self.toggled.connect(self.on_toggled)
+        # Checked means folded, and show down direction. Click to unfold.
+        self.setChecked(True)
+
+    def on_toggled(self, checked):
+        self.setToolTip("展开" if checked else "收起")
+        self.set_direction("down" if checked else "up")
 
 
 class Panel(QWidget):
@@ -66,24 +86,40 @@ class Panel(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(10)
+
+        # Create header layout with icon, title, and buttons
         self._h_layout = QHBoxLayout()
         self._h_layout.setSpacing(5)
         self._layout.addLayout(self._h_layout)
+
+        # Add icon and header to the left
         self._h_layout.addWidget(self.icon_label)
         self._h_layout.addWidget(self.header)
+
+        # Add stretch to push the fold_unfold_btn to the right
+        self._h_layout.addStretch(1)
+
+        self.fold_unfold_btn = FoldButton(length=16)
+        self._h_layout.addWidget(self.fold_unfold_btn)
+        self._h_layout.addSpacing(20)
+
         self._layout.addWidget(self.body)
 
     @classmethod
-    def get_provider_pixmap(cls, app: "GuiApp", provider_id):
+    def get_provider_pixmap(cls, app: "GuiApp", provider_id, width=20):
+        device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
         if provider_id in cls._id_pixmap_cache:
             return cls._id_pixmap_cache[provider_id]
         pvd_ui = app.pvd_ui_mgr.get(provider_id)
         if pvd_ui is None:
-            return QPixmap()
-        svg = pvd_ui.get_colorful_svg()
-        return QPixmap(svg).scaledToWidth(
-            20, Qt.TransformationMode.SmoothTransformation
+            svg = "icons:feeluown.png"
+        else:
+            svg = pvd_ui.get_colorful_svg()
+        pixmap = QPixmap(svg).scaledToWidth(
+            int(width * device_pixel_ratio), Qt.TransformationMode.SmoothTransformation
         )
+        pixmap.setDevicePixelRatio(device_pixel_ratio)
+        return pixmap
 
     async def render(self):
         pass
@@ -97,18 +133,42 @@ class HBody(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
 
+class Overview(QWidget):
+    def __init__(self, app: "GuiApp"):
+        super().__init__(parent=None)
+        self._app = app
+
+        self._main_layout = QVBoxLayout(self)
+        self._main_layout.setContentsMargins(0, 0, 0, 0)
+        self._main_layout.setSpacing(10)
+
+        self.setFixedHeight(20)
+
+
 class RecPlaylistsPanel(Panel):
     def __init__(self, app: "GuiApp", provider: SupportsRecListDailyPlaylists):
         self._provider = provider
         self._app = app
         title = "推荐歌单"
-        self.playlist_list_view = PlaylistCardListView(no_scroll_v=True)
+        self._initial_row_count = 2
+        self.playlist_list_view = PlaylistCardListView(
+            no_scroll_v=True,
+            fixed_row_count=self._initial_row_count
+        )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, self.playlist_list_view, pixmap)
 
+        # Connect the fold_unfold_btn to show more or less playlists
+        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
+
+    def _show_more_or_less(self, checked):
+        if checked:
+            self.playlist_list_view.set_fixed_row_count(self._initial_row_count)
+        else:
+            self.playlist_list_view.unset_fixed_row_count()
+
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
-        print(playlists)
         if not playlists:
             return
         playlist_list_view = self.playlist_list_view
@@ -118,7 +178,8 @@ class RecPlaylistsPanel(Panel):
         playlist_list_view.setItemDelegate(
             PlaylistCardListDelegate(
                 playlist_list_view,
-                card_min_width=150,
+                card_min_width=PlaylistCardMinWidth,
+                card_spacing=PlaylistCardSpacing,
             )
         )
         model = PlaylistCardListModel.create(create_reader(playlists), self._app)
@@ -138,21 +199,36 @@ class SongsBasePanel(Panel, Generic[P]):
     def __init__(self, title: str, app: "GuiApp", provider: P):
         self._app = app
         self._provider = provider
-        self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True)
+        self._initial_row_count = 3
+        self.songs_list_view = songs_list_view = SongMiniCardListView(
+            no_scroll_v=True,
+            fixed_row_count=self._initial_row_count,
+        )
         songs_list_view.setItemDelegate(
             SongMiniCardListDelegate(
                 songs_list_view,
+                card_height=SongCardHeight,
+                card_padding=SongCardPadding,
             )
         )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, songs_list_view, pixmap)
 
+        # Add play_all_btn to the left of the header
         self.play_all_btn = PlayButton()
-        self._h_layout.addWidget(self.play_all_btn)
-        self._h_layout.addStretch(0)
+        # Insert the play button after the header
+        self._h_layout.insertWidget(2, self.play_all_btn)
 
+        # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
+        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
         songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
+
+    def _show_more_or_less(self, checked):
+        if checked:
+            self.songs_list_view.set_fixed_row_count(self._initial_row_count)
+        else:
+            self.songs_list_view.set_fixed_row_count(0)
 
     async def _play_all(self):
         songs = await run_fn(self.songs_list_view.model().get_reader().readall)
@@ -187,7 +263,11 @@ class RecVideosPanel(Panel):
     def __init__(self, app: "GuiApp", provider: SupportsRecACollectionOfVideos):
         self._app = app
         self._provider = provider
-        self.video_list_view = video_list_view = VideoCardListView()
+        self._initial_row_count = 2
+        self.video_list_view = video_list_view = VideoCardListView(
+            no_scroll_v=True,
+            fixed_row_count=self._initial_row_count
+        )
         video_list_view.setItemDelegate(
             VideoCardListDelegate(
                 video_list_view,
@@ -197,14 +277,21 @@ class RecVideosPanel(Panel):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__("瞅瞅", video_list_view, pixmap)
 
+        # Connect the fold_unfold_btn to show more or less videos
+        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
         video_list_view.play_video_needed.connect(self._app.playlist.play_model)
+
+    def _show_more_or_less(self, checked):
+        if checked:
+            self.video_list_view.set_fixed_row_count(self._initial_row_count)
+        else:
+            self.video_list_view.unset_fixed_row_count()
 
     async def render(self):
         coll = await run_fn(self._provider.rec_a_collection_of_videos)
         videos = coll.models
         if videos:
-            # TODO: maybe show all videos
-            model = VideoCardListModel.create(videos[:8], self._app)
+            model = VideoCardListModel.create(videos, self._app)
             self.video_list_view.setModel(model)
             self.header.setText(coll.name)
         else:
@@ -217,9 +304,13 @@ class View(QWidget, BgTransparentMixin):
         super().__init__(parent=None)
         self._app = app
 
+        self._overview = Overview(app)
+
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(20, 10, 20, 0)
-        self._layout.setSpacing(10)
+        self._layout.setSpacing(20)
+        self._layout.addWidget(self._overview)
+        self._layout.addSpacing(20)
 
     async def render(self):
         panels = []

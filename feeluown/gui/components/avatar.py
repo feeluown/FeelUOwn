@@ -34,8 +34,10 @@ class Avatar(SelfPaintAbstractIconTextButton):
     a current user, this tries to show the user avatar.
     """
 
+    default_text = "点击登录第三方平台"
+
     def __init__(self, app: "GuiApp", *args, **kwargs):
-        super().__init__("未登录", *args, **kwargs)
+        super().__init__(self.default_text, *args, **kwargs)
 
         self._app = app
         self._logging_state = {}
@@ -83,9 +85,9 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 self._logging_state.pop(provider.identifier, None)
             if not self._app.current_pvd_ui_mgr.get():
                 if self._logging_state:
-                    self._text = "部分已登录"
+                    self._text = "已登录部分平台"
                 else:
-                    self._text = "未登录"
+                    self._text = self.default_text
                 self.setToolTip(self._text)  # refresh tooltip
 
         return cb
@@ -181,7 +183,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             user = await run_fn(provider.get_current_user_or_none)
 
         if user is None:
-            self._text = "未登录"
+            self._text = self.default_text
             return None
         if isinstance(user, UserModel) and user.avatar_url:
             self._text = user.name

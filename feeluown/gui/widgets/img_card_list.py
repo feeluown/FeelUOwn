@@ -38,6 +38,7 @@ from PyQt6.QtGui import (
     QAction,
 )
 from PyQt6.QtWidgets import (
+    QStyle,
     QAbstractItemDelegate,
     QListView,
     QFrame,
@@ -56,6 +57,7 @@ from feeluown.gui.helpers import (
     painter_save,
     secondary_text_color,
     fetch_cover_wrapper,
+    random_solarized_color,
 )
 
 if TYPE_CHECKING:
@@ -197,7 +199,15 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
 
 
 class ImgCardListDelegate(QAbstractItemDelegate):
-    """
+    """Draw image card based on the view width and card_min_width.
+
+    Card width is dynamically calculated based on the view width. The card width
+    will be at least *card_min_width*.
+
+    This delegate works well with ItemViewNoScrollMixin. It automatically adjusts
+    the view's `_row_height` so that the view can show all the cards properly.
+    Though changing the view's `_row_height` is tricky :)
+
     Card layout should be like the following::
 
         |card0    card1    card2|
@@ -264,6 +274,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             secondary_color = border_color = secondary_text_color(option.palette)
             # Draw cover or color.
             img_height = int(draw_width / self.w_h_ratio)
+
             with painter_save(painter):
                 self.draw_img_or_color(
                     painter, border_color, obj, draw_width, img_height
@@ -274,8 +285,13 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             text_source_height = self.text_height - text_title_height
             painter.translate(0, img_height)
             text_rect = QRectF(0, 0, draw_width, text_title_height)
+
             with painter_save(painter):
+                # Draw hover effect.
+                if option.state & QStyle.StateFlag.State_MouseOver:
+                    painter.setPen(QColor(random_solarized_color()))
                 self.draw_title(painter, index, text_rect)
+
             painter.translate(0, text_title_height - 5)
             with painter_save(painter):
                 self.draw_whats_this(
@@ -360,6 +376,9 @@ class ImgCardListDelegate(QAbstractItemDelegate):
     def on_view_resized(self, size: QSize, _: QSize):
         self._view_width = size.width()
         self.re_calc_all()
+        # When view's height is changed, view.ajust_height() should do nothing.
+        # So it does not cause infinite loop.
+        self.view.adjust_height()
 
     def re_calc_all(self):
         # HELP: CardListView needs about 20 spacing left on macOS
@@ -376,8 +395,8 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         count = max(count, 1)
         # calculate img_width when column count is the max
         self._card_width = (width + card_spacing) // count - card_spacing
-        self._card_height = int(self._card_width * self.w_h_ratio) + self.text_height
-        self.view._row_height = self._card_height + self.v_spacing
+        self._card_height = int(self._card_width / self.w_h_ratio) + self.text_height
+        self.view.set_row_height(self._card_height + self.v_spacing)
 
     def column_count(self):
         return (self._view_width + self.card_spacing) // (
@@ -463,6 +482,7 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         self.setViewMode(QListView.ViewMode.IconMode)
         self.setResizeMode(QListView.ResizeMode.Adjust)
         self.setWrapping(True)
+        self.setMouseTracking(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.initialize()
 
