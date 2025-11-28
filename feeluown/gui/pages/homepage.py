@@ -79,29 +79,12 @@ class Panel(QWidget):
         self._h_layout.addWidget(self.icon_label)
         self._h_layout.addWidget(self.header)
         
-        # Add stretch to push buttons to the right
+        # Add stretch to push the view_all_btn to the right
         self._h_layout.addStretch(1)
         
-        # Create a separate layout for buttons
-        self._buttons_layout = QHBoxLayout()
-        self._buttons_layout.setSpacing(5)
-        self._h_layout.addLayout(self._buttons_layout)
-        
-        # Add "查看全部" button to the buttons layout
+        # Add "查看全部" button
         self.view_all_btn = TextButton('查看全部', height=24)
-        self.view_all_btn.setStyleSheet("""
-            TextButton {
-                background: transparent;
-                border: 1px solid palette(mid);
-                border-radius: 12px;
-                padding: 0px 12px;
-                font-size: 12px;
-            }
-            TextButton:hover {
-                background: palette(light);
-            }
-        """)
-        self._buttons_layout.addWidget(self.view_all_btn)
+        self._h_layout.addWidget(self.view_all_btn)
         
         self._layout.addWidget(self.body)
 
@@ -202,10 +185,10 @@ class SongsBasePanel(Panel, Generic[P]):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, songs_list_view, pixmap)
 
-        # Add play_all_btn to the buttons layout before the view_all_btn
+        # Add play_all_btn to the left of the header
         self.play_all_btn = PlayButton()
-        # Insert the play button before the view_all_btn
-        self._buttons_layout.insertWidget(0, self.play_all_btn)
+        # Insert the play button after the header
+        self._h_layout.insertWidget(2, self.play_all_btn)
         
         # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
