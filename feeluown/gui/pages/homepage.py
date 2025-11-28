@@ -73,6 +73,22 @@ class Panel(QWidget):
         self._layout.addLayout(self._h_layout)
         self._h_layout.addWidget(self.icon_label)
         self._h_layout.addWidget(self.header)
+        self._h_layout.addStretch(1)  # Add stretch to push the button to the right
+        # Add "查看全部" button
+        self.view_all_btn = TextButton('查看全部', height=24)
+        self.view_all_btn.setStyleSheet("""
+            TextButton {
+                background: transparent;
+                border: 1px solid palette(mid);
+                border-radius: 12px;
+                padding: 0px 12px;
+                font-size: 12px;
+            }
+            TextButton:hover {
+                background: palette(light);
+            }
+        """)
+        self._h_layout.addWidget(self.view_all_btn)
         self._layout.addWidget(self.body)
 
     @classmethod
@@ -123,6 +139,14 @@ class RecPlaylistsPanel(Panel):
         self.playlist_list_view = PlaylistCardListView(no_scroll_v=True)
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, self.playlist_list_view, pixmap)
+        
+        # Connect the view_all_btn to show all recommended playlists
+        self.view_all_btn.clicked.connect(self._show_all_playlists)
+
+    def _show_all_playlists(self):
+        # TODO: Implement showing all recommended playlists in a dedicated page
+        # For now, we can just log or show a message
+        self._app.show_msg('查看全部推荐歌单功能待实现')
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
@@ -165,12 +189,26 @@ class SongsBasePanel(Panel, Generic[P]):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, songs_list_view, pixmap)
 
+        # Remove the view_all_btn from the base Panel and add play_all_btn
+        # We need to adjust the layout to place buttons properly
+        # First, remove the view_all_btn added by the parent class
+        self._h_layout.removeWidget(self.view_all_btn)
+        self.view_all_btn.setParent(None)
+        
+        # Add play_all_btn and view_all_btn in a specific order
         self.play_all_btn = PlayButton()
         self._h_layout.addWidget(self.play_all_btn)
+        self._h_layout.addWidget(self.view_all_btn)
         self._h_layout.addStretch(0)
 
+        # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
+        self.view_all_btn.clicked.connect(self._show_all_songs)
         songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
+
+    def _show_all_songs(self):
+        # TODO: Implement showing all songs in a dedicated page
+        self._app.show_msg('查看全部歌曲功能待实现')
 
     async def _play_all(self):
         songs = await run_fn(self.songs_list_view.model().get_reader().readall)
@@ -215,7 +253,13 @@ class RecVideosPanel(Panel):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__("瞅瞅", video_list_view, pixmap)
 
+        # Connect the view_all_btn
+        self.view_all_btn.clicked.connect(self._show_all_videos)
         video_list_view.play_video_needed.connect(self._app.playlist.play_model)
+
+    def _show_all_videos(self):
+        # TODO: Implement showing all recommended videos in a dedicated page
+        self._app.show_msg('查看全部视频功能待实现')
 
     async def render(self):
         coll = await run_fn(self._provider.rec_a_collection_of_videos)
