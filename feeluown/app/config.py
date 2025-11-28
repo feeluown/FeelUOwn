@@ -24,8 +24,8 @@ def create_config() -> Config:
         type_=dict,
         default={
             'contents': [
-                # {'name': 'RecListDailySongs', 'provider': 'netease'},
-                {'name': 'RecACollectionOfSongs', 'provider': 'qqmusic'},
+                {'name': 'RecListDailySongs', 'provider': 'netease'},
+                # {'name': 'RecACollectionOfSongs', 'provider': 'qqmusic'},
                 {'name': 'RecListDailyPlaylists', 'provider': 'qqmusic'},
                 {'name': 'RecACollectionOfVideos', 'provider': 'bilibili'},
             ]

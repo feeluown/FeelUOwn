@@ -103,133 +103,16 @@ class HBody(QWidget):
         self._layout.setContentsMargins(0, 0, 0, 0)
 
 
-class ProviderAccountWidget(QWidget):
-    def __init__(self, icon_pixmap, display_name, parent=None):
-        super().__init__(parent)
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(8, 8, 8, 8)
-        layout.setSpacing(4)
-
-        hbox = QHBoxLayout()
-        hbox.setContentsMargins(0, 0, 0, 0)
-        hbox.setSpacing(0)
-        self.icon_label = QLabel()
-        self.icon_label.setFixedSize(40, 40)
-        self.icon_label.setPixmap(icon_pixmap)
-        self.icon_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        hbox.addStretch(1)
-        hbox.addWidget(self.icon_label)
-        hbox.addStretch(1)
-        layout.addLayout(hbox)
-
-        self.name_label = QLabel(display_name)
-        self.name_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.name_label.setStyleSheet("font-size: 15px; font-weight: 500;")
-        layout.addWidget(self.name_label)
-
-        self.setStyleSheet("border-radius: 8px; margin: 2px;")
-
-
 class Overview(QWidget):
     def __init__(self, app: "GuiApp"):
         super().__init__(parent=None)
         self._app = app
-        self._logged_in = {}  # provider_id -> user_name
 
         self._main_layout = QVBoxLayout(self)
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(10)
 
-        self._welcome_label = QLabel("Feel Your Own!")
-        self._welcome_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._welcome_label.setStyleSheet(
-            "font-size: 32px; font-weight: bold; margin: 20px 0; letter-spacing: 2px;")
-        self._main_layout.addWidget(self._welcome_label)
-
-        # 分隔线
-        self._divider = QLabel()
-        self._divider.setFixedHeight(2)
-        self._divider.setStyleSheet("margin: 8px 0; background-color: palette(text);")
-        self._main_layout.addWidget(self._divider)
-
-        # Title for platform account card area
-        self._account_title = QLabel("已连接平台")
-        self._account_title.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self._account_title.setStyleSheet(
-            "font-size: 15px; font-weight: bold; margin: 8px 0 0 0;")
-        self._main_layout.addWidget(self._account_title)
-
-        # Platform account card area
-        self._account_layout = QHBoxLayout()
-        self._account_layout.setContentsMargins(0, 0, 0, 0)
-        self._account_layout.setSpacing(20)
-        self._main_layout.addLayout(self._account_layout)
-
-        # Traverse all providers at initialization to detect logged-in platforms
-        for provider in self._app.library.list():
-            self._try_listen_provider(provider)
-            self._update_provider_login_state(provider)
-
-        # Listen for subsequent provider additions
-        self._app.library.provider_added.connect(self._on_provider_added)
-
-        self._refresh()
-
-    def _on_provider_added(self, provider):
-        self._try_listen_provider(provider)
-        self._update_provider_login_state(provider)
-        self._refresh()
-
-    def _try_listen_provider(self, provider):
-        if isinstance(provider, SupportsCurrentUserChanged):
-            provider.current_user_changed.connect(
-                lambda user,
-                p=provider: self._on_current_user_changed(p, user),
-                weak=False
-            )
-
-    def _on_current_user_changed(self, provider, user):
-        if user is not None:
-            self._logged_in[provider.identifier] = user.name
-        else:
-            self._logged_in.pop(provider.identifier, None)
-        self._refresh()
-
-    def _update_provider_login_state(self, provider):
-        if isinstance(provider, SupportsCurrentUser):
-            try:
-                user = provider.get_current_user_or_none()
-            except Exception:
-                user = None
-            if user is not None:
-                self._logged_in[provider.identifier] = user.name
-            else:
-                self._logged_in.pop(provider.identifier, None)
-
-    def _refresh(self):
-        # Clean up platform account area
-        while self._account_layout.count():
-            item = self._account_layout.takeAt(0)
-            w = item.widget()
-            if w:
-                w.deleteLater()
-        # Show all providers, display username if logged in,
-        # otherwise display platform name
-        providers = self._app.library.list()
-        if providers:
-            for provider in providers:
-                pixmap = Panel.get_provider_pixmap(self._app, provider.identifier, 30)
-                if provider.identifier in self._logged_in:
-                    display_name = self._logged_in[provider.identifier]
-                else:
-                    display_name = getattr(provider, 'name', provider.identifier)
-                widget = ProviderAccountWidget(pixmap, display_name)
-                self._account_layout.addWidget(widget)
-        else:
-            empty_label = QLabel("暂无已连接平台")
-            empty_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            empty_label.setStyleSheet("font-size: 15px;")
-            self._account_layout.addWidget(empty_label)
+        self.setFixedHeight(20)
 
 
 class RecPlaylistsPanel(Panel):

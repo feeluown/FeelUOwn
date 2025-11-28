@@ -111,8 +111,7 @@ class GuiApp(App, QWidget):
 
     def apply_state(self, state):
         super().apply_state(state)
-        coll_library = self.coll_mgr.get_coll_library()
-        self.browser.goto(page=f'/colls/{coll_library.identifier}')
+        self.browser.goto(page=f'/homepage')
 
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})
