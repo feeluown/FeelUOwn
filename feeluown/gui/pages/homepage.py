@@ -18,6 +18,7 @@ from feeluown.library import (
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
 from feeluown.gui.widgets.header import LargeHeader
+from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
     PlaylistCardListModel,
