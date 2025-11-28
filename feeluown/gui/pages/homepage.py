@@ -33,7 +33,7 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate,
     SongMiniCardListModel,
 )
-from feeluown.gui.widgets.selfpaint_btn import PlayButton
+from feeluown.gui.widgets.selfpaint_btn import PlayButton, TriagleButton
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.helpers import BgTransparentMixin
 
@@ -53,6 +53,20 @@ async def render(req, **kwargs):
     await view.render()
 
 
+class FoldButton(TriagleButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.setToolTip("展开/收起")
+        self.setCheckable(True)
+        self.toggled.connect(self.on_toggled)
+        # Checked means folded, and show down direction. Click to unfold.
+        self.setChecked(True)
+
+    def on_toggled(self, checked):
+        self.setToolTip("展开" if checked else "收起")
+        self.set_direction("down" if checked else "up")
+
+
 class Panel(QWidget):
     _id_pixmap_cache = {}
 
@@ -69,23 +83,23 @@ class Panel(QWidget):
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(10)
-        
+
         # Create header layout with icon, title, and buttons
         self._h_layout = QHBoxLayout()
         self._h_layout.setSpacing(5)
         self._layout.addLayout(self._h_layout)
-        
+
         # Add icon and header to the left
         self._h_layout.addWidget(self.icon_label)
         self._h_layout.addWidget(self.header)
-        
-        # Add stretch to push the view_all_btn to the right
+
+        # Add stretch to push the fold_unfold_btn to the right
         self._h_layout.addStretch(1)
-        
-        # Add "查看全部" button
-        self.view_all_btn = TextButton('查看全部', height=24)
-        self._h_layout.addWidget(self.view_all_btn)
-        
+
+        self.fold_unfold_btn = FoldButton(length=16)
+        self._h_layout.addWidget(self.fold_unfold_btn)
+        self._h_layout.addSpacing(20)
+
         self._layout.addWidget(self.body)
 
     @classmethod
@@ -137,8 +151,8 @@ class RecPlaylistsPanel(Panel):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, self.playlist_list_view, pixmap)
 
-        # Connect the view_all_btn to show all recommended playlists
-        self.view_all_btn.clicked.connect(self._show_all_playlists)
+        # Connect the fold_unfold_btn to show all recommended playlists
+        self.fold_unfold_btn.clicked.connect(self._show_all_playlists)
 
     def _show_all_playlists(self):
         # TODO: Implement showing all recommended playlists in a dedicated page
@@ -176,7 +190,12 @@ class SongsBasePanel(Panel, Generic[P]):
     def __init__(self, title: str, app: "GuiApp", provider: P):
         self._app = app
         self._provider = provider
-        self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True, fixed_row_count=2, row_height=43)
+        self._initial_row_count = 3
+        self.songs_list_view = songs_list_view = SongMiniCardListView(
+            no_scroll_v=True,
+            fixed_row_count=self._initial_row_count,
+            row_height=43
+        )
         songs_list_view.setItemDelegate(
             SongMiniCardListDelegate(
                 songs_list_view,
@@ -189,15 +208,19 @@ class SongsBasePanel(Panel, Generic[P]):
         self.play_all_btn = PlayButton()
         # Insert the play button after the header
         self._h_layout.insertWidget(2, self.play_all_btn)
-        
+
         # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
-        self.view_all_btn.clicked.connect(self._show_all_songs)
+        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
         songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
-    def _show_all_songs(self):
-        self.songs_list_view._fixed_row_count = 0
-        self.songs_list_view.adjust_height()
+    def _show_more_or_less(self, checked):
+        if checked:
+            self.songs_list_view._fixed_row_count = self._initial_row_count
+            self.songs_list_view.adjust_height()
+        else:
+            self.songs_list_view._fixed_row_count = 0
+            self.songs_list_view.adjust_height()
 
     async def _play_all(self):
         songs = await run_fn(self.songs_list_view.model().get_reader().readall)
@@ -242,8 +265,8 @@ class RecVideosPanel(Panel):
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__("瞅瞅", video_list_view, pixmap)
 
-        # Connect the view_all_btn
-        self.view_all_btn.clicked.connect(self._show_all_videos)
+        # Connect the fold_unfold_btn
+        self.fold_unfold_btn.clicked.connect(self._show_all_videos)
         video_list_view.play_video_needed.connect(self._app.playlist.play_model)
 
     def _show_all_videos(self):
