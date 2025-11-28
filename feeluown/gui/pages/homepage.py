@@ -140,7 +140,7 @@ class RecPlaylistsPanel(Panel):
         self.playlist_list_view = PlaylistCardListView(no_scroll_v=True)
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, self.playlist_list_view, pixmap)
-        
+
         # Connect the view_all_btn to show all recommended playlists
         self.view_all_btn.clicked.connect(self._show_all_playlists)
 
@@ -151,7 +151,6 @@ class RecPlaylistsPanel(Panel):
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
-        print(playlists)
         if not playlists:
             return
         playlist_list_view = self.playlist_list_view
@@ -181,7 +180,7 @@ class SongsBasePanel(Panel, Generic[P]):
     def __init__(self, title: str, app: "GuiApp", provider: P):
         self._app = app
         self._provider = provider
-        self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True)
+        self.songs_list_view = songs_list_view = SongMiniCardListView(no_scroll_v=True, fixed_row_count=2, row_height=43)
         songs_list_view.setItemDelegate(
             SongMiniCardListDelegate(
                 songs_list_view,
@@ -195,12 +194,13 @@ class SongsBasePanel(Panel, Generic[P]):
         # First, remove the view_all_btn added by the parent class
         self._h_layout.removeWidget(self.view_all_btn)
         self.view_all_btn.setParent(None)
-        
+
         # Add play_all_btn and view_all_btn in a specific order
         self.play_all_btn = PlayButton()
         self._h_layout.addWidget(self.play_all_btn)
         self._h_layout.addWidget(self.view_all_btn)
         self._h_layout.addStretch(0)
+
 
         # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
@@ -208,8 +208,8 @@ class SongsBasePanel(Panel, Generic[P]):
         songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
     def _show_all_songs(self):
-        # TODO: Implement showing all songs in a dedicated page
-        self._app.show_msg('查看全部歌曲功能待实现')
+        self.songs_list_view._fixed_row_count = 0
+        self.songs_list_view.adjust_height()
 
     async def _play_all(self):
         songs = await run_fn(self.songs_list_view.model().get_reader().readall)
