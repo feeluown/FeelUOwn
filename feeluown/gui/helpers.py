@@ -282,9 +282,14 @@ class ItemViewNoScrollMixin:
         .. versionadded:: 5.0
         """
         self._row_height = height
-        self.adjust_height()
+        if self._no_scroll_v is True:
+            self.adjust_height()
 
     def adjust_height(self):
+        if self._no_scroll_v is False:
+            # There must an implementation bug if we reach here.
+            logger.error('should not adjust height when no_scroll_v is False')
+
         if self.model() is None:
             return
 
