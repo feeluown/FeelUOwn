@@ -221,7 +221,7 @@ class SongExploreView(QWidget):
         self.copy_web_url_btn = TextButton("复制网页地址")
         self.cover_label = CoverLabelV2(app=app)
         self.song_wiki_label = SongWikiLabel(app)
-        self.comments_view = CommentListView(reserved=0)
+        self.comments_view = CommentListView()
         self.similar_songs_view = SongMiniCardListView(row_height=60, no_scroll_v=True)
         delegate = SongMiniCardListDelegate(
             self.similar_songs_view,

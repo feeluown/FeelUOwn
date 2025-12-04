@@ -132,7 +132,6 @@ class ProvidersView(ItemViewNoScrollMixin, QListView):
         super().__init__(parent=parent)
         self._library = library
 
-        self._reserved = 10
         self._least_row_count = 1
         self._row_height = 48
 
