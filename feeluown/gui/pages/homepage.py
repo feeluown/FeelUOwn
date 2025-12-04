@@ -165,7 +165,7 @@ class RecPlaylistsPanel(Panel):
         if checked:
             self.playlist_list_view.set_fixed_row_count(self._initial_row_count)
         else:
-            self.playlist_list_view.unset_fixed_row_count()
+            self.playlist_list_view.set_fixed_row_count(-1)
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
@@ -228,7 +228,7 @@ class SongsBasePanel(Panel, Generic[P]):
         if checked:
             self.songs_list_view.set_fixed_row_count(self._initial_row_count)
         else:
-            self.songs_list_view.set_fixed_row_count(0)
+            self.songs_list_view.set_fixed_row_count(-1)
 
     async def _play_all(self):
         songs = await run_fn(self.songs_list_view.model().get_reader().readall)
@@ -285,7 +285,7 @@ class RecVideosPanel(Panel):
         if checked:
             self.video_list_view.set_fixed_row_count(self._initial_row_count)
         else:
-            self.video_list_view.unset_fixed_row_count()
+            self.video_list_view.set_fixed_row_count(-1)
 
     async def render(self):
         coll = await run_fn(self._provider.rec_a_collection_of_videos)
