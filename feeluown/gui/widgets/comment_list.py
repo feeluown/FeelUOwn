@@ -206,7 +206,7 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
         if model is None:
             return super().min_height()
         row_count = model.rowCount()
-        height = self._reserved
+        height = 0
         while row_count >= 0:
             row_count -= 1
             height += self.sizeHintForRow(row_count)

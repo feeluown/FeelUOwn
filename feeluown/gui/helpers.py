@@ -309,7 +309,7 @@ class ItemViewNoScrollMixin:
                 rect = self.visualRect(index)
                 height = self.sizeHint().height()
                 if self._no_scroll_v is True:
-                    height = height - int(rect.height() * 1.5) - self._reserved
+                    height = height - int(rect.height() * 1.5)
                 self.setFixedHeight(max(height, self.min_height()))
             elif self._fixed_row_count > 0:
                 self.setFixedHeight(self._row_height * self._fixed_row_count)
@@ -356,7 +356,7 @@ class ItemViewNoScrollMixin:
             if self._fixed_row_count == 0 or self._fixed_row_count < 0:
                 index = self._last_visible_index()
                 rect = self.visualRect(index)
-                height = rect.y() + rect.height() + self._reserved
+                height = rect.y() + rect.height()
                 height = max(min_height, height)
             else:  # fixed_row_count > 0
                 height = self._row_height * self._fixed_row_count
@@ -378,7 +378,7 @@ class ItemViewNoScrollMixin:
         return source_model.index(row_index, column_index)
 
     def min_height(self):
-        default = self._row_height * self._least_row_count + self._reserved
+        default = self._row_height * self._least_row_count
         return max(self._min_height, default)
 
     def suggest_min_height(self, height):
