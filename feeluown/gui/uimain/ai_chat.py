@@ -117,49 +117,16 @@ class RoundedLabel(QLabel):
         super().paintEvent(event)
 
 
-class Body(QWidget):
-    def __init__(self, app: "GuiApp", parent=None):
-        super().__init__(parent=parent)
-        self._app = app
+class ChatHistoryWidget(QWidget):
+    """Widget for displaying chat history"""
 
-        # Chat history display area
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
         self._history_area = QScrollArea(self)
         self._history_widget = QWidget()
         self._history_area.setWidget(self._history_widget)
         self._history_layout = QVBoxLayout(self._history_widget)
 
-        # User input area
-        self._editor = ChatInputEditor(self)
-        self._editor.setPlaceholderText("在这里输入你的问题...")
-        self._editor.setFrameShape(QFrame.Shape.NoFrame)
-        self._editor.enter_pressed.connect(
-            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText())
-        )
-        self._msg_label = QLabel(self)
-        self._msg_label.setWordWrap(True)
-        self._hide_btn = TextButton("关闭窗口", self)
-        self._extract_and_play_btn = TextButton("提取歌曲并播放", self)
-        self._extract_10_and_play_btn = TextButton("提取10首并播放", self)
-        self._send_btn = TextButton("发送（回车）", self)
-        self._clear_history_btn = TextButton("清空对话", self)
-
-        self.setup_ui()
-        self._hide_btn.clicked.connect(self.hide)
-        self._extract_and_play_btn.clicked.connect(
-            lambda: run_afn_ref(self.extract_and_play)
-        )
-        self._extract_10_and_play_btn.clicked.connect(
-            lambda: run_afn_ref(self.extract_10_and_play)
-        )
-        self._send_btn.clicked.connect(
-            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText())
-        )
-        self._clear_history_btn.clicked.connect(self.clear_history)
-
-        self._chat_context = None
-        self.setAutoFillBackground(True)
-
-    def setup_ui(self):
         self._history_area.setFrameShape(QFrame.Shape.NoFrame)
         self._history_area.setAutoFillBackground(True)
         self._history_layout.setContentsMargins(0, 0, 0, 0)
@@ -168,37 +135,17 @@ class Body(QWidget):
         # Adjust spacing between messages
         self._history_layout.setSpacing(10)
 
-        self._msg_label.setWordWrap(True)
-        self._app.installEventFilter(self)
-        self._msg_label.setTextFormat(Qt.TextFormat.RichText)
+        layout = QVBoxLayout(self)
+        layout.addWidget(self._history_area)
+        layout.setContentsMargins(0, 0, 0, 0)
 
-        self._root_layout = QVBoxLayout(self)
-        self._layout = QHBoxLayout()
-        self._v_layout = QVBoxLayout()
-        self._btn_layout = QVBoxLayout()
+    def add_message(self, role, content):
+        """Add a message to the history"""
+        label = self.create_message_label(role, content)
+        self._history_layout.addWidget(label)
+        self.scroll_to_bottom()
 
-        self._root_layout.addWidget(MidHeader("AI 助手"))
-        self._root_layout.addLayout(self._layout)
-        self._layout.addStretch(0)
-        self._layout.addLayout(self._v_layout)
-        self._layout.setStretch(1, 1)
-        self._layout.addLayout(self._btn_layout)
-        self._layout.addStretch(0)
-        self._root_layout.setContentsMargins(10, 10, 10, 10)
-        self._root_layout.setSpacing(10)
-
-        # Adjust layout to add chat history area
-        self._v_layout.addWidget(self._history_area)
-        self._v_layout.addWidget(self._msg_label)
-        self._v_layout.addWidget(self._editor)
-        self._btn_layout.addWidget(self._extract_and_play_btn)
-        self._btn_layout.addWidget(self._extract_10_and_play_btn)
-        self._btn_layout.addWidget(self._clear_history_btn)
-        self._btn_layout.addWidget(self._hide_btn)
-        self._btn_layout.addStretch(0)
-        self._btn_layout.addWidget(self._send_btn)
-
-    def _create_message_label(self, role, content):
+    def create_message_label(self, role, content):
         """Create message label"""
         label = RoundedLabel()
         label.setText(content)
@@ -220,57 +167,80 @@ class Body(QWidget):
 
         return label
 
-    def _add_message_to_history(self, role, content):
-        """Add message to chat history"""
-        self._chat_context.messages.append({"role": role, "content": content})
-        label = self._create_message_label(role, content)
-        self._history_layout.addWidget(label)
-        self._scroll_to_bottom()
+    def scroll_to_bottom(self) -> None:
+        """Scroll chat history to bottom."""
+        self._history_area.verticalScrollBar().setValue(
+            self._history_area.verticalScrollBar().maximum()
+        )
 
-    async def exec_user_query(self, query):
-        if self._chat_context is None:
-            self._chat_context = self.create_chat_context()
+    def clear(self):
+        """Clear chat history"""
+        while self._history_layout.count():
+            item = self._history_layout.takeAt(0)
+            widget = item.widget()
+            if widget:
+                widget.deleteLater()
 
-        self._add_message_to_history("user", query)
-        self.set_msg("等待 AI 返回中...", level="hint")
-        try:
-            stream = await self._chat_context.send_message()
-        except Exception as e:  # noqa
-            self.set_msg(f"调用 AI 接口失败: {e}", level="err")
-            logger.exception("AI request failed")
-        else:
-            # Create label for AI response
-            ai_label = self._create_message_label("assistant", "")
-            self._history_layout.addWidget(ai_label)
+    def add_widget(self, widget):
+        """Add a custom widget to the history layout"""
+        self._history_layout.addWidget(widget)
 
-            content = ""
-            async for chunk in stream:
-                self.set_msg("AI 返回中...", level="hint")
-                # 当使用 stream_options 时，最后一个 chunk 的 choices 为空
-                if chunk.choices:
-                    delta_content = chunk.choices[0].delta.content or ""
-                    content += delta_content
-                    # Update AI response in real-time
-                    ai_label.setText(content)
-                    self._scroll_to_bottom()
+    def widget(self):
+        """Return the widget to be added to layouts"""
+        return self
 
-            # Update chat context and show token usage
-            assistant_message = {"role": "assistant", "content": content}
-            self._chat_context.messages.append(assistant_message)
-            self.show_tokens_usage(chunk)
-            # Clear input box
-            self._editor.clear()
 
-    def show_tokens_usage(self, chunk):
-        if not chunk:
-            self.set_msg("AI 内容返回结束", level="hint")
-            return
+class ChatInputWidget(QWidget):
+    """Widget for chat input and buttons"""
 
-        in_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
-        out_tokens = chunk.usage.completion_tokens if chunk.usage else 0
-        total_tokens = chunk.usage.total_tokens if chunk.usage else 0
-        token_msg = f"Tokens: 输入 {in_tokens}, 输出 {out_tokens}, 合计 {total_tokens}"
-        self.set_msg(f"AI 内容返回结束 ({token_msg})", level="hint")
+    send_clicked = pyqtSignal(str)  # emits query text
+    extract_10_clicked = pyqtSignal()
+    clear_history_clicked = pyqtSignal()
+    hide_clicked = pyqtSignal()
+
+    def __init__(self, parent=None):
+        super().__init__(parent=parent)
+        self._editor = ChatInputEditor(self)
+        self._editor.setPlaceholderText("在这里输入你的问题...")
+        self._editor.setFrameShape(QFrame.Shape.NoFrame)
+        self._msg_label = QLabel(self)
+        self._msg_label.setWordWrap(True)
+        self._hide_btn = TextButton("关闭窗口", self)
+        self._extract_10_and_play_btn = TextButton("提取10首并播放", self)
+        self._send_btn = TextButton("发送（回车）", self)
+        self._clear_history_btn = TextButton("清空对话", self)
+
+        self._editor.enter_pressed.connect(self._on_enter_pressed)
+        self._send_btn.clicked.connect(self._on_send_clicked)
+        self._extract_10_and_play_btn.clicked.connect(self.extract_10_clicked.emit)
+        self._clear_history_btn.clicked.connect(self.clear_history_clicked.emit)
+        self._hide_btn.clicked.connect(self.hide_clicked.emit)
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        self._msg_label.setWordWrap(True)
+        self._msg_label.setTextFormat(Qt.TextFormat.RichText)
+
+        layout = QVBoxLayout(self)
+        layout.addWidget(self._msg_label)
+        layout.addWidget(self._editor)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self._extract_10_and_play_btn)
+        btn_layout.addWidget(self._clear_history_btn)
+        btn_layout.addWidget(self._hide_btn)
+        btn_layout.addStretch(0)
+        btn_layout.addWidget(self._send_btn)
+        layout.addLayout(btn_layout)
+
+    def _on_enter_pressed(self):
+        self._on_send_clicked()
+
+    def _on_send_clicked(self):
+        query = self._editor.toPlainText().strip()
+        if query:
+            self.send_clicked.emit(query)
 
     def set_msg(self, text, level="hint"):
         if level == "hint":
@@ -281,36 +251,153 @@ class Body(QWidget):
             color = "magenta"
         self._msg_label.setText(f'<span style="color: {color}">{text}</span>')
 
+    def clear_input(self):
+        self._editor.clear()
+
+    def get_input(self):
+        return self._editor.toPlainText()
+
+
+class ChatSession:
+    """Manages chat context and AI interactions"""
+
+    def __init__(self, app: "GuiApp"):
+        self._app = app
+        self._chat_context = None
+
     def create_chat_context(self):
-        return ChatContext(
+        """Create a new chat context"""
+        self._chat_context = ChatContext(
             model=self._app.config.OPENAI_MODEL,
             client=self._app.ai.get_async_client(),
             messages=[{"role": "system", "content": QUERY_PROMPT}],
         )
+        return self._chat_context
 
-    async def extract_and_play(self):
-        await self._extract_and_play(EXTRACT_PROMPT)
+    @property
+    def chat_context(self):
+        if self._chat_context is None:
+            self.create_chat_context()
+        return self._chat_context
+
+    async def send_user_query(self, query):
+        """Send a user query and return stream"""
+        self.chat_context.messages.append({"role": "user", "content": query})
+        return await self.chat_context.send_message()
+
+    async def send_extract_query(self, extract_prompt):
+        """Send an extract prompt and return stream"""
+        self.chat_context.messages.append({"role": "user", "content": extract_prompt})
+        return await self.chat_context.send_message()
+
+    def add_assistant_message(self, content):
+        """Add an assistant message to context"""
+        self.chat_context.messages.append({"role": "assistant", "content": content})
+
+    def clear(self):
+        """Clear chat context"""
+        self._chat_context = None
+
+
+class Body(QWidget):
+    def __init__(self, app: "GuiApp", parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+
+        # Components
+        self._history_widget = ChatHistoryWidget(self)
+        self._input_widget = ChatInputWidget(self)
+        self._session = ChatSession(app)
+
+        self.setup_ui()
+        self.connect_signals()
+        self.setAutoFillBackground(True)
+
+    def setup_ui(self):
+        self._root_layout = QVBoxLayout(self)
+        self._layout = QHBoxLayout()
+        self._v_layout = QVBoxLayout()
+
+        self._root_layout.addWidget(MidHeader("AI 助手"))
+        self._root_layout.addLayout(self._layout)
+        self._layout.addStretch(0)
+        self._layout.addLayout(self._v_layout)
+        self._layout.setStretch(1, 1)
+        self._layout.addStretch(0)
+        self._root_layout.setContentsMargins(10, 10, 10, 10)
+        self._root_layout.setSpacing(10)
+
+        # Add components
+        self._v_layout.addWidget(self._history_widget)
+        self._v_layout.addWidget(self._input_widget)
+
+    def connect_signals(self):
+        self._input_widget.send_clicked.connect(
+            lambda query: run_afn_ref(self.exec_user_query, query)
+        )
+        self._input_widget.extract_10_clicked.connect(
+            lambda: run_afn_ref(self.extract_10_and_play)
+        )
+        self._input_widget.clear_history_clicked.connect(self.clear_history)
+        self._input_widget.hide_clicked.connect(self.hide)
+
+    async def exec_user_query(self, query):
+        if self._session.chat_context is None:
+            self._session.create_chat_context()
+
+        self._history_widget.add_message("user", query)
+        self._input_widget.set_msg("等待 AI 返回中...", level="hint")
+        try:
+            stream = await self._session.send_user_query(query)
+        except Exception as e:  # noqa
+            self._input_widget.set_msg(f"调用 AI 接口失败: {e}", level="err")
+            logger.exception("AI request failed")
+            return
+
+        # Create AI response label
+        ai_label = self._history_widget.create_message_label("assistant", "")
+        self._history_widget.add_widget(ai_label)
+        content = ""
+        async for chunk in stream:
+            self._input_widget.set_msg("AI 返回中...", level="hint")
+            if chunk.choices:
+                delta_content = chunk.choices[0].delta.content or ""
+                content += delta_content
+                ai_label.setText(content)
+                self._history_widget.scroll_to_bottom()
+
+        # Update chat context and show token usage
+        self._session.add_assistant_message(content)
+        self.show_tokens_usage(chunk)
+        self._input_widget.clear_input()
+
+    def show_tokens_usage(self, chunk):
+        if not chunk:
+            self._input_widget.set_msg("AI 内容返回结束", level="hint")
+            return
+
+        in_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
+        out_tokens = chunk.usage.completion_tokens if chunk.usage else 0
+        total_tokens = chunk.usage.total_tokens if chunk.usage else 0
+        token_msg = f"Tokens: 输入 {in_tokens}, 输出 {out_tokens}, 合计 {total_tokens}"
+        self._input_widget.set_msg(f"AI 内容返回结束 ({token_msg})", level="hint")
 
     async def extract_10_and_play(self):
         await self._extract_and_play(f"{EXTRACT_PROMPT}\n随机提取最多10首即可")
 
     async def _extract_and_play(self, extract_prompt):
         """Main entry point for extracting and playing songs"""
-        self._prepare_extract_context(extract_prompt)
-        self.set_msg("正在让 AI 解析歌曲信息，这可能会花费一些时间...")
+        if self._session.chat_context is None:
+            self._input_widget.set_msg("没有对话上下文", level="err")
+            return
+        self._history_widget.add_message("user", extract_prompt)
+        self._input_widget.set_msg("正在让 AI 解析歌曲信息，这可能会花费一些时间...")
         try:
-            stream = await self._chat_context.send_message()
+            stream = await self._session.send_extract_query(extract_prompt)
             await self._process_extract_stream(stream)
         except Exception as e:
-            self.set_msg(f"调用 AI 接口失败: {e}", level="err")
+            self._input_widget.set_msg(f"调用 AI 接口失败: {e}", level="err")
             logger.exception("AI request failed")
-
-    def _prepare_extract_context(self, extract_prompt):
-        """Prepare chat context for song extraction"""
-        if self._chat_context is None:
-            self.set_msg("没有对话上下文", level="err")
-        else:
-            self._add_message_to_history("user", extract_prompt)
 
     async def _process_extract_stream(self, stream):
         """Process the stream of extracted songs"""
@@ -318,21 +405,21 @@ class Body(QWidget):
         ok_count = 0
         fail_count = 0
 
-        # 创建AI回复的标签
-        ai_label = self._create_message_label("assistant", "")
-        self._history_layout.addWidget(ai_label)
+        # Create AI response label
+        ai_label = self._history_widget.create_message_label("assistant", "")
+        self._history_widget.add_widget(ai_label)
         content = ""
         try:
             while True:
                 try:
                     line = await rr.readline()
                     line = line.decode("utf-8")
-                    content += f"{line}\n"  # add newline
+                    content += f"{line}\n"
                     ai_label.setText(content)
-                    self._scroll_to_bottom()
+                    self._history_widget.scroll_to_bottom()
                     logger.debug(f"read a line: {line}")
                     if not line:
-                        self.set_msg(
+                        self._input_widget.set_msg(
                             f"解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。",
                             level="hint",
                         )
@@ -346,14 +433,14 @@ class Body(QWidget):
                     except Exception:
                         fail_count += 1
                         logger.exception(f"failed to parse a line: {line}")
-                        self.set_msg(
+                        self._input_widget.set_msg(
                             f"成功解析{ok_count}首歌曲，失败{fail_count}首歌",
                             level="yellow",
                         )
                         continue
 
                     ok_count += 1
-                    self.set_msg(
+                    self._input_widget.set_msg(
                         f"成功解析{ok_count}首歌曲，失败{fail_count}首歌", level="hint"
                     )
                     self._app.playlist.add(song)
@@ -363,30 +450,19 @@ class Body(QWidget):
                     logger.exception("Error processing song")
                     break
         finally:
-            assistant_message = {"role": "assistant", "content": content}
-            self._chat_context.messages.append(assistant_message)
+            self._session.add_assistant_message(content)
             chunk = await wtask
             self.show_tokens_usage(chunk)
-            self._scroll_to_bottom()
+            self._history_widget.scroll_to_bottom()
             rw.close()
             await rw.wait_closed()
-            self._editor.clear()
-
-    def _scroll_to_bottom(self) -> None:
-        """Scroll chat history to bottom."""
-        self._history_area.verticalScrollBar().setValue(
-            self._history_area.verticalScrollBar().maximum()
-        )
+            self._input_widget.clear_input()
 
     def clear_history(self):
         """Clear chat history"""
-        while self._history_layout.count():
-            item = self._history_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-        self.set_msg("")
-        self._chat_context = None
+        self._history_widget.clear()
+        self._session.clear()
+        self._input_widget.set_msg("")
 
     def hide(self):
         self.clear_history()
@@ -414,8 +490,7 @@ if __name__ == "__main__":
         widget.resize(600, 400)
         layout.addWidget(widget)
         widget.show()
-        widget.body.set_msg("error", level="err")
-
-        widget.body._chat_context = widget.body.create_chat_context()
-        widget.body._add_message_to_history("user", "哈哈哈" * 10)
-        widget.body._add_message_to_history("xxx", "哈哈哈" * 100)
+        # widget.body.set_msg("error", level="err")
+        # widget.body._chat_context = widget.body.create_chat_context()
+        # widget.body._add_message_to_history("user", "哈哈哈" * 10)
+        # widget.body._add_message_to_history("xxx", "哈哈哈" * 100)
