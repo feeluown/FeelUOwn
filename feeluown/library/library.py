@@ -455,9 +455,13 @@ class Library:
                 return ''
         else:
             um = model
-        # FIXME: remove this hack lator.
         if ModelType(model.meta.model_type) is ModelType.artist:
             cover = um.pic_url
+        elif ModelType(model.meta.model_type) is ModelType.song:
+            cover = um.pic_url
+            if not cover:
+                album = um.album
+                return self.model_get_cover(album)
         else:
             cover = um.cover
         return cover

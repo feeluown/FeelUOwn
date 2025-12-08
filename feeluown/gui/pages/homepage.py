@@ -15,6 +15,7 @@ from feeluown.library import (
 )
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
+from feeluown.gui.components.ai_radio_card import AIRadioCard
 from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
@@ -138,11 +139,15 @@ class Overview(QWidget):
         super().__init__(parent=None)
         self._app = app
 
+        self._ai_radio_card = AIRadioCard(self._app)
+
         self._main_layout = QVBoxLayout(self)
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(10)
+        self._main_layout.addWidget(self._ai_radio_card)
 
-        self.setFixedHeight(20)
+    async def render(self):
+        await self._ai_radio_card.render()
 
 
 class RecPlaylistsPanel(Panel):
@@ -310,7 +315,6 @@ class View(QWidget, BgTransparentMixin):
         self._layout.setContentsMargins(20, 10, 20, 0)
         self._layout.setSpacing(20)
         self._layout.addWidget(self._overview)
-        self._layout.addSpacing(20)
 
     async def render(self):
         panels = []
@@ -335,7 +339,7 @@ class View(QWidget, BgTransparentMixin):
                     panels.append(panel)
         for panel in panels:
             self._layout.addWidget(panel)
-        gather(*[panel.render() for panel in panels])
+        gather(*([panel.render() for panel in panels] + [self._overview.render()]))
 
     def _handle_rec_a_collection_of_videos(self, content: dict) -> Optional[Panel]:
         source = content["provider"]

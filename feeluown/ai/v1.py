@@ -16,8 +16,8 @@ async def a_handle_stream(stream):
             # When stream_options={'include_usage': True},
             # the last chunk.choices is empty.
             if chunk.choices:
-                content = chunk.choices[0].delta.content or ''
-                ww.write(content.encode('utf-8'))
+                content = chunk.choices[0].delta.content or ""
+                ww.write(content.encode("utf-8"))
 
         ww.write_eof()
         await ww.drain()

@@ -71,6 +71,7 @@ setup(
                     ],
         'ai': [
             'openai>=1.50',
+            'langchain[openai]>=1.0',
         ],
         'qt': [
             'PyQt6',

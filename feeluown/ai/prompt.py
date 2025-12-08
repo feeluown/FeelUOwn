@@ -1,12 +1,18 @@
 import random
 
 from feeluown.collection import Collection
-from feeluown.library import BriefSongModel, ModelType, reverse, BriefAlbumModel, BriefArtistModel
+from feeluown.library import (
+    BriefSongModel,
+    ModelType,
+    reverse,
+    BriefAlbumModel,
+    BriefArtistModel,
+)
 
 
 def song2line(song: BriefSongModel):
     line = reverse(song, as_line=True)
-    parts = line.split('#', 1)
+    parts = line.split("#", 1)
     if len(parts) >= 2:
         return parts[1]
     return None
@@ -14,7 +20,7 @@ def song2line(song: BriefSongModel):
 
 def artist2line(artist: BriefArtistModel):
     line = reverse(artist, as_line=True)
-    parts = line.split('#', 1)
+    parts = line.split("#", 1)
     if len(parts) >= 2:
         return parts[1]
     return None
@@ -22,15 +28,14 @@ def artist2line(artist: BriefArtistModel):
 
 def album2line(album: BriefAlbumModel):
     line = reverse(album, as_line=True)
-    parts = line.split('#', 1)
+    parts = line.split("#", 1)
     if len(parts) >= 2:
         return parts[1]
     return None
 
 
 async def generate_prompt_for_library(library: Collection):
-    """Generate prompt based on the user's music library.
-    """
+    """Generate prompt based on the user's music library."""
     songs = []
     artists = []
     albums = []
@@ -52,22 +57,22 @@ async def generate_prompt_for_library(library: Collection):
     for song in random_songs:
         line = song2line(song)
         if line:
-            song_lines.append('    ' + line)
-    songs_text = '\n'.join(song_lines)
+            song_lines.append("    " + line)
+    songs_text = "\n".join(song_lines)
 
     artist_lines = []
     for artist in random_artists:
         line = artist2line(artist)
         if line:
-            artist_lines.append('    ' + line)
-    artists_text = '\n'.join(artist_lines)
+            artist_lines.append("    " + line)
+    artists_text = "\n".join(artist_lines)
 
     album_lines = []
     for album in random_albums:
         line = album2line(album)
         if line:
-            album_lines.append('    ' + line)
-    albums_text = '\n'.join(album_lines)
+            album_lines.append("    " + line)
+    albums_text = "\n".join(album_lines)
 
     prompt_text = f"""用户的音乐库包含以下内容：
 歌曲（总数：{len(songs)}，随机抽取 {len(song_lines)} 首）：
@@ -78,4 +83,3 @@ async def generate_prompt_for_library(library: Collection):
 {albums_text}
 """
     return prompt_text
-

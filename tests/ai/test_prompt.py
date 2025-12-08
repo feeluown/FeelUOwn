@@ -21,4 +21,3 @@ async def test_generate_prompt_for_library(library_mock):
     assert 'hello world - mary' in prompt  # song
     assert 'mary\n' in prompt  # artist
     assert 'blue and green' in prompt  # album
-
