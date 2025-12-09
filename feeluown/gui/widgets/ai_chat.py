@@ -114,7 +114,7 @@ class ChatHistoryWidget(QWidget):
         label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
         label.setFrameStyle(QFrame.Shape.NoFrame)
 
-        label.setSizePolicy(QSizePolicy.Policy.Maximum, QSizePolicy.Policy.Preferred)
+        label.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Preferred)
         label.setAlignment(Qt.AlignmentFlag.AlignLeft)
 
         pal = label.palette()
@@ -224,12 +224,14 @@ class AIChatBox(QWidget):
     This only provides UI; real message sending is intentionally left empty.
     """
 
-    def __init__(self, agent, parent=None):
+    def __init__(self, agent, agent_context, header="AI 助手", parent=None):
         super().__init__(parent=parent)
 
+        # TODO: 传这两个参数进来，有点 tricky
         self._agent = agent
+        self._agent_context = agent_context
 
-        self._header = MidHeader("AI 助手")
+        self._header = MidHeader(header)
         self._history_widget = ChatHistoryWidget(self)
         self._input_widget = ChatInputWidget(self)
 
@@ -246,8 +248,6 @@ class AIChatBox(QWidget):
         layout.addWidget(self._input_widget)
 
     async def exec_user_query(self, query: str):
-        from feeluown.ai.radio_agent import Context
-
         self._history_widget.add_message("user", query)
         self._history_widget.scroll_to_bottom()
 
@@ -256,9 +256,8 @@ class AIChatBox(QWidget):
         async for token, metadata in self._agent.astream(
             {"messages": [{"role": "user", "content": query}]},
             stream_mode="messages",
-            context=Context([]),
+            context=self._agent_context,
         ):
-            # assert metadata['langgraph_node'] == 'model', metadata
             node = metadata["langgraph_node"]
             if node == "model":
                 if current_label is None:
@@ -268,6 +267,7 @@ class AIChatBox(QWidget):
                 for block in token.content_blocks:
                     if block["type"] == "text":
                         response_message += block["text"]
+                current_label.setText(response_message)
             elif node == "tools":
                 self._history_widget.create_message_label(
                     "tools", f"tools: {token.name}"
@@ -281,7 +281,7 @@ if __name__ == "__main__":
     from PyQt6.QtCore import QSize
 
     from feeluown.gui.debug import mock_app, simple_layout
-    from feeluown.ai.radio_agent import create_agent_with_config
+    from feeluown.ai import create_agent_with_config
 
     with simple_layout(theme="dark", aio=True) as layout, mock_app() as app:
         app.config.OPENAI_API_KEY = os.environ.get("OPENROUTER_API_KEY_BAK")

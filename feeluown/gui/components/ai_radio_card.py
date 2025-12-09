@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 )
 
 from feeluown.app.gui_app import GuiApp
-from feeluown.ai.radio_agent import AIRadio, AISongMatcher
+from feeluown.ai.radio import AISongMatcher
 from feeluown.library import reverse
 from feeluown.gui.widgets import PlayButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
@@ -17,17 +17,18 @@ logger = logging.getLogger(__name__)
 
 
 class Header(ClickableMixin, LargeHeader):
-    pass
+    def __init__(self, text, **kwargs):
+        super().__init__(text=text, **kwargs)
 
 
 class AIRadioCard(QFrame):
     def __init__(self, app: GuiApp, parent=None):
         super().__init__(parent)
         self._app = app
-        self.ai_radio = AIRadio(self._app)
+        self.ai_radio = self._app.ai.get_radio()
 
         # Widgets and layouts
-        self._header = LargeHeader('AI 电台')
+        self._header = Header('AI 电台')
         self._summary_label = QLabel(self)
         self._summary_label.setWordWrap(True)
         self._cover_label = CoverLabelV2(self._app, self)
@@ -35,6 +36,7 @@ class AIRadioCard(QFrame):
         self._play_btn = PlayButton(length=20, padding=0.2)
         self._play_btn.setDisabled(True)
         self._play_btn.clicked.connect(self.on_play_btn_clicked)
+        self._header.clicked.connect(self.on_header_clicked)
 
         self.setup_ui()
 
@@ -88,3 +90,6 @@ class AIRadioCard(QFrame):
 
     def on_play_btn_clicked(self):
         self._app.playlist.play_model(self._song)
+
+    def on_header_clicked(self):
+        pass

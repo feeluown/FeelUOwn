@@ -60,6 +60,7 @@ class Library:
 
         self.provider_added = Signal()  # emit(AbstractProvider)
         self.provider_removed = Signal()  # emit(AbstractProvider)
+        # TODO: implement this feature
         self.enable_ai_standby_matcher = enable_ai_standby_matcher
 
     def setup_ytdl(self, *args, **kwargs):
@@ -271,16 +272,6 @@ class Library:
                         return song_media_list
             if song_media_list:
                 return song_media_list
-        if self.enable_ai_standby_matcher and self.ai and top2_standby:
-            from feeluown.library.ai_standby import AIStandbyMatcher  # noqa
-
-            logger.info(f'Try to use AI to match standby for song {song}')
-            matcher = AIStandbyMatcher(
-                self.ai, self.a_song_prepare_media_no_exc, 60, audio_select_policy)
-            song_media_list = await matcher.match(song, top2_standby)
-            word = 'found a' if song_media_list else 'found no'
-            logger.info(f'AI {word} standby for song:{song}')
-            return song_media_list
         return song_media_list
 
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
