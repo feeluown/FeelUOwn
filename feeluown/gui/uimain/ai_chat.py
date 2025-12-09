@@ -12,10 +12,8 @@ from PyQt6.QtWidgets import (
 )
 
 from feeluown.ai.radio_agent import AISongModel
-from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.widgets import PlayButton
-from feeluown.gui.widgets.header import LargeHeader, MidHeader
-from feeluown.gui.widgets.ai_chat import ChatHistoryWidget, ChatInputWidget, AIChatBox
+from feeluown.gui.widgets.ai_chat import AIChatBox
 from feeluown.gui.components.overlay import AppOverlayContainer
 
 from feeluown.app.gui_app import GuiApp
@@ -95,7 +93,6 @@ class AISongListWidget(QWidget):
         self._list_widget.clear()
 
 
-
 class Body(QWidget):
     def __init__(self, app: "GuiApp"):
         super().__init__(parent=None)
@@ -105,8 +102,8 @@ class Body(QWidget):
         self._chat_box = AIChatBox(self)
 
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(20, 10, 20, 10)
-        self._layout.setSpacing(12)
+        self._layout.setContentsMargins(10, 10, 10, 10)
+        self._layout.setSpacing(10)
         self._layout.addWidget(self._chat_box)
         self._layout.addWidget(self._list_widget)
         self._layout.setStretch(0, 2)

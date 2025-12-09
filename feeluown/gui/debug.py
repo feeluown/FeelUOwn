@@ -1,9 +1,13 @@
+import asyncio
 import os
 from contextlib import contextmanager
 from unittest.mock import MagicMock
 
+from qasync import QEventLoop
 from PyQt6.QtCore import QDir
 from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout
+
+from feeluown.app import create_config
 
 
 @contextmanager
@@ -14,8 +18,18 @@ def simple_qapp():
 
 
 @contextmanager
+def async_simple_qapp():
+    app_close_event = asyncio.Event()
+    qapp = QApplication([])
+    qapp.aboutToQuit.connect(app_close_event.set)
+    yield qapp
+    asyncio.run(app_close_event.wait(), loop_factory=QEventLoop)
+
+
+@contextmanager
 def mock_app():
     app = MagicMock()
+    app.config = create_config()
     yield app
 
 
@@ -32,8 +46,9 @@ def read_dark_theme_qss():
 
 
 @contextmanager
-def simple_layout(cls=QHBoxLayout, theme=""):
-    with simple_qapp():
+def simple_layout(cls=QHBoxLayout, theme="", aio=False):
+    func = async_simple_qapp if aio is True else simple_qapp
+    with func():
         main = QWidget()
         if theme == "dark":
             main.setStyleSheet(read_dark_theme_qss())
