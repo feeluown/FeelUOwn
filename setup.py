@@ -70,7 +70,6 @@ setup(
                     'feeluown-bilibili>=0.4.1',
                     ],
         'ai': [
-            'openai>=1.50',
             'langchain[openai]>=1.0',
         ],
         'qt': [
@@ -85,7 +84,7 @@ setup(
         ],
         'jsonrpc': ['json-rpc'],
         'webserver': ['sanic', 'json-rpc'],
-        'webengine': ['PyQtWebEngine'],
+        'webengine': ['PyQt6-WebEngine'],
         # Load cookies from chrome/firefox/...
         'cookies': [
             'yt-dlp',

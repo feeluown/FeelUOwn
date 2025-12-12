@@ -15,7 +15,10 @@ from feeluown.utils.dispatch import Signal
 
 @dataclass
 class AISongModel:
-    """A song recommended by the agent."""
+    """A song recommended by the AI.
+
+    :param description: Recommendation reason or song description.
+    """
 
     title: str
     artists_name: str
@@ -122,7 +125,8 @@ class Copilot:
                     },
                     {
                         "role": "system",
-                        "content": "给用户推荐1首歌。并将歌曲加入到播放列表候选中",
+                        "content": ("根据用户的音乐库收藏，分析用户的喜好，并且综合当前日期/时间等信息，"
+                                    "推荐1首合适的歌给用户，并将歌曲加入到播放列表候选中。"),
                     },
                 ]
             },
@@ -132,12 +136,13 @@ class Copilot:
         return self._candidates
 
     async def astream_user_query(self, query: str):
-        return self._agent.astream(
+        async for v in self._agent.astream(
             {"messages": [{"role": "user", "content": query}]},
             self._get_configurable(),
             stream_mode="messages",
             context=self._agent_context,
-        )
+        ):
+            yield v
 
     def set_candidates(self, ai_songs: List[AISongModel]):
         self._candidates = ai_songs

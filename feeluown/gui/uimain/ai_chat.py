@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import time
 from typing import List
 
 from PyQt6.QtCore import Qt, QSize, QRect
@@ -213,18 +214,24 @@ class AIChatBox(QWidget):
         self.copilot = self._app.ai.get_copilot()
 
         self._header = MidHeader("AI 助手")
+        self._new_thread_btn = PlusButton(length=12)
+        self._new_thread_btn.setToolTip("新的对话")
         self.history_widget = ChatHistoryWidget(self)
         self.input_widget = ChatInputWidget(self)
 
         self.input_widget.send_clicked.connect(
             lambda q: aio.run_afn_ref(self.exec_user_query, q)
         )
-        self.input_widget.clear_history_clicked.connect(self.history_widget.clear)
+        self._new_thread_btn.clicked.connect(self.on_new_thread_btn_clicked)
 
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
-        layout.addWidget(self._header)
+        header_layout = QHBoxLayout()
+        header_layout.addWidget(self._header)
+        header_layout.addWidget(self._new_thread_btn)
+        header_layout.addStretch(0)
+        layout.addLayout(header_layout)
         layout.addWidget(self.history_widget)
         layout.addWidget(self.input_widget)
 
@@ -234,6 +241,8 @@ class AIChatBox(QWidget):
 
         current_label = None
         response_message = ""
+        last_update_ts = time.time()
+
         async for token, metadata in self.copilot.astream_user_query(query):
             node = metadata["langgraph_node"]
             if node == "model":
@@ -244,14 +253,24 @@ class AIChatBox(QWidget):
                 for block in token.content_blocks:
                     if block["type"] == "text":
                         response_message += block["text"]
-                current_label.setText(response_message)
-                self.history_widget.scroll_to_bottom()
+                # Rate limit: 0.1s
+                if last_update_ts + 0.2 <= time.time():
+                    current_label.setText(response_message)
+                    self.history_widget.scroll_to_bottom()
+                    last_update_ts = time.time()
             elif node == "tools":
                 self.history_widget.create_message_label(
                     "tools", f"tools: {token.name}"
                 )
                 current_label = None
+
+        if current_label is not None:
+            current_label.setText(response_message)
         self.history_widget.scroll_to_bottom()
+
+    def on_new_thread_btn_clicked(self):
+        self.copilot.new_thread()
+        self.history_widget.clear()
 
 
 class Body(QWidget):

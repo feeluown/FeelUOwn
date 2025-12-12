@@ -15,7 +15,6 @@ from feeluown.library import (
 )
 from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
-from feeluown.gui.components.ai_radio_card import AIRadioCard
 from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
@@ -139,15 +138,21 @@ class Overview(QWidget):
         super().__init__(parent=None)
         self._app = app
 
-        self._ai_radio_card = AIRadioCard(self._app)
+        if self._app.ai is not None:
+            from feeluown.gui.components.ai_radio_card import AIRadioCard
+            self._ai_radio_card = AIRadioCard(self._app)
+        else:
+            self._ai_radio_card = None
 
         self._main_layout = QVBoxLayout(self)
         self._main_layout.setContentsMargins(0, 0, 0, 0)
         self._main_layout.setSpacing(10)
-        self._main_layout.addWidget(self._ai_radio_card)
+        if self._ai_radio_card is not None:
+            self._main_layout.addWidget(self._ai_radio_card)
 
     async def render(self):
-        await self._ai_radio_card.render()
+        if self._ai_radio_card is not None:
+            await self._ai_radio_card.render()
 
 
 class RecPlaylistsPanel(Panel):

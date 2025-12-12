@@ -159,7 +159,6 @@ class ChatInputWidget(QWidget):
     """Widget for chat input and buttons"""
 
     send_clicked = pyqtSignal(str)  # emits query text
-    clear_history_clicked = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__(parent=parent)
