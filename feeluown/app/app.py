@@ -68,11 +68,7 @@ class App:
             if (config.OPENAI_API_BASEURL and
                     config.OPENAI_API_KEY and
                     config.OPENAI_MODEL):
-                self.ai = AI(
-                    config.OPENAI_API_BASEURL,
-                    config.OPENAI_API_KEY,
-                    config.OPENAI_MODEL,
-                )
+                self.ai = AI(self)
                 self.library.setup_ai(self.ai)
             else:
                 logger.warning("AI is not available, no valid settings")

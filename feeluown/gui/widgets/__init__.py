@@ -18,6 +18,7 @@ from .selfpaint_btn import (  # noqa
     PlayPauseButton,
     PlayNextButton,
     PlayPreviousButton,
+    PlayButton,
     MVButton,
     VolumeButton,
     HotButton,

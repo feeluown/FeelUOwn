@@ -1,396 +1,300 @@
-import json
+import asyncio
 import logging
-from typing import TYPE_CHECKING, List
+import time
+from typing import List
 
-from openai import AsyncOpenAI
-from PyQt6.QtCore import QSize, Qt, QRectF, pyqtSignal
-from PyQt6.QtGui import QPainter
+from PyQt6.QtCore import Qt, QSize, QRect
+from PyQt6.QtGui import QPalette, QResizeEvent, QFontMetrics
 from PyQt6.QtWidgets import (
+    QFrame,
     QHBoxLayout,
+    QLabel,
+    QListWidget,
+    QListWidgetItem,
     QVBoxLayout,
     QWidget,
-    QLabel,
-    QScrollArea,
-    QPlainTextEdit,
-    QFrame,
-    QSizePolicy,
 )
-from PyQt6.QtGui import QPainterPath
-from PyQt6.QtGui import QTextOption
 
-from feeluown.ai import a_handle_stream
-from feeluown.utils.aio import run_afn_ref
-from feeluown.library import fmt_artists_names
-from feeluown.library.text2song import create_dummy_brief_song
-from feeluown.gui.helpers import palette_set_bg_color
-from feeluown.gui.widgets.textbtn import TextButton
+from feeluown.ai import AISongModel, AISongMatcher
+from feeluown.app.gui_app import GuiApp
+from feeluown.gui.consts import ScrollBarWidth
+from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.header import MidHeader
+from feeluown.gui.widgets.ai_chat import ChatHistoryWidget, ChatInputWidget
 from feeluown.gui.components.overlay import AppOverlayContainer
-
-
-if TYPE_CHECKING:
-    from feeluown.app.gui_app import GuiApp
+from feeluown.utils import aio
 
 logger = logging.getLogger(__name__)
 
 
-QUERY_PROMPT = """你是一个音乐播放器助手。"""
-EXTRACT_PROMPT = """\
-提取歌曲信息，歌手名为空的话，你需要补全，每首歌一行 JSON，用类似下面这样的格式返回
-    {"title": "t1", "artists": ["a1", "a11"], "description": "推荐理由1"}
-    {"title": "t2", "artists": ["a11"], "description": "推荐理由2"}
+class AISongItemWidget(QWidget):
+    """Display a single AISongModel with play support."""
 
-注意，你返回的内容只应该有几行 JSON，其它信息都不需要。也不要用 markdown 格式返回。
-"""
+    def __init__(self, app: "GuiApp", ai_song: AISongModel, parent=None):
+        super().__init__(parent=parent)
+        self._app = app
 
+        self._ai_song = ai_song
+        self._matched_song = None
+        self._match_lock = asyncio.Lock()
 
-class ChatContext:
-    def __init__(self, model: str, client: AsyncOpenAI, messages: List):
-        self.model = model
-        self.client = client
-        self.messages = messages
+        self._title_label = QLabel(f"{ai_song.title} • {ai_song.artists_name}")
+        self._desc_label = QLabel(ai_song.description)
+        self._desc_label.setWordWrap(True)
+        self._play_btn = PlayButton(length=16, padding=0.22)
+        self._add_to_playlist_btn = PlusButton(length=16, padding=0.25)
+        self._btns = [self._play_btn, self._add_to_playlist_btn]
 
-    async def send_message(self):
-        return await self.client.chat.completions.create(
-            model=self.model,
-            messages=self.messages,
-            stream=True,
-            stream_options={"include_usage": True},
+        self._play_btn.clicked.connect(self._on_play_clicked)
+        self._add_to_playlist_btn.clicked.connect(self._on_add_to_playlist_clicked)
+
+        self._setup_ui()
+
+    def _setup_ui(self):
+        font = self._desc_label.font()
+        font.setPixelSize(11)
+        self._desc_label.setFont(font)
+        palette = self._desc_label.palette()
+        palette.setColor(
+            QPalette.ColorRole.Text,
+            palette.color(QPalette.ColorGroup.Disabled, QPalette.ColorRole.Text),
         )
+        self._desc_label.setPalette(palette)
 
+        layout = QHBoxLayout(self)
+        layout.setContentsMargins(10, 5, ScrollBarWidth + 5, 5)
+        layout.setSpacing(5)
 
-class ChatInputEditor(QPlainTextEdit):
-    """Custom editor for chat input with Enter key handling"""
+        self.label_layout = label_layout = QVBoxLayout()
+        label_layout.addWidget(self._title_label)
+        label_layout.addWidget(self._desc_label)
+        label_layout.addStretch(0)
 
-    enter_pressed = pyqtSignal()
+        self.btn_layout = btn_layout = QHBoxLayout()
+        btn_layout.setSpacing(0)
+        for btn in self._btns:
+            btn_layout.addWidget(btn)
 
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
-        self.setMinimumHeight(30)
-        self.setMaximumHeight(300)  # TODO: set maximum height based on parent size
-        self.textChanged.connect(self.adjust_height)
-        self.adjust_height()
-        # The size policy matters
-        self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
+        layout.addLayout(label_layout)
+        layout.addLayout(btn_layout)
 
-    def sizeHint(self) -> QSize:  # noqa: D102
-        font_metrics = self.fontMetrics()
-        line_height = font_metrics.lineSpacing()
-        doc = self.document()
-        line_count = doc.lineCount()
-        doc_height = line_count * line_height
+    def height_for_width(self, width) -> QSize:
+        desc_fm = QFontMetrics(self._desc_label.font())
+        h_spacing = (self.layout().spacing() +
+                     self.btn_layout.spacing() * (len(self._btns) - 1))
+        v_spacing = self.layout().spacing()
+        margins = self.layout().contentsMargins()
+        h_margins = margins.left() + margins.right()
+        v_margins = margins.top() + margins.bottom()
+        btn_width = self._play_btn.width() + self._add_to_playlist_btn.width()
+        desc_width = width - btn_width - h_spacing - h_margins
+        desc_height = desc_fm.boundingRect(
+            QRect(0, 0, desc_width, 0), Qt.TextFlag.TextWordWrap, self._desc_label.text()
+        ).height()
+        title_height = 16
+        total_height = title_height + desc_height + v_spacing + v_margins
+        return total_height
 
-        # Add some padding, 10
-        new_height = min(
-            max(int(doc_height) + 10, self.minimumHeight()), self.maximumHeight()
-        )
-        return QSize(super().sizeHint().width(), new_height)
-
-    def adjust_height(self):
-        self.updateGeometry()
-
-    def keyPressEvent(self, event):
-        if event.key() == Qt.Key.Key_Return and not event.modifiers():
-            self.enter_pressed.emit()
-            event.accept()
+    def _on_play_clicked(self):
+        if self._matched_song is not None:
+            self._app.playlist.play_model(self._matched_song)
         else:
-            super().keyPressEvent(event)
+            aio.run_afn_ref(self.match_and_play)
+
+    def _on_add_to_playlist_clicked(self):
+        if self._matched_song is not None:
+            self._app.playlist.add(self._matched_song)
+        else:
+            aio.run_afn_ref(self.match_and_add_to_playlist)
+
+    async def match_and_play(self):
+        await self.match()
+        if self._matched_song:
+            self._app.playlist.play_model(self._matched_song)
+
+    async def match_and_add_to_playlist(self):
+        await self.match()
+        if self._matched_song:
+            self._app.playlist.add(self._matched_song)
+
+    async def match(self):
+        async with self._match_lock:
+            return await self.match_no_lock()
+
+    async def match_no_lock(self):
+        if self._matched_song is not None:
+            return self._matched_song
+
+        for btn in self._btns:
+            btn.setEnabled(False)
+            btn.setToolTip("正在匹配资源...")
+        try:
+            self._matched_song = await AISongMatcher(self._app).match(self._ai_song)
+        except Exception:
+            logger.exception("match ai song failed")
+            for btn in self._btns:
+                btn.setEnabled(True)
+        else:
+            if self._matched_song is not None:
+                for btn in self._btns:
+                    btn.setEnabled(True)
+            else:
+                for btn in self._btns:
+                    btn.setToolTip("匹配资源失败")
 
 
-class RoundedLabel(QLabel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self._radius = 8
-        self._padding = 8
-        self.setContentsMargins(
-            self._padding, self._padding, self._padding, self._padding
-        )
-        self.setWordWrap(True)
+class AISongListWidget(QWidget):
+    """Container widget to display AISongModel list."""
 
-    def paintEvent(self, event):
-        painter = QPainter(self)
-        path = QPainterPath()
-        path.addRoundedRect(QRectF(self.rect()), self._radius, self._radius)
-        # Fill background
-        painter.fillPath(path, self.palette().color(self.backgroundRole()))
-        super().paintEvent(event)
-
-
-class Body(QWidget):
     def __init__(self, app: "GuiApp", parent=None):
         super().__init__(parent=parent)
         self._app = app
 
-        # Chat history display area
-        self._history_area = QScrollArea(self)
-        self._history_widget = QWidget()
-        self._history_area.setWidget(self._history_widget)
-        self._history_layout = QVBoxLayout(self._history_widget)
+        self._title_label = QLabel("歌曲候选列表")
+        self._title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self._list_widget = QListWidget(self)
+        self._list_widget.setFrameShape(QFrame.Shape.NoFrame)
+        self._list_widget.setSelectionMode(QListWidget.SelectionMode.NoSelection)
+        self._list_widget.setResizeMode(QListWidget.ResizeMode.Adjust)
+        self._list_widget.setAlternatingRowColors(True)
 
-        # User input area
-        self._editor = ChatInputEditor(self)
-        self._editor.setPlaceholderText("在这里输入你的问题...")
-        self._editor.setFrameShape(QFrame.Shape.NoFrame)
-        self._editor.enter_pressed.connect(
-            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText())
-        )
-        self._msg_label = QLabel(self)
-        self._msg_label.setWordWrap(True)
-        self._hide_btn = TextButton("关闭窗口", self)
-        self._extract_and_play_btn = TextButton("提取歌曲并播放", self)
-        self._extract_10_and_play_btn = TextButton("提取10首并播放", self)
-        self._send_btn = TextButton("发送（回车）", self)
-        self._clear_history_btn = TextButton("清空对话", self)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(5, 5, 5, 5)
+        layout.setSpacing(10)
+        layout.addWidget(self._title_label)
+        layout.addWidget(self._list_widget)
 
-        self.setup_ui()
-        self._hide_btn.clicked.connect(self.hide)
-        self._extract_and_play_btn.clicked.connect(
-            lambda: run_afn_ref(self.extract_and_play)
-        )
-        self._extract_10_and_play_btn.clicked.connect(
-            lambda: run_afn_ref(self.extract_10_and_play)
-        )
-        self._send_btn.clicked.connect(
-            lambda: run_afn_ref(self.exec_user_query, self._editor.toPlainText())
-        )
-        self._clear_history_btn.clicked.connect(self.clear_history)
-
-        self._chat_context = None
         self.setAutoFillBackground(True)
 
-    def setup_ui(self):
-        self._history_area.setFrameShape(QFrame.Shape.NoFrame)
-        self._history_area.setAutoFillBackground(True)
-        self._history_layout.setContentsMargins(0, 0, 0, 0)
-        self._history_layout.setSpacing(5)
-        self._history_area.setWidgetResizable(True)
-        # Adjust spacing between messages
-        self._history_layout.setSpacing(10)
+    def set_ai_songs(self, ai_songs: List[AISongModel]):
+        self._clear_items()
+        for ai_song in ai_songs:
+            item = AISongItemWidget(self._app, ai_song, parent=self)
+            list_item = QListWidgetItem(self._list_widget)
+            width = self._get_width_for_items()
+            list_item.setSizeHint(QSize(width, item.height_for_width(width)))
+            self._list_widget.addItem(list_item)
+            self._list_widget.setItemWidget(list_item, item)
 
-        self._msg_label.setWordWrap(True)
-        self._app.installEventFilter(self)
-        self._msg_label.setTextFormat(Qt.TextFormat.RichText)
+    def _clear_items(self):
+        self._list_widget.clear()
 
-        self._root_layout = QVBoxLayout(self)
-        self._layout = QHBoxLayout()
-        self._v_layout = QVBoxLayout()
-        self._btn_layout = QVBoxLayout()
+    def _get_width_for_items(self):
+        margins = self.layout().contentsMargins()
+        return self.width() - ScrollBarWidth * 2 - margins.left() - margins.right()
 
-        self._root_layout.addWidget(MidHeader("AI 助手"))
-        self._root_layout.addLayout(self._layout)
-        self._layout.addStretch(0)
-        self._layout.addLayout(self._v_layout)
-        self._layout.setStretch(1, 1)
-        self._layout.addLayout(self._btn_layout)
-        self._layout.addStretch(0)
-        self._root_layout.setContentsMargins(10, 10, 10, 10)
-        self._root_layout.setSpacing(10)
+    def resizeEvent(self, event: QResizeEvent):
+        """Update item sizes when widget is resized."""
+        super().resizeEvent(event)
+        self._update_item_sizes()
 
-        # Adjust layout to add chat history area
-        self._v_layout.addWidget(self._history_area)
-        self._v_layout.addWidget(self._msg_label)
-        self._v_layout.addWidget(self._editor)
-        self._btn_layout.addWidget(self._extract_and_play_btn)
-        self._btn_layout.addWidget(self._extract_10_and_play_btn)
-        self._btn_layout.addWidget(self._clear_history_btn)
-        self._btn_layout.addWidget(self._hide_btn)
-        self._btn_layout.addStretch(0)
-        self._btn_layout.addWidget(self._send_btn)
-
-    def _create_message_label(self, role, content):
-        """Create message label"""
-        label = RoundedLabel()
-        label.setText(content)
-        label.setWordWrap(True)
-        label.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        label.setFrameStyle(QFrame.Shape.NoFrame)
-
-        width_factor = 0.6 if role in ("user", "system") else 1
-        label.setMaximumWidth(int(self._history_area.width() * width_factor))
-        label.setAlignment(Qt.AlignmentFlag.AlignLeft)
-
-        pal = label.palette()
-        if role in ("user", "system"):
-            origin_window = pal.color(pal.ColorRole.Window)
-            palette_set_bg_color(pal, pal.color(pal.ColorRole.Highlight))
-            pal.setColor(pal.ColorRole.Text, pal.color(pal.ColorRole.HighlightedText))
-            pal.setColor(pal.ColorRole.Highlight, origin_window)
-            label.setPalette(pal)
-
-        return label
-
-    def _add_message_to_history(self, role, content):
-        """Add message to chat history"""
-        self._chat_context.messages.append({"role": role, "content": content})
-        label = self._create_message_label(role, content)
-        self._history_layout.addWidget(label)
-        self._scroll_to_bottom()
-
-    async def exec_user_query(self, query):
-        if self._chat_context is None:
-            self._chat_context = self.create_chat_context()
-
-        self._add_message_to_history("user", query)
-        self.set_msg("等待 AI 返回中...", level="hint")
-        try:
-            stream = await self._chat_context.send_message()
-        except Exception as e:  # noqa
-            self.set_msg(f"调用 AI 接口失败: {e}", level="err")
-            logger.exception("AI request failed")
-        else:
-            # Create label for AI response
-            ai_label = self._create_message_label("assistant", "")
-            self._history_layout.addWidget(ai_label)
-
-            content = ""
-            async for chunk in stream:
-                self.set_msg("AI 返回中...", level="hint")
-                # 当使用 stream_options 时，最后一个 chunk 的 choices 为空
-                if chunk.choices:
-                    delta_content = chunk.choices[0].delta.content or ""
-                    content += delta_content
-                    # Update AI response in real-time
-                    ai_label.setText(content)
-                    self._scroll_to_bottom()
-
-            # Update chat context and show token usage
-            assistant_message = {"role": "assistant", "content": content}
-            self._chat_context.messages.append(assistant_message)
-            self.show_tokens_usage(chunk)
-            # Clear input box
-            self._editor.clear()
-
-    def show_tokens_usage(self, chunk):
-        if not chunk:
-            self.set_msg("AI 内容返回结束", level="hint")
+    def _update_item_sizes(self):
+        """Update all item sizes based on current viewport width."""
+        width = self._get_width_for_items()
+        if width <= 0:
             return
 
-        in_tokens = chunk.usage.prompt_tokens if chunk.usage else 0
-        out_tokens = chunk.usage.completion_tokens if chunk.usage else 0
-        total_tokens = chunk.usage.total_tokens if chunk.usage else 0
-        token_msg = f"Tokens: 输入 {in_tokens}, 输出 {out_tokens}, 合计 {total_tokens}"
-        self.set_msg(f"AI 内容返回结束 ({token_msg})", level="hint")
+        for i in range(self._list_widget.count()):
+            list_item = self._list_widget.item(i)
+            item_widget = self._list_widget.itemWidget(list_item)
+            if item_widget is not None:
+                height = item_widget.height_for_width(width)
+                list_item.setSizeHint(QSize(width, height))
 
-    def set_msg(self, text, level="hint"):
-        if level == "hint":
-            color = "green"
-        elif level == "warn":
-            color = "yellow"
-        else:  # err
-            color = "magenta"
-        self._msg_label.setText(f'<span style="color: {color}">{text}</span>')
 
-    def create_chat_context(self):
-        return ChatContext(
-            model=self._app.config.OPENAI_MODEL,
-            client=self._app.ai.get_async_client(),
-            messages=[{"role": "system", "content": QUERY_PROMPT}],
+class AIChatBox(QWidget):
+    """
+    A lightweight AI chat UI for the AI Radio page.
+    This only provides UI; real message sending is intentionally left empty.
+    """
+
+    def __init__(self, app, parent=None):
+        super().__init__(parent=parent)
+        self._app = app
+        self.copilot = self._app.ai.get_copilot()
+
+        self._header = MidHeader("AI 助手")
+        self._new_thread_btn = PlusButton(length=12)
+        self._new_thread_btn.setToolTip("新的对话")
+        self.history_widget = ChatHistoryWidget(self)
+        self.input_widget = ChatInputWidget(self)
+
+        self.input_widget.send_clicked.connect(
+            lambda q: aio.run_afn_ref(self.exec_user_query, q)
         )
+        self._new_thread_btn.clicked.connect(self.on_new_thread_btn_clicked)
 
-    async def extract_and_play(self):
-        await self._extract_and_play(EXTRACT_PROMPT)
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(8)
+        header_layout = QHBoxLayout()
+        header_layout.addWidget(self._header)
+        header_layout.addWidget(self._new_thread_btn)
+        header_layout.addStretch(0)
+        layout.addLayout(header_layout)
+        layout.addWidget(self.history_widget)
+        layout.addWidget(self.input_widget)
 
-    async def extract_10_and_play(self):
-        await self._extract_and_play(f"{EXTRACT_PROMPT}\n随机提取最多10首即可")
+    async def exec_user_query(self, query: str):
+        self.history_widget.add_message("user", query)
+        self.history_widget.scroll_to_bottom()
 
-    async def _extract_and_play(self, extract_prompt):
-        """Main entry point for extracting and playing songs"""
-        self._prepare_extract_context(extract_prompt)
-        self.set_msg("正在让 AI 解析歌曲信息，这可能会花费一些时间...")
-        try:
-            stream = await self._chat_context.send_message()
-            await self._process_extract_stream(stream)
-        except Exception as e:
-            self.set_msg(f"调用 AI 接口失败: {e}", level="err")
-            logger.exception("AI request failed")
+        current_label = None
+        response_message = ""
+        last_update_ts = time.time()
 
-    def _prepare_extract_context(self, extract_prompt):
-        """Prepare chat context for song extraction"""
-        if self._chat_context is None:
-            self.set_msg("没有对话上下文", level="err")
-        else:
-            self._add_message_to_history("user", extract_prompt)
-
-    async def _process_extract_stream(self, stream):
-        """Process the stream of extracted songs"""
-        rr, rw, wtask = await a_handle_stream(stream)
-        ok_count = 0
-        fail_count = 0
-
-        # 创建AI回复的标签
-        ai_label = self._create_message_label("assistant", "")
-        self._history_layout.addWidget(ai_label)
-        content = ""
-        try:
-            while True:
-                try:
-                    line = await rr.readline()
-                    line = line.decode("utf-8")
-                    content += f"{line}\n"  # add newline
-                    ai_label.setText(content)
-                    self._scroll_to_bottom()
-                    logger.debug(f"read a line: {line}")
-                    if not line:
-                        self.set_msg(
-                            f"解析结束，成功解析{ok_count}首歌曲，失败{fail_count}首歌。",
-                            level="hint",
-                        )
-                        break
-
-                    try:
-                        jline = json.loads(line)
-                        title, artists = jline["title"], jline["artists"]
-                        artists_name = fmt_artists_names(artists)
-                        song = create_dummy_brief_song(title, artists_name)
-                    except Exception:
-                        fail_count += 1
-                        logger.exception(f"failed to parse a line: {line}")
-                        self.set_msg(
-                            f"成功解析{ok_count}首歌曲，失败{fail_count}首歌",
-                            level="yellow",
-                        )
-                        continue
-
-                    ok_count += 1
-                    self.set_msg(
-                        f"成功解析{ok_count}首歌曲，失败{fail_count}首歌", level="hint"
+        async for token, metadata in self.copilot.astream_user_query(query):
+            node = metadata["langgraph_node"]
+            if node == "model":
+                if current_label is None:
+                    current_label = self.history_widget.create_message_label(
+                        "assistant", ""
                     )
-                    self._app.playlist.add(song)
-                    if ok_count == 1:
-                        self._app.playlist.play_model(song)
-                except Exception:
-                    logger.exception("Error processing song")
-                    break
-        finally:
-            assistant_message = {"role": "assistant", "content": content}
-            self._chat_context.messages.append(assistant_message)
-            chunk = await wtask
-            self.show_tokens_usage(chunk)
-            self._scroll_to_bottom()
-            rw.close()
-            await rw.wait_closed()
-            self._editor.clear()
+                for block in token.content_blocks:
+                    if block["type"] == "text":
+                        response_message += block["text"]
+                # Rate limit: 0.1s
+                if last_update_ts + 0.2 <= time.time():
+                    current_label.setText(response_message)
+                    self.history_widget.scroll_to_bottom()
+                    last_update_ts = time.time()
+            elif node == "tools":
+                self.history_widget.create_message_label(
+                    "tools", f"tools: {token.name}"
+                )
+                current_label = None
 
-    def _scroll_to_bottom(self) -> None:
-        """Scroll chat history to bottom."""
-        self._history_area.verticalScrollBar().setValue(
-            self._history_area.verticalScrollBar().maximum()
-        )
+        if current_label is not None:
+            current_label.setText(response_message)
+        self.history_widget.scroll_to_bottom()
 
-    def clear_history(self):
-        """Clear chat history"""
-        while self._history_layout.count():
-            item = self._history_layout.takeAt(0)
-            widget = item.widget()
-            if widget:
-                widget.deleteLater()
-        self.set_msg("")
-        self._chat_context = None
+    def on_new_thread_btn_clicked(self):
+        self.copilot.new_thread()
+        self.history_widget.clear()
 
-    def hide(self):
-        self.clear_history()
-        self.parent().hide()
+
+class Body(QWidget):
+    def __init__(self, app: "GuiApp"):
+        super().__init__(parent=None)
+        self._app = app
+        copilot = self._app.ai.get_copilot()
+        copilot.candidates_changed.connect(
+            self.on_copilot_candidates_changed, aioqueue=True)
+
+        self._list_widget = AISongListWidget(app, self)
+        self._chat_box = AIChatBox(app)
+
+        self._layout = QHBoxLayout(self)
+        self._layout.setContentsMargins(10, 10, 10, 10)
+        self._layout.setSpacing(10)
+        self._layout.addWidget(self._chat_box)
+        self._layout.addWidget(self._list_widget)
+        self._layout.setStretch(0, 2)
+        self._layout.setStretch(1, 1)
+        self.setAutoFillBackground(True)
+
+    def on_copilot_candidates_changed(self, candidates):
+        self._list_widget.set_ai_songs(candidates)
 
 
 def create_aichat_overlay(app: "GuiApp", parent=None) -> AppOverlayContainer:
@@ -401,21 +305,28 @@ def create_aichat_overlay(app: "GuiApp", parent=None) -> AppOverlayContainer:
 
 
 if __name__ == "__main__":
-    import os
-    from PyQt6.QtWidgets import QWidget
-    from feeluown.gui.debug import simple_layout, mock_app
+    from PyQt6.QtCore import QSize
+    from feeluown.gui.debug import mock_app, simple_layout
 
     with simple_layout(theme="dark") as layout, mock_app() as app:
         app.size.return_value = QSize(600, 400)
-        app.config.OPENAI_API_KEY = os.environ.get("DEEPSEEK_API_KEY")
-        app.config.OPENAI_API_BASEURL = "https://api.deepseek.com"
-        app.config.OPENAI_MODEL = "deepseek-chat"
-        widget = create_aichat_overlay(app)
-        widget.resize(600, 400)
-        layout.addWidget(widget)
-        widget.show()
-        widget.body.set_msg("error", level="err")
+        overlay = create_aichat_overlay(app)
+        long_description = (
+            "一个很长的描述啊啊啊啊啊啊"
+            "啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊"
+            "啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊结束"
+        )
+        sample_ai_songs = [
+            AISongModel(
+                title="Song A", artists_name="Artist A", description=long_description
+            ),
+            AISongModel(title="Song B", artists_name="Artist B", description="Desc B"),
+            AISongModel(title="Song C", artists_name="Artist C", description="Desc C"),
+        ]
 
-        widget.body._chat_context = widget.body.create_chat_context()
-        widget.body._add_message_to_history("user", "哈哈哈" * 10)
-        widget.body._add_message_to_history("xxx", "哈哈哈" * 100)
+        overlay.body._chat_box.history_widget.add_message("user", "hello world")
+        overlay.body._chat_box.history_widget.add_message("assistant", "Hi, 我是你的音乐助手")
+        overlay.body._chat_box.history_widget.add_message("tools", "tools: play_model")
+        overlay.body._list_widget.set_ai_songs(sample_ai_songs)
+        overlay.show()
+        layout.addWidget(overlay)

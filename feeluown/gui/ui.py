@@ -26,14 +26,15 @@ class Ui:
         self._splitter = QSplitter(app)
 
         # Create widgets that don't rely on other widgets first.
+        self.ai_chat_overlay = None
         try:
             from feeluown.gui.uimain.ai_chat import create_aichat_overlay
         except ImportError as e:
             logger.warning(f"AIChatOverlay is not available: {e}")
-            self.ai_chat_overlay = None
         else:
-            self.ai_chat_overlay = create_aichat_overlay(app, parent=app)
-            self.ai_chat_overlay.hide()
+            if self._app.ai is not None:
+                self.ai_chat_overlay = create_aichat_overlay(app, parent=app)
+                self.ai_chat_overlay.hide()
         self.lyric_window = LyricWindow(self._app)
         self.lyric_window.hide()
         self.playlist_overlay = PlaylistOverlay(app, parent=app)

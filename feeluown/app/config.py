@@ -92,15 +92,7 @@ def create_config() -> Config:
     config.deffield(
         'AI_RADIO_PROMPT',
         type_=str,
-        default='''\
-你是一个音乐推荐系统。你根据用户的歌曲列表分析用户的喜好，给用户推荐一些歌。默认推荐5首歌。
-
-有几个注意点
-1. 不要推荐与用户播放列表中一模一样的歌曲。不要推荐用户不喜欢的歌曲。不要重复推荐。
-2. 你返回的内容只应该有 JSON，其它信息都不需要。也不要用 markdown 格式返回。
-3. 你推荐的歌曲需要使用类似这样的 JSON 格式
-    [{"title": "xxx", "artists": ["yyy", "zzz"], "description": "推荐理由"}]
-''',
+        default='你是一个音乐播放器智能助手。',
         desc='AI 电台功能的提示词'
     )
     return config
