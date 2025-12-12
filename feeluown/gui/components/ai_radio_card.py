@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import (
 )
 
 from feeluown.app.gui_app import GuiApp
-from feeluown.ai.radio import AISongMatcher
+from feeluown.ai import AISongMatcher
 from feeluown.library import reverse
 from feeluown.gui.widgets import PlayButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
@@ -25,10 +25,11 @@ class AIRadioCard(QFrame):
     def __init__(self, app: GuiApp, parent=None):
         super().__init__(parent)
         self._app = app
-        self.ai_radio = self._app.ai.get_radio()
+        self.ai_radio = self._app.ai.get_copilot()
 
         # Widgets and layouts
         self._header = Header('AI 电台')
+        self._header.setToolTip('暂未实现，欢迎 PR :)')
         self._summary_label = QLabel(self)
         self._summary_label.setWordWrap(True)
         self._cover_label = CoverLabelV2(self._app, self)
@@ -37,7 +38,6 @@ class AIRadioCard(QFrame):
         self._play_btn.setDisabled(True)
         self._play_btn.clicked.connect(self.on_play_btn_clicked)
         self._header.clicked.connect(self.on_header_clicked)
-
         self.setup_ui()
 
         self._song = None  # The song which is displayed.
@@ -68,10 +68,10 @@ class AIRadioCard(QFrame):
 
     async def render(self):
         self._status_label.setText('正在获取电台歌曲...')
-        ai_songs = await self.ai_radio.get5songs()
+        ai_songs = await self.ai_radio.push_a_song()
         if not ai_songs:
             self._status_label.setText('AI 推荐歌曲失败...')
-            logger.warning("AI radio get5songs return empty")
+            logger.warning("AI radio push_a_song return empty")
         else:
             first = ai_songs[0]
             self._status_label.setText(f'{first.title} • {first.artists_name}')
@@ -92,4 +92,5 @@ class AIRadioCard(QFrame):
         self._app.playlist.play_model(self._song)
 
     def on_header_clicked(self):
+        # TODO: to be implemented
         pass

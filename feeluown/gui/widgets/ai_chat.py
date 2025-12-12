@@ -13,10 +13,8 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
-from feeluown.utils import aio
 from feeluown.gui.helpers import palette_set_bg_color
 from feeluown.gui.widgets.textbtn import TextButton
-from feeluown.gui.widgets.header import MidHeader
 
 logger = logging.getLogger(__name__)
 
@@ -85,9 +83,9 @@ class ChatHistoryWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self._history_area = QScrollArea(self)
-        self._history_widget = QWidget()
-        self._history_area.setWidget(self._history_widget)
-        self._history_layout = QVBoxLayout(self._history_widget)
+        self.history_widget = QWidget()
+        self._history_area.setWidget(self.history_widget)
+        self._history_layout = QVBoxLayout(self.history_widget)
 
         self._history_area.setFrameShape(QFrame.Shape.NoFrame)
         self._history_area.setAutoFillBackground(True)
@@ -166,17 +164,15 @@ class ChatInputWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self._editor = ChatInputEditor(self)
-        self._editor.setPlaceholderText("在这里输入你的问题...")
+        self._editor.setPlaceholderText("和助手聊聊")
         self._editor.setFrameShape(QFrame.Shape.NoFrame)
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
-        self._send_btn = TextButton("发送（回车）", self)
-        self._clear_history_btn = TextButton("清空对话", self)
+        self._send_btn = TextButton("发送")
 
         self._editor.enter_pressed.connect(self._on_enter_pressed)
         self._send_btn.clicked.connect(self._on_send_clicked)
-        self._clear_history_btn.clicked.connect(self.clear_history_clicked.emit)
-
+        self._editor.setMinimumHeight(80)
         self.setup_ui()
 
     def setup_ui(self):
@@ -184,14 +180,14 @@ class ChatInputWidget(QWidget):
         self._msg_label.setTextFormat(Qt.TextFormat.RichText)
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(5)
         layout.addWidget(self._msg_label)
-        layout.addWidget(self._editor)
 
-        btn_layout = QHBoxLayout()
-        btn_layout.addWidget(self._clear_history_btn)
-        btn_layout.addStretch(0)
-        btn_layout.addWidget(self._send_btn)
-        layout.addLayout(btn_layout)
+        input_layout = QHBoxLayout()
+        input_layout.addWidget(self._editor)
+        input_layout.addWidget(self._send_btn, 0, Qt.AlignmentFlag.AlignBottom)
+        layout.addLayout(input_layout)
 
     def _on_enter_pressed(self):
         self._on_send_clicked()
@@ -216,82 +212,3 @@ class ChatInputWidget(QWidget):
 
     def get_input(self):
         return self._editor.toPlainText()
-
-
-class AIChatBox(QWidget):
-    """
-    A lightweight AI chat UI for the AI Radio page.
-    This only provides UI; real message sending is intentionally left empty.
-    """
-
-    def __init__(self, agent, agent_context, header="AI 助手", parent=None):
-        super().__init__(parent=parent)
-
-        # TODO: 传这两个参数进来，有点 tricky
-        self._agent = agent
-        self._agent_context = agent_context
-
-        self._header = MidHeader(header)
-        self._history_widget = ChatHistoryWidget(self)
-        self._input_widget = ChatInputWidget(self)
-
-        self._input_widget.send_clicked.connect(
-            lambda q: aio.run_afn_ref(self.exec_user_query, q)
-        )
-        self._input_widget.clear_history_clicked.connect(self._history_widget.clear)
-
-        layout = QVBoxLayout(self)
-        layout.setContentsMargins(0, 0, 0, 0)
-        layout.setSpacing(8)
-        layout.addWidget(self._header)
-        layout.addWidget(self._history_widget)
-        layout.addWidget(self._input_widget)
-
-    async def exec_user_query(self, query: str):
-        self._history_widget.add_message("user", query)
-        self._history_widget.scroll_to_bottom()
-
-        current_label = None
-        response_message = ""
-        async for token, metadata in self._agent.astream(
-            {"messages": [{"role": "user", "content": query}]},
-            stream_mode="messages",
-            context=self._agent_context,
-        ):
-            node = metadata["langgraph_node"]
-            if node == "model":
-                if current_label is None:
-                    current_label = self._history_widget.create_message_label(
-                        "assistant", ""
-                    )
-                for block in token.content_blocks:
-                    if block["type"] == "text":
-                        response_message += block["text"]
-                current_label.setText(response_message)
-            elif node == "tools":
-                self._history_widget.create_message_label(
-                    "tools", f"tools: {token.name}"
-                )
-                current_label = None
-        self._history_widget.scroll_to_bottom()
-
-
-if __name__ == "__main__":
-    import os
-    from PyQt6.QtCore import QSize
-
-    from feeluown.gui.debug import mock_app, simple_layout
-    from feeluown.ai import create_agent_with_config
-
-    with simple_layout(theme="dark", aio=True) as layout, mock_app() as app:
-        app.config.OPENAI_API_KEY = os.environ.get("OPENROUTER_API_KEY_BAK")
-        app.config.OPENAI_API_BASEURL = "https://openrouter.ai/api/v1"
-        app.config.OPENAI_MODEL = "z-ai/glm-4.5-air:free"
-        app.config.OPENAI_MODEL = "kwaipilot/kat-coder-pro:free"
-        agent = create_agent_with_config(app.config)
-        chat_box = AIChatBox(agent)
-        chat_box._history_widget.add_message("user", "hello world")
-        chat_box._history_widget.add_message("assistant", "Hi, 我是你的音乐助手")
-        chat_box._history_widget.add_message("tools", "tools: play_model")
-        chat_box.resize(600, 400)
-        layout.addWidget(chat_box)
