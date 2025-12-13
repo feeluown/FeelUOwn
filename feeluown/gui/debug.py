@@ -2,7 +2,6 @@ import asyncio
 import os
 from contextlib import contextmanager
 
-from qasync import QEventLoop
 from PyQt6.QtCore import QDir
 from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout
 
