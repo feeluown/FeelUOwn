@@ -32,11 +32,10 @@ setup(
     url='https://github.com/feeluown/FeelUOwn',
     keywords=['media', 'player', 'application', 'PyQt6', 'music'],
     classifiers=[
-        'Programming Language :: Python :: 3.8',
-        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
         'Programming Language :: Python :: 3.12',
+        'Programming Language :: Python :: 3.13',
         'Programming Language :: Python :: 3 :: Only',
         'Environment :: X11 Applications :: Qt',
         "Topic :: Multimedia :: Sound/Audio",
