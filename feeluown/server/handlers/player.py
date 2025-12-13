@@ -4,7 +4,7 @@ from typing import Any
 
 from feeluown.library import (
     resolve, reverse, BriefSongModel, BriefPlaylistModel,
-    SupportsPlaylistSongsReader,
+    SupportsPlaylistSongsReader, BriefVideoModel,
 )
 from .base import AbstractHandler
 from .excs import HandlerException
@@ -70,6 +70,8 @@ class PlayerHandler(AbstractHandler):
                         f"provider:{provider.identifier} does not support"
                         " SupportsPlaylistSongsReader"
                     )
+            elif isinstance(model, BriefVideoModel):
+                self._app.playlist.play_model(model)
             else:
                 model_type = model.meta.model_type
                 raise HandlerException(f"can't play this model type: {model_type}")

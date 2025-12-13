@@ -6,6 +6,7 @@ from qasync import QEventLoop
 from PyQt6.QtCore import QDir
 from PyQt6.QtWidgets import QApplication, QWidget, QHBoxLayout
 
+from feeluown.utils.compat import DefaultQEventLoopPolicy
 from feeluown.debug import *  # noqa
 
 
@@ -22,7 +23,8 @@ def async_simple_qapp():
     qapp = QApplication([])
     qapp.aboutToQuit.connect(app_close_event.set)
     yield qapp
-    asyncio.run(app_close_event.wait(), loop_factory=QEventLoop)
+    asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
+    asyncio.run(app_close_event.wait())
 
 
 def read_dark_theme_qss():
