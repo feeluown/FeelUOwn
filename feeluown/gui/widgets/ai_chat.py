@@ -138,6 +138,7 @@ class ChatHistoryWidget(QWidget):
 
     def scroll_to_bottom(self) -> None:
         """Scroll chat history to bottom."""
+        self.history_widget.updateGeometry()
         self._history_area.verticalScrollBar().setValue(
             self._history_area.verticalScrollBar().maximum()
         )
@@ -211,3 +212,6 @@ class ChatInputWidget(QWidget):
 
     def get_input(self):
         return self._editor.toPlainText()
+
+    def enable_send(self, enabled):
+        self._send_btn.setEnabled(enabled)

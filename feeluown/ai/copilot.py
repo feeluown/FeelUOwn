@@ -6,6 +6,8 @@ from langchain.chat_models import init_chat_model
 from langchain.agents import create_agent
 from langchain.tools import tool, ToolRuntime
 from langgraph.checkpoint.memory import InMemorySaver
+from langchain_core.messages import BaseMessage
+from langchain_core.callbacks import BaseCallbackHandler
 
 from feeluown.app import App
 from feeluown.library import BriefSongModel, ModelState
@@ -70,14 +72,27 @@ def play_song(song: AISongModel, runtime: ToolRuntime):
     runtime.context.app.playlist.play_model(song.to_brief_song())
 
 
+tools = [add_songs_to_playlist_candidates, play_song]
+
+
 def create_agent_with_config(config):
     model = create_chat_model_with_config(config)
     return create_agent(
         model=model,
         system_prompt="你是一个音乐播放器 AI 助手。",
-        tools=[add_songs_to_playlist_candidates, play_song],
+        tools=tools,
         context_schema=CopilotContext,
         checkpointer=InMemorySaver(),
+    )
+
+
+def create_recommendation_agent_with_config(config):
+    model = create_chat_model_with_config(config)
+    return create_agent(
+        model=model,
+        system_prompt="你是一个音乐播放器 AI 助手。",
+        tools=tools,
+        context_schema=CopilotContext,
     )
 
 
@@ -103,34 +118,69 @@ class AISongMatcher:
         return None
 
 
+class AgentStreamCallback(BaseCallbackHandler):
+    def __init__(self, copilot: 'Copilot', *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.__copilot = copilot
+
+    def on_chain_start(self, serialized, inputs, **kwargs):
+        self.__copilot.is_working = True
+
+    def on_chain_end(self, outputs, **kwargs):
+        self.__copilot.is_working = False
+
+    def on_chain_error(self, error, **kwargs):
+        self.__copilot.is_working = False
+
+
 class Copilot:
     def __init__(self, app: App):
         self._app = app
-        self._agent = create_agent_with_config(app.config)
+        self._agent = create_agent_with_config(self._app.config)
         self._agent_context = CopilotContext(copilot=self, app=app)
+        self._agent_stream_callback = AgentStreamCallback(self)
         self._candidates: List[AISongModel] = []
         self.candidates_changed = Signal()
         self._current_thread_id = 1
+        # Agent is working or not
+        # When the agent is streaming messages, it is working.
+        self._is_working = False
+        # emit(bool): working: true, not_working: false
+        self.working_state_changed = Signal()
+
+    @property
+    def is_working(self) -> bool:
+        return self._is_working
+
+    @is_working.setter
+    def is_working(self, working: bool):
+        self._is_working = working
+        self.working_state_changed.emit(working)
 
     def new_thread(self):
         self._current_thread_id += 1
 
-    async def push_a_song(self) -> List[AISongModel]:
-        await self._agent.ainvoke(
-            {
-                "messages": [
-                    {
-                        "role": "system",
-                        "content": await generate_prompt(self._app)
-                    },
-                    {
-                        "role": "system",
-                        "content": ("根据用户的音乐库收藏，分析用户的喜好，并且综合当前日期/时间等信息，"
-                                    "推荐1首合适的歌给用户，并将歌曲加入到播放列表候选中。"),
-                    },
-                ]
-            },
-            self._get_configurable(),
+    async def recommend_a_song(self) -> List[AISongModel]:
+        """Create an adhoc agent to recommend a song.
+
+        :return: A list of AISongModel.
+        """
+        agent = create_recommendation_agent_with_config(self._app.config)
+        input = {
+            "messages": [
+                {
+                    "role": "system",
+                    "content": await generate_prompt(self._app)
+                },
+                {
+                    "role": "system",
+                    "content": ("根据用户的音乐库收藏，分析用户的喜好，并且综合当前日期/时间等信息，"
+                                "推荐1首合适的歌给用户，并将歌曲加入到播放列表候选中。"),
+                },
+            ]
+        }
+        await agent.ainvoke(
+            input,
             context=self._agent_context,
         )
         return self._candidates
@@ -138,7 +188,7 @@ class Copilot:
     async def astream_user_query(self, query: str):
         async for v in self._agent.astream(
             {"messages": [{"role": "user", "content": query}]},
-            self._get_configurable(),
+            self.get_config(),
             stream_mode="messages",
             context=self._agent_context,
         ):
@@ -148,8 +198,14 @@ class Copilot:
         self._candidates = ai_songs
         self.candidates_changed.emit(ai_songs)
 
-    def _get_configurable(self):
-        return {"thread_id": str(self._current_thread_id)}
+    def get_config(self):
+        return {
+            "configurable": {"thread_id": str(self._current_thread_id)},
+            "callbacks": [self._agent_stream_callback],
+        }
+
+    def get_current_thread_history_messages(self) -> List[BaseMessage]:
+        return self._agent.get_state(self.get_config()).values['messages']
 
 
 async def generate_prompt(app: App):
@@ -172,11 +228,7 @@ if __name__ == "__main__":
         app.config.OPENAI_API_KEY = os.environ.get("DEEPSEEK_API_KEY", "")
         app.config.OPENAI_API_BASEURL = "https://api.deepseek.com"
         app.config.OPENAI_MODEL = "deepseek-chat"
-        app.config.OPENAI_API_KEY = os.environ.get("OPENROUTER_API_KEY_BAK", "")
-        app.config.OPENAI_API_BASEURL = "https://openrouter.ai/api/v1"
-        app.config.OPENAI_MODEL = "z-ai/glm-4.5-air:free"
-        app.config.OPENAI_MODEL = "kwaipilot/kat-coder-pro:free"
 
         copilot = Copilot(app)
-        songs = asyncio.run(copilot.push_a_song())
-        print(songs)
+        songs = asyncio.run(copilot.recommend_a_song())
+        state = copilot._agent.get_state(copilot.get_config())

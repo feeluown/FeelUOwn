@@ -35,7 +35,6 @@ jobs:
       run: |
         echo "FUO_MACOS_VERSION=`sw_vers --productVersion`" >> $GITHUB_ENV
     - name: Setup DYLD path for macos-arm64
-      if: matrix.os == 'macos-latest'
       run: |
         # Python can't find libmpv on macOS arm64 by default.
         # This problem does not exist on macOS with x86_64.

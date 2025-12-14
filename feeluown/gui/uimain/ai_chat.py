@@ -223,7 +223,10 @@ class AIChatBox(QWidget):
             lambda q: aio.run_afn_ref(self.exec_user_query, q)
         )
         self._new_thread_btn.clicked.connect(self.on_new_thread_btn_clicked)
+        self.copilot.working_state_changed.connect(self.on_working_state_changed)
+        self.setup_ui()
 
+    def setup_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(8)
@@ -253,7 +256,6 @@ class AIChatBox(QWidget):
                 for block in token.content_blocks:
                     if block["type"] == "text":
                         response_message += block["text"]
-                # Rate limit: 0.1s
                 if last_update_ts + 0.2 <= time.time():
                     current_label.setText(response_message)
                     self.history_widget.scroll_to_bottom()
@@ -271,6 +273,9 @@ class AIChatBox(QWidget):
     def on_new_thread_btn_clicked(self):
         self.copilot.new_thread()
         self.history_widget.clear()
+
+    def on_working_state_changed(self, working: bool):
+        self.input_widget.enable_send(not working)
 
 
 class Body(QWidget):

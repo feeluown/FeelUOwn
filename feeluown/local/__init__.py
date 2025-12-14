@@ -4,7 +4,6 @@ import logging
 
 from feeluown.utils import aio  # noqa
 from .provider import provider  # noqa
-from .provider_ui import LocalProviderUi
 
 DEFAULT_MUSIC_FOLDER = os.path.expanduser('~') + '/Music'
 DEFAULT_MUSIC_EXTS = ['mp3', 'ogg', 'wma', 'm4a', 'm4v', 'mp4', 'flac', 'ape', 'wav']
@@ -61,6 +60,8 @@ def enable(app):
                         weak=False,
                         aioqueue=False)
     if app.mode & app.GuiMode:
+        from .provider_ui import LocalProviderUi
+
         provider_ui = LocalProviderUi(app)
         app.pvd_ui_mgr.register(provider_ui)
 
