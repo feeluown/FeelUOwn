@@ -201,7 +201,7 @@ class Copilot:
     def get_config(self):
         return {
             "configurable": {"thread_id": str(self._current_thread_id)},
-            # "callbacks": [self._agent_stream_callback],
+            "callbacks": [self._agent_stream_callback],
         }
 
     def get_current_thread_history_messages(self) -> List[BaseMessage]:
