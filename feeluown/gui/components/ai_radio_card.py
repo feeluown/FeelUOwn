@@ -68,10 +68,10 @@ class AIRadioCard(QFrame):
 
     async def render(self):
         self._status_label.setText('正在获取电台歌曲...')
-        ai_songs = await self.ai_radio.push_a_song()
+        ai_songs = await self.ai_radio.recommend_a_song()
         if not ai_songs:
             self._status_label.setText('AI 推荐歌曲失败...')
-            logger.warning("AI radio push_a_song return empty")
+            logger.warning("AI radio recommend_a_song return empty")
         else:
             first = ai_songs[0]
             self._status_label.setText(f'{first.title} • {first.artists_name}')
