@@ -172,5 +172,4 @@ asyncio_default_fixture_loop_scope = "function"
 [tool.flake8]
 max-line-length = 89
 exclude = "feeluown/mpv.py"
-extend-ignore = ["E203"]
-ignore = ["E402"]
+extend-ignore = ["E203", "E402"]
