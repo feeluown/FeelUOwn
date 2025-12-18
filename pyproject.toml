@@ -59,6 +59,8 @@ ytdl = ["yt-dlp"]
 
 [dependency-groups]
 dev = [
+    # packaging
+    "pyinstaller",
     # lint
     "flake8",
     "Flake8-pyproject",
