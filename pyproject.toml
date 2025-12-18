@@ -56,6 +56,25 @@ webserver = ["sanic", "json-rpc"]
 webengine = ["PyQt6-WebEngine"]
 cookies = ["yt-dlp"]
 ytdl = ["yt-dlp"]
+# Sync this with `dependency-groups.dev` below for backward compatibility.
+# So that users using `pip install .[dev]` can get the same packages.
+dev = [
+    "pyinstaller",
+    "flake8",
+    "Flake8-pyproject",
+    "pylint",
+    "mypy",
+    "pyqt5-stubs",
+    "pytest>=9.0",
+    "pytest-runner",
+    "pytest-cov",
+    "pytest-asyncio",
+    "pytest-qt",
+    "pytest-mock",
+    "pytest-benchmark>=3.4.1",
+    "sphinx",
+    "sphinx_rtd_theme",
+]
 
 [dependency-groups]
 dev = [
