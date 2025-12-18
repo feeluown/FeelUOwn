@@ -426,6 +426,24 @@ battery = [
 cookies = [
     { name = "yt-dlp" },
 ]
+dev = [
+    { name = "flake8" },
+    { name = "flake8-pyproject" },
+    { name = "mypy" },
+    { name = "pyinstaller" },
+    { name = "pylint" },
+    { name = "pyqt5-stubs" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-benchmark" },
+    { name = "pytest-cov" },
+    { name = "pytest-mock" },
+    { name = "pytest-qt" },
+    { name = "pytest-runner" },
+    { name = "sphinx", version = "8.1.3", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "sphinx", version = "9.0.4", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
+    { name = "sphinx-rtd-theme" },
+]
 jsonrpc = [
     { name = "json-rpc" },
 ]
@@ -475,6 +493,8 @@ requires-dist = [
     { name = "aionowplaying", marker = "extra == 'macos'", specifier = ">=0.10" },
     { name = "aionowplaying", marker = "extra == 'win32'", specifier = ">=0.10" },
     { name = "feeluown-bilibili", marker = "extra == 'battery'", specifier = ">=0.4.1" },
+    { name = "flake8", marker = "extra == 'dev'" },
+    { name = "flake8-pyproject", marker = "extra == 'dev'" },
     { name = "fuo-netease", marker = "extra == 'battery'", specifier = ">=1.0.3" },
     { name = "fuo-qqmusic", marker = "extra == 'battery'", specifier = ">=1.0.5" },
     { name = "fuo-ytmusic", marker = "extra == 'battery'", specifier = ">=0.4.4" },
@@ -483,19 +503,32 @@ requires-dist = [
     { name = "json-rpc", marker = "extra == 'webserver'" },
     { name = "langchain", extras = ["openai"], marker = "extra == 'ai'", specifier = ">=1.0" },
     { name = "mutagen", specifier = ">=1.37" },
+    { name = "mypy", marker = "extra == 'dev'" },
     { name = "packaging" },
     { name = "pydantic", specifier = ">=1.10" },
+    { name = "pyinstaller", marker = "extra == 'dev'" },
+    { name = "pylint", marker = "extra == 'dev'" },
+    { name = "pyqt5-stubs", marker = "extra == 'dev'" },
     { name = "pyqt6", marker = "extra == 'qt'" },
     { name = "pyqt6-webengine", marker = "extra == 'webengine'" },
     { name = "pyshortcuts", marker = "extra == 'win32'" },
+    { name = "pytest", marker = "extra == 'dev'", specifier = ">=9.0" },
+    { name = "pytest-asyncio", marker = "extra == 'dev'" },
+    { name = "pytest-benchmark", marker = "extra == 'dev'", specifier = ">=3.4.1" },
+    { name = "pytest-cov", marker = "extra == 'dev'" },
+    { name = "pytest-mock", marker = "extra == 'dev'" },
+    { name = "pytest-qt", marker = "extra == 'dev'" },
+    { name = "pytest-runner", marker = "extra == 'dev'" },
     { name = "qasync" },
     { name = "requests" },
     { name = "sanic", marker = "extra == 'webserver'" },
+    { name = "sphinx", marker = "extra == 'dev'" },
+    { name = "sphinx-rtd-theme", marker = "extra == 'dev'" },
     { name = "tomlkit" },
     { name = "yt-dlp", marker = "extra == 'cookies'" },
     { name = "yt-dlp", marker = "extra == 'ytdl'" },
 ]
-provides-extras = ["battery", "ai", "qt", "macos", "win32", "jsonrpc", "webserver", "webengine", "cookies", "ytdl"]
+provides-extras = ["battery", "ai", "qt", "macos", "win32", "jsonrpc", "webserver", "webengine", "cookies", "ytdl", "dev"]
 
 [package.metadata.requires-dev]
 dev = [
