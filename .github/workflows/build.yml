@@ -56,7 +56,7 @@ jobs:
         run: |
           pip install --upgrade pip
           pip install "pytest<7.2"
-          pip install -e .[qt,dev,cookies,webserver,ytdl,ai]
+          pip install -e .[qt,cookies,webserver,ytdl,ai] --group dev
 
       - name: Install Python(macOS) Dependencies
         if: startsWith(matrix.os, 'macos')
