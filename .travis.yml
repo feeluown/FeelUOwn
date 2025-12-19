@@ -24,7 +24,7 @@ install:
     - pip install pyqt5==5.14.0 pyopengl
     - pip install coveralls
     - pip install sphinx_rtd_theme
-    - pip install -e .[dev]
+    - pip install -e . --group dev
 
 script:
     - make test
