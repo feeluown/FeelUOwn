@@ -10,7 +10,13 @@ from langchain_core.messages import BaseMessage
 from langchain_core.callbacks import BaseCallbackHandler
 
 from feeluown.app import App
-from feeluown.library import BriefSongModel, ModelState
+from feeluown.library import (
+    BriefSongModel,
+    ModelState,
+    get_standby_score,
+    STANDBY_FULL_SCORE,
+    STANDBY_DEFAULT_MIN_SCORE,
+)
 from feeluown.ai.prompt import generate_prompt_for_library
 from feeluown.utils.dispatch import Signal
 
@@ -48,8 +54,8 @@ def create_chat_model_with_config(config):
 
 @dataclass
 class CopilotContext:
-    copilot: 'Copilot'
-    app: 'App'
+    copilot: "Copilot"
+    app: "App"
 
 
 @tool
@@ -91,7 +97,7 @@ def create_recommendation_agent_with_config(config):
     return create_agent(
         model=model,
         system_prompt="你是一个音乐播放器 AI 助手。",
-        tools=tools,
+        tools=[add_songs_to_playlist_candidates],
         context_schema=CopilotContext,
     )
 
@@ -105,21 +111,24 @@ class AISongMatcher:
 
         This API is in alpha stage.
         """
+        origin = ai_song.to_brief_song()
         title, artists_name = ai_song.title, ai_song.artists_name
-        async for result in self._app.library.a_search(f'{title} {artists_name}'):
+        candidates = []
+        async for result in self._app.library.a_search(f"{title} {artists_name}"):
             if result is None:
                 continue
-            for song in result.songs:
-                if (
-                    song.title_display == title and
-                    song.artists_name_display == artists_name
-                ):
-                    return song
-        return None
+            for standby in result.songs:
+                score = get_standby_score(origin, standby)
+                if score == STANDBY_FULL_SCORE:
+                    return standby
+                elif score >= STANDBY_DEFAULT_MIN_SCORE:
+                    candidates.append((score, standby))
+        sorted_candidates = sorted(candidates, key=lambda x: x[0], reverse=True)
+        return sorted_candidates[0][1] if sorted_candidates else None
 
 
 class AgentStreamCallback(BaseCallbackHandler):
-    def __init__(self, copilot: 'Copilot', *args, **kwargs):
+    def __init__(self, copilot: "Copilot", *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.__copilot = copilot
 
@@ -168,14 +177,13 @@ class Copilot:
         agent = create_recommendation_agent_with_config(self._app.config)
         input = {
             "messages": [
+                {"role": "system", "content": await generate_prompt(self._app)},
                 {
                     "role": "system",
-                    "content": await generate_prompt(self._app)
-                },
-                {
-                    "role": "system",
-                    "content": ("根据用户的音乐库收藏，分析用户的喜好，并且综合当前日期/时间等信息，"
-                                "推荐1首合适的歌给用户，并将歌曲加入到播放列表候选中。"),
+                    "content": (
+                        "根据用户的音乐库收藏，分析用户的喜好，并且综合当前日期/时间等信息，"
+                        "推荐1首合适的歌给用户，并将歌曲加入到播放列表候选中。"
+                    ),
                 },
             ]
         }
@@ -205,7 +213,7 @@ class Copilot:
         }
 
     def get_current_thread_history_messages(self) -> List[BaseMessage]:
-        return self._agent.get_state(self.get_config()).values['messages']
+        return self._agent.get_state(self.get_config()).values["messages"]
 
 
 async def generate_prompt(app: App):
@@ -213,7 +221,9 @@ async def generate_prompt(app: App):
     1. Today's date and current time.
     2. User's music library, including songs, albums, artists, playlists.
     """
-    time_prompt = f"当前时间是 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}。"
+    time_prompt = (
+        f"当前时间是 {datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')}。"
+    )
     library_prompt = await generate_prompt_for_library(app.coll_mgr.get_coll_library())
     return f"{time_prompt}\n\n{library_prompt}"
 
