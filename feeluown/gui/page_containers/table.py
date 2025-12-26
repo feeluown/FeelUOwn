@@ -417,6 +417,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             await self._renderer.tearDown()
         self.meta_widget.hide()
         self.meta_widget.clear()
+        self.meta_widget.add_tabbar(self.tabbar)
         self.tabbar.hide()
         self.tabbar.restore_default()
         self.current_table = None

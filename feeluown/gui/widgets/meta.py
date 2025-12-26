@@ -128,6 +128,10 @@ class TableMetaWidget(MetaWidget):
         self.layout().setContentsMargins(0, 0, 30, 0)
         self.layout().setSpacing(0)
 
+    def add_tabbar(self, tabbar):
+        self._right_layout.addWidget(tabbar)
+        self._right_layout.setAlignment(tabbar, Qt.AlignmentFlag.AlignLeft)
+
     def set_cover_image(self, image):
         if image is not None:
             self.cover_label.show()
