@@ -195,7 +195,7 @@ class SequentialReader(Reader[T]):
                     obj = next(self._g)
             except StopIteration:
                 if self._count is None:
-                    self._count = self.offset + 1
+                    self._count = self.offset
                 raise
         else:
             raise StopIteration
