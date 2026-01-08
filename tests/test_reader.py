@@ -13,6 +13,7 @@ def test_sequential_reader():
     g = g_func()
     reader = wrap(g)
     assert len(list(reader)) == 5
+    assert reader.count == 5
 
 
 @pytest.mark.asyncio
