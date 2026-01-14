@@ -96,9 +96,9 @@ def create_config() -> Config:
         desc='AI 电台功能的提示词'
     )
     config.deffield(
-        'SONGS_TABLE_AUTO_RESET_ON_DBLCLICK',
+        'ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK',
         type_=bool,
         default=True,
-        desc='双击歌曲行时默认重建播放列表'
+        desc='双击歌曲时，用歌曲所在列表替换当前播放列表'
     )
     return config
