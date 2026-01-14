@@ -526,7 +526,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             )
             need_replace = self._app.config.ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK        
             # .. versionadded:: 3.7.11
-            #    Reset playlist with songs in table; modifier toggles behavior via config.
+            #    Replace playlist with songs in table.
             if need_replace != alt_pressed:
                 model = self.songs_table.model()
                 if isinstance(model, SongFilterProxyModel):
