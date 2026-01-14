@@ -95,4 +95,10 @@ def create_config() -> Config:
         default='你是一个音乐播放器智能助手。',
         desc='AI 电台功能的提示词'
     )
+    config.deffield(
+        'ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK',
+        type_=bool,
+        default=True,
+        desc='双击歌曲时，用歌曲所在列表替换当前播放列表'
+    )
     return config

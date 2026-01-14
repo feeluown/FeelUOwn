@@ -521,9 +521,13 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         song = index.data(Qt.ItemDataRole.UserRole)
         if index.column() == Column.song:
+            alt_pressed = bool(
+                QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier
+            )
+            need_replace = self._app.config.ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK
             # .. versionadded:: 3.7.11
-            #    Reset playlist with songs in table if Alt key is pressed.
-            if QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier:
+            #    Replace playlist with songs in table.
+            if need_replace != alt_pressed:
                 model = self.songs_table.model()
                 if isinstance(model, SongFilterProxyModel):
                     model = model.sourceModel()
