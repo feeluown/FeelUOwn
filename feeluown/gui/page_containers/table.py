@@ -524,12 +524,10 @@ class TableContainer(QFrame, BgTransparentMixin):
             alt_pressed = bool(
                 QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier
             )
-            auto_reset = getattr(
-                self._app.config, "SONGS_TABLE_AUTO_RESET_ON_DBLCLICK", True
-            )
+            need_replace = self._app.config.ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK        
             # .. versionadded:: 3.7.11
             #    Reset playlist with songs in table; modifier toggles behavior via config.
-            if auto_reset != alt_pressed:
+            if need_replace != alt_pressed:
                 model = self.songs_table.model()
                 if isinstance(model, SongFilterProxyModel):
                     model = model.sourceModel()
