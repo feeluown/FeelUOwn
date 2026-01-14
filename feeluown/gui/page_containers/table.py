@@ -521,12 +521,15 @@ class TableContainer(QFrame, BgTransparentMixin):
 
         song = index.data(Qt.ItemDataRole.UserRole)
         if index.column() == Column.song:
-            alt_pressed = (
+            alt_pressed = bool(
                 QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier
             )
+            auto_reset = getattr(
+                self._app.config, "SONGS_TABLE_AUTO_RESET_ON_DBLCLICK", True
+            )
             # .. versionadded:: 3.7.11
-            #    Reset playlist with songs in table; hold Alt to skip this step.
-            if not alt_pressed:
+            #    Reset playlist with songs in table; modifier toggles behavior via config.
+            if auto_reset != alt_pressed:
                 model = self.songs_table.model()
                 if isinstance(model, SongFilterProxyModel):
                     model = model.sourceModel()

@@ -95,4 +95,10 @@ def create_config() -> Config:
         default='你是一个音乐播放器智能助手。',
         desc='AI 电台功能的提示词'
     )
+    config.deffield(
+        'SONGS_TABLE_AUTO_RESET_ON_DBLCLICK',
+        type_=bool,
+        default=True,
+        desc='双击歌曲行时默认重建播放列表'
+    )
     return config
