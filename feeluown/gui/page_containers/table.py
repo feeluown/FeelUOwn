@@ -524,7 +524,7 @@ class TableContainer(QFrame, BgTransparentMixin):
             alt_pressed = bool(
                 QApplication.keyboardModifiers() & Qt.KeyboardModifier.AltModifier
             )
-            need_replace = self._app.config.ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK        
+            need_replace = self._app.config.ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK
             # .. versionadded:: 3.7.11
             #    Replace playlist with songs in table.
             if need_replace != alt_pressed:
