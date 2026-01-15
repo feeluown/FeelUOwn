@@ -423,15 +423,19 @@ class Playlist:
             current_songs = list(self._songs)
             snapshot = self._shuffle_snapshot
             if current_songs:
-                restored = [song for song in snapshot['original'] if song in current_songs]
+                restored = [
+                    song
+                    for song in snapshot['original']
+                    if song in current_songs
+                ]
                 added = snapshot.get('added', [])
                 restored.extend(
-                    song for song in added
+                    song
+                    for song in added
                     if song in current_songs and song not in restored
                 )
                 restored.extend(
-                    song for song in current_songs
-                    if song not in restored
+                    song for song in current_songs if song not in restored
                 )
                 self._reorder_no_lock(restored)
             else:

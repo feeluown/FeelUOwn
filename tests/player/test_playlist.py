@@ -229,7 +229,9 @@ async def test_playlist_change_repeat_shuffle_mode(app_mock):
     assert pl.repeat_mode is PlaylistRepeatMode.all
 
 
-def test_playlist_random_mode_reorder_and_restore(app_mock, song, song1, song2, song3, mocker):
+def test_playlist_random_mode_reorder_and_restore(
+    app_mock, song, song1, song2, song3, mocker
+):
     playlist = Playlist(
         app_mock,
         songs=[song, song1, song2, song3],
