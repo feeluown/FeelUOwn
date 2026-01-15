@@ -379,8 +379,8 @@ class Playlist:
                 self.songs_removed.emit(0, length)
             self._bad_songs.clear()
             if self._shuffle_snapshot is not None:
-                self._shuffle_snapshot['original'] = []
-                self._shuffle_snapshot['added'] = []
+                self._shuffle_snapshot['original'].clear()
+                self._shuffle_snapshot['added'].clear()
 
     def list(self):
         """Get all songs in playlists"""
@@ -396,7 +396,7 @@ class Playlist:
             if playback_mode is not PlaybackMode.sequential:
                 logger.warning("can't set playback mode to others in fm mode")
                 return
-        previous_mode = getattr(self, '_playback_mode', None)
+        previous_mode = self._playback_mode
         if previous_mode is playback_mode:
             return
         if (
@@ -417,8 +417,8 @@ class Playlist:
             if self._shuffle_snapshot is not None:
                 return
             self._shuffle_snapshot = {
-                'original': list(self._songs),
-                'added': [],
+                'original': DedupList(self._songs),
+                'added': DedupList(),
             }
             self._shuffle_playlist_order_no_lock()
 
@@ -429,12 +429,10 @@ class Playlist:
             current_songs = list(self._songs)
             snapshot = self._shuffle_snapshot
             if current_songs:
-                restored = [
-                    song
-                    for song in snapshot['original']
-                    if song in current_songs
-                ]
-                added = snapshot.get('added', [])
+                restored = DedupList(
+                    [song for song in snapshot['original'] if song in current_songs]
+                )
+                added = snapshot.get('added', DedupList())
                 restored.extend(
                     song
                     for song in added
@@ -476,7 +474,7 @@ class Playlist:
 
     def _record_shuffle_add(self, song):
         if self._shuffle_snapshot is not None:
-            added = self._shuffle_snapshot.setdefault('added', [])
+            added = self._shuffle_snapshot.setdefault('added', DedupList())
             if song not in added:
                 added.append(song)
 
