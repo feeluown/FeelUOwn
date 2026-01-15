@@ -150,6 +150,7 @@ class Playlist:
         #    The *songs_removed* and *songs_added* signal.
         self.songs_removed = Signal()  # (index, count)
         self.songs_added = Signal()  # (index, count)
+        self.songs_reordered = Signal()  # ()
         # .. versionadded:: 3.9.0
         #    The *play_model_handling* signal.
         self.play_model_handling = Signal()
@@ -159,6 +160,8 @@ class Playlist:
 
         self._app.player.media_finished.connect(self._on_media_finished)
         self.song_changed.connect(self._on_song_changed)
+
+        self._shuffle_snapshot = None
 
     @property
     def mode(self):
@@ -229,9 +232,15 @@ class Playlist:
         """
         if song in self._songs:
             return
-        self._songs.append(song)
-        length = len(self._songs)
-        self.songs_added.emit(length-1, 1)
+        if self._shuffle_snapshot is not None:
+            insert_index = random.randint(0, len(self._songs))
+            self._songs.insert(insert_index, song)
+            self.songs_added.emit(insert_index, 1)
+        else:
+            self._songs.append(song)
+            insert_index = len(self._songs) - 1
+            self.songs_added.emit(insert_index, 1)
+        self._record_shuffle_add(song)
 
     def set_models(self, models, next_=False, fm=False):
         """
@@ -251,11 +260,17 @@ class Playlist:
         .. versionadded: v3.7.13
         """
         with self._songs_lock:
-            start_index = len(self._songs)
-            for model in models:
-                self._songs.append(model)
-            end_index = len(self._songs)
-            self.songs_added.emit(start_index, end_index - start_index)
+            if self._shuffle_snapshot is not None:
+                for model in models:
+                    self._add(model)
+            else:
+                start_index = len(self._songs)
+                for model in models:
+                    self._songs.append(model)
+                end_index = len(self._songs)
+                count = end_index - start_index
+                if count > 0:
+                    self.songs_added.emit(start_index, count)
 
     def add(self, song):
         """add song to playlist
@@ -296,6 +311,7 @@ class Playlist:
             index = self._songs.index(self._current_song)
             self._songs.insert(index + 1, song)
             self.songs_added.emit(index + 1, 1)
+        self._record_shuffle_add(song)
 
     def remove_no_lock(self, song):
         try:
@@ -327,6 +343,7 @@ class Playlist:
             else:
                 self._songs.remove(song)
             self.songs_removed.emit(index, 1)
+            self._record_shuffle_remove(song)
             logger.debug('Remove {} from player playlist'.format(song))
         if song in self._bad_songs:
             self._bad_songs.remove(song)
@@ -344,10 +361,12 @@ class Playlist:
         index = self._songs.index(model)
         self._songs.insert(index+1, umodel)
         self.songs_added.emit(index+1, 1)
+        self._update_shuffle_snapshot_on_replace(model, umodel)
         if self.current_song == model:
             self.set_current_song_none()
         self._songs.remove(model)
         self.songs_removed.emit(index, 1)
+        self._record_shuffle_remove(model)
 
     def clear(self):
         """remove all songs from playlists"""
@@ -359,6 +378,9 @@ class Playlist:
             if length > 0:
                 self.songs_removed.emit(0, length)
             self._bad_songs.clear()
+            if self._shuffle_snapshot is not None:
+                self._shuffle_snapshot['original'] = []
+                self._shuffle_snapshot['added'] = []
 
     def list(self):
         """Get all songs in playlists"""
@@ -374,8 +396,95 @@ class Playlist:
             if playback_mode is not PlaybackMode.sequential:
                 logger.warning("can't set playback mode to others in fm mode")
                 return
+        previous_mode = getattr(self, '_playback_mode', None)
+        if previous_mode is playback_mode:
+            return
+        if playback_mode is PlaybackMode.random and previous_mode is not PlaybackMode.random:
+            self._enter_shuffle_mode()
+        elif previous_mode is PlaybackMode.random and playback_mode is not PlaybackMode.random:
+            self._leave_shuffle_mode()
         self._playback_mode = playback_mode
         self.playback_mode_changed.emit(self.playback_mode)
+
+    def _enter_shuffle_mode(self):
+        with self._songs_lock:
+            if self._shuffle_snapshot is not None:
+                return
+            self._shuffle_snapshot = {
+                'original': list(self._songs),
+                'added': [],
+            }
+            self._shuffle_playlist_order_no_lock()
+
+    def _leave_shuffle_mode(self):
+        with self._songs_lock:
+            if self._shuffle_snapshot is None:
+                return
+            current_songs = list(self._songs)
+            snapshot = self._shuffle_snapshot
+            if current_songs:
+                restored = [song for song in snapshot['original'] if song in current_songs]
+                added = snapshot.get('added', [])
+                restored.extend(
+                    song for song in added
+                    if song in current_songs and song not in restored
+                )
+                restored.extend(
+                    song for song in current_songs
+                    if song not in restored
+                )
+                self._reorder_no_lock(restored)
+            else:
+                self._reorder_no_lock([])
+            self._shuffle_snapshot = None
+
+    def _shuffle_playlist_order_no_lock(self):
+        assert self._songs_lock.locked()
+        if len(self._songs) <= 1:
+            return
+        shuffled = list(self._songs)
+        random.shuffle(shuffled)
+        current = self.current_song
+        if current is not None and current in shuffled:
+            try:
+                original_index = self._shuffle_snapshot['original'].index(current)
+            except (ValueError, KeyError, TypeError):
+                original_index = 0
+            shuffled.remove(current)
+            insert_index = min(original_index, len(shuffled))
+            shuffled.insert(insert_index, current)
+        self._reorder_no_lock(shuffled)
+
+    def _reorder_no_lock(self, new_order):
+        assert self._songs_lock.locked()
+        if list(self._songs) == new_order:
+            return
+        list.clear(self._songs)
+        self._songs._map.clear()
+        self._songs.extend(new_order)
+        self.songs_reordered.emit()
+
+    def _record_shuffle_add(self, song):
+        if self._shuffle_snapshot is not None:
+            added = self._shuffle_snapshot.setdefault('added', [])
+            if song not in added:
+                added.append(song)
+
+    def _record_shuffle_remove(self, song):
+        if self._shuffle_snapshot is not None:
+            added = self._shuffle_snapshot.get('added')
+            if added and song in added:
+                added.remove(song)
+
+    def _update_shuffle_snapshot_on_replace(self, old, new):
+        if self._shuffle_snapshot is not None:
+            original = self._shuffle_snapshot.get('original')
+            if original:
+                try:
+                    idx = original.index(old)
+                except ValueError:
+                    return
+                original[idx] = new
 
     def _get_good_song(self, base=0, random_=False, direction=1, loop=True):
         """Get a good song from playlist.
@@ -436,7 +545,9 @@ class Playlist:
             return self._get_good_song()
 
         if self.playback_mode == PlaybackMode.random:
-            next_song = self._get_good_song(random_=True)
+            current_index = self._songs.index(self.current_song)
+            base_index = current_index + 1
+            next_song = self._get_good_song(base=base_index, loop=True)
         else:
             current_index = self._songs.index(self.current_song)
             is_last_song = current_index == len(self._songs) - 1
@@ -463,7 +574,9 @@ class Playlist:
             return self._get_good_song(base=-1, direction=-1)
 
         if self.playback_mode == PlaybackMode.random:
-            previous_song = self._get_good_song(direction=-1, random_=True)
+            current_index = self._songs.index(self.current_song)
+            base_index = current_index - 1
+            previous_song = self._get_good_song(base=base_index, direction=-1, loop=True)
         else:
             current_index = self._songs.index(self.current_song)
             previous_song = self._get_good_song(base=current_index - 1, direction=-1)
