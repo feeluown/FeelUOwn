@@ -399,9 +399,15 @@ class Playlist:
         previous_mode = getattr(self, '_playback_mode', None)
         if previous_mode is playback_mode:
             return
-        if playback_mode is PlaybackMode.random and previous_mode is not PlaybackMode.random:
+        if (
+            playback_mode is PlaybackMode.random
+            and previous_mode is not PlaybackMode.random
+        ):
             self._enter_shuffle_mode()
-        elif previous_mode is PlaybackMode.random and playback_mode is not PlaybackMode.random:
+        elif (
+            previous_mode is PlaybackMode.random
+            and playback_mode is not PlaybackMode.random
+        ):
             self._leave_shuffle_mode()
         self._playback_mode = playback_mode
         self.playback_mode_changed.emit(self.playback_mode)
