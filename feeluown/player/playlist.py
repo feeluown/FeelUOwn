@@ -385,6 +385,16 @@ class Playlist:
         """Get all songs in playlists"""
         return self._songs
 
+    def ordered_songs_for_state(self):
+        """Return songs in a deterministic order for persisting state."""
+        with self._songs_lock:
+            if (
+                self.playback_mode is PlaybackMode.random
+                and self._shuffle_snapshot is not None
+            ):
+                return list(self._shuffle_snapshot)
+            return list(self._songs)
+
     @property
     def playback_mode(self):
         return self._playback_mode

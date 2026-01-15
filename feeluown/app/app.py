@@ -224,6 +224,12 @@ class App:
         if song is not None:
             song = reverse(song, as_line=True)
         # TODO: dump player.media
+        playlist_songs = (
+            playlist.ordered_songs_for_state()
+            if playlist.playback_mode is PlaybackMode.random
+            else playlist.list()
+        )
+
         state = {
             'playback_mode': playlist.playback_mode.value,
             'volume': player.volume,
@@ -231,7 +237,7 @@ class App:
             'song': song,
             # cast position to int to avoid such value 2.7755575615628914e-17
             'position': int(player.position or 0),
-            'playlist': [reverse(song, as_line=True) for song in playlist.list()],
+            'playlist': [reverse(song, as_line=True) for song in playlist_songs],
             'recently_played': [reverse(song, as_line=True)
                                 for song in recently_played.list_songs()]
         }
