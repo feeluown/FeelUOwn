@@ -379,8 +379,7 @@ class Playlist:
                 self.songs_removed.emit(0, length)
             self._bad_songs.clear()
             if self._shuffle_snapshot is not None:
-                self._shuffle_snapshot['original'].clear()
-                self._shuffle_snapshot['added'].clear()
+                self._shuffle_snapshot.clear()
 
     def list(self):
         """Get all songs in playlists"""
@@ -416,10 +415,7 @@ class Playlist:
         with self._songs_lock:
             if self._shuffle_snapshot is not None:
                 return
-            self._shuffle_snapshot = {
-                'original': DedupList(self._songs),
-                'added': DedupList(),
-            }
+            self._shuffle_snapshot = DedupList(self._songs)
             self._shuffle_playlist_order_no_lock()
 
     def _leave_shuffle_mode(self):
@@ -429,15 +425,7 @@ class Playlist:
             current_songs = list(self._songs)
             snapshot = self._shuffle_snapshot
             if current_songs:
-                restored = DedupList(
-                    [song for song in snapshot['original'] if song in current_songs]
-                )
-                added = snapshot.get('added', DedupList())
-                restored.extend(
-                    song
-                    for song in added
-                    if song in current_songs and song not in restored
-                )
+                restored = [song for song in snapshot if song in current_songs]
                 restored.extend(
                     song for song in current_songs if song not in restored
                 )
@@ -455,8 +443,8 @@ class Playlist:
         current = self.current_song
         if current is not None and current in shuffled:
             try:
-                original_index = self._shuffle_snapshot['original'].index(current)
-            except (ValueError, KeyError, TypeError):
+                original_index = self._shuffle_snapshot.index(current)
+            except ValueError:
                 original_index = 0
             shuffled.remove(current)
             insert_index = min(original_index, len(shuffled))
@@ -474,25 +462,21 @@ class Playlist:
 
     def _record_shuffle_add(self, song):
         if self._shuffle_snapshot is not None:
-            added = self._shuffle_snapshot.setdefault('added', DedupList())
-            if song not in added:
-                added.append(song)
+            if song not in self._shuffle_snapshot:
+                self._shuffle_snapshot.append(song)
 
     def _record_shuffle_remove(self, song):
         if self._shuffle_snapshot is not None:
-            added = self._shuffle_snapshot.get('added')
-            if added and song in added:
-                added.remove(song)
+            if song in self._shuffle_snapshot:
+                self._shuffle_snapshot.remove(song)
 
     def _update_shuffle_snapshot_on_replace(self, old, new):
         if self._shuffle_snapshot is not None:
-            original = self._shuffle_snapshot.get('original')
-            if original:
-                try:
-                    idx = original.index(old)
-                except ValueError:
-                    return
-                original[idx] = new
+            try:
+                idx = self._shuffle_snapshot.index(old)
+            except ValueError:
+                return
+            self._shuffle_snapshot[idx] = new
 
     def _get_good_song(self, base=0, random_=False, direction=1, loop=True):
         """Get a good song from playlist.
