@@ -269,19 +269,19 @@ def test_playlist_random_mode_iteration_without_replacement(
     playlist.playback_mode = PlaybackMode.random
     assert list(playlist.list()) == order
 
-    with playlist._songs_lock:
+    with playlist._queue_lock:
         playlist._current_song = None
 
     seen = []
     for _ in range(len(order)):
         next_song = playlist.next_song
         seen.append(next_song)
-        with playlist._songs_lock:
+        with playlist._queue_lock:
             playlist._current_song = next_song
 
     assert seen == order
 
-    with playlist._songs_lock:
+    with playlist._queue_lock:
         playlist._current_song = order[-1]
     assert playlist.next_song == order[0]
 

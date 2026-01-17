@@ -60,10 +60,9 @@ class PlayerPlaylistModel(SongMiniCardListModel):
             count -= 1
         self.endRemoveRows()
 
-    def on_songs_reordered(self):
-        self.beginResetModel()
-        self._items = list(self._playlist.list())
-        self.endResetModel()
+    def on_songs_reordered(self, index, count):
+        self.on_songs_removed(index, count)
+        self.on_songs_added(index, count)
 
 
 class PlayerPlaylistView(SongMiniCardListView):

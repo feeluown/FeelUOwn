@@ -114,14 +114,17 @@ class Playlist:
         #: songs whose url is invalid
         self._bad_songs = DedupList()
 
-        #: store value for ``songs`` property
+        # A data structure to store the song list.
         self._songs = DedupList(songs or [])
+        self._shuffled_songs = None
+        self._queue = self._songs  # A pointer the the current song list.
+
         # Acquire this lock before changing _current_song or _songs.
         # NOTE: some methods emit some signal while holding the lock,
         #   the signal handler should pay much attention to avoid deadlock.
         #   One thing is that the signal handler should not call any method
         #   that requires the lock!!!
-        self._songs_lock = Lock()
+        self._queue_lock = Lock()
 
         self.audio_select_policy = audio_select_policy
 
@@ -160,8 +163,6 @@ class Playlist:
 
         self._app.player.media_finished.connect(self._on_media_finished)
         self.song_changed.connect(self._on_song_changed)
-
-        self._shuffle_snapshot = None
 
     @property
     def mode(self):
@@ -213,14 +214,14 @@ class Playlist:
             self.playback_mode = PlaybackMode.loop
 
     def __len__(self):
-        return len(self._songs)
+        return len(self._queue)
 
     def __getitem__(self, index):
         """overload [] operator"""
-        return self._songs[index]
+        return self._queue[index]
 
     def mark_as_bad(self, song):
-        if song in self._songs and song not in self._bad_songs:
+        if song in self._queue and song not in self._bad_songs:
             self._bad_songs.append(song)
 
     def is_bad(self, song):
@@ -228,19 +229,37 @@ class Playlist:
 
     def _add(self, song):
         """
-        Requires: acquire `_songs_lock` before calling this method.
+        Requires: acquire `_queue_lock` before calling this method.
         """
-        if song in self._songs:
+        if song in self._queue:
             return
-        if self._shuffle_snapshot is not None:
-            insert_index = random.randint(0, len(self._songs))
-            self._songs.insert(insert_index, song)
-            self.songs_added.emit(insert_index, 1)
-        else:
+        self._queue_append(song)
+        length = len(self._queue)
+        self.songs_added.emit(length-1, 1)
+
+    @property
+    def _queue_is_shuffled_songs(self):
+        return self._queue is self._shuffled_songs
+
+    def _queue_insert(self, index, song):
+        self._queue.insert(index, song)
+        if self._queue_is_shuffled_songs:
             self._songs.append(song)
-            insert_index = len(self._songs) - 1
-            self.songs_added.emit(insert_index, 1)
-        self._record_shuffle_add(song)
+
+    def _queue_append(self, song):
+        self._queue.append(song)
+        if self._queue_is_shuffled_songs:
+            self._songs.append(song)
+
+    def _queue_remove(self, song):
+        self._queue.remove(song)
+        if self._queue_is_shuffled_songs:
+            self._songs.remove(song)
+
+    def _queue_clear(self):
+        self._queue.clear()
+        if self._queue_is_shuffled_songs:
+            self._songs.clear()
 
     def set_models(self, models, next_=False, fm=False):
         """
@@ -259,18 +278,12 @@ class Playlist:
         """
         .. versionadded: v3.7.13
         """
-        with self._songs_lock:
-            if self._shuffle_snapshot is not None:
-                for model in models:
-                    self._add(model)
-            else:
-                start_index = len(self._songs)
-                for model in models:
-                    self._songs.append(model)
-                end_index = len(self._songs)
-                count = end_index - start_index
-                if count > 0:
-                    self.songs_added.emit(start_index, count)
+        with self._queue_lock:
+            start_index = len(self._queue)
+            for model in models:
+                self._queue_append(model)
+            end_index = len(self._queue)
+            self.songs_added.emit(start_index, end_index - start_index)
 
     def add(self, song):
         """add song to playlist
@@ -281,11 +294,11 @@ class Playlist:
         """
         if self._mode is PlaylistMode.fm:
             self.mode = PlaylistMode.normal
-        with self._songs_lock:
+        with self._queue_lock:
             self._add(song)
 
     def fm_add(self, song):
-        with self._songs_lock:
+        with self._queue_lock:
             self._fm_add_no_lock(song)
 
     def _fm_add_no_lock(self, song):
@@ -297,30 +310,29 @@ class Playlist:
     def insert_after_current_song(self, song):
         """Insert song after current song
 
-        Requires: acquire `_songs_lock` before calling this method.
+        Requires: acquire `_queue_lock` before calling this method.
 
         When current song is none, the song is appended.
         """
-        if song in self._songs:
+        if song in self._queue:
             return
         if self._mode is PlaylistMode.fm:
             self.mode = PlaylistMode.normal
         if self._current_song is None:
             self._add(song)
         else:
-            index = self._songs.index(self._current_song)
-            self._songs.insert(index + 1, song)
+            index = self._queue.index(self._current_song)
+            self._queue_insert(index + 1, song)
             self.songs_added.emit(index + 1, 1)
-        self._record_shuffle_add(song)
 
     def remove_no_lock(self, song):
         try:
-            index = self._songs.index(song)
+            index = self._queue.index(song)
         except ValueError:
             logger.debug('Remove failed: {} not in playlist'.format(song))
         else:
             if self._current_song is None:
-                self._songs.remove(song)
+                self._queue_remove(song)
             elif song == self._current_song:
                 next_song = self._get_next_song_no_lock()
                 # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
@@ -328,7 +340,7 @@ class Playlist:
                     # Should set current song immediately.
                     # Should not use set_current_song, because it is an async task.
                     self.set_current_song_none()
-                    self._songs.remove(song)
+                    self._queue_remove(song)
                     new_next_song = self._get_next_song_no_lock()
                     self.set_existing_song_as_current_song(new_next_song)
                 elif next_song is None and self.mode is PlaylistMode.fm:
@@ -338,12 +350,11 @@ class Playlist:
                     self._next_no_lock()
                     return
                 else:
-                    self._songs.remove(song)
+                    self._queue_remove(song)
                     self.set_existing_song_as_current_song(next_song)
             else:
-                self._songs.remove(song)
+                self._queue_remove(song)
             self.songs_removed.emit(index, 1)
-            self._record_shuffle_remove(song)
             logger.debug('Remove {} from player playlist'.format(song))
         if song in self._bad_songs:
             self._bad_songs.remove(song)
@@ -354,46 +365,38 @@ class Playlist:
         If song is current song, remove the song and play next. Otherwise,
         just remove it.
         """
-        with self._songs_lock:
+        with self._queue_lock:
             self.remove_no_lock(song)
 
     def _replace_song_no_lock(self, model, umodel):
-        index = self._songs.index(model)
-        self._songs.insert(index+1, umodel)
+        index = self._queue.index(model)
+        self._queue_insert(index+1, umodel)
         self.songs_added.emit(index+1, 1)
-        self._update_shuffle_snapshot_on_replace(model, umodel)
         if self.current_song == model:
             self.set_current_song_none()
-        self._songs.remove(model)
+        self._queue_remove(model)
         self.songs_removed.emit(index, 1)
-        self._record_shuffle_remove(model)
 
     def clear(self):
         """remove all songs from playlists"""
-        with self._songs_lock:
+        with self._queue_lock:
             if self.current_song is not None:
                 self.set_current_song_none()
-            length = len(self._songs)
-            self._songs.clear()
+            length = len(self._queue)
+            self._queue_clear()
             if length > 0:
                 self.songs_removed.emit(0, length)
             self._bad_songs.clear()
-            if self._shuffle_snapshot is not None:
-                self._shuffle_snapshot.clear()
 
     def list(self):
         """Get all songs in playlists"""
-        return self._songs
+        return self._queue
 
-    def ordered_songs_for_state(self):
-        """Return songs in a deterministic order for persisting state."""
-        with self._songs_lock:
-            if (
-                self.playback_mode is PlaybackMode.random
-                and self._shuffle_snapshot is not None
-            ):
-                return list(self._shuffle_snapshot)
-            return list(self._songs)
+    def list_unshuffled(self):
+        """Get all songs in original order"""
+        if self._shuffled_songs is not None:
+            return list(self._shuffled_songs)
+        return list(self._queue)
 
     @property
     def playback_mode(self):
@@ -405,93 +408,44 @@ class Playlist:
             if playback_mode is not PlaybackMode.sequential:
                 logger.warning("can't set playback mode to others in fm mode")
                 return
-        previous_mode = self._playback_mode
-        if previous_mode is playback_mode:
+
+        current_mode = self._playback_mode
+        if current_mode is playback_mode:
             return
+
         if (
-            playback_mode is PlaybackMode.random
-            and previous_mode is not PlaybackMode.random
+            current_mode is not PlaybackMode.random
+            and playback_mode is PlaybackMode.random
         ):
             self._enter_shuffle_mode()
         elif (
-            previous_mode is PlaybackMode.random
+            current_mode is PlaybackMode.random
             and playback_mode is not PlaybackMode.random
         ):
             self._leave_shuffle_mode()
+
         self._playback_mode = playback_mode
         self.playback_mode_changed.emit(self.playback_mode)
 
     def _enter_shuffle_mode(self):
-        with self._songs_lock:
-            if self._shuffle_snapshot is not None:
-                return
-            self._shuffle_snapshot = DedupList(self._songs)
-            self._shuffle_playlist_order_no_lock()
+        with self._queue_lock:
+            assert self._shuffled_songs is None
+            self._shuffled_songs = self._queue.copy()
+            random.shuffle(self._shuffled_songs)
+            self._queue = self._shuffled_songs
+            self.songs_reordered.emit(0, len(self._queue))
 
     def _leave_shuffle_mode(self):
-        with self._songs_lock:
-            if self._shuffle_snapshot is None:
-                return
-            current_songs = list(self._songs)
-            snapshot = self._shuffle_snapshot
-            if current_songs:
-                restored = [song for song in snapshot if song in current_songs]
-                restored.extend(
-                    song for song in current_songs if song not in restored
-                )
-                self._reorder_no_lock(restored)
-            else:
-                self._reorder_no_lock([])
-            self._shuffle_snapshot = None
-
-    def _shuffle_playlist_order_no_lock(self):
-        assert self._songs_lock.locked()
-        if len(self._songs) <= 1:
-            return
-        shuffled = list(self._songs)
-        random.shuffle(shuffled)
-        current = self.current_song
-        if current is not None and current in shuffled:
-            try:
-                original_index = self._shuffle_snapshot.index(current)
-            except ValueError:
-                original_index = 0
-            shuffled.remove(current)
-            insert_index = min(original_index, len(shuffled))
-            shuffled.insert(insert_index, current)
-        self._reorder_no_lock(shuffled)
-
-    def _reorder_no_lock(self, new_order):
-        assert self._songs_lock.locked()
-        if list(self._songs) == new_order:
-            return
-        list.clear(self._songs)
-        self._songs._map.clear()
-        self._songs.extend(new_order)
-        self.songs_reordered.emit()
-
-    def _record_shuffle_add(self, song):
-        if self._shuffle_snapshot is not None:
-            if song not in self._shuffle_snapshot:
-                self._shuffle_snapshot.append(song)
-
-    def _record_shuffle_remove(self, song):
-        if self._shuffle_snapshot is not None:
-            if song in self._shuffle_snapshot:
-                self._shuffle_snapshot.remove(song)
-
-    def _update_shuffle_snapshot_on_replace(self, old, new):
-        if self._shuffle_snapshot is not None:
-            try:
-                idx = self._shuffle_snapshot.index(old)
-            except ValueError:
-                return
-            self._shuffle_snapshot[idx] = new
+        with self._queue_lock:
+            assert self._shuffled_songs is not None
+            self._queue = self._songs
+            self.songs_reordered.emit(0, len(self._queue))
+            self._shuffled_songs = None
 
     def _get_good_song(self, base=0, random_=False, direction=1, loop=True):
         """Get a good song from playlist.
 
-        Requires: acquire `_songs_lock` before calling this method.
+        Requires: acquire `_queue_lock` before calling this method.
 
         :param base: base index
         :param random_: random strategy or not
@@ -512,21 +466,21 @@ class Playlist:
         >>> pl._bad_songs = [1, 2, 3]
         >>> pl._get_good_song()
         """
-        if not self._songs or len(self._songs) <= len(self._bad_songs):
+        if not self._queue or len(self._queue) <= len(self._bad_songs):
             logger.debug('No good song in playlist.')
             return None
 
         good_songs = []
         if direction > 0:
             if loop is True:
-                song_list = self._songs[base:] + self._songs[0:base]
+                song_list = self._queue[base:] + self._queue[0:base]
             else:
-                song_list = self._songs[base:]
+                song_list = self._queue[base:]
         else:
             if loop is True:
-                song_list = self._songs[base::-1] + self._songs[:base:-1]
+                song_list = self._queue[base::-1] + self._queue[:base:-1]
             else:
-                song_list = self._songs[base::-1]
+                song_list = self._queue[base::-1]
         for song in song_list:
             if song not in self._bad_songs:
                 good_songs.append(song)
@@ -539,49 +493,39 @@ class Playlist:
 
     def _get_next_song_no_lock(self):
         """
-        Requires: acquire `_songs_lock` before calling this method.
+        Requires: acquire `_queue_lock` before calling this method.
         """
-        assert self._songs_lock.locked()
+        assert self._queue_lock.locked()
 
         if self.current_song is None:
             return self._get_good_song()
 
-        if self.playback_mode == PlaybackMode.random:
-            current_index = self._songs.index(self.current_song)
-            base_index = current_index + 1
-            next_song = self._get_good_song(base=base_index, loop=True)
+        current_index = self._queue.index(self.current_song)
+        is_last_song = current_index == len(self._queue) - 1
+        if is_last_song and self.playback_mode == PlaybackMode.sequential:
+            next_song = None
         else:
-            current_index = self._songs.index(self.current_song)
-            is_last_song = current_index == len(self._songs) - 1
-            if is_last_song and self.playback_mode == PlaybackMode.sequential:
-                next_song = None
+            if is_last_song:
+                base_index = 0
             else:
-                if is_last_song:
-                    base_index = 0
-                else:
-                    base_index = current_index + 1
-                loop = self.playback_mode != PlaybackMode.sequential
-                next_song = self._get_good_song(base=base_index, loop=loop)
+                base_index = current_index + 1
+            loop = self.playback_mode != PlaybackMode.sequential
+            next_song = self._get_good_song(base=base_index, loop=loop)
         return next_song
 
     @property
     def next_song(self):
         """next song for player, calculated based on playback_mode"""
         # 如果没有正在播放的歌曲，找列表里面第一首能播放的
-        with self._songs_lock:
+        with self._queue_lock:
             return self._get_next_song_no_lock()
 
     def _get_previous_song_no_lock(self):
         if self.current_song is None:
             return self._get_good_song(base=-1, direction=-1)
 
-        if self.playback_mode == PlaybackMode.random:
-            current_index = self._songs.index(self.current_song)
-            base_index = current_index - 1
-            previous_song = self._get_good_song(base=base_index, direction=-1, loop=True)
-        else:
-            current_index = self._songs.index(self.current_song)
-            previous_song = self._get_good_song(base=current_index - 1, direction=-1)
+        current_index = self._queue.index(self.current_song)
+        previous_song = self._get_good_song(base=current_index - 1, direction=-1)
         return previous_song
 
     @property
@@ -590,7 +534,7 @@ class Playlist:
 
         NOTE: not the last played song
         """
-        with self._songs_lock:
+        with self._queue_lock:
             return self._get_previous_song_no_lock()
 
     async def a_next(self):
@@ -598,7 +542,7 @@ class Playlist:
 
     def _next_no_lock(self):
         """
-        Requires: acquire `_songs_lock` before calling this method.
+        Requires: acquire `_queue_lock` before calling this method.
         Only for unittest and internal usage.
         """
         next_song = self._get_next_song_no_lock()
@@ -610,7 +554,7 @@ class Playlist:
 
     def next(self) -> Optional[asyncio.Task]:
         """
-        Why _songs_lock is needed? Think about the following scenario:
+        Why _queue_lock is needed? Think about the following scenario:
 
             [A, B, C, D] is the playlist, and the current song is B.
 
@@ -620,13 +564,13 @@ class Playlist:
 
             The expected song to play is D. So lock is needed here.
         """
-        with self._songs_lock:
+        with self._queue_lock:
             return self._next_no_lock()
 
     def _on_media_finished(self):
         # Play next model when current media is finished.
         if self.playback_mode == PlaybackMode.one_loop:
-            with self._songs_lock:
+            with self._queue_lock:
                 return self.set_existing_song_as_current_song(self.current_song)
         else:
             self.next()
@@ -649,7 +593,7 @@ class Playlist:
 
     def previous(self) -> Optional[asyncio.Task]:
         """return to the previous song in playlist"""
-        with self._songs_lock:
+        with self._queue_lock:
             song = self._get_previous_song_no_lock()
             return self.set_existing_song_as_current_song(song)
 
@@ -678,7 +622,7 @@ class Playlist:
             self.set_current_song_none()
             return None
 
-        if self.mode is PlaylistMode.fm and song not in self._songs:
+        if self.mode is PlaylistMode.fm and song not in self._queue:
             self.mode = PlaylistMode.normal
 
         target_song = song  # The song to be set.
@@ -755,10 +699,10 @@ class Playlist:
             self._app.show_msg(f'在 {standby.source} 平台找到 {song} 的备用歌曲 ✅')
             # Insert the standby song after the song
             # TODO: 或许这里可以优化一下？用 self.insert 函数？
-            with self._songs_lock:
-                if song in self._songs and standby not in self._songs:
-                    index = self._songs.index(song)
-                    self._songs.insert(index + 1, standby)
+            with self._queue_lock:
+                if song in self._queue and standby not in self._queue:
+                    index = self._queue.index(song)
+                    self._queue_insert(index + 1, standby)
                     self.songs_added.emit(index + 1, 1)
             return standby, media
 
@@ -771,7 +715,7 @@ class Playlist:
             self.set_current_song_none()
             return
         # Add it to playlist if song not in playlist.
-        with self._songs_lock:
+        with self._queue_lock:
             self.insert_after_current_song(song)
             self._current_song = song
             # TODO: 这里可能有点问题。比如 current_song 怎样和 media 保持一致呢？
@@ -873,8 +817,8 @@ class Playlist:
             # Replace the brief model with the upgraded model
             # when user try to play a brief model that is already in the playlist.
             if isinstance(model, BriefSongModel) and not isinstance(model, SongModel):
-                with self._songs_lock:
-                    if model in self._songs:
+                with self._queue_lock:
+                    if model in self._queue:
                         self._replace_song_no_lock(model, umodel)
             model = umodel
 
@@ -914,7 +858,7 @@ class Playlist:
 
     def set_existing_song_as_current_song(self, song):
         """
-        Requires: acquire `_songs_lock` before calling this method.
+        Requires: acquire `_queue_lock` before calling this method.
         """
         self._current_song = song
         return self.set_current_song(song)
