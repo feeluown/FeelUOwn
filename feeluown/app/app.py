@@ -231,7 +231,8 @@ class App:
             'song': song,
             # cast position to int to avoid such value 2.7755575615628914e-17
             'position': int(player.position or 0),
-            'playlist': [reverse(song, as_line=True) for song in playlist.list()],
+            'playlist': [reverse(song, as_line=True)
+                         for song in playlist.list_unshuffled()],
             'recently_played': [reverse(song, as_line=True)
                                 for song in recently_played.list_songs()]
         }

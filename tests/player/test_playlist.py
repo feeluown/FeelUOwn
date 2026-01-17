@@ -229,6 +229,63 @@ async def test_playlist_change_repeat_shuffle_mode(app_mock):
     assert pl.repeat_mode is PlaylistRepeatMode.all
 
 
+def test_playlist_random_mode_reorder_and_restore(
+    app_mock, song, song1, song2, song3, mocker
+):
+    playlist = Playlist(
+        app_mock,
+        songs=[song, song1, song2, song3],
+        playback_mode=PlaybackMode.loop,
+    )
+    original = list(playlist.list())
+
+    def fake_shuffle(seq):
+        seq.reverse()
+
+    mocker.patch('feeluown.player.playlist.random.shuffle', side_effect=fake_shuffle)
+
+    playlist.playback_mode = PlaybackMode.random
+    assert list(playlist.list()) == original[::-1]
+
+    playlist.playback_mode = PlaybackMode.loop
+    assert list(playlist.list()) == original
+
+
+def test_playlist_random_mode_iteration_without_replacement(
+    app_mock, song, song1, song2, song3, mocker
+):
+    playlist = Playlist(
+        app_mock,
+        songs=[song, song1, song2, song3],
+        playback_mode=PlaybackMode.loop,
+    )
+    order = [song2, song3, song1, song]
+
+    def fake_shuffle(seq):
+        seq[:] = order
+
+    mocker.patch('feeluown.player.playlist.random.shuffle', side_effect=fake_shuffle)
+
+    playlist.playback_mode = PlaybackMode.random
+    assert list(playlist.list()) == order
+
+    with playlist._queue_lock:
+        playlist._current_song = None
+
+    seen = []
+    for _ in range(len(order)):
+        next_song = playlist.next_song
+        seen.append(next_song)
+        with playlist._queue_lock:
+            playlist._current_song = next_song
+
+    assert seen == order
+
+    with playlist._queue_lock:
+        playlist._current_song = order[-1]
+    assert playlist.next_song == order[0]
+
+
 @pytest.mark.asyncio
 async def test_playlist_exit_fm_mode(app_mock, song, mock_prepare_metadata):
     pl = Playlist(app_mock)

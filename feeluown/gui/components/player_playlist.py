@@ -35,6 +35,7 @@ class PlayerPlaylistModel(SongMiniCardListModel):
         self._playlist = playlist
         self._playlist.songs_added.connect(self.on_songs_added)
         self._playlist.songs_removed.connect(self.on_songs_removed)
+        self._playlist.songs_reordered.connect(self.on_songs_reordered)
 
     def flags(self, index):
         flags = super().flags(index)
@@ -58,6 +59,10 @@ class PlayerPlaylistModel(SongMiniCardListModel):
             self._items.pop(index + count - 1)
             count -= 1
         self.endRemoveRows()
+
+    def on_songs_reordered(self, index, count):
+        self.on_songs_removed(index, count)
+        self.on_songs_added(index, count)
 
 
 class PlayerPlaylistView(SongMiniCardListView):
