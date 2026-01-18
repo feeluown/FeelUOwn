@@ -43,6 +43,9 @@ Contributors = [
     ("williamherry", ""),
     ("seiuneko", ""),
     ("emmanuel-ferdman", ""),
+    ("c-xk", "Shinka"),
+    ("w568w", ""),
+    ("mokurin000", "莯凛"),
 ]
 
 
