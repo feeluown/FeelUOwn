@@ -395,7 +395,7 @@ class Playlist:
     def list_unshuffled(self):
         """Get all songs in original order"""
         if self._shuffled_songs is not None:
-            return list(self._shuffled_songs)
+            return list(self._songs)
         return list(self._queue)
 
     @property
