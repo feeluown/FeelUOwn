@@ -58,7 +58,7 @@ class View(QWidget):
         self.rank_btn = RankButton(parent=self)
         # FIXME: design a new button for dislike
         self.dislike_btn = EmojiButton("🚫", "音乐黑名单", parent=self)
-        self.heart_radar_btn = EmojiButton("❤️", "红心雷达", parent=self)
+        self.heart_radar_btn = EmojiButton("📻", "红心雷达", parent=self)
         self.daily_songs_btn.setMinimumWidth(150)
         self.rank_btn.setMinimumWidth(150)
         self.dislike_btn.setMinimumWidth(150)
