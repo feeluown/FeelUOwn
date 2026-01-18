@@ -1,10 +1,11 @@
+import logging
 from typing import TYPE_CHECKING
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from feeluown.library.provider_protocol import SupportsToplist
 
 from feeluown.utils.reader import create_reader
-from feeluown.utils.aio import run_fn
+from feeluown.utils.aio import run_fn, run_afn
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
@@ -17,13 +18,18 @@ from feeluown.library import (
     SupportsRecListDailyPlaylists,
     SupportsRecListDailySongs,
     SupportsCurrentUserDislikeSongsReader,
+    SupportsCurrentUserListRadioSongs,
 )
+from feeluown.excs import NoUserLoggedIn, ProviderIOError
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
 
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+
+logger = logging.getLogger(__name__)
 
 
 async def render(req, **kwargs):
@@ -52,9 +58,11 @@ class View(QWidget):
         self.rank_btn = RankButton(parent=self)
         # FIXME: design a new button for dislike
         self.dislike_btn = EmojiButton("🚫", "音乐黑名单", parent=self)
+        self.heart_radar_btn = EmojiButton("❤️", "红心雷达", parent=self)
         self.daily_songs_btn.setMinimumWidth(150)
         self.rank_btn.setMinimumWidth(150)
         self.dislike_btn.setMinimumWidth(150)
+        self.heart_radar_btn.setMinimumWidth(150)
 
         self.header_title.setText("发现音乐")
         self.header_playlist_list.setText("个性化推荐")
@@ -69,6 +77,7 @@ class View(QWidget):
             lambda: self._app.browser.goto(page="/rec/daily_songs")
         )
         self.rank_btn.clicked.connect(lambda: self._app.browser.goto(page="/toplist"))
+        self.heart_radar_btn.clicked.connect(self._on_heart_radar_clicked)
         self.dislike_btn.clicked.connect(
             lambda: self._app.browser.goto(page="/my_dislike")
         )
@@ -78,6 +87,8 @@ class View(QWidget):
         self._h_layout.addWidget(self.daily_songs_btn)
         self._h_layout.addSpacing(10)
         self._h_layout.addWidget(self.rank_btn)
+        self._h_layout.addSpacing(10)
+        self._h_layout.addWidget(self.heart_radar_btn)
         self._h_layout.addSpacing(10)
         self._h_layout.addWidget(self.dislike_btn)
         self._h_layout.addStretch(0)
@@ -109,6 +120,18 @@ class View(QWidget):
 
         self.daily_songs_btn.setEnabled(isinstance(provider, SupportsRecListDailySongs))
         self.rank_btn.setEnabled(isinstance(provider, SupportsToplist))
+        self.heart_radar_btn.setEnabled(
+            isinstance(provider, SupportsCurrentUserListRadioSongs)
+        )
         self.dislike_btn.setEnabled(
             isinstance(provider, SupportsCurrentUserDislikeSongsReader)
         )
+
+    def _on_heart_radar_clicked(self):
+        pvd_ui = self._app.current_pvd_ui_mgr.get()
+        assert pvd_ui is not None
+        provider = pvd_ui.provider
+        assert isinstance(provider, SupportsCurrentUserListRadioSongs)
+
+        self._app.fm.activate(provider.current_user_list_radio_songs)
+        self._app.show_msg("红心雷达已激活")

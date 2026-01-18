@@ -367,6 +367,16 @@ class SupportsCurrentUserListPlaylists(Protocol):
         """
 
 
+@runtime_checkable
+class SupportsCurrentUserListRadioSongs(Protocol):
+    @abstractmethod
+    def current_user_list_radio_songs(self, count) -> List[SongModel]:
+        """
+        :param count: number of songs
+        :raises NoUserLoggedIn:
+        """
+
+
 #
 # Protocols for current user favorites/collections
 #
