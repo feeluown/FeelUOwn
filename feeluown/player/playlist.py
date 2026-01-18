@@ -280,10 +280,18 @@ class Playlist:
         """
         .. versionadded: v3.7.13
         """
+        unique_models = DedupList(models)
+        nonexisting_models = []
+        for model in unique_models:
+            if model not in self._queue:
+                nonexisting_models.append(model)
+
         with self._queue_lock:
             start_index = len(self._queue)
-            for model in models:
-                self._queue_append(model)
+            self._songs.extend(nonexisting_models)
+            if self._queue_is_shuffled_songs:
+                random.shuffle(nonexisting_models)
+                self._shuffled_songs.extend(nonexisting_models)
             end_index = len(self._queue)
             self.songs_added.emit(start_index, end_index - start_index)
 
@@ -385,9 +393,7 @@ class Playlist:
             if self.current_song is not None:
                 self.set_current_song_none()
             length = len(self._queue)
-            self._songs.clear()
-            self._queue = self._songs
-            self._shuffled_songs = None
+            self._queue_clear()
             if length > 0:
                 self.songs_removed.emit(0, length)
             self._bad_songs.clear()
