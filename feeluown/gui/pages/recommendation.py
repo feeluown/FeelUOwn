@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from feeluown.library.provider_protocol import SupportsToplist
 
 from feeluown.utils.reader import create_reader
-from feeluown.utils.aio import run_fn, run_afn
+from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.img_card_list import (
     PlaylistCardListView,
@@ -20,7 +20,6 @@ from feeluown.library import (
     SupportsCurrentUserDislikeSongsReader,
     SupportsCurrentUserListRadioSongs,
 )
-from feeluown.excs import NoUserLoggedIn, ProviderIOError
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
 
