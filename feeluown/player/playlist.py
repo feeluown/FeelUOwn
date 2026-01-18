@@ -269,8 +269,6 @@ class Playlist:
         self.batch_add(models)
         if fm is False:
             self.mode = PlaylistMode.normal
-            if self.playback_mode is PlaybackMode.random:
-                self._enter_shuffle_mode()
         else:
             self.mode = PlaylistMode.fm
         if next_ is True:
