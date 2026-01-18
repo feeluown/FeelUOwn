@@ -269,6 +269,8 @@ class Playlist:
         self.batch_add(models)
         if fm is False:
             self.mode = PlaylistMode.normal
+            if self.playback_mode is PlaybackMode.random:
+                self._enter_shuffle_mode()
         else:
             self.mode = PlaylistMode.fm
         if next_ is True:
@@ -391,7 +393,9 @@ class Playlist:
             if self.current_song is not None:
                 self.set_current_song_none()
             length = len(self._queue)
-            self._queue_clear()
+            self._songs.clear()
+            self._queue = self._songs
+            self._shuffled_songs = None
             if length > 0:
                 self.songs_removed.emit(0, length)
             self._bad_songs.clear()
