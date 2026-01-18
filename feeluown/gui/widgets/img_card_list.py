@@ -310,18 +310,24 @@ class ImgCardListDelegate(QAbstractItemDelegate):
             brush = QBrush(color)
             painter.setBrush(brush)
         else:
-            if obj.width() / obj.height() > draw_width / height:
-                img = obj.scaledToHeight(
-                    int(height * self._device_pixel_ratio),
-                    Qt.TransformationMode.SmoothTransformation,
-                )
+            img_w = obj.width()
+            img_h = obj.height()
+            if height <= 0 or img_w <= 0 or img_h <= 0:
+                # Fall back to a flat fill when the image is invalid or height is zero.
+                brush = QBrush(border_color)
             else:
-                img = obj.scaledToWidth(
-                    int(draw_width * self._device_pixel_ratio),
-                    Qt.TransformationMode.SmoothTransformation,
-                )
-            img.setDevicePixelRatio(self._device_pixel_ratio)
-            brush = QBrush(img)
+                if img_w / img_h > draw_width / height:
+                    img = obj.scaledToHeight(
+                        int(height * self._device_pixel_ratio),
+                        Qt.TransformationMode.SmoothTransformation,
+                    )
+                else:
+                    img = obj.scaledToWidth(
+                        int(draw_width * self._device_pixel_ratio),
+                        Qt.TransformationMode.SmoothTransformation,
+                    )
+                img.setDevicePixelRatio(self._device_pixel_ratio)
+                brush = QBrush(img)
             painter.setBrush(brush)
         border_radius = 3
         if self.as_circle:
