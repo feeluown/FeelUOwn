@@ -1,5 +1,5 @@
 import logging
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
 from feeluown.library.provider_protocol import SupportsToplist
@@ -43,6 +43,7 @@ class View(QWidget):
     def __init__(self, app: "GuiApp"):
         super().__init__(parent=None)
         self._app = app
+        self._heart_radar_provider: Optional[SupportsCurrentUserListRadioSongs] = None
 
         self.header_title = LargeHeader()
         self.header_playlist_list = MidHeader()
@@ -133,16 +134,9 @@ class View(QWidget):
         assert isinstance(provider, SupportsCurrentUserListRadioSongs)
 
         was_active = self._app.fm.is_active
+        current_provider = self._heart_radar_provider if was_active else None
         fetch_func = provider.current_user_list_radio_songs
-        current_fetch = getattr(self._app.fm, "_fetch_songs_func", None)
-        target_self = getattr(fetch_func, "__self__", None)
-        target_func = getattr(fetch_func, "__func__", fetch_func)
-        if (
-            was_active
-            and current_fetch is not None
-            and getattr(current_fetch, "__self__", None) is target_self
-            and getattr(current_fetch, "__func__", current_fetch) is target_func
-        ):
+        if was_active and current_provider is provider:
             self._app.show_msg("红心雷达已激活")
             return
 
@@ -150,4 +144,5 @@ class View(QWidget):
             self._app.fm.deactivate()
 
         self._app.fm.activate(fetch_func)
+        self._heart_radar_provider = provider
         self._app.show_msg("红心雷达已切换" if was_active else "红心雷达已激活")
