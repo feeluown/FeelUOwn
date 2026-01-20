@@ -98,11 +98,13 @@ class Mpris2Service(dbus.service.Object):
         self._app = app
 
     def enable(self):
-        # 根据 mpris2 规范, position 变化时，不需要发送 PropertiesChanged 信号。
-        # audacious 的一个 issue 也证明了这个观点:
+        # According to the mpris2 specification, when the position changes,
+        # it is not necessary to send a PropertiesChanged signal.
+        # An issue in audacious also proves this point:
         #   https://redmine.audacious-media-player.org/issues/849
-        #   这个 issue 主要是说频繁发送 PropertiesChanged 信号会导致
-        #   GNOME 桌面消耗大量 CPU。
+        #   This issue mainly states that
+        #   frequently sending PropertiesChanged signals can cause
+        #   the GNOME desktop to consume a large amount of CPU.
         self._app.player.seeked.connect(self.update_position)
         self._app.player.duration_changed.connect(self.update_duration)
         self._app.player.state_changed.connect(self.update_playback_status)
@@ -114,8 +116,7 @@ class Mpris2Service(dbus.service.Object):
 
     def update_playback_status(self, state):
         status = to_dbus_playback_status(state)
-        self.PropertiesChanged(PlayerInterface,
-                               {'PlaybackStatus': status}, [])
+        self.PropertiesChanged(PlayerInterface, {'PlaybackStatus': status}, [])
 
     def update_playback_mode(self, _):
         props = {
@@ -141,23 +142,29 @@ class Mpris2Service(dbus.service.Object):
         self.PropertiesChanged(PlayerInterface, props, [])
 
     def get_player_properties(self):
-        return dbus.Dictionary({
-            'Metadata': to_dbus_metadata(self._app.player.current_metadata),
-            'Rate': 1.0,
-            'MinimumRate': 1.0,
-            'MaximumRate': 1.0,
-            'CanGoNext': True,
-            'CanGoPrevious': True,
-            'CanControl': True,
-            'CanSeek': True,
-            'CanPause': True,
-            'CanPlay': True,
-            'Position': to_dbus_position(self._app.player.position or 0),
-            'LoopStatus': RepeatModeLoopStatusMapping[self._app.playlist.repeat_mode],
-            'Shuffle': self._app.playlist.shuffle_mode is not PlaylistShuffleMode.off,
-            'PlaybackStatus': to_dbus_playback_status(self._app.player.state),
-            'Volume': to_dbus_volume(self._app.player.volume),
-        }, signature='sv', variant_level=2)
+        return dbus.Dictionary(
+            {
+                'Metadata': to_dbus_metadata(self._app.player.current_metadata),
+                'Rate': 1.0,
+                'MinimumRate': 1.0,
+                'MaximumRate': 1.0,
+                'CanGoNext': True,
+                'CanGoPrevious': True,
+                'CanControl': True,
+                'CanSeek': True,
+                'CanPause': True,
+                'CanPlay': True,
+                'Position': to_dbus_position(self._app.player.position or 0),
+                'LoopStatus': RepeatModeLoopStatusMapping[self._app.playlist.repeat_mode
+                                                          ],
+                'Shuffle': self._app.playlist.shuffle_mode
+                is not PlaylistShuffleMode.off,
+                'PlaybackStatus': to_dbus_playback_status(self._app.player.state),
+                'Volume': to_dbus_volume(self._app.player.volume),
+            },
+            signature='sv',
+            variant_level=2
+        )
 
     # ##########################
     # implement mpris2 interface
@@ -203,8 +210,9 @@ class Mpris2Service(dbus.service.Object):
         pass
 
     @dbus.service.signal(dbus.PROPERTIES_IFACE, signature='sa{sv}as')
-    def PropertiesChanged(self, interface, changed_properties,
-                          invalidated_properties=None):
+    def PropertiesChanged(
+        self, interface, changed_properties, invalidated_properties=None
+    ):
         pass
 
     @dbus.service.method(dbus.PROPERTIES_IFACE, in_signature='ss', out_signature='v')

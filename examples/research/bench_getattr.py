@@ -1,7 +1,7 @@
 """
-测试通过 obj.attr 和 await async_run(lambda: obj.attr) 性能差别
+Testing the performance difference between accessing `obj.attr` directly and using `await async_run(lambda: obj.attr)`.
 
-测试结果：十万次 obj.attr 花费时间是毫秒级，而后者是秒级(10 秒左右)。
+Test results: accessing `obj.attr` 100,000 times takes milliseconds, whereas the latter takes seconds (around 10 seconds).
 """
 
 

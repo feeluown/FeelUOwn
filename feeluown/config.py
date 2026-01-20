@@ -11,10 +11,9 @@ Field = namedtuple('Field', ('name', 'type_', 'default', 'desc', 'warn'))
 
 
 class Config:
-    """配置模块
+    """Configuration module
 
-    用户可以在 rc 文件中配置各个选项的值
-    """
+Users can configure the values of various options in the rc file."""
 
     def __init__(self, name: str = 'config', parent: Optional['Config'] = None):
         object.__setattr__(self, '_name', name)
@@ -23,7 +22,8 @@ class Config:
         object.__setattr__(self, '_undeclared_fields', {})
 
     def __getattr__(self, name):
-        # tips: 这里不能用 getattr 来获取值, 否则会死循环
+        # tips: Can't use getattr to get the value here,
+        # otherwise it will cause an infinite loop
         if name in ('_fields', '_parent', '_name', '_undeclared_fields'):
             return object.__getattribute__(self, name)
         if name in self._fields:
@@ -48,9 +48,10 @@ class Config:
         if name in self._fields:
             field = self._fields[name]
             if field.warn is not None:
-                warnings.warn('Config field({}): {}'.format(name, field.warn),
-                              stacklevel=2)
-            # TODO: 校验值类型
+                warnings.warn(
+                    'Config field({}): {}'.format(name, field.warn), stacklevel=2
+                )
+            # TODO: Validate the value type
             object.__setattr__(self, name, value)
         else:
             logger.warning(f'Assign to an undeclared config key: {self.fullname}.{name}')
@@ -72,10 +73,8 @@ class Config:
         :param warn: if field is deprecated, set a warn message.
         """
         if name not in self._fields:
-            self._fields[name] = Field(name=name,
-                                       type_=type_,
-                                       default=default,
-                                       desc=desc,
-                                       warn=warn)
+            self._fields[name] = Field(
+                name=name, type_=type_, default=default, desc=desc, warn=warn
+            )
         else:
             raise ValueError('Field({}) is already defined.'.format(name))

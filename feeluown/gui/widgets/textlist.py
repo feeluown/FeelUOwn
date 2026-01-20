@@ -149,7 +149,7 @@ class TextlistView(QListView):
             else:
                 text = "🙁"
             x = rect.width() - 20 + rect.x()
-            # 让字垂直居中
+            # Vertically center the text
             y = (rect.height() + fm.ascent() - fm.descent()) // 2 + rect.y()
             topleft = QPoint(x, y)
             painter.drawText(topleft, text)

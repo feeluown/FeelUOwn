@@ -11,7 +11,7 @@ from feeluown.player import State, Playlist, PlaybackMode, Player as MpvPlayer  
 
 MP3_URL = os.path.join(os.path.dirname(__file__),
                        '../../data/test.m4a')
-MPV_SLEEP_SECOND = 0.1  # 留给 MPV 反应的时间
+MPV_SLEEP_SECOND = 0.1  # Give MPV time to respond
 
 
 app_mock = mock.MagicMock()
@@ -152,10 +152,10 @@ class TestPlayerAndPlaylist(TestCase):
     @skipIf(cannot_play_audio, '')
     @mock.patch.object(MpvPlayer, 'play')
     def test_remove_current_song_2(self, mock_play):
-        """当播放列表只有一首歌时，移除它"""
+        """When there is only one song in the playlist, remove it."""
         s1 = FakeValidSongModel()
         self.playlist.current_song = s1
-        time.sleep(MPV_SLEEP_SECOND)  # 让 Mpv 真正的开始播放
+        time.sleep(MPV_SLEEP_SECOND)  # Let Mpv truly start playing.
         self.playlist.remove(s1)
         self.assertEqual(len(self.playlist), 0)
         self.assertEqual(self.player.state, State.stopped)

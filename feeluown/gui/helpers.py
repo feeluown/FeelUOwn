@@ -75,10 +75,10 @@ def darker_or_lighter(color: QColor, factor):
 
 
 async def async_run(func, loop=None, executor=None):
-    """异步的获取 model 属性值
+    """Asynchronously obtain the model attribute value
 
-    值得注意的是，如果 executor 消费队列排队了，这个会卡住。
-    """
+It is worth noting that if the executor consumption queue is backed up, this will hang.
+"""
     if loop is None:
         loop = asyncio.get_event_loop()
     return await loop.run_in_executor(executor, func)

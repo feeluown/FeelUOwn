@@ -32,7 +32,7 @@ class SongSourceTag(QLabel):
 
     def contextMenuEvent(self, e):
         # pylint: disable=unnecessary-direct-lambda-call
-        # FIXME(wuliaotc): 在切换provider时禁用menu
+        # FIXME(wuliaotc): Disable the menu when switching provider
         song = self._app.playlist.current_song
         if song is None:
             return

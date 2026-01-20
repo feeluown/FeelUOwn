@@ -87,9 +87,10 @@ class PlaylistsModel(TextlistModel):
 
 
 class PlaylistsView(TextlistView):
-    """歌单列表视图
+    """Playlist list view
 
-    该视图会显示所有的元素，理论上不会有滚动条，也不接受滚动事件
+    This view will display all items; in theory there will be no scroll bar and
+    it does not accept scroll events
 
     .. versiondeprecated:: 3.9
     """
@@ -132,15 +133,11 @@ class PlaylistsView(TextlistView):
             try:
                 provider = app.library.get(playlist.source)
                 if isinstance(provider, SupportsPlaylistAddSong):
-                    is_success = await run_fn(
-                        provider.playlist_add_song, playlist, song
-                    )
+                    is_success = await run_fn(provider.playlist_add_song, playlist, song)
             except:  # noqa, to avoid crash.
                 logger.exception("add song to playlist failed")
                 is_success = False
-            app.show_msg(
-                f"添加歌曲 {song} 到播放列表 {'成功' if is_success is True else '失败'}"
-            )
+            app.show_msg(f"添加歌曲 {song} 到播放列表 {'成功' if is_success is True else '失败'}")
             self._results[index.row] = (index, is_success)
             self.viewport().update()
             self._result_timer.start(2000)

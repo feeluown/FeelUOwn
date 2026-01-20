@@ -71,7 +71,8 @@ class ListViewContainer(QFrame):
 
         self._layout.addLayout(self._t_h_layout)
         self._layout.addLayout(self._b_h_layout)
-        # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
+        # XXX: The original intent is to prevent any extra space from
+        # appearing below the ListViewContainer.
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
 
     def toggle_view(self):
@@ -143,7 +144,7 @@ class ProviderBar(QWidget):
         self._layout.addWidget(self.my_music_con)
         self._layout.addWidget(self.playlists_con)
 
-        # 让各个音乐库来决定是否显示这些组件
+        # Let each music library decide whether to display these components
         self.playlists_con.hide()
         self.my_music_con.hide()
         self.discovery_btn.setDisabled(True)

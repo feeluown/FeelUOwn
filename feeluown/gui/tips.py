@@ -51,7 +51,7 @@ Contributors = [
 
 
 class TipsManager:
-    """在合适的时候展示一些使用 Tip"""
+    """Display some usage tips at appropriate times."""
 
     tips = [
         t("tips-osdlyrics"),

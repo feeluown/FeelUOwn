@@ -30,7 +30,7 @@ def show_provider(req):
     if hasattr(req, 'ctx'):
         app: 'GuiApp' = req.ctx['app']
     else:
-        app = req  # 兼容老版本
+        app = req  # Backward compatibility
     app.pl_uimgr.clear()
     # app.playlists.add(provider.playlists)
 

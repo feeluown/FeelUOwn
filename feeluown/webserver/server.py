@@ -65,13 +65,13 @@ async def rpcv1(request: Request):
 
 @sanic_app.websocket('/signal/v1')
 async def signal(request, ws: Websocket):
-    # TODO: 优化这个代码，比如处理连接的关闭。
+    # TODO: Optimize this code, for example handling closing of the connection.
     queue = asyncio.Queue()
 
     class Subscriber:
 
         def write_topic_msg(self, topic, msg):
-            # TODO: 这个结构体可能会变化，需要注意一下
+            # TODO: This struct may change, so please be mindful.
             queue.put_nowait(json.dumps({'topic': topic, 'data': msg, 'format': 'json'}))
 
     subscriber = Subscriber()

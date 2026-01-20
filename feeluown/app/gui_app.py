@@ -74,14 +74,14 @@ class GuiApp(App, QWidget):
 
         self.setObjectName('app')
 
-        # GUI 的一些辅助管理模块
+        # auxiliary management modules for the GUI
         self.theme_mgr = ThemeManager(self, parent=self)
         self.tips_mgr = TipsManager(self)
         self.hotkey_mgr = HotkeyManager(self)
         self.img_mgr = ImgManager(self)
         self.watch_mgr = WatchManager(self)
 
-        # GUI 组件的数据管理模块
+        # data management modules for GUI components
         self.pvd_ui_mgr = self.pvd_uimgr = ProviderUiManager(self)
         self.current_pvd_ui_mgr = CurrentProviderUiManager(self)
         self.pl_uimgr = PlaylistUiManager(self)

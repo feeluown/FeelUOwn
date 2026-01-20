@@ -188,11 +188,21 @@ def gen_artist_name_list(artists_name, splitter, splitter_ignorance):
             for artist_name in artist_name_list if artist_name.strip()]
 
 
-def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contributors,
-             can_convert_chinese=False, lang='auto',
-             delimiter='', expand_artist_songs=False,
-             artist_splitter=[',', '&'], artist_splitter_ignorance=None,
-             split_album_artist_name=False):
+def add_song(
+    fpath,
+    g_songs,
+    g_artists,
+    g_albums,
+    g_file_song,
+    g_album_contributors,
+    can_convert_chinese=False,
+    lang='auto',
+    delimiter='',
+    expand_artist_songs=False,
+    artist_splitter=[',', '&'],
+    artist_splitter_ignorance=None,
+    split_album_artist_name=False
+):
     """
     parse music file metadata with Easymp3 and return a song
     model.
@@ -205,26 +215,31 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
     title = data['title']
     album_name = data['album_name']
     artist_name_list = gen_artist_name_list(
-        data['artists_name'], artist_splitter, artist_splitter_ignorance)
+        data['artists_name'], artist_splitter, artist_splitter_ignorance
+    )
     artists_name = ','.join(artist_name_list)
     duration = data['duration']
     album_artist_name = data['album_artist_name']
 
-    # 生成 song model
-    # 用来生成 id 的字符串应该尽量减少无用信息，这样或许能减少 id 冲突概率
-    # 加入分隔符'-'在一定概率上更能确保不发生哈希值重复
+    # Generate song model
+    # The string used to generate the id should minimize unnecessary information,
+    # which may reduce the probability of id collisions
+    # Adding the separator '-' can further
+    # ensure hash value uniqueness with high probability
     song_id_str = delimiter.join([title, artists_name, album_name, str(int(duration))])
     song_id = gen_id(song_id_str)
     if song_id not in g_songs:
-        song = SongModel(identifier=song_id,
-                         source=SOURCE,
-                         artists=[],
-                         title=title,
-                         duration=duration,
-                         genre=data['genre'],
-                         date=data['date'],
-                         disc=data['disc'],
-                         track=data['track'])
+        song = SongModel(
+            identifier=song_id,
+            source=SOURCE,
+            artists=[],
+            title=title,
+            duration=duration,
+            genre=data['genre'],
+            date=data['date'],
+            disc=data['disc'],
+            track=data['track']
+        )
         g_file_song[fpath] = song_id
         g_songs[song_id] = song
     else:
@@ -232,10 +247,11 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
         logger.warning('Duplicate song: %s', fpath)
         return
 
-    # 生成 album artist model
+    # Generate album artist model
     if split_album_artist_name:
         album_artist_name_list = gen_artist_name_list(
-            album_artist_name, artist_splitter, artist_splitter_ignorance)
+            album_artist_name, artist_splitter, artist_splitter_ignorance
+        )
     else:
         album_artist_name_list = [album_artist_name]
 
@@ -250,7 +266,7 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
         album_artist_id_list.append(artist_id)
         album_artist_list.append(album_artist)
 
-    # 生成 album model
+    # Generate album model
     album_id_str = delimiter.join([album_name, album_artist_name])
     album_id = gen_id(album_id_str)
     cover = gen_cover_url(song)
@@ -261,7 +277,8 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
     else:
         album = g_albums[album_id]
 
-    # 处理专辑的歌手信息和歌曲信息，专辑歌手的专辑列表信息
+    # Process the album’s artist information and song information,
+    # and the album artist’s album list information
     for album_artist in album_artist_list:
         for artist in album.artists:
             if album_artist.identifier == artist.identifier:
@@ -272,7 +289,8 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
     if song not in album.songs:
         album.songs.append(song)
 
-    # 处理歌曲的歌手和专辑信息，以及歌手的歌曲列表和参与作品
+    # Process the song’s artist and album information,
+    # as well as the artist’s song list and contributions.
     song.album = to_brief_album(album)
     for artist_name in artist_name_list:
         artist_id = gen_id(artist_name)
@@ -286,12 +304,15 @@ def add_song(fpath, g_songs, g_artists, g_albums, g_file_song, g_album_contribut
         if song not in artist.hot_songs:
             artist.hot_songs.append(song)
 
-        # 处理歌曲歌手的参与作品信息(不与前面的重复)
+        # Process the participating works information of
+        # the song’s artist (not duplicating the above).
         if artist_id not in album_artist_id_list \
                 and artist_id not in g_album_contributors[album_id]:
             g_album_contributors[album_id].append(artist_id)
 
-    # 处理专辑歌手的歌曲信息: 有些作词人出合辑很少出现在歌曲歌手里(可选)
+    # Process the album artist’s song information:
+    # Some lyricists who appear on compilations
+    # rarely appear in the song artists (optional)
     for album_artist_ in album_artist_list:
         if expand_artist_songs and song not in album_artist_.hot_songs:
             album_artist_.hot_songs.append(song)

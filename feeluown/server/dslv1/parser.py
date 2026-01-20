@@ -1,13 +1,15 @@
 r"""
-fuo 请求解析器
+fuo request parser
 ~~~~~~~~~~~~~~~~~~~~
 
-ps: 和常见的编程语言不一样，fuo 请求语法和 shell 命令的语法更相似，
-理论上，我们可以参考 optparse 来实现解这个解析器，
-但是第一作者(cosven)对 optparse 没啥太大的兴趣，而对编程语言的 parser
-比较感冒，于是就以下面这种形式实现了这个 Parser。
+ps: Unlike common programming languages,
+the fuo request syntax is more similar to shell command syntax.
+In theory, we could refer to optparse to implement this parser,
+but the original author (cosven) isn’t very interested in optparse and
+is more enthusiastic about programming language parsers,
+so the Parser was implemented in the following form.
 
-上下文无关文法::
+Context-free grammar::
 
     expr: cmd (value)* (cmd_option)? (req_option)?
     req_option: REQ_DELIMETER options
@@ -53,9 +55,9 @@ class _EOF(Exception):
 
 
 class Parser:
-    """fuo 请求语法分析器
+    """fuo request syntax analyzer
 
-    使用递归下降思想实现，自顶向下，LL(1)。
+    Implemented using recursive descent, top-down, LL(1).
     """
 
     def __init__(self, source):
@@ -74,10 +76,10 @@ class Parser:
             req.options = self._parse_req_options()
             req.has_heredoc, req.heredoc_word = self._parse_heredoc()
         except _EOF:
-            # 上述步骤出现 EOF 都属于正常情况
+            # Encountering EOF in the above steps is normal.
             pass
         else:
-            # 检测是否剩余 token
+            # Check if there are any remaining tokens
             try:
                 token = self._next_token()
             except _EOF:
@@ -105,7 +107,7 @@ class Parser:
         """
         cmd: NAME
 
-        成功返回值，失败抛出 FuoSyntaxError 异常
+        :return: a value on success; on failure throws a FuoSyntaxError exception
         """
         try:
             token = self._next_token()
@@ -120,7 +122,7 @@ class Parser:
         """
         value: NAME | STRING | INTEGER | FLOAT | FURI
 
-        成功则返回值，否则返回 None
+        :return: a value on success; otherwise returns None.
         """
         valid_types = (TOKEN_NAME, TOKEN_STRING, TOKEN_INTEGER,
                        TOKEN_FLOAT, TOKEN_FURI, TOKEN_UNQUOTE_STRING)
@@ -150,7 +152,7 @@ class Parser:
         """
         option_expr: NAME (EQ value)
 
-        成功返回 (k,v) 元组，失败返回 (None, None)
+        :return: a (k, v) tuple on success; on failure returns (None, None)
         """
         token = self._next_token()
         if token.type_ == TOKEN_NAME:
@@ -203,12 +205,12 @@ class Parser:
             self._current_token = token
             return {}
         cmd_options = self._parse_options()
-        next_token = self._next_token()  # 消费 RBRACKET
+        next_token = self._next_token()  # Consume RBRACKET
         assert next_token.type_ == TOKEN_RBRACKET
         return cmd_options
 
     def _parse_req_options(self):
-        next_token = self._next_token()  # 消费 REQ_DELIMETER
+        next_token = self._next_token()  # Consume REQ_DELIMETER
         if next_token.type_ != TOKEN_REQ_DELIMETER:
             self._current_token = next_token
             return {}

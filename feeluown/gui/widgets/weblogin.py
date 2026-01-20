@@ -70,10 +70,11 @@ class WebLoginView(QWebEngineView):
 
     def check_cookie_domain(self, cookie: QNetworkCookie):
         """
-        检查 Cookie 的域名
+        Check the `Cookie`’s domain
+
         :param cookie: Cookie
         :type cookie: QNetworkCookie
-        :return: 是否匹配域名
+        :return: Whether the domain matches
         :rtype: bool
         """
         cookie_domain = cookie.domain().lstrip(".")

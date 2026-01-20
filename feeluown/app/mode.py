@@ -9,6 +9,6 @@ class AppMode(IntFlag):
 
     cli mode is *experimental* feature temporarily.
     """
-    server = 0x0001  # 开启 Server
-    gui = 0x0010     # 显示 GUI
-    cli = 0x0100     # 命令行模式
+    server = 0x0001  # Start the Server
+    gui = 0x0010     # Display GUI
+    cli = 0x0100     # Command-line mode

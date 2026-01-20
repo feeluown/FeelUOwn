@@ -1,5 +1,5 @@
 """
-播放列表管理
+Playlist Management
 ~~~~~~~~~~~~~
 """
 
@@ -10,15 +10,15 @@ from feeluown.library import PlaylistModel
 
 class PlaylistUiItem(PlaylistModel):
     """
-    根据目前经验，播放列表的相关操作最基本的就是几个：
+Based on current experience, the most basic operations related to playlists are:
 
-    * 创建、删除
-    * 添加、移除歌曲
-    * 重命名
-    * 点击展示这个歌单
+* Creating, deleting
+* Adding, removing songs
+* Renaming
+* Clicking to display this playlist
 
-    这些操作对各平台的播放列表、歌单来说，语义都是一致的，
-    所以 PlaylistUiItem 暂时不提供 clicked 等操作信号。
+These operations have consistent semantics across platforms,
+so PlaylistUiItem does not provide signals like clicked for now.
     """
 
 
