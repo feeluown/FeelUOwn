@@ -132,5 +132,22 @@ class View(QWidget):
         provider = pvd_ui.provider
         assert isinstance(provider, SupportsCurrentUserListRadioSongs)
 
-        self._app.fm.activate(provider.current_user_list_radio_songs)
-        self._app.show_msg("红心雷达已激活")
+        was_active = self._app.fm.is_active
+        fetch_func = provider.current_user_list_radio_songs
+        current_fetch = getattr(self._app.fm, "_fetch_songs_func", None)
+        target_self = getattr(fetch_func, "__self__", None)
+        target_func = getattr(fetch_func, "__func__", fetch_func)
+        if (
+            was_active
+            and current_fetch is not None
+            and getattr(current_fetch, "__self__", None) is target_self
+            and getattr(current_fetch, "__func__", current_fetch) is target_func
+        ):
+            self._app.show_msg("红心雷达已激活")
+            return
+
+        if was_active:
+            self._app.fm.deactivate()
+
+        self._app.fm.activate(fetch_func)
+        self._app.show_msg("红心雷达已切换" if was_active else "红心雷达已激活")
