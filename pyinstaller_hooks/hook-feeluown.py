@@ -12,6 +12,7 @@ assets_files = [
     '**/*.icns',
     '**/*.colors',
     '**/*.mo',
+    '**/*.ftl',
 ]
 datas, hiddenimports = collect_entry_point('fuo.plugins_v1')
 
