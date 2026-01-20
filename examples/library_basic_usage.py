@@ -25,10 +25,10 @@ lib.register(np)
 
 def test_list_song_standby():
     """
-    使用 library.list_song_standby 接口
+    Test the library.list_song_standby function
     """
     result = xp.search('小小恋歌 新垣结衣', limit=2)
-    song = result.songs[0]  # 虾米音乐没有这首歌的资源
+    song = result.songs[0]
     assert song.url == ''
 
     standby_songs = lib.list_song_standby(song)

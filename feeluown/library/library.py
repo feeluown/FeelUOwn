@@ -102,14 +102,14 @@ class Library:
         return False
 
     def get(self, identifier) -> Optional[Provider]:
-        """通过资源提供方唯一标识获取提供方实例"""
+        """Obtain the provider instance by the resource provider’s unique identifier."""
         for provider in self._providers:
             if provider.identifier == identifier:
                 return provider
         return None
 
     def list(self) -> List[Provider]:
-        """列出所有资源提供方"""
+        """List all resource providers."""
         return list(self._providers)
 
     def _filter(self, identifier_in=None):

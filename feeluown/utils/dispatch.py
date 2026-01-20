@@ -19,7 +19,7 @@ class Signal:
 
     similar as pyqt signal/slot
 
-    参考 django dispatcher 模块实现
+    Refer to the implementation of the Django dispatcher module.
     """
     aioqueue = None
     has_aio_support = False
@@ -32,10 +32,11 @@ class Signal:
 
     @classmethod
     def setup_aio_support(cls, loop=None):
-        """有些回调函数（比如 Qt UI 操作）只能在主线程中执行，
-        我们这里通过 asyncio Queue 来实现。
+        """Some callback functions (such as Qt UI operations)
+        can only be executed on the main thread,
+        we implement this here using an asyncio Queue.
 
-        这个和 qt signal 的设计类似。
+        This is similar to the design of Qt signals.
         """
         import asyncio
         loop = asyncio.get_running_loop()

@@ -343,7 +343,8 @@ class Playlist:
                 self._queue_remove(song)
             elif song == self._current_song:
                 next_song = self._get_next_song_no_lock()
-                # 随机模式下或者歌单只剩一首歌曲，下一首可能和当前歌曲相同
+                # In random mode or when there is only one song left in the playlist,
+                # the next song may be the same as the current one.
                 if next_song == self.current_song:
                     # Should set current song immediately.
                     # Should not use set_current_song, because it is an async task.
@@ -524,7 +525,8 @@ class Playlist:
     @property
     def next_song(self):
         """next song for player, calculated based on playback_mode"""
-        # 如果没有正在播放的歌曲，找列表里面第一首能播放的
+        # If there is no song currently playing,
+        # find the first playable song in the list.
         with self._queue_lock:
             return self._get_next_song_no_lock()
 
@@ -706,7 +708,7 @@ class Playlist:
             logger.info(f'song standby was found in {standby.source} ✅')
             self._app.show_msg(f'在 {standby.source} 平台找到 {song} 的备用歌曲 ✅')
             # Insert the standby song after the song
-            # TODO: 或许这里可以优化一下？用 self.insert 函数？
+            # TODO: Perhaps we can optimize here using the `self.insert` function?
             with self._queue_lock:
                 if song in self._queue and standby not in self._queue:
                     index = self._queue.index(song)
@@ -726,7 +728,8 @@ class Playlist:
         with self._queue_lock:
             self.insert_after_current_song(song)
             self._current_song = song
-            # TODO: 这里可能有点问题。比如 current_song 怎样和 media 保持一致呢？
+            # TODO: There might be a problem here.
+            # For example, how do we keep `current_song` consistent with `media`?
             self.song_changed.emit(song)
             self.song_changed_v2.emit(song, media)
         if media is None:

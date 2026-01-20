@@ -22,17 +22,19 @@ def get_proc_addr(_, name: bytes):
 
 
 class MpvOpenGLWidget(VideoOpenGLWidget):
-    """Mpv 视频输出窗口
+    """Mpv video output window
 
-    销毁时，应该调用 shutdown 方法来释放资源。
+    On destruction, the shutdown method should be called to release resources.
 
-    该 Widget 是模仿一些 C++ 程序编写而成（详见项目 research 目录下的例子），
-    我们对背后的原理不太理解，目前测试是可以正常工作的。
+    This Widget is modeled after some C++ programs
+    (see examples in the project’s research directory),
+    we don’t fully understand the underlying principles, but testing shows it works fine.
 
-    目前主要的疑问有：
+    The main current questions:
 
-    - [ ] shutdown 方法期望是用来释放资源的，目前的写法不知是否合理？
-          应该在什么时候调用 shutdown 方法？
+    - [ ] The shutdown method is expected to release resources;
+          is the current implementation reasonable?
+          When should the shutdown method be called?
     """
 
     def __init__(self, app, parent=None):
@@ -152,6 +154,6 @@ class MpvOpenGLWidget(VideoOpenGLWidget):
             print("WARNING: video widget is not reconfigured properly", file=sys.stderr)
 
 
-# TODO: 实现 MpvEmbeddedWidget
+# TODO: Implement MpvEmbeddedWidget
 class MpvEmbeddedWidget:
     pass

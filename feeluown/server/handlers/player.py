@@ -36,7 +36,7 @@ class PlayerHandler(AbstractHandler):
 
     def handle(self, cmd):  # pylint: disable=inconsistent-return-statements
         # pylint: disable=no-else-return
-        # TODO: 支持设置是否显示视频
+        # TODO: Support setting whether to display video
         if cmd.action == 'play':
             s = ' '.join(cmd.args)
             return self.play(s)
@@ -80,7 +80,7 @@ class PlayerHandler(AbstractHandler):
         elif s.startswith('http'):
             return self.player.play(s, video=False)
 
-        # 取每个提供方的第一个搜索结果
+        # Take the first search result from each provider.
         source_song_map: Any = defaultdict()
         for result in self.library.search(s):
             for song in result.songs:

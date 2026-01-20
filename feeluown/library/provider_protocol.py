@@ -449,7 +449,7 @@ class SupportsCurrentUserDislikeRemoveSong(Protocol):
 class SupportsToplist(Protocol):
     @abstractmethod
     def toplist_list(self) -> List[BriefPlaylistModel]:
-        """List all toplist(排行榜)."""
+        """List all toplist."""
 
     @abstractmethod
     def toplist_get(self, toplist_id) -> PlaylistModel:

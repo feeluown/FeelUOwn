@@ -10,7 +10,7 @@ class NotFound(Exception):
 
 
 def match(url, rules):
-    """找到 path 对应的 rule，并解析其中的参数
+    """Find the rule corresponding to the path and parse its parameters.
 
     >>> match('/local/songs', rules=['/<p>/songs'])
     ('/<p>/songs', {'p': 'local'}, {})
@@ -26,9 +26,10 @@ def match(url, rules):
         url_regex = regex_from_rule(rule)
         match = url_regex.match(path)
         if match:
-            # parse_qsl 的结果有可能是 [('a', 'b'), ('a', 'c')],
-            # 对应的 query string 是 a=b&a=c, 我们这里暂时不允许这种情况，
-            # 所以这里暂时直接将解析的结果转换成字典
+            # The result of parse_qsl may be [('a', 'b'), ('a', 'c')],
+            # corresponding to the query string a=b&a=c.
+            # We currently do not allow this case, so here we
+            # temporarily convert the parsed results directly into a dict
             query = dict(parse_qsl(qs))
             params = match.groupdict()
             return rule, params, query
@@ -36,9 +37,9 @@ def match(url, rules):
 
 
 def _validate_rule(rule):
-    """简单的对 rule 进行校验
+    """Simple validation of rule
 
-    TODO: 代码实现需要改进
+    TODO: code implementation needs improvement
     """
     if rule:
         if rule == '/':
@@ -75,7 +76,7 @@ class Router(object):
 
     def register(self, rule, handler):
         self.rules.append(rule)
-        # TODO: 或许可以使用 weakref?
+        # TODO: Perhaps we could use weakref?
         self.handlers[rule] = handler
 
     def route(self, rule):

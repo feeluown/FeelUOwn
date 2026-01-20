@@ -22,8 +22,10 @@ class State(IntEnum):
     Player states.
     """
     stopped = 0
-    #: 处于 paused 状态时，current_song 也可能为 False
+
     paused = 1
+    """Even when in `paused` state, current_song can be `None`."""
+
     playing = 2
 
 
@@ -202,15 +204,18 @@ class AbstractPlayer(metaclass=ABCMeta):
         return self._playlist.current_song
 
     def load_song(self, song) -> asyncio.Task:
-        """加载歌曲
+        """Load song
 
-        如果目标歌曲与当前歌曲不相同，则修改播放列表当前歌曲，
-        播放列表会发出 song_changed 信号，player 监听到信号后调用 play 方法，
-        到那时才会真正的播放新的歌曲。如果和当前播放歌曲相同，则忽略。
+        If the target song is different from the current song,
+        modify the playlist’s current song,
+        the playlist will emit the song_changed signal,
+        the player listens to the signal and calls the play method,
+        only then will the new song actually play.
+        If it’s the same as the currently playing song, it will be ignored.
 
         .. note::
 
-            调用方应该直接调用 playlist.current_song = song 来切换歌曲
+            The caller should directly call playlist.current_song = song to switch songs
         """
         assert song is not None
         warnings.warn(
@@ -220,7 +225,7 @@ class AbstractPlayer(metaclass=ABCMeta):
         return self._playlist.set_current_song(song)
 
     def play_song(self, song):
-        """加载并播放指定歌曲"""
+        """Load and play the specified song"""
         warnings.warn(
             'use playlist.set_current_model instead, this will be removed in v3.8',
             DeprecationWarning

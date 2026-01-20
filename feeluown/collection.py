@@ -38,11 +38,12 @@ class Collection:
     """
 
     def __init__(self, fpath):
-        # TODO: 以后考虑添加 identifier 字段，identifier
-        # 字段应该尽量设计成可以跨电脑使用
+        # TODO: Consider adding an identifier field in the future; the identifier
+        # field should be designed to be usable across different machines
         self.fpath = str(fpath)
-        # TODO: 目前还没想好 collection identifier 计算方法，故添加这个函数
-        # 现在把 fpath 当作 identifier 使用，但对外透明
+        # TODO: Haven’t figured out the collection identifier calculation method yet,
+        # so this function was added.
+        # For now, use fpath as the identifier, but keep it opaque externally
         self.identifier = elfhash(base64.b64encode(bytes(self.fpath, 'utf-8')))
 
         # these variables should be inited during loading
@@ -58,7 +59,7 @@ class Collection:
         self._metadata = None
 
     def load(self):
-        """解析文件，初始化自己"""
+        """Parse the file, initialize itself."""
         # pylint: disable=too-many-branches
         self.models = []
         filepath = Path(self.fpath)
@@ -103,8 +104,10 @@ class Collection:
                     logger.warning('resolver not found for line:%s', line)
                     model = None
                 except ResolveFailed as e:
-                    logger.warning('resolve failed, file:%s, line:%s, error:%s',
-                                   str(filepath), line, str(e))
+                    logger.warning(
+                        'resolve failed, file:%s, line:%s, error:%s', str(filepath),
+                        line, str(e)
+                    )
                     model = None
                 if model is not None:
                     if model.state is ModelState.not_exists:
@@ -129,7 +132,7 @@ class Collection:
 
         doc = tomlkit.document()
         if title:
-            doc.add('title', title)         # type: ignore[arg-type]
+            doc.add('title', title)  # type: ignore[arg-type]
         doc.add('created', datetime.now())  # type: ignore[arg-type]
         doc.add('updated', datetime.now())  # type: ignore[arg-type]
         with open(fpath, 'w', encoding='utf-8') as f:
@@ -179,7 +182,8 @@ class Collection:
                 self._write_metadata_if_needed(f)
                 f.write('\n'.join(lines))
                 f.truncate()
-                # 确保最后写入一个换行符，让文件更加美观
+                # Ensure a trailing newline is written at the end
+                # to make the file more aesthetically pleasing
                 if lines and not lines[-1].endswith('\n'):
                     f.write('\n')
             self.models.remove(model)

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=wrong-import-position
 """
-TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐库的构建等小部分，
-这些小部分理论都可以从中拆除。
+TODO: The current logic in this module is very extensive,
+including small parts such as music directory scanning and music library construction;
+in theory, all these small parts can be extracted from it.
 """
 
 import difflib

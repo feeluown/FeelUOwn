@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 
 class App:
-    """App 基类"""
+    """App Base Class"""
     _instance = None
 
     # .. deprecated:: 3.8
@@ -55,8 +55,7 @@ class App:
         self.task_mgr = TaskManager(self)
         # Library.
         self.library = Library(
-            config.PROVIDERS_STANDBY,
-            config.ENABLE_AI_STANDBY_MATCHER
+            config.PROVIDERS_STANDBY, config.ENABLE_AI_STANDBY_MATCHER
         )
         self.coll_mgr = CollectionManager(self)
         self.ai = None
@@ -65,9 +64,10 @@ class App:
         except ImportError as e:
             logger.warning(f"AI is not available, err: {e}")
         else:
-            if (config.OPENAI_API_BASEURL and
-                    config.OPENAI_API_KEY and
-                    config.OPENAI_MODEL):
+            if (
+                config.OPENAI_API_BASEURL and config.OPENAI_API_KEY
+                and config.OPENAI_MODEL
+            ):
                 self.ai = AI(self)
                 self.library.setup_ai(self.ai)
             else:
@@ -80,8 +80,10 @@ class App:
                 logger.warning(f"can't enable ytdl as standby due to {e}")
             else:
                 logger.warning('ytdl-as-standby is deprecated since v4.1.9')
-                logger.info(f"enable ytdl as standby succeed"
-                            f" with rules:{config.YTDL_RULES}")
+                logger.info(
+                    f"enable ytdl as standby succeed"
+                    f" with rules:{config.YTDL_RULES}"
+                )
         # TODO: initialization should be moved into initialize
         Resolver.library = self.library
         # Player.
@@ -113,8 +115,9 @@ class App:
         self.alert_mgr.initialize(self)
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
-        self.playlist.song_changed.connect(self.live_lyric.on_song_changed,
-                                           aioqueue=True)
+        self.playlist.song_changed.connect(
+            self.live_lyric.on_song_changed, aioqueue=True
+        )
         self.plugin_mgr.enable_plugins(self)
 
     def run(self):
@@ -135,7 +138,8 @@ class App:
         return AppMode.gui in AppMode(self.config.MODE)
 
     def show_msg(self, msg, *args, **kwargs):
-        """在程序中显示消息，一般是用来显示程序当前状态"""
+        """Display messages within the program,
+        typically used to show the program’s current status."""
         # pylint: disable=no-self-use, unused-argument
         logger.info(msg)
 
@@ -194,8 +198,9 @@ class App:
                 except ResolverNotFound:
                     pass
                 else:
-                    player.media_about_to_changed.connect(before_media_change,
-                                                          weak=False)
+                    player.media_about_to_changed.connect(
+                        before_media_change, weak=False
+                    )
                     player.pause()
                     player.set_play_range(start=state['position'])
                     playlist.set_current_song(song)
@@ -225,16 +230,21 @@ class App:
             song = reverse(song, as_line=True)
         # TODO: dump player.media
         state = {
-            'playback_mode': playlist.playback_mode.value,
-            'volume': player.volume,
-            'state': player.state.value,
-            'song': song,
+            'playback_mode':
+            playlist.playback_mode.value,
+            'volume':
+            player.volume,
+            'state':
+            player.state.value,
+            'song':
+            song,
             # cast position to int to avoid such value 2.7755575615628914e-17
-            'position': int(player.position or 0),
-            'playlist': [reverse(song, as_line=True)
-                         for song in playlist.list_unshuffled()],
-            'recently_played': [reverse(song, as_line=True)
-                                for song in recently_played.list_songs()]
+            'position':
+            int(player.position or 0),
+            'playlist':
+            [reverse(song, as_line=True) for song in playlist.list_unshuffled()],
+            'recently_played':
+            [reverse(song, as_line=True) for song in recently_played.list_songs()]
         }
         return state
 
@@ -246,10 +256,12 @@ class App:
 
     @contextmanager
     def create_action(self, s):  # pylint: disable=no-self-use
-        """根据操作描述生成 Action (alpha)
+        """Generate Action (alpha) based on the operation description
 
-        设计缘由：用户需要知道目前程序正在进行什么操作，进度怎么样，
-        结果是失败或者成功。这里将操作封装成 Action。
+        Design rationale: The user needs to know what the program is currently
+        performing, what the progress is,
+        and whether the resultis a failure or a success.
+        Here the operation is encapsulated as an Action.
         """
         show_msg = self.show_msg
 
@@ -257,6 +269,7 @@ class App:
             pass
 
         class Action:
+
             def set_progress(self, value):
                 value = int(value * 100)
                 show_msg(s + f'...{value}%', timeout=5000)

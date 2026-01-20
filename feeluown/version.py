@@ -53,7 +53,7 @@ class VersionManager(object):
 
 if __name__ == '__main__':
     """
-    测试 VersionManager 基本行为
+    Test the basic behavior of VersionManager
     """
 
     import logging

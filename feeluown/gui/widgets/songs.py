@@ -389,11 +389,13 @@ class BaseSongsTableModel(QAbstractTableModel):
 
 
 class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
+
     def __init__(self, reader, **kwargs):
         """
 
-        :param songs: 歌曲列表
-        :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
+        :param songs: list of songs
+        :param songs_g: song list generator (when the song list generator is not None,
+        ignore the songs parameter)
         """
         super().__init__(**kwargs)
         self._reader = reader

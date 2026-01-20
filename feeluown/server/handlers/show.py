@@ -2,11 +2,11 @@
 feeluown.cmds.show
 ~~~~~~~~~~~~~~~~~
 
-处理 ``show`` 命令::
+Handle the ``show`` command::
 
-    show fuo://               # 列出所有 provider
-    show fuo://local/songs    # 显示本地所有歌曲
-    show fuo://local/songs/1  # 显示一首歌的详细信息
+    show fuo://               # list all providers
+    show fuo://local/songs    # show all local songs
+    show fuo://local/songs/1  # show detailed information for a single song
 """
 import logging
 from functools import wraps

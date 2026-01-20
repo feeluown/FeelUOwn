@@ -18,7 +18,7 @@ KeyType = _KeyPrefix + "type"
 
 
 class MagicBox(QLineEdit):
-    """读取用户输入，解析执行
+    """Read user input, parse and execute
 
     ref: https://wiki.qt.io/Technical_FAQ #How can I create a one-line QTextEdit?
     """
@@ -55,17 +55,19 @@ class MagicBox(QLineEdit):
         self.returnPressed.connect(self.__on_return_pressed)
 
     def _set_mode(self, mode):
-        """修改当前模式
+        """Modify current mode
 
-        现在主要有两种模式：cmd 模式是正常模式；msg 模式用来展示消息通知，
-        当自己处于 msg 模式下时，会 block 所有 signal
+        Currently, there are two main modes: cmd mode is the normal mode;
+        msg mode is for displaying message notifications.
+
+        When in msg mode, all signals will be blocked.
         """
         if mode == "cmd":
             self.setReadOnly(False)
             self._timer.stop()
             self.setText(self._cmd_text or "")
-            # 注意在所有操作完成之后再关闭 blockSignals
-            # 然后修改当前 mode
+            # Note: only disable blockSignals after all operations are completed
+            # Then modify the current mode
             self.blockSignals(False)
             self._mode = mode
         elif mode == "msg":
@@ -76,7 +78,7 @@ class MagicBox(QLineEdit):
                 self._mode = mode
 
     def _exec_code(self, code):
-        """执行代码并重定向代码的 stdout/stderr"""
+        """Execute code and redirect the code’s stdout/stderr."""
         output = io.StringIO()
         sys.stderr = output
         sys.stdout = output
