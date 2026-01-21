@@ -23,6 +23,7 @@ from feeluown.player import (
     RecentlyPlayed,
     PlayerPositionDelegate,
 )
+from feeluown.i18n import rfc1766_langcode
 from feeluown.collection import CollectionManager
 from feeluown.plugin import plugins_mgr
 from feeluown.version import VersionManager
@@ -68,6 +69,8 @@ class App:
         )
         self.coll_mgr = CollectionManager(self)
         self.ai = None
+        self.language_code = rfc1766_langcode()
+
         try:
             from feeluown.ai import AI
         except ImportError as e:

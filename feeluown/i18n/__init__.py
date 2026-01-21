@@ -16,8 +16,6 @@ _L10N_BUNDLE_LOCK = RLock()
 # Comma separated list
 OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
 
-__all__ = ["t"]
-
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
@@ -43,7 +41,7 @@ def l10n_bundle(locales: list[str] | None = None) -> FluentLocalization:
 
     if locales is None:
         if OVERRIDE_LOCALE is None:
-            locales = [babel_langcode()]
+            locales = [rfc1766_langcode()]
         else:
             locales = [OVERRIDE_LOCALE]
 
@@ -85,7 +83,10 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
         )
 
 
-def babel_langcode() -> str:
+def rfc1766_langcode() -> str:
+    """
+    Returns RFC 1766 language code
+    """
     if sys.version_info.major > 3 or sys.version_info.minor >= 15:
         raise NotImplementedError(
             "python locale.getlocale violates RFC 1766 on Windows"
