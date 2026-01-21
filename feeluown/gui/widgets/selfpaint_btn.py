@@ -16,6 +16,7 @@ from feeluown.gui.drawers import (
     AIIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
+from feeluown.i18n import t
 
 
 def set_pen_width(painter, width):
@@ -277,7 +278,7 @@ class AIButton(SelfPaintAbstractIconTextButton):
 
 
 class DiscoveryButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text="发现", **kwargs):
+    def __init__(self, text=t("discovery"), **kwargs):
         super().__init__(text=text, **kwargs)
 
         self._timer = QTimer(self)
@@ -315,7 +316,7 @@ class DiscoveryButton(SelfPaintAbstractIconTextButton):
 
 class HomeButton(SelfPaintAbstractIconTextButton):
     def __init__(self, *args, **kwargs):
-        super().__init__("主页", *args, **kwargs)
+        super().__init__(t("homepage"), *args, **kwargs)
         self.home_icon = HomeIconDrawer(self.height(), self._padding)
 
     def draw_icon(self, painter):
@@ -323,7 +324,7 @@ class HomeButton(SelfPaintAbstractIconTextButton):
 
 
 class CalendarButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text="日历", *args, **kwargs):
+    def __init__(self, text=t("calender"), *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.calendar_icon = CalendarIconDrawer(self.height(), self._padding)
 
@@ -332,7 +333,7 @@ class CalendarButton(SelfPaintAbstractIconTextButton):
 
 
 class RankButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text="排行榜", *args, **kwargs):
+    def __init__(self, text=t("top-list"), *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.rank_icon = RankIconDrawer(self.height(), self._padding)
 
@@ -341,7 +342,7 @@ class RankButton(SelfPaintAbstractIconTextButton):
 
 
 class StarButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text="收藏", *args, **kwargs):
+    def __init__(self, text=t("favorites"), *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.star_icon = StarIconDrawer(self.height(), self._padding)
 
@@ -350,7 +351,7 @@ class StarButton(SelfPaintAbstractIconTextButton):
 
 
 class HotButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text="热门", *args, **kwargs):
+    def __init__(self, text=t("hot"), *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.hot_icon = FireIconDrawer(self.height(), self._padding)
 
@@ -359,7 +360,7 @@ class HotButton(SelfPaintAbstractIconTextButton):
 
 
 class EmojiButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, emoji: str, text="表情", *args, **kwargs):
+    def __init__(self, emoji: str, text=t("emoji-expression"), *args, **kwargs):
         super().__init__(text, *args, **kwargs)
         self.emoji_icon = EmojiIconDrawer(emoji, self.height(), self._padding)
 

@@ -6,6 +6,7 @@ from PyQt6.QtCore import QPointF, QRectF, Qt
 from feeluown.player import PlaylistMode
 from feeluown.gui.widgets import SelfPaintAbstractSquareButton
 from feeluown.gui.helpers import SOLARIZED_COLORS
+from feeluown.i18n import t
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -17,7 +18,7 @@ class PlaylistButton(SelfPaintAbstractSquareButton):
 
         self._app = app
 
-        self.setToolTip("显示当前播放列表")
+        self.setToolTip(t("playlist-show"))
         # PlaylistButton show FM text on the button when FM mode is actiavted,
         # so update the button when mode is changed.
         self._app.playlist.mode_changed.connect(lambda *args: self.update(), weak=False)

@@ -19,14 +19,15 @@ from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.accordion import Accordion
 from feeluown.gui.widgets.labels import MessageLabel
 from feeluown.utils.reader import create_reader
+from feeluown.i18n import t
 
 
 Tabs = [
-    ("歌曲", SearchType.so),
-    ("专辑", SearchType.al),
-    ("歌手", SearchType.ar),
-    ("歌单", SearchType.pl),
-    ("视频", SearchType.vi),
+    (t("track"), SearchType.so),
+    (t("album"), SearchType.al),
+    (t("musician"), SearchType.ar),
+    (t("playlist"), SearchType.pl),
+    (t("video"), SearchType.vi),
 ]
 
 

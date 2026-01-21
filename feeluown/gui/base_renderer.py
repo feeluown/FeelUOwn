@@ -4,6 +4,7 @@
 from abc import abstractmethod
 from typing import runtime_checkable, Protocol
 
+from feeluown.i18n import t
 from feeluown.library import ModelType
 from feeluown.gui.widgets.tabbar import Tab, TabBar
 
@@ -71,11 +72,11 @@ class TabBarRendererMixin:
 
     def default_tabs(self):
         return [
-            ("歌曲", ModelType.song, self.show_songs),
-            ("专辑", ModelType.album, self.show_albums),
-            ("歌手", ModelType.artist, self.show_artists),
-            ("歌单", ModelType.playlist, self.show_playlists),
-            ("视频", ModelType.video, self.show_videos),
+            (t("track"), ModelType.song, self.show_songs),
+            (t("album"), ModelType.album, self.show_albums),
+            (t("musician"), ModelType.artist, self.show_artists),
+            (t("playlist"), ModelType.playlist, self.show_playlists),
+            (t("video"), ModelType.video, self.show_videos),
         ]
 
 

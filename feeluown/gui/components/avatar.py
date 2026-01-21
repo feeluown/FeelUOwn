@@ -21,6 +21,7 @@ from feeluown.gui.provider_ui import (
 from feeluown.gui.widgets import SelfPaintAbstractIconTextButton
 from feeluown.gui.drawers import SizedPixmapDrawer, AvatarIconDrawer
 from feeluown.gui.helpers import painter_save
+from feeluown.i18n import t
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -34,7 +35,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
     a current user, this tries to show the user avatar.
     """
 
-    default_text = "点击登录第三方平台"
+    default_text = t("login-third-party")
 
     def __init__(self, app: "GuiApp", *args, **kwargs):
         super().__init__(self.default_text, *args, **kwargs)
@@ -52,7 +53,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
         self._avatar_translate_x = -self._avatar_padding
         self._icon_drawer = AvatarIconDrawer(self.height(), self._padding)
         self.clicked.connect(self.on_clicked)
-        self.setToolTip("点击切换平台")
+        self.setToolTip(t("switch-music-platform"))
 
         self._app.library.provider_added.connect(self.on_provider_added)
 
@@ -78,6 +79,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             )
 
     def create_provider_current_user_changed_cb(self, provider: Provider):
+
         def cb(user: UserModel):
             if user is not None:
                 self._logging_state[provider.identifier] = user.name
@@ -85,7 +87,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 self._logging_state.pop(provider.identifier, None)
             if not self._app.current_pvd_ui_mgr.get():
                 if self._logging_state:
-                    self._text = "已登录部分平台"
+                    self._text = t("some-platform-already-logged")
                 else:
                     self._text = self.default_text
                 self.setToolTip(self._text)  # refresh tooltip
@@ -105,7 +107,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             current_pvd_ui.context_menu_add_items(menu)
 
         # Create a submenu for "切换账号"
-        menu.addSection("切换账号")
+        menu.addSection(t("switch-third-party-account"))
         switch_account_menu = menu
 
         for item in self._app.pvd_uimgr.list_items():
@@ -203,7 +205,15 @@ class Avatar(SelfPaintAbstractIconTextButton):
         pass
 
     def setToolTip(self, text):
-        notes = f"后台已登录：{','.join(self._logging_state.keys()) or '无'}"
+        usernames = list(self._logging_state.keys())
+        logged_users = ','.join(usernames)
+        logged_users_count = len(usernames)
+
+        notes = t(
+            "logged-accounts-tooltip",
+            loggedUsers=logged_users,
+            loggedUsersCount=logged_users_count,
+        )
         super().setToolTip(text + "\n\n" + notes)
 
     def draw_text(self, painter):

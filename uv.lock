@@ -413,6 +413,7 @@ wheels = [
 name = "feeluown"
 source = { editable = "." }
 dependencies = [
+    { name = "babel" },
     { name = "fluent-runtime" },
     { name = "janus" },
     { name = "mutagen" },
@@ -502,6 +503,7 @@ dev = [
 requires-dist = [
     { name = "aionowplaying", marker = "extra == 'macos'", specifier = ">=0.10" },
     { name = "aionowplaying", marker = "extra == 'win32'", specifier = ">=0.10" },
+    { name = "babel", specifier = ">=2.17.0" },
     { name = "feeluown-bilibili", marker = "extra == 'battery'", specifier = ">=0.4.1" },
     { name = "flake8", marker = "extra == 'dev'" },
     { name = "flake8-pyproject", marker = "extra == 'dev'" },

@@ -37,7 +37,10 @@ thanks-contributor = 感谢 { $user } 的贡献 :)
 picture-in-picture = 画中画
 hide-picture-in-picture = 退出{ picture-in-picture }
 
-# Avatar component
+# COMPONENTS
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Avatar component (avatar.py)
 # ----------------------------------------
 login-third-party = 点击登录第三方平台
 some-platform-already-logged = 已登录部分平台
@@ -52,7 +55,7 @@ logged-accounts-tooltip = 后台已登录：{ $loggedUsersCount ->
     *[other] { $loggedUsers }
 }
 
-# Buttons component
+# Buttons component (btns.py)
 # ----------------------------------------
 lyric-button = 词
 watch-mode-tooltip =
@@ -66,7 +69,7 @@ local-liked-tracks-removed = 已经从{ local-liked-tracks }中移除
 
 show-track-movie = 展示{ video }画面
 
-# Collections component
+# Collections component (collections.py)
 # ----------------------------------------
 track-collection = 收藏集
 remove-this-collection = 删除此{ track-collection }
@@ -133,3 +136,16 @@ track-search-result-empty = 搜索 { $providerName } 的资源，提供方无结
 track-search-done = 搜索完成，共有 { $resultCount } 个有效的结果，花费 {
    NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2)
 }s
+
+# WIDGETS
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# Widget selfpaint_btn.py
+# ----------------------------------------
+discovery = 发现
+homepage = 主页
+calender = 日历
+top-list = 排行榜
+favorites = 收藏
+hot = 热门
+emoji-expression = 表情
