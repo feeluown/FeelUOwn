@@ -136,7 +136,7 @@ exclude = ['tests*']
 
 # ruff configuration
 [tool.ruff.lint.pycodestyle]
-max-line-length = 150
+max-line-length = 89
 
 # yapf configuration
 [tool.yapf]
