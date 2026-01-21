@@ -168,6 +168,17 @@ emoji-expression = 表情
 
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
+search-box-placeholder = 搜索歌曲、歌手、专辑、用户
+search-box-tooltip =
+    直接输入文字可以进行过滤，按 Enter 可以搜索
+    输入 >>> 前缀之后，可以执行 Python 代码
+    输入 “==> 执迷不悔 | 王菲”，可以直接播放歌曲
+    输入 “=== 下雨天听点啥？”，可以和 AI 互动
+    输入 # 前缀之后，可以过滤表格内容
+    输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）
+search-box-ai-chat-unavailable = AI 聊天功能不可用
+search-box-play-track = 尝试播放：{ $song }
+search-box-play-track-ill-formed = 你输入的内容需要符合格式：“歌曲标题 | 歌手名”
 
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

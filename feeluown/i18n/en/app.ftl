@@ -100,6 +100,20 @@ favorites = Favorites
 hot = Hot
 emoji-expression = Emoji
 
+# feeluown.gui.widgets.magicbox
+# ----------------------------------------
+search-box-placeholder = Search songs, artists, albums, users
+search-box-tooltip =
+    Type text directly to filter, press Enter to search
+    Input >>> prefix to execute Python code
+    Input "==> Playing Without Regret | Faye Wong" to play a song directly
+    Input "=== What to listen on a rainy day?" to interact with AI
+    Input # prefix to filter table content
+    Input > prefix to execute fuo command (not implemented, PR welcome)
+search-box-ai-chat-unavailable = AI chat is unavailable
+search-box-play-track = Attempt to play: { $song }
+search-box-play-track-ill-formed = Your input must follow the format: "Song Title | Artist Name"
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
