@@ -155,7 +155,7 @@ track-search = Search { $keyword }
 track-searching = Searching { $providerCount } content providers...
 
 ## providerName: name of the content provider
-track-search-error = Error searching resources from { $providerName }: { $errorMessage }
+track-search-error = Error searching from { $providerName }: { $errorMessage }
 track-search-result-empty = Searching { $providerName } yielded no results
 
 ## resultCount: amount of valid results
