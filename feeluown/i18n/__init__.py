@@ -49,6 +49,8 @@ def l10n_bundle(locales: list[str] | None = None) -> FluentLocalization:
     # en_US -> en, e.g.
     locales_with_fallback = []
     for locale_str in locales:
+        if locale_str == "C":
+            locale_str = "en_US"
         locales_with_fallback.append(locale_str)
         lang = Locale.parse(locale_str).language
 
