@@ -215,7 +215,8 @@ cookies-dialog-tutorial =
     Of course, if you know how to manually copy cookies, you can copy them first and then click “Login”.
 
 cookies-dialog-placeholder =
-    Please copy cookies from the browser!\n\n
+    Please copy cookies from the browser!
+
     You can copy a request’s Cookie header in the format key1=value1; key2=value2
     Or you can enter cookie content in JSON format, like {"{"}"key1": "value1", "key2": "value2"{"}"}
 

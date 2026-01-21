@@ -215,8 +215,9 @@ cookies-dialog-tutorial =
     当然，如果你知道如何手动拷贝 Cookie，你可以先拷贝 Cookie，然后点击“登录”。
 
 cookies-dialog-placeholder =
-    请从浏览器中复制 Cookie！\n\n
-    你可以拷贝一个请求的 Cookie Header，格式类似 key1=value1; key2=value2\n
+    请从浏览器中复制 Cookie！
+
+    你可以拷贝一个请求的 Cookie Header，格式类似 key1=value1; key2=value2
     你也可以填入 JSON 格式的 Cookie 内容，类似 {"{"}"key1": "value1", "key2": "value2"{"}"}
 
 cookies-parse-fail    = 使用 { $parser } 解析器解析失败，尝试下一种
