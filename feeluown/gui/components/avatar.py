@@ -205,14 +205,14 @@ class Avatar(SelfPaintAbstractIconTextButton):
         pass
 
     def setToolTip(self, text):
-        usernames = list(self._logging_state.keys())
-        logged_users = ','.join(usernames)
-        logged_users_count = len(usernames)
+        providers_lst = list(self._logging_state.keys())
+        providers_count = len(providers_lst)
+        providers = ','.join(providers_lst)
 
         notes = t(
             "logged-accounts-tooltip",
-            loggedUsers=logged_users,
-            loggedUsersCount=logged_users_count,
+            platforms=providers,
+            platformsCount=providers_count,
         )
         super().setToolTip(text + "\n\n" + notes)
 

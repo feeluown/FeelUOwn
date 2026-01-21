@@ -19,28 +19,61 @@ video = Video
 ## can be the singer, artist, or musician.
 musician = Musician
 
+
+# Tips banner (feeluown.gui.tips)
+# ----------------------------------------
+
+tips-osdlyrics = Did you know FeelUOwn can work with osdlyrics?
+tips-search-shortcut = The search shortcut is Ctrl + F
+tips-show-more-tips = Type '>>> app.tips_mgr.show_random()' in the search box to see more Tips
+tips-album-original-image = Right-click on the album art to view the original image ~
+tips-common-tooltip = Hover or right-click for pleasant surprises ~
+tips-watch-mode = Enable watch mode to watch MVs while working or studying—how nice is that?
+
+## note: $user is passed with prefix '@'
+thanks-contributor = Thanks to { $user } for the contribution :)
+
+# Watch mode (feeluown.gui.watch)
+# ----------------------------------------
+picture-in-picture = Picture-in-Picture
+hide-picture-in-picture = Exit { picture-in-picture } mode
+
 # COMPONENTS
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Avatar component (avatar.py)
+# Avatar component (feeluown.gui.components.avatar)
 # ----------------------------------------
 login-third-party = Login to a third-party platform
-some-platform-already-logged = Already logged some platforms
+some-platform-already-logged = Logged
 switch-third-party-account = Change the account
 
 switch-music-platform = Change the platform
 
-## loggedUsers: user names conjucted by a comma
-## loggedUsersCount: length of the user name list
-logged-accounts-tooltip = Logged: { $loggedUsersCount ->
+## platforms: providers' name conjucted by a comma
+## platformsCount: amount of logged providers
+logged-accounts-tooltip = Logged: { $platformsCount ->
     [0] None
-    *[other] { $loggedUsers }
+    *[other] { $platforms }
 }
+
+# Buttons component (feeluown.gui.components.btns)
+# ----------------------------------------
+lyric-button = 词
+watch-mode-tooltip =
+    When watch mode is enabled, the player will first try to find a suitable { video } to play for the { track }.
+    Best practice: when enabling watch, it’s recommended to also enable the { picture-in-picture } mode of the { video }.
+
+show-track-movie = Show the { video } screen
+
+local-liked-tracks = the Local favorites
+local-liked-tracks-add = Add to { local-liked-tracks }
+local-liked-tracks-added = Already Added to { local-liked-tracks }
+local-liked-tracks-removed = Already removed from { local-liked-tracks }
 
 # WIDGETS
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Widget selfpaint_btn.py
+# Widget (feeluown.gui.widgets.selfpaint_btn)
 # ----------------------------------------
 discovery = Discovery
 homepage = Home
