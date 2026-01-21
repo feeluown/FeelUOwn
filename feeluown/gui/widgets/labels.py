@@ -4,6 +4,7 @@ from PyQt6.QtWidgets import QLabel, QSizePolicy
 
 from feeluown.utils.utils import parse_ms
 from feeluown.gui.helpers import elided_text, SOLARIZED_COLORS
+from feeluown.i18n import t
 
 
 def format_second(s):
@@ -91,10 +92,10 @@ class MessageLabel(QLabel):
 
     def show_msg(self, text, level=None):
         if level == MessageLabel.ERROR:
-            hint = "错误提示："
+            hint = t("error-message-prefix")
             color = "red"
         elif level == MessageLabel.INFO:
-            hint = "️提示："
+            hint = t("info-message-prefix")
             color = SOLARIZED_COLORS["blue"]
         else:
             hint = "️"

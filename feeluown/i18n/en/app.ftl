@@ -167,6 +167,11 @@ track-search-done = Search completed, with { $resultCount } valid results, takin
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.labels
+# ----------------------------------------
+error-message-prefix = Error:{" "}
+info-message-prefix = Note:{" "}
+
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
 discovery = Discovery

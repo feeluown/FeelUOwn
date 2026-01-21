@@ -167,6 +167,11 @@ track-search-done = 搜索完成，共有 { $resultCount } 个有效的结果，
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.labels
+# ----------------------------------------
+error-message-prefix = 错误：
+info-message-prefix = 提示：
+
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
 discovery = 发现
