@@ -108,9 +108,9 @@ emoji-expression = Emoji
 playlist-clear = Clear { playlist }
 jump-to-playing-track = Current track
 
-song-radio-mode = Automatic Song Continuation
-song-radio-mode-empty-playlist = Playback queue is empty, cannot activate “{ song-radio-mode }” feature
-song-radio-mode-activated = “{ song-radio-mode }” feature activated
+song-radio-mode = Song radio mode
+song-radio-mode-empty-playlist = Playback queue is empty, cannot activate the { song-radio-mode }
+song-radio-mode-activated = '{ song-radio-mode }' activated
 
 playback-mode = Playback Mode
 playback-mode-change = Change { playback-mode }
