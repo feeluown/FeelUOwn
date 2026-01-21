@@ -180,6 +180,14 @@ search-box-ai-chat-unavailable = AI 聊天功能不可用
 search-box-play-track = 尝试播放：{ $song }
 search-box-play-track-ill-formed = 你输入的内容需要符合格式：“歌曲标题 | 歌手名”
 
+# feeluown.gui.widgets.settings
+# ----------------------------------------
+app-config = 应用配置
+save-config = 保存
+search-providers = 搜索来源
+ai-radio-prompt = AI 电台 (提示词)
+player = 播放器
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

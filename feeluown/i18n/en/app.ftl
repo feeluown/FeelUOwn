@@ -114,6 +114,14 @@ search-box-ai-chat-unavailable = AI chat is unavailable
 search-box-play-track = Attempt to play: { $song }
 search-box-play-track-ill-formed = Your input must follow the format: "Song Title | Artist Name"
 
+# feeluown.gui.widgets.settings
+# ----------------------------------------
+app-config = App Configuration
+save-config = Save
+search-providers = Search Providers
+ai-radio-prompt = AI Radio (Prompt)
+player = Player
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
