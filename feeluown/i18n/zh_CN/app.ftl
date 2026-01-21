@@ -226,6 +226,11 @@ cookies-parse-success = 使用 { $parser } 解析器解析成功
 cookies-save-user-info        = 保存用户信息到 FeelUOwn 数据目录
 cookies-loading-existing-user = 正在尝试加载已有用户...
 
+# feeluown.gui.widgets.songs
+# ----------------------------------------
+add-to-playlist = 添加到播放队列
+remove-from-playlist = 移除歌曲
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

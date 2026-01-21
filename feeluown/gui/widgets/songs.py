@@ -33,6 +33,7 @@ from PyQt6.QtWidgets import (
     QStyledItemDelegate,
 )
 
+from feeluown.i18n import t
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.library import ModelState, ModelFlags, MediaFlags
@@ -742,12 +743,12 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         menu = QMenu()
 
         # add to playlist action
-        add_to_playlist_action = QAction("添加到播放队列", menu)
+        add_to_playlist_action = QAction(t("add-to-playlist"), menu)
         add_to_playlist_action.triggered.connect(lambda: self._add_to_playlist(indexes))
         menu.addAction(add_to_playlist_action)
 
         # remove song action
-        remove_song_action = QAction("移除歌曲", menu)
+        remove_song_action = QAction(t("remove-from-playlist"), menu)
         remove_song_action.triggered.connect(lambda: self._remove_by_indexes(indexes))
         menu.addSeparator()
         menu.addAction(remove_song_action)

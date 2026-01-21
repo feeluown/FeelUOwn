@@ -226,6 +226,11 @@ cookies-parse-success = Successfully parsed with { $parser }
 cookies-save-user-info        = Saving user info to FeelUOwn data directory
 cookies-loading-existing-user = Attempting to load existing user...
 
+# feeluown.gui.widgets.songs
+# ----------------------------------------
+add-to-playlist = Add to playlist
+remove-from-playlist = Remove song
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
