@@ -101,7 +101,7 @@ class Body(QFrame, BgTransparentMixin):
         view = self
         app = self._app
 
-        self.title.setText(f"搜索“{q}”")
+        self.title.setText(t("track-search", keyword=q))
 
         tab_index = get_tab_idx(search_type)
         succeed = 0
@@ -111,13 +111,19 @@ class Body(QFrame, BgTransparentMixin):
             source_count = len(source_in)
         else:
             source_count = len(app.library.list())
-        hint_msgs = [f"正在搜索 {source_count} 个资源提供方..."]
+        hint_msgs = [t("track-searching", providerCount=source_count)]
         view.hint.show_msg("\n".join(hint_msgs))
         async for result in app.library.a_search(
             q, type_in=search_type, source_in=source_in, return_err=True
         ):
             if result.err_msg:
-                hint_msgs.append(f"搜索 {result.source} 的资源出错：{result.err_msg}")
+                hint_msgs.append(
+                    t(
+                        "track-search-error",
+                        providerName=result.source,
+                        errorMessage=result.err_msg,
+                    )
+                )
                 view.hint.show_msg("\n".join(hint_msgs))
                 continue
 
@@ -141,7 +147,9 @@ class Body(QFrame, BgTransparentMixin):
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
             objects = getattr(result, attrname) or []
             if not objects:  # Result is empty.
-                hint_msgs.append(f"搜索 {result.source} 资源，提供方返回空")
+                hint_msgs.append(
+                    t("track-search-result-empty", providerName=result.source)
+                )
                 view.hint.show_msg("\n".join(hint_msgs))
                 continue
 
@@ -164,7 +172,8 @@ class Body(QFrame, BgTransparentMixin):
         time_cost = (datetime.now() - start).total_seconds()
         hint_msgs.pop(0)
         hint_msgs.insert(
-            0, f"搜索完成，共有 {succeed} 个有效的结果，花费 {time_cost:.2f}s"
+            0,
+            t("track-search-done", resultCount=succeed, timeCost=time_cost),
         )
         view.hint.show_msg("\n".join(hint_msgs))
 

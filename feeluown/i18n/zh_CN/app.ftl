@@ -149,7 +149,7 @@ playlist-show = 显示当前{ playlist }
 # feeluown.gui.components.search
 # ----------------------------------------
 
-track-search = 搜索{ $keyword }
+track-search = 搜索“{ $keyword }”
 
 ## providerCount: count of content providers.
 track-searching = 正在搜索 { $providerCount }个资源提供方...
