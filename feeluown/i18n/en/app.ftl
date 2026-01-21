@@ -21,19 +21,19 @@ video = Video
 ## can be the singer, artist, or musician.
 musician = Musician
 
-# Version info (feeluown.version)
+# feeluown.version
 # ----------------------------------------
 new-version-found = Found new version { $latestVer }, current: { $currentVer }
 already-updated = Already updated: { $latestVer }
 
-# Local musics (feeluown.local)
+# feeluown.local
 # ----------------------------------------
 local-tracks-scan-finished = Local tracks scan finished!
-# Local musics (feeluown.local.provider)
+# feeluown.local.provider
 # ----------------------------------------
 local-tracks = Local tracks
 
-# Tips banner (feeluown.gui.tips)
+# feeluown.gui.tips
 # ----------------------------------------
 
 tips-osdlyrics = Did you know FeelUOwn can work with osdlyrics?
@@ -49,15 +49,15 @@ tips-search-shortcut = The search shortcut is { $shortcut }
 ## note: $user is passed with prefix '@'
 thanks-contributor = Thanks to { $user } for the contribution :)
 
-# Watch mode (feeluown.gui.watch)
+# feeluown.gui.watch
 # ----------------------------------------
 picture-in-picture = Picture-in-Picture
 hide-picture-in-picture = Exit { picture-in-picture } mode
 
-# COMPONENTS
+# feeluown.gui.components
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Avatar component (feeluown.gui.components.avatar)
+# feeluown.gui.components.avatar
 # ----------------------------------------
 login-third-party = Login to a third-party platform
 some-platform-already-logged = Logged
@@ -72,7 +72,7 @@ logged-accounts-tooltip = Logged: { $platformsCount ->
     *[other] { $platforms }
 }
 
-# Buttons component (feeluown.gui.components.btns)
+# feeluown.gui.components.btns
 # ----------------------------------------
 lyric-button = 词
 watch-mode-tooltip =
@@ -87,10 +87,10 @@ local-liked-tracks-removed = Already removed from { local-liked-tracks }
 
 show-track-movie = Show the { video } screen
 
-# WIDGETS
+# feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Self paint buttons (feeluown.gui.widgets.selfpaint_btn)
+# feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
 discovery = Discovery
 homepage = Home
@@ -100,7 +100,7 @@ favorites = Favorites
 hot = Hot
 emoji-expression = Emoji
 
-# UIMAIN
+# feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # feeluown.gui.uimain.playlist_overlay
@@ -121,6 +121,9 @@ playback-mode-sequential = Sequential
 playback-mode-loop = Loop
 ## play songs in random order
 playback-mode-random = Random
+
+# feelown.gui.pages
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # feeluown.gui.pages.homepage
 # ----------------------------------------

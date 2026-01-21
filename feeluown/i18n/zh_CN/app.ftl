@@ -21,19 +21,19 @@ video = 视频
 ## can be the singer, artist, or musician.
 musician = 歌手
 
-# Version info (feeluown.version)
+# feeluown.version
 # ----------------------------------------
 new-version-found = 检测到新版本 { $latestVer }，当前版本为 { $currentVer }
 already-updated = 当前已经是最新版本: { $latestVer }
 
-# Local musics (feeluown.local)
+# feeluown.local
 # ----------------------------------------
 local-tracks-scan-finished = 本地音乐扫描完毕
-# Local musics (feeluown.local.provider)
+# feeluown.local.provider
 # ----------------------------------------
 local-tracks = 本地音乐
 
-# Tips banner (feeluown.gui.tips)
+# feeluown.gui.tips
 # ----------------------------------------
 
 tips-osdlyrics = 你知道 FeelUOwn 可以配合 osdlyrics 使用吗?
@@ -49,15 +49,15 @@ tips-search-shortcut = 搜索快捷键是 { $shortcut }
 ## note: $user is passed with prefix '@'
 thanks-contributor = 感谢 { $user } 的贡献 :)
 
-# Watch mode (feeluown.gui.watch)
+# feeluown.gui.watch
 # ----------------------------------------
 picture-in-picture = 画中画
 hide-picture-in-picture = 退出{ picture-in-picture }
 
-# COMPONENTS
+# feeluown.gui.components
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Avatar component (feeluown.gui.components.avatar)
+# feeluown.gui.components.avatar
 # ----------------------------------------
 login-third-party = 点击登录第三方平台
 some-platform-already-logged = 已登录部分平台
@@ -70,7 +70,7 @@ logged-accounts-tooltip = 后台已登录：{ $platformsCount ->
     *[other] { $platforms }
 }
 
-# Buttons component (feeluown.gui.components.btns)
+# feeluown.gui.components.btns
 # ----------------------------------------
 lyric-button = 词
 watch-mode-tooltip =
@@ -85,12 +85,12 @@ local-liked-tracks-removed = 已经{ local-liked-tracks-remove }
 
 show-track-movie = 展示{ video }画面
 
-# Collections component (feeluown.gui.components.collections)
+# feeluown.gui.components.collections
 # ----------------------------------------
 track-collection = 收藏集
 remove-this-collection = 删除此{ track-collection }
 
-# Song status line component (feeluown.gui.components.line_song)
+# feeluown.gui.components.line_song
 # ----------------------------------------
 play-stage-prepare-track-url = 正在获取{track}播放链接...
 play-stage-prepare-track-url-fallback = 尝试寻找备用播放链接...
@@ -98,7 +98,7 @@ play-stage-prepare-track-metadata = 尝试获取完整的歌曲元信息...
 play-stage-prepare-track-loading = 正在加载{track}资源...
 play-stage-prepare-movie-url = 正在获取音乐的{video}播放链接...
 
-# Menu component (feeluown.gui.components.menu)
+# feeluown.gui.components.menu
 # ----------------------------------------
 track-missing-album = 该{ track }没有{ album }信息
 track-search-similar = 搜索相似资源
@@ -117,12 +117,12 @@ menu-ai-button = AI
 menu-ai-copy-prompt = 复制 AI Prompt
 menu-ai-copy-prompt-succeed = 已经复制到剪贴板
 
-# Nowplaying component (feeluown.gui.components.nowplaying)
+# feeluown.gui.components.nowplaying
 # ----------------------------------------
 track-movie-play-tooltip = 播放{ track }MV
 track-album-release-date = 专辑发行日期：{ $releaseDate }
 
-# Player playlist component (feeluown.gui.components.player_playlist)
+# feeluown.gui.components.player_playlist
 # ----------------------------------------
 fm-radio-current-song-dislike = 不想听
 track-playlist-remove = 从{ playlist }中移除
@@ -131,11 +131,11 @@ track-provider-blacklist-add = 加入资源提供方的黑名单
 track-provider-blacklist-adding = 正在加入黑名单，请稍等...
 track-provider-blacklist-add-fail = 加入黑名单失败
 
-# Playlist button component (feeluown.gui.components.playlist_btn)
+# feeluown.gui.components.playlist_btn
 # ----------------------------------------
 playlist-show = 显示当前{ playlist }
 
-# Track search component (feeluown.gui.components.search)
+# feeluown.gui.components.search
 # ----------------------------------------
 
 track-search = 搜索{ $keyword }
@@ -153,10 +153,10 @@ track-search-done = 搜索完成，共有 { $resultCount } 个有效的结果，
    NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2)
 }s
 
-# WIDGETS
+# feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Self paint buttons (feeluown.gui.widgets.selfpaint_btn)
+# feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
 discovery = 发现
 homepage = 主页
@@ -166,7 +166,10 @@ favorites = 收藏
 hot = 热门
 emoji-expression = 表情
 
-# UIMAIN
+# feeluown.gui.widgets.magicbox
+# ----------------------------------------
+
+# feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # feeluown.gui.uimain.playlist_overlay
@@ -187,6 +190,9 @@ playback-mode-sequential = 顺序播放
 playback-mode-loop = 循环播放
 ## play songs in random order
 playback-mode-random = 随机播放
+
+# feelown.gui.pages
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 # feeluown.gui.pages.homepage
 # ----------------------------------------
