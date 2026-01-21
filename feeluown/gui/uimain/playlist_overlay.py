@@ -28,10 +28,10 @@ from feeluown.utils.reader import create_reader
 
 
 PlaybackModeName = {
-    PlaybackMode.one_loop: "单曲循环",
-    PlaybackMode.sequential: "顺序播放",
-    PlaybackMode.loop: "循环播放",
-    PlaybackMode.random: "随机播放",
+    PlaybackMode.one_loop: t("playback-mode-single-repeat"),
+    PlaybackMode.sequential: t("playback-mode-sequential"),
+    PlaybackMode.loop: t("playback-mode-loop"),
+    PlaybackMode.random: t("playback-mode-random"),
 }
 PlaybackModes = list(PlaybackModeName.keys())
 
@@ -49,10 +49,10 @@ class PlaylistOverlay(QWidget):
 
         self._app = app
         self._tabbar = TabBar(self)
-        self._clear_playlist_btn = TextButton("清空播放队列")
+        self._clear_playlist_btn = TextButton(t("playlist-clear"))
         self._playback_mode_switch = PlaybackModeSwitch(app)
-        self._goto_current_song_btn = TextButton("跳转到当前歌曲")
-        self._songs_radio_btn = TextButton("自动续歌")
+        self._goto_current_song_btn = TextButton(t("jump-to-playing-track"))
+        self._songs_radio_btn = TextButton(t("song-radio-mode"))
         # Please update the list when you add new buttons.
         self._btns = [
             self._clear_playlist_btn,
@@ -94,7 +94,7 @@ class PlaylistOverlay(QWidget):
         self._btn_layout2.setSpacing(7)
 
         self._tabbar.setDocumentMode(True)
-        self._tabbar.addTab("播放列表")
+        self._tabbar.addTab(t("playlist"))
         self._tabbar.addTab(t("recently-played"))
         self._layout.addWidget(self._tabbar)
         self._layout.addLayout(self._btn_layout)
@@ -127,11 +127,11 @@ class PlaylistOverlay(QWidget):
     def enter_songs_radio(self):
         songs = self._app.playlist.list()
         if not songs:
-            self._app.show_msg("播放队列为空，不能激活“自动续歌”功能")
+            self._app.show_msg(t("song-radio-mode-empty-playlist"))
         else:
             radio = SongsRadio(self._app, songs)
             self._app.fm.activate(radio.fetch_songs_func, reset=False)
-            self._app.show_msg("“自动续歌”功能已激活")
+            self._app.show_msg(t("song-radio-mode-activated"))
 
     def show_tab(self, index):
         if not self.isVisible():
@@ -215,7 +215,7 @@ class PlaybackModeSwitch(TextButton):
         self._app.playlist.playback_mode_changed.connect(
             self.on_playback_mode_changed, aioqueue=True
         )
-        self.setToolTip("修改播放模式")
+        self.setToolTip(t("playback-mode-change"))
 
     def switch_playback_mode(self):
         playlist = self._app.playlist

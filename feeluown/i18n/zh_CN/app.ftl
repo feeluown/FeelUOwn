@@ -156,7 +156,7 @@ track-search-done = 搜索完成，共有 { $resultCount } 个有效的结果，
 # WIDGETS
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Widget (feeluown.gui.components.selfpaint_btn)
+# Self paint buttons (feeluown.gui.widgets.selfpaint_btn)
 # ----------------------------------------
 discovery = 发现
 homepage = 主页
@@ -165,3 +165,25 @@ top-list = 排行榜
 favorites = 收藏
 hot = 热门
 emoji-expression = 表情
+
+# UIMAIN
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+## feeluown.gui.uimain.playlist_overlay
+# ----------------------------------------
+playlist-clear = 清空{ playlist }
+jump-to-playing-track = 跳转到当前歌曲
+
+song-radio-mode = 自动续歌
+song-radio-mode-empty-playlist = 播放队列为空，不能激活“{ song-radio-mode }”功能
+song-radio-mode-activated = “{ song-radio-mode }”功能已激活
+
+playback-mode = 播放模式
+playback-mode-change = 修改{ playback-mode }
+playback-mode-single-repeat = 单曲循环
+## play songs in original order, on end stop playing
+playback-mode-sequential = 顺序播放
+## play songs in original order, on end back to the first
+playback-mode-loop = 循环播放
+## play songs in random order
+playback-mode-random = 随机播放

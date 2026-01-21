@@ -90,7 +90,7 @@ show-track-movie = Show the { video } screen
 # WIDGETS
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-# Widget (feeluown.gui.widgets.selfpaint_btn)
+# Self paint buttons (feeluown.gui.widgets.selfpaint_btn)
 # ----------------------------------------
 discovery = Discovery
 homepage = Home
@@ -99,3 +99,25 @@ top-list = Top list
 favorites = Favorites
 hot = Hot
 emoji-expression = Emoji
+
+# UIMAIN
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+## feeluown.gui.uimain.playlist_overlay
+# ----------------------------------------
+playlist-clear = Clear { playlist }
+jump-to-playing-track = Current track
+
+song-radio-mode = Automatic Song Continuation
+song-radio-mode-empty-playlist = Playback queue is empty, cannot activate “{ song-radio-mode }” feature
+song-radio-mode-activated = “{ song-radio-mode }” feature activated
+
+playback-mode = Playback Mode
+playback-mode-change = Change { playback-mode }
+playback-mode-single-repeat = Single Repeat
+## play songs in original order, on end stop playing
+playback-mode-sequential = Sequential
+## play songs in original order, on end back to the first
+playback-mode-loop = Loop
+## play songs in random order
+playback-mode-random = Random

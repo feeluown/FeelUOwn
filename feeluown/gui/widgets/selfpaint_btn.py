@@ -17,7 +17,6 @@ from feeluown.gui.drawers import (
     AIIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
-from feeluown.i18n import t
 
 
 def set_pen_width(painter, width):
