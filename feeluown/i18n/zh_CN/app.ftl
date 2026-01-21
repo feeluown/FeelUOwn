@@ -65,6 +65,8 @@ switch-third-party-account = 切换账号
 
 switch-music-platform = 点击切换平台
 
+## platforms: providers' name conjucted by a comma
+## platformsCount: amount of logged providers
 logged-accounts-tooltip = 后台已登录：{ $platformsCount ->
     [0] 无
     *[other] { $platforms }
@@ -135,7 +137,10 @@ track-playlist-remove = 从{ playlist }中移除
 
 track-provider-blacklist-add = 加入资源提供方的黑名单
 track-provider-blacklist-adding = 正在加入黑名单，请稍等...
+track-provider-blacklist-add-succ = 已加入黑名单
 track-provider-blacklist-add-fail = 加入黑名单失败
+
+track-radio-mode-remove-latest = FM 模式下，如果当前歌曲是最后一首歌，则无法移除。请稍后再尝试移除
 
 # feeluown.gui.components.playlist_btn
 # ----------------------------------------

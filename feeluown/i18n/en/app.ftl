@@ -132,12 +132,15 @@ track-album-release-date = Album Release Date: { $releaseDate }
 
 # feeluown.gui.components.player_playlist
 # ----------------------------------------
-fm-radio-current-song-dislike = Don't want to listen
+fm-radio-current-song-dislike = Dislike
 track-playlist-remove = Remove from { playlist }
 
-track-provider-blacklist-add = Add content provider to blacklist
+track-provider-blacklist-add = Add to provider's blacklist
 track-provider-blacklist-adding = Adding to blacklist, please wait...
+track-provider-blacklist-add-succ = Added to provider's blacklist
 track-provider-blacklist-add-fail = Failed to add to blacklist
+
+track-radio-mode-remove-latest = In FM mode, if the current song is the last one, it cannot be removed. Please try again later.
 
 # feeluown.gui.components.playlist_btn
 # ----------------------------------------
