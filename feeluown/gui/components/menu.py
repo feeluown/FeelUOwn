@@ -95,11 +95,9 @@ class SongMenuInitializer:
         )
 
     def copy_ai_prompt(self, song):
-        _song_title: str = song.title
-        _song_artists: str = song.artists_name
-        prompt = "你是一个音乐播放器助手。\n"
-        prompt += "【填入你的需求】\n"
-        prompt += f"歌曲信息如下 -> 歌曲名：{song.title}, 歌手名：{song.artists_name}"
+        song_title: str = song.title
+        song_artists: str = song.artists_name
+        prompt = t("menu-ai-prompt", songTitle=song_title, songArtists=song_artists)
         QGuiApplication.clipboard().setText(prompt)
         self._app.show_msg(t("menu-ai-copy-prompt-succeed"))
 

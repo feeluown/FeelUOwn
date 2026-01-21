@@ -117,6 +117,10 @@ track-playlist-add-fail = Failed to add to { $playlistName } ❌
 
 track-movie-missing = No MV for this { track }
 
+menu-ai-prompt =
+    You are a music player assistant.
+    \[your request here\]
+    The song information is as follows -> Song Title: { $songTitle }, Artist: { $songArtists }
 menu-ai-button = AI
 menu-ai-copy-prompt = Copy AI Prompt
 menu-ai-copy-prompt-succeed = Copied to clipboard

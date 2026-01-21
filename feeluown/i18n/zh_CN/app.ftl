@@ -115,6 +115,10 @@ track-playlist-add-fail = 加入到{ $playlistName } 失败 ❌
 
 track-movie-missing = 该{ track }无 MV
 
+menu-ai-prompt =
+    你是一个音乐播放器助手。
+    【填入你的需求】
+    歌曲信息如下 -> 歌曲名：{ $songTitle }, 歌手名：{ $songArtists }
 menu-ai-button = AI
 menu-ai-copy-prompt = 复制 AI Prompt
 menu-ai-copy-prompt-succeed = 已经复制到剪贴板
