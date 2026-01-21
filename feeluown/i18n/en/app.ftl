@@ -5,7 +5,7 @@
 # minimize, fullscreen, close, e.g.
 # ----------------------------------------
 minimize-window = Minimize
-fullscreen-window = Fullscreen
+fullscreen-window = Full Screen
 playlist = Playlist
 recently-played = Recently Played
 
@@ -252,6 +252,28 @@ playback-mode-sequential = Sequential
 playback-mode-loop = Loop
 ## play songs in random order
 playback-mode-random = Random
+
+# feeluown.gui.uimain.nowplaying_overlay
+# ----------------------------------------
+similar-tracks = Similar{track}
+track-hot-comments = Hot comments
+movie-mode-exit = Exit movie mode
+
+# feeluown.gui.pages.song_explore
+# ----------------------------------------
+track-lyrics = Lyrics
+track-start-play = Play
+track-webpage-url-copy = Copy webpage URL
+track-belongs-album = Belongs to album
+release-date = Release date
+track-genre = Genre
+
+error-message-template =
+    <p style=color: grey; font: small;>This provider does not yet support{"{"}feature{"}"}.
+    <br/> Implement the { $interface } interface to support this feature ~
+    </p>
+find-similar-tracks = View{ similar-tracks }
+track-view-comments = View{ track } comments
 
 # feelown.gui.pages
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

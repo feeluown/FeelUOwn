@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
     QSplitter,
 )
 
+from feeluown.i18n import t
 from feeluown.gui.components import PlayerProgressSliderAndLabel
 from feeluown.gui.components.btns import MediaButtonsV2
 from feeluown.gui.components.nowplaying import (
@@ -102,8 +103,8 @@ class PlayerPanel(QWidget):
         self.ctl_btns.hide()
         self.progress.hide()
         video_widget.ctl_bar.clear_adhoc_btns()
-        exit_btn = video_widget.ctl_bar.add_adhoc_btn("退出视频模式")
-        fullwindow_btn = video_widget.ctl_bar.add_adhoc_btn("窗口全屏")
+        exit_btn = video_widget.ctl_bar.add_adhoc_btn(t("movie-mode-exit"))
+        fullwindow_btn = video_widget.ctl_bar.add_adhoc_btn(t("fullscreen-window"))
         exit_btn.clicked.connect(self.unkeep_and_enter_cover_mode)
         fullwindow_btn.clicked.connect(
             lambda: self._app.watch_mgr.enter_fullwindow_mode(
@@ -154,10 +155,10 @@ class NowplayingOverlay(QWidget):
         self.comments_view = NowplayingCommentListView(app)
         self.player_playlist_view = NowplayingPlayerPlaylistView(app)
         self.similar_songs_view = NowplayingSimilarSongsView(app)
-        self.tabbar.addTab("歌词")
-        self.tabbar.addTab("热门评论")
-        self.tabbar.addTab("相似歌曲")
-        self.tabbar.addTab("播放队列")
+        self.tabbar.addTab(t("track-lyrics"))
+        self.tabbar.addTab(t("track-hot-comments"))
+        self.tabbar.addTab(t("similar-tracks"))
+        self.tabbar.addTab(t("playlist"))
         self.stacked_widget.addWidget(self.lyric_view)
         self.stacked_widget.addWidget(self.comments_view)
         self.stacked_widget.addWidget(self.similar_songs_view)
