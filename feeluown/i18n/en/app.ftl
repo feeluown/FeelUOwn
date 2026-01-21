@@ -7,6 +7,7 @@
 minimize-window = Minimize
 fullscreen-window = Fullscreen
 playlist = Playlist
+recently-played = Recently Played
 
 # Tab name, commonly used
 # ----------------------------------------

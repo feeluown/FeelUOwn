@@ -13,6 +13,7 @@ from PyQt6.QtGui import (
     QPainter,
 )
 
+from feeluown.i18n import t
 from feeluown.player import PlaybackMode, SongsRadio
 from feeluown.gui.helpers import fetch_cover_wrapper, esc_hide_widget
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
@@ -94,7 +95,7 @@ class PlaylistOverlay(QWidget):
 
         self._tabbar.setDocumentMode(True)
         self._tabbar.addTab("播放列表")
-        self._tabbar.addTab("最近播放")
+        self._tabbar.addTab(t("recently-played"))
         self._layout.addWidget(self._tabbar)
         self._layout.addLayout(self._btn_layout)
         self._layout.addLayout(self._btn_layout2)

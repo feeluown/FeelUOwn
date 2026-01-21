@@ -7,6 +7,7 @@
 minimize-window = 最小化
 fullscreen-window = 全屏
 playlist = 播放列表
+recently-played = 最近播放
 
 # Tab name, commonly used
 # ----------------------------------------

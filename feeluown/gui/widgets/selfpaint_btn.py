@@ -2,6 +2,7 @@ from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
 from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton
 from PyQt6.QtGui import QPainter, QPalette, QPainterPath
 
+from feeluown.i18n import t
 from feeluown.gui.drawers import (
     HomeIconDrawer,
     PlusIconDrawer,
@@ -240,7 +241,7 @@ class TriagleButton(SelfPaintAbstractSquareButton):
 
 
 class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, text="最近播放", **kwargs):
+    def __init__(self, text=t("recently-played"), **kwargs):
         super().__init__(text, **kwargs)
 
     def draw_icon(self, painter):
