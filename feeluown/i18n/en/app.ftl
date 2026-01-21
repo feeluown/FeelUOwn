@@ -5,6 +5,7 @@
 # minimize, fullscreen, close, e.g.
 # ----------------------------------------
 minimize-window = Minimize
+fullscreen-window = Fullscreen
 playlist = Playlist
 
 # Tab name, commonly used
@@ -24,11 +25,14 @@ musician = Musician
 # ----------------------------------------
 
 tips-osdlyrics = Did you know FeelUOwn can work with osdlyrics?
-tips-search-shortcut = The search shortcut is Ctrl + F
 tips-show-more-tips = Type '>>> app.tips_mgr.show_random()' in the search box to see more Tips
 tips-album-original-image = Right-click on the album art to view the original image ~
+tips-track-drag-to-playlist = You can drag the song to add it to a playlist!
 tips-common-tooltip = Hover or right-click for pleasant surprises ~
 tips-watch-mode = Enable watch mode to watch MVs while working or studying—how nice is that?
+
+## shortcut: the shortcut key
+tips-search-shortcut = The search shortcut is { $shortcut }
 
 ## note: $user is passed with prefix '@'
 thanks-contributor = Thanks to { $user } for the contribution :)

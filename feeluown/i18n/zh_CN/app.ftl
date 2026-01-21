@@ -5,6 +5,7 @@
 # minimize, fullscreen, close, e.g.
 # ----------------------------------------
 minimize-window = 最小化
+fullscreen-window = 全屏
 playlist = 播放列表
 
 # Tab name, commonly used
@@ -23,11 +24,14 @@ musician = 歌手
 # ----------------------------------------
 
 tips-osdlyrics = 你知道 FeelUOwn 可以配合 osdlyrics 使用吗?
-tips-search-shortcut = 搜索快捷键是 Ctrl + F
 tips-show-more-tips = 在搜索框输入“>>> app.tips_mgr.show_random()”查看更多 Tips
 tips-album-original-image = 专辑图片上右键可以查看原图哦 ~
+tips-track-drag-to-playlist = 可以拖动歌曲来将歌曲添加到歌单呐！
 tips-common-tooltip = 鼠标悬浮或右键常有惊喜 ~
 tips-watch-mode = 开启 watch 模式一边看 MV，一边工作学习香不香？
+
+## shortcut: the shortcut key
+tips-search-shortcut = 搜索快捷键是 { $shortcut }
 
 ## note: $user is passed with prefix '@'
 thanks-contributor = 感谢 { $user } 的贡献 :)

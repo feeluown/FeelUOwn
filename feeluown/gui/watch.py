@@ -6,6 +6,7 @@ from PyQt6.QtCore import Qt, QEvent
 from PyQt6.QtGui import QResizeEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout
 
+from feeluown.i18n import t
 from feeluown.gui.helpers import esc_hide_widget
 from feeluown.gui.widgets.frameless import ResizableFramelessContainer
 
@@ -116,10 +117,10 @@ class WatchManager:
 
         video_widget.overlay_auto_visible = True
         video_widget.ctl_bar.clear_adhoc_btns()
-        pip_btn = video_widget.ctl_bar.add_adhoc_btn("画中画")
+        pip_btn = video_widget.ctl_bar.add_adhoc_btn(t("picture-in-picture"))
         pip_btn.clicked.connect(lambda: self.keep_and_set_mode(Mode.pip))
         if go_back is not None:
-            hide_btn = video_widget.ctl_bar.add_adhoc_btn("最小化")
+            hide_btn = video_widget.ctl_bar.add_adhoc_btn(t("minimize-window"))
             hide_btn.clicked.connect(go_back)
 
     def unkeep_pip_and_enter_fullwindow_mode(self):
@@ -150,8 +151,8 @@ class WatchManager:
             self._pip_container.show()
 
         video_widget.ctl_bar.clear_adhoc_btns()
-        fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn("全屏")
-        hide_btn = video_widget.ctl_bar.add_adhoc_btn("退出画中画")
+        fullscreen_btn = video_widget.ctl_bar.add_adhoc_btn(t("fullscreen-window"))
+        hide_btn = video_widget.ctl_bar.add_adhoc_btn(t('hide-picture-in-picture'))
         fullscreen_btn.clicked.connect(self.toggle_pip_fullscreen)
         hide_btn.clicked.connect(self.unkeep_pip_and_enter_fullwindow_mode)
         try:
