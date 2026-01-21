@@ -199,6 +199,32 @@ search-providers = Search Providers
 ai-radio-prompt = AI Radio (Prompt)
 player = Player
 
+# feeluown.gui.widgets.login
+# ----------------------------------------
+cookies-dialog-login-button  = Login
+cookies-dialog-web-login-btn = Use FeelUOwn built-in browser to login
+cookies-dialog-chrome-btn    = Read cookies from Chrome
+cookies-dialog-firefox-btn   = Read cookies from Firefox
+cookies-dialog-edge-btn      = Read cookies from Edge
+
+cookies-dialog-tutorial =
+    FeelUOwn offers several ways to log in to third-party music platforms,
+    <span style='color:red'>choose whichever you like</span>.<br/><br/>
+    If you are already logged into a third-party platform in your usual browser, you can prioritize the “Read Cookie” login method.
+    Otherwise, it is recommended to use the “Use built-in browser to login” method (you need to install pyqt webengine to use it).
+    Of course, if you know how to manually copy cookies, you can copy them first and then click “Login”.
+
+cookies-dialog-placeholder =
+    Please copy cookies from the browser!\n\n
+    You can copy a request’s Cookie header in the format key1=value1; key2=value2
+    Or you can enter cookie content in JSON format, like {"{"}"key1": "value1", "key2": "value2"{"}"}
+
+cookies-parse-fail    = Failed to parse with { $parser }, trying next
+cookies-parse-success = Successfully parsed with { $parser }
+
+cookies-save-user-info        = Saving user info to FeelUOwn data directory
+cookies-loading-existing-user = Attempting to load existing user...
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -199,6 +199,32 @@ search-providers = 搜索来源
 ai-radio-prompt = AI 电台 (提示词)
 player = 播放器
 
+# feeluown.gui.widgets.login
+# ----------------------------------------
+cookies-dialog-login-button  = 登录
+cookies-dialog-web-login-btn = 使用 FeelUOwn 内置浏览器登录
+cookies-dialog-chrome-btn    = 从 Chrome 中读取 Cookie
+cookies-dialog-firefox-btn   = 从 Firefox 中读取 Cookie
+cookies-dialog-edge-btn      = 从 Edge 中读取 Cookie
+
+cookies-dialog-tutorial =
+    FeelUOwn 提供了几种登录第三方音乐平台的方式，
+    <span style='color:red'>任选一种即可</span>。<br/><br/>
+    如果你已经在常用浏览器上登录了第三方平台，可以优先选择“读取 Cookie”方式登录。
+    其它情况，推荐使用“使用内置浏览器登录”方式登录（你需要安装 pyqt webengine 才可使用）。
+    当然，如果你知道如何手动拷贝 Cookie，你可以先拷贝 Cookie，然后点击“登录”。
+
+cookies-dialog-placeholder =
+    请从浏览器中复制 Cookie！\n\n
+    你可以拷贝一个请求的 Cookie Header，格式类似 key1=value1; key2=value2\n
+    你也可以填入 JSON 格式的 Cookie 内容，类似 {"{"}"key1": "value1", "key2": "value2"{"}"}
+
+cookies-parse-fail    = 使用 { $parser } 解析器解析失败，尝试下一种
+cookies-parse-success = 使用 { $parser } 解析器解析成功
+
+cookies-save-user-info        = 保存用户信息到 FeelUOwn 数据目录
+cookies-loading-existing-user = 正在尝试加载已有用户...
+
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

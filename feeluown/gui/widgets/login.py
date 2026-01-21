@@ -4,8 +4,12 @@ from urllib.parse import urlparse
 
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import (
-    QDialog, QTextEdit, QPushButton, QVBoxLayout, QLabel,
-    QHBoxLayout
+    QDialog,
+    QTextEdit,
+    QPushButton,
+    QVBoxLayout,
+    QLabel,
+    QHBoxLayout,
 )
 
 try:
@@ -23,6 +27,7 @@ else:
     can_load_keyring_cookies = True
 
 from feeluown.utils import aio
+from feeluown.i18n import t
 
 
 def try_get_domain_from_uri(uri):
@@ -96,11 +101,11 @@ class CookiesLoginDialog(LoginDialog):
         self.tutorial_label = QLabel(self)
         self.hint_label = QLabel(self)
         self.hint_label.setWordWrap(True)
-        self.login_btn = QPushButton("登录", self)
-        self.weblogin_btn = QPushButton("使用 FeelUOwn 内置浏览器登录", self)
-        self.chrome_btn = QPushButton("从 Chrome 中读取 Cookie")
-        self.firefox_btn = QPushButton("从 Firefox 中读取 Cookie")
-        self.edge_btn = QPushButton("从 Edge 中读取 Cookie")
+        self.login_btn = QPushButton(t("cookies-dialog-login-button"), self)
+        self.weblogin_btn = QPushButton(t("cookies-dialog-web-login-btn"), self)
+        self.chrome_btn = QPushButton(t("cookies-dialog-chrome-btn"))
+        self.firefox_btn = QPushButton(t("cookies-dialog-firefox-btn"))
+        self.edge_btn = QPushButton(t("cookies-dialog-edge-btn"))
 
         self.tutorial_label.setWordWrap(True)
         self.tutorial_label.setTextFormat(Qt.TextFormat.RichText)
@@ -122,19 +127,9 @@ class CookiesLoginDialog(LoginDialog):
         self._layout.addWidget(self.hint_label)
         self._layout.addWidget(self.login_btn)
 
-        self.tutorial_label.setText(
-            "FeelUOwn 提供了几种登录第三方音乐平台的方式，"
-            "<span style='color:red'>任选一种即可</span>。<br/><br/>"
-            "如果你已经在常用浏览器上登录了第三方平台,可以优先选择“读取 Cookie”方式登录。"
-            "其它情况，推荐使用“使用内置浏览器登录”方式登录（你需要安装 pyqt webengine 才可使用）。"
-            "当然，如果你知道如何手动拷贝 Cookie，你可以先拷贝 Cookie，然后点击“登录”。"
-        )
+        self.tutorial_label.setText(t("cookies-dialog-tutorial"))
         self.cookies_text_edit.setAcceptRichText(False)
-        self.cookies_text_edit.setPlaceholderText(
-            "请从浏览器中复制 Cookie！\n\n"
-            "你可以拷贝一个请求的 Cookie Header，格式类似 key1=value1; key2=value2\n"
-            '你也可以填入 JSON 格式的 Cookie 内容，类似 {"key1": "value1", "key2": "value2"}'
-        )
+        self.cookies_text_edit.setPlaceholderText(t("cookies-dialog-placeholder"))
 
         if self._use_webview is True:
             self.weblogin_btn.clicked.connect(self._start_web_login)
@@ -218,11 +213,9 @@ class CookiesLoginDialog(LoginDialog):
         for name, parse in parsers:
             cookies = parse(text)
             if cookies is None:
-                self.show_hint(
-                    f"使用 {name} 解析器解析失败，尝试下一种", color="orange"
-                )
+                self.show_hint(t("cookies-parse-fail", parser=name), color="orange")
             else:
-                self.show_hint(f"使用 {name} 解析器解析成功")
+                self.show_hint(t("cookies-parse-success", parser=name))
                 break
         return cookies
 
@@ -252,7 +245,7 @@ class CookiesLoginDialog(LoginDialog):
         except InvalidCookies as e:
             self.show_hint(str(e), color="red")
         else:
-            self.show_hint("保存用户信息到 FeelUOwn 数据目录")
+            self.show_hint(t("cookies-save-user-info"))
             self.dump_user_cookies(user, cookies)
             self.setup_user(user)
             self.login_succeed.emit()
@@ -264,7 +257,7 @@ class CookiesLoginDialog(LoginDialog):
         """
         cookies = self.load_user_cookies()
         if cookies is not None:
-            self.show_hint("正在尝试加载已有用户...", color="green")
+            self.show_hint(t("cookies-loading-existing-user"), color="green")
             self.cookies_text_edit.setText(json.dumps(cookies, indent=2))
             aio.create_task(self.login_with_cookies(cookies))
 
