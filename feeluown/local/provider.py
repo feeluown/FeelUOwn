@@ -79,7 +79,7 @@ class LocalProvider(AbstractProvider, ProviderV2):
 
     @property
     def name(self):
-        return '本地音乐'
+        return LocalProvider.meta.name
 
     def scan(self, config, paths, depth=3):
         exts = config.MUSIC_FORMATS
