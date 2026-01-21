@@ -3,6 +3,7 @@ from typing import Optional, TYPE_CHECKING
 
 from PyQt6.QtGui import QGuiApplication
 
+from feeluown.i18n import t
 from feeluown.excs import ProviderIOError
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.player import SongRadio
@@ -21,7 +22,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-MV_BTN_TEXT = "播放 MV"
+MV_BTN_TEXT = t("play-track-movie")
 
 
 class SongMenuInitializer:
@@ -60,40 +61,47 @@ class SongMenuInitializer:
             if usong.album is not None:
                 self._app.browser.goto(model=usong.album)
             else:
-                self._app.show_msg("该歌曲没有专辑信息")
+                self._app.show_msg(t("track-missing-album"))
 
         menu.hovered.connect(self.on_action_hovered)
-        menu.addAction("搜索相似资源").triggered.connect(
+        menu.addAction(t("track-search-similar")).triggered.connect(
             lambda: self.show_similar_resource(song)
         )
-        artist_menu = menu.addMenu("查看歌手")
+        artist_menu = menu.addMenu(t("track-show-artist"))
         artist_menu.menuAction().setData({"artists": None, "song": song})
         mv_menu = menu.addMenu(MV_BTN_TEXT)
         mv_menu.menuAction().setData({"mvs": None, "song": song})
 
-        menu.addAction("查看专辑").triggered.connect(
+        menu.addAction(t("track-show-album")).triggered.connect(
             lambda: run_afn(goto_song_album, song)
         )
-        menu.addAction("歌曲电台").triggered.connect(lambda: enter_song_radio(song))
-        menu.addAction("歌曲详情").triggered.connect(lambda: goto_song_explore(song))
+        menu.addAction(t("track-enter-radio")).triggered.connect(
+            lambda: enter_song_radio(song)
+        )
+        menu.addAction(t("track-show-detail")).triggered.connect(
+            lambda: goto_song_explore(song)
+        )
 
         menu.addSeparator()
-        playlist_add_menu = menu.addMenu("加入到播放列表")
+        playlist_add_menu = menu.addMenu(t("track-playlist-add"))
+
         playlist_add_menu.menuAction().setData(
             {"menu_id": "playlist_add", "playlists": None, "song": song}
         )
 
         ai_menu = menu.addMenu("AI")
-        ai_menu.addAction("拷贝 AI Prompt").triggered.connect(
+        ai_menu.addAction(t("menu-ai-copy-prompt")).triggered.connect(
             lambda: self.copy_ai_prompt(song)
         )
 
     def copy_ai_prompt(self, song):
+        _song_title: str = song.title
+        _song_artists: str = song.artists_name
         prompt = "你是一个音乐播放器助手。\n"
         prompt += "【填入你的需求】\n"
         prompt += f"歌曲信息如下 -> 歌曲名：{song.title}, 歌手名：{song.artists_name}"
         QGuiApplication.clipboard().setText(prompt)
-        self._app.show_msg("已经复制到剪贴板")
+        self._app.show_msg(t("menu-ai-copy-prompt-succeed"))
 
     def show_similar_resource(self, song):
         from feeluown.gui.components.search import create_search_result_view
@@ -136,9 +144,13 @@ class SongMenuInitializer:
                 logger.error(f"add song to playlist failed {e}")
                 ok = False
             if ok:
-                self._app.show_msg(f"已加入到 {playlist.name} ✅")
+                self._app.show_msg(
+                    t("track-playlist-add-succ", playlistName=playlist.name)
+                )
             else:
-                self._app.show_msg(f"加入到 {playlist.name} 失败 ❌")
+                self._app.show_msg(
+                    t("track-playlist-add-fail", playlistName=playlist.name)
+                )
 
         if (
             isinstance(provider, SupportsPlaylistAddSong)
@@ -189,7 +201,7 @@ class SongMenuInitializer:
                 action.setText(MV_BTN_TEXT)
             else:
                 data["mvs"] = []
-                action.setText("该歌曲无 MV")
+                action.setText(t("track-missing-movie"))
                 action.setDisabled(True)
             action.setData(data)
 

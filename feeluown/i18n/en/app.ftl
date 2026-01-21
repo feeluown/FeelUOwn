@@ -87,6 +87,76 @@ local-liked-tracks-removed = Already removed from { local-liked-tracks }
 
 show-track-movie = Show the { video } screen
 
+# feeluown.gui.components.collections
+# ----------------------------------------
+track-collection = Collection
+remove-this-collection = Remove this { track-collection }
+
+# feeluown.gui.components.line_song
+# ----------------------------------------
+play-stage-prepare-track-url = Obtaining {track} playback URL...
+play-stage-prepare-track-url-fallback = Attempting to find a fallback playback URL...
+play-stage-prepare-track-metadata = Attempting to fetch complete track metadata...
+play-stage-prepare-track-loading = Loading {track} resources...
+play-stage-prepare-movie-url = Obtaining {video} playback URL for the music...
+
+# feeluown.gui.components.menu
+# ----------------------------------------
+play-track-movie = Play MV
+track-missing-album = No { album } information for this { track }
+track-missing-movie = { track } has no MV
+track-search-similar = Search for similar resources
+track-show-artist = View { musician }
+track-show-album = View { album }
+track-enter-radio = { track } Radio
+track-show-detail = { track } Details
+
+track-playlist-add = Add to { playlist }
+track-playlist-add-succ = Added to { $playlistName } ✅
+track-playlist-add-fail = Failed to add to { $playlistName } ❌
+
+track-movie-missing = No MV for this { track }
+
+menu-ai-button = AI
+menu-ai-copy-prompt = Copy AI Prompt
+menu-ai-copy-prompt-succeed = Copied to clipboard
+
+# feeluown.gui.components.nowplaying
+# ----------------------------------------
+track-movie-play-tooltip = Play { track } MV
+track-album-release-date = Album Release Date: { $releaseDate }
+
+# feeluown.gui.components.player_playlist
+# ----------------------------------------
+fm-radio-current-song-dislike = Don't want to listen
+track-playlist-remove = Remove from { playlist }
+
+track-provider-blacklist-add = Add content provider to blacklist
+track-provider-blacklist-adding = Adding to blacklist, please wait...
+track-provider-blacklist-add-fail = Failed to add to blacklist
+
+# feeluown.gui.components.playlist_btn
+# ----------------------------------------
+playlist-show = Show current { playlist }
+
+# feeluown.gui.components.search
+# ----------------------------------------
+
+track-search = Search { $keyword }
+
+## providerCount: count of content providers.
+track-searching = Searching { $providerCount } content providers...
+
+## providerName: name of the content provider
+track-search-error = Error searching resources from { $providerName }: { $errorMessage }
+track-search-result-empty = Searching { $providerName } yielded no results
+
+## resultCount: amount of valid results
+## timeCost: seconds cost for searching, floating number
+track-search-done = Search completed, with { $resultCount } valid results, taking {
+   NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2)
+}s
+
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

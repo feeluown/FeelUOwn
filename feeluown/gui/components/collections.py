@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QAbstractItemView, QMenu
 
+from feeluown.i18n import t
 from feeluown.collection import CollectionType, Collection
 from feeluown.gui.widgets.textlist import TextlistModel, TextlistView
 
@@ -48,7 +49,7 @@ class CollectionListView(TextlistView):
 
         collection: Collection = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
-        action = menu.addAction("删除此收藏集")
+        action = menu.addAction(t("remove-this-collection"))
         action.triggered.connect(lambda: self.remove_collection.emit(collection))
         menu.exec(event.globalPos())
 

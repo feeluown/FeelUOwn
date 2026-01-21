@@ -4,6 +4,7 @@ from PyQt6.QtCore import QTimer, QRect, Qt
 from PyQt6.QtGui import QPainter, QPalette, QColor
 from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu, QVBoxLayout, QWidget
 
+from feeluown.i18n import t
 from feeluown.player import PlaylistPlayModelStage
 from feeluown.library import fmt_artists_names
 from feeluown.gui.components import SongMenuInitializer
@@ -56,15 +57,15 @@ class LineSongLabel(QLabel):
 
     def on_play_model_stage_changed(self, stage):
         if stage == PlaylistPlayModelStage.prepare_media:
-            self.setText("正在获取歌曲播放链接...")
+            self.setText(t("play-stage-prepare-track-url"))
         elif stage == PlaylistPlayModelStage.find_standby_by_mv:
-            self.setText("正在获取音乐的视频播放链接...")
+            self.setText(t("play-stage-prepare-movie-url"))
         elif stage == PlaylistPlayModelStage.find_standby:
-            self.setText("尝试寻找备用播放链接...")
+            self.setText(t("play-stage-prepare-track-url-fallback"))
         elif stage == PlaylistPlayModelStage.prepare_metadata:
-            self.setText("尝试获取完整的歌曲元信息...")
+            self.setText(t("play-stage-prepare-track-metadata"))
         elif stage == PlaylistPlayModelStage.load_media:
-            self.setText("正在加载歌曲资源...")
+            self.setText(t("play-stage-prepare-track-loading"))
 
     def change_text_position(self):
         if not self.parent().isVisible():  # type: ignore

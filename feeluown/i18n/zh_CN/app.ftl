@@ -100,7 +100,9 @@ play-stage-prepare-movie-url = 正在获取音乐的{video}播放链接...
 
 # feeluown.gui.components.menu
 # ----------------------------------------
+play-track-movie = 播放 MV
 track-missing-album = 该{ track }没有{ album }信息
+track-missing-movie = 该{ track }无 MV
 track-search-similar = 搜索相似资源
 track-show-artist = 查看{ musician }
 track-show-album = 查看{ album }
