@@ -10,21 +10,36 @@ from feeluown.utils.dispatch import Signal
 from feeluown.library.base import SearchType, ModelType
 from feeluown.library.provider import Provider
 from feeluown.library.excs import (
-    MediaNotFound, ProviderAlreadyExists, ModelNotFound, ResourceNotFound,
+    MediaNotFound,
+    ProviderAlreadyExists,
+    ModelNotFound,
+    ResourceNotFound,
 )
 from feeluown.library.flags import Flags as PF
 from feeluown.library.models import (
-    ModelFlags as MF, BaseModel, SimpleSearchResult,
-    BriefVideoModel, BriefSongModel, SongModel,
-    LyricModel, VideoModel, BriefAlbumModel, BriefArtistModel,
+    ModelFlags as MF,
+    BaseModel,
+    SimpleSearchResult,
+    BriefVideoModel,
+    BriefSongModel,
+    SongModel,
+    LyricModel,
+    VideoModel,
+    BriefAlbumModel,
+    BriefArtistModel,
     AlbumModel,
 )
 from feeluown.library.model_state import ModelState
 from feeluown.library.provider_protocol import (
     check_flag as check_flag_impl,
-    SupportsSongLyric, SupportsSongMV, SupportsSongMultiQuality,
-    SupportsVideoMultiQuality, SupportsSongWebUrl, SupportsVideoWebUrl,
-    SupportsAlbumSongsReader, SupportsUserAutoLogin,
+    SupportsSongLyric,
+    SupportsSongMV,
+    SupportsSongMultiQuality,
+    SupportsVideoMultiQuality,
+    SupportsSongWebUrl,
+    SupportsVideoWebUrl,
+    SupportsAlbumSongsReader,
+    SupportsUserAutoLogin,
 )
 from feeluown.library.standby import (
     get_standby_score,
@@ -38,7 +53,7 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-T_p = TypeVar('T_p')
+T_p = TypeVar("T_p")
 
 
 def raise_(e):
@@ -55,8 +70,8 @@ class Library:
         """
         self._providers_standby = providers_standby
         self._providers = set()
-        self.ytdl: Optional['Ytdl'] = None
-        self.ai: Optional['AI'] = None
+        self.ytdl: Optional["Ytdl"] = None
+        self.ai: Optional["AI"] = None
 
         self.provider_added = Signal()  # emit(AbstractProvider)
         self.provider_removed = Signal()  # emit(AbstractProvider)
@@ -78,7 +93,7 @@ class Library:
         :raises ValueError:
         """
         if not isinstance(provider, Provider):
-            raise ValueError('invalid provider instance')
+            raise ValueError("invalid provider instance")
         for _provider in self._providers:
             if _provider.identifier == provider.identifier:
                 raise ProviderAlreadyExists
@@ -134,14 +149,14 @@ class Library:
                 try:
                     result = provider.search(keyword=keyword, type_=type_, **kwargs)
                 except Exception:  # pylint: disable=broad-except
-                    logger.exception('Search %s in %s failed.', keyword, provider)
+                    logger.exception("Search %s in %s failed.", keyword, provider)
                 else:
                     if result is not None:
                         yield result
 
-    async def a_search(self, keyword, source_in=None, timeout=None,
-                       type_in=None, return_err=False,
-                       **_):
+    async def a_search(
+        self, keyword, source_in=None, timeout=None, type_in=None, return_err=False, **_
+    ):
         """async version of search
 
         .. versionchanged:: 4.1.9
@@ -158,21 +173,26 @@ class Library:
                     res = pvd.search(kw, type_=t)
                 except Exception as e:  # noqa
                     if return_err:
-                        logger.exception('One provider search failed')
+                        logger.exception("One provider search failed")
                         return SimpleSearchResult(
                             q=keyword,
                             source=pvd.identifier,  # noqa
-                            err_msg=f'{type(e)}',
+                            err_msg=f"{type(e)}",
                         )
                     raise e
                 # When a provider does not implement search method, it returns None.
                 if res is not None and (
-                    res.songs or res.albums or
-                    res.artists or res.videos or res.playlists
+                    res.songs
+                    or res.albums
+                    or res.artists
+                    or res.videos
+                    or res.playlists
                 ):
                     return res
                 return SimpleSearchResult(
-                    q=keyword, source=pvd.identifier, err_msg='结果为空')
+                    q=keyword, source=pvd.identifier, err_msg="结果为空"
+                )
+
             return search
 
         fs = []  # future list
@@ -184,7 +204,7 @@ class Library:
             try:
                 result = await task_
             except Exception as e:  # noqa
-                logger.exception('One search task failed due to asyncio')
+                logger.exception("One search task failed due to asyncio")
             else:
                 yield result
 
@@ -193,14 +213,20 @@ class Library:
         try:
             media = await run_fn(self.song_prepare_media, standby, policy)
         except MediaNotFound as e:
-            logger.debug(f'standby media not found: {e}')
+            logger.debug(f"standby media not found: {e}")
         except:  # noqa
-            logger.exception(f'get standby:{standby} media failed')
+            logger.exception(f"get standby:{standby} media failed")
         return media
 
     async def a_list_song_standby_v2(
-            self, song, audio_select_policy='>>>', source_in=None,
-            score_fn=None, min_score=STANDBY_DEFAULT_MIN_SCORE, limit=1):
+        self,
+        song,
+        audio_select_policy=">>>",
+        source_in=None,
+        score_fn=None,
+        min_score=STANDBY_DEFAULT_MIN_SCORE,
+        limit=1,
+    ):
         """list song standbys and their media
 
         .. versionadded:: 3.7.8
@@ -213,7 +239,7 @@ class Library:
             score_fn = get_standby_score
         limit = max(limit, 1)
 
-        q = '{} {}'.format(song.title_display, song.artists_name_display)
+        q = "{} {}".format(song.title_display, song.artists_name_display)
         standby_score_list = []  # [(standby, score), (standby, score)]
         song_media_list = []  # [(standby, media), (standby, media)]
         top2_standby = []
@@ -224,17 +250,16 @@ class Library:
             for i, standby in enumerate(result.songs):
                 # HACK(cosven): I think the local provider should not be included,
                 #   because the search algorithm of local provider is so bad.
-                if i < 2 and standby.source != 'local':
+                if i < 2 and standby.source != "local":
                     top2_standby.append(standby)
                 score = score_fn(song, standby)
                 if score == STANDBY_FULL_SCORE:
                     media = await self.a_song_prepare_media_no_exc(
-                        standby,
-                        audio_select_policy
+                        standby, audio_select_policy
                     )
                     if media is None:
                         continue
-                    logger.info(f'Find full score standby for song:{q}')
+                    logger.info(f"Find full score standby for song:{q}")
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
                         # Return as early as possible to get better performance
@@ -243,8 +268,10 @@ class Library:
                     standby_score_list.append((standby, score))
         if standby_score_list:
             standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
-            logger.info(f"Find {len(standby_score_list)} similar songs "
-                        f"from {','.join(standby_pvd_id_set)}. Try to get a valid media")
+            logger.info(
+                f"Find {len(standby_score_list)} similar songs "
+                f"from {','.join(standby_pvd_id_set)}. Try to get a valid media"
+            )
             max_per_source = 2
             standby_score_list_2 = []
             counter = Counter()
@@ -263,8 +290,7 @@ class Library:
             for standby, _ in sorted_standby_score_list:
                 # TODO: send multiple requests at a time.
                 media = await self.a_song_prepare_media_no_exc(
-                    standby,
-                    audio_select_policy
+                    standby, audio_select_policy
                 )
                 if media is not None:
                     song_media_list.append((standby, media))
@@ -297,10 +323,8 @@ class Library:
 
     def check_flags_by_model(self, model: BaseModel, flags: PF) -> bool:
         """Alias for check_flags"""
-        warnings.warn('please use isinstance(provider, protocol_cls)')
-        return self.check_flags(model.source,
-                                ModelType(model.meta.model_type),
-                                flags)
+        warnings.warn("please use isinstance(provider, protocol_cls)")
+        return self.check_flags(model.source, ModelType(model.meta.model_type), flags)
 
     # -----
     # Songs
@@ -311,7 +335,7 @@ class Library:
     def song_prepare_media(self, song: BriefSongModel, policy) -> Media:
         provider = self.get(song.source)
         if provider is None:
-            raise MediaNotFound(f'provider({song.source}) not found')
+            raise MediaNotFound(f"provider({song.source}) not found")
         media = None
         if isinstance(provider, SupportsSongMultiQuality):
             try:
@@ -326,10 +350,11 @@ class Library:
                 song_web_url = provider.song_get_web_url(song)
                 media = self.ytdl.select_audio(song_web_url, policy, source=song.source)
                 found = media is not None
-                logger.debug(f'ytdl select audio for {song_web_url} finished, '
-                             f'found: {found}')
+                logger.debug(
+                    f"ytdl select audio for {song_web_url} finished, found: {found}"
+                )
             if not media:
-                raise MediaNotFound('provider returns empty media')
+                raise MediaNotFound("provider returns empty media")
         return media
 
     def song_get_web_url(self, song: BriefSongModel) -> str:
@@ -342,7 +367,7 @@ class Library:
         """
         provider = self.get(song.source)
         if provider is None:
-            raise ResourceNotFound(f'provider({song.source}) not found')
+            raise ResourceNotFound(f"provider({song.source}) not found")
         if isinstance(provider, SupportsSongWebUrl):
             return provider.song_get_web_url(song)
         raise ResourceNotFound(reason=ResourceNotFound.Reason.not_supported)
@@ -356,7 +381,7 @@ class Library:
         if mv is not None:
             media = self.video_prepare_media(mv, policy)
             return media
-        raise MediaNotFound('provider returns empty media')
+        raise MediaNotFound("provider returns empty media")
 
     def song_get_mv(self, song: BriefSongModel) -> Optional[VideoModel]:
         """Get the MV model of a song."""
@@ -430,7 +455,7 @@ class Library:
         """
         provider = self.get(pid)
         if provider is None:
-            raise ModelNotFound(f'provider:{pid} not found')
+            raise ModelNotFound(f"provider:{pid} not found")
         return provider.model_get(mtype, mid)
 
     def model_get_cover(self, model):
@@ -443,7 +468,7 @@ class Library:
             try:
                 um = self._model_upgrade(model)
             except ResourceNotFound:
-                return ''
+                return ""
         else:
             um = model
         if ModelType(model.meta.model_type) is ModelType.artist:
@@ -475,7 +500,7 @@ class Library:
         model_type = ModelType(model.meta.model_type)
         provider = self.get(model.source)
         if provider is None:
-            raise ModelNotFound(f'provider:{model.source} not found')
+            raise ModelNotFound(f"provider:{model.source} not found")
         try:
             upgraded_model = provider.model_get(model_type, model.identifier)
         except ModelNotFound as e:
@@ -485,7 +510,7 @@ class Library:
                 model.state = ModelState.cant_upgrade
             raise
         if upgraded_model is None:  # some provider does not implement
-            raise ModelNotFound(f'{provider} implementation error, it returns None :(')
+            raise ModelNotFound(f"{provider} implementation error, it returns None :(")
         return upgraded_model
 
     # --------
@@ -504,18 +529,19 @@ class Library:
             if isinstance(provider, SupportsVideoMultiQuality):
                 media, _ = provider.video_select_media(video, policy)
                 if not media:
-                    raise MediaNotFound('provider returns empty media')
+                    raise MediaNotFound("provider returns empty media")
             else:
-                raise MediaNotFound('provider or video not found')
+                raise MediaNotFound("provider or video not found")
         except MediaNotFound:
             if self.ytdl is not None and isinstance(provider, SupportsVideoWebUrl):
                 video_web_url = provider.video_get_web_url(video)
-                media = self.ytdl.select_video(video_web_url,
-                                               policy,
-                                               source=video.source)
+                media = self.ytdl.select_video(
+                    video_web_url, policy, source=video.source
+                )
                 found = media is not None
-                logger.debug(f'ytdl select video for {video_web_url} finished, '
-                             f'found: {found}')
+                logger.debug(
+                    f"ytdl select video for {video_web_url} finished, found: {found}"
+                )
             else:
                 media = None
             if not media:
