@@ -82,8 +82,8 @@ watch-mode-tooltip =
 local-liked-tracks = “本地收藏”
 local-liked-tracks-add = 添加到{ local-liked-tracks }
 local-liked-tracks-remove = 从{ local-liked-tracks }中移除
-local-liked-tracks-added = 已经{ local-liked-tracks-add }
-local-liked-tracks-removed = 已经{ local-liked-tracks-remove }
+local-liked-tracks-added = 已添加到{ local-liked-tracks }
+local-liked-tracks-removed = 已从{ local-liked-tracks }移除
 
 show-track-movie = 展示{ video }画面
 
