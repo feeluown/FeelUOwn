@@ -12,13 +12,13 @@ class PlaylistUiItem(PlaylistModel):
     """
 Based on current experience, the most basic operations related to playlists are:
 
-* Creating, deleting
-* Adding, removing songs
-* Renaming
-* Clicking to display this playlist
+    * Creating, deleting
+    * Adding, removing songs
+    * Renaming
+    * Clicking to display this playlist
 
-These operations have consistent semantics across platforms,
-so PlaylistUiItem does not provide signals like clicked for now.
+    These operations have consistent semantics across platforms,
+    so PlaylistUiItem does not provide signals like clicked for now.
     """
 
 

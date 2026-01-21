@@ -61,8 +61,9 @@ class CollectionListView(TextlistView):
         Then dropMoveEvent will not receive this event either.
         """
         mimedata = e.mimeData()
-        if mimedata.hasFormat("fuo-model/x-song"
-                              ) or mimedata.hasFormat("fuo-model/x-album"):
+        if mimedata.hasFormat("fuo-model/x-song") or mimedata.hasFormat(
+            "fuo-model/x-album"
+        ):
             e.accept()
         else:
             e.ignore()

@@ -13,7 +13,7 @@ Field = namedtuple('Field', ('name', 'type_', 'default', 'desc', 'warn'))
 class Config:
     """Configuration module
 
-Users can configure the values of various options in the rc file."""
+    Users can configure the values of various options in the rc file."""
 
     def __init__(self, name: str = 'config', parent: Optional['Config'] = None):
         object.__setattr__(self, '_name', name)
