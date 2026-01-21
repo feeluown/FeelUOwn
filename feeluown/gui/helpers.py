@@ -77,7 +77,8 @@ def darker_or_lighter(color: QColor, factor):
 async def async_run(func, loop=None, executor=None):
     """Asynchronously obtain the model attribute value
 
-    It is worth noting that if the executor consumption queue is backed up, this will hang.
+    It is worth noting that
+    if the executor consumption queue is backed up, this will hang.
     """
     if loop is None:
         loop = asyncio.get_event_loop()

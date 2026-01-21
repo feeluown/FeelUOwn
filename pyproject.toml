@@ -134,6 +134,10 @@ exclude = ['tests*']
     'gui/assets/themes/*.colors',
 ]
 
+# ruff configuration
+[tool.ruff.lint.pycodestyle]
+max-line-length = 150
+
 # yapf configuration
 [tool.yapf]
 column_limit = 89
