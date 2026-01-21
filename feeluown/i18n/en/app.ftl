@@ -67,12 +67,13 @@ watch-mode-tooltip =
     When watch mode is enabled, the player will first try to find a suitable { video } to play for the { track }.
     Best practice: when enabling watch, it’s recommended to also enable the { picture-in-picture } mode of the { video }.
 
-show-track-movie = Show the { video } screen
-
 local-liked-tracks = the Local favorites
 local-liked-tracks-add = Add to { local-liked-tracks }
-local-liked-tracks-added = Already Added to { local-liked-tracks }
+local-liked-tracks-remove = Remove from { local-liked-tracks }
+local-liked-tracks-added = Already added to { local-liked-tracks }
 local-liked-tracks-removed = Already removed from { local-liked-tracks }
+
+show-track-movie = Show the { video } screen
 
 # WIDGETS
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
