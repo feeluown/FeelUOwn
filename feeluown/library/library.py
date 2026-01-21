@@ -189,8 +189,10 @@ class Library:
                     or res.playlists
                 ):
                     return res
+                # Pass empty err_msg, otherwise `track-search-result-empty`
+                # can be ignored.
                 return SimpleSearchResult(
-                    q=keyword, source=pvd.identifier, err_msg="结果为空"
+                    q=keyword, source=pvd.identifier, err_msg=""
                 )
 
             return search
