@@ -7,6 +7,7 @@ import requests
 from requests.exceptions import ConnectionError, Timeout
 
 from feeluown import __version__
+from feeluown.i18n import t
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +28,7 @@ class VersionManager(object):
     async def check_release(self):
         loop = asyncio.get_event_loop()
 
-        logger.info('正在检测更新...')
+        logger.info('Checking for updates...')
         try:
             resp = await loop.run_in_executor(
                 None,
@@ -35,20 +36,22 @@ class VersionManager(object):
             )
         except (ConnectionError, Timeout) as e:
             logger.warning(e)
-            logger.warning('检查更新失败')
+            logger.warning('Update check failed!')
         else:
             rv = resp.json()
             latest = version.parse(rv['info']['version'])
             current = version.parse(__version__)
+
             if latest > current:
-                msg = '检测到新版本 %s，当前版本为 %s' % (latest, current)
+                msg = t('new-version-found', latestVer=latest, currentVer=current)
                 logger.warning(msg)
                 if self._app.mode & self._app.GuiMode:
                     self._app.show_msg(msg)
             else:
-                logger.info('当前已经是最新版本')
+                msg = t('already-updated', latestVer=latest)
+                logger.info(msg)
                 if self._app.mode & self._app.GuiMode:
-                    self._app.show_msg(f'当前已经是最新版本: {latest}')
+                    self._app.show_msg(msg)
 
 
 if __name__ == '__main__':

@@ -20,6 +20,10 @@ video = Video
 ## can be the singer, artist, or musician.
 musician = Musician
 
+# Version info (feeluown.version)
+# ----------------------------------------
+new-version-found = Found new version { $latestVer }, current: { $currentVer }
+already-updated = Already updated: { $latestVer }
 
 # Tips banner (feeluown.gui.tips)
 # ----------------------------------------

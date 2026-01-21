@@ -20,6 +20,11 @@ video = 视频
 ## can be the singer, artist, or musician.
 musician = 歌手
 
+# Version info (feeluown.version)
+# ----------------------------------------
+new-version-found = 检测到新版本 { $latestVer }，当前版本为 { $currentVer }
+already-updated = 当前已经是最新版本: { $latestVer }
+
 # Tips banner (feeluown.gui.tips)
 # ----------------------------------------
 

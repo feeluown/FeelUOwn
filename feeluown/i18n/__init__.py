@@ -22,7 +22,11 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def t(msg_id: str, **kwargs: str | float | int) -> str:
+def t(msg_id: str, **kwargs: object) -> str:
+    for k, v in kwargs.items():
+        if not isinstance(v, (str, float, int)):
+            kwargs[k] = str(v)
+
     return l10n_bundle().format_value(msg_id, kwargs)
 
 
