@@ -211,7 +211,7 @@ cookies-dialog-tutorial =
     FeelUOwn 提供了几种登录第三方音乐平台的方式，
     <span style='color:red'>任选一种即可</span>。<br/><br/>
     如果你已经在常用浏览器上登录了第三方平台，可以优先选择“读取 Cookie”方式登录。
-    其它情况，推荐使用“使用内置浏览器登录”方式登录（你需要安装 pyqt webengine 才可使用）。
+    其它情况，推荐使用“{ cookies-dialog-web-login-btn }”方式登录（你需要安装 pyqt webengine 才可使用）。
     当然，如果你知道如何手动拷贝 Cookie，你可以先拷贝 Cookie，然后点击“登录”。
 
 cookies-dialog-placeholder =

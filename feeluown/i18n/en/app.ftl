@@ -211,7 +211,7 @@ cookies-dialog-tutorial =
     FeelUOwn offers several ways to log in to third-party music platforms,
     <span style='color:red'>choose whichever you like</span>.<br/><br/>
     If you are already logged into a third-party platform in your usual browser, you can prioritize the “Read Cookie” login method.
-    Otherwise, it is recommended to use the “Use built-in browser to login” method (you need to install pyqt webengine to use it).
+    Otherwise, it is recommended to use the "{ cookies-dialog-web-login-btn }" method (you need to install pyqt webengine to use it).
     Of course, if you know how to manually copy cookies, you can copy them first and then click “Login”.
 
 cookies-dialog-placeholder =
