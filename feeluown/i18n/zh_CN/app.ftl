@@ -169,7 +169,7 @@ emoji-expression = 表情
 # UIMAIN
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-## feeluown.gui.uimain.playlist_overlay
+# feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = 清空{ playlist }
 jump-to-playing-track = 跳转到当前歌曲
@@ -187,3 +187,15 @@ playback-mode-sequential = 顺序播放
 playback-mode-loop = 循环播放
 ## play songs in random order
 playback-mode-random = 随机播放
+
+# feeluown.gui.pages.homepage
+# ----------------------------------------
+fold-expand = 展开
+fold-collapse = 收起
+fold-tooltip = {fold-expand}/{fold-collapse}
+
+recommended-playlist = 推荐{track-list}
+recommended-daily-playlist = 每日推荐
+recommended-feelin-lucky = 随便听听
+recommended-videos = 瞅瞅
+recommended-videos-missing = 暂无推荐{video}

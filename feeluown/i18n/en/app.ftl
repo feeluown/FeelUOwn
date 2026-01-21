@@ -103,7 +103,7 @@ emoji-expression = Emoji
 # UIMAIN
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-## feeluown.gui.uimain.playlist_overlay
+# feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = Clear { playlist }
 jump-to-playing-track = Current track
@@ -121,3 +121,15 @@ playback-mode-sequential = Sequential
 playback-mode-loop = Loop
 ## play songs in random order
 playback-mode-random = Random
+
+# feeluown.gui.pages.homepage
+# ----------------------------------------
+fold-expand = Expand
+fold-collapse = Collapse
+fold-tooltip = {fold-expand}/{fold-collapse}
+
+recommended-playlist = Recommended {track-list}s
+recommended-daily-playlist = Daily Recommendations
+recommended-feelin-lucky = Just listening
+recommended-videos = Take a look
+recommended-videos-missing = No recommended {video}
