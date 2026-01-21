@@ -25,6 +25,13 @@ musician = Musician
 new-version-found = Found new version { $latestVer }, current: { $currentVer }
 already-updated = Already updated: { $latestVer }
 
+# Local musics (feeluown.local)
+# ----------------------------------------
+local-tracks-scan-finished = Local tracks scan finished!
+# Local musics (feeluown.local.provider)
+# ----------------------------------------
+local-tracks = Local tracks
+
 # Tips banner (feeluown.gui.tips)
 # ----------------------------------------
 

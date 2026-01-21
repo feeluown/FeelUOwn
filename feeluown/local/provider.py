@@ -14,6 +14,7 @@ from functools import wraps
 
 from feeluown.excs import ProviderIOError
 
+from feeluown.i18n import t
 from feeluown.media import Media, Quality
 from feeluown.library import AbstractProvider, ProviderV2, ModelType, SimpleSearchResult
 from feeluown.utils.reader import create_reader
@@ -42,7 +43,7 @@ def wait_for_scan(func):
 class LocalProvider(AbstractProvider, ProviderV2):
     class meta:
         identifier = SOURCE
-        name = '本地音乐'
+        name = t('local-tracks')
 
     def __init__(self):
         super().__init__()

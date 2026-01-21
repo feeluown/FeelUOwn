@@ -25,6 +25,13 @@ musician = 歌手
 new-version-found = 检测到新版本 { $latestVer }，当前版本为 { $currentVer }
 already-updated = 当前已经是最新版本: { $latestVer }
 
+# Local musics (feeluown.local)
+# ----------------------------------------
+local-tracks-scan-finished = 本地音乐扫描完毕
+# Local musics (feeluown.local.provider)
+# ----------------------------------------
+local-tracks = 本地音乐
+
 # Tips banner (feeluown.gui.tips)
 # ----------------------------------------
 

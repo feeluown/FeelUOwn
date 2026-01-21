@@ -2,6 +2,7 @@
 import os
 import logging
 
+from feeluown.i18n import t
 from feeluown.utils import aio  # noqa
 from .provider import provider  # noqa
 
@@ -20,35 +21,35 @@ def init_config(config):
     config.deffield('MUSIC_FOLDERS',
                     type_=list,
                     default=[DEFAULT_MUSIC_FOLDER],
-                    desc='支持的音乐文件夹列表')
+                    desc='Supported list of music folders')
     config.deffield('MUSIC_FORMATS',
                     type_=list,
                     default=DEFAULT_MUSIC_EXTS,
-                    desc='支持的音乐格式列表')
-    config.deffield('CORE_LANGUAGE', type_=str, default='auto', desc='默认显示的语言')
+                    desc='Supported list of music formats')
+    config.deffield('CORE_LANGUAGE', type_=str, default='auto', desc='Default display language')
     config.deffield('IDENTIFIER_DELIMITER',
                     type_=str,
                     default='',
-                    desc='生成identifier时的连接符')
+                    desc='Delimiter used when generating identifiers')
     config.deffield('EXPAND_ARTIST_SONGS',
                     type_=bool,
                     default=False,
-                    desc='将专辑艺术家的专辑中歌曲加入到该艺术家的歌曲中')
-    config.deffield('ARTIST_SPLITTER', type_=list, default=[',', '&'], desc='歌曲艺术家的分隔符')
+                    desc='Include songs from album artists\' albums in that artist\'s song list')
+    config.deffield('ARTIST_SPLITTER', type_=list, default=[',', '&'], desc='Delimiters for song artists')
     config.deffield('ARTIST_SPLITTER_IGNORANCE',
                     type_=list,
                     default=None,
-                    desc='对艺术家信息使用分隔符时需要进行保护的字符串')
+                    desc='Strings to be protected when using delimiters on artist info')
     config.deffield('SPLIT_ALBUM_ARTIST_NAME',
                     type_=bool,
                     default=False,
-                    desc='支持使用分隔符分隔专辑艺术家')
+                    desc='Allow splitting album artist names using delimiters')
 
 
 async def autoload(app):
     await aio.run_fn(provider.scan, app.config.local, app.config.local.MUSIC_FOLDERS)
 
-    app.show_msg('本地音乐扫描完毕')
+    app.show_msg(t("local-tracks-scan-finished"))
 
 
 def enable(app):
@@ -67,4 +68,4 @@ def enable(app):
 
 
 def disable(app):
-    logger.info('唔，不要禁用我')
+    logger.info('Oops, local provider cannot be disabled')
