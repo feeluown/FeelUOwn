@@ -221,7 +221,7 @@ class ProviderBar(QWidget):
                 except (ProviderIOError, NoUserLoggedIn) as e:
                     QMessageBox.warning(
                         self._app,
-                        t("-error"),
+                        t("error"),
                         t(
                             "playlist-create-failed",
                             playlistTitle=title,
@@ -260,7 +260,7 @@ class ProviderBar(QWidget):
 
         box = QMessageBox(
             QMessageBox.Icon.Warning,
-            t("-info"),
+            t("info"),
             t("playlist-remove-confirm", playlistTitle=playlist.name),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             self,

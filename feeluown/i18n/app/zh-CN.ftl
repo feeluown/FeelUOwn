@@ -10,6 +10,8 @@ playlist = 播放列表
 recently-played = 最近播放
 -error = 错误
 -info = 提示
+error = { -error }
+info = { -info }
 
 # Tab name, commonly used
 # ----------------------------------------

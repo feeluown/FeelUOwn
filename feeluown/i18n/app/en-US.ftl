@@ -8,8 +8,10 @@ minimize-window = Minimize
 fullscreen-window = Full Screen
 playlist = Playlist
 recently-played = Recently Played
--ertror = Error
+-error = Error
 -info = Note
+error = { -error }
+info = { -info }
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
