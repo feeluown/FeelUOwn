@@ -280,7 +280,7 @@ provider-recommended-page-enter = 点击进入 { $providerName } 推荐页
 provider-custom-ui-missing = 当前的资源提供方未注册其 UI
 
 ## Note: this can also be due to missing of logged user
-playlist-create-unsupported = 当前的资源提供方不支持创建歌单
+playlist-create-unsupported = 当前的资源提供方不支持创建{track-list}
 ## providerName: [string] name of the provider
 playlist-remove-unsupported = 资源提供方 { $providerName } 不支持删除歌单
 
