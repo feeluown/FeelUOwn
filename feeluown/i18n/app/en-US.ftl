@@ -15,8 +15,8 @@ info = { -info }
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
-    [uppercase] Account Firefox
-   *[lowercase] account Firefox
+    [uppercase] Track
+   *[lowercase] track
 }
 track = { -track(capitalization: "uppercase") }
 

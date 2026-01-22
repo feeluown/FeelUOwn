@@ -15,7 +15,10 @@ info = { -info }
 
 # Tab name, commonly used
 # ----------------------------------------
--track = 歌曲
+-track = { $capitalization ->
+    [uppercase] 歌曲
+   *[lowercase] 歌曲
+}
 track = {-track}
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
