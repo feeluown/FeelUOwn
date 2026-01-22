@@ -266,10 +266,24 @@ album-filter-compilation-retrospective = 合辑/精选辑
 # feeluown.gui.widgets.meta
 # ----------------------------------------
 
-## these partial messages are followed by a datetime
-meta-created-at = 创建于
-meta-updated-at = 更新于
-meta-released-at = 发布于
+## unixTimestamp: Unix timestamp in milliseconds
+## https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
+meta-created-at =
+    🕛 创建于
+    <code style="font-size: small">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    </code>
+meta-updated-at =
+    🕛 更新于
+    <code style="font-size: small">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    </code>
+meta-released-at =
+    🕛 发布于
+    <code style="font-size: small">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    </code>
+
 ## songsCount: [int] number of songs, -1 for unknown
 meta-amount-songs = { $songsCount ->
     [-1] 未知

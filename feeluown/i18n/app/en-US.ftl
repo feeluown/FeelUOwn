@@ -242,6 +242,34 @@ album-filter-singular-or-ep = Singles & EPs
 album-filter-live = Live
 album-filter-compilation-retrospective = Compilation/Retrospective
 
+# feeluown.gui.widgets.meta
+# ----------------------------------------
+
+## unixTimestamp: Unix timestamp in milliseconds
+## https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
+meta-created-at =
+    🕛 Created at
+    <code style="font-size: small">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    </code>
+meta-updated-at =
+    🕛 Updated at
+    <code style="font-size: small">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    </code>
+meta-released-at =
+    🕛 Released at
+    <code style="font-size: small">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    </code>
+
+## songsCount: [int] number of songs, -1 for unknown
+meta-amount-songs = { $songsCount ->
+    [-1] Unknown
+    [0] No songs
+    *[other] <code style="font-size: small">{ $songsCount }</code> songs
+}
+
 # feeluown.gui.widgets.songs
 # ----------------------------------------
 add-to-playlist = Add to playlist

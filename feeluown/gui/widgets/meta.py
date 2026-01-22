@@ -2,6 +2,7 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
+from datetime import datetime
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QSize
@@ -23,7 +24,6 @@ from .cover_label import CoverLabelV2
 if TYPE_CHECKING:
     from feeluown.library import BaseModel
     from feeluown.gui.app import GuiApp  # type: ignore
-    from datetime import datetime
 
 
 class getset_property:
@@ -171,20 +171,21 @@ class TableMetaWidget(MetaWidget):
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
-            updated_part = f"""🕛 {t("meta-updated-at")}
-            <code style="font-size: small">
-                {self.updated_at.strftime("%Y-%m-%d")}
-            </code>"""
+            updated_part = t(
+                "meta-updated-at", unixTimestamp=self.updated_at.timestamp() * 1000
+            )
         if self.created_at:
-            created_part = f"""🕛 {t("meta-created-at")}
-            <code style="font-size: small">
-                {self.created_at.strftime("%Y-%m-%d")}
-            </code>"""
+            created_part = t(
+                "meta-created-at", unixTimestamp=self.created_at.timestamp() * 1000
+            )
         if self.released_at:
-            released_part = f"""🕛 {t("meta-released-at")}
-            <code style="font-size: small">
-                {self.released_at}
-            </code>"""
+            try:
+                year, month, day = map(int, self.released_at.split("-"))
+            except Exception:
+                year, month, day = 1970, 1, 1
+            unix_ts_ms = datetime(year=year, month=month, day=day).timestamp() * 1000
+            released_part = t("meta-released-at", unixTimestamp=unix_ts_ms)
+
         if self.songs_count is not None:
             songs_count_part = t("meta-amount-songs", songsCount=self.songs_count)
         parts = [
