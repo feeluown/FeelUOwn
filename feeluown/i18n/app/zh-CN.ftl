@@ -13,7 +13,8 @@ recently-played = 最近播放
 
 # Tab name, commonly used
 # ----------------------------------------
-track = 歌曲
+-track = 歌曲
+track = {-track}
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
 track-list = 歌单
@@ -41,7 +42,7 @@ local-tracks = 本地音乐
 tips-osdlyrics = 你知道 FeelUOwn 可以配合 osdlyrics 使用吗?
 tips-show-more-tips = 在搜索框输入“>>> app.tips_mgr.show_random()”查看更多 Tips
 tips-album-original-image = 专辑图片上右键可以查看原图哦 ~
-tips-track-drag-to-playlist = 可以拖动{ track }来将{ track }添加到歌单呐！
+tips-track-drag-to-playlist = 可以拖动{ -track }来将{ -track }添加到歌单呐！
 tips-common-tooltip = 鼠标悬浮或右键常有惊喜 ~
 tips-watch-mode = 开启 watch 模式一边看 MV，一边工作学习香不香？
 
@@ -78,7 +79,7 @@ logged-accounts-tooltip = 后台已登录：{ $platformsCount ->
 # ----------------------------------------
 lyric-button = 词
 watch-mode-tooltip =
-    开启 watch 模式时，播放器会优先尝试为{ track }找一个合适的{ video }来播放。
+    开启 watch 模式时，播放器会优先尝试为{ -track }找一个合适的{ video }来播放。
     最佳实践：开启 watch 的同时建议开启{ video }的{ picture-in-picture }模式。
 
 local-liked-tracks = “本地收藏”
@@ -96,40 +97,40 @@ remove-this-collection = 删除此{ track-collection }
 
 # feeluown.gui.components.line_song
 # ----------------------------------------
-play-stage-prepare-track-url = 正在获取{track}播放链接...
+play-stage-prepare-track-url = 正在获取{ -track }播放链接...
 play-stage-prepare-track-url-fallback = 尝试寻找备用播放链接...
-play-stage-prepare-track-metadata = 尝试获取完整的{ track }元信息...
-play-stage-prepare-track-loading = 正在加载{track}资源...
+play-stage-prepare-track-metadata = 尝试获取完整的{ -track }元信息...
+play-stage-prepare-track-loading = 正在加载{ -track }资源...
 play-stage-prepare-movie-url = 正在获取音乐的{video}播放链接...
 
 # feeluown.gui.components.menu
 # ----------------------------------------
 play-track-movie = 播放 MV
-track-missing-album = 该{ track }没有{ album }信息
-track-missing-movie = 该{ track }无 MV
+track-missing-album = 该{ -track }没有{ album }信息
+track-missing-movie = 该{ -track }无 MV
 track-search-similar = 搜索相似资源
 track-show-artist = 查看{ musician }
 track-show-album = 查看{ album }
-track-enter-radio = { track }电台
-track-show-detail = { track }详情
+track-enter-radio = { -track }电台
+track-show-detail = { -track }详情
 
 track-playlist-add = 加入到{ playlist }
 track-playlist-add-succ = 已加入到{ $playlistName }✅
 track-playlist-add-fail = 加入到{ $playlistName } 失败 ❌
 
-track-movie-missing = 该{ track }无 MV
+track-movie-missing = 该{ -track }无 MV
 
 menu-ai-prompt =
     你是一个音乐播放器助手。
     【填入你的需求】
-    { track }信息如下 -> { track }名：{ $songTitle }, 歌手名：{ $songArtists }
+    { -track }信息如下 -> { -track }名：{ $songTitle }, 歌手名：{ $songArtists }
 menu-ai-button = AI
 menu-ai-copy-prompt = 复制 AI Prompt
 menu-ai-copy-prompt-succeed = 已经复制到剪贴板
 
 # feeluown.gui.components.nowplaying
 # ----------------------------------------
-track-movie-play-tooltip = 播放{ track }MV
+track-movie-play-tooltip = 播放{ -track }MV
 track-album-release-date = 专辑{ release-date }：{ $releaseDate }
 
 # feeluown.gui.components.player_playlist
@@ -142,7 +143,7 @@ track-provider-blacklist-adding = 正在加入黑名单，请稍等...
 track-provider-blacklist-add-succ = 已加入黑名单
 track-provider-blacklist-add-fail = 加入黑名单失败
 
-track-radio-mode-remove-latest = FM 模式下，如果当前{ track }是最后一首歌，则无法移除。请稍后再尝试移除
+track-radio-mode-remove-latest = FM 模式下，如果当前{ -track }是最后一首歌，则无法移除。请稍后再尝试移除
 
 # feeluown.gui.components.playlist_btn
 # ----------------------------------------
@@ -186,17 +187,17 @@ emoji-expression = 表情
 
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
-search-box-placeholder = 搜索{ track }、歌手、专辑、用户
+search-box-placeholder = 搜索{ -track }、歌手、专辑、用户
 search-box-tooltip =
     直接输入文字可以进行过滤，按 Enter 可以搜索
     输入 >>> 前缀之后，可以执行 Python 代码
-    输入 “==> 执迷不悔 | 王菲”，可以直接播放{ track }
+    输入 “==> 执迷不悔 | 王菲”，可以直接播放{ -track }
     输入 “=== 下雨天听点啥？”，可以和 AI 互动
     输入 # 前缀之后，可以过滤表格内容
     输入 > 前缀可以执行 fuo 命令（未实现，欢迎 PR）
 search-box-ai-chat-unavailable = AI 聊天功能不可用
 search-box-play-track = 尝试播放：{ $song }
-search-box-play-track-ill-formed = 你输入的内容需要符合格式：“{ track }标题 | 歌手名”
+search-box-play-track-ill-formed = 你输入的内容需要符合格式：“{ -track }标题 | 歌手名”
 
 # feeluown.gui.widgets.settings
 # ----------------------------------------
@@ -236,7 +237,7 @@ cookies-loading-existing-user = 正在尝试加载已有用户...
 # feeluown.gui.widgets.songs
 # ----------------------------------------
 add-to-playlist = 添加到播放队列
-remove-from-playlist = 移除{ track }
+remove-from-playlist = 移除{ -track }
 
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -244,7 +245,7 @@ remove-from-playlist = 移除{ track }
 # feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = 清空{ playlist }
-jump-to-playing-track = 跳转到当前{ track }
+jump-to-playing-track = 跳转到当前{ -track }
 
 song-radio-mode = 自动续歌
 song-radio-mode-empty-playlist = 播放队列为空，不能激活“{ song-radio-mode }”功能
@@ -262,7 +263,7 @@ playback-mode-random = 随机播放
 
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
-similar-tracks = 相似{track}
+similar-tracks = 相似{ -track }
 track-hot-comments = 热门评论
 movie-mode-exit = 退出视频模式
 
@@ -309,7 +310,7 @@ error-message-template =
     <br/> 给它实现一下 { $interface } 接口来支持该功能吧 ~
     </p>
 find-similar-tracks = 查看{ similar-tracks }
-track-view-comments = 查看{ track }评论
+track-view-comments = 查看{ -track }评论
 
 # feelown.gui.pages
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -337,7 +338,7 @@ recommended-videos-missing = 暂无推荐{video}
 ##    playlist
 ##    video
 provider-missing-favorite = 当前资源提供方（{ $providerName }）不支持获取 收藏的{ $mediaType ->
-    [track] {track}
+    [track] { -track }
     [album] {album}
     [singer] {musician}
     [playlist] {track-list}

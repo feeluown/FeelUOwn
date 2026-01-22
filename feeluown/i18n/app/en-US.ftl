@@ -8,11 +8,15 @@ minimize-window = Minimize
 fullscreen-window = Full Screen
 playlist = Playlist
 recently-played = Recently Played
--error = Error
+-ertror = Error
 -info = Note
 # Tab name, commonly used
 # ----------------------------------------
-track = Track
+-track = { $capitalization ->
+    [uppercase] Account Firefox
+   *[lowercase] account Firefox
+}
+track = { -track(capitalization: "uppercase") }
 
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
@@ -41,7 +45,7 @@ local-tracks = Local tracks
 tips-osdlyrics = Did you know FeelUOwn can work with osdlyrics?
 tips-show-more-tips = Type '>>> app.tips_mgr.show_random()' in the search box to see more Tips
 tips-album-original-image = Right-click on the album art to view the original image ~
-tips-track-drag-to-playlist = You can drag the {track} to add it to a playlist!
+tips-track-drag-to-playlist = You can drag the { -track } to add it to a playlist!
 tips-common-tooltip = Hover or right-click for pleasant surprises ~
 tips-watch-mode = Enable watch mode to watch MVs while working or studying—how nice is that?
 
@@ -79,7 +83,7 @@ logged-accounts-tooltip =
 # ----------------------------------------
 lyric-button = 词
 watch-mode-tooltip =
-    When watch mode is enabled, the player will first try to find a suitable { video } to play for the { track }.
+    When watch mode is enabled, the player will first try to find a suitable { video } to play for the { -track }.
     Best practice: when enabling watch, it’s recommended to also enable the { picture-in-picture } mode of the { video }.
 local-liked-tracks = the Local favorites
 local-liked-tracks-add = Add to { local-liked-tracks }
@@ -93,35 +97,35 @@ track-collection = Collection
 remove-this-collection = Remove this { track-collection }
 # feeluown.gui.components.line_song
 # ----------------------------------------
-play-stage-prepare-track-url = Obtaining { track } playback URL...
+play-stage-prepare-track-url = Obtaining { -track } playback URL...
 play-stage-prepare-track-url-fallback = Attempting to find a fallback playback URL...
-play-stage-prepare-track-metadata = Attempting to fetch complete {track} metadata...
-play-stage-prepare-track-loading = Loading { track } resources...
+play-stage-prepare-track-metadata = Attempting to fetch complete { -track } metadata...
+play-stage-prepare-track-loading = Loading { -track } resources...
 play-stage-prepare-movie-url = Obtaining { video } playback URL for the music...
 # feeluown.gui.components.menu
 # ----------------------------------------
 play-track-movie = Play MV
-track-missing-album = No { album } information for this { track }
-track-missing-movie = { track } has no MV
+track-missing-album = No { album } information for this { -track }
+track-missing-movie = { -track } has no MV
 track-search-similar = Search for similar resources
 track-show-artist = View { musician }
 track-show-album = View { album }
-track-enter-radio = { track } Radio
-track-show-detail = { track } Details
+track-enter-radio = { -track } Radio
+track-show-detail = { -track } Details
 track-playlist-add = Add to { playlist }
 track-playlist-add-succ = Added to { $playlistName } ✅
 track-playlist-add-fail = Failed to add to { $playlistName } ❌
-track-movie-missing = No MV for this { track }
+track-movie-missing = No MV for this { -track }
 menu-ai-prompt =
     You are a music player assistant.
         \[your request here\]
-        The {track} information is as follows -> Song Title: { $songTitle }, Artist: { $songArtists }
+        The { -track } information is as follows -> Song Title: { $songTitle }, Artist: { $songArtists }
 menu-ai-button = AI
 menu-ai-copy-prompt = Copy AI Prompt
 menu-ai-copy-prompt-succeed = Copied to clipboard
 # feeluown.gui.components.nowplaying
 # ----------------------------------------
-track-movie-play-tooltip = Play { track } MV
+track-movie-play-tooltip = Play { -track } MV
 track-album-release-date = Album {release-date}: { $releaseDate }
 # feeluown.gui.components.player_playlist
 # ----------------------------------------
@@ -131,7 +135,7 @@ track-provider-blacklist-add = Add to provider's blacklist
 track-provider-blacklist-adding = Adding to blacklist, please wait...
 track-provider-blacklist-add-succ = Added to provider's blacklist
 track-provider-blacklist-add-fail = Failed to add to blacklist
-track-radio-mode-remove-latest = In FM mode, if the current {track} is the last one, it cannot be removed. Please try again later.
+track-radio-mode-remove-latest = In FM mode, if the current { -track } is the last one, it cannot be removed. Please try again later.
 # feeluown.gui.components.playlist_btn
 # ----------------------------------------
 playlist-show = Show current { playlist }
@@ -173,17 +177,17 @@ hot = Hot
 emoji-expression = Emoji
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
-search-box-placeholder = Search { track }s, artists, albums, users
+search-box-placeholder = Search { -track }s, artists, albums, users
 search-box-tooltip =
     Type text directly to filter, press Enter to search
         Input >>> prefix to execute Python code
-        Input "==> Playing Without Regret | Faye Wong" to play a {track} directly
+        Input "==> Playing Without Regret | Faye Wong" to play a { -track } directly
         Input "=== What to listen on a rainy day?" to interact with AI
         Input # prefix to filter table content
         Input > prefix to execute fuo command (not implemented, PR welcome)
 search-box-ai-chat-unavailable = AI chat is unavailable
 search-box-play-track = Attempt to play: { $song }
-search-box-play-track-ill-formed = Your input must follow the format: "{track} title | Artist name"
+search-box-play-track-ill-formed = Your input must follow the format: "{ -track } title | Artist name"
 # feeluown.gui.widgets.settings
 # ----------------------------------------
 app-config = App Configuration
@@ -206,7 +210,7 @@ cookies-dialog-tutorial =
     Of course, if you know how to manually copy cookies, you can copy them first and then click “Login”.
 cookies-dialog-placeholder =
     Please copy cookies from the browser!
-    
+
     You can copy a request’s Cookie header in the format key1=value1; key2=value2
     Or you can enter cookie content in JSON format, like { "{" }"key1": "value1", "key2": "value2"{ "}" }
 cookies-parse-fail = Failed to parse with { $parser }, trying next
@@ -216,7 +220,7 @@ cookies-loading-existing-user = Attempting to load existing user...
 # feeluown.gui.widgets.songs
 # ----------------------------------------
 add-to-playlist = Add to playlist
-remove-from-playlist = Remove {track}
+remove-from-playlist = Remove { -track }
 
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -224,7 +228,7 @@ remove-from-playlist = Remove {track}
 # feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = Clear { playlist }
-jump-to-playing-track = Current {track}
+jump-to-playing-track = Current { -track }
 song-radio-mode = Song radio mode
 song-radio-mode-empty-playlist = Playback queue is empty, cannot activate the { song-radio-mode }
 song-radio-mode-activated = '{ song-radio-mode }' activated
@@ -245,7 +249,7 @@ playback-mode-loop = Loop
 playback-mode-random = Random
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
-similar-tracks = Similar{ track }
+similar-tracks = Similar{ -track }
 track-hot-comments = Hot comments
 movie-mode-exit = Exit movie mode
 # feeluown.gui.uimain.provider_bar
@@ -291,7 +295,7 @@ error-message-template =
     <br/> Implement the { $interface } interface to support this feature ~
     </p>
 find-similar-tracks = View{ similar-tracks }
-track-view-comments = View{ track } comments
+track-view-comments = View{ -track } comments
 
 # feelown.gui.pages
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -321,7 +325,7 @@ recommended-videos-missing = No recommended { video }
 
 provider-missing-favorite =
     Provider { $providerName } doesn't support Liked { $mediaType ->
-        [track] { track }
+        [track] { -track }
         [album] { album }
         [singer] { musician }
         [playlist] { track-list }
