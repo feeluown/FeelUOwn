@@ -24,9 +24,13 @@ track = { -track(capitalization: "uppercase") }
 
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
-
 track-list = Playlist
-album = Album
+
+-album = { $capitalization ->
+    [uppercase] Album
+   *[lowercase] album
+}
+album = { -album(capitalization: "uppercase") }
 video = Video
 
 ## can be the singer, artist, or musician.
@@ -221,6 +225,19 @@ cookies-parse-fail = Failed to parse with { $parser }, trying next
 cookies-parse-success = Successfully parsed with { $parser }
 cookies-save-user-info = Saving user info to FeelUOwn data directory
 cookies-loading-existing-user = Attempting to load existing user...
+
+# feeluown.gui.widgets.table_toolbar
+# ----------------------------------------
+play-all-button = Play All
+play-all-button-fetching = Fetching all songs...
+play-all-button-fetch-done = {play-all-button-fetching} done
+
+album-filter-all = All { -album }s
+album-filter-standard = Standard
+album-filter-singular-or-ep = Singles & EPs
+album-filter-live = Live
+album-filter-compilation-retrospective = Compilation/Retrospective
+
 # feeluown.gui.widgets.songs
 # ----------------------------------------
 add-to-playlist = Add to playlist

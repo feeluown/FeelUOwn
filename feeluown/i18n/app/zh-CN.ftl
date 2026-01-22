@@ -22,10 +22,16 @@ warn = { -warn }
    *[lowercase] 歌曲
 }
 track = {-track}
+
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
 track-list = 歌单
-album = 专辑
+
+-album = { $capitalization ->
+    [uppercase] 专辑
+   *[lowercase] 专辑
+}
+album = { -album }
 video = 视频
 
 ## can be the singer, artist, or musician.
@@ -240,6 +246,18 @@ cookies-parse-success = 使用 { $parser } 解析器解析成功
 
 cookies-save-user-info        = 保存用户信息到 FeelUOwn 数据目录
 cookies-loading-existing-user = 正在尝试加载已有用户...
+
+# feeluown.gui.widgets.table_toolbar
+# ----------------------------------------
+play-all-button = 播放全部
+play-all-button-fetching = 获取所有歌曲...
+play-all-button-fetch-done = {play-all-button-fetching} 完成
+
+album-filter-all = 所有{ -album }
+album-filter-standard = 标准
+album-filter-singular-or-ep = 单曲与EP
+album-filter-live = 现场
+album-filter-compilation-retrospective = 合辑/精选辑
 
 # feeluown.gui.widgets.songs
 # ----------------------------------------
