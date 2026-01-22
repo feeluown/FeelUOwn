@@ -9,6 +9,7 @@ fullscreen-window = Full Screen
 playlist = Playlist
 recently-played = Recently Played
 unknown = Unknown
+description = Description
 
 -error = Error
 -info = Note
@@ -201,6 +202,18 @@ top-list = Top list
 favorites = Favorites
 hot = Hot
 emoji-expression = Emoji
+
+# feeluown.gui.widgets.songs
+# ----------------------------------------
+track-source = Source
+track-duration = Duration
+
+# feeluown.gui.widgets.tabbar
+# ----------------------------------------
+
+## Albums containting this track
+track-contributed-albums = Contributed works
+
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
 search-box-placeholder = Search { -track }s, artists, { -album }s, users

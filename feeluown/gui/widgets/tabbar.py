@@ -11,6 +11,7 @@ from PyQt6.QtWidgets import (
 )
 from PyQt6.QtGui import QPalette
 
+from feeluown.i18n import t
 from feeluown.gui.helpers import resize_font
 
 
@@ -108,12 +109,12 @@ class TableTabBarV2(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
 
-        self.songs_btn = QRadioButton("歌曲", self)
-        self.albums_btn = QRadioButton("专辑", self)
-        self.artists_btn = QRadioButton("歌手", self)
-        self.playlists_btn = QRadioButton("歌单", self)
-        self.videos_btn = QRadioButton("视频", self)
-        self.desc_btn = QRadioButton("简介", self)
+        self.songs_btn = QRadioButton(t("track"), self)
+        self.albums_btn = QRadioButton(t("album"), self)
+        self.artists_btn = QRadioButton(t("musician"), self)
+        self.playlists_btn = QRadioButton(t("track-list"), self)
+        self.videos_btn = QRadioButton(t("video"), self)
+        self.desc_btn = QRadioButton(t("description"), self)
         self.contributed_btn = QRadioButton("参与作品", self)
         self._layout = QHBoxLayout(self)
 
@@ -142,11 +143,11 @@ class TableTabBarV2(QWidget):
         self.songs_btn.setChecked(True)
 
     def restore_default(self):
-        self.songs_btn.setText("歌曲")
-        self.albums_btn.setText("专辑")
-        self.artists_btn.setText("歌手")
-        self.playlists_btn.setText("歌单")
-        self.videos_btn.setText("视频")
+        self.songs_btn.setText(t("track"))
+        self.albums_btn.setText(t("album"))
+        self.artists_btn.setText(t("musician"))
+        self.playlists_btn.setText(t("track-list"))
+        self.videos_btn.setText(t("video"))
         self.check_default()
 
     def check(self, tab):
@@ -185,10 +186,10 @@ class TableTabBarV2(QWidget):
 
 
 class TableTabBar(QTabBar):
-    song = "歌曲"
-    artist = "歌手"
-    album = "专辑"
-    contributed_albums = "参与作品"
+    song = t("track")
+    artist = t("musician")
+    album = t("album")
+    contributed_albums = t("track-contributed-albums")
 
     show_songs_needed = pyqtSignal()
     show_artists_needed = pyqtSignal()

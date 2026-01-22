@@ -113,11 +113,11 @@ class ColumnsConfig:
 def get_column_name(column):
     return {
         Column.index: "",
-        Column.song: "歌曲标题",
-        Column.artist: "歌手",
-        Column.album: "专辑",
-        Column.duration: "时长",
-        Column.source: "来源",
+        Column.song: t("track"),
+        Column.artist: t("musician"),
+        Column.album: t("album"),
+        Column.duration: t("track-duration"),
+        Column.source: t("track-source"),
     }[column]
 
 
@@ -390,7 +390,6 @@ class BaseSongsTableModel(QAbstractTableModel):
 
 
 class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
-
     def __init__(self, reader, **kwargs):
         """
 

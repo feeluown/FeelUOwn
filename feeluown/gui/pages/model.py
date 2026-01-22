@@ -15,6 +15,7 @@ from feeluown.library import ModelType, reverse
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer
 from feeluown.gui.widgets.songs import ColumnsMode
+from feeluown.i18n import t
 from .template import render_error_message
 
 
@@ -61,10 +62,10 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
         self.model = artist
         self.tab_index = tab_index
         self.tabs = [
-            ("简介",),
-            ("歌曲",),
-            ("专辑",),
-            ("参与作品",),
+            (t("description"),),
+            (t("track"),),
+            (t("album"),),
+            (t("track-contributed-albums"),),
         ]
 
     async def render(self):
@@ -140,8 +141,8 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         self.model = album
         self.tab_index = tab_index
         self.tabs = [
-            ("简介",),
-            ("歌曲",),
+            (t("description"),),
+            (t("track"),),
         ]
 
     async def render(self):

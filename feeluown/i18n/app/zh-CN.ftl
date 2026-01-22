@@ -9,6 +9,7 @@ fullscreen-window = 窗口全屏
 playlist = 播放列表
 recently-played = 最近播放
 unknown = 未知
+description = 简介
 
 -error = 错误
 -info = 提示
@@ -215,6 +216,17 @@ top-list = 排行榜
 favorites = 收藏
 hot = 热门
 emoji-expression = 表情
+
+# feeluown.gui.widgets.songs
+# ----------------------------------------
+track-source = 来源
+track-duration = 时长
+
+# feeluown.gui.widgets.tabbar
+# ----------------------------------------
+
+## Albums containting this track
+track-contributed-albums = 参与作品
 
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
