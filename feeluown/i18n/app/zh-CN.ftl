@@ -38,7 +38,11 @@ album = { -album }
 video = 视频
 
 ## can be the singer, artist, or musician.
-musician = 歌手
+-musician = { $capitalization ->
+    [uppercase] 歌手
+   *[lowercase] 歌手
+}
+musician = { -musician }
 
 # feeluown.version
 # ----------------------------------------
@@ -494,3 +498,17 @@ music-customized-recommendation = 个性化推荐
 # ----------------------------------------
 # ref: provider-unknown-cannot-view
 # ref: top-list
+
+# feeluown.gui.pages.model
+# ----------------------------------------
+provider-unsupported-fetch-artist-contributed-works =
+    资源提供方不支持获取{ -musician }贡献过的{ -album }
+provider-unsupported-fetch-artist-works =
+    资源提供方不支持获取{ -musician }{ -album }
+provider-unsupported-fetch-artist = 资源提供方不支持获取{ -musician }{ -track }
+provider-unsupported-fetch-album = 资源提供方不支持获取{ -album }{ -track }
+provider-unsupported-fetch-playlist = 资源提供方不支持获取{ track-list }{ -track }
+
+## songTitle: [string]
+track-playlist-remove-succ = 移除{ -track } { $songTitle } 成功
+track-playlist-remove-fail = 移除{ -track } { $songTitle } 失败

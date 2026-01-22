@@ -37,8 +37,12 @@ album = { -album(capitalization: "uppercase") }
 video = Video
 
 ## can be the singer, artist, or musician.
+-musician = { $capitalization ->
+    [uppercase] Musician
+   *[lowercase] musician
+}
+musician = { -musician }
 
-musician = Musician
 # feeluown.version
 # ----------------------------------------
 new-version-found = Found new version { $latestVer }, current: { $currentVer }
@@ -479,3 +483,16 @@ music-discovery = Discover Music
 ## Similar to Spotify Discover Weekly
 music-customized-recommendation = Discover Weekly
 
+# feeluown.gui.pages.model
+# ----------------------------------------
+provider-unsupported-fetch-artist-contributed-works =
+    Provider does not support obtaining { -album } contributed by { -musician }
+provider-unsupported-fetch-artist-works =
+    Provider does not support obtaining { -album } for { -musician }
+provider-unsupported-fetch-artist = Provider does not support obtaining { -track } for { -musician }
+provider-unsupported-fetch-album = Provider does not support obtaining { -track } for { -album }
+provider-unsupported-fetch-playlist = Provider does not support obtaining { -track } for { track-list }s
+
+## songTitle: [string]
+track-playlist-remove-succ = Removed { -track } { $songTitle } successfully
+track-playlist-remove-fail = Failed to remove { -track } { $songTitle }
