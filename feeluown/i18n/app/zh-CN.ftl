@@ -412,3 +412,18 @@ provider-missing-favorite = 当前资源提供方（{ $providerName }）不支�
 }
 provider-unknown-cannot-view = 当前资源提供方未知，无法浏览该页面
 my-favorite-title = 我的收藏
+
+# feeluown.gui.pages.recommendation
+# ----------------------------------------
+music-blacklisted = 音乐黑名单
+
+## Similar to Spotify Radio
+-music-radio-radar = 红心雷达
+music-radio-radar = { -music-radio-radar }
+music-radio-radar-activated = { -music-radio-radar }已激活
+## Generate Radio stream based on the new track
+music-radio-radar-changed = { -music-radio-radar }已切换
+## Find music recommendations
+music-discovery = 发现音乐
+## Similar to Spotify Discover Weekly
+music-customized-recommendation = 个性化推荐

@@ -22,6 +22,7 @@ from feeluown.library import (
 )
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
+from feeluown.i18n import t
 
 
 if TYPE_CHECKING:
@@ -54,18 +55,20 @@ class View(QWidget):
                 card_min_width=100,
             )
         )
-        self.daily_songs_btn = CalendarButton("每日推荐", parent=self)
+        self.daily_songs_btn = CalendarButton(
+            t("recommended-daily-playlist"), parent=self
+        )
         self.rank_btn = RankButton(parent=self)
         # FIXME: design a new button for dislike
-        self.dislike_btn = EmojiButton("🚫", "音乐黑名单", parent=self)
-        self.heart_radar_btn = EmojiButton("📻", "红心雷达", parent=self)
+        self.dislike_btn = EmojiButton("🚫", t("music-blacklisted"), parent=self)
+        self.heart_radar_btn = EmojiButton("📻", t("music-radio-radar"), parent=self)
         self.daily_songs_btn.setMinimumWidth(150)
         self.rank_btn.setMinimumWidth(150)
         self.dislike_btn.setMinimumWidth(150)
         self.heart_radar_btn.setMinimumWidth(150)
 
-        self.header_title.setText("发现音乐")
-        self.header_playlist_list.setText("个性化推荐")
+        self.header_title.setText(t("music-discovery"))
+        self.header_playlist_list.setText(t("music-customized-recommendation"))
 
         self._layout = QVBoxLayout(self)
         self._setup_ui()
@@ -137,7 +140,7 @@ class View(QWidget):
         current_provider = self._heart_radar_provider if was_active else None
         fetch_func = provider.current_user_list_radio_songs
         if was_active and current_provider is provider:
-            self._app.show_msg("红心雷达已激活")
+            self._app.show_msg(t("music-radio-radar-activated"))
             return
 
         if was_active:
@@ -145,4 +148,8 @@ class View(QWidget):
 
         self._app.fm.activate(fetch_func)
         self._heart_radar_provider = provider
-        self._app.show_msg("红心雷达已切换" if was_active else "红心雷达已激活")
+        self._app.show_msg(
+            t("music-radio-radar-changed")
+            if was_active
+            else t("music-radio-radar-activated")
+        )

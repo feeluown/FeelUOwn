@@ -399,3 +399,19 @@ provider-missing-favorite =
     }
 provider-unknown-cannot-view = Provider unknown, cannot view this page
 my-favorite-title = My favorites
+
+# feeluown.gui.pages.recommendation
+# ----------------------------------------
+music-blacklisted = Musics blacklisted
+
+## Similar to Spotify Radio
+-music-radio-radar = Music Radio
+music-radio-radar = { -music-radio-radar }
+music-radio-radar-activated = { -music-radio-radar } activated
+## Generate Radio stream based on the new track
+music-radio-radar-changed = { -music-radio-radar } switched
+## Find music recommendations
+music-discovery = Discover Music
+## Similar to Spotify Discover Weekly
+music-customized-recommendation = Discover Weekly
+
