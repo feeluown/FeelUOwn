@@ -40,8 +40,8 @@ def config():
     return create_config()
 
 
-@pytest.fixture
-def noharm(mocker):
+@pytest_asyncio.fixture
+async def noharm(mocker):
     mocker.patch('feeluown.app.app.Player')
     mocker.patch.object(PluginsManager, 'enable_plugins')
     mocker.patch.object(CollectionManager, 'scan')
