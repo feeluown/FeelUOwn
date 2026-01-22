@@ -305,7 +305,7 @@ recommended-videos-missing = No recommended {video}
 ##    singer
 ##    playlist
 ##    video
-provider-missing-favorite =Provider { $providerName } doesn't support Liked { $mediaType ->
+provider-missing-favorite = Provider { $providerName } doesn't support Liked { $mediaType ->
     [track] {track}
     [album] {album}
     [singer] {musician}
@@ -313,3 +313,5 @@ provider-missing-favorite =Provider { $providerName } doesn't support Liked { $m
     [video] {video}
    *[other] Contents
 }
+provider-unknown-cannot-view = Provider unknown, cannot view this page
+my-favorite-title = My favorites

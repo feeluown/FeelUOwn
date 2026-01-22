@@ -305,7 +305,7 @@ recommended-videos-missing = 暂无推荐{video}
 ##    singer
 ##    playlist
 ##    video
-provider-missing-favorite =当前资源提供方（{ $providerName }）不支持获取 收藏的{ $mediaType ->
+provider-missing-favorite = 当前资源提供方（{ $providerName }）不支持获取 收藏的{ $mediaType ->
     [track] {track}
     [album] {album}
     [singer] {musician}
@@ -313,3 +313,5 @@ provider-missing-favorite =当前资源提供方（{ $providerName }）不支持
     [video] {video}
    *[other] 内容
 }
+provider-unknown-cannot-view = 当前资源提供方未知，无法浏览该页面
+my-favorite-title = 我的收藏

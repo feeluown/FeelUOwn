@@ -21,7 +21,7 @@ async def render(req, **kwargs):
     tab_index = int(req.query.get("tab_index", 0))
     pvd_ui = app.current_pvd_ui_mgr.get()
     if pvd_ui is None:
-        return await render_error_message(app, "当前资源提供方未知，无法浏览该页面")
+        return await render_error_message(app, t("provider-unknown-cannot-view"))
 
     ui.right_panel.set_body(ui.right_panel.scrollarea)
     table_container = ui.right_panel.table_container
@@ -38,7 +38,7 @@ class MyFavRenderer(Renderer, TabBarRendererMixin):
 
     async def render(self):
         self.meta_widget.show()
-        self.meta_widget.title = "我的收藏"
+        self.meta_widget.title = t("my-favorite-title")
         self.render_tab_bar()
         await self.render_models()
 
