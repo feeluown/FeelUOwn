@@ -22,7 +22,6 @@ from feeluown.i18n import t
 from .cover_label import CoverLabelV2
 
 if TYPE_CHECKING:
-    from feeluown.library import BaseModel
     from feeluown.gui.app import GuiApp  # type: ignore
 
 
@@ -68,7 +67,7 @@ class MetaWidget(QFrame):
     creator = getset_property("creator")
     # YYYY-mm-dd
     released_at: str = getset_property("released_at")
-    model: BaseModel = getset_property("model")
+    model  = getset_property("model")
 
 
 class TableMetaWidget(MetaWidget):
