@@ -8,6 +8,8 @@ minimize-window = Minimize
 fullscreen-window = Full Screen
 playlist = Playlist
 recently-played = Recently Played
+-error = Error
+-info = Note
 
 # Tab name, commonly used
 # ----------------------------------------
@@ -169,8 +171,8 @@ track-search-done = Search completed, with { $resultCount } valid results, takin
 
 # feeluown.gui.widgets.labels
 # ----------------------------------------
-error-message-prefix = Error:{" "}
-info-message-prefix = Note:{" "}
+error-message-prefix = {-error}:{" "}
+info-message-prefix = {-info}:{" "}
 
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
@@ -263,6 +265,35 @@ playback-mode-random = Random
 similar-tracks = Similar{track}
 track-hot-comments = Hot comments
 movie-mode-exit = Exit movie mode
+
+# feeluown.gui.uimain.provider_bar
+# ----------------------------------------
+my-favorite-button = { my-favorite-title }
+my-playlists = {track-list}s
+my-tracks = My tracks
+provider-unknown-tooltip = Unknown provider
+fold-top-tooltip = {fold-collapse}/{fold-expand} Homepage and Local favorites
+
+## providerName: [string] name of the provider
+provider-recommended-page-enter = Recommendation of { $providerName }
+
+provider-custom-ui-missing = Provider didn't register their UI
+
+## Note: this can also be due to missing of logged user
+playlist-create-unsupported = Provider cannot create {track-list}s yet
+## providerName: [string] name of the provider
+playlist-remove-unsupported = Provider { $providerName } doesn't support removing playlist
+
+## playlistTitle: [string]
+## errorMessage: [string]
+playlist-create-succed = Created {track-list} '{ $playlistTitle}'
+playlist-create-failed = Failed to create {track-list} '{ $playlistTitle}': { $errorMessage }
+playlist-remove-succed = Removed {track-list} '{ $playlistTitle}'
+playlist-remove-failed = Failed to remove {track-list} '{ $playlistTitle}'
+
+playlist-remove-confirm = Confirm to remove '{ $playlistTitle }'?
+
+playlist-name = {track-list} Name
 
 # feeluown.gui.pages.song_explore
 # ----------------------------------------

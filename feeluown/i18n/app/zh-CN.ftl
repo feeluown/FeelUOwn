@@ -8,6 +8,8 @@ minimize-window = 最小化
 fullscreen-window = 窗口全屏
 playlist = 播放列表
 recently-played = 最近播放
+-error = 错误
+-info = 提示
 
 # Tab name, commonly used
 # ----------------------------------------
@@ -169,8 +171,8 @@ track-search-done = 搜索完成，共有 { $resultCount } 个有效的结果，
 
 # feeluown.gui.widgets.labels
 # ----------------------------------------
-error-message-prefix = 错误：
-info-message-prefix = 提示：
+error-message-prefix = {-error}：
+info-message-prefix = {-info}：
 
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
@@ -263,6 +265,35 @@ playback-mode-random = 随机播放
 similar-tracks = 相似{track}
 track-hot-comments = 热门评论
 movie-mode-exit = 退出视频模式
+
+# feeluown.gui.uimain.provider_bar
+# ----------------------------------------
+my-favorite-button = { my-favorite-title }
+my-playlists = {track-list}列表
+my-tracks = 我的音乐
+provider-unknown-tooltip = 当前资源提供方未知
+fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和本地收藏集” 功能
+
+## providerName: [string] name of the provider
+provider-recommended-page-enter = 点击进入 { $providerName } 推荐页
+
+provider-custom-ui-missing = 当前的资源提供方未注册其 UI
+
+## Note: this can also be due to missing of logged user
+playlist-create-unsupported = 当前的资源提供方不支持创建歌单
+## providerName: [string] name of the provider
+playlist-remove-unsupported = 资源提供方 { $providerName } 不支持删除歌单
+
+## playlistTitle: [string]
+## errorMessage: [string]
+playlist-create-succed = 创建{track-list} '{ $playlistTitle}' 成功
+playlist-create-failed = 创建{track-list} '{ $playlistTitle}' 失败: { $errorMessage }
+playlist-remove-succed = 删除{track-list} '{ $playlistTitle}' 成功
+playlist-remove-failed = 删除{track-list} '{ $playlistTitle}' 失败
+
+playlist-remove-confirm = 确认删除歌单 '{ $playlistTitle }' 吗？
+
+playlist-name = {track-list}名
 
 # feeluown.gui.pages.song_explore
 # ----------------------------------------
