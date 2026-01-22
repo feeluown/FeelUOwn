@@ -428,7 +428,7 @@ class DB:
         media_files = []
         logger.info('start scanning...')
         for directory in paths:
-            logger.debug('正在扫描目录(%s)...', directory)
+            logger.debug('Scanning for directory (%s)...', directory)
             media_files.extend(scan_directory(directory, exts, depth))
         logger.info(f'scanning finished, {len(media_files)} files in total')
 
@@ -440,7 +440,7 @@ class DB:
                      config.IDENTIFIER_DELIMITER, config.EXPAND_ARTIST_SONGS,
                      config.ARTIST_SPLITTER, config.ARTIST_SPLITTER_IGNORANCE,
                      config.SPLIT_ALBUM_ARTIST_NAME)
-        logger.info('录入本地音乐库完毕')
+        logger.info('Local music scan finished.')
 
     def after_scan(self):
         # Sort the songs in a album.
