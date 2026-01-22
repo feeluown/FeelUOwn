@@ -20,7 +20,9 @@ from feeluown.gui.components import FavButton
 from .cover_label import CoverLabelV2
 
 if TYPE_CHECKING:
-    from feeluown.gui.app import GuiApp
+    from feeluown.library import BaseModel
+    from feeluown.gui.app import GuiApp  # type: ignore
+    from datetime import datetime
 
 
 class getset_property:
@@ -59,12 +61,12 @@ class MetaWidget(QFrame):
     subtitle = getset_property("subtitle")
     source = getset_property("source")
     cover = getset_property("cover")
-    created_at = getset_property("created_at")  # datetime
-    updated_at = getset_property("updated_at")  # datetime
+    created_at: datetime = getset_property("created_at")
+    updated_at: datetime = getset_property("updated_at")
     songs_count = getset_property("songs_count")
     creator = getset_property("creator")
-    released_at = getset_property("released_at")  # str
-    model = getset_property("model")  # feeluown.library.BaseModel
+    released_at: str = getset_property("released_at")
+    model: BaseModel = getset_property("model")
 
 
 class TableMetaWidget(MetaWidget):
@@ -107,8 +109,9 @@ class TableMetaWidget(MetaWidget):
         self._title_row_layout.addWidget(self.fav_button)
         self._title_row_layout.setSpacing(10)
         self._title_row_layout.addStretch(0)
-        self._title_row_layout.setAlignment(self.fav_button,
-                                            Qt.AlignmentFlag.AlignCenter)
+        self._title_row_layout.setAlignment(
+            self.fav_button, Qt.AlignmentFlag.AlignCenter
+        )
 
         self._right_layout.addLayout(self._title_row_layout)
         self._right_layout.addWidget(self.meta_label)
