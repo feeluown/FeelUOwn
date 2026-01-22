@@ -294,3 +294,22 @@ recommended-daily-playlist = 每日推荐
 recommended-feelin-lucky = 随便听听
 recommended-videos = 瞅瞅
 recommended-videos-missing = 暂无推荐{video}
+
+# feeluown.gui.pages.my_fav.py
+# ----------------------------------------
+
+## providerName: [string] name of the provider
+## mediaType: [string] can be one of:
+##    track
+##    album
+##    singer
+##    playlist
+##    video
+provider-missing-favorite =当前资源提供方（{ $providerName }）不支持获取 收藏的{ $mediaType ->
+    [track] {track}
+    [album] {album}
+    [singer] {musician}
+    [playlist] {track-list}
+    [video] {video}
+   *[other] 内容
+}

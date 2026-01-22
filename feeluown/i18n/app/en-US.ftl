@@ -294,3 +294,22 @@ recommended-daily-playlist = Daily Recommendations
 recommended-feelin-lucky = Just listening
 recommended-videos = Take a look
 recommended-videos-missing = No recommended {video}
+
+# feeluown.gui.pages.my_fav.py
+# ----------------------------------------
+
+## providerName: [string] name of the provider
+## mediaType: [string] can be one of:
+##    track
+##    album
+##    singer
+##    playlist
+##    video
+provider-missing-favorite =Provider { $providerName } doesn't support Liked { $mediaType ->
+    [track] {track}
+    [album] {album}
+    [singer] {musician}
+    [playlist] {track-list}
+    [video] {video}
+   *[other] Contents
+}
