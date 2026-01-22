@@ -94,7 +94,7 @@ if (
 
 def rfc1766_langcode() -> str:
     """
-    Returns RFC 1766 language code
+    Returns a RFC 1766 language code, for current user preference.
     """
 
     import locale
@@ -106,6 +106,8 @@ def rfc1766_langcode() -> str:
             lang, _ = locale.getdefaultlocale()
         case _:
             lang, _ = locale.getlocale(locale.LC_CTYPE)
+            if lang == "C":
+                lang = "en-US"
 
     return lang
 
