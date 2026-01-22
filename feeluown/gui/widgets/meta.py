@@ -2,7 +2,7 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QSize
@@ -67,7 +67,7 @@ class MetaWidget(QFrame):
     creator = getset_property("creator")
     # YYYY-mm-dd
     released_at: str = getset_property("released_at")
-    model  = getset_property("model")
+    model = getset_property("model")
 
 
 class TableMetaWidget(MetaWidget):
@@ -170,20 +170,16 @@ class TableMetaWidget(MetaWidget):
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
-            updated_part = t(
-                "meta-updated-at", unixTimestamp=self.updated_at.timestamp() * 1000
-            )
+            updated_part = t("meta-updated-at", unixTimestamp=self.updated_at)
         if self.created_at:
-            created_part = t(
-                "meta-created-at", unixTimestamp=self.created_at.timestamp() * 1000
-            )
+            created_part = t("meta-created-at", unixTimestamp=self.created_at)
         if self.released_at:
             try:
                 year, month, day = map(int, self.released_at.split("-"))
             except Exception:
                 year, month, day = 1970, 1, 1
-            unix_ts_ms = datetime(year=year, month=month, day=day).timestamp() * 1000
-            released_part = t("meta-released-at", unixTimestamp=unix_ts_ms)
+            released_dt = date(year=year, month=month, day=day)
+            released_part = t("meta-released-at", unixTimestamp=released_dt)
 
         if self.songs_count is not None:
             songs_count_part = t("meta-amount-songs", songsCount=self.songs_count)

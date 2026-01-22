@@ -1,6 +1,8 @@
 import os
 import sys
 import logging
+from decimal import Decimal
+from datetime import date, datetime
 from importlib import resources
 from threading import RLock
 
@@ -19,13 +21,29 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
 
 
-def t(msg_id: str, **kwargs: object) -> str:
+def t(
+    msg_id: str,
+    **kwargs: str | int | float | Decimal | date | datetime | object,
+) -> str:
     """
     :param msg_id: Message ID inside fluent translation files.
     :param kwargs: Any object that implements the `__str__`
+
+    > To format DATETIME() correctly, you must pass a date/datetime object.
     """
     for k, v in kwargs.items():
-        if not isinstance(v, (str, float, int)):
+        # Special types
+        if not isinstance(
+            v,
+            (
+                str,
+                float,
+                int,
+                date,
+                datetime,
+                Decimal,
+            ),
+        ):
             kwargs[k] = str(v)
 
     return l10n_bundle().format_value(msg_id, kwargs)

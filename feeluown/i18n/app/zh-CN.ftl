@@ -266,29 +266,29 @@ album-filter-compilation-retrospective = 合辑/精选辑
 # feeluown.gui.widgets.meta
 # ----------------------------------------
 
-## unixTimestamp: Unix timestamp in milliseconds
+## unixTimestamp: [date, datetime]
 ## https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
 meta-created-at =
     🕛 创建于
-    <code style="font-size: small">
-        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    <code style="font-size: medium">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "numeric") }
     </code>
 meta-updated-at =
     🕛 更新于
-    <code style="font-size: small">
-        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    <code style="font-size: medium">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "numeric") }
     </code>
 meta-released-at =
     🕛 发布于
-    <code style="font-size: small">
-        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "short") }
+    <code style="font-size: medium">
+        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "numeric") }
     </code>
 
 ## songsCount: [int] number of songs, -1 for unknown
 meta-amount-songs = { $songsCount ->
     [-1] 未知
     [0] 无歌曲
-    *[other] <code style="font-size: small">{ $songsCount }</code> 首歌曲
+    *[other] <code style="font-size: medium">{ $songsCount }</code> 首歌曲
 }
 
 # feeluown.gui.widgets.songs
