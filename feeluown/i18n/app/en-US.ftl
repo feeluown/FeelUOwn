@@ -189,7 +189,7 @@ hot = Hot
 emoji-expression = Emoji
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
-search-box-placeholder = Search { -track }s, artists, { -alubm }s, users
+search-box-placeholder = Search { -track }s, artists, { -album }s, users
 search-box-tooltip =
     Type text directly to filter, press Enter to search
         Input >>> prefix to execute Python code
