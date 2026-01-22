@@ -1,6 +1,5 @@
 import os
 import sys
-import locale
 import logging
 from importlib import resources
 from threading import RLock
@@ -73,6 +72,8 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
             if matched_best is not None:
                 matched_locales.append(matched_best)
 
+        logger.info(f"matched locale: {matched_locales}")
+
         # resources are loaded immediately,
         # so current_dir can be cleaned safely.
         return FluentLocalization(
@@ -87,12 +88,19 @@ def rfc1766_langcode() -> str:
     """
     Returns RFC 1766 language code
     """
-    if sys.version_info.major > 3 or sys.version_info.minor >= 15:
-        lang, _encoding = locale.getlocale(locale.LC_CTYPE)
-    else:
-        lang, _encoding = locale.getdefaultlocale()
-    return lang
 
+    import locale
+
+    match sys.platform:
+        case "win32" if sys.version_info.major == 3 and sys.version_info.minor >= 15:
+            from winrt.windows.system.userprofile import GlobalizationPreferences # type: ignore
+            lang = GlobalizationPreferences.languages[0]
+        case "win32":
+            lang, _ = locale.getdefaultlocale()
+        case _:
+            lang, _ = locale.getlocale(locale.LC_CTYPE)
+
+    return lang
 
 if __name__ == "__main__":
     l10n_en = l10n_bundle(locales=["en_US"])
