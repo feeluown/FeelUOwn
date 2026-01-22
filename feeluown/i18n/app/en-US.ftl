@@ -52,7 +52,7 @@ local-tracks = Local tracks
 
 tips-osdlyrics = Did you know FeelUOwn can work with osdlyrics?
 tips-show-more-tips = Type '>>> app.tips_mgr.show_random()' in the search box to see more Tips
-tips-album-original-image = Right-click on the album art to view the original image ~
+tips-album-original-image = Right-click on the { -album } art to view the original image ~
 tips-track-drag-to-playlist = You can drag the { -track } to add it to a playlist!
 tips-common-tooltip = Hover or right-click for pleasant surprises ~
 tips-watch-mode = Enable watch mode to watch MVs while working or studying—how nice is that?
@@ -134,7 +134,7 @@ menu-ai-copy-prompt-succeed = Copied to clipboard
 # feeluown.gui.components.nowplaying
 # ----------------------------------------
 track-movie-play-tooltip = Play { -track } MV
-track-album-release-date = Album {release-date}: { $releaseDate }
+track-album-release-date = { -album(capitalization: "uppercase") } {release-date}: { $releaseDate }
 # feeluown.gui.components.player_playlist
 # ----------------------------------------
 fm-radio-current-song-dislike = Dislike
@@ -185,7 +185,7 @@ hot = Hot
 emoji-expression = Emoji
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
-search-box-placeholder = Search { -track }s, artists, albums, users
+search-box-placeholder = Search { -track }s, artists, { -alubm }s, users
 search-box-tooltip =
     Type text directly to filter, press Enter to search
         Input >>> prefix to execute Python code
@@ -337,7 +337,7 @@ playlist-name = { track-list } Name
 track-lyrics = Lyrics
 track-start-play = Play
 track-webpage-url-copy = Copy webpage URL
-track-belongs-album = Belongs to album
+track-belongs-album = { -album(capitalization: "uppercase") }
 release-date = Release date
 track-genre = Genre
 error-message-template =

@@ -54,7 +54,7 @@ local-tracks = 本地音乐
 
 tips-osdlyrics = 你知道 FeelUOwn 可以配合 osdlyrics 使用吗?
 tips-show-more-tips = 在搜索框输入“>>> app.tips_mgr.show_random()”查看更多 Tips
-tips-album-original-image = 专辑图片上右键可以查看原图哦 ~
+tips-album-original-image = { -album }图片上右键可以查看原图哦 ~
 tips-track-drag-to-playlist = 可以拖动{ -track }来将{ -track }添加到歌单呐！
 tips-common-tooltip = 鼠标悬浮或右键常有惊喜 ~
 tips-watch-mode = 开启 watch 模式一边看 MV，一边工作学习香不香？
@@ -144,7 +144,7 @@ menu-ai-copy-prompt-succeed = 已经复制到剪贴板
 # feeluown.gui.components.nowplaying
 # ----------------------------------------
 track-movie-play-tooltip = 播放{ -track }MV
-track-album-release-date = 专辑{ release-date }：{ $releaseDate }
+track-album-release-date = { -album }{ release-date }：{ $releaseDate }
 
 # feeluown.gui.components.player_playlist
 # ----------------------------------------
@@ -200,7 +200,7 @@ emoji-expression = 表情
 
 # feeluown.gui.widgets.magicbox
 # ----------------------------------------
-search-box-placeholder = 搜索{ -track }、歌手、专辑、用户
+search-box-placeholder = 搜索{ -track }、歌手、{ -album }、用户
 search-box-tooltip =
     直接输入文字可以进行过滤，按 Enter 可以搜索
     输入 >>> 前缀之后，可以执行 Python 代码
@@ -351,7 +351,7 @@ playlist-name = {track-list}名
 track-lyrics = 歌词
 track-start-play = 播放
 track-webpage-url-copy = 复制网页地址
-track-belongs-album = 所属专辑
+track-belongs-album = 所属{ -album }
 release-date = 发行日期
 track-genre = 曲风
 
