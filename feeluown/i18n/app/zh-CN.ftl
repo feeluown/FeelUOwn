@@ -414,7 +414,7 @@ fold-expand = 展开
 fold-collapse = 收起
 fold-tooltip = {fold-expand}/{fold-collapse}
 
-recommended-playlist = 推荐{track-list}
+recommended-playlist = 推荐歌单
 recommended-daily-playlist = 每日推荐
 recommended-feelin-lucky = 随便听听
 recommended-videos = 瞅瞅
