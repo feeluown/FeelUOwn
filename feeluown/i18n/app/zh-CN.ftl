@@ -186,6 +186,18 @@ track-search-done = 搜索完成，共有 { $resultCount } 个有效的结果，
    NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2)
 }s
 
+# feeluown.gui.components.song_tag
+# ----------------------------------------
+# This is for missing track fallback,
+# when you cannot play original track due to copyright issues, e.g.
+
+music-source = 音乐来源
+track-smart-standby = 智能替换
+track-unknown-source = 未知来源
+
+track-fallback-to-standby = 使用 { $standby } 替换当前{ -track }
+track-fallback-failed = 提供方 “{ $providerName }” 没有找到可用的相似{ -track }
+
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

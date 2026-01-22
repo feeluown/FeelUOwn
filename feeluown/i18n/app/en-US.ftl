@@ -173,6 +173,18 @@ track-search-result-empty = Searching { $providerName } yielded no results
 
 track-search-done = Search completed, with { $resultCount } valid results, taking { NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2) }s
 
+# feeluown.gui.components.song_tag
+# ----------------------------------------
+# This is for missing track fallback,
+# when you cannot play original track due to copyright issues, e.g.
+
+music-source = Music source
+track-smart-standby = Smart Standby
+track-unknown-source = Unknown source
+
+track-fallback-to-standby = Used { $standby } to replace the current { -track }
+track-fallback-failed = Provider “{ $providerName }” did not find any similar { -track }s available
+
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
