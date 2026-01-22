@@ -8,6 +8,8 @@ minimize-window = Minimize
 fullscreen-window = Full Screen
 playlist = Playlist
 recently-played = Recently Played
+unknown = Unknown
+
 -error = Error
 -info = Note
 -warn = Warning
@@ -372,6 +374,15 @@ track-webpage-url-copy = Copy webpage URL
 track-belongs-album = { -album(capitalization: "uppercase") }
 release-date = Release date
 track-genre = Genre
+
+## url: [string]
+track-webpage-url-copied = Copied: { $url }
+
+## providerName: [string]
+## This happens if user uninstalled a plugin, or modified
+## their collections by hand, e.g.
+track-source-provider-missing = Provider { $providerName } not found
+
 error-message-template =
     <p style=color: grey; font: small;>This provider does not yet support{ "{" }feature{ "}" }.
     <br/> Implement the { $interface } interface to support this feature ~

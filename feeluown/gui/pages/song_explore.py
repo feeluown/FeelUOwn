@@ -49,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 
 def or_unknown(x):
-    return x or "未知"
+    return x or t("unknown")
 
 
 async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
@@ -58,7 +58,9 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
     provider = app.library.get(song.source)
     if provider is None:
-        await render_error_message(app, f"没有相应的资源提供方 {song.source}")
+        await render_error_message(
+            app, t("track-source-provider-missing", providerName=song.source)
+        )
         return
 
     # TODO: Initialize the view with song object, and it should reduce
@@ -304,7 +306,7 @@ class SongExploreView(QWidget):
 
             async def copy_song_web_url():
                 QGuiApplication.clipboard().setText(web_url)
-                self._app.show_msg(f"已经复制：{web_url}")
+                self._app.show_msg(t("track-webpage-url-copied", url=web_url))
 
             self.copy_web_url_btn.clicked.connect(
                 lambda: aio.run_afn(copy_song_web_url)

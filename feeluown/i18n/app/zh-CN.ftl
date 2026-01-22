@@ -8,6 +8,8 @@ minimize-window = 最小化
 fullscreen-window = 窗口全屏
 playlist = 播放列表
 recently-played = 最近播放
+unknown = 未知
+
 -error = 错误
 -info = 提示
 -warn = 警告
@@ -386,6 +388,14 @@ track-webpage-url-copy = 复制网页地址
 track-belongs-album = 所属{ -album }
 release-date = 发行日期
 track-genre = 曲风
+
+## url: [string]
+track-webpage-url-copied = 已经复制：{ $url }
+
+## providerName: [string]
+## This happens if user uninstalled a plugin, or modified
+## their collections by hand, e.g.
+track-source-provider-missing = 没有相应的资源提供方 { $providerName }
 
 error-message-template =
     <p style=color: grey; font: small;>该提供方暂不支持{"{"}feature{"}"}。
