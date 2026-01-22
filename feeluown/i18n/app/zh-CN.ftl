@@ -263,6 +263,20 @@ album-filter-singular-or-ep = 单曲与EP
 album-filter-live = 现场
 album-filter-compilation-retrospective = 合辑/精选辑
 
+# feeluown.gui.widgets.meta
+# ----------------------------------------
+
+## these partial messages are followed by a datetime
+meta-created-at = 创建于
+meta-updated-at = 更新于
+meta-released-at = 发布于
+## songsCount: [int] number of songs, -1 for unknown
+meta-amount-songs = { $songsCount ->
+    [-1] 未知
+    [0] 无歌曲
+    *[other] <code style="font-size: small">{ $songsCount }</code> 首歌曲
+}
+
 # feeluown.gui.widgets.songs
 # ----------------------------------------
 add-to-playlist = 添加到播放队列

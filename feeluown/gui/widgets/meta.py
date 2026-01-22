@@ -17,6 +17,7 @@ from PyQt6.QtWidgets import (
 
 from feeluown.gui.helpers import elided_text
 from feeluown.gui.components import FavButton
+from feeluown.i18n import t
 from .cover_label import CoverLabelV2
 
 if TYPE_CHECKING:
@@ -65,6 +66,7 @@ class MetaWidget(QFrame):
     updated_at: datetime = getset_property("updated_at")
     songs_count = getset_property("songs_count")
     creator = getset_property("creator")
+    # YYYY-mm-dd
     released_at: str = getset_property("released_at")
     model: BaseModel = getset_property("model")
 
@@ -169,20 +171,22 @@ class TableMetaWidget(MetaWidget):
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
-            updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'.format(
-                self.updated_at.strftime("%Y-%m-%d")
-            )
+            updated_part = f"""🕛 {t("meta-updated-at")}
+            <code style="font-size: small">
+                {self.updated_at.strftime("%Y-%m-%d")}
+            </code>"""
         if self.created_at:
-            created_part = '🕛 创建于 <code style="font-size: small">{}</code>'.format(
-                self.created_at.strftime("%Y-%m-%d")
-            )
+            created_part = f"""🕛 {t("meta-created-at")}
+            <code style="font-size: small">
+                {self.created_at.strftime("%Y-%m-%d")}
+            </code>"""
         if self.released_at:
-            released_part = (
-                f'🕛 发布于 <code style="font-size: small">{self.released_at}</code>'  # noqa
-            )
+            released_part = f"""🕛 {t("meta-released-at")}
+            <code style="font-size: small">
+                {self.released_at}
+            </code>"""
         if self.songs_count is not None:
-            text = self.songs_count if self.songs_count != -1 else "未知"
-            songs_count_part = f'<code style="font-size: small">{text}</code> 首歌曲'
+            songs_count_part = t("meta-amount-songs", songsCount=self.songs_count)
         parts = [
             creator_part,
             created_part,
