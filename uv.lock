@@ -413,9 +413,9 @@ wheels = [
 name = "feeluown"
 source = { editable = "." }
 dependencies = [
-    { name = "babel" },
     { name = "fluent-runtime" },
     { name = "janus" },
+    { name = "langcodes" },
     { name = "mutagen" },
     { name = "packaging" },
     { name = "pydantic" },
@@ -503,7 +503,6 @@ dev = [
 requires-dist = [
     { name = "aionowplaying", marker = "extra == 'macos'", specifier = ">=0.10" },
     { name = "aionowplaying", marker = "extra == 'win32'", specifier = ">=0.10" },
-    { name = "babel", specifier = ">=2.17.0" },
     { name = "feeluown-bilibili", marker = "extra == 'battery'", specifier = ">=0.4.1" },
     { name = "flake8", marker = "extra == 'dev'" },
     { name = "flake8-pyproject", marker = "extra == 'dev'" },
@@ -515,6 +514,7 @@ requires-dist = [
     { name = "json-rpc", marker = "extra == 'jsonrpc'" },
     { name = "json-rpc", marker = "extra == 'webserver'" },
     { name = "langchain", extras = ["openai"], marker = "extra == 'ai'", specifier = ">=1.0" },
+    { name = "langcodes", specifier = ">=3.5.1" },
     { name = "mutagen", specifier = ">=1.37" },
     { name = "mypy", marker = "extra == 'dev'" },
     { name = "packaging" },
@@ -998,6 +998,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fc/1c/008a6dd7b3523121be1a4f24701b099ae79193dab9b329dfb787bece08bf/langchain_openai-1.1.5.tar.gz", hash = "sha256:a8ca5f3919bd948867c7d427a575b34f7c141110ef7cbc14ea7bbc46363871de", size = 1038129, upload-time = "2025-12-17T19:14:36.392Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e8/c5/22b690a27ba6b1ca6876270473aab1610cb8767314e5038cb6b826d9b69b/langchain_openai-1.1.5-py3-none-any.whl", hash = "sha256:d3a3b0c39e1513bbb9e5d4526c194909a00c5733195dbe90bfea6619b00420ca", size = 84569, upload-time = "2025-12-17T19:14:35.529Z" },
+]
+
+[[package]]
+name = "langcodes"
+version = "3.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/a9/75/f9edc5d72945019312f359e69ded9f82392a81d49c5051ed3209b100c0d2/langcodes-3.5.1.tar.gz", hash = "sha256:40bff315e01b01d11c2ae3928dd4f5cbd74dd38f9bd912c12b9a3606c143f731", size = 191084, upload-time = "2025-12-02T16:22:01.627Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/dd/c1/d10b371bcba7abce05e2b33910e39c33cfa496a53f13640b7b8e10bb4d2b/langcodes-3.5.1-py3-none-any.whl", hash = "sha256:b6a9c25c603804e2d169165091d0cdb23934610524a21d226e4f463e8e958a72", size = 183050, upload-time = "2025-12-02T16:21:59.954Z" },
 ]
 
 [[package]]

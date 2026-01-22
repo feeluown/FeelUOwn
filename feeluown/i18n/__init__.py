@@ -5,7 +5,7 @@ import logging
 from importlib import resources
 from threading import RLock
 
-from babel import Locale
+import langcodes
 from fluent.runtime import FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
@@ -49,36 +49,36 @@ def l10n_bundle(locales: list[str] | None = None) -> FluentLocalization:
 
     # Simple fallback,
     # en_US -> en, e.g.
-    locales_with_fallback = []
-    for locale_str in locales:
-        if locale_str == "C":
-            locale_str = "en_US"
-        locales_with_fallback.append(locale_str)
-        lang = Locale.parse(locale_str).language
-
-        if lang != locale_str and lang not in locales_with_fallback:
-            locales_with_fallback.append(lang)
-
     with _L10N_BUNDLE_LOCK:
         if L10N_BUNDLE is None:
-            L10N_BUNDLE = load_l10n_resource(locales=locales_with_fallback)
+            L10N_BUNDLE = load_l10n_resource(locales=locales)
 
     return L10N_BUNDLE
 
 
 def load_l10n_resource(locales: list[str]) -> FluentLocalization:
     with resources.as_file(
-        resources.files(feeluown.i18n),
+        resources.files(feeluown.i18n) / "app",
     ) as current_dir:
+        supported = [lang.removesuffix(".ftl") for lang in os.listdir(current_dir)]
         # The 'str' typing hint of `roots` is incorrect
-        res_loader = FluentResourceLoader(roots=[current_dir / "{locale}"])
+        res_loader = FluentResourceLoader(roots=[current_dir])
+
+        matched_locales = []
+        for locale in locales:
+            matched_best = langcodes.closest_supported_match(
+                desired_language=locale,
+                supported_languages=supported,
+            )
+            if matched_best is not None:
+                matched_locales.append(matched_best)
 
         # resources are loaded immediately,
         # so current_dir can be cleaned safely.
         return FluentLocalization(
-            # add zh_CN for fallback
-            locales=locales + ["zh_CN"],
-            resource_ids=["app.ftl"],
+            # add en-US, zh-CN for fallback
+            locales=matched_locales + ["en-US", "zh-CN"],
+            resource_ids=["{locale}.ftl"],
             resource_loader=res_loader,
         )
 
@@ -88,10 +88,6 @@ def rfc1766_langcode() -> str:
     Returns RFC 1766 language code
     """
     if sys.version_info.major > 3 or sys.version_info.minor >= 15:
-        raise NotImplementedError(
-            "python locale.getlocale violates RFC 1766 on Windows"
-        )
-        # FIXME: need ICU for python >= 3.15
         lang, _encoding = locale.getlocale(locale.LC_CTYPE)
     else:
         lang, _encoding = locale.getdefaultlocale()
