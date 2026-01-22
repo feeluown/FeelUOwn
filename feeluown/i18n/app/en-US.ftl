@@ -118,12 +118,12 @@ play-stage-prepare-movie-url = Obtaining { video } playback URL for the music...
 # ----------------------------------------
 play-track-movie = Play MV
 track-missing-album = No { album } information for this { -track }
-track-missing-movie = { -track } has no MV
+track-missing-movie = { -track(capitalization: "uppercase") } has no MV
 track-search-similar = Search for similar resources
 track-show-artist = View { musician }
 track-show-album = View { album }
-track-enter-radio = { -track } Radio
-track-show-detail = { -track } Details
+track-enter-radio = { -track(capitalization: "uppercase") } Radio
+track-show-detail = { -track(capitalization: "uppercase") } Details
 track-playlist-add = Add to { playlist }
 track-playlist-add-succ = Added to { $playlistName } ✅
 track-playlist-add-fail = Failed to add to { $playlistName } ❌
