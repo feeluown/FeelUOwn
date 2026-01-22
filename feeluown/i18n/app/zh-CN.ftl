@@ -10,8 +10,10 @@ playlist = 播放列表
 recently-played = 最近播放
 -error = 错误
 -info = 提示
+-warn = 警告
 error = { -error }
 info = { -info }
+warn = { -warn }
 
 # Tab name, commonly used
 # ----------------------------------------
@@ -272,13 +274,38 @@ similar-tracks = 相似{ -track }
 track-hot-comments = 热门评论
 movie-mode-exit = 退出视频模式
 
+# feeluown.gui.uimain.sidebar
+# ----------------------------------------
+-local-favorites = 本地收藏集
+local-favorites = { -local-favorites }
+
+collections-header-tooltip =
+    我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源
+
+    每个收藏集都以一个独立 .fuo 文件的存在，将鼠标悬浮在收藏集上，可以查看文件所在路径。
+    新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。
+
+    手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删{-track}。
+ai-configure-tooltip =
+    你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了
+    config.OPENAI_API_KEY = sk-xxx
+    config.OPENAI_API_BASEURL = http://xxx
+    config.OPENAI_API_MODEL = model name
+
+collection-id = ID
+collection-title = 标题
+
+## collectionName: [string] title/name of the collection
+collection-already-exists = 收藏集 '{ $collectionName }' 已存在
+collection-confirm-remove = 确认删除收藏集 '{ $collectionName }' 吗？
+
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
 my-favorite-button = { my-favorite-title }
 my-playlists = {track-list}列表
 my-tracks = 我的音乐
 provider-unknown-tooltip = 当前资源提供方未知
-fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和本地收藏集” 功能
+fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和{-local-favorites}” 功能
 
 ## providerName: [string] name of the provider
 provider-recommended-page-enter = 点击进入 { $providerName } 推荐页

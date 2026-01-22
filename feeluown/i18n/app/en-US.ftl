@@ -10,8 +10,10 @@ playlist = Playlist
 recently-played = Recently Played
 -error = Error
 -info = Note
+-warn = Warning
 error = { -error }
 info = { -info }
+warn = { -warn }
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
@@ -249,18 +251,47 @@ playback-mode-loop = Loop
 ## play songs in random order
 
 playback-mode-random = Random
+
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
 similar-tracks = Similar{ -track }
 track-hot-comments = Hot comments
 movie-mode-exit = Exit movie mode
+
+# feeluown.gui.uimain.sidebar
+# ----------------------------------------
+-local-favorites = Local favorites
+local-favorites = { -local-favorites }
+
+collections-header-tooltip =
+    You can create ‘collections’ locally to save your favorite music resources
+
+    Each collection exists as an independent .fuo file. Hover over a collection to view its file path.
+    Creating a new .fuo file creates a new collection; the filename is the collection’s name.
+
+    You can manually edit the .fuo file to edit the music resources in the collection,
+    or drag and drop {-track}s in the interface to add or remove them.
+ai-configure-tooltip =
+    You need to install the Python third-party library openai,
+    and configure the following settings to use the AI assistant
+    config.OPENAI_API_KEY = sk-xxx
+    config.OPENAI_API_BASEURL = http://xxx
+    config.OPENAI_API_MODEL = model name
+
+collection-id = ID
+collection-title = Title
+
+## collectionName: [string] title/name of the collection
+collection-already-exists = Collection '{ $collectionName }' already exists
+collection-confirm-remove = Are you sure you want to delete the collection '{ $collectionName }'?
+
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
 my-favorite-button = { my-favorite-title }
 my-playlists = { track-list }s
 my-tracks = My tracks
 provider-unknown-tooltip = Unknown provider
-fold-top-tooltip = { fold-collapse }/{ fold-expand } Homepage and Local favorites
+fold-top-tooltip = { fold-collapse }/{ fold-expand } Homepage and { -local-favorites }
 
 ## providerName: [string] name of the provider
 
