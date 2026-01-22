@@ -89,7 +89,7 @@ logged-accounts-tooltip =
     }
 # feeluown.gui.components.btns
 # ----------------------------------------
-lyric-button = 词
+lyric-button = LRC
 watch-mode-tooltip =
     When watch mode is enabled, the player will first try to find a suitable { video } to play for the { -track }.
     Best practice: when enabling watch, it’s recommended to also enable the { picture-in-picture } mode of the { video }.
