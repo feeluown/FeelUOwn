@@ -101,8 +101,11 @@ local-liked-tracks-removed = Already removed from { local-liked-tracks }
 show-track-movie = Show the { video } screen
 # feeluown.gui.components.collections
 # ----------------------------------------
--track-collection = Collection
-track-collection = { -track-collection }
+-track-collection ={ $capitalization ->
+    [uppercase] Collection
+   *[lowercase] collection
+}
+track-collection = { -track-collection(capitalization: "uppercase") }
 remove-this-collection = Remove this { -track-collection }
 # feeluown.gui.components.line_song
 # ----------------------------------------
@@ -282,12 +285,12 @@ movie-mode-exit = Exit movie mode
 local-favorites = { -local-favorites }
 
 collections-header-tooltip =
-    You can create ‘collections’ locally to save your favorite music resources
+    You can create ‘{ -track-collection }s’ locally to save your favorite music resources
 
-    Each collection exists as an independent .fuo file. Hover over a collection to view its file path.
-    Creating a new .fuo file creates a new collection; the filename is the collection’s name.
+    Each { -track-collection } exists as an independent .fuo file. Hover over a { -track-collection } to view its file path.
+    Creating a new .fuo file creates a new { -track-collection }; the filename is the { -track-collection }’s name.
 
-    You can manually edit the .fuo file to edit the music resources in the collection,
+    You can manually edit the .fuo file to edit the music resources in the { -track-collection },
     or drag and drop {-track}s in the interface to add or remove them.
 ai-configure-tooltip =
     You need to install the Python third-party library openai,
@@ -300,8 +303,8 @@ collection-id = ID
 collection-title = Title
 
 ## collectionName: [string] title/name of the collection
-collection-already-exists = Collection '{ $collectionName }' already exists
-collection-confirm-remove = Are you sure you want to delete the collection '{ $collectionName }'?
+collection-already-exists = { -track-collection(capitalization: "uppercase") } '{ $collectionName }' already exists
+collection-confirm-remove = Confirm to delete the collection '{ $collectionName }'?
 
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------

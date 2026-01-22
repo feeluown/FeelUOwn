@@ -105,7 +105,10 @@ show-track-movie = 展示{ video }画面
 
 # feeluown.gui.components.collections
 # ----------------------------------------
--track-collection = 收藏集
+-track-collection = { $capitalization ->
+    [uppercase] 收藏集
+   *[lowercase] 收藏集
+}
 track-collection = { -track-collection }
 remove-this-collection = 删除此{ -track-collection }
 
@@ -299,12 +302,12 @@ movie-mode-exit = 退出视频模式
 local-favorites = { -local-favorites }
 
 collections-header-tooltip =
-    我们可以在本地建立『收藏集』来收藏自己喜欢的音乐资源
+    我们可以在本地建立『{ -track-collection }』来收藏自己喜欢的音乐资源
 
-    每个收藏集都以一个独立 .fuo 文件的存在，将鼠标悬浮在收藏集上，可以查看文件所在路径。
-    新建 fuo 文件，则可以新建收藏集，文件名即是收藏集的名字。
+    每个{ -track-collection }都以一个独立 .fuo 文件的存在，将鼠标悬浮在{ -track-collection }上，可以查看文件所在路径。
+    新建 fuo 文件，则可以新建{ -track-collection }，文件名即是{ -track-collection }的名字。
 
-    手动编辑 fuo 文件即可编辑收藏集中的音乐资源，也可以在界面上拖拽来增删{-track}。
+    手动编辑 fuo 文件即可编辑{ -track-collection }中的音乐资源，也可以在界面上拖拽来增删{-track}。
 ai-configure-tooltip =
     你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了
     config.OPENAI_API_KEY = sk-xxx
@@ -315,8 +318,8 @@ collection-id = ID
 collection-title = 标题
 
 ## collectionName: [string] title/name of the collection
-collection-already-exists = 收藏集 '{ $collectionName }' 已存在
-collection-confirm-remove = 确认删除收藏集 '{ $collectionName }' 吗？
+collection-already-exists = { -track-collection } '{ $collectionName }' 已存在
+collection-confirm-remove = 确认删除{ -track-collection } '{ $collectionName }' 吗？
 
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
