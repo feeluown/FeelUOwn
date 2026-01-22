@@ -129,7 +129,7 @@ def rfc1766_langcode() -> str:
         case _:
             lang, _ = locale.getlocale(locale.LC_CTYPE)
             if lang == "C":
-                lang = "en-US"
+                lang = "en_US"
 
     return lang
 
