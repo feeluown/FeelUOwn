@@ -20,6 +20,10 @@ logger.setLevel(logging.INFO)
 
 
 def t(msg_id: str, **kwargs: object) -> str:
+    """
+    :param msg_id: Message ID inside fluent translation files.
+    :param kwargs: Any object that implements the `__str__`
+    """
     for k, v in kwargs.items():
         if not isinstance(v, (str, float, int)):
             kwargs[k] = str(v)

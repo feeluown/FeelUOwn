@@ -105,8 +105,9 @@ show-track-movie = 展示{ video }画面
 
 # feeluown.gui.components.collections
 # ----------------------------------------
-track-collection = 收藏集
-remove-this-collection = 删除此{ track-collection }
+-track-collection = 收藏集
+track-collection = { -track-collection }
+remove-this-collection = 删除此{ -track-collection }
 
 # feeluown.gui.components.line_song
 # ----------------------------------------
@@ -364,6 +365,17 @@ track-view-comments = 查看{ -track }评论
 
 # feelown.gui.pages
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.pages.coll_mixed
+# ----------------------------------------
+-music-library = 音乐库
+music-library = { -music-library }
+
+music-library-empty = { -music-library }暂无收藏，快去添加一些吧！
+collection-is-empty = 该{ -track-collection }暂无内容，快去添加一些吧！
+
+## item: [string]
+remove-item-succeed = 移除 { $item } 成功
 
 # feeluown.gui.pages.homepage
 # ----------------------------------------

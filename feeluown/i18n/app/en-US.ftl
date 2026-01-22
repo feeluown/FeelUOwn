@@ -101,8 +101,9 @@ local-liked-tracks-removed = Already removed from { local-liked-tracks }
 show-track-movie = Show the { video } screen
 # feeluown.gui.components.collections
 # ----------------------------------------
-track-collection = Collection
-remove-this-collection = Remove this { track-collection }
+-track-collection = Collection
+track-collection = { -track-collection }
+remove-this-collection = Remove this { -track-collection }
 # feeluown.gui.components.line_song
 # ----------------------------------------
 play-stage-prepare-track-url = Obtaining { -track } playback URL...
@@ -349,6 +350,17 @@ track-view-comments = View{ -track } comments
 
 # feelown.gui.pages
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.pages.coll_mixed
+# ----------------------------------------
+-music-library = Music Library
+music-library = { -music-library }
+
+music-library-empty = { -music-library } has no content yet, go add some!
+collection-is-empty = This { -track-collection } has no content yet, go add some!
+
+## item: [string]
+remove-item-succeed = Removed { $item } successfully
 
 # feeluown.gui.pages.homepage
 # ----------------------------------------
