@@ -84,6 +84,14 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
         )
 
 
+if (
+    sys.platform == "win32"
+    and sys.version_info.major == 3
+    and sys.version_info.minor >= 15
+):
+    from winrt.windows.system.userprofile import GlobalizationPreferences  # type: ignore
+
+
 def rfc1766_langcode() -> str:
     """
     Returns RFC 1766 language code
@@ -93,7 +101,6 @@ def rfc1766_langcode() -> str:
 
     match sys.platform:
         case "win32" if sys.version_info.major == 3 and sys.version_info.minor >= 15:
-            from winrt.windows.system.userprofile import GlobalizationPreferences # type: ignore
             lang = GlobalizationPreferences.languages[0]
         case "win32":
             lang, _ = locale.getdefaultlocale()
@@ -101,6 +108,7 @@ def rfc1766_langcode() -> str:
             lang, _ = locale.getlocale(locale.LC_CTYPE)
 
     return lang
+
 
 if __name__ == "__main__":
     l10n_en = l10n_bundle(locales=["en_US"])
