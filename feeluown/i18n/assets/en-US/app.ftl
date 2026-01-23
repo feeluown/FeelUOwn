@@ -200,6 +200,7 @@ error-message-prefix = { -error }:{ " " }
 info-message-prefix = { -info }:{ " " }
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
+configuration-button = Configuration
 discovery = Discovery
 homepage = Home
 calender = Calender
@@ -207,6 +208,14 @@ top-list = Top list
 favorites = Favorites
 hot = Hot
 emoji-expression = Emoji
+
+# feeluown.gui.widgets.volume_button
+# ----------------------------------------
+volume-button-tooltip = Adjust volume
+
+# feeluown.gui.widgets.progress_slider
+# ----------------------------------------
+drag-to-seek-progress = Drag to seek
 
 # feeluown.gui.widgets.songs
 # ----------------------------------------
@@ -414,7 +423,7 @@ track-webpage-url-copied = Copied: { $url }
 track-source-provider-missing = Provider { $providerName } not found
 
 error-message-template =
-    <p style=color: grey; font: small;>This provider does not yet support{ "{" }feature{ "}" }.
+    <p style=color: grey; font: small;>This provider does not yet support { "{" }feature{ "}" }.
     <br/> Implement the { $interface } interface to support this feature ~
     </p>
 find-similar-tracks = View{ similar-tracks }

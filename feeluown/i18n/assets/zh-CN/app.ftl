@@ -213,6 +213,7 @@ info-message-prefix = {-info}：
 
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
+configuration-button = 配置
 discovery = 发现
 homepage = 主页
 calender = 日历
@@ -320,6 +321,14 @@ meta-amount-songs = { $songsCount ->
     [0] 无歌曲
     *[other] <code style="font-size: medium">{ $songsCount }</code> 首歌曲
 }
+
+# feeluown.gui.widgets.volume_button
+# ----------------------------------------
+volume-button-tooltip = 调整音量
+
+# feeluown.gui.widgets.progress_slider
+# ----------------------------------------
+drag-to-seek-progress = 拖动调节进度
 
 # feeluown.gui.widgets.songs
 # ----------------------------------------

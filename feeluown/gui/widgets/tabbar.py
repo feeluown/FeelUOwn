@@ -115,7 +115,7 @@ class TableTabBarV2(QWidget):
         self.playlists_btn = QRadioButton(t("track-list"), self)
         self.videos_btn = QRadioButton(t("video"), self)
         self.desc_btn = QRadioButton(t("description"), self)
-        self.contributed_btn = QRadioButton("参与作品", self)
+        self.contributed_btn = QRadioButton(t("track-contributed-albums"), self)
         self._layout = QHBoxLayout(self)
 
         self.songs_btn.clicked.connect(self.show_songs_needed.emit)

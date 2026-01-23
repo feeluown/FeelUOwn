@@ -193,7 +193,7 @@ class SettingsButton(SelfPaintAbstractSquareButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self.setToolTip("配置")
+        self.setToolTip(t("configuration-button"))
 
     def paintEvent(self, _):
         painter = QPainter(self)

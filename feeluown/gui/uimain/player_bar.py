@@ -19,6 +19,7 @@ from feeluown.gui.components import (
     PlaylistButton,
     SongSourceTag,
 )
+from feeluown.i18n import t
 from feeluown.gui.helpers import IS_MACOS, ClickableMixin
 
 if TYPE_CHECKING:
@@ -66,7 +67,7 @@ class PlayerControlPanel(QFrame):
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
-        self.playlist_btn.setToolTip("显示当前播放列表")
+        self.playlist_btn.setToolTip(t("playlist-show"))
         self.download_btn.setToolTip("下载歌曲（未实现，欢迎 PR）")
         self.download_btn.setCheckable(True)
 
