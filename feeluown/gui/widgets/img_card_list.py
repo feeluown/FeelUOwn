@@ -48,7 +48,6 @@ from PyQt6.QtWidgets import (
 from feeluown.utils import aio
 from feeluown.library import AlbumModel, AlbumType, PlaylistModel, VideoModel
 from feeluown.utils.reader import wrap, create_reader, Reader
-from feeluown.utils.utils import int_to_human_readable
 from feeluown.library import reverse
 from feeluown.gui.helpers import (
     ItemViewNoScrollMixin,
@@ -59,6 +58,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     random_solarized_color,
 )
+from feeluown.i18n import human_readable_number
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -550,7 +550,7 @@ class VideoCardListModel(ImgCardListModel):
             and isinstance(video, VideoModel)
             and video.play_count > 0
         ):
-            return f"► {int_to_human_readable(video.play_count)}"
+            return f"▶ {human_readable_number(video.play_count)}"
         return super().data(index, role)
 
 
@@ -588,8 +588,8 @@ class PlaylistCardListModel(ImgCardListModel):
             and isinstance(playlist, PlaylistModel)
             and playlist.play_count > 0
         ):
-            count = int_to_human_readable(playlist.play_count)
-            return f"► {count}"
+            count = human_readable_number(playlist.play_count)
+            return f"▶ {count}"
         return super().data(index, role)
 
 

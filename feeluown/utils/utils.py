@@ -4,10 +4,13 @@ import logging
 import sys
 import socket
 import time
+import warnings
 from collections import OrderedDict
 from copy import copy, deepcopy
 from functools import wraps
 from itertools import filterfalse
+
+from feeluown.i18n import human_readable_number
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +39,7 @@ def win32_is_port_binded(host, port):
 
 def is_port_inuse(port):
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    rv = sock.connect_ex(('127.0.0.1', port))
+    rv = sock.connect_ex(("127.0.0.1", port))
     sock.close()
     return rv == 0
 
@@ -53,9 +56,11 @@ def log_exectime(func):
         t = time.process_time()
         result = func(*args, **kwargs)
         elapsed_time = time.process_time() - t
-        logger.debug('function %s executed time: %f ms',
-                     func.__name__, elapsed_time * 1000)
+        logger.debug(
+            "function %s executed time: %f ms", func.__name__, elapsed_time * 1000
+        )
         return result
+
     return wrapper
 
 
@@ -74,9 +79,9 @@ def elfhash(s):
         hash = (hash << 4) + c
         x = hash & 0xF0000000
         if x:
-            hash ^= (x >> 24)
+            hash ^= x >> 24
             hash &= ~x
-    return (hash & 0x7FFFFFFF)
+    return hash & 0x7FFFFFFF
 
 
 class DedupList(list):
@@ -87,7 +92,7 @@ class DedupList(list):
     """
 
     def _get_index(self, index):
-        """ project idx into range(len) """
+        """project idx into range(len)"""
         if index <= -len(self):
             return 0
         if index < 0:
@@ -98,7 +103,7 @@ class DedupList(list):
 
     @staticmethod
     def dic():
-        """ return a dict that remembers insertion order """
+        """return a dict that remembers insertion order"""
         return {} if sys.version_info[1] > 5 else OrderedDict()
 
     def __init__(self, seq=(), dedup=True):
@@ -174,7 +179,7 @@ class DedupList(list):
 
     def extend(self, iterable):
         length = len(self)
-        append_list = list(filterfalse(self._map.__contains__, iterable))   # dedup
+        append_list = list(filterfalse(self._map.__contains__, iterable))  # dedup
         self._map.update(zip(append_list, range(length, length + len(append_list))))
         super().extend(append_list)
 
@@ -224,9 +229,11 @@ class DedupList(list):
         super().clear()
 
 
-def int_to_human_readable(i):
-    if i >= 100000000:
-        return f'{i / 100000000:.1f}亿'
-    elif i >= 10000:
-        return f'{i / 10000:.1f}万'
-    return i
+def int_to_human_readable(i: int) -> str:
+    warnings.warn(
+        "Since FeelUOwn 5.1, it's recommended to use "
+        "feeluown.i18n.human_readable_number for L10N support.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return human_readable_number(n=i)

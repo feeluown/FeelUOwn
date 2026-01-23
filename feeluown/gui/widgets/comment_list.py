@@ -9,14 +9,7 @@ from feeluown.gui.helpers import ItemViewNoScrollMixin, Paddings, Margins
 from feeluown.library import CommentModel
 from feeluown.utils.reader import Reader
 
-
-def human_readable_number_v1(n):
-    levels = [(100000000, "亿"), (10000, "万")]
-    for value, unit in levels:
-        if n > value:
-            first, second = n // value, (n % value) // (value // 10)
-            return f"{first}.{second}{unit}"
-    return str(n)
+from feeluown.i18n import human_readable_number
 
 
 class CommentListModel(QAbstractListModel):
@@ -97,7 +90,7 @@ class CommentListDelegate(QStyledItemDelegate):
             dt = datetime.fromtimestamp(comment.time)
             text_list.append(dt.strftime("%Y-%m-%d %H:%M"))
         if comment.liked_count != -1:
-            liked_count_text = human_readable_number_v1(comment.liked_count)
+            liked_count_text = human_readable_number(comment.liked_count)
             text_list.append(f"♥ {liked_count_text}")
         text = "  |  ".join(text_list)
         text_color = option.palette.color(QPalette.ColorRole.Text)

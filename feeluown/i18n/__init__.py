@@ -12,15 +12,12 @@ from fluent.runtime import FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
 
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO)
+
 
 _L10N_BUNDLE: dict[tuple[str, ...], FluentLocalization] = {}
 _L10N_BUNDLE_LOCK: dict[tuple[str, ...], RLock] = defaultdict(RLock)
-
-# BCP-47 language code
-OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
 
 
 def t(
@@ -33,7 +30,9 @@ def t(
     :param locale: Optional BCP-47 language code
     :param kwargs: Any object that implements the `__str__`
 
-    > To format DATETIME() correctly, you must pass a date/datetime object.
+    If `locale` was left `None`, this will use the _DEFAULT_LOCALE.
+
+    To format DATETIME() correctly, you must pass a date/datetime object.
     """
     if locale is None:
         locale = _DEFAULT_LOCALE
@@ -135,7 +134,41 @@ def rfc1766_langcode() -> str:
     return lang
 
 
+# BCP-47 language code
+OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
+# Default locale
 _DEFAULT_LOCALE = OVERRIDE_LOCALE if OVERRIDE_LOCALE is not None else rfc1766_langcode()
+
+
+def human_readable_number(n: int, locale: str = None) -> str:
+    """
+    Compact number formatter
+
+    :param n: the number
+    :param locale: BCP-47 language code,
+    """
+
+    if locale is None:
+        locale = _DEFAULT_LOCALE
+
+    if locale.startswith("zh"):
+        levels = [
+            (100000000, "亿"),
+            (10000, "万"),
+        ]
+    else:
+        levels = [
+            (1_000_000_000, "B"),
+            (1_000_000, "M"),
+            (1_000, "K"),
+        ]
+
+    for value, unit in levels:
+        if n > value:
+            first, second = n // value, (n % value) // (value // 10)
+            return f"{first}.{second}{unit}"
+    return str(n)
+
 
 if __name__ == "__main__":
     l10n_en = l10n_bundle(locale="en_US")
