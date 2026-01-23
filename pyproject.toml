@@ -38,9 +38,6 @@ dependencies = [
     'mutagen>=1.37',
     "fluent-runtime>=0.4.0",
     "langcodes>=3.5.1",
-    "winrt-windows-foundation>=3.2.1 ; platform_system == 'Windows' and python_version > '3.14'",
-    "winrt-windows-foundation-collections>=3.2.1 ; platform_system == 'Windows' and python_version > '3.14'",
-    "winrt-windows-system-userprofile>=3.2.1 ; platform_system == 'Windows' and python_version > '3.14'",
 ]
 
 [project.optional-dependencies]

@@ -11,6 +11,7 @@ from fluent.runtime import FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
 
+
 L10N_BUNDLE: FluentLocalization | None = None
 _L10N_BUNDLE_LOCK = RLock()
 
@@ -106,14 +107,6 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
         )
 
 
-if (
-    sys.platform == "win32"
-    and sys.version_info.major == 3
-    and sys.version_info.minor >= 15
-):
-    from winrt.windows.system.userprofile import GlobalizationPreferences  # type: ignore
-
-
 def rfc1766_langcode() -> str:
     """
     Returns a RFC 1766 language code, for current user preference.
@@ -122,10 +115,10 @@ def rfc1766_langcode() -> str:
     import locale
 
     match sys.platform:
-        case "win32" if sys.version_info.major == 3 and sys.version_info.minor >= 15:
-            lang = GlobalizationPreferences.languages[0]
         case "win32":
-            lang, _ = locale.getdefaultlocale()
+            from .windows import user_default_locale
+
+            lang = user_default_locale()
         case _:
             lang, _ = locale.getlocale(locale.LC_CTYPE)
             if lang == "C":
