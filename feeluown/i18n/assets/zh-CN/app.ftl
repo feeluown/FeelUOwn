@@ -296,22 +296,22 @@ album-filter-compilation-retrospective = 合辑/精选辑
 # feeluown.gui.widgets.meta
 # ----------------------------------------
 
-## unixTimestamp: [date, datetime]
+## dateTime: [date, datetime]
 ## https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/DateTimeFormat
 meta-created-at =
     🕛 创建于
     <code style="font-size: medium">
-        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "numeric") }
+        { DATETIME($dateTime, year: "numeric", day: "numeric", month: "numeric") }
     </code>
 meta-updated-at =
     🕛 更新于
     <code style="font-size: medium">
-        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "numeric") }
+        { DATETIME($dateTime, year: "numeric", day: "numeric", month: "numeric") }
     </code>
 meta-released-at =
     🕛 发布于
     <code style="font-size: medium">
-        { DATETIME($unixTimestamp, year: "numeric", day: "numeric", month: "numeric") }
+        { DATETIME($dateTime, year: "numeric", day: "numeric", month: "numeric") }
     </code>
 
 ## songsCount: [int] number of songs, -1 for unknown

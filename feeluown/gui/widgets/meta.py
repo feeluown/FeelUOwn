@@ -170,16 +170,16 @@ class TableMetaWidget(MetaWidget):
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
-            updated_part = t("meta-updated-at", unixTimestamp=self.updated_at)
+            updated_part = t("meta-updated-at", dateTime=self.updated_at)
         if self.created_at:
-            created_part = t("meta-created-at", unixTimestamp=self.created_at)
+            created_part = t("meta-created-at", dateTime=self.created_at)
         if self.released_at:
             try:
                 year, month, day = map(int, self.released_at.split("-"))
             except Exception:
                 year, month, day = 1970, 1, 1
             released_dt = date(year=year, month=month, day=day)
-            released_part = t("meta-released-at", unixTimestamp=released_dt)
+            released_part = t("meta-released-at", dateTime=released_dt)
 
         if self.songs_count is not None:
             songs_count_part = t("meta-amount-songs", songsCount=self.songs_count)
