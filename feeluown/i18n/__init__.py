@@ -79,11 +79,11 @@ def l10n_bundle(locales: list[str] | None = None) -> FluentLocalization:
 
 def load_l10n_resource(locales: list[str]) -> FluentLocalization:
     with resources.as_file(
-        resources.files(feeluown.i18n) / "app",
+        resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
-        supported = [lang.removesuffix(".ftl") for lang in os.listdir(current_dir)]
+        supported = [lang for lang in os.listdir(current_dir)]
         # The 'str' typing hint of `roots` is incorrect
-        res_loader = FluentResourceLoader(roots=[current_dir])
+        res_loader = FluentResourceLoader(roots=[current_dir / "{locale}"])
 
         matched_locales = []
         for locale in locales:
@@ -101,7 +101,7 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
         return FluentLocalization(
             # add en-US, zh-CN for fallback
             locales=matched_locales + ["en-US", "zh-CN"],
-            resource_ids=["{locale}.ftl"],
+            resource_ids=["app.ftl"],
             resource_loader=res_loader,
         )
 

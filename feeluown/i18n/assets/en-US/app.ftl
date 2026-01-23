@@ -363,7 +363,7 @@ collection-title = Title
 
 ## collectionName: [string] title/name of the collection
 collection-already-exists = { -track-collection(capitalization: "uppercase") } '{ $collectionName }' already exists
-collection-confirm-remove = Confirm to delete the collection '{ $collectionName }'?
+collection-confirm-remove = Confirm to delete the {-track-collection} '{ $collectionName }'?
 
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
