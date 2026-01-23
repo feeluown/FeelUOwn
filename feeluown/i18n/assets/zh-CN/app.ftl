@@ -388,6 +388,12 @@ collection-title = 标题
 collection-already-exists = { -track-collection } '{ $collectionName }' 已存在
 collection-confirm-remove = 确认删除{ -track-collection } '{ $collectionName }' 吗？
 
+# feeluown.gui.uimain.toolbar
+# ----------------------------------------
+-search-bar = 搜索框
+search-bar-show = 显示{ -search-bar }
+search-bar-hide = 关闭{ -search-bar }
+
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
 my-favorite-button = { my-favorite-title }

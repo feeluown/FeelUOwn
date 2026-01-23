@@ -375,6 +375,12 @@ collection-title = Title
 collection-already-exists = { -track-collection(capitalization: "uppercase") } '{ $collectionName }' already exists
 collection-confirm-remove = Confirm to delete the {-track-collection} '{ $collectionName }'?
 
+# feeluown.gui.uimain.toolbar
+# ----------------------------------------
+-search-bar = Search Bar
+search-bar-show = Show { -search-bar }
+search-bar-hide = Hide { -search-bar }
+
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
 my-favorite-button = { my-favorite-title }

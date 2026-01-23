@@ -11,6 +11,7 @@ from feeluown.gui.widgets import (
 )
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine
+from feeluown.i18n import t
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -36,7 +37,7 @@ class BottomPanel(QWidget):
         self.magicbox = MagicBox(self._app)
 
         self._stack_switch = SearchSwitchButton(length=ButtonSize[0])
-        self._stack_switch.setToolTip("显示搜索框")
+        self._stack_switch.setToolTip(t("search-bar-show"))
         self._stack_switch.setCheckable(True)
         self._stacked_widget = QStackedWidget(self)
         self._stacked_widget.addWidget(self.magicbox)
@@ -92,9 +93,9 @@ class BottomPanel(QWidget):
 
     def _on_stack_switch_toggled(self, checked):
         if checked:
-            self._stack_switch.setToolTip("关闭搜索框")
+            self._stack_switch.setToolTip(t("search-bar-hide"))
         else:
-            self._stack_switch.setToolTip("显示搜索框")
+            self._stack_switch.setToolTip(t("search-bar-show"))
 
     def _on_stacked_widget_changed(self, _):
         self._stack_switch.setChecked(
