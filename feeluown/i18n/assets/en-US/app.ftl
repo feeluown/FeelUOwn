@@ -511,3 +511,24 @@ provider-unsupported-fetch-playlist = Provider does not support obtaining { -tra
 ## songTitle: [string]
 track-playlist-remove-succ = Removed { -track } { $songTitle } successfully
 track-playlist-remove-fail = Failed to remove { -track } { $songTitle }
+
+# feeluown.gui.tray
+# ----------------------------------------
+
+## action: [string] "show", "hide"
+## Show and focus app main window after hide to tray
+tray-main-window-action = { $action ->
+    [show] Show
+   *[hide] Hide
+} Window
+
+## action: [string] "play", "pause"
+tray-toggle-playpause = { $action ->
+    [pause] Pause
+    *[play] Play
+}
+
+tray-skip-track-next = Next
+tray-skip-track-prev = Previous
+
+tray-quit-application = Quit

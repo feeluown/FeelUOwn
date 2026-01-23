@@ -521,3 +521,24 @@ provider-unsupported-fetch-playlist = 资源提供方不支持获取{ track-list
 ## songTitle: [string]
 track-playlist-remove-succ = 移除{ -track } { $songTitle } 成功
 track-playlist-remove-fail = 移除{ -track } { $songTitle } 失败
+
+# feeluown.gui.tray
+# ----------------------------------------
+
+## action: [string] "show", "hide"
+## Show and focus app main window after hide to tray
+tray-main-window-action = { $action ->
+    [show] 激活
+   *[hide] 隐藏
+}主窗口
+
+## action: [string] "play", "pause"
+tray-toggle-playpause = { $action ->
+    [pause] 暂停
+    *[play] 播放
+}
+
+tray-skip-track-next = 下一首
+tray-skip-track-prev = 上一首
+
+tray-quit-application = 退出
