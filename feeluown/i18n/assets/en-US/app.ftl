@@ -17,6 +17,7 @@ description = Description
 error = { -error }
 info = { -info }
 warn = { -warn }
+
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
@@ -492,6 +493,11 @@ provider-unsupported-fetch-artist-works =
 provider-unsupported-fetch-artist = Provider does not support obtaining { -track } for { -musician }
 provider-unsupported-fetch-album = Provider does not support obtaining { -track } for { -album }
 provider-unsupported-fetch-playlist = Provider does not support obtaining { -track } for { track-list }s
+
+# feeluown.gui.pages.toplist
+# ----------------------------------------
+# ref: provider-unknown-cannot-view
+# ref: top-list
 
 ## songTitle: [string]
 track-playlist-remove-succ = Removed { -track } { $songTitle } successfully
