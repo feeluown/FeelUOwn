@@ -70,8 +70,6 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
         else:
             locale = OVERRIDE_LOCALE
 
-    logger.info(f"Loading locales for: {locale}")
-
     return load_l10n_resource(locales=[locale])
 
 
@@ -93,12 +91,13 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
                 matched_locales.append(matched_best)
 
         locales_to_load = matched_locales + ["en-US", "zh-CN"]
-        logger.info(f"Loading locale for: {locales_to_load}")
 
         cache_key = tuple(locales_to_load)
         with _L10N_BUNDLE_LOCK[cache_key]:
             if cache_key in _L10N_BUNDLE:
                 return _L10N_BUNDLE[cache_key]
+
+            logger.info(f"Loading locale for: {locales_to_load}")
 
             # resources are loaded immediately,
             # so current_dir can be cleaned safely.
