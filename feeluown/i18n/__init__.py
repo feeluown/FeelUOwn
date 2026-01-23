@@ -5,6 +5,7 @@ from decimal import Decimal
 from datetime import date, datetime
 from importlib import resources
 from threading import RLock
+from collections import defaultdict
 
 import langcodes
 from fluent.runtime import FluentLocalization, FluentResourceLoader
@@ -12,10 +13,10 @@ from fluent.runtime import FluentLocalization, FluentResourceLoader
 import feeluown.i18n
 
 
-L10N_BUNDLE: FluentLocalization | None = None
-_L10N_BUNDLE_LOCK = RLock()
+_L10N_BUNDLE: dict[tuple[str, ...], FluentLocalization] = {}
+_L10N_BUNDLE_LOCK: dict[tuple[str, ...], RLock] = defaultdict(RLock)
 
-# Comma separated list
+# BCP-47 language code
 OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
 
 logger = logging.getLogger(__name__)
@@ -24,14 +25,19 @@ logger.setLevel(logging.INFO)
 
 def t(
     msg_id: str,
+    locale: str = None,
     **kwargs: str | int | float | Decimal | date | datetime | object,
 ) -> str:
     """
     :param msg_id: Message ID inside fluent translation files.
+    :param locale: Optional BCP-47 language code
     :param kwargs: Any object that implements the `__str__`
 
     > To format DATETIME() correctly, you must pass a date/datetime object.
     """
+    if locale is None:
+        locale = _DEFAULT_LOCALE
+
     for k, v in kwargs.items():
         # Special types
         if not isinstance(
@@ -47,35 +53,27 @@ def t(
         ):
             kwargs[k] = str(v)
 
-    return l10n_bundle().format_value(msg_id, kwargs)
+    return l10n_bundle(locale).format_value(msg_id, kwargs)
 
 
-def l10n_bundle(locales: list[str] | None = None) -> FluentLocalization:
+def l10n_bundle(locale: str | None = None) -> FluentLocalization:
     """
     You could call this method multiple times
 
     **NOTE:** `locale.getlocale` from standard library is unreliable.
 
-    :param locales: RFC 1766 langcode list.
+    :param locale: BCP-47 language code.
     :return: l10n localization bundle
     """
-    global L10N_BUNDLE
-
-    if locales is None:
+    if locale is None:
         if OVERRIDE_LOCALE is None:
-            locales = [rfc1766_langcode()]
+            locale = rfc1766_langcode()
         else:
-            locales = [OVERRIDE_LOCALE]
+            locale = OVERRIDE_LOCALE
 
-    logger.info(f"Loading locales for: {locales}")
+    logger.info(f"Loading locales for: {locale}")
 
-    # Simple fallback,
-    # en_US -> en, e.g.
-    with _L10N_BUNDLE_LOCK:
-        if L10N_BUNDLE is None:
-            L10N_BUNDLE = load_l10n_resource(locales=locales)
-
-    return L10N_BUNDLE
+    return load_l10n_resource(locales=[locale])
 
 
 def load_l10n_resource(locales: list[str]) -> FluentLocalization:
@@ -95,16 +93,26 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
             if matched_best is not None:
                 matched_locales.append(matched_best)
 
-        logger.info(f"matched locale: {matched_locales}")
+        locales_to_load = matched_locales + ["en-US", "zh-CN"]
+        logger.info(f"Loading locale for: {locales_to_load}")
 
-        # resources are loaded immediately,
-        # so current_dir can be cleaned safely.
-        return FluentLocalization(
-            # add en-US, zh-CN for fallback
-            locales=matched_locales + ["en-US", "zh-CN"],
-            resource_ids=["app.ftl"],
-            resource_loader=res_loader,
-        )
+        cache_key = tuple(locales_to_load)
+        with _L10N_BUNDLE_LOCK[cache_key]:
+            if cache_key in _L10N_BUNDLE:
+                return _L10N_BUNDLE[cache_key]
+
+            # resources are loaded immediately,
+            # so current_dir can be cleaned safely.
+            bundle = FluentLocalization(
+                # add en-US, zh-CN for fallback
+                locales=locales_to_load,
+                resource_ids=["app.ftl"],
+                resource_loader=res_loader,
+            )
+
+            _L10N_BUNDLE[cache_key] = bundle
+
+        return bundle
 
 
 def rfc1766_langcode() -> str:
@@ -127,6 +135,8 @@ def rfc1766_langcode() -> str:
     return lang
 
 
+_DEFAULT_LOCALE = OVERRIDE_LOCALE if OVERRIDE_LOCALE is not None else rfc1766_langcode()
+
 if __name__ == "__main__":
-    l10n_en = l10n_bundle(locales=["en_US"])
+    l10n_en = l10n_bundle(locale="en_US")
     print(l10n_en.format_value("track"))
