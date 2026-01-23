@@ -42,7 +42,7 @@ video = Video
     [uppercase] Musician
    *[lowercase] musician
 }
-musician = { -musician }
+musician = { -musician(capitalization: "uppercase") }
 
 # feeluown.version
 # ----------------------------------------
