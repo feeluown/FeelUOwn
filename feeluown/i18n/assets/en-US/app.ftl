@@ -18,6 +18,18 @@ error = { -error }
 info = { -info }
 warn = { -warn }
 
+## Resource provider, like ytmusic, spotify, e.g.
+-provider = { $capitalization ->
+    [uppercase] { $plural ->
+        [plural] Providers
+       *[singular] Provider
+    }
+   *[lowercase] { $plural ->
+        [plural] providers
+       *[singular] provider
+    }
+}
+
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
@@ -188,7 +200,7 @@ track-search = Search { $keyword }
 
 ## providerCount: count of content providers.
 
-track-searching = Searching { $providerCount } content providers...
+track-searching = Searching { $providerCount } content { -provider(plural: "plural") }...
 
 ## providerName: name of the content provider
 
@@ -210,7 +222,7 @@ track-smart-standby = Smart Standby
 track-unknown-source = Unknown source
 
 track-fallback-to-standby = Used { $standby } to replace the current { -track }
-track-fallback-failed = Provider “{ $providerName }” did not find any similar { -track }s available
+track-fallback-failed = { -provider(capitalization: "uppercase") } “{ $providerName }” did not find any similar { -track }s available
 
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -266,7 +278,7 @@ search-box-play-track-ill-formed = Your input must follow the format: "{ -track 
 # ----------------------------------------
 app-config = App Configuration
 save-config = Save
-search-providers = Search Providers
+search-providers = Search { -provider(capitalization: "uppercase") }s
 ai-radio-prompt = AI Radio (Prompt)
 player = Player
 # feeluown.gui.widgets.login
@@ -413,15 +425,15 @@ fold-top-tooltip = { fold-collapse }/{ fold-expand } Homepage and { -local-favor
 ## providerName: [string] name of the provider
 
 provider-recommended-page-enter = Recommendation of { $providerName }
-provider-custom-ui-missing = Provider didn't register their UI
+provider-custom-ui-missing = { -provider(capitalization: "uppercase") } didn't register their UI
 
 ## Note: this can also be due to missing of logged user
 
-playlist-create-unsupported = Provider cannot create { -track-list }s yet
+playlist-create-unsupported = { -provider(capitalization: "uppercase") } cannot create { -track-list }s yet
 
 ## providerName: [string] name of the provider
 
-playlist-remove-unsupported = Provider { $providerName } doesn't support removing playlist
+playlist-remove-unsupported = { -provider(capitalization: "uppercase") } { $providerName } doesn't support removing playlist
 
 ## playlistTitle: [string]
 ## errorMessage: [string]
@@ -447,7 +459,7 @@ track-webpage-url-copied = Copied: { $url }
 ## providerName: [string]
 ## This happens if user uninstalled a plugin, or modified
 ## their collections by hand, e.g.
-track-source-provider-missing = Provider { $providerName } not found
+track-source-provider-missing = { -provider(capitalization: "uppercase") } { $providerName } not found
 
 error-message-template =
     <p style=color: grey; font: small;>This provider does not yet support { "{" }feature{ "}" }.
@@ -494,7 +506,7 @@ recommended-videos-missing = No recommended { video }
 ##    video
 
 provider-missing-favorite =
-    Provider { $providerName } doesn't support Liked { $mediaType ->
+    { -provider(capitalization: "uppercase") } { $providerName } doesn't support Liked { $mediaType ->
         [track] { -track }
         [album] { album }
         [singer] { musician }
@@ -502,7 +514,7 @@ provider-missing-favorite =
         [video] { video }
        *[other] Contents
     }
-provider-unknown-cannot-view = Provider unknown, cannot view this page
+provider-unknown-cannot-view = { -provider(capitalization: "uppercase") } unknown, cannot view this page
 my-favorite-title = My favorites
 
 # feeluown.gui.pages.recommendation
@@ -523,12 +535,12 @@ music-customized-recommendation = Discover Weekly
 # feeluown.gui.pages.model
 # ----------------------------------------
 provider-unsupported-fetch-artist-contributed-works =
-    Provider does not support obtaining { -album } contributed by { -musician }
+    { -provider(capitalization: "uppercase") } does not support obtaining { -album } contributed by { -musician }
 provider-unsupported-fetch-artist-works =
-    Provider does not support obtaining { -album } for { -musician }
-provider-unsupported-fetch-artist = Provider does not support obtaining { -track } for { -musician }
-provider-unsupported-fetch-album = Provider does not support obtaining { -track } for { -album }
-provider-unsupported-fetch-playlist = Provider does not support obtaining { -track } for { -track-list }s
+    { -provider(capitalization: "uppercase") } does not support obtaining { -album } for { -musician }
+provider-unsupported-fetch-artist = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -musician }
+provider-unsupported-fetch-album = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -album }
+provider-unsupported-fetch-playlist = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -track-list }s
 
 # feeluown.gui.pages.toplist
 # ----------------------------------------

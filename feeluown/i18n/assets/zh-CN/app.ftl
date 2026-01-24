@@ -18,33 +18,36 @@ error = { -error }
 info = { -info }
 warn = { -warn }
 
+## Resource provider, like ytmusic, spotify, e.g.
+-provider = { $capitalization ->
+   *[any] { $plural ->
+       *[any] 资源提供方
+    }
+}
+
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
-    [uppercase] 歌曲
-   *[lowercase] 歌曲
+   *[any] 歌曲
 }
 track = {-track}
 
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
 -track-list = { $plural ->
-    [plural] 歌单
-   *[singular] 歌单
+   *[any] 歌单
 }
 track-list = { -track-list }
 
 -album = { $capitalization ->
-    [uppercase] 专辑
-   *[lowercase] 专辑
+   *[any] 专辑
 }
 album = { -album }
 video = 视频
 
 ## can be the singer, artist, or musician.
 -musician = { $capitalization ->
-    [uppercase] 歌手
-   *[lowercase] 歌手
+   *[any] 歌手
 }
 musician = { -musician }
 
@@ -183,7 +186,7 @@ track-album-release-date = { -album }{ release-date }：{ $releaseDate }
 fm-radio-current-song-dislike = 不想听
 track-playlist-remove = 从{ playlist }中移除
 
-track-provider-blacklist-add = 加入资源提供方的黑名单
+track-provider-blacklist-add = 加入{ -provider }的黑名单
 track-provider-blacklist-adding = 正在加入黑名单，请稍等...
 track-provider-blacklist-add-succ = 已加入黑名单
 track-provider-blacklist-add-fail = 加入黑名单失败
@@ -200,7 +203,7 @@ playlist-show = 显示当前{ playlist }
 track-search = 搜索“{ $keyword }”
 
 ## providerCount: count of content providers.
-track-searching = 正在搜索 { $providerCount }个资源提供方...
+track-searching = 正在搜索 { $providerCount }个{ -provider }...
 
 ## providerName: name of the content provider
 track-search-error = 搜索 { $providerName } 的资源出错：{ $errorMessage }
@@ -420,18 +423,18 @@ search-bar-hide = 关闭{ -search-bar }
 my-favorite-button = { my-favorite-title }
 my-playlists = { -track-list }列表
 my-tracks = 我的音乐
-provider-unknown-tooltip = 当前资源提供方未知
+provider-unknown-tooltip = 当前{ -provider }未知
 fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和{-local-favorites}” 功能
 
 ## providerName: [string] name of the provider
 provider-recommended-page-enter = 点击进入 { $providerName } 推荐页
 
-provider-custom-ui-missing = 当前的资源提供方未注册其 UI
+provider-custom-ui-missing = 当前的{ -provider }未注册其 UI
 
 ## Note: this can also be due to missing of logged user
-playlist-create-unsupported = 当前的资源提供方不支持创建{ -track-list }
+playlist-create-unsupported = 当前的{ -provider }不支持创建{ -track-list }
 ## providerName: [string] name of the provider
-playlist-remove-unsupported = 资源提供方 { $providerName } 不支持删除歌单
+playlist-remove-unsupported = { -provider } { $providerName } 不支持删除歌单
 
 ## playlistTitle: [string]
 ## errorMessage: [string]
@@ -459,7 +462,7 @@ track-webpage-url-copied = 已经复制：{ $url }
 ## providerName: [string]
 ## This happens if user uninstalled a plugin, or modified
 ## their collections by hand, e.g.
-track-source-provider-missing = 没有相应的资源提供方 { $providerName }
+track-source-provider-missing = 没有相应的{ -provider } { $providerName }
 
 error-message-template =
     <p style=color: grey; font: small;>该提供方暂不支持{"{"}feature{"}"}。
@@ -504,7 +507,7 @@ recommended-videos-missing = 暂无推荐{video}
 ##    singer
 ##    playlist
 ##    video
-provider-missing-favorite = 当前资源提供方（{ $providerName }）不支持获取 收藏的{ $mediaType ->
+provider-missing-favorite = 当前{ -provider }（{ $providerName }）不支持获取 收藏的{ $mediaType ->
     [track] { -track }
     [album] {album}
     [singer] {musician}
@@ -512,7 +515,7 @@ provider-missing-favorite = 当前资源提供方（{ $providerName }）不支�
     [video] {video}
    *[other] 内容
 }
-provider-unknown-cannot-view = 当前资源提供方未知，无法浏览该页面
+provider-unknown-cannot-view = 当前{ -provider }未知，无法浏览该页面
 my-favorite-title = 我的收藏
 
 # feeluown.gui.pages.recommendation
@@ -538,12 +541,12 @@ music-customized-recommendation = 个性化推荐
 # feeluown.gui.pages.model
 # ----------------------------------------
 provider-unsupported-fetch-artist-contributed-works =
-    资源提供方不支持获取{ -musician }贡献过的{ -album }
+    { -provider }不支持获取{ -musician }贡献过的{ -album }
 provider-unsupported-fetch-artist-works =
-    资源提供方不支持获取{ -musician }{ -album }
-provider-unsupported-fetch-artist = 资源提供方不支持获取{ -musician }{ -track }
-provider-unsupported-fetch-album = 资源提供方不支持获取{ -album }{ -track }
-provider-unsupported-fetch-playlist = 资源提供方不支持获取{ -track-list }{ -track }
+    { -provider }不支持获取{ -musician }{ -album }
+provider-unsupported-fetch-artist = { -provider }不支持获取{ -musician }{ -track }
+provider-unsupported-fetch-album = { -provider }不支持获取{ -album }{ -track }
+provider-unsupported-fetch-playlist = { -provider }不支持获取{ -track-list }{ -track }
 
 ## songTitle: [string]
 track-playlist-remove-succ = 移除{ -track } { $songTitle } 成功
