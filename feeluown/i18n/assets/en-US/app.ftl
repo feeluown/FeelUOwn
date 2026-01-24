@@ -44,6 +44,23 @@ video = Video
 }
 musician = { -musician(capitalization: "uppercase") }
 
+# feeluown.alert
+# ----------------------------------------
+
+## hostname: [string] hostname of the URL, or 'none'
+connection-timeout = { $hostname ->
+    [none] Connection timeout
+    *[other] Connection to '{ $hostname }' timeout
+}, please check your network/proxy settings!
+
+## hostname: [string] hostname of the URL
+## proxy: [string] the HTTP proxy URL or 'none'
+media-loading-failed =
+    Cannot play resource from { $hostname }, { $proxy ->
+    [none] HTTP Proxy unset
+    *[others] HTTP Proxy: {$proxy}
+} (Tip: Player engine doesn't respect system proxy)
+
 # feeluown.version
 # ----------------------------------------
 new-version-found = Found new version { $latestVer }, current: { $currentVer }

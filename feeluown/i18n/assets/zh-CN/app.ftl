@@ -44,6 +44,23 @@ video = 视频
 }
 musician = { -musician }
 
+# feeluown.alert
+# ----------------------------------------
+
+## hostname: [string] hostname of the URL, or 'none'
+connection-timeout = { $hostname ->
+    [none] 连接超时
+    *[other] 连接 '{ $hostname }' 超时
+}，请检查你的网络或者代理设置
+
+## hostname: [string] hostname of the URL
+## proxy: [string] the HTTP proxy URL or 'none'
+media-loading-failed =
+    无法播放来自 { $hostname } 的资源，{ $proxy ->
+    [none] HTTP 代理未设置
+    *[others] HTTP 代理为{$proxy}
+}（注：播放引擎无法使用系统代理）
+
 # feeluown.version
 # ----------------------------------------
 new-version-found = 检测到新版本 { $latestVer }，当前版本为 { $currentVer }
