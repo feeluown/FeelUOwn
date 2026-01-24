@@ -28,7 +28,11 @@ track = { -track(capitalization: "uppercase") }
 
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
-track-list = Playlist
+-track-list = { $plural ->
+    [plural] Playlists
+   *[singular] Playlist
+}
+track-list = { -track-list }
 
 -album = { $capitalization ->
     [uppercase] Album
@@ -401,7 +405,7 @@ search-bar-hide = Hide { -search-bar }
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
 my-favorite-button = { my-favorite-title }
-my-playlists = { track-list }s
+my-playlists = { -track-list }s
 my-tracks = My tracks
 provider-unknown-tooltip = Unknown provider
 fold-top-tooltip = { fold-collapse }/{ fold-expand } Homepage and { -local-favorites }
@@ -413,7 +417,7 @@ provider-custom-ui-missing = Provider didn't register their UI
 
 ## Note: this can also be due to missing of logged user
 
-playlist-create-unsupported = Provider cannot create {track-list}s yet
+playlist-create-unsupported = Provider cannot create { -track-list }s yet
 
 ## providerName: [string] name of the provider
 
@@ -422,12 +426,12 @@ playlist-remove-unsupported = Provider { $providerName } doesn't support removin
 ## playlistTitle: [string]
 ## errorMessage: [string]
 
-playlist-create-succed = Created { track-list } '{ $playlistTitle }'
-playlist-create-failed = Failed to create { track-list } '{ $playlistTitle }': { $errorMessage }
-playlist-remove-succed = Removed { track-list } '{ $playlistTitle }'
-playlist-remove-failed = Failed to remove { track-list } '{ $playlistTitle }'
+playlist-create-succed = Created { -track-list } '{ $playlistTitle }'
+playlist-create-failed = Failed to create { -track-list } '{ $playlistTitle }': { $errorMessage }
+playlist-remove-succed = Removed { -track-list } '{ $playlistTitle }'
+playlist-remove-failed = Failed to remove { -track-list } '{ $playlistTitle }'
 playlist-remove-confirm = Confirm to remove '{ $playlistTitle }'?
-playlist-name = { track-list } Name
+playlist-name = { -track-list } Name
 # feeluown.gui.pages.song_explore
 # ----------------------------------------
 track-lyrics = Lyrics
@@ -494,7 +498,7 @@ provider-missing-favorite =
         [track] { -track }
         [album] { album }
         [singer] { musician }
-        [playlist] { track-list }
+        [playlist] { -track-list }
         [video] { video }
        *[other] Contents
     }
@@ -524,7 +528,7 @@ provider-unsupported-fetch-artist-works =
     Provider does not support obtaining { -album } for { -musician }
 provider-unsupported-fetch-artist = Provider does not support obtaining { -track } for { -musician }
 provider-unsupported-fetch-album = Provider does not support obtaining { -track } for { -album }
-provider-unsupported-fetch-playlist = Provider does not support obtaining { -track } for { track-list }s
+provider-unsupported-fetch-playlist = Provider does not support obtaining { -track } for { -track-list }s
 
 # feeluown.gui.pages.toplist
 # ----------------------------------------

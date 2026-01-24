@@ -28,7 +28,11 @@ track = {-track}
 
 ## Note: this is for playlists from online providers
 ## while {playlist} is for tracks play queue.
-track-list = 歌单
+-track-list = { $plural ->
+    [plural] 歌单
+   *[singular] 歌单
+}
+track-list = { -track-list }
 
 -album = { $capitalization ->
     [uppercase] 专辑
@@ -414,7 +418,7 @@ search-bar-hide = 关闭{ -search-bar }
 # feeluown.gui.uimain.provider_bar
 # ----------------------------------------
 my-favorite-button = { my-favorite-title }
-my-playlists = {track-list}列表
+my-playlists = { -track-list }列表
 my-tracks = 我的音乐
 provider-unknown-tooltip = 当前资源提供方未知
 fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和{-local-favorites}” 功能
@@ -425,20 +429,20 @@ provider-recommended-page-enter = 点击进入 { $providerName } 推荐页
 provider-custom-ui-missing = 当前的资源提供方未注册其 UI
 
 ## Note: this can also be due to missing of logged user
-playlist-create-unsupported = 当前的资源提供方不支持创建{track-list}
+playlist-create-unsupported = 当前的资源提供方不支持创建{ -track-list }
 ## providerName: [string] name of the provider
 playlist-remove-unsupported = 资源提供方 { $providerName } 不支持删除歌单
 
 ## playlistTitle: [string]
 ## errorMessage: [string]
-playlist-create-succed = 创建{track-list} '{ $playlistTitle}' 成功
-playlist-create-failed = 创建{track-list} '{ $playlistTitle}' 失败: { $errorMessage }
-playlist-remove-succed = 删除{track-list} '{ $playlistTitle}' 成功
-playlist-remove-failed = 删除{track-list} '{ $playlistTitle}' 失败
+playlist-create-succed = 创建{ -track-list } '{ $playlistTitle}' 成功
+playlist-create-failed = 创建{ -track-list } '{ $playlistTitle}' 失败: { $errorMessage }
+playlist-remove-succed = 删除{ -track-list } '{ $playlistTitle}' 成功
+playlist-remove-failed = 删除{ -track-list } '{ $playlistTitle}' 失败
 
 playlist-remove-confirm = 确认删除歌单 '{ $playlistTitle }' 吗？
 
-playlist-name = {track-list}名
+playlist-name = { -track-list }名
 
 # feeluown.gui.pages.song_explore
 # ----------------------------------------
@@ -504,7 +508,7 @@ provider-missing-favorite = 当前资源提供方（{ $providerName }）不支�
     [track] { -track }
     [album] {album}
     [singer] {musician}
-    [playlist] {track-list}
+    [playlist] { -track-list }
     [video] {video}
    *[other] 内容
 }
@@ -539,7 +543,7 @@ provider-unsupported-fetch-artist-works =
     资源提供方不支持获取{ -musician }{ -album }
 provider-unsupported-fetch-artist = 资源提供方不支持获取{ -musician }{ -track }
 provider-unsupported-fetch-album = 资源提供方不支持获取{ -album }{ -track }
-provider-unsupported-fetch-playlist = 资源提供方不支持获取{ track-list }{ -track }
+provider-unsupported-fetch-playlist = 资源提供方不支持获取{ -track-list }{ -track }
 
 ## songTitle: [string]
 track-playlist-remove-succ = 移除{ -track } { $songTitle } 成功
