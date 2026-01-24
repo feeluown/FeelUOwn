@@ -310,7 +310,6 @@ def create_aichat_overlay(app: "GuiApp", parent=None) -> AppOverlayContainer:
 
 
 if __name__ == "__main__":
-    from PyQt6.QtCore import QSize
     from feeluown.gui.debug import mock_app, simple_layout
 
     with simple_layout(theme="dark") as layout, mock_app() as app:
