@@ -8,7 +8,7 @@ from threading import RLock
 from collections import defaultdict
 
 import langcodes
-from fluent.runtime import FluentLocalization, FluentResourceLoader
+from fluent.runtime import FluentBundle, FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
 
@@ -73,7 +73,9 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
     return load_l10n_resource(locales=[locale])
 
 
-def load_l10n_resource(locales: list[str]) -> FluentLocalization:
+def load_l10n_resource(
+    locales: list[str], skip_fallback: bool = False
+) -> FluentLocalization:
     with resources.as_file(
         resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
@@ -90,7 +92,9 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
             if matched_best is not None:
                 matched_locales.append(matched_best)
 
-        locales_to_load = matched_locales + ["en-US", "zh-CN"]
+        locales_to_load = matched_locales
+        if not skip_fallback:
+            locales_to_load += ["en-US", "zh-CN"]
 
         cache_key = tuple(locales_to_load)
         with _L10N_BUNDLE_LOCK[cache_key]:
@@ -170,5 +174,14 @@ def human_readable_number(n: int, locale: str = None) -> str:
 
 
 if __name__ == "__main__":
-    l10n_en = l10n_bundle(locale="en_US")
-    print(l10n_en.format_value("track"))
+    l10n_zh = next(load_l10n_resource(locales=["zh-CN"], skip_fallback=True)._bundles())
+    total_term_len = len(l10n_zh._terms)
+    total_msg_len = len(l10n_zh._messages)
+    for locale in ["en-US"]:
+        bundle: FluentBundle = next(
+            load_l10n_resource(locales=[locale], skip_fallback=True)._bundles()
+        )
+        print(f"""{locale}
+Terms: {len(bundle._terms)}/{total_term_len} ({100*len(bundle._terms)/total_term_len:.1f}%)
+Messages: {len(bundle._messages)}/{total_msg_len} ({100*len(bundle._messages)/total_msg_len:.1f}%)
+""")
