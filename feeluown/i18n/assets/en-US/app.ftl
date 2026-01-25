@@ -525,7 +525,7 @@ track-webpage-url-copied = Copied: { $url }
 track-source-provider-missing = { -provider(capitalization: "uppercase") } { $providerName } not found
 
 error-message-template =
-    <p style=color: grey; font: small;>This provider does not yet support { "{" }feature{ "}" }.
+    <p style="color: grey; font: small;">This provider does not yet support { "{" }feature{ "}" }.
     <br/> Implement the { $interface } interface to support this feature ~
     </p>
 find-similar-tracks = View{ similar-tracks }

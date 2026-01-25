@@ -199,13 +199,16 @@ if __name__ == "__main__":
             if locale == "zh-CN":
                 continue
 
-            bundle: FluentBundle = next(
-                load_l10n_resource(
-                    locales=[locale],
-                    skip_fallback=True,
-                    resource_ids=resource_ids,
-                )._bundles()
-            )
+            try:
+                bundle: FluentBundle = next(
+                    load_l10n_resource(
+                        locales=[locale],
+                        skip_fallback=True,
+                        resource_ids=resource_ids,
+                    )._bundles()
+                )
+            except StopIteration:
+                continue
             print(f"{locale}")
 
             if total_term_len:

@@ -522,7 +522,7 @@ track-webpage-url-copied = 已经复制：{ $url }
 track-source-provider-missing = 没有相应的{ -provider } { $providerName }
 
 error-message-template =
-    <p style=color: grey; font: small;>该提供方暂不支持{"{"}feature{"}"}。
+    <p style="color: grey; font: small;">该提供方暂不支持{"{"}feature{"}"}。
     <br/> 给它实现一下 { $interface } 接口来支持该功能吧 ~
     </p>
 find-similar-tracks = 查看{ similar-tracks }
