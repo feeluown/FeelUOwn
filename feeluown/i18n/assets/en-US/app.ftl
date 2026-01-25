@@ -211,8 +211,11 @@ track-search-result-empty = Searching { $providerName } yielded no results
 
 ## resultCount: amount of valid results
 ## timeCost: seconds cost for searching, floating number
-
-track-search-done = Search completed, with { $resultCount } valid results, taking { NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2) }s
+## See https://projectfluent.org/fluent/guide/selectors.html
+track-search-done = Search completed, with { $resultCount ->
+    [one] { $resultCount } valid result
+    *[other] { $resultCount } valid results
+}, taking { NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2) }s
 
 # feeluown.gui.components.song_tag
 # ----------------------------------------
