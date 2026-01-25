@@ -1,4 +1,5 @@
 from feeluown.app.gui_app import GuiApp
+from feeluown.i18n import t
 from feeluown.library import ModelType
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.gui.page_containers.table import Renderer, TableContainer
@@ -17,7 +18,7 @@ async def render(req, **kwargs):
     tab_index = int(req.query.get("tab_index", 0))
     pvd_ui = app.current_pvd_ui_mgr.get()
     if pvd_ui is None:
-        return await render_error_message(app, "当前资源提供方未知，无法浏览该页面")
+        return await render_error_message(app, t("provider-unknown-cannot-view"))
 
     scroll_area = ScrollArea()
     # it should not use TableContainer.songs_table to show
@@ -40,7 +41,7 @@ class DislikeRenderer(Renderer, TabBarRendererMixin):
 
     async def render(self):
         self.meta_widget.show()
-        self.meta_widget.title = "音乐黑名单"
+        self.meta_widget.title = t("music-blacklisted")
         self.render_tab_bar()
         await self.render_models()
 
@@ -51,7 +52,7 @@ class DislikeRenderer(Renderer, TabBarRendererMixin):
 
     async def render_models(self):
         _, mtype, show_handler = self.tabs[self.tab_index]
-        err = ""
+        res_type = ""
         reader = create_reader([])
         if mtype is ModelType.song:
             if isinstance(self._provider, SupportsCurrentUserDislikeSongsReader):
@@ -59,18 +60,22 @@ class DislikeRenderer(Renderer, TabBarRendererMixin):
                     self._provider.current_user_dislike_create_songs_rd
                 )  # noqa
             else:
-                err = "不喜欢的歌曲"
+                res_type = "dislike"
             if isinstance(self._provider, SupportsCurrentUserDislikeRemoveSong):
                 self.songs_table.remove_song_func = lambda song: run_afn(
                     self.dislike_remove_song, song
                 )
         else:
-            err = "未知类型资源"
+            res_type = "unknown"
 
-        if err:
+        if res_type:
             return await render_error_message(
                 self._app,
-                f"当前资源提供方（{self._provider.name}）不支持展示 {err} 的黑名单",
+                t(
+                    "provider-unsupported",
+                    providerName=self._provider.name,
+                    resType=res_type,
+                ),
             )
         else:
             show_handler(reader)

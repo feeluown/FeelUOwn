@@ -554,7 +554,17 @@ recommended-feelin-lucky = 随便听听
 recommended-videos = 瞅瞅
 recommended-videos-missing = 暂无推荐{video}
 
-# feeluown.gui.pages.my_fav.py
+# feeluown.gui.pages.my_dislike
+# ----------------------------------------
+
+## providerName: [string] name of the provider
+## resType: [string] 'unknown', 'dislike'
+provider-unsupported = 当前{ -provider }（{ $providerName}）不支持展示{ $resType ->
+    [dislike] 不喜欢的{ -track }
+    *[unknown] 未知类型资源
+}
+
+# feeluown.gui.pages.my_fav
 # ----------------------------------------
 
 ## providerName: [string] name of the provider

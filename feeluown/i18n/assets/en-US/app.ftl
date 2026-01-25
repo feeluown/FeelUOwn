@@ -556,9 +556,18 @@ recommended-feelin-lucky = Just listening
 recommended-videos = Take a look
 recommended-videos-missing = No recommended { video }
 
-# feeluown.gui.pages.my_fav.py
+# feeluown.gui.pages.my_dislike
 # ----------------------------------------
 
+## providerName: [string] name of the provider
+## resType: [string] 'unknown', 'dislike'
+provider-unsupported = { -provider(capitalization: "uppercase") } { $providerName} does not support displaying { $resType ->
+    [dislike] Disliked { -track(plural: "plural") }
+    *[unknown] Unknown resource type
+}
+
+# feeluown.gui.pages.my_fav
+# ----------------------------------------
 
 ## providerName: [string] name of the provider
 ## mediaType: [string] can be one of:
