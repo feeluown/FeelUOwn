@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import logging
 from decimal import Decimal
@@ -177,11 +178,14 @@ if __name__ == "__main__":
     l10n_zh = next(load_l10n_resource(locales=["zh-CN"], skip_fallback=True)._bundles())
     total_term_len = len(l10n_zh._terms)
     total_msg_len = len(l10n_zh._messages)
-    for locale in ["en-US"]:
+    for locale in os.listdir(Path(__file__).parent / "assets"):
+        if locale == "zh-CN":
+            continue
+
         bundle: FluentBundle = next(
             load_l10n_resource(locales=[locale], skip_fallback=True)._bundles()
         )
         print(f"""{locale}
-Terms: {len(bundle._terms)}/{total_term_len} ({100*len(bundle._terms)/total_term_len:.1f}%)
-Messages: {len(bundle._messages)}/{total_msg_len} ({100*len(bundle._messages)/total_msg_len:.1f}%)
+Terms: {len(bundle._terms)}/{total_term_len} ({100 * len(bundle._terms) / total_term_len:.1f}%)
+Messages: {len(bundle._messages)}/{total_msg_len} ({100 * len(bundle._messages) / total_msg_len:.1f}%)
 """)
