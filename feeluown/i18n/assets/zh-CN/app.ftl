@@ -106,17 +106,15 @@ hide-picture-in-picture = 退出{ picture-in-picture }
 
 # feeluown.gui.components.avatar
 # ----------------------------------------
-login-third-party = 点击登录第三方平台
-some-platform-already-logged = 已登录部分平台
-switch-third-party-account = 切换账号
+add-profile = 添加账号
+select-profile = 选择账号
+switch-profile = 切换账号
 
-switch-music-platform = 点击切换平台
-
-## platforms: providers' name conjucted by a comma
-## platformsCount: amount of logged providers
-logged-accounts-tooltip = 后台已登录：{ $platformsCount ->
+## profiles: profiles' name conjucted by a comma
+## profileCount: amount of profiles
+profiles-tooltip = 账号：{ $profileCount ->
     [0] 无
-    *[other] { $platforms }
+    *[other] { $profiles }
 }
 
 # feeluown.gui.components.btns
