@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QWidget, QHBoxLayout, QVBoxLayout, QScrollArea, QFra
 from feeluown.gui.widgets.my_music import MyMusicView
 from feeluown.gui.widgets.header import LargeHeader, MidHeader
 from feeluown.gui.widgets.playlists import PlaylistsView
+from feeluown.i18n import t
 
 
 if TYPE_CHECKING:
@@ -28,9 +29,9 @@ class View(QWidget):
         self._provider = provider
 
         self.title = LargeHeader(self._provider.name, parent=self)
-        self.my_music_header = MidHeader("我的音乐", parent=self)
+        self.my_music_header = MidHeader(t("provider-liked-music"), parent=self)
         self.my_music_view = MyMusicView(parent=self)
-        self.playlists_header = MidHeader("歌单列表", parent=self)
+        self.playlists_header = MidHeader(t("provider-playlist-list"), parent=self)
         self.playlists_view = PlaylistsView(parent=self)
 
         self.my_music_view.setModel(self._app.mymusic_uimgr.model)

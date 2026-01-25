@@ -590,6 +590,11 @@ music-discovery = 发现音乐
 ## Similar to Spotify Discover Weekly
 music-customized-recommendation = 个性化推荐
 
+# feeluown.gui.pages.provider_home
+# ----------------------------------------
+provider-liked-music = 我的音乐
+provider-playlist-list = { -track-list }列表
+
 # feeluown.gui.pages.toplist
 # ----------------------------------------
 # ref: provider-unknown-cannot-view

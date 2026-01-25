@@ -605,6 +605,11 @@ provider-unsupported-fetch-artist = { -provider(capitalization: "uppercase") } d
 provider-unsupported-fetch-album = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -album }
 provider-unsupported-fetch-playlist = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -track-list }s
 
+# feeluown.gui.pages.provider_home
+# ----------------------------------------
+provider-liked-music = Liked
+provider-playlist-list = { -track-list(plural: "plural") }
+
 # feeluown.gui.pages.toplist
 # ----------------------------------------
 # ref: provider-unknown-cannot-view
