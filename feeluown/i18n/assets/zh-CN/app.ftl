@@ -232,6 +232,21 @@ track-fallback-failed = 提供方 “{ $providerName }” 没有找到可用的�
 # ----------------------------------------
 show-original-image = 查看原图
 
+# feeluown.gui.widgets.img_card_list
+# ----------------------------------------
+remove-action = 移除
+remove-action-video = { remove-action }视频
+remove-action-playlist = { remove-action }{ -track-list }
+remove-action-musician = { remove-action }{ -musician }
+remove-action-album = { remove-action }{ -album }
+
+## releaseDate: [date, datetime] datetime when album was published
+## trackCount: [int] amount of tracks in this album
+album-release-date = { $trackCount ->
+    [0] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "numeric") }
+    *[other] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "numeric") } { $trackCount }首
+}
+
 # feeluown.gui.widgets.labels
 # ----------------------------------------
 error-message-prefix = {-error}：

@@ -233,6 +233,22 @@ track-fallback-failed = { -provider(capitalization: "uppercase") } “{ $provide
 # ----------------------------------------
 show-original-image = Show original
 
+# feeluown.gui.widgets.img_card_list
+# ----------------------------------------
+remove-action = Remove
+remove-action-video = { remove-action } Movie
+remove-action-playlist = { remove-action } { -track-list }
+remove-action-musician = { remove-action } { -musician }
+remove-action-album = { remove-action } { -album }
+
+## releaseDate: [date, datetime] datetime when album was published
+## trackCount: [int] amount of tracks in this album
+album-release-date = { $trackCount ->
+    [0] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "short") }
+    [1] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "short") } { $trackCount } song
+    *[other] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "short") } { $trackCount } songs
+}
+
 # feeluown.gui.widgets.labels
 # ----------------------------------------
 error-message-prefix = { -error }:{ " " }
