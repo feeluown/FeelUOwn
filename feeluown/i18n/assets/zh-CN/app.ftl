@@ -228,6 +228,11 @@ track-fallback-failed = 提供方 “{ $providerName }” 没有找到可用的�
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.ai_chat
+# ----------------------------------------
+ai-chat-input-placeholder = 和助手聊聊
+ai-chat-send-button = 发送
+
 # feeluown.gui.widgets.cover_label
 # ----------------------------------------
 show-original-image = 查看原图
@@ -392,6 +397,14 @@ remove-from-playlist = 移除{ -track }
 
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.uimain.ai_chat
+# ----------------------------------------
+ai-chat-header = AI 助手
+ai-chat-new = 新的对话
+ai-chat-match-resource = 正在匹配资源...
+ai-chat-match-resource-failed = 匹配资源失败
+ai-chat-track-candidate-list = { -track }候选列表
 
 # feeluown.gui.uimain.player_bar
 # ----------------------------------------

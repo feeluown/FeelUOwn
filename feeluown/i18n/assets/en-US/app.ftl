@@ -229,6 +229,11 @@ track-fallback-failed = { -provider(capitalization: "uppercase") } “{ $provide
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.ai_chat
+# ----------------------------------------
+ai-chat-input-placeholder = Chat with the assistant
+ai-chat-send-button = Send
+
 # feeluown.gui.widgets.cover_label
 # ----------------------------------------
 show-original-image = Show original
@@ -387,6 +392,14 @@ remove-from-playlist = Remove { -track }
 
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.uimain.ai_chat
+# ----------------------------------------
+ai-chat-header = AI Assistant
+ai-chat-new = New chat
+ai-chat-match-resource = Matching resources...
+ai-chat-match-resource-failed = Resource matching failed
+ai-chat-track-candidate-list = { -track(capitalization: "uppercase") } candidate list
 
 # feeluown.gui.uimain.player_bar
 # ----------------------------------------
