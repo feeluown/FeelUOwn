@@ -99,3 +99,49 @@ meta-created-at =
 
 - `provider-search-succ`: Searching via YTMusic done in 1.74s, found 3 results
 - `meta-created-at`: 🕛 Created at Jan 24, 2026`
+
+## Prefer multiple messages than attributes
+
+ProjectFluent does support structural i18n, which is however, not asscessible in python implementation.
+
+```fluent
+## playlistTitle: [string]
+## errorMessage: [string]
+playlist-action =
+    .create-succeed = 创建{ -track-list } '{ $playlistTitle}' 成功
+    .create-failed = 创建{ -track-list } '{ $playlistTitle}' 失败: { $errorMessage }
+    .remove-succeed = 删除{ -track-list } '{ $playlistTitle}' 成功
+    .remove-failed = 删除{ -track-list } '{ $playlistTitle}' 失败
+```
+
+In javascript, we could do:
+
+```javascript
+l10n.getAttributes("playlist-action").create-succeed
+```
+
+But in python, you must obtain the FluentBundle and call `.format_pattern`
+to get the raw message to access attribute:
+
+```python
+bundles = list(l10n.bundles())
+
+# even worse, we need to manually handle message fallback!
+for bundle in bundles:
+    print(
+        bundle.format_pattern(
+            bundle.get_message("playlist-action").attributes["create-succeed"]
+        )[0]
+    )
+```
+
+So we'd better to write:
+
+```fluent
+## playlistTitle: [string]
+## errorMessage: [string]
+playlist-create-succed = 创建{ -track-list } '{ $playlistTitle}' 成功
+playlist-create-failed = 创建{ -track-list } '{ $playlistTitle}' 失败: { $errorMessage }
+playlist-remove-succed = 删除{ -track-list } '{ $playlistTitle}' 成功
+playlist-remove-failed = 删除{ -track-list } '{ $playlistTitle}' 失败
+```
