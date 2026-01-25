@@ -676,3 +676,13 @@ track-standby-found = Found a stand-by { -track } for { $track } on { $standby }
 track-standby-unavailable = No stand-by { -track } found for { $track }
 
 track-skip-to-next = No available playback link found, playing the next...
+
+# feeluown.gui.page_containers
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.page_containers.table
+# ----------------------------------------
+
+## errorMessage: [string]
+provider-missing-feature = { -provider(capitalization: "uppercase") } does not support this feature: { $errorMessage }
+provider-network-error = Request failed: { $errorMessage }

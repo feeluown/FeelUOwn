@@ -672,3 +672,13 @@ track-standby-found = 在 { $standby } 平台找到 { $track } 的备用{ -track
 track-standby-unavailable = 未找到 { $track } 的备用{ -track }
 
 track-skip-to-next = 未找到可用的播放链接，播放下一首...
+
+# feeluown.gui.page_containers
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.page_containers.table
+# ----------------------------------------
+
+## errorMessage: [string]
+provider-missing-feature = { -provider(capitalization: "uppercase") }不支持该功能: { $errorMessage }
+provider-network-error = 请求失败: { $errorMessage }
