@@ -597,3 +597,24 @@ tray-skip-track-next = Next
 tray-skip-track-prev = Previous
 
 tray-quit-application = Quit
+
+# feeluown.player.playlist
+# ----------------------------------------
+## errorMessage: [string]
+track-url-fetch-failed = Failed to fetch URL for { -track }: { $errorMessage }
+
+-music-video = Music video
+track-fallback-music-video = Using { -music-video } as its playback source ✅
+track-fallback-no-music-video = No available { -music-video } resource found 🙁
+
+music-video-not-avaliable = No available { -music-video } resource found
+
+playback-url-unavailable = No available playback URL
+
+## standby: [string] standby provider for this resource
+## track: the target track to play
+track-standby-try = No available playback resources for { $track }, trying to find a stand-by { -track }...
+track-standby-found = Found a stand-by { -track } for { $track } on { $standby } ✅
+track-standby-unavailable = No stand-by { -track } found for { $track }
+
+track-skip-to-next = No available playback link found, playing the next...

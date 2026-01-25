@@ -38,7 +38,7 @@ class ShowHandler(AbstractHandler):
             furi = 'fuo://'
         r = urlparse(furi)
         path = f'/{r.netloc}{r.path}'
-        logger.debug(f'请求 path: {path}')
+        logger.debug(f'Request path: {path}')
         try:
             rv = router.dispatch(path, {'library': self.library,
                                         'session': self.session})

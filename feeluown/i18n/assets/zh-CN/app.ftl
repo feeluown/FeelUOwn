@@ -597,3 +597,24 @@ tray-skip-track-next = 下一首
 tray-skip-track-prev = 上一首
 
 tray-quit-application = 退出
+
+# feeluown.player.playlist
+# ----------------------------------------
+## errorMessage: [string]
+track-url-fetch-failed = 获取{ -track }链接失败: { $errorMessage }
+
+-music-video = 音乐视频
+track-fallback-music-video = 使用{ -music-video }作为其播放资源 ✅
+track-fallback-no-music-video = 未找到可用的{ -music-video }资源 🙁
+
+music-video-not-avaliable = 未找到可用的{ -music-video }资源
+
+playback-url-unavailable = 没有可用的播放链接
+
+## standby: [string] standby provider for this resource
+## track: the target track to play
+track-standby-try = { $track } 无可用的播放资源, 尝试寻找备用{ -track }...
+track-standby-found = 在 { $standby } 平台找到 { $track } 的备用{ -track } ✅
+track-standby-unavailable = 未找到 { $track } 的备用{ -track }
+
+track-skip-to-next = 未找到可用的播放链接，播放下一首...
