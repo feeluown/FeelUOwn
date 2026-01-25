@@ -352,6 +352,10 @@ meta-amount-songs = { $songsCount ->
 # ----------------------------------------
 volume-button-tooltip = 调整音量
 
+# feeluown.gui.widgets.playlists
+# ----------------------------------------
+remove-this-playlist = 删除此{ -track-list }
+
 # feeluown.gui.widgets.provider
 # ----------------------------------------
 logged = 已登录

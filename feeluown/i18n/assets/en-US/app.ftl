@@ -249,6 +249,10 @@ emoji-expression = Emoji
 # ----------------------------------------
 volume-button-tooltip = Adjust volume
 
+# feeluown.gui.widgets.playlists
+# ----------------------------------------
+remove-this-playlist = Remove this { -track-list }
+
 # feeluown.gui.widgets.provider
 # ----------------------------------------
 logged = Logged-in
