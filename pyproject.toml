@@ -7,7 +7,6 @@ license = "GPL-3.0-or-later"
 authors = [{ name = "feeluown", email = "yinshaowen241@gmail.com" }]
 keywords = ['media', 'player', 'application', 'PyQt6', 'music']
 classifiers = [
-    'Programming Language :: Python :: 3.10',
     'Programming Language :: Python :: 3.11',
     'Programming Language :: Python :: 3.12',
     'Programming Language :: Python :: 3.13',
@@ -20,7 +19,7 @@ classifiers = [
 ]
 urls = { "homepage" = "https://github.com/feeluown/FeelUOwn", "source" = "https://github.com/feeluown/FeelUOwn" }
 
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 # FIXME: depends on PyQt6
 # - PyQt6.QtWidgets/QtCore/QtGui
 # - PyQt6.QtSvg

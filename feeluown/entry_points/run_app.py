@@ -10,7 +10,6 @@ from feeluown.app import AppMode, create_app, create_config
 from feeluown.plugin import plugins_mgr
 from feeluown.utils.utils import is_port_inuse, win32_is_port_binded
 from feeluown.fuoexec import fuoexec_load_rcfile, fuoexec_init
-from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal  # noqa: E402
 
 from .base import ensure_dirs, setup_config, setup_logger  # noqa: E402
@@ -20,16 +19,18 @@ logger = logging.getLogger(__name__)
 
 def run_app(args: argparse.Namespace):
     args, config = before_start_app(args)
-    # FIXME: qasync does not work with 'python3.11'.
-    # https://github.com/CabbageDevelopment/qasync/issues/68
-    if sys.version_info.major == 3 and sys.version_info.minor >= 11:
-        runner = asyncio.runners.Runner()
-        try:
-            runner.run(start_app(args, config))
-        finally:
-            runner.close()
-    else:
-        aio.run(start_app(args, config))
+
+    loop_factory = None
+
+    if AppMode.gui in AppMode(config.MODE):
+        from PyQt6.QtWidgets import QApplication
+        from feeluown.utils.compat import PatchedQEventLoop
+
+        _ = QApplication(['FeelUOwn'])
+        loop_factory = PatchedQEventLoop
+
+    with asyncio.Runner(loop_factory=loop_factory) as runner:
+        runner.run(start_app(args, config))
 
 
 def before_start_app(args):
@@ -89,8 +90,6 @@ def before_start_app(args):
             import PyQt6.QtWebEngineWidgets  # type: ignore # noqa
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
-        from feeluown.utils.compat import DefaultQEventLoopPolicy
-        asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
     return args, config
 
 
