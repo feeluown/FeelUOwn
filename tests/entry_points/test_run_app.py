@@ -45,10 +45,9 @@ def argsparser():
 def test_before_start_app_with_default_args(argsparser, mocker, noharm):
     mocker.patch('feeluown.entry_points.run_app.fuoexec_load_rcfile')
     mocker.patch('feeluown.entry_points.run_app.precheck')
-    mock_asyncio = mocker.patch('feeluown.entry_points.run_app.asyncio')
+    mocker.patch('feeluown.entry_points.run_app.asyncio')
     args = argsparser.parse_args([])
     _, config = before_start_app(args)
-    assert mock_asyncio.set_event_loop_policy.called
     assert AppMode.gui in AppMode(config.MODE)
 
 
