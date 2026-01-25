@@ -383,6 +383,15 @@ playback-mode-loop = 循环播放
 ## play songs in random order
 playback-mode-random = 随机播放
 
+# feeluown.gui.uimain.lyric
+# ----------------------------------------
+lyric-not-available = 未找到可用歌词
+lyric-background-color = 背景颜色
+lyric-text-color = 文字颜色
+lyric-font = 字体
+lyric-show-bilingual = 双语歌词
+lyric-window-auto-resize = 大小自动
+
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
 similar-tracks = 相似{ -track }

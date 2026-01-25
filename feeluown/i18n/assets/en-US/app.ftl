@@ -378,6 +378,15 @@ playback-mode-loop = Loop
 
 playback-mode-random = Random
 
+# feeluown.gui.uimain.lyric
+# ----------------------------------------
+lyric-not-available = Lyrics not available
+lyric-background-color = Background color
+lyric-text-color = Text color
+lyric-font = Font
+lyric-show-bilingual = Bilingual lyrics
+lyric-window-auto-resize = Auto resize 
+
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
 similar-tracks = Similar{ -track }
