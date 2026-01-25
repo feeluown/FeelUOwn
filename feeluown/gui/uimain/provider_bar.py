@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QSizePolicy,
 )
 
+from feeluown.i18n import t
 from feeluown.excs import ProviderIOError, NoUserLoggedIn
 from feeluown.library import (
     SupportsPlaylistDelete,
@@ -71,7 +72,8 @@ class ListViewContainer(QFrame):
 
         self._layout.addLayout(self._t_h_layout)
         self._layout.addLayout(self._b_h_layout)
-        # XXX: 本意是让 ListViewContainer 下方不要出现多余的空间
+        # XXX: The original intent is to prevent any extra space from
+        # appearing below the ListViewContainer.
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Maximum)
 
     def toggle_view(self):
@@ -96,12 +98,12 @@ class ProviderBar(QWidget):
         self._app = app
 
         self.discovery_btn = DiscoveryButton(height=30, padding=0.2, parent=self)
-        self.fav_btn = StarButton("我的收藏", height=30, parent=self)
+        self.fav_btn = StarButton(t("my-favorite-button"), height=30, parent=self)
         self.fold_top_btn = TriagleButton(length=14, padding=0.2)
         self.fold_top_btn.setCheckable(True)
 
-        self.playlists_header = QLabel("歌单列表", self)
-        self.my_music_header = QLabel("我的音乐", self)
+        self.playlists_header = QLabel(t("my-playlists"), self)
+        self.my_music_header = QLabel(t("my-tracks"), self)
 
         self._layout = QVBoxLayout(self)
         # Layout to let provider add it's own buttons.
@@ -143,20 +145,22 @@ class ProviderBar(QWidget):
         self._layout.addWidget(self.my_music_con)
         self._layout.addWidget(self.playlists_con)
 
-        # 让各个音乐库来决定是否显示这些组件
+        # Let each music library decide whether to display these components
         self.playlists_con.hide()
         self.my_music_con.hide()
         self.discovery_btn.setDisabled(True)
         self.fav_btn.setDisabled(True)
-        self.discovery_btn.setToolTip("当前资源提供方未知")
-        self.fold_top_btn.setToolTip("折叠/打开“主页和本地收藏集”功能")
+        self.discovery_btn.setToolTip(t("provider-unknown-tooltip"))
+        self.fold_top_btn.setToolTip(t("fold-top-tooltip"))
 
     def on_current_pvd_ui_changed(self, pvd_ui, _):
         self._clear_btns()
         if pvd_ui:
             self.discovery_btn.setEnabled(True)
             self.fav_btn.setEnabled(True)
-            self.discovery_btn.setToolTip(f"点击进入 {pvd_ui.provider.name} 推荐页")
+            self.discovery_btn.setToolTip(
+                t("provider-recommended-page-enter", providerName=pvd_ui.provider.name)
+            )
             if isinstance(pvd_ui, UISupportsNavBtns):
                 for btn in pvd_ui.list_nav_btns():
                     qt_btn = EmojiButton(btn.icon, btn.text, height=30, parent=self)
@@ -184,7 +188,7 @@ class ProviderBar(QWidget):
     def _create_playlist(self):
         provider_ui = self._app.current_pvd_ui_mgr.get()
         if provider_ui is None:
-            self._app.show_msg("当前的资源提供方未注册其 UI")
+            self._app.show_msg(t("provider-custom-ui-missing"))
             return
         provider = provider_ui.provider
         if (
@@ -192,7 +196,7 @@ class ProviderBar(QWidget):
             or not isinstance(provider, SupportsCurrentUser)
             or not provider.has_current_user()
         ):
-            self._app.show_msg("当前的资源提供方不支持创建歌单")
+            self._app.show_msg(t("playlist-create-unsupported"))
             return
 
         dialog = QDialog(self)
@@ -200,7 +204,7 @@ class ProviderBar(QWidget):
         dialog.setAttribute(Qt.WidgetAttribute.WA_DeleteOnClose)
         layout = QFormLayout(dialog)
         title_edit = QLineEdit(dialog)
-        layout.addRow("歌单名", title_edit)
+        layout.addRow(t("playlist-name"), title_edit)
         button_box = QDialogButtonBox(
             QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Yes
         )
@@ -216,7 +220,13 @@ class ProviderBar(QWidget):
                     playlist = await aio.run_fn(provider.playlist_create_by_name, title)
                 except (ProviderIOError, NoUserLoggedIn) as e:
                     QMessageBox.warning(
-                        self._app, "错误", f"创建歌单 '{title}' 失败: {e}"
+                        self._app,
+                        t("error"),
+                        t(
+                            "playlist-create-failed",
+                            playlistTitle=title,
+                            errorMessage=e,
+                        ),
                     )
                 else:
                     # Add playlist to pl_uimgr is a workaround, which may cause bug.
@@ -224,7 +234,7 @@ class ProviderBar(QWidget):
                     # in the top for some providers.
                     # TODO: re-fetch user's playlists and fill the UI.
                     self._app.pl_uimgr.add(playlist, is_fav=False)
-                    self._app.show_msg(f"创建歌单 '{title}' 成功")
+                    self._app.show_msg(t("playlist-create-succed", playlistTitle=title))
 
             aio.run_afn(do)
 
@@ -237,17 +247,21 @@ class ProviderBar(QWidget):
             if isinstance(provider, SupportsPlaylistDelete):
                 ok = await aio.run_fn(provider.playlist_delete, playlist.identifier)
                 self._app.show_msg(
-                    f"删除歌单 {playlist.name} {'成功' if ok else '失败'}"
+                    t("playlist-create-succed", playlistTitle=playlist.name)
+                    if ok
+                    else t("playlist-create-failed", playlistTitle=playlist.name)
                 )
                 if ok is True:
                     self._app.pl_uimgr.model.remove(playlist)
             else:
-                self._app.show_msg(f"资源提供方({playlist.source})不支持删除歌单")
+                self._app.show_msg(
+                    t("playlist-remove-unsupported", providerName=playlist.source)
+                )
 
         box = QMessageBox(
             QMessageBox.Icon.Warning,
-            "提示",
-            f"确认删除歌单 '{playlist.name}' 吗？",
+            t("info"),
+            t("playlist-remove-confirm", playlistTitle=playlist.name),
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             self,
         )

@@ -6,7 +6,7 @@ from feeluown.gui.helpers import SOLARIZED_COLORS
 
 
 class StatusLineItem:
-    """状态栏组件"""
+    """Status bar component"""
 
     def __init__(self, name, widget):
         self.name = name
@@ -22,10 +22,14 @@ class StatusLineItem:
 
 class StatuslineLabel(QLabel):
     """
-    StatuslineLabel 是一个基类，具体的设计还没想好太清楚，不建议大范围使用。
+    This is a base class;
+    the specific design hasn’t been fully figured out yet,
+    and it’s not recommended for widespread use.
 
-    大概想法如下：Label 由两部分组成，中间和通知部分（参考 chrome 的插件图标）。
-    基类会定义好这两个部分的 size，并提供一些预定义好的绘制函数供子类使用。
+    The general idea is as follows: the Label consists of two parts, the middle and
+    the notification parts (see Chrome’s extension icon for reference).
+    The base class will define the sizes of these two parts and provide some
+    predefined drawing functions for subclasses to use.
     """
 
     def __init__(self, app, *args, **kwargs):
@@ -33,7 +37,8 @@ class StatuslineLabel(QLabel):
 
         self._app = app
 
-        # TODO: 顶部导航栏中前进、后退按钮的的高度也是 30，之后应该由外部传入进来
+        # TODO: The height of the forward and back buttons in the top navigation bar
+        # is also 30, and it should be passed in externally later
         self._width = self._height = 30
         self._inner_width = self._inner_height = 18
         self._status_width = self._status_height = 13
@@ -108,7 +113,7 @@ class StatuslineLabel(QLabel):
 
 
 class StatusLine(QWidget):
-    """状态栏（类似 Emacs/Vim status line）"""
+    """Status bar (similar to Emacs/Vim status line)"""
 
     def __init__(self, app, parent=None):
         super().__init__(parent)
@@ -124,14 +129,14 @@ class StatusLine(QWidget):
                 return item
 
     def add_item(self, item):
-        """添加组件"""
+        """Add component"""
         if item not in self._items:
             self._items.append(item)
             self._layout.addWidget(item.widget)
 
     def remove_item(self, item):
-        """移除组件
+        """Remove component
 
-        :param item: 一个 StatusLineItem 对象，或者 item 名字
+        :param item: A StatusLineItem object, or an item name
         """
         pass

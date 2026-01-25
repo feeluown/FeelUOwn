@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QPushButton,
 )
 
+from feeluown.i18n import t
 from feeluown.gui.widgets.magicbox import KeySourceIn
 from feeluown.gui.widgets.header import MidHeader
 from feeluown.gui.components import LyricButton, WatchButton
@@ -78,7 +79,7 @@ class AISettings(QWidget):
 
         self._app = app
         self._prompt_editor = QPlainTextEdit(self)
-        self._save_btn = QPushButton("保存", self)
+        self._save_btn = QPushButton(t("save-config"), self)
 
         self._layout = QHBoxLayout(self)
         self._layout.addWidget(self._prompt_editor)
@@ -97,7 +98,7 @@ class SettingsDialog(QDialog):
         super().__init__(parent=parent)
         self._app = app
 
-        self.setWindowTitle("应用配置")
+        self.setWindowTitle(t("app-config"))
         self.render()
 
     def render(self):
@@ -111,11 +112,11 @@ class SettingsDialog(QDialog):
         toolbar.checked_btn_changed.connect(self.update_source_in)
 
         self._layout = QVBoxLayout(self)
-        self._layout.addWidget(MidHeader("搜索来源"))
+        self._layout.addWidget(MidHeader(t("search-providers")))
         self._layout.addWidget(toolbar)
-        self._layout.addWidget(MidHeader("AI 电台（PROMPT）"))
+        self._layout.addWidget(MidHeader(t("ai-radio-prompt")))
         self._layout.addWidget(AISettings(self._app))
-        self._layout.addWidget(MidHeader("播放器"))
+        self._layout.addWidget(MidHeader(t("player")))
         self._layout.addWidget(PlayerSettings(self._app))
         self._layout.addStretch(0)
 

@@ -16,10 +16,10 @@ MODEL_PAGE_PREFIX = "/models/"
 
 
 class Browser:
-    """GUI 页面管理中心
+    """GUI Page Management Center
 
-    将 feeluown 类比为浏览器：magicbox 是搜索框，RightPanel
-    部分是浏览器主体。
+    Compare feeluown to a browser: magicbox is the search box,
+    RightPanel is the main browser area.
     """
 
     def __init__(self, app):
@@ -114,7 +114,7 @@ class Browser:
             self.on_history_changed()
 
     def route(self, rule):
-        """路由装饰器 (alpha)"""
+        """Routing decorator (alpha)"""
         return self.router.route(rule)
 
     def _goto_page(self, page):

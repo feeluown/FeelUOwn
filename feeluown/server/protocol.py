@@ -39,10 +39,12 @@ def decode(b):
 
 
 async def read_request(reader: asyncio.StreamReader, parse_func) -> Optional[Request]:
-    """读取一个请求
+    """Read a request
 
-    读取成功时，返回 Request 对象，如果读取失败（比如客户端关闭连接），
-    则返回 None。其它异常会抛出 RequestError。
+    On success, returns a Request object.
+
+    If reading fails (for example, the client closes the connection),
+    returns None. Other exceptions will raise a RequestError.
 
     :type reader: asyncio.StreamReader
     """
@@ -90,10 +92,10 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
     - add request timeout: close connection if no action happens
     - add graceful shutdown: close connection before exit
     """
+
     def __init__(
-            self,
-            handle_req: Callable[[Request, SessionLike], Awaitable[Response]],
-            loop):
+        self, handle_req: Callable[[Request, SessionLike], Awaitable[Response]], loop
+    ):
         super().__init__(loop)
         self._handle_req = handle_req
         self._loop = loop
@@ -132,7 +134,8 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         self.writer.write(encode(f'OK rpc {version}\r\n'))
 
     async def write_response(self, resp):
-        # TODO: 区分客户端和服务端错误（比如客户端错误后面加 ! 标记）
+        # TODO: Distinguish between client-side and server-side errors
+        # (for example, add a ! marker after client-side errors)
         msg_bytes = bytes(resp.text, 'utf-8')
         response_line = f'ACK {resp.code} {len(msg_bytes)}\r\n'
         self.writer.write(bytes(response_line, 'utf-8'))
@@ -163,14 +166,16 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
                         # Ignore the empty request.
                         continue
 
-                    # 通常来说，客户端如果想断开连接，只需要自己主动关闭连接即可，
-                    # 但如果客户端不方便主动断开，可以发送 quit 命令，
-                    # 让服务端来主动关闭连接。
+                    # In general, if the client wants to disconnect, it can
+                    # simply close the connection itself,
+                    # but if the client cannot conveniently close it itself, it can send
+                    # a quit command, letting the server actively close the connection.
                     #
-                    # 客户端不方便主动断开的例子：当用户使用 NetCat 发送请求时，
-                    # 用户想在读取完一个 fuo 响应后断开。
+                    # An example where the client cannot conveniently disconnect on
+                    # its own is when the user uses NetCat to send requests,
+                    # and the user wants to disconnect after reading a full response.
                     if req.cmd == 'quit':
-                        # FIXME: 理论上最好能等待 close 结束
+                        # FIXME: We'd better wait for close to happen
                         self.writer.close()
                     else:
                         try:
@@ -187,8 +192,7 @@ class FuoServerProtocol(asyncio.streams.FlowControlMixin):
         self._peername = transport.get_extra_info('peername')
         logger.debug('%s connceted to fuo daemon.', self._peername)
         self._reader = asyncio.StreamReader(loop=self._loop)
-        self._writer = asyncio.StreamWriter(
-            transport, self, self._reader, self._loop)
+        self._writer = asyncio.StreamWriter(transport, self, self._reader, self._loop)
         # Unlike aiohttp RequestHandler, we will never cancel the handler task,
         # our task should die when it is supposed to. For instance, when the
         # client close the connection, connection lost with ConnectionResetErrror,

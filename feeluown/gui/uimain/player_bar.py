@@ -19,6 +19,7 @@ from feeluown.gui.components import (
     PlaylistButton,
     SongSourceTag,
 )
+from feeluown.i18n import t
 from feeluown.gui.helpers import IS_MACOS, ClickableMixin
 
 if TYPE_CHECKING:
@@ -58,17 +59,13 @@ class PlayerControlPanel(QFrame):
         self.like_btn = LikeButton(self._app, parent=self)
         self.mv_btn = NowplayingMVTextButton(app=self._app, parent=self)
         self.toggle_lyric_btn = LyricButton(self._app, parent=self)
-        self.download_btn = QPushButton(self)
         self.toggle_watch_btn = WatchButton(self._app, self)
 
         self.playlist_btn.setObjectName("playlist_btn")
-        self.download_btn.setObjectName("download_btn")
 
         self.progress_slider = ProgressSlider(app=app, parent=self)
 
-        self.playlist_btn.setToolTip("显示当前播放列表")
-        self.download_btn.setToolTip("下载歌曲（未实现，欢迎 PR）")
-        self.download_btn.setCheckable(True)
+        self.playlist_btn.setToolTip(t("playlist-show"))
 
         self.song_title_label = LineSongLabel(self._app)
         self.song_title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
@@ -106,8 +103,6 @@ class PlayerControlPanel(QFrame):
         self.duration_label.setFixedWidth(50)
         self.position_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.duration_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.download_btn.setFixedSize(15, 15)
-        self.download_btn.hide()
         self.mv_btn.setFixedHeight(16)
         self.toggle_watch_btn.setFixedHeight(16)
 
@@ -133,7 +128,6 @@ class PlayerControlPanel(QFrame):
         self._sub_top_layout.addSpacing(8)
         self._sub_top_layout.addWidget(self.toggle_watch_btn)
         # self._sub_top_layout.addSpacing(8)
-        # self._sub_top_layout.addWidget(self.download_btn)
         self._sub_top_layout.addSpacing(3)
 
         self._sub_layout.addSpacing(3)

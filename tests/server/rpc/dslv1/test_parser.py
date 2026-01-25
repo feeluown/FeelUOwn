@@ -5,7 +5,8 @@ from feeluown.server.excs import FuoSyntaxError
 
 class TestParser(TestCase):
     """
-    FIXME: 由于懒得构造 Token 序列，所以下面的测试都不正交
+    FIXME: Because I’m too lazy to construct token sequences,
+    he following tests are not orthogonal.
     """
     def test_read_cmd_error(self):
         text = "'hello world'"

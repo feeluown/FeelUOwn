@@ -4,13 +4,14 @@ from PyQt6.QtWidgets import QLabel, QMenu
 
 from feeluown.utils.aio import run_afn
 from feeluown.media import MediaType
+from feeluown.i18n import t
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 
 class SongSourceTag(QLabel):
-    default_text = "音乐来源"
+    default_text = t("music-source")
 
     def __init__(self, app: "GuiApp", font_size=12, parent=None):
         super().__init__(text=SongSourceTag.default_text, parent=parent)
@@ -32,13 +33,13 @@ class SongSourceTag(QLabel):
 
     def contextMenuEvent(self, e):
         # pylint: disable=unnecessary-direct-lambda-call
-        # FIXME(wuliaotc): 在切换provider时禁用menu
+        # FIXME(wuliaotc): Disable the menu when switching provider
         song = self._app.playlist.current_song
         if song is None:
             return
 
         menu = QMenu()
-        submenu = menu.addMenu("“智能”替换")
+        submenu = menu.addMenu(t("track-smart-standby"))
         for provider in self._app.library.list():
             pid = provider.identifier
             if pid == song.source:
@@ -64,7 +65,7 @@ class SongSourceTag(QLabel):
             self._source = ""
             self._bitrate = 0
         else:
-            self._source = "未知来源"
+            self._source = t("track-unknown-source")
             # Fill source name.
             source = metadata.get("source", "")
             if source:
@@ -96,8 +97,8 @@ class SongSourceTag(QLabel):
         if songs:
             standby, media = songs[0]
             assert standby != song
-            self._app.show_msg(f"使用 {standby} 替换当前歌曲")
+            self._app.show_msg(t("track-fallback-to-standby", standby=standby))
             self._app.playlist.set_current_song_with_media(standby, media)
             self._app.playlist.remove(song)
         else:
-            self._app.show_msg(f"提供方 “{provider_id}” 没有找到可用的相似歌曲")
+            self._app.show_msg(t("track-fallback-failed", providerName=provider_id))

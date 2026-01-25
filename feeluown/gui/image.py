@@ -17,9 +17,9 @@ logger = logging.getLogger(__name__)
 
 
 class ImgManager(object):
-    """图片下载、缓存管理
+    """Image downloading and cache management
 
-    TOOD: 该模块相关逻辑需要重新梳理
+    TOOD: The related logic in this module needs to be reorganized
     """
 
     def __init__(self, app):

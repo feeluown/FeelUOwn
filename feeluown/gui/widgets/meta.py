@@ -2,6 +2,7 @@
 all metadata related widgets, for example: cover, and so on.
 """
 
+from datetime import date, datetime
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QSize
@@ -17,10 +18,11 @@ from PyQt6.QtWidgets import (
 
 from feeluown.gui.helpers import elided_text
 from feeluown.gui.components import FavButton
+from feeluown.i18n import t
 from .cover_label import CoverLabelV2
 
 if TYPE_CHECKING:
-    from feeluown.gui.app import GuiApp
+    from feeluown.gui.app import GuiApp  # type: ignore
 
 
 class getset_property:
@@ -59,12 +61,13 @@ class MetaWidget(QFrame):
     subtitle = getset_property("subtitle")
     source = getset_property("source")
     cover = getset_property("cover")
-    created_at = getset_property("created_at")  # datetime
-    updated_at = getset_property("updated_at")  # datetime
+    created_at: datetime = getset_property("created_at")
+    updated_at: datetime = getset_property("updated_at")
     songs_count = getset_property("songs_count")
     creator = getset_property("creator")
-    released_at = getset_property("released_at")  # str
-    model = getset_property("model")  # feeluown.library.BaseModel
+    # YYYY-mm-dd
+    released_at: str = getset_property("released_at")
+    model = getset_property("model")
 
 
 class TableMetaWidget(MetaWidget):
@@ -107,8 +110,9 @@ class TableMetaWidget(MetaWidget):
         self._title_row_layout.addWidget(self.fav_button)
         self._title_row_layout.setSpacing(10)
         self._title_row_layout.addStretch(0)
-        self._title_row_layout.setAlignment(self.fav_button,
-                                            Qt.AlignmentFlag.AlignCenter)
+        self._title_row_layout.setAlignment(
+            self.fav_button, Qt.AlignmentFlag.AlignCenter
+        )
 
         self._right_layout.addLayout(self._title_row_layout)
         self._right_layout.addWidget(self.meta_label)
@@ -166,20 +170,19 @@ class TableMetaWidget(MetaWidget):
         if self.source:
             source_part = f'<code style="color: gray;">{self.source}</code>'
         if self.updated_at:
-            updated_part = '🕒 更新于 <code style="font-size: small">{}</code>'.format(
-                self.updated_at.strftime("%Y-%m-%d")
-            )
+            updated_part = t("meta-updated-at", dateTime=self.updated_at)
         if self.created_at:
-            created_part = '🕛 创建于 <code style="font-size: small">{}</code>'.format(
-                self.created_at.strftime("%Y-%m-%d")
-            )
+            created_part = t("meta-created-at", dateTime=self.created_at)
         if self.released_at:
-            released_part = (
-                f'🕛 发布于 <code style="font-size: small">{self.released_at}</code>'  # noqa
-            )
+            try:
+                year, month, day = map(int, self.released_at.split("-"))
+            except Exception:
+                year, month, day = 1970, 1, 1
+            released_dt = date(year=year, month=month, day=day)
+            released_part = t("meta-released-at", dateTime=released_dt)
+
         if self.songs_count is not None:
-            text = self.songs_count if self.songs_count != -1 else "未知"
-            songs_count_part = f'<code style="font-size: small">{text}</code> 首歌曲'
+            songs_count_part = t("meta-amount-songs", songsCount=self.songs_count)
         parts = [
             creator_part,
             created_part,

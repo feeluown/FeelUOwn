@@ -1,3 +1,4 @@
+from feeluown.i18n import t
 from feeluown.utils.aio import run_afn
 from feeluown.utils.reader import create_reader
 from feeluown.gui.page_containers.table import Renderer
@@ -12,7 +13,7 @@ async def render(req, **kwargs):
 
 class PlayerPlaylistRenderer(Renderer):
     async def render(self):
-        self.meta_widget.title = "最近播放"
+        self.meta_widget.title = t("recently-played")
         self.meta_widget.show()
         songs = self._app.recently_played.list_songs()
         reader = create_reader(songs)

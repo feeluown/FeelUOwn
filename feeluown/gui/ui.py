@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 class Ui:
+
     def __init__(self, app):
         self._app = app
         # Let the following widgets access ui object during init.
@@ -40,8 +41,8 @@ class Ui:
         self.playlist_overlay = PlaylistOverlay(app, parent=app)
         self.nowplaying_overlay = NowplayingOverlay(app, parent=app)
 
-        # NOTE: 以位置命名的部件应该只用来组织界面布局，不要
-        # 给其添加任何功能性的函数
+        # NOTE: Components named by position should only be used
+        # to organize the UI layout, o not add any functional methods to them.
         self._message_line = MessageLine()
         self.top_panel = TopPanel(app, app)
         self.sidebar = self._left_panel_con = LeftPanel(self._app)

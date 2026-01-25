@@ -15,6 +15,7 @@ from feeluown.library import ModelType, reverse
 from feeluown.gui.base_renderer import TabBarRendererMixin
 from feeluown.gui.page_containers.table import Renderer
 from feeluown.gui.widgets.songs import ColumnsMode
+from feeluown.i18n import t
 from .template import render_error_message
 
 
@@ -61,10 +62,10 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
         self.model = artist
         self.tab_index = tab_index
         self.tabs = [
-            ("简介",),
-            ("歌曲",),
-            ("专辑",),
-            ("参与作品",),
+            (t("description"),),
+            (t("track"),),
+            (t("album"),),
+            (t("track-contributed-albums"),),
         ]
 
     async def render(self):
@@ -102,11 +103,12 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
             else:
                 if contributed:
                     await render_error_message(
-                        self._app, "资源提供方不支持获取歌手贡献过的专辑"
+                        self._app,
+                        t("provider-unsupported-fetch-artist-contributed-works"),
                     )
                 else:
                     await render_error_message(
-                        self._app, "资源提供方不支持获取歌手专辑"
+                        self._app, t("provider-unsupported-fetch-artist-works")
                     )
                 return
             self.toolbar.show()
@@ -121,7 +123,9 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
         artist = self.model
         provider = self._app.library.get(artist.source)
         if not isinstance(provider, SupportsArtistSongsReader):
-            await render_error_message(self._app, "资源提供方不支持获取歌手歌曲")
+            await render_error_message(
+                self._app, t("provider-unsupported-fetch-artist")
+            )
             return
 
         async def cb():
@@ -140,8 +144,8 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
         self.model = album
         self.tab_index = tab_index
         self.tabs = [
-            ("简介",),
-            ("歌曲",),
+            (t("description"),),
+            (t("track"),),
         ]
 
     async def render(self):
@@ -173,7 +177,7 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
                         reader = await run_fn(provider.album_create_songs_rd, album)
                     else:
                         await render_error_message(
-                            self._app, "资源提供方不支持获取专辑歌曲"
+                            self._app, t("provider-unsupported-fetch-album")
                         )
                         return
             self.meta_widget.songs_count = reader.count
@@ -213,7 +217,9 @@ class PlaylistRenderer(Renderer):
         if isinstance(provider, SupportsPlaylistSongsReader):
             reader = await run_fn(provider.playlist_create_songs_rd, self.playlist)
         else:
-            await render_error_message(self._app, "资源提供方不支持获取歌单歌曲")
+            await render_error_message(
+                self._app, t("provider-unsupported-fetch-playlist")
+            )
             return
         self.show_songs(reader=reader, show_count=True)
 
@@ -223,8 +229,8 @@ class PlaylistRenderer(Renderer):
             if await run_fn(provider.playlist_remove_song, self.playlist, song) is True:
                 # Re-render songs table so that user can see that the song is removed.
                 run_afn(self._show_songs)
-                self._app.show_msg(f"移除歌曲 {song} 成功")
+                self._app.show_msg(t("track-playlist-remove-succ", songTitle=song))
             else:
-                self._app.show_msg(f"移除歌曲 {song} 失败")
+                self._app.show_msg(t("track-playlist-remove-fail", songTitle=song))
 
         run_afn(do)

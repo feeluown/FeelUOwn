@@ -11,6 +11,7 @@ from feeluown.utils.aio import run_fn
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets import PlayPauseButton, PlayNextButton, PlayPreviousButton
 from feeluown.gui.helpers import resize_font
+from feeluown.i18n import t
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 class LyricButton(TextButton):
     def __init__(self, app: "GuiApp", **kwargs):
         kwargs.setdefault("height", 16)
-        super().__init__("词", **kwargs)
+        super().__init__(t("lyric-button"), **kwargs)
         self._app = app
 
         font_size = 9
@@ -55,8 +56,7 @@ class WatchButton(TextButton):
         self._app = app
 
         self.setToolTip(
-            "开启 watch 模式时，播放器会优先尝试为歌曲找一个合适的视频来播放。\n"
-            "最佳实践：开启 watch 的同时建议开启视频的画中画模式。"
+            t("watch-mode-tooltip"),
         )
 
         self.setCheckable(True)
@@ -91,7 +91,7 @@ class FavButton(QPushButton):
         self.clicked.connect(self.toggle_liked)
         self.toggled.connect(self.on_toggled)
         self.setObjectName("like_btn")
-        self.setToolTip("添加到“本地收藏")
+        self.setToolTip(t("local-liked-tracks-add"))
 
         self._model = None
 
@@ -106,16 +106,16 @@ class FavButton(QPushButton):
         model = self._model
         if self.already_in_library(model):
             coll_library.remove(model)
-            self._app.show_msg("已经从“本地收藏”中移除")
+            self._app.show_msg(t("local-liked-tracks-removed"))
         else:
             coll_library.add(model)
-            self._app.show_msg("已经添加到“本地收藏”")
+            self._app.show_msg(t("local-liked-tracks-added"))
 
     def on_toggled(self):
         if self.already_in_library(self._model):
-            self.setToolTip("添加到“本地收藏”")
+            self.setToolTip(t("local-liked-tracks-add"))
         else:
-            self.setToolTip("从“本地收藏”中移除")
+            self.setToolTip(t("local-liked-tracks-remove"))
 
     def already_in_library(self, model):
         coll_library = self._app.coll_mgr.get_coll_library()
@@ -197,7 +197,7 @@ class MediaButtonsV2(QWidget):
         self.toggle_video_btn = TriagleButton(length=button_width)
         self.toggle_video_btn.hide()
         self.pp_btn.setCheckable(True)
-        self.toggle_video_btn.setToolTip("展示视频画面")
+        self.toggle_video_btn.setToolTip(t("show-track-movie"))
 
         self._layout = QHBoxLayout(self)
         self._layout.setSpacing(spacing)

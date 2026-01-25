@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import (
     QFrame,
 )
 
+from feeluown.i18n import t
 from feeluown.excs import ResourceNotFound
 from feeluown.library import (
     SupportsSongHotComments,
@@ -46,16 +47,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# Error message template for NotSupported
-err_msg_tpl = (
-    '<p style="color: grey; font: small;">该提供方暂不支持{feature}。'
-    "<br/> 给它实现一下 {interface} 接口来支持该功能吧 ~"
-    "</p>"
-)
-
 
 def or_unknown(x):
-    return x or "未知"
+    return x or t("unknown")
 
 
 async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-branches
@@ -64,7 +58,9 @@ async def render(req, **kwargs):  # pylint: disable=too-many-locals,too-many-bra
 
     provider = app.library.get(song.source)
     if provider is None:
-        await render_error_message(app, f"没有相应的资源提供方 {song.source}")
+        await render_error_message(
+            app, t("track-source-provider-missing", providerName=song.source)
+        )
         return
 
     # TODO: Initialize the view with song object, and it should reduce
@@ -173,10 +169,10 @@ class SongWikiLabel(QLabel):
             f'<a href="{reverse(album)}">{album.name_display}</a>' if album else ""
         )
         kvs = [
-            ("歌手", artists_str),
-            ("所属专辑", or_unknown(album_str)),
-            ("发行日期", or_unknown(date_fmted)),
-            ("曲风", or_unknown(song.genre)),
+            (t("musician"), artists_str),
+            (t("track-belongs-album"), or_unknown(album_str)),
+            (t("release-date"), or_unknown(date_fmted)),
+            (t("track-genre"), or_unknown(song.genre)),
         ]
         lines = []
         for k, v in kvs:
@@ -213,12 +209,12 @@ class SongExploreView(QWidget):
         self._title_cover_spacing = 10
         self._left_right_spacing = 30
         self.title_label = Title()
-        self.similar_songs_header = MidHeader("相似歌曲")
-        self.comments_header = MidHeader("热门评论")
+        self.similar_songs_header = MidHeader(t("similar-tracks"))
+        self.comments_header = MidHeader(t("track-hot-comments"))
         self.lyric_view = LyricView(parent=self)
-        self.play_btn = TextButton("播放")
+        self.play_btn = TextButton(t("track-start-play"))
         self.play_mv_btn = SongMVTextButton(self._app)
-        self.copy_web_url_btn = TextButton("复制网页地址")
+        self.copy_web_url_btn = TextButton(t("track-webpage-url-copy"))
         self.cover_label = CoverLabelV2(app=app)
         self.song_wiki_label = SongWikiLabel(app)
         self.comments_view = CommentListView()
@@ -310,7 +306,7 @@ class SongExploreView(QWidget):
 
             async def copy_song_web_url():
                 QGuiApplication.clipboard().setText(web_url)
-                self._app.show_msg(f"已经复制：{web_url}")
+                self._app.show_msg(t("track-webpage-url-copied", url=web_url))
 
             self.copy_web_url_btn.clicked.connect(
                 lambda: aio.run_afn(copy_song_web_url)
@@ -327,9 +323,11 @@ class SongExploreView(QWidget):
             )
             self.similar_songs_view.setModel(model)
         else:
-            msg = err_msg_tpl.format(
-                feature="查看相似歌曲", interface=SupportsSongSimilar.__name__
-            )
+            msg = t(
+                "error-message-template",
+                interface=SupportsSongSimilar.__name__,
+            ).format(feature=t("find-similar-tracks"))
+
             self.similar_songs_header.setText(msg)
 
     async def maybe_show_song_hot_comments(self, provider, song):
@@ -338,9 +336,12 @@ class SongExploreView(QWidget):
             comments_reader = create_reader(comments)
             self.comments_view.setModel(CommentListModel(comments_reader))
         else:
-            msg = err_msg_tpl.format(
-                feature="查看歌曲评论", interface=SupportsSongHotComments.__name__
-            )
+            msg = t(
+                "error-message-template",
+                interface=SupportsSongHotComments.__name__,
+            ).format(feature=t("track-view-comments"))
+
+            self.similar_songs_header.setText(msg)
             self.comments_header.setText(msg)
 
     async def maybe_show_mv_btn(self, song):

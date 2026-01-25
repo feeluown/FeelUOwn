@@ -4,6 +4,7 @@ from feeluown.library import ModelType
 from feeluown.utils.reader import wrap
 from feeluown.gui.page_containers.table import Renderer
 
+from feeluown.i18n import t
 from feeluown.gui.base_renderer import TabBarRendererMixin
 
 
@@ -58,16 +59,16 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
         coll = self._coll
         self.meta_widget.show()
         if coll.type is CollectionType.sys_library:
-            self.meta_widget.title = "音乐库"
+            self.meta_widget.title = t("music-library")
         else:
             self.meta_widget.title = coll.name
 
         if not coll.models:
             # HACK: show a message by meta widget
             if coll.type is CollectionType.sys_library:
-                self.meta_widget.source = "音乐库暂无收藏，快去添加一些吧！"
+                self.meta_widget.source = t("music-library-empty")
             else:
-                self.meta_widget.source = "该收藏集暂无内容，快去添加一些吧！"
+                self.meta_widget.source = t("collection-is-empty")
             return
 
         self.render_tab_bar()
@@ -80,12 +81,12 @@ class LibraryRenderer(Renderer, TabBarRendererMixin):
             # the UI is refreshed and the the user needs to scroll to the bottom again.
             self._coll.remove(model)
             self.render_models()
-            self._app.show_msg(f"移除 {model} 成功")
+            self._app.show_msg(t("remove-item-succeed", item=model))
 
         def remove_model(model, cb):
             self._coll.remove(model)
             cb(model, True)
-            self._app.show_msg(f"移除 {model} 成功")
+            self._app.show_msg(t("remove-item-succeed", item=model))
 
         if self.tabs[self.tab_index][1] is ModelType.song:
             self.songs_table.remove_song_func = remove_song

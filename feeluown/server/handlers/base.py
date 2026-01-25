@@ -28,9 +28,11 @@ class AbstractHandler(metaclass=HandlerMeta):
 
     def __init__(self, app: 'ServerApp', session: Optional[SessionLike] = None):
         """
-        暂时不确定 session 应该设计为什么样的结构。当前主要是为了将它看作一个
-        subscriber。大部分 handler 不需要使用到 session 对像，目前只有 SubHandler
-        把 session 当作一个 subscriber 看待。
+        It’s not yet determined what structure the session should have.
+        Currently it’s mainly considered as a subscriber.
+
+        Most handlers do not need to use the session object;
+        at present only SubHandler treats the session as a subscriber.
         """
         self._app = app
         self.session = session

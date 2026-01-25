@@ -8,9 +8,8 @@ from PyQt6.QtWidgets import QSystemTrayIcon, QMenu
 
 from feeluown.player import State
 from feeluown.gui.helpers import elided_text, get_qapp
+from feeluown.i18n import t
 
-TOGGLE_APP_TEXT = ("激活主窗口", "隐藏主窗口")
-TOGGLE_PLAYER_TEXT = ("播放", "暂停")
 
 IS_MACOS = sys.platform == "darwin"
 
@@ -30,16 +29,20 @@ class Tray(QSystemTrayIcon):
         self._menu = QMenu()
         self._status_action = QAction("...")
         self._toggle_player_action = QAction(
-            QIcon.fromTheme("media-play"), TOGGLE_PLAYER_TEXT[0]
+            QIcon.fromTheme("media-play"), t("tray-toggle-playpause", action="play")
         )
-        self._next_action = QAction(QIcon.fromTheme("media-skip-forward"), "下一首")
-        self._prev_action = QAction(QIcon.fromTheme("media-skip-backward"), "上一首")
-        self._quit_action = QAction(QIcon.fromTheme("exit"), "退出")
+        self._next_action = QAction(
+            QIcon.fromTheme("media-skip-forward"), t("tray-skip-track-next")
+        )
+        self._prev_action = QAction(
+            QIcon.fromTheme("media-skip-backward"), t("tray-skip-track-prev")
+        )
+        self._quit_action = QAction(QIcon.fromTheme("exit"), t("tray-quit-application"))
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
         if IS_MACOS:
             self._toggle_app_action: Optional[QAction] = QAction(
-                QIcon.fromTheme("window"), TOGGLE_APP_TEXT[1]
+                QIcon.fromTheme("window"), t("tray-main-window-action", action="hide")
             )
         else:
             self._toggle_app_action = None
@@ -127,11 +130,15 @@ class Tray(QSystemTrayIcon):
 
     def on_player_state_changed(self, state):
         if state == State.playing:
-            self._toggle_player_action.setText(TOGGLE_PLAYER_TEXT[1])
+            self._toggle_player_action.setText(
+                t("tray-toggle-playpause", action="pause")
+            )
             self._toggle_player_action.setIcon(QIcon.fromTheme("media-pause"))
             self._toggle_player_action.setEnabled(True)
         else:
-            self._toggle_player_action.setText(TOGGLE_PLAYER_TEXT[0])
+            self._toggle_player_action.setText(
+                t("tray-toggle-playpause", action="play")
+            )
             self._toggle_player_action.setIcon(QIcon.fromTheme("media-play"))
             if state == State.stopped:
                 self._toggle_player_action.setEnabled(False)
@@ -155,23 +162,25 @@ class Tray(QSystemTrayIcon):
         elif state == Qt.ApplicationState.ApplicationInactive:
             # when app window is not the top window, it changes to inactive
             if self._toggle_app_action is not None:
-                self._toggle_app_action.setText(TOGGLE_APP_TEXT[0])
+                self._toggle_app_action.setText(
+                    t("tray-main-window-action", action="show")
+                )
 
     def eventFilter(self, obj, event):
         """event filter for app"""
-        app_text_idx = None
+        app_action = None
         if event.type() == QEvent.Type.WindowStateChange:
             # when window is maximized before minimized, the window state will
             # be Qt.WindowMinimized | Qt.WindowMaximized
             if obj.windowState() & Qt.WindowState.WindowMinimized:
                 self._app_old_state = event.oldState()
-                app_text_idx = 0
+                app_action = "show"
             else:
-                app_text_idx = 1
+                app_action = "hide"
         elif event.type() == QEvent.Type.Hide:
-            app_text_idx = 0
+            app_action = "show"
         elif event.type() == QEvent.Type.Show:
-            app_text_idx = 1
+            app_action = "hide"
         else:
             # Only handle known event. When QApplication is quiting,
             # some unknown event is emitted.
@@ -180,6 +189,8 @@ class Tray(QSystemTrayIcon):
             # app is quiting.
             # RuntimeError: wrapped C/C++ object of type QAction has been deleted
             return False
-        if app_text_idx is not None and self._toggle_app_action is not None:
-            self._toggle_app_action.setText(TOGGLE_APP_TEXT[app_text_idx])
+        if app_action is not None and self._toggle_app_action is not None:
+            self._toggle_app_action.setText(
+                t("tray-main-window-action", action=app_action)
+            )
         return False

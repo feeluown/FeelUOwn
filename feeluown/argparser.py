@@ -147,38 +147,49 @@ def _create_cli_parser() -> argparse.ArgumentParser:
     from feeluown import __version__ as feeluown_version
 
     parser = argparse.ArgumentParser(
-        description=textwrap.dedent('''\
+        description=textwrap.dedent(
+            '''\
         FeelUOwn - modern music player (daemon).
 
         Example:
             - fuo                        # start fuo server
             - fuo status                 # lookup server status
             - fuo play 晴天-周杰伦       # search and play
-        '''),
+        '''
+        ),
         formatter_class=argparse.RawTextHelpFormatter,
-        prog='feeluown')
+        prog='feeluown'
+    )
 
-    parser.add_argument('-V', '--version', action='version',
-                        version='%(prog)s {}'.format(feeluown_version))
-    parser.add_argument('-ns', '--no-server', action='store_true', default=False,
-                        help='不运行 server')
-    parser.add_argument('-nw', '--no-window', action='store_true', default=False,
-                        help='不显示 GUI')
+    parser.add_argument(
+        '-V',
+        '--version',
+        action='version',
+        version='%(prog)s {}'.format(feeluown_version)
+    )
+    parser.add_argument(
+        '-ns', '--no-server', action='store_true', default=False, help='不运行 server'
+    )
+    parser.add_argument(
+        '-nw', '--no-window', action='store_true', default=False, help='不显示 GUI'
+    )
 
     # options about log
-    parser.add_argument('-d', '--debug', action='store_true', default=False,
-                        help='开启调试模式')
-    parser.add_argument('-v', '--verbose', action='count',
-                        help='输出详细的日志')
-    parser.add_argument('--log-to-file', action='store_true', default=False,
-                        help='将日志打到文件中')
-
-    # XXX: 不知道能否加一个基于 regex 的 option？比如加一个
-    # `--mpv-*` 的 option，否则每个 mpv 配置我都需要写一个 option？
-
-    # TODO: 需要在文档中给出如何查看有哪些播放设备的方法
     parser.add_argument(
-        '--mpv-audio-device', help='（高级选项）指定播放设备')
+        '-d', '--debug', action='store_true', default=False, help='开启调试模式'
+    )
+    parser.add_argument('-v', '--verbose', action='count', help='输出详细的日志')
+    parser.add_argument(
+        '--log-to-file', action='store_true', default=False, help='将日志打到文件中'
+    )
+
+    # XXX: Not sure if it's possible to add a regex-based option?
+    # For example, a `--mpv-*` option, otherwise I’d need to write
+    # an option for each mpv configuration?
+
+    # TODO: Need to include in the documentation
+    # how to view the available playback devices.
+    parser.add_argument('--mpv-audio-device', help='（高级选项）指定播放设备')
     return parser
 
 

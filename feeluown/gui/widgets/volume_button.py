@@ -2,6 +2,7 @@ from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtGui import QPainter, QPalette
 from PyQt6.QtWidgets import QAbstractSlider
 
+from feeluown.i18n import t
 from feeluown.gui.drawers import VolumeIconDrawer
 from feeluown.gui.helpers import painter_save, darker_or_lighter
 
@@ -12,7 +13,7 @@ class VolumeButton(QAbstractSlider):
     def __init__(self, length=30, padding=0.25, parent=None):
         super().__init__(parent=parent)
 
-        self.setToolTip("调整音量")
+        self.setToolTip(t("volume-button-tooltip"))
 
         font = self.font()
         font.setPixelSize(length // 3)

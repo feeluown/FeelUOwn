@@ -6,7 +6,8 @@ from typing import Deque, Any
 from feeluown.server.excs import FuoSyntaxError
 
 
-# 注：下面很多正则都是从 jinja2/lexer.py 和 pygments/lexer.py 拷贝过来
+# Note: Many of the following regular expressions are
+# copied from jinja2/lexer.py and pygments/lexer.py
 TOKEN_NAME = sys.intern('name')
 TOKEN_FURI = sys.intern('furi')  # fuo uri
 TOKEN_STRING = sys.intern('string')
@@ -88,7 +89,7 @@ def get_state_expect(state):
 
 
 class Lexer:
-    """fuo 协议请求的词法分析器
+    """fuo protocol request lexical analyzer
 
     >>> list(token.value for token in Lexer().tokenize('play fuo://local'))
     ['play', 'fuo://local']
@@ -101,14 +102,18 @@ class Lexer:
     """
 
     def tokenize(self, source):  # pylint: disable=too-many-arguments,too-many-branches
+
         def err(msg, column):
             raise FuoSyntaxError(msg, text=source, column=column)
 
         pos = 0
-        # 栈是 lexer 实现时常用的一个数据结构
-        # 在处理括号是否闭合等场景十分有用，很多 lexer
-        # 实现时会给 token 带上 #pop 标记，这个标记也是用来配合栈的
+
+        # The stack is a data structure commonly used in lexer implementations
+        # It is very useful in scenarios such as handling whether parentheses are closed;
+        # many lexer implementations add a #pop marker to tokens;
+        # this marker is also used in conjunction with the stack.
         state_stack: Deque[str] = deque()
+
         state = 'root'
         while 1:
             for rule in state_rules[state]:

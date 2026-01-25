@@ -217,7 +217,7 @@ class ProviderUiItem:
 
     def __init__(self, name, text, symbol, desc, colorful_svg=None, provider=None):
         # pylint: disable=too-many-arguments,too-many-positional-arguments
-        # 如果需要，可以支持右键弹出菜单
+        # If needed, you can support a right-click pop-up menu
         self._name = name
         self.text = text
         self.symbol = symbol

@@ -5,7 +5,7 @@ from PyQt6.QtGui import QKeySequence as KS, QMouseEvent, QShortcut
 
 
 class HotkeyManager(QObject):
-    """集中管理各个组件的快捷键"""
+    """Centralized management of shortcuts for various components."""
 
     def __init__(self, app):
         super().__init__(app)

@@ -33,6 +33,7 @@ from PyQt6.QtWidgets import (
     QStyledItemDelegate,
 )
 
+from feeluown.i18n import t
 from feeluown.utils import aio
 from feeluown.utils.dispatch import Signal
 from feeluown.library import ModelState, ModelFlags, MediaFlags
@@ -112,11 +113,11 @@ class ColumnsConfig:
 def get_column_name(column):
     return {
         Column.index: "",
-        Column.song: "歌曲标题",
-        Column.artist: "歌手",
-        Column.album: "专辑",
-        Column.duration: "时长",
-        Column.source: "来源",
+        Column.song: t("track"),
+        Column.artist: t("musician"),
+        Column.album: t("album"),
+        Column.duration: t("track-duration"),
+        Column.source: t("track-source"),
     }[column]
 
 
@@ -392,8 +393,9 @@ class SongsTableModel(BaseSongsTableModel, ReaderFetchMoreMixin):
     def __init__(self, reader, **kwargs):
         """
 
-        :param songs: 歌曲列表
-        :param songs_g: 歌曲列表生成器（当歌曲列表生成器不为 None 时，忽略 songs 参数）
+        :param songs: list of songs
+        :param songs_g: song list generator (when the song list generator is not None,
+        ignore the songs parameter)
         """
         super().__init__(**kwargs)
         self._reader = reader
@@ -740,12 +742,12 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         menu = QMenu()
 
         # add to playlist action
-        add_to_playlist_action = QAction("添加到播放队列", menu)
+        add_to_playlist_action = QAction(t("add-to-playlist"), menu)
         add_to_playlist_action.triggered.connect(lambda: self._add_to_playlist(indexes))
         menu.addAction(add_to_playlist_action)
 
         # remove song action
-        remove_song_action = QAction("移除歌曲", menu)
+        remove_song_action = QAction(t("remove-from-playlist"), menu)
         remove_song_action.triggered.connect(lambda: self._remove_by_indexes(indexes))
         menu.addSeparator()
         menu.addAction(remove_song_action)

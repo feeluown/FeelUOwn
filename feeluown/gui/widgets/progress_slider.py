@@ -5,6 +5,7 @@ from PyQt6.QtWidgets import QSlider, QAbstractSlider
 
 from feeluown.player import State
 from feeluown.gui.helpers import IS_MACOS
+from feeluown.i18n import t
 
 
 class DraggingContext:
@@ -19,7 +20,7 @@ class ProgressSlider(QSlider):
         self._app = app
         self._dragging_ctx: Optional[DraggingContext] = None
 
-        self.setToolTip("拖动调节进度")
+        self.setToolTip(t("drag-to-seek-progress"))
         self.setRange(0, 0)  # User can't drag the slider control when range is empty.
         self.setOrientation(Qt.Orientation.Horizontal)
 

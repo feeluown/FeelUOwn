@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # pylint: disable=wrong-import-position
 """
-TODO: 这个模块中目前逻辑非常多，包括音乐目录扫描、音乐库的构建等小部分，
-这些小部分理论都可以从中拆除。
+TODO: The current logic in this module is very extensive,
+including small parts such as music directory scanning and music library construction;
+in theory, all these small parts can be extracted from it.
 """
 
 import difflib
@@ -13,6 +14,7 @@ from functools import wraps
 
 from feeluown.excs import ProviderIOError
 
+from feeluown.i18n import t
 from feeluown.media import Media, Quality
 from feeluown.library import AbstractProvider, ProviderV2, ModelType, SimpleSearchResult
 from feeluown.utils.reader import create_reader
@@ -41,7 +43,7 @@ def wait_for_scan(func):
 class LocalProvider(AbstractProvider, ProviderV2):
     class meta:
         identifier = SOURCE
-        name = '本地音乐'
+        name = t('local-tracks')
 
     def __init__(self):
         super().__init__()
@@ -79,7 +81,7 @@ class LocalProvider(AbstractProvider, ProviderV2):
 
     @property
     def name(self):
-        return '本地音乐'
+        return LocalProvider.meta.name
 
     def scan(self, config, paths, depth=3):
         exts = config.MUSIC_FORMATS

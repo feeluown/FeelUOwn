@@ -35,15 +35,15 @@ class Plugin:
     # pylint: disable=too-many-positional-arguments
     def __init__(self, module, alias='', version='', desc='',
                  author='', homepage='', dist_name=''):
-        """插件对象
+        """Plugin object
 
-        :param alias: 插件名
-        :param version: 插件版本
-        :param module: 插件模块对象，它有 enable 和 disable 方法
-        :param desc: 插件描述
-        :param author: 插件作者
-        :param homepage: 插件主页
-        :param dist_name: 插件发行版名字
+        :param alias: plugin name
+        :param version: plugin version
+        :param module: plugin module object, which has enable and disable methods
+        :param desc: plugin description
+        :param author: plugin author
+        :param homepage: plugin homepage
+        :param dist_name: plugin distribution name
         """
         # pylint: disable=too-many-arguments
 
@@ -60,13 +60,13 @@ class Plugin:
 
     @classmethod
     def create(cls, module):
-        """Plugin 工厂函数
+        """Plugin factory function
 
         :param module:
         :return:
         """
         try:
-            # alias, desc, version 为必需字段
+            # alias, desc, version are required fields
             alias = module.__alias__
             desc = module.__desc__
             _ = module.__version__  # noqa
@@ -178,7 +178,7 @@ class PluginsManager:
         self._plugins[plugin.name] = plugin
 
     def _scan_dirs(self):
-        """扫描插件目录中的插件"""
+        """Scan the plugins in the plugin directory"""
         if not os.path.exists(USER_PLUGINS_DIR):
             return
 
@@ -199,7 +199,7 @@ class PluginsManager:
                 self.load_plugin_from_module(module)
 
     def _scan_entry_points(self):
-        """扫描通过 setuptools 机制注册的插件
+        """Scan plugins registered via the setuptools mechanism
 
         https://packaging.python.org/guides/creating-and-discovering-plugins/
         """

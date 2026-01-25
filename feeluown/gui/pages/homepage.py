@@ -5,6 +5,7 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QGuiApplication
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
+from feeluown.i18n import t
 from feeluown.library import (
     SupportsRecListDailyPlaylists,
     SupportsRecACollectionOfSongs,
@@ -59,14 +60,16 @@ async def render(req, **kwargs):
 class FoldButton(TriagleButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.setToolTip("展开/收起")
+        self.setToolTip(t("fold-tooltip"))
         self.setCheckable(True)
         self.toggled.connect(self.on_toggled)
         # Checked means folded, and show down direction. Click to unfold.
         self.setChecked(True)
 
     def on_toggled(self, checked):
-        self.setToolTip("展开" if checked else "收起")
+        self.setToolTip(
+            t("fold-expand") if checked else t("fold-collapse"),
+        )
         self.set_direction("down" if checked else "up")
 
 
@@ -140,6 +143,7 @@ class Overview(QWidget):
 
         if self._app.ai is not None:
             from feeluown.gui.components.ai_radio_card import AIRadioCard
+
             self._ai_radio_card = AIRadioCard(self._app)
         else:
             self._ai_radio_card = None
@@ -159,11 +163,10 @@ class RecPlaylistsPanel(Panel):
     def __init__(self, app: "GuiApp", provider: SupportsRecListDailyPlaylists):
         self._provider = provider
         self._app = app
-        title = "推荐歌单"
+        title = t("recommended-playlist")
         self._initial_row_count = 2
         self.playlist_list_view = PlaylistCardListView(
-            no_scroll_v=True,
-            fixed_row_count=self._initial_row_count
+            no_scroll_v=True, fixed_row_count=self._initial_row_count
         )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, self.playlist_list_view, pixmap)
@@ -252,7 +255,7 @@ class SongsBasePanel(Panel, Generic[P]):
 
 class RecDailySongsPanel(SongsBasePanel[SupportsRecListDailySongs]):
     def __init__(self, app: "GuiApp", provider: SupportsRecListDailySongs):
-        super().__init__("每日推荐", app, provider)
+        super().__init__(t("recommended-daily-playlist"), app, provider)
 
     async def render(self):
         songs = await run_fn(self._provider.rec_list_daily_songs)
@@ -261,7 +264,7 @@ class RecDailySongsPanel(SongsBasePanel[SupportsRecListDailySongs]):
 
 class RecSongsPanel(SongsBasePanel[SupportsRecACollectionOfSongs]):
     def __init__(self, app: "GuiApp", provider: SupportsRecACollectionOfSongs):
-        super().__init__("随便听听", app, provider)
+        super().__init__(t("recommended-feelin-lucky"), app, provider)
 
     async def render(self):
         coll: Collection = await run_fn(self._provider.rec_a_collection_of_songs)
@@ -275,8 +278,7 @@ class RecVideosPanel(Panel):
         self._provider = provider
         self._initial_row_count = 2
         self.video_list_view = video_list_view = VideoCardListView(
-            no_scroll_v=True,
-            fixed_row_count=self._initial_row_count
+            no_scroll_v=True, fixed_row_count=self._initial_row_count
         )
         video_list_view.setItemDelegate(
             VideoCardListDelegate(
@@ -285,7 +287,7 @@ class RecVideosPanel(Panel):
             )
         )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
-        super().__init__("瞅瞅", video_list_view, pixmap)
+        super().__init__(t("recommended-videos"), video_list_view, pixmap)
 
         # Connect the fold_unfold_btn to show more or less videos
         self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
@@ -305,7 +307,7 @@ class RecVideosPanel(Panel):
             self.video_list_view.setModel(model)
             self.header.setText(coll.name)
         else:
-            self.header.setText("暂无推荐视频")
+            self.header.setText(t("recommended-videos-missing"))
             self.video_list_view.hide()
 
 

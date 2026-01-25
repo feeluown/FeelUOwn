@@ -9,19 +9,24 @@ logger = logging.getLogger(__name__)
 class TcpServer(object):
     """A simple asyncio TCP server
 
-    使用 loop 的 sock_accept/sock_sendall/sock_recv 等方法来实现，
-    这些方法相对都比较 low-level。
+    This implementation is based on low-level event loop APIs such as
+    `loop.sock_accept`, `loop.sock_sendall`, and `loop.sock_recv`.
 
-    asyncio 也提供了 ``loop.create_server`` 方法创建一个 server，然后使用
-    StreamReader 和 StreamWriter 来进行读写，整体来说更加 high level。
-    StreamReader 封装了类似 readline/readuntil 等方法，使用起来很方便。
-    StreamWriter 有一个自己的 buffer，所以调用 write 方法时，
-    它没有真正的将数据写给操作系统，在 3.7 之前，它似乎都没有很好的办法来确保这一点。
-    不过它有个 drain 方法来将 buffer 中的一部分数据 flush 到操作系统。
+    Asyncio also provides `loop.create_server` for creating a server, together with
+    `StreamReader` and `StreamWriter` for I/O, which is overall a more high-level
+    abstraction. `StreamReader` wraps convenient methods such as `readline` and
+    `readuntil`, making it easier to use.
 
-    总体来说，个人目前更喜欢这个 TcpServer 的实现，接口非常明确，
-    和阻塞的 socket 使用起来特别像。而 asyncio 提供的那一套用起来不直观，
-    不过现在 feeluown 中使用的正是 asyncio 这一套，大概是强迫症。
+    `StreamWriter` maintains its own internal buffer, so calling `write()` does not
+    immediately send data to the operating system. Prior to Python 3.7, there was
+    no particularly good way to reliably ensure this behavior. However, it does
+    provide a `drain()` method to flush part of the buffered data to the OS.
+
+    Overall, I personally prefer this `TcpServer` implementation. Its interface is
+    very explicit and feels much closer to using blocking sockets. The asyncio
+    stream-based API, on the other hand, is less intuitive to me. That said, the
+    current implementation in FeelUOwn does use asyncio streams—probably due to a
+    bit of personal perfectionism.
     """
 
     def __init__(self, host, port, handle_func):

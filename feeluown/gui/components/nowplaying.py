@@ -19,6 +19,7 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListView,
     SongMiniCardListModel,
 )
+from feeluown.i18n import t
 from feeluown.library import SupportsSongHotComments, SupportsSongSimilar
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.reader import create_reader
@@ -66,7 +67,7 @@ class MVWrapper(QWidget):
 
         self._layout = QHBoxLayout(self)
         self.mv_btn = MVButton(length=20, parent=self)
-        self.mv_btn.setToolTip("播放歌曲 MV")
+        self.mv_btn.setToolTip(t("track-movie-play-tooltip"))
 
         self.mv_btn.setPalette(palette)
         self._layout.addWidget(self.mv_btn)
@@ -126,7 +127,7 @@ class NowplayingArtwork(QWidget):
         metadata = metadata or {}
         released = metadata.get("released", "")
         if released:
-            self.setToolTip(f"专辑发行日期：{released}")
+            self.setToolTip(t("track-album-release-date", releaseDate=released))
         else:
             self.setToolTip("")
         # Set song artwork.

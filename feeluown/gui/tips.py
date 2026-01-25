@@ -2,6 +2,7 @@ import random
 
 from feeluown.utils import aio
 from feeluown.app import App
+from feeluown.i18n import t
 
 # (nickname, name), no order.
 # Write your Chinese(or other languages) name if you want.
@@ -50,16 +51,16 @@ Contributors = [
 
 
 class TipsManager:
-    """在合适的时候展示一些使用 Tip"""
+    """Display some usage tips at appropriate times."""
 
     tips = [
-        "你知道 FeelUOwn 可以配合 osdlyrics 使用吗?",
-        "搜索快捷键是 Ctrl + F",
-        "在搜索框输入“>>> app.tips_mgr.show_random()”查看更多 Tips",
-        "专辑图片上右键可以查看原图哦 ~",
-        "可以拖动歌曲来将歌曲添加到歌单呐！",
-        "鼠标悬浮或右键常有惊喜 ~",
-        "开启 watch 模式一边看 MV，一边工作学习香不香？",
+        t("tips-osdlyrics"),
+        t("tips-search-shortcut", shortcut="Ctrl + F"),
+        t("tips-show-more-tips"),
+        t("tips-album-original-image"),
+        t("tips-track-drag-to-playlist"),
+        t("tips-common-tooltip"),
+        t("tips-watch-mode"),
     ]
 
     def __init__(self, app: App):
@@ -76,7 +77,7 @@ class TipsManager:
                 user = f"{name} (@{nickname})"
             else:
                 user = f"@{nickname}"
-            msg = f"感谢 {user} 的贡献 :)"
+            msg = t("thanks-contributor", user=user)
             self._app.show_msg(msg, timeout=2500)
 
     def show_random_after_5s(self, *_):

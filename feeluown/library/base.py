@@ -28,12 +28,12 @@ class ModelType(IntEnum):
 
 
 class MediaFlags(IntFlag):
-    not_sure = 0b10000000  # 不确定
-    not_exists = 0b00  # 不存在相关资源
-    sample = 0b01  # 存在试听片段
-    free = 0b10  # 存在免费的完整资源
-    vip = 0b100  # 存在资源，不免费，vip 可用
-    pay = 0b1000  # 存在资源，不免费，付费可用
+    not_sure = 0b10000000  # Uncertain
+    not_exists = 0b00      # No relevant resources exist
+    sample = 0b01          # Preview clip exists
+    free = 0b10            # Full resource available for free
+    vip = 0b100            # Resource exists, not free, VIP accessible
+    pay = 0b1000           # Resource exists, not free, Paid access
 
 
 class SearchType(Enum):
@@ -102,10 +102,13 @@ class SearchType(Enum):
 class AlbumType(Enum):
     """Album type enumeration
 
-    中文解释::
+    Explanation::
 
-        Single 和 EP 会有一些交集，在展示时，会在一起展示，比如 Singles & EPs。
-        Compilation 和 Retrospective 也会有交集，展示时，也通常放在一起，统称“合辑”。
+    Single and EP have some overlap, and when displayed, they are shown together,
+    for example, Singles & EPs.
+
+    Compilation and Retrospective also overlap, and when displayed,
+    they are usually shown together, collectively referred to as "Compilation".
 
     References:
 
@@ -120,6 +123,8 @@ class AlbumType(Enum):
     live = 'live'
 
     compilation = 'compilation'
+    """compilation album"""
+
     retrospective = 'retrospective'
 
     @classmethod

@@ -46,11 +46,11 @@ def set_fg_color(palette, color):
 
 
 Tooltip = """
-* 右键可以弹出设置菜单
-* Ctrl+= 或者 Ctrl++ 可以增大字体
-* Ctrl+- 可以减小字体
-* 鼠标前进后退键可以播放前一首/下一首
-* ESC 键可以关闭此歌词窗口
+* Right-click can pop up the settings menu
+* Ctrl+= or Ctrl++ can increase font size
+* Ctrl+- can decrease font size
+* Mouse forward/back buttons can play the previous/next track
+* ESC key can close this lyrics window
 """
 
 

@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from PyQt6.QtCore import pyqtSignal, Qt
 from PyQt6.QtWidgets import QAbstractItemView, QMenu
 
+from feeluown.i18n import t
 from feeluown.collection import CollectionType, Collection
 from feeluown.gui.widgets.textlist import TextlistModel, TextlistView
 
@@ -48,15 +49,17 @@ class CollectionListView(TextlistView):
 
         collection: Collection = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
-        action = menu.addAction("删除此收藏集")
+        action = menu.addAction(t("remove-this-collection"))
         action.triggered.connect(lambda: self.remove_collection.emit(collection))
         menu.exec(event.globalPos())
 
     # dragEnterEvent -> dragMoveEvent -> dropEvent
     def dragEnterEvent(self, e):
         """
-        在这里仅判断此次 drag 的对象是否有效，如果无效，则忽略这个事件。
-        之后 dropMoveEvent 也就不会接收到这个事件。
+        Here we only check whether the dragged object this time is valid.
+        If it is invalid, ignore this event.
+
+        Then dropMoveEvent will not receive this event either.
         """
         mimedata = e.mimeData()
         if mimedata.hasFormat("fuo-model/x-song") or mimedata.hasFormat(
@@ -68,8 +71,9 @@ class CollectionListView(TextlistView):
 
     def dragMoveEvent(self, e):
         """
-        由于鼠标移动时，可能会移动到非 collection item 的地方，
-        所以在这里判断当前位置对应的 model index 是否符合条件。
+        Because when moving the mouse, it may move to an area that is not
+        a collection item, so here we check whether the model index at
+        the current position meets the conditions.
         """
         # pylint: disable=all
         index = self.indexAt(e.position().toPoint())

@@ -75,9 +75,10 @@ def darker_or_lighter(color: QColor, factor):
 
 
 async def async_run(func, loop=None, executor=None):
-    """异步的获取 model 属性值
+    """Asynchronously obtain the model attribute value
 
-    值得注意的是，如果 executor 消费队列排队了，这个会卡住。
+    It is worth noting that
+    if the executor consumption queue is backed up, this will hang.
     """
     if loop is None:
         loop = asyncio.get_event_loop()
@@ -291,7 +292,7 @@ class ItemViewNoScrollMixin:
     def adjust_height(self):
         if self._no_scroll_v is False:
             # There must an implementation bug if we reach here.
-            logger.error('should not adjust height when no_scroll_v is False')
+            logger.error("should not adjust height when no_scroll_v is False")
 
         if self.model() is None:
             return
