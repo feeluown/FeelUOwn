@@ -115,18 +115,17 @@ hide-picture-in-picture = Exit { picture-in-picture } mode
 
 # feeluown.gui.components.avatar
 # ----------------------------------------
-login-third-party = Login to a third-party platform
-some-platform-already-logged = Logged
-switch-third-party-account = Change the account
-switch-music-platform = Change the platform
+add-profile = Add profile
+select-profile = Select profile
+switch-profile = Switch profile
 
-## platforms: providers' name conjucted by a comma
-## platformsCount: amount of logged providers
+## profiles: profiles' name conjucted by a comma
+## profileCount: amount of profiles
 
-logged-accounts-tooltip =
-    Logged: { $platformsCount ->
+profiles-tooltip =
+    Profiles: { $profileCount ->
         [0] None
-       *[other] { $platforms }
+       *[other] { $profiles }
     }
 # feeluown.gui.components.btns
 # ----------------------------------------

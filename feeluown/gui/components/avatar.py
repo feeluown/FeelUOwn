@@ -35,7 +35,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
     a current user, this tries to show the user avatar.
     """
 
-    default_text = t("login-third-party")
+    default_text = t("add-profile")
 
     def __init__(self, app: "GuiApp", *args, **kwargs):
         super().__init__(self.default_text, *args, **kwargs)
@@ -53,7 +53,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
         self._avatar_translate_x = -self._avatar_padding
         self._icon_drawer = AvatarIconDrawer(self.height(), self._padding)
         self.clicked.connect(self.on_clicked)
-        self.setToolTip(t("switch-music-platform"))
+        self.setToolTip(t("switch-profile"))
 
         self._app.library.provider_added.connect(self.on_provider_added)
 
@@ -87,7 +87,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 self._logging_state.pop(provider.identifier, None)
             if not self._app.current_pvd_ui_mgr.get():
                 if self._logging_state:
-                    self._text = t("some-platform-already-logged")
+                    self._text = t("select-profile")
                 else:
                     self._text = self.default_text
                 self.setToolTip(self._text)  # refresh tooltip
@@ -107,7 +107,7 @@ class Avatar(SelfPaintAbstractIconTextButton):
             current_pvd_ui.context_menu_add_items(menu)
 
         # Create a submenu for "切换账号"
-        menu.addSection(t("switch-third-party-account"))
+        menu.addSection(t("switch-profile"))
         switch_account_menu = menu
 
         for item in self._app.pvd_uimgr.list_items():
@@ -210,9 +210,9 @@ class Avatar(SelfPaintAbstractIconTextButton):
         providers = ','.join(providers_lst)
 
         notes = t(
-            "logged-accounts-tooltip",
-            platforms=providers,
-            platformsCount=providers_count,
+            "profiles-tooltip",
+            profiles=providers,
+            profileCount=providers_count,
         )
         super().setToolTip(text + "\n\n" + notes)
 
