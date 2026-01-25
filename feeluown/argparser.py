@@ -2,6 +2,8 @@ import argparse
 import textwrap
 from functools import partial
 
+from feeluown.i18n import t
+
 
 def create_fmt_parser():
     fmt_parser = argparse.ArgumentParser(add_help=False)
@@ -60,12 +62,12 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
         formatter_class=argparse.RawTextHelpFormatter,
         parents=parents,
     )
-    remove_parser = add_parser("remove", help="从播放列表移除歌曲")
-    add_parser_ = add_parser("add", help="添加歌曲到播放列表")
+    remove_parser = add_parser("remove", help=t("command-track-remove"))
+    add_parser_ = add_parser("add", help=t("command-track-add"))
     exec_parser = add_parser("exec")
     jsonrpc_parser = add_parser("jsonrpc")
-    add_parser("pause", help="暂停播放")
-    add_parser("resume", help="回复播放")
+    add_parser("pause", help=t("command-playback-pause"))
+    add_parser("resume", help=t("command-playback-resume"))
     add_parser("toggle", help="")
     add_parser("stop")
     add_parser("next")
@@ -80,7 +82,7 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
     show_parser.add_argument("uri")
     remove_parser.add_argument("uri")
     add_parser_.add_argument("uri", nargs="?")
-    search_parser.add_argument("keyword", help="搜索关键字")
+    search_parser.add_argument("keyword", help=t("command-search"))
     search_parser.add_argument("-s", "--source", action="append")
     search_parser.add_argument(
         "--type",
@@ -88,8 +90,8 @@ def add_common_cmds(subparsers: argparse._SubParsersAction):
         type=str,
         choices=["song", "album", "artist", "video", "playlist"],
     )
-    exec_parser.add_argument("code", nargs="?", help="Python 代码")
-    jsonrpc_parser.add_argument("body", nargs="?", help="JSON-RPC 请求体")
+    exec_parser.add_argument("code", nargs="?", help=t("command-exec-code"))
+    jsonrpc_parser.add_argument("body", nargs="?", help=t("command-jsonrpc-body"))
 
 
 def add_cli_cmds(subparsers: argparse._SubParsersAction):
@@ -165,19 +167,39 @@ def _create_cli_parser() -> argparse.ArgumentParser:
         version="%(prog)s {}".format(feeluown_version),
     )
     parser.add_argument(
-        "-ns", "--no-server", action="store_true", default=False, help="不运行 server"
+        "-ns",
+        "--no-server",
+        action="store_true",
+        default=False,
+        help=t("cli-no-server"),
     )
     parser.add_argument(
-        "-nw", "--no-window", action="store_true", default=False, help="不显示 GUI"
+        "-nw",
+        "--no-window",
+        action="store_true",
+        default=False,
+        help=t("cli-no-window"),
     )
 
     # options about log
     parser.add_argument(
-        "-d", "--debug", action="store_true", default=False, help="开启调试模式"
+        "-d",
+        "--debug",
+        action="store_true",
+        default=False,
+        help=t("cli-debug-mode"),
     )
-    parser.add_argument("-v", "--verbose", action="count", help="输出详细的日志")
     parser.add_argument(
-        "--log-to-file", action="store_true", default=False, help="将日志打到文件中"
+        "-v",
+        "--verbose",
+        action="count",
+        help=t("cli-verbose"),
+    )
+    parser.add_argument(
+        "--log-to-file",
+        action="store_true",
+        default=False,
+        help=t("cli-log-to-file"),
     )
 
     # XXX: Not sure if it's possible to add a regex-based option?
@@ -186,7 +208,10 @@ def _create_cli_parser() -> argparse.ArgumentParser:
 
     # TODO: Need to include in the documentation
     # how to view the available playback devices.
-    parser.add_argument("--mpv-audio-device", help="（高级选项）指定播放设备")
+    parser.add_argument(
+        "--mpv-audio-device",
+        help=t("cli-mpv-audio-device"),
+    )
     return parser
 
 
