@@ -30,10 +30,10 @@ warn = { -warn }
 -track = { $capitalization ->
    *[any] 歌曲
 }
-track = {-track}
+track = { -track }
 
 ## Note: this is for playlists from online providers
-## while {playlist} is for tracks play queue.
+## while { playlist } is for tracks play queue.
 -track-list = { $plural ->
    *[any] 歌单
 }
@@ -147,7 +147,7 @@ play-stage-prepare-track-url = 正在获取{ -track }播放链接...
 play-stage-prepare-track-url-fallback = 尝试寻找备用播放链接...
 play-stage-prepare-track-metadata = 尝试获取完整的{ -track }元信息...
 play-stage-prepare-track-loading = 正在加载{ -track }资源...
-play-stage-prepare-movie-url = 正在获取音乐的{video}播放链接...
+play-stage-prepare-movie-url = 正在获取音乐的{ video }播放链接...
 
 # feeluown.gui.components.menu
 # ----------------------------------------
@@ -254,8 +254,8 @@ album-release-date = { $trackCount ->
 
 # feeluown.gui.widgets.labels
 # ----------------------------------------
-error-message-prefix = {-error}：
-info-message-prefix = {-info}：
+error-message-prefix = { -error }：
+info-message-prefix = { -info }：
 
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
@@ -332,7 +332,7 @@ cookies-loading-existing-user = 正在尝试加载已有用户...
 # ----------------------------------------
 play-all-button = 播放全部
 play-all-button-fetching = 获取所有歌曲...
-play-all-button-fetch-done = {play-all-button-fetching} 完成
+play-all-button-fetch-done = { play-all-button-fetching } 完成
 
 album-filter-all = 所有{ -album }
 album-filter-standard = 标准
@@ -455,7 +455,7 @@ collections-header-tooltip =
     每个{ -track-collection }都以一个独立 .fuo 文件的存在，将鼠标悬浮在{ -track-collection }上，可以查看文件所在路径。
     新建 fuo 文件，则可以新建{ -track-collection }，文件名即是{ -track-collection }的名字。
 
-    手动编辑 fuo 文件即可编辑{ -track-collection }中的音乐资源，也可以在界面上拖拽来增删{-track}。
+    手动编辑 fuo 文件即可编辑{ -track-collection }中的音乐资源，也可以在界面上拖拽来增删{ -track }。
 ai-configure-tooltip =
     你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了
     config.OPENAI_API_KEY = sk-xxx
@@ -481,7 +481,7 @@ my-favorite-button = { my-favorite-title }
 my-playlists = { -track-list }列表
 my-tracks = 我的音乐
 provider-unknown-tooltip = 当前{ -provider }未知
-fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和{-local-favorites}” 功能
+fold-top-tooltip = { fold-collapse }/{ fold-expand } “主页和{ -local-favorites }” 功能
 
 ## providerName: [string] name of the provider
 provider-recommended-page-enter = 点击进入 { $providerName } 推荐页
@@ -546,13 +546,13 @@ remove-item-succeed = 移除 { $item } 成功
 # ----------------------------------------
 fold-expand = 展开
 fold-collapse = 收起
-fold-tooltip = {fold-expand}/{fold-collapse}
+fold-tooltip = { fold-expand }/{ fold-collapse }
 
 recommended-playlist = 推荐歌单
 recommended-daily-playlist = 每日推荐
 recommended-feelin-lucky = 随便听听
 recommended-videos = 瞅瞅
-recommended-videos-missing = 暂无推荐{video}
+recommended-videos-missing = 暂无推荐{ video }
 
 # feeluown.gui.pages.my_dislike
 # ----------------------------------------
@@ -576,10 +576,10 @@ provider-unsupported = 当前{ -provider }（{ $providerName}）不支持展示{
 ##    video
 provider-missing-favorite = 当前{ -provider }（{ $providerName }）不支持获取 收藏的{ $mediaType ->
     [track] { -track }
-    [album] {album}
-    [singer] {musician}
+    [album] { album }
+    [singer] { musician }
     [playlist] { -track-list }
-    [video] {video}
+    [video] { video }
    *[other] 内容
 }
 provider-unknown-cannot-view = 当前{ -provider }未知，无法浏览该页面

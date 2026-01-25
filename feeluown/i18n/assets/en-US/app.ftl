@@ -42,7 +42,7 @@ warn = { -warn }
 track = { -track(capitalization: "uppercase") }
 
 ## Note: this is for playlists from online providers
-## while {playlist} is for tracks play queue.
+## while { playlist } is for tracks play queue.
 -track-list = { $plural ->
     [plural] Playlists
    *[singular] Playlist
@@ -181,7 +181,7 @@ menu-ai-copy-prompt-succeed = Copied to clipboard
 # feeluown.gui.components.nowplaying
 # ----------------------------------------
 track-movie-play-tooltip = Play { -track } MV
-track-album-release-date = { -album(capitalization: "uppercase") } {release-date}: { $releaseDate }
+track-album-release-date = { -album(capitalization: "uppercase") } { release-date }: { $releaseDate }
 # feeluown.gui.components.player_playlist
 # ----------------------------------------
 fm-radio-current-song-dislike = Dislike
@@ -349,7 +349,7 @@ cookies-loading-existing-user = Trying to load existing user...
 # ----------------------------------------
 play-all-button = Play All
 play-all-button-fetching = Fetching all songs...
-play-all-button-fetch-done = {play-all-button-fetching} done
+play-all-button-fetch-done = { play-all-button-fetching } done
 
 album-filter-all = All { -album }s
 album-filter-standard = Standard
@@ -456,7 +456,7 @@ collections-header-tooltip =
     Creating a new .fuo file creates a new { -track-collection }; the filename is the { -track-collection }’s name.
 
     You can manually edit the .fuo file to edit the music resources in the { -track-collection },
-    or drag and drop {-track}s in the interface to add or remove them.
+    or drag and drop { -track }s in the interface to add or remove them.
 ai-configure-tooltip =
     You need to install the Python third-party library openai,
     and configure the following settings to use the AI assistant
@@ -469,7 +469,7 @@ collection-title = Title
 
 ## collectionName: [string] title/name of the collection
 collection-already-exists = { -track-collection(capitalization: "uppercase") } '{ $collectionName }' already exists
-collection-confirm-remove = Confirm to delete the {-track-collection} '{ $collectionName }'?
+collection-confirm-remove = Confirm to delete the { -track-collection } '{ $collectionName }'?
 
 # feeluown.gui.uimain.toolbar
 # ----------------------------------------
