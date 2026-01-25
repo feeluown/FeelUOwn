@@ -305,5 +305,5 @@ if __name__ == "__main__":
     app = QApplication([])
     widget = CookiesLoginDialog()
     widget.show()
-    widget.show_hint("格式可能不正确", color="orange")
+    widget.show_hint("Format might be incorrect", color="orange")
     app.exec()

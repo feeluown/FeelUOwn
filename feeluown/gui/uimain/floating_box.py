@@ -306,7 +306,7 @@ if __name__ == "__main__":
     box.setWindowFlags(Qt.WindowType.FramelessWindowHint)
     box.setAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
     box.circle.show_img(img)
-    box.toolbar.line_song_label.setText("哈哈哈 - 嘿嘿")
+    box.toolbar.line_song_label.setText("Haha - hehe")
     box.show()
     box.move(600, 400)
     theme_mgr.load_light()
