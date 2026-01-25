@@ -226,6 +226,10 @@ track-fallback-failed = { -provider(capitalization: "uppercase") } “{ $provide
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.cover_label
+# ----------------------------------------
+show-original-image = Show original
+
 # feeluown.gui.widgets.labels
 # ----------------------------------------
 error-message-prefix = { -error }:{ " " }

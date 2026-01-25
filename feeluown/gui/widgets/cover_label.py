@@ -5,6 +5,7 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QPainter, QImage
 from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu
 
+from feeluown.i18n import t
 from feeluown.gui.drawers import PixmapDrawer
 from feeluown.gui.image import open_image
 
@@ -50,7 +51,7 @@ class CoverLabel(QLabel):
         if self.drawer.get_img() is None:
             return
         menu = QMenu()
-        action = menu.addAction("查看原图")
+        action = menu.addAction(t("show-original-image"))
         action.triggered.connect(lambda: open_image(self.drawer.get_img()))
         menu.exec(e.globalPos())
 

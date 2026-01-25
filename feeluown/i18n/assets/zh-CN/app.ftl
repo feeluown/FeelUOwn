@@ -228,6 +228,10 @@ track-fallback-failed = 提供方 “{ $providerName }” 没有找到可用的�
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.cover_label
+# ----------------------------------------
+show-original-image = 查看原图
+
 # feeluown.gui.widgets.labels
 # ----------------------------------------
 error-message-prefix = {-error}：
