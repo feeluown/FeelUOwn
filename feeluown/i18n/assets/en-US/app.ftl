@@ -388,6 +388,11 @@ remove-from-playlist = Remove { -track }
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.uimain.player_bar
+# ----------------------------------------
+## released: [string]
+album-released-at = { -album(capitalization: "uppercase") } released at: { $released }
+
 # feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = Clear { playlist }

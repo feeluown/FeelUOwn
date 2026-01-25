@@ -174,7 +174,7 @@ class PlayerControlPanel(QFrame):
         metadata = metadata or {}
         released = metadata.get("released", "")
         if released:
-            self.cover_label.setToolTip(f"专辑发行日期：{released}")
+            self.cover_label.setToolTip(t("album-released-at", released=released))
         else:
             self.cover_label.setToolTip("")
         # Set song artwork.

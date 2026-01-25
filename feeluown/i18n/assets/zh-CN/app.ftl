@@ -393,6 +393,10 @@ remove-from-playlist = 移除{ -track }
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.uimain.player_bar
+# ----------------------------------------
+album-released-at = 专辑发行日期：{ $released }
+
 # feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = 清空{ playlist }
