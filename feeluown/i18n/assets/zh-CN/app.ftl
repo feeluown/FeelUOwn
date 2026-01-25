@@ -598,6 +598,13 @@ tray-skip-track-prev = 上一首
 
 tray-quit-application = 退出
 
+# feeluown.player
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.player.fm
+# ----------------------------------------
+track-radio-not-enough = 电台返回{ -track }不足，退出 FM 模式
+
 # feeluown.player.playlist
 # ----------------------------------------
 ## errorMessage: [string]

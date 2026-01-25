@@ -33,8 +33,11 @@ warn = { -warn }
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
-    [uppercase] Track
-   *[lowercase] track
+    [uppercase] Trac
+   *[lowercase] trac
+}{ $plural ->
+    [plural] ks
+    *[singular] k
 }
 track = { -track(capitalization: "uppercase") }
 
@@ -597,6 +600,13 @@ tray-skip-track-next = Next
 tray-skip-track-prev = Previous
 
 tray-quit-application = Quit
+
+# feeluown.player
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.player.fm
+# ----------------------------------------
+track-radio-not-enough = No enough { -track(plural: "plural") }, exiting FM mode
 
 # feeluown.player.playlist
 # ----------------------------------------

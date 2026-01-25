@@ -5,6 +5,7 @@ import logging
 
 from feeluown.excs import ProviderIOError
 from feeluown.player import PlaylistMode
+from feeluown.i18n import t
 
 if TYPE_CHECKING:
     from feeluown.app import App
@@ -27,7 +28,7 @@ class FM:
         maybe a bit confusing.
     """
 
-    def __init__(self, app: 'App'):
+    def __init__(self, app: "App"):
         """
         :type app: feeluown.app.App
         """
@@ -35,7 +36,7 @@ class FM:
 
         self._activated = False
         self._is_fetching_songs = False
-        self._fetch_songs_task_name = 'fm-fetch-songs'
+        self._fetch_songs_task_name = "fm-fetch-songs"
         self._fetch_songs_func = None  # fn(number_to_fetch)
         self._minimum_per_fetch = 3
 
@@ -55,7 +56,7 @@ class FM:
            The *reset* parameter.
         """
         if self.is_active:
-            logger.warning('fm already actiavted')
+            logger.warning("fm already actiavted")
             return
         self._fetch_songs_func = fetch_songs_func
         self._app.playlist.eof_reached.connect(self._on_playlist_eof_reached)
@@ -64,7 +65,7 @@ class FM:
             self._app.playlist.clear()
             self._app.playlist.next()
             self._app.player.resume()
-        logger.info('fm mode actiavted')
+        logger.info("fm mode actiavted")
 
     def deactivate(self):
         """deactivate fm mode"""
@@ -86,7 +87,8 @@ class FM:
         self._is_fetching_songs = True
         task_spec = self._app.task_mgr.get_or_create(self._fetch_songs_task_name)
         task = task_spec.bind_blocking_io(
-            self._fetch_songs_func, self._minimum_per_fetch)
+            self._fetch_songs_func, self._minimum_per_fetch
+        )
         task.add_done_callback(self._on_songs_fetched)
 
     def _on_playlist_mode_changed(self, mode):
@@ -95,10 +97,10 @@ class FM:
         self._on_playlist_fm_mode_exited()
 
     def _on_playlist_fm_mode_exited(self):
-        """when playlist fm mode exited, """
+        """when playlist fm mode exited,"""
         self._app.playlist.eof_reached.disconnect(self._on_playlist_eof_reached)
         self._fetch_songs_func = None
-        logger.info('fm mode deactivated')
+        logger.info("fm mode deactivated")
 
     def _feed_playlist(self, songs):
         for song in songs:
@@ -109,13 +111,13 @@ class FM:
         try:
             songs = future.result()
         except asyncio.CancelledError:
-            logger.exception('fm-fetch-songs task is cancelled')
+            logger.exception("fm-fetch-songs task is cancelled")
         except ProviderIOError:
-            logger.exception('fm-fetch-songs io error')
+            logger.exception("fm-fetch-songs io error")
         else:
             if len(songs) < self._minimum_per_fetch:
-                logger.info('No enough songs, exit fm mode now')
-                self._app.show_msg('电台返回歌曲不足，退出 FM 模式')
+                logger.info(t("track-radio-not-enough", locale="en-US"))
+                self._app.show_msg(t("track-radio-not-enough"))
                 self.deactivate()
             else:
                 self._feed_playlist(songs)
