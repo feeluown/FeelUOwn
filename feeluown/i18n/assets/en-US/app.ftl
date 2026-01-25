@@ -164,7 +164,7 @@ track-show-artist = View { musician }
 track-show-album = View { album }
 track-enter-radio = { -track(capitalization: "uppercase") } Radio
 track-show-detail = { -track(capitalization: "uppercase") } Details
-track-playlist-add = Add to { playlist }
+track-playlist-add = Add to { -track-list }
 track-playlist-add-succ = Added to { $playlistName } ✅
 track-playlist-add-fail = Failed to add to { $playlistName } ❌
 track-movie-missing = No MV for this { -track }
@@ -251,7 +251,13 @@ volume-button-tooltip = Adjust volume
 
 # feeluown.gui.widgets.playlists
 # ----------------------------------------
-remove-this-playlist = Remove this { -track-list }
+track-list-remove = Remove this { -track-list }
+
+# status: [string], 'succ' for success, 'fail' for failure
+playlist-add-track = Add { -track } to { playlist }{ $status ->
+    [succ] succeed
+   *[fail] failed
+}
 
 # feeluown.gui.widgets.provider
 # ----------------------------------------

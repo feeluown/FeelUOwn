@@ -160,7 +160,7 @@ track-show-album = 查看{ album }
 track-enter-radio = { -track }电台
 track-show-detail = { -track }详情
 
-track-playlist-add = 加入到{ playlist }
+track-playlist-add = 加入到{ -track-list }
 track-playlist-add-succ = 已加入到{ $playlistName }✅
 track-playlist-add-fail = 加入到{ $playlistName } 失败 ❌
 
@@ -354,7 +354,13 @@ volume-button-tooltip = 调整音量
 
 # feeluown.gui.widgets.playlists
 # ----------------------------------------
-remove-this-playlist = 删除此{ -track-list }
+track-list-remove = 删除此{ -track-list }
+
+# status: [string], 'succ' for success, 'fail' for failure
+playlist-add-track = 添加{ -track }到{ playlist }{ $status ->
+    [succ] 成功
+   *[fail] 失败
+}
 
 # feeluown.gui.widgets.provider
 # ----------------------------------------
