@@ -249,6 +249,10 @@ emoji-expression = Emoji
 # ----------------------------------------
 volume-button-tooltip = Adjust volume
 
+# feeluown.gui.widgets.provider
+# ----------------------------------------
+logged = Logged-in
+
 # feeluown.gui.widgets.progress_slider
 # ----------------------------------------
 drag-to-seek-progress = Drag to seek
@@ -385,7 +389,7 @@ lyric-background-color = Background color
 lyric-text-color = Text color
 lyric-font = Font
 lyric-show-bilingual = Bilingual lyrics
-lyric-window-auto-resize = Auto resize 
+lyric-window-auto-resize = Auto resize
 
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------

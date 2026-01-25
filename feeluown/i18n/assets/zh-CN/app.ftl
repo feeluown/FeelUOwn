@@ -352,6 +352,10 @@ meta-amount-songs = { $songsCount ->
 # ----------------------------------------
 volume-button-tooltip = 调整音量
 
+# feeluown.gui.widgets.provider
+# ----------------------------------------
+logged = 已登录
+
 # feeluown.gui.widgets.progress_slider
 # ----------------------------------------
 drag-to-seek-progress = 拖动调节进度
