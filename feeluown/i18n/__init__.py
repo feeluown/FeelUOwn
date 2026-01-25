@@ -104,7 +104,7 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
             bundle = FluentLocalization(
                 # add en-US, zh-CN for fallback
                 locales=locales_to_load,
-                resource_ids=["app.ftl", "argparser.ftl"],
+                resource_ids=["app.ftl", "argparser.ftl", "config.ftl"],
                 resource_loader=res_loader,
             )
 
