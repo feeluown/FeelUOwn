@@ -4,6 +4,16 @@ from qasync import QEventLoop, QThreadExecutor, AllEvents
 from PyQt6.QtWidgets import QApplication
 
 
+try:
+    from qasync import DefaultQEventLoopPolicy
+except ImportError:
+    # From qasync>=0.28, the class DefaultQEventLoopPolicy is removed
+    # when python version >= 3.12
+    class DefaultQEventLoopPolicy(asyncio.DefaultEventLoopPolicy):
+        def new_event_loop(self):
+            return QEventLoop(QApplication.instance() or QApplication(['FeelUOwn']))
+
+
 # Work around Python 3.14 running-loop checks triggered by qasync shutdown.
 class PatchedQEventLoop(QEventLoop):
     def run_until_complete(self, future):
