@@ -13,6 +13,7 @@ from PyQt6.QtWidgets import (
     QWidget,
 )
 
+from feeluown.i18n import t
 from feeluown.gui.helpers import palette_set_bg_color
 from feeluown.gui.widgets.textbtn import TextButton
 
@@ -164,11 +165,11 @@ class ChatInputWidget(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent=parent)
         self._editor = ChatInputEditor(self)
-        self._editor.setPlaceholderText("和助手聊聊")
+        self._editor.setPlaceholderText(t("ai-chat-input-placeholder"))
         self._editor.setFrameShape(QFrame.Shape.NoFrame)
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
-        self._send_btn = TextButton("发送")
+        self._send_btn = TextButton(t("ai-chat-send-button"))
 
         self._editor.enter_pressed.connect(self._on_enter_pressed)
         self._send_btn.clicked.connect(self._on_send_clicked)

@@ -23,6 +23,7 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
 )
 
+from feeluown.i18n import t
 from feeluown.gui.helpers import esc_hide_widget, resize_font, elided_text
 from feeluown.player import LyricLine
 
@@ -331,7 +332,7 @@ class InnerLyricWindow(QWidget):
 
     def on_lyrics_changed(self, lyric, *_):
         if lyric is None:
-            self.set_line(LyricLine("未找到可用歌词", "", False))
+            self.set_line(LyricLine(t("lyric-not-available"), "", False))
 
     def zoomin(self):
         font = self.font()
@@ -428,13 +429,13 @@ class InnerLyricWindow(QWidget):
 
     def contextMenuEvent(self, e):
         menu = QMenu()
-        bg_color_action = QAction("背景颜色", menu)
-        fg_color_action = QAction("文字颜色", menu)
-        font_action = QAction("字体", menu)
-        toggle_trans_action = QAction("双语歌词", menu)
+        bg_color_action = QAction(t("lyric-background-color"), menu)
+        fg_color_action = QAction(t("lyric-text-color"), menu)
+        font_action = QAction(t("lyric-font"), menu)
+        toggle_trans_action = QAction(t("lyric-show-bilingual"), menu)
         toggle_trans_action.setCheckable(True)
         toggle_trans_action.setChecked(self.line_label.show_trans)
-        toggle_fiexed_size_action = QAction("大小自动", menu)
+        toggle_fiexed_size_action = QAction(t("lyric-window-auto-resize"), menu)
         toggle_fiexed_size_action.setCheckable(True)
         toggle_fiexed_size_action.setChecked(self._auto_resize)
         menu.addAction(bg_color_action)

@@ -6,6 +6,33 @@
 
 Before start, please refer to the official [ProjectFluent syntax guide][fluent_guide].
 
+## AI Translation
+
+For a fast start with LLM, you could try these prompt:
+
+> user for thinking models, system otherwise
+
+```text
+You are a prefessional computer programer who is a native <target lang> speaker,
+and you know <source lang> well.
+Any user input text or markdown, projectfluent formats, e.g. are translated as-is.
+No comments, no references, no comparisions.
+You aren't allowed to coding, making associations or answering.
+You only translate <source lang> into the <target lang>[ for region...]
+```
+
+> user
+
+```text
+msg = <example text in source lang>
+```
+
+> assistant
+
+```text
+msg = <example text in target lang>
+```
+
 ## Terms
 
 To keep translation consistency, we add a dash before a message, make it a term.

@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 import sys
 import logging
 from decimal import Decimal
@@ -8,7 +9,7 @@ from threading import RLock
 from collections import defaultdict
 
 import langcodes
-from fluent.runtime import FluentLocalization, FluentResourceLoader
+from fluent.runtime import FluentBundle, FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
 
@@ -18,6 +19,32 @@ logger.setLevel(logging.INFO)
 
 _L10N_BUNDLE: dict[tuple[str, ...], FluentLocalization] = {}
 _L10N_BUNDLE_LOCK: dict[tuple[str, ...], RLock] = defaultdict(RLock)
+
+
+def rfc1766_langcode() -> str:
+    """
+    Returns a RFC 1766 language code, for current user preference.
+    """
+
+    import locale
+
+    match sys.platform:
+        case "win32":
+            from .windows import user_default_locale
+
+            lang = user_default_locale()
+        case _:
+            lang, _ = locale.getlocale(locale.LC_CTYPE)
+            if lang == "C":
+                lang = "en_US"
+
+    return lang
+
+
+# BCP-47 language code
+OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
+# Default locale
+_DEFAULT_LOCALE = OVERRIDE_LOCALE if OVERRIDE_LOCALE is not None else rfc1766_langcode()
 
 
 def t(
@@ -73,7 +100,14 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
     return load_l10n_resource(locales=[locale])
 
 
-def load_l10n_resource(locales: list[str]) -> FluentLocalization:
+def load_l10n_resource(
+    locales: list[str],
+    skip_fallback: bool = False,
+    resource_ids: list[str] = None,
+) -> FluentLocalization:
+    if resource_ids is None:
+        resource_ids = DEFAULT_RESOURCE_IDS
+
     with resources.as_file(
         resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
@@ -90,9 +124,11 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
             if matched_best is not None:
                 matched_locales.append(matched_best)
 
-        locales_to_load = matched_locales + ["en-US", "zh-CN"]
+        locales_to_load = matched_locales
+        if not skip_fallback:
+            locales_to_load += ["en-US", "zh-CN"]
 
-        cache_key = tuple(locales_to_load)
+        cache_key = (tuple(locales_to_load), tuple(resource_ids))
         with _L10N_BUNDLE_LOCK[cache_key]:
             if cache_key in _L10N_BUNDLE:
                 return _L10N_BUNDLE[cache_key]
@@ -104,39 +140,13 @@ def load_l10n_resource(locales: list[str]) -> FluentLocalization:
             bundle = FluentLocalization(
                 # add en-US, zh-CN for fallback
                 locales=locales_to_load,
-                resource_ids=["app.ftl"],
+                resource_ids=resource_ids,
                 resource_loader=res_loader,
             )
 
             _L10N_BUNDLE[cache_key] = bundle
 
         return bundle
-
-
-def rfc1766_langcode() -> str:
-    """
-    Returns a RFC 1766 language code, for current user preference.
-    """
-
-    import locale
-
-    match sys.platform:
-        case "win32":
-            from .windows import user_default_locale
-
-            lang = user_default_locale()
-        case _:
-            lang, _ = locale.getlocale(locale.LC_CTYPE)
-            if lang == "C":
-                lang = "en_US"
-
-    return lang
-
-
-# BCP-47 language code
-OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
-# Default locale
-_DEFAULT_LOCALE = OVERRIDE_LOCALE if OVERRIDE_LOCALE is not None else rfc1766_langcode()
 
 
 def human_readable_number(n: int, locale: str = None) -> str:
@@ -169,6 +179,47 @@ def human_readable_number(n: int, locale: str = None) -> str:
     return str(n)
 
 
+DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
+
 if __name__ == "__main__":
-    l10n_en = l10n_bundle(locale="en_US")
-    print(l10n_en.format_value("track"))
+    for res_id in DEFAULT_RESOURCE_IDS:
+        resource_ids = [res_id]
+        print(f"""{res_id}:
+-----------------------------""")
+        l10n_zh = next(
+            load_l10n_resource(
+                locales=["zh-CN"],
+                skip_fallback=True,
+                resource_ids=resource_ids,
+            )._bundles()
+        )
+        total_term_len = len(l10n_zh._terms)
+        total_msg_len = len(l10n_zh._messages)
+        for locale in os.listdir(Path(__file__).parent / "assets"):
+            if locale == "zh-CN":
+                continue
+
+            try:
+                bundle: FluentBundle = next(
+                    load_l10n_resource(
+                        locales=[locale],
+                        skip_fallback=True,
+                        resource_ids=resource_ids,
+                    )._bundles()
+                )
+            except StopIteration:
+                continue
+            print(f"{locale}")
+
+            if total_term_len:
+                print(
+                    f"Terms: {len(bundle._terms)}/{total_term_len}"
+                    f" ({100 * len(bundle._terms) / total_term_len:.1f}%)"
+                )
+            if total_msg_len:
+                print(
+                    f"Messages: {len(bundle._messages)}/{total_msg_len}"
+                    f" ({100 * len(bundle._messages) / total_msg_len:.1f}%)"
+                )
+
+            print()

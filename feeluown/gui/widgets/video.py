@@ -3,6 +3,7 @@ from PyQt6.QtGui import QColor, QPalette
 from PyQt6.QtWidgets import QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QLabel
 from PyQt6.QtOpenGLWidgets import QOpenGLWidget
 
+from feeluown.i18n import t
 from feeluown.player import State
 from feeluown.gui.widgets import PlayPauseButton
 from feeluown.gui.widgets.progress_slider import ProgressSlider
@@ -190,6 +191,6 @@ if __name__ == "__main__":
 
     with simple_layout(theme="dark") as layout, mock_app() as app:
         ctl_bar = VideoPlayerCtlBar(app)
-        ctl_bar.add_adhoc_btn("全屏")
-        ctl_bar.add_adhoc_btn("最小化")
+        ctl_bar.add_adhoc_btn(t("fullscreen-window"))
+        ctl_bar.add_adhoc_btn(t("minimize-window"))
         layout.addWidget(ctl_bar)

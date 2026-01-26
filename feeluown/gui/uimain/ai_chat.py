@@ -22,6 +22,7 @@ from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.header import MidHeader
 from feeluown.gui.widgets.ai_chat import ChatHistoryWidget, ChatInputWidget
 from feeluown.gui.components.overlay import AppOverlayContainer
+from feeluown.i18n import t
 from feeluown.utils import aio
 
 logger = logging.getLogger(__name__)
@@ -127,7 +128,7 @@ class AISongItemWidget(QWidget):
 
         for btn in self._btns:
             btn.setEnabled(False)
-            btn.setToolTip("正在匹配资源...")
+            btn.setToolTip(t("ai-chat-match-resource"))
         try:
             self._matched_song = await AISongMatcher(self._app).match(self._ai_song)
         except Exception:
@@ -140,7 +141,7 @@ class AISongItemWidget(QWidget):
                     btn.setEnabled(True)
             else:
                 for btn in self._btns:
-                    btn.setToolTip("匹配资源失败")
+                    btn.setToolTip(t("ai-chat-match-resource-failed"))
 
 
 class AISongListWidget(QWidget):
@@ -150,7 +151,7 @@ class AISongListWidget(QWidget):
         super().__init__(parent=parent)
         self._app = app
 
-        self._title_label = QLabel("歌曲候选列表")
+        self._title_label = QLabel(t("ai-chat-track-candidate-list"))
         self._title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._list_widget = QListWidget(self)
         self._list_widget.setFrameShape(QFrame.Shape.NoFrame)
@@ -213,9 +214,9 @@ class AIChatBox(QWidget):
         self._app = app
         self.copilot = self._app.ai.get_copilot()
 
-        self._header = MidHeader("AI 助手")
+        self._header = MidHeader(t("ai-chat-header"))
         self._new_thread_btn = PlusButton(length=12)
-        self._new_thread_btn.setToolTip("新的对话")
+        self._new_thread_btn.setToolTip(t("ai-chat-new"))
         self.history_widget = ChatHistoryWidget(self)
         self.input_widget = ChatInputWidget(self)
 
@@ -316,9 +317,9 @@ if __name__ == "__main__":
         app.size.return_value = QSize(600, 400)
         overlay = create_aichat_overlay(app)
         long_description = (
-            "一个很长的描述啊啊啊啊啊啊"
-            "啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊"
-            "啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊啊结束"
+            "Very long description"
+            "Ahhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
+            "Ahhhhhhhhhhhhhhhhhhhhhhhhhhhhhh"
         )
         sample_ai_songs = [
             AISongModel(

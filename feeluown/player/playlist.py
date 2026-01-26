@@ -11,10 +11,15 @@ from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.dispatch import Signal
 from feeluown.utils.utils import DedupList
 from feeluown.library import (
-    MediaNotFound, SongModel, ModelType, VideoModel, ModelNotFound,
+    MediaNotFound,
+    SongModel,
+    ModelType,
+    VideoModel,
+    ModelNotFound,
     BriefSongModel,
 )
 from feeluown.media import Media
+from feeluown.i18n import t
 from .metadata_assembler import MetadataAssembler
 
 if TYPE_CHECKING:
@@ -22,9 +27,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-TASK_SET_CURRENT_MODEL = 'playlist.set_current_model'
-TASK_PLAY_MODEL = 'playlist.play_model'
-TASK_PREPARE_MEDIA = 'playlist.prepare_media'
+TASK_SET_CURRENT_MODEL = "playlist.set_current_model"
+TASK_PLAY_MODEL = "playlist.play_model"
+TASK_PREPARE_MEDIA = "playlist.prepare_media"
 
 
 class PlaybackMode(IntEnum):
@@ -34,6 +39,7 @@ class PlaybackMode(IntEnum):
     .. deprecated:: 3.8.12
         Please use PlaylistRepeatMode and PlaylistShuffleMode instead.
     """
+
     one_loop = 0  #: One Loop
     sequential = 1  #: Sequential
     loop = 2  #: Loop
@@ -41,17 +47,18 @@ class PlaybackMode(IntEnum):
 
 
 class PlaylistRepeatMode(Enum):
-    none = 'none'
-    one = 'one'
-    all = 'all'
+    none = "none"
+    one = "one"
+    all = "all"
 
 
 class PlaylistShuffleMode(Enum):
     """
     Windows and macOS has multiple shuffle modes.
     """
-    off = 'off'
-    songs = 'songs'
+
+    off = "off"
+    songs = "songs"
 
 
 class PlaylistMode(IntEnum):
@@ -73,6 +80,7 @@ class PlaylistMode(IntEnum):
     2. change to normal mode
     3. set current song to the song
     """
+
     normal = 0  #: Normal
     fm = 1  #: FM mode
 
@@ -86,8 +94,13 @@ class PlaylistPlayModelStage(IntEnum):
 
 
 class Playlist:
-    def __init__(self, app: 'App', songs=None, playback_mode=PlaybackMode.loop,
-                 audio_select_policy='hq<>'):
+    def __init__(
+        self,
+        app: "App",
+        songs=None,
+        playback_mode=PlaybackMode.loop,
+        audio_select_policy="hq<>",
+    ):
         """
         :param songs: list of :class:`feeluown.library.SongModel`
         :param playback_mode: :class:`feeluown.player.PlaybackMode`
@@ -180,7 +193,7 @@ class Playlist:
             else:
                 self.playback_mode = self._normal_mode_playback_mode
             self.mode_changed.emit(mode)
-            logger.info('playlist mode changed to %s', mode)
+            logger.info("playlist mode changed to %s", mode)
 
     @property
     def repeat_mode(self):
@@ -235,7 +248,7 @@ class Playlist:
             return
         self._queue_append(song)
         length = len(self._queue)
-        self.songs_added.emit(length-1, 1)
+        self.songs_added.emit(length - 1, 1)
 
     @property
     def _queue_is_shuffled_songs(self):
@@ -337,7 +350,7 @@ class Playlist:
         try:
             index = self._queue.index(song)
         except ValueError:
-            logger.debug('Remove failed: {} not in playlist'.format(song))
+            logger.debug("Remove failed: {} not in playlist".format(song))
         else:
             if self._current_song is None:
                 self._queue_remove(song)
@@ -355,7 +368,9 @@ class Playlist:
                 elif next_song is None and self.mode is PlaylistMode.fm:
                     # The caller should not remove the current song when it
                     # is the last song in fm mode.
-                    logger.error("Can't remove the last song in fm mode, will play next")
+                    logger.error(
+                        "Can't remove the last song in fm mode, will play next"
+                    )
                     self._next_no_lock()
                     return
                 else:
@@ -364,7 +379,7 @@ class Playlist:
             else:
                 self._queue_remove(song)
             self.songs_removed.emit(index, 1)
-            logger.debug('Remove {} from player playlist'.format(song))
+            logger.debug("Remove {} from player playlist".format(song))
         if song in self._bad_songs:
             self._bad_songs.remove(song)
 
@@ -379,8 +394,8 @@ class Playlist:
 
     def _replace_song_no_lock(self, model, umodel):
         index = self._queue.index(model)
-        self._queue_insert(index+1, umodel)
-        self.songs_added.emit(index+1, 1)
+        self._queue_insert(index + 1, umodel)
+        self.songs_added.emit(index + 1, 1)
         if self.current_song == model:
             self.set_current_song_none()
         self._queue_remove(model)
@@ -476,7 +491,7 @@ class Playlist:
         >>> pl._get_good_song()
         """
         if not self._queue or len(self._queue) <= len(self._bad_songs):
-            logger.debug('No good song in playlist.')
+            logger.debug("No good song in playlist.")
             return None
 
         good_songs = []
@@ -557,7 +572,7 @@ class Playlist:
         """
         next_song = self._get_next_song_no_lock()
         if next_song is None:
-            logger.debug('No next song in playlist, emit eof_reached.')
+            logger.debug("No next song in playlist, emit eof_reached.")
             self.eof_reached.emit()
             return None
         return self.set_existing_song_as_current_song(next_song)
@@ -595,7 +610,7 @@ class Playlist:
             try:
                 mv = await run_fn(self._app.library.song_get_mv, song)
             except ProviderIOError:
-                logger.exception('get song mv info failed')
+                logger.exception("get song mv info failed")
                 self._current_song_mv = None
             else:
                 self._current_song_mv = mv
@@ -636,7 +651,7 @@ class Playlist:
             self.mode = PlaylistMode.normal
 
         target_song = song  # The song to be set.
-        media = None        # The corresponding media to be set.
+        media = None  # The corresponding media to be set.
         try:
             self.play_model_stage_changed.emit(PlaylistPlayModelStage.prepare_media)
             media = await self._app.task_mgr.run_afn_preemptive(
@@ -650,13 +665,13 @@ class Playlist:
                 return
         except ProviderIOError as e:
             # FIXME: This may cause infinite loop when the prepare media always fails
-            logger.error(f'prepare media failed: {e}, try next song')
+            logger.error(f"prepare media failed: {e}, try next song")
             run_afn(self.a_next)
             return
         except Exception as e:  # noqa
             # When the exception is unknown, we mark the song as bad.
-            self._app.show_msg(f'获取歌曲链接失败: {e}')
-            logger.exception('prepare media failed due to unknown error')
+            self._app.show_msg(t("track-url-fetch-failed", errorMessage=e))
+            logger.exception("prepare media failed due to unknown error")
         else:
             assert media, "media must not be empty"
 
@@ -664,13 +679,14 @@ class Playlist:
         if media is None:
             if self._app.config.ENABLE_MV_AS_STANDBY:
                 self.play_model_stage_changed.emit(
-                    PlaylistPlayModelStage.find_standby_by_mv)
+                    PlaylistPlayModelStage.find_standby_by_mv
+                )
                 media = await self._prepare_mv_media(song)
 
             if media:
-                self._app.show_msg('使用音乐视频作为其播放资源 ✅')
+                self._app.show_msg(t("track-fallback-music-video"))
             else:
-                self._app.show_msg('未找到可用的音乐视频资源 🙁')
+                self._app.show_msg(t("track-fallback-no-music-video"))
                 logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
                 self.play_model_stage_changed.emit(PlaylistPlayModelStage.find_standby)
@@ -685,9 +701,9 @@ class Playlist:
 
     async def a_set_current_song_children(self, song):
         # TODO: maybe we can just add children to playlist?
-        self._app.show_msg(f'{song} 的播放资源在孩子节点上，将孩子节点添加到播放列表')
+        self._app.show_msg(f"{song} 的播放资源在孩子节点上，将孩子节点添加到播放列表")
         self.mark_as_bad(song)
-        logger.info(f'{song} has children, replace the current playlist')
+        logger.info(f"{song} has children, replace the current playlist")
         song = await run_fn(self._app.library.song_upgrade, song)
         if song.children:
             self.batch_add(song.children)
@@ -697,16 +713,17 @@ class Playlist:
         return
 
     async def find_and_use_standby(self, song):
-        self._app.show_msg(f'{song} 无可用的播放资源, 尝试寻找备用歌曲...')
-        logger.info(f'try to find standby from other providers for {song}')
+        self._app.show_msg(t("track-standby-try", track=song))
+        logger.info(f"try to find standby from other providers for {song}")
         standby_candidates = await self._app.library.a_list_song_standby_v2(
-            song,
-            self.audio_select_policy
+            song, self.audio_select_policy
         )
         if standby_candidates:
             standby, media = standby_candidates[0]
-            logger.info(f'song standby was found in {standby.source} ✅')
-            self._app.show_msg(f'在 {standby.source} 平台找到 {song} 的备用歌曲 ✅')
+            logger.info(f"song standby was found in {standby.source} ✅")
+            self._app.show_msg(
+                t("track-standby-found", track=song, standby=standby.source)
+            )
             # Insert the standby song after the song
             # TODO: Perhaps we can optimize here using the `self.insert` function?
             with self._queue_lock:
@@ -716,8 +733,8 @@ class Playlist:
                     self.songs_added.emit(index + 1, 1)
             return standby, media
 
-        logger.info(f'{song} song standby not found')
-        self._app.show_msg(f'未找到 {song} 的备用歌曲')
+        logger.info(f"{song} song standby not found")
+        self._app.show_msg(t("track-standby-unavailable", track=song))
         return song, None
 
     def set_current_song_with_media(self, song, media, metadata=None):
@@ -733,12 +750,12 @@ class Playlist:
             self.song_changed.emit(song)
             self.song_changed_v2.emit(song, media)
         if media is None:
-            self._app.show_msg("没找到可用的播放链接，播放下一首...")
+            self._app.show_msg(t("track-skip-to-next"))
             run_afn(self.a_next)
         else:
             kwargs = {}
             if not self._app.has_gui:
-                kwargs['video'] = False
+                kwargs["video"] = False
             # TODO: set artwork field
             self._app.player.play(media, metadata=metadata, **kwargs)
 
@@ -754,9 +771,11 @@ class Playlist:
             mv_media = await self._prepare_mv_media(song)
             if mv_media:
                 return mv_media
-            self._app.show_msg('未找到可用的歌曲视频资源')
+            self._app.show_msg(t("music-video-not-avaliable"))
         return await aio.run_fn(
-            self._app.library.song_prepare_media, song, self.audio_select_policy,
+            self._app.library.song_prepare_media,
+            song,
+            self.audio_select_policy,
         )
 
     async def _prepare_mv_media(self, song) -> Optional[Media]:
@@ -764,12 +783,13 @@ class Playlist:
             mv_media = await run_fn(
                 self._app.library.song_prepare_mv_media,
                 song,
-                self._app.config.VIDEO_SELECT_POLICY)
+                self._app.config.VIDEO_SELECT_POLICY,
+            )
         except MediaNotFound:
             mv_media = None
         except Exception as e:  # noqa
             mv_media = None
-            logger.exception(f'fail to get {song} mv: {e}')
+            logger.exception(f"fail to get {song} mv: {e}")
         return mv_media
 
     async def a_set_current_model(self, model):
@@ -789,15 +809,15 @@ class Playlist:
             media = await aio.run_fn(
                 self._app.library.video_prepare_media,
                 video,
-                self._app.config.VIDEO_SELECT_POLICY
+                self._app.config.VIDEO_SELECT_POLICY,
             )
         except MediaNotFound:
-            self._app.show_msg('没有可用的播放链接')
+            self._app.show_msg(t("playback-url-unavailable"))
         else:
             metadata = await self._metadata_mgr.prepare_for_video(video)
             kwargs = {}
             if not self._app.has_gui:
-                kwargs['video'] = False
+                kwargs["video"] = False
             self._app.player.play(media, metadata=metadata, **kwargs)
 
     async def a_play_model(self, model):
@@ -822,7 +842,7 @@ class Playlist:
         except ModelNotFound:
             pass
         except Exception as e:  # noqa
-            logger.exception(f'upgrade model({model}) failed')
+            logger.exception(f"upgrade model({model}) failed")
             self._app.alert_mgr.on_exception(e)
         else:
             # Replace the brief model with the upgraded model
@@ -838,10 +858,10 @@ class Playlist:
                 fn, model, name=TASK_SET_CURRENT_MODEL
             )
         except:  # noqa
-            logger.exception(f'play model({model}) failed')
+            logger.exception(f"play model({model}) failed")
         else:
             self._app.player.resume()
-            logger.info(f'play a model ({model}) succeed')
+            logger.info(f"play a model ({model}) succeed")
 
     """
     Sync methods.
@@ -850,6 +870,7 @@ class Playlist:
     compatibility. Sync methods will be replaced by async methods in the end.
     Sync methods just wrap the async method.
     """
+
     def play_model(self, model):
         """Set current model and play it
 
@@ -864,7 +885,9 @@ class Playlist:
         .. versionadded: 3.7.13
         """
         return self._app.task_mgr.run_afn_preemptive(
-            self.a_set_current_model, model, name=TASK_SET_CURRENT_MODEL,
+            self.a_set_current_model,
+            model,
+            name=TASK_SET_CURRENT_MODEL,
         )
 
     def set_existing_song_as_current_song(self, song):

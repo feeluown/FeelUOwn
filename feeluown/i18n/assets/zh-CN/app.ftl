@@ -30,10 +30,10 @@ warn = { -warn }
 -track = { $capitalization ->
    *[any] 歌曲
 }
-track = {-track}
+track = { -track }
 
 ## Note: this is for playlists from online providers
-## while {playlist} is for tracks play queue.
+## while { playlist } is for tracks play queue.
 -track-list = { $plural ->
    *[any] 歌单
 }
@@ -147,7 +147,7 @@ play-stage-prepare-track-url = 正在获取{ -track }播放链接...
 play-stage-prepare-track-url-fallback = 尝试寻找备用播放链接...
 play-stage-prepare-track-metadata = 尝试获取完整的{ -track }元信息...
 play-stage-prepare-track-loading = 正在加载{ -track }资源...
-play-stage-prepare-movie-url = 正在获取音乐的{video}播放链接...
+play-stage-prepare-movie-url = 正在获取音乐的{ video }播放链接...
 
 # feeluown.gui.components.menu
 # ----------------------------------------
@@ -160,7 +160,7 @@ track-show-album = 查看{ album }
 track-enter-radio = { -track }电台
 track-show-detail = { -track }详情
 
-track-playlist-add = 加入到{ playlist }
+track-playlist-add = 加入到{ -track-list }
 track-playlist-add-succ = 已加入到{ $playlistName }✅
 track-playlist-add-fail = 加入到{ $playlistName } 失败 ❌
 
@@ -228,10 +228,34 @@ track-fallback-failed = 提供方 “{ $providerName }” 没有找到可用的�
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.widgets.ai_chat
+# ----------------------------------------
+ai-chat-input-placeholder = 和助手聊聊
+ai-chat-send-button = 发送
+
+# feeluown.gui.widgets.cover_label
+# ----------------------------------------
+show-original-image = 查看原图
+
+# feeluown.gui.widgets.img_card_list
+# ----------------------------------------
+remove-action = 移除
+remove-action-video = { remove-action }视频
+remove-action-playlist = { remove-action }{ -track-list }
+remove-action-musician = { remove-action }{ -musician }
+remove-action-album = { remove-action }{ -album }
+
+## releaseDate: [date, datetime] datetime when album was published
+## trackCount: [int] amount of tracks in this album
+album-release-date = { $trackCount ->
+    [0] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "numeric") }
+    *[other] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "numeric") } { $trackCount }首
+}
+
 # feeluown.gui.widgets.labels
 # ----------------------------------------
-error-message-prefix = {-error}：
-info-message-prefix = {-info}：
+error-message-prefix = { -error }：
+info-message-prefix = { -info }：
 
 # feeluown.gui.widgets.selfpaint_btn
 # ----------------------------------------
@@ -308,7 +332,7 @@ cookies-loading-existing-user = 正在尝试加载已有用户...
 # ----------------------------------------
 play-all-button = 播放全部
 play-all-button-fetching = 获取所有歌曲...
-play-all-button-fetch-done = {play-all-button-fetching} 完成
+play-all-button-fetch-done = { play-all-button-fetching } 完成
 
 album-filter-all = 所有{ -album }
 album-filter-standard = 标准
@@ -348,6 +372,20 @@ meta-amount-songs = { $songsCount ->
 # ----------------------------------------
 volume-button-tooltip = 调整音量
 
+# feeluown.gui.widgets.playlists
+# ----------------------------------------
+track-list-remove = 删除此{ -track-list }
+
+# status: [string], 'succ' for success, 'fail' for failure
+playlist-add-track = 添加{ -track }到{ playlist }{ $status ->
+    [succ] 成功
+   *[fail] 失败
+}
+
+# feeluown.gui.widgets.provider
+# ----------------------------------------
+logged = 已登录
+
 # feeluown.gui.widgets.progress_slider
 # ----------------------------------------
 drag-to-seek-progress = 拖动调节进度
@@ -359,6 +397,18 @@ remove-from-playlist = 移除{ -track }
 
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.uimain.ai_chat
+# ----------------------------------------
+ai-chat-header = AI 助手
+ai-chat-new = 新的对话
+ai-chat-match-resource = 正在匹配资源...
+ai-chat-match-resource-failed = 匹配资源失败
+ai-chat-track-candidate-list = { -track }候选列表
+
+# feeluown.gui.uimain.player_bar
+# ----------------------------------------
+album-released-at = 专辑发行日期：{ $released }
 
 # feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
@@ -379,6 +429,15 @@ playback-mode-loop = 循环播放
 ## play songs in random order
 playback-mode-random = 随机播放
 
+# feeluown.gui.uimain.lyric
+# ----------------------------------------
+lyric-not-available = 未找到可用歌词
+lyric-background-color = 背景颜色
+lyric-text-color = 文字颜色
+lyric-font = 字体
+lyric-show-bilingual = 双语歌词
+lyric-window-auto-resize = 大小自动
+
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
 similar-tracks = 相似{ -track }
@@ -396,7 +455,7 @@ collections-header-tooltip =
     每个{ -track-collection }都以一个独立 .fuo 文件的存在，将鼠标悬浮在{ -track-collection }上，可以查看文件所在路径。
     新建 fuo 文件，则可以新建{ -track-collection }，文件名即是{ -track-collection }的名字。
 
-    手动编辑 fuo 文件即可编辑{ -track-collection }中的音乐资源，也可以在界面上拖拽来增删{-track}。
+    手动编辑 fuo 文件即可编辑{ -track-collection }中的音乐资源，也可以在界面上拖拽来增删{ -track }。
 ai-configure-tooltip =
     你需要安装 Python 三方库 openai，并且配置如下配置项，你就可以使用 AI 助手了
     config.OPENAI_API_KEY = sk-xxx
@@ -422,7 +481,7 @@ my-favorite-button = { my-favorite-title }
 my-playlists = { -track-list }列表
 my-tracks = 我的音乐
 provider-unknown-tooltip = 当前{ -provider }未知
-fold-top-tooltip = {fold-collapse}/{fold-expand} “主页和{-local-favorites}” 功能
+fold-top-tooltip = { fold-collapse }/{ fold-expand } “主页和{ -local-favorites }” 功能
 
 ## providerName: [string] name of the provider
 provider-recommended-page-enter = 点击进入 { $providerName } 推荐页
@@ -463,7 +522,7 @@ track-webpage-url-copied = 已经复制：{ $url }
 track-source-provider-missing = 没有相应的{ -provider } { $providerName }
 
 error-message-template =
-    <p style=color: grey; font: small;>该提供方暂不支持{"{"}feature{"}"}。
+    <p style="color: grey; font: small;">该提供方暂不支持{"{"}feature{"}"}。
     <br/> 给它实现一下 { $interface } 接口来支持该功能吧 ~
     </p>
 find-similar-tracks = 查看{ similar-tracks }
@@ -487,15 +546,25 @@ remove-item-succeed = 移除 { $item } 成功
 # ----------------------------------------
 fold-expand = 展开
 fold-collapse = 收起
-fold-tooltip = {fold-expand}/{fold-collapse}
+fold-tooltip = { fold-expand }/{ fold-collapse }
 
 recommended-playlist = 推荐歌单
 recommended-daily-playlist = 每日推荐
 recommended-feelin-lucky = 随便听听
 recommended-videos = 瞅瞅
-recommended-videos-missing = 暂无推荐{video}
+recommended-videos-missing = 暂无推荐{ video }
 
-# feeluown.gui.pages.my_fav.py
+# feeluown.gui.pages.my_dislike
+# ----------------------------------------
+
+## providerName: [string] name of the provider
+## resType: [string] 'unknown', 'dislike'
+provider-unsupported = 当前{ -provider }（{ $providerName}）不支持展示{ $resType ->
+    [dislike] 不喜欢的{ -track }
+    *[unknown] 未知类型资源
+}
+
+# feeluown.gui.pages.my_fav
 # ----------------------------------------
 
 ## providerName: [string] name of the provider
@@ -507,10 +576,10 @@ recommended-videos-missing = 暂无推荐{video}
 ##    video
 provider-missing-favorite = 当前{ -provider }（{ $providerName }）不支持获取 收藏的{ $mediaType ->
     [track] { -track }
-    [album] {album}
-    [singer] {musician}
+    [album] { album }
+    [singer] { musician }
     [playlist] { -track-list }
-    [video] {video}
+    [video] { video }
    *[other] 内容
 }
 provider-unknown-cannot-view = 当前{ -provider }未知，无法浏览该页面
@@ -530,6 +599,11 @@ music-radio-radar-changed = { -music-radio-radar }已切换
 music-discovery = 发现音乐
 ## Similar to Spotify Discover Weekly
 music-customized-recommendation = 个性化推荐
+
+# feeluown.gui.pages.provider_home
+# ----------------------------------------
+provider-liked-music = 我的音乐
+provider-playlist-list = { -track-list }列表
 
 # feeluown.gui.pages.toplist
 # ----------------------------------------
@@ -570,3 +644,41 @@ tray-skip-track-next = 下一首
 tray-skip-track-prev = 上一首
 
 tray-quit-application = 退出
+
+# feeluown.player
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.player.fm
+# ----------------------------------------
+track-radio-not-enough = 电台返回{ -track }不足，退出 FM 模式
+
+# feeluown.player.playlist
+# ----------------------------------------
+## errorMessage: [string]
+track-url-fetch-failed = 获取{ -track }链接失败: { $errorMessage }
+
+-music-video = 音乐视频
+track-fallback-music-video = 使用{ -music-video }作为其播放资源 ✅
+track-fallback-no-music-video = 未找到可用的{ -music-video }资源 🙁
+
+music-video-not-avaliable = 未找到可用的{ -music-video }资源
+
+playback-url-unavailable = 没有可用的播放链接
+
+## standby: [string] standby provider for this resource
+## track: the target track to play
+track-standby-try = { $track } 无可用的播放资源, 尝试寻找备用{ -track }...
+track-standby-found = 在 { $standby } 平台找到 { $track } 的备用{ -track } ✅
+track-standby-unavailable = 未找到 { $track } 的备用{ -track }
+
+track-skip-to-next = 未找到可用的播放链接，播放下一首...
+
+# feeluown.gui.page_containers
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.page_containers.table
+# ----------------------------------------
+
+## errorMessage: [string]
+provider-missing-feature = { -provider(capitalization: "uppercase") }不支持该功能: { $errorMessage }
+provider-network-error = 请求失败: { $errorMessage }

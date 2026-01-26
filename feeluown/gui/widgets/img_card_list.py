@@ -12,6 +12,7 @@ resized, the cover width and the margin should make a few adjustment.
 # pylint: disable=unused-argument
 import logging
 import random
+from datetime import date
 from typing import TypeVar, Optional, List, cast, Union, TYPE_CHECKING
 
 from PyQt6.QtCore import (
@@ -45,6 +46,7 @@ from PyQt6.QtWidgets import (
     QMenu,
 )
 
+from feeluown.i18n import t
 from feeluown.utils import aio
 from feeluown.library import AlbumModel, AlbumType, PlaylistModel, VideoModel
 from feeluown.utils.reader import wrap, create_reader, Reader
@@ -466,6 +468,7 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
     .. versionchanged:: 3.9
        The *card_min_width*, *card_spacing*, *card_text_height* parameter were removed.
     """
+
     # Generic signal emitted when a remove action is requested from context menu.
     # .. versionadded:: 5.0
     #
@@ -474,7 +477,7 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
     # At the same time, it provides a callback to notify the success status.
     # I'm not sure whether the design of the callback signature is good.
     remove_item_needed = pyqtSignal([object, object])
-    remove_action_text = '移除'
+    remove_action_text = t("remove-action")
 
     def __init__(self, parent=None, **kwargs):
         super().__init__(parent=parent, **kwargs)
@@ -522,7 +525,8 @@ class ImgCardListView(ItemViewNoScrollMixin, QListView):
         menu = QMenu(self)
         remove_action = QAction(self.remove_action_text, self)
         remove_action.triggered.connect(
-            lambda: self.remove_item_needed.emit(item, self.remove_item_cb))
+            lambda: self.remove_item_needed.emit(item, self.remove_item_cb)
+        )
         menu.addAction(remove_action)
         menu.exec(event.globalPos())
 
@@ -569,7 +573,7 @@ class VideoFilterProxyModel(ImgFilterProxyModel):
 class VideoCardListView(ImgCardListView):
     play_video_needed = pyqtSignal([object])
     # Use base class remove behavior; subclasses keep a convenient alias
-    remove_action_text = "移除视频"
+    remove_action_text = t("remove-action-video")
 
     def on_activated(self, index):
         video = index.data(Qt.ItemDataRole.UserRole)
@@ -606,7 +610,7 @@ class PlaylistFilterProxyModel(ImgFilterProxyModel):
 
 class PlaylistCardListView(ImgCardListView):
     show_playlist_needed = pyqtSignal([object])
-    remove_action_text = "移除歌单"
+    remove_action_text = t("remove-action-playlist")
 
     def on_activated(self, index):
         artist = index.data(Qt.ItemDataRole.UserRole)
@@ -630,7 +634,7 @@ class ArtistFilterProxyModel(ImgFilterProxyModel):
 
 class ArtistCardListView(ImgCardListView):
     show_artist_needed = pyqtSignal([object])
-    remove_action_text = "移除歌手"
+    remove_action_text = t("remove-action-musician")
 
     def on_activated(self, index):
         artist = index.data(Qt.ItemDataRole.UserRole)
@@ -646,10 +650,16 @@ class AlbumCardListModel(ImgCardListModel):
         album = self._items[offset]
         if role == Qt.ItemDataRole.WhatsThisRole:
             if isinstance(album, AlbumModel):
-                if album.song_count >= 0:
-                    # Like: 1991-01-01 10首
-                    return f"{album.released} {album.song_count}首"
-                return album.released
+                try:
+                    year, month, day = map(int, album.released.split("-"))
+                except Exception:
+                    year, month, day = 1970, 1, 1
+                release_date = date(year, month, day)
+                return t(
+                    "album-release-date",
+                    releaseDate=release_date,
+                    trackCount=album.song_count,
+                )
         return super().data(index, role)
 
 
@@ -686,7 +696,7 @@ class AlbumFilterProxyModel(ImgFilterProxyModel):
 
 class AlbumCardListView(ImgCardListView):
     show_album_needed = pyqtSignal([object])
-    remove_action_text = "移除专辑"
+    remove_action_text = t("remove-action-album")
 
     def on_activated(self, index):
         album = index.data(Qt.ItemDataRole.UserRole)

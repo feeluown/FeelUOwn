@@ -9,6 +9,8 @@ from feeluown.library import ModelType, ProviderFlags as PF
 from feeluown.gui.helpers import ItemViewNoScrollMixin, SOLARIZED_COLORS
 from .textlist import TextlistModel
 
+from feeluown.i18n import t
+
 
 class ProvidersModel(TextlistModel):
     def __init__(self, library, parent=None):
@@ -34,7 +36,7 @@ class ProvidersModel(TextlistModel):
             if self._library.check_flags(provider_id, ModelType.none, PF.current_user):
                 provider = provider_ui_item.provider
                 if provider.has_current_user():
-                    return "已登录"
+                    return t("logged")
                 return f"{provider_ui_item.desc}"
             return f"[{provider_ui_item.text}] {provider_ui_item.desc}"
         if role == Qt.ItemDataRole.UserRole:

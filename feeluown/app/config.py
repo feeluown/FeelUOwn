@@ -6,51 +6,118 @@ App configuration items.
 """
 
 from feeluown.config import Config
+from feeluown.i18n import t
 
 
 def create_config() -> Config:
     config = Config()
-    config.deffield('DEBUG', type_=bool, desc='是否为调试模式')
-    config.deffield('VERBOSE', default=0, type_=int, desc='日志详细程度')
-    config.deffield('RPC_PORT', default=23333, type_=int, desc='RPC 端口')
-    config.deffield('PUBSUB_PORT', default=23334, type_=int, desc='PUBSUB 端口')
-    config.deffield('WEB_PORT', default=23332, type_=int, desc='WEB 服务端口')
-    config.deffield('ENABLE_WEB_SERVER', default=False, type_=bool)
-    config.deffield('MODE', default=0x0000, desc='CLI or GUI 模式')
-    config.deffield('THEME', default='auto', desc='auto/light/dark')
-    config.deffield('ENABLE_NEW_HOMEPAGE', default=True, type_=bool)
     config.deffield(
-        'NEW_HOMEPAGE_SETTINGS',
+        "DEBUG",
+        type_=bool,
+        desc=t("debug-desc"),
+    )
+    config.deffield(
+        "VERBOSE",
+        default=0,
+        type_=int,
+        desc=t("verbose-desc"),
+    )
+    config.deffield(
+        "RPC_PORT",
+        default=23333,
+        type_=int,
+        desc=t("rpc-port-desc"),
+    )
+    config.deffield(
+        "PUBSUB_PORT",
+        default=23334,
+        type_=int,
+        desc=t("pubsub-port-desc"),
+    )
+    config.deffield(
+        "WEB_PORT",
+        default=23332,
+        type_=int,
+        desc=t("web-port-desc"),
+    )
+    config.deffield(
+        "ENABLE_WEB_SERVER",
+        default=False,
+        type_=bool,
+    )
+    config.deffield(
+        "MODE",
+        default=0x0000,
+        desc=t("mode-desc"),
+    )
+    config.deffield(
+        "THEME",
+        default="auto",
+        desc=t("theme-desc"),
+    )
+    config.deffield(
+        "ENABLE_NEW_HOMEPAGE",
+        default=True,
+        type_=bool,
+    )
+    config.deffield(
+        "NEW_HOMEPAGE_SETTINGS",
         type_=dict,
         default={
-            'contents': [
-                {'name': 'RecListDailySongs', 'provider': 'netease'},
+            "contents": [
+                {"name": "RecListDailySongs", "provider": "netease"},
                 # {'name': 'RecACollectionOfSongs', 'provider': 'qqmusic'},
-                {'name': 'RecListDailyPlaylists', 'provider': 'qqmusic'},
-                {'name': 'RecACollectionOfVideos', 'provider': 'bilibili'},
+                {"name": "RecListDailyPlaylists", "provider": "qqmusic"},
+                {"name": "RecACollectionOfVideos", "provider": "bilibili"},
             ]
         },
-        desc='主页配置'
+        desc=t("new-homepage-settings-desc"),
     )
-    config.deffield('MPV_AUDIO_DEVICE', default='auto', desc='MPV 播放设备')
-    config.deffield('COLLECTIONS_DIR', desc='本地收藏所在目录')
     config.deffield(
-        'FORCE_MAC_HOTKEY',
-        desc='强制开启 macOS 全局快捷键功能',
-        warn='Will be remove in version 3.0'
+        "MPV_AUDIO_DEVICE",
+        default="auto",
+        desc=t("mpv-audio-device-desc"),
     )
-    config.deffield('LOG_TO_FILE', desc='将日志输出到文件中')
-    config.deffield('AUDIO_SELECT_POLICY', default='hq<>')
-    config.deffield('VIDEO_SELECT_POLICY', default='hd<>')
-    config.deffield('ALLOW_LAN_CONNECT', type_=bool, default=False, desc='是否可以从局域网连接服务器')
-    config.deffield('PROVIDERS_STANDBY', type_=list, default=None, desc='')
+    config.deffield(
+        "COLLECTIONS_DIR",
+        desc=t("collections-dir-desc"),
+    )
+    config.deffield(
+        "FORCE_MAC_HOTKEY",
+        desc=t("force-mac-hotkey-desc"),
+        warn="Will be remove in version 3.0",
+    )
+    config.deffield(
+        "LOG_TO_FILE",
+        desc=t("log-to-file-desc"),
+    )
+    config.deffield(
+        "AUDIO_SELECT_POLICY",
+        default="hq<>",
+    )
+    config.deffield(
+        "VIDEO_SELECT_POLICY",
+        default="hd<>",
+    )
+    config.deffield(
+        "ALLOW_LAN_CONNECT",
+        type_=bool,
+        default=False,
+        desc=t("allow-lan-connect-desc"),
+    )
+    config.deffield(
+        "PROVIDERS_STANDBY",
+        type_=list,
+        default=None,
+        desc="",
+    )
 
     # YTDL related fields are deprecated since v4.1.9. Disable them by default.
     config.deffield(
-        'ENABLE_YTDL_AS_MEDIA_PROVIDER',
+        "ENABLE_YTDL_AS_MEDIA_PROVIDER",
         type_=bool,
         default=False,
-        desc='(Deprecated) YTDL 作为备用资源'
+        desc=t("enable-ytdl-as-media-provider-desc"),
     )
     # For example::
     #    [
@@ -63,42 +130,88 @@ def create_config() -> Config:
     #            },
     #        },
     #    ]
-    config.deffield('YTDL_RULES', type_=list, default=None, desc='(Deprecated)')
+    config.deffield(
+        "YTDL_RULES",
+        type_=list,
+        default=None,
+        desc=t("ytdl-rules-desc"),
+    )
 
     # TODO(cosven): maybe
     # 1. when it is set to 2, find standby from other providers first.
     # 2. when it is set to 3, play it's MV model instead of using MV's media.
-    config.deffield('ENABLE_MV_AS_STANDBY', type_=int, default=1, desc='MV 作为备用资源')
-    config.deffield('ENABLE_TRAY', type_=bool, default=True, desc='启用系统托盘')
     config.deffield(
-        'NOTIFY_ON_TRACK_CHANGED', type_=bool, default=False, desc='切换歌曲时显示桌面通知'
-    )
-    config.deffield('NOTIFY_DURATION', type_=int, default=3000, desc='桌面通知保留时长(ms)')
-    config.deffield('PLAYBACK_CROSSFADE', type_=bool, default=False, desc='播放暂停淡入淡出')
-    config.deffield(
-        'PLAYBACK_CROSSFADE_DURATION', type_=int, default=500, desc='淡入淡出持续时间'
+        "ENABLE_MV_AS_STANDBY",
+        type_=int,
+        default=1,
+        desc=t("enable-mv-as-standby-desc"),
     )
     config.deffield(
-        'OPENAI_API_BASEURL',
-        type_=str,
-        default='',
-        desc='OpenAI API base url'
-    )
-    config.deffield('OPENAI_API_KEY', type_=str, default='', desc='OpenAI API key')
-    config.deffield('OPENAI_MODEL', type_=str, default='', desc='OpenAI model name')
-    # Not sure if AI_STANDBY_MATCHER may be activated unexpectedly.
-    # And it may burn some money, let user enable it manually.
-    config.deffield('ENABLE_AI_STANDBY_MATCHER', type_=bool, default=False, desc='')
-    config.deffield(
-        'AI_RADIO_PROMPT',
-        type_=str,
-        default='你是一个音乐播放器智能助手。',
-        desc='AI 电台功能的提示词'
-    )
-    config.deffield(
-        'ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK',
+        "ENABLE_TRAY",
         type_=bool,
         default=True,
-        desc='双击歌曲时，用歌曲所在列表替换当前播放列表'
+        desc=t("enable-tray-desc"),
+    )
+    config.deffield(
+        "NOTIFY_ON_TRACK_CHANGED",
+        type_=bool,
+        default=False,
+        desc=t("notify-on-track-changed-desc"),
+    )
+    config.deffield(
+        "NOTIFY_DURATION",
+        type_=int,
+        default=3000,
+        desc=t("notify-duration-desc"),
+    )
+    config.deffield(
+        "PLAYBACK_CROSSFADE",
+        type_=bool,
+        default=False,
+        desc=t("playback-crossfade-desc"),
+    )
+    config.deffield(
+        "PLAYBACK_CROSSFADE_DURATION",
+        type_=int,
+        default=500,
+        desc=t("playback-crossfade-desc"),
+    )
+    config.deffield(
+        "OPENAI_API_BASEURL",
+        type_=str,
+        default="",
+        desc=t("openai-api-baseurl-desc"),
+    )
+    config.deffield(
+        "OPENAI_API_KEY",
+        type_=str,
+        default="",
+        desc=t("openai-api-key-desc"),
+    )
+    config.deffield(
+        "OPENAI_MODEL",
+        type_=str,
+        default="",
+        desc=t("openai-model-desc"),
+    )
+    # Not sure if AI_STANDBY_MATCHER may be activated unexpectedly.
+    # And it may burn some money, let user enable it manually.
+    config.deffield(
+        "ENABLE_AI_STANDBY_MATCHER",
+        type_=bool,
+        default=False,
+        desc="",
+    )
+    config.deffield(
+        "AI_RADIO_PROMPT",
+        type_=str,
+        default="你是一个音乐播放器智能助手。",
+        desc=t("ai-radio-prompt-desc"),
+    )
+    config.deffield(
+        "ENABLE_REPLACE_PLAYLIST_ON_DBLCLICK",
+        type_=bool,
+        default=True,
+        desc=t("enable-replace-playlist-on-dblclick-desc"),
     )
     return config

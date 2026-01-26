@@ -33,13 +33,16 @@ warn = { -warn }
 # Tab name, commonly used
 # ----------------------------------------
 -track = { $capitalization ->
-    [uppercase] Track
-   *[lowercase] track
+    [uppercase] Trac
+   *[lowercase] trac
+}{ $plural ->
+    [plural] ks
+    *[singular] k
 }
 track = { -track(capitalization: "uppercase") }
 
 ## Note: this is for playlists from online providers
-## while {playlist} is for tracks play queue.
+## while { playlist } is for tracks play queue.
 -track-list = { $plural ->
     [plural] Playlists
    *[singular] Playlist
@@ -164,7 +167,7 @@ track-show-artist = View { musician }
 track-show-album = View { album }
 track-enter-radio = { -track(capitalization: "uppercase") } Radio
 track-show-detail = { -track(capitalization: "uppercase") } Details
-track-playlist-add = Add to { playlist }
+track-playlist-add = Add to { -track-list }
 track-playlist-add-succ = Added to { $playlistName } ✅
 track-playlist-add-fail = Failed to add to { $playlistName } ❌
 track-movie-missing = No MV for this { -track }
@@ -178,7 +181,7 @@ menu-ai-copy-prompt-succeed = Copied to clipboard
 # feeluown.gui.components.nowplaying
 # ----------------------------------------
 track-movie-play-tooltip = Play { -track } MV
-track-album-release-date = { -album(capitalization: "uppercase") } {release-date}: { $releaseDate }
+track-album-release-date = { -album(capitalization: "uppercase") } { release-date }: { $releaseDate }
 # feeluown.gui.components.player_playlist
 # ----------------------------------------
 fm-radio-current-song-dislike = Dislike
@@ -208,8 +211,11 @@ track-search-result-empty = Searching { $providerName } yielded no results
 
 ## resultCount: amount of valid results
 ## timeCost: seconds cost for searching, floating number
-
-track-search-done = Search completed, with { $resultCount } valid results, taking { NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2) }s
+## See https://projectfluent.org/fluent/guide/selectors.html
+track-search-done = Search completed, with { $resultCount ->
+    [one] { $resultCount } valid result
+    *[other] { $resultCount } valid results
+}, taking { NUMBER($timeCost, minimumFractionDigits: 2, maximumFractionDigits: 2) }s
 
 # feeluown.gui.components.song_tag
 # ----------------------------------------
@@ -225,6 +231,31 @@ track-fallback-failed = { -provider(capitalization: "uppercase") } “{ $provide
 
 # feeluown.gui.widgets
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.widgets.ai_chat
+# ----------------------------------------
+ai-chat-input-placeholder = Chat with the assistant
+ai-chat-send-button = Send
+
+# feeluown.gui.widgets.cover_label
+# ----------------------------------------
+show-original-image = Show original
+
+# feeluown.gui.widgets.img_card_list
+# ----------------------------------------
+remove-action = Remove
+remove-action-video = { remove-action } Movie
+remove-action-playlist = { remove-action } { -track-list }
+remove-action-musician = { remove-action } { -musician }
+remove-action-album = { remove-action } { -album }
+
+## releaseDate: [date, datetime] datetime when album was published
+## trackCount: [int] amount of tracks in this album
+album-release-date = { $trackCount ->
+    [0] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "short") }
+    [1] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "short") } { $trackCount } song
+    *[other] { DATETIME($releaseDate, year: "numeric", day: "numeric", month: "short") } { $trackCount } songs
+}
 
 # feeluown.gui.widgets.labels
 # ----------------------------------------
@@ -244,6 +275,20 @@ emoji-expression = Emoji
 # feeluown.gui.widgets.volume_button
 # ----------------------------------------
 volume-button-tooltip = Adjust volume
+
+# feeluown.gui.widgets.playlists
+# ----------------------------------------
+track-list-remove = Remove this { -track-list }
+
+# status: [string], 'succ' for success, 'fail' for failure
+playlist-add-track = Add { -track } to { playlist }{ $status ->
+    [succ] succeed
+   *[fail] failed
+}
+
+# feeluown.gui.widgets.provider
+# ----------------------------------------
+logged = Logged-in
 
 # feeluown.gui.widgets.progress_slider
 # ----------------------------------------
@@ -307,7 +352,7 @@ cookies-loading-existing-user = Trying to load existing user...
 # ----------------------------------------
 play-all-button = Play All
 play-all-button-fetching = Fetching all songs...
-play-all-button-fetch-done = {play-all-button-fetching} done
+play-all-button-fetch-done = { play-all-button-fetching } done
 
 album-filter-all = All { -album }s
 album-filter-standard = Standard
@@ -351,6 +396,19 @@ remove-from-playlist = Remove { -track }
 # feeluown.gui.uimain
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+# feeluown.gui.uimain.ai_chat
+# ----------------------------------------
+ai-chat-header = AI Assistant
+ai-chat-new = New chat
+ai-chat-match-resource = Matching resources...
+ai-chat-match-resource-failed = Resource matching failed
+ai-chat-track-candidate-list = { -track(capitalization: "uppercase") } candidate list
+
+# feeluown.gui.uimain.player_bar
+# ----------------------------------------
+## released: [string]
+album-released-at = { -album(capitalization: "uppercase") } released at: { $released }
+
 # feeluown.gui.uimain.playlist_overlay
 # ----------------------------------------
 playlist-clear = Clear { playlist }
@@ -374,6 +432,15 @@ playback-mode-loop = Loop
 
 playback-mode-random = Random
 
+# feeluown.gui.uimain.lyric
+# ----------------------------------------
+lyric-not-available = Lyrics not available
+lyric-background-color = Background color
+lyric-text-color = Text color
+lyric-font = Font
+lyric-show-bilingual = Bilingual lyrics
+lyric-window-auto-resize = Auto resize
+
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
 similar-tracks = Similar{ -track }
@@ -392,7 +459,7 @@ collections-header-tooltip =
     Creating a new .fuo file creates a new { -track-collection }; the filename is the { -track-collection }’s name.
 
     You can manually edit the .fuo file to edit the music resources in the { -track-collection },
-    or drag and drop {-track}s in the interface to add or remove them.
+    or drag and drop { -track }s in the interface to add or remove them.
 ai-configure-tooltip =
     You need to install the Python third-party library openai,
     and configure the following settings to use the AI assistant
@@ -405,7 +472,7 @@ collection-title = Title
 
 ## collectionName: [string] title/name of the collection
 collection-already-exists = { -track-collection(capitalization: "uppercase") } '{ $collectionName }' already exists
-collection-confirm-remove = Confirm to delete the {-track-collection} '{ $collectionName }'?
+collection-confirm-remove = Confirm to delete the { -track-collection } '{ $collectionName }'?
 
 # feeluown.gui.uimain.toolbar
 # ----------------------------------------
@@ -461,7 +528,7 @@ track-webpage-url-copied = Copied: { $url }
 track-source-provider-missing = { -provider(capitalization: "uppercase") } { $providerName } not found
 
 error-message-template =
-    <p style=color: grey; font: small;>This provider does not yet support { "{" }feature{ "}" }.
+    <p style="color: grey; font: small;">This provider does not yet support { "{" }feature{ "}" }.
     <br/> Implement the { $interface } interface to support this feature ~
     </p>
 find-similar-tracks = View{ similar-tracks }
@@ -492,9 +559,18 @@ recommended-feelin-lucky = Just listening
 recommended-videos = Take a look
 recommended-videos-missing = No recommended { video }
 
-# feeluown.gui.pages.my_fav.py
+# feeluown.gui.pages.my_dislike
 # ----------------------------------------
 
+## providerName: [string] name of the provider
+## resType: [string] 'unknown', 'dislike'
+provider-unsupported = { -provider(capitalization: "uppercase") } { $providerName} does not support displaying { $resType ->
+    [dislike] Disliked { -track(plural: "plural") }
+    *[unknown] Unknown resource type
+}
+
+# feeluown.gui.pages.my_fav
+# ----------------------------------------
 
 ## providerName: [string] name of the provider
 ## mediaType: [string] can be one of:
@@ -541,6 +617,11 @@ provider-unsupported-fetch-artist = { -provider(capitalization: "uppercase") } d
 provider-unsupported-fetch-album = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -album }
 provider-unsupported-fetch-playlist = { -provider(capitalization: "uppercase") } does not support obtaining { -track } for { -track-list }s
 
+# feeluown.gui.pages.provider_home
+# ----------------------------------------
+provider-liked-music = Liked
+provider-playlist-list = { -track-list(plural: "plural") }
+
 # feeluown.gui.pages.toplist
 # ----------------------------------------
 # ref: provider-unknown-cannot-view
@@ -570,3 +651,41 @@ tray-skip-track-next = Next
 tray-skip-track-prev = Previous
 
 tray-quit-application = Quit
+
+# feeluown.player
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.player.fm
+# ----------------------------------------
+track-radio-not-enough = No enough { -track(plural: "plural") }, exiting FM mode
+
+# feeluown.player.playlist
+# ----------------------------------------
+## errorMessage: [string]
+track-url-fetch-failed = Failed to fetch URL for { -track }: { $errorMessage }
+
+-music-video = Music video
+track-fallback-music-video = Using { -music-video } as its playback source ✅
+track-fallback-no-music-video = No available { -music-video } resource found 🙁
+
+music-video-not-avaliable = No available { -music-video } resource found
+
+playback-url-unavailable = No available playback URL
+
+## standby: [string] standby provider for this resource
+## track: the target track to play
+track-standby-try = No available playback resources for { $track }, trying to find a stand-by { -track }...
+track-standby-found = Found a stand-by { -track } for { $track } on { $standby } ✅
+track-standby-unavailable = No stand-by { -track } found for { $track }
+
+track-skip-to-next = No available playback link found, playing the next...
+
+# feeluown.gui.page_containers
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+# feeluown.gui.page_containers.table
+# ----------------------------------------
+
+## errorMessage: [string]
+provider-missing-feature = { -provider(capitalization: "uppercase") } does not support this feature: { $errorMessage }
+provider-network-error = Request failed: { $errorMessage }

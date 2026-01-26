@@ -7,6 +7,7 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtWidgets import QAbstractItemView, QMenu
 
+from feeluown.i18n import t
 from feeluown.library import SupportsPlaylistAddSong
 from feeluown.utils.aio import run_afn, run_fn
 from .textlist import TextlistModel, TextlistView
@@ -115,7 +116,7 @@ class PlaylistsView(TextlistView):
 
         playlist = self.model().data(indexes[0], Qt.ItemDataRole.UserRole)
         menu = QMenu()
-        action = menu.addAction("删除此歌单")
+        action = menu.addAction(t("track-list-remove"))
         action.triggered.connect(lambda: self.remove_playlist.emit(playlist))
         menu.exec(event.globalPos())
 
@@ -133,11 +134,15 @@ class PlaylistsView(TextlistView):
             try:
                 provider = app.library.get(playlist.source)
                 if isinstance(provider, SupportsPlaylistAddSong):
-                    is_success = await run_fn(provider.playlist_add_song, playlist, song)
-            except:  # noqa, to avoid crash.
+                    is_success = await run_fn(
+                        provider.playlist_add_song, playlist, song
+                    )
+            except Exception:  # noqa, to avoid crash.
                 logger.exception("add song to playlist failed")
                 is_success = False
-            app.show_msg(f"添加歌曲 {song} 到播放列表 {'成功' if is_success is True else '失败'}")
+            app.show_msg(
+                t("playlist-add-track", status="succ" if is_success else "fail")
+            )
             self._results[index.row] = (index, is_success)
             self.viewport().update()
             self._result_timer.start(2000)

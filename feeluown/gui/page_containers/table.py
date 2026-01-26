@@ -9,6 +9,7 @@ from PyQt6.QtGui import QImage, QPixmap, QPalette
 from PyQt6.QtWidgets import QFrame, QVBoxLayout, QLabel, QApplication, QWidget
 from requests.exceptions import RequestException  # type: ignore[import]
 
+from feeluown.i18n import t
 from feeluown.utils import aio
 from feeluown.utils.reader import wrap
 from feeluown.media import Media, MediaType
@@ -55,7 +56,7 @@ logger = logging.getLogger(__name__)
 
 
 class Renderer:
-    async def setUp(self, container: 'TableContainer'):
+    async def setUp(self, container: "TableContainer"):
         # pylint: disable=attribute-defined-outside-init
         self.container = container
         self.meta_widget = container.meta_widget
@@ -384,9 +385,9 @@ class TableContainer(QFrame, BgTransparentMixin):
         show table and hide other tables, if table is None,
         hide all tables.
         """
-        for t in self._tables:
-            if t != table:
-                t.hide()
+        for tb in self._tables:
+            if tb != table:
+                tb.hide()
         if table is None:
             self.toolbar.hide()
         else:
@@ -543,15 +544,15 @@ class TableContainer(QFrame, BgTransparentMixin):
                     None, self._app.library.song_upgrade, song
                 )
             except ModelNotFound as e:
-                self._app.show_msg(f"资源提供方不支持该功能: {str(e)}")
+                self._app.show_msg(t("provider-missing-feature", errorMessage=e))
                 logger.info(f"provider:{song.source} does not support song_get")
                 song.state = ModelState.cant_upgrade
             except (ProviderIOError, RequestException) as e:
                 # FIXME: we should only catch ProviderIOError here,
-                # but currently, some plugins such fuo-qqmusic may raise
+                # but currently, some plugins such like fuo-qqmusic may raise
                 # requests.RequestException
                 logger.exception("upgrade song failed")
-                self._app.show_msg(f"请求失败: {str(e)}")
+                self._app.show_msg(t("provider-network-error", errorMessage=e))
             else:
                 if index.column() == Column.artist:
                     artists = song.artists
