@@ -22,15 +22,21 @@ def run_app(args: argparse.Namespace):
 
     loop_factory = None
 
-    if AppMode.gui in AppMode(config.MODE):
-        from PyQt6.QtWidgets import QApplication
-        from feeluown.utils.compat import PatchedQEventLoop
+    # Python 3.10 does not support specifying event loop factory in
+    # asyncio.run. Use set_event_loop_policy instead, and the policy
+    # is set in before_start_app.
+    if sys.version_info.major == 3 and sys.version_info.minor <= 10:
+        asyncio.run(start_app(args, config))
+    else:
+        if AppMode.gui in AppMode(config.MODE):
+            from PyQt6.QtWidgets import QApplication
+            from feeluown.utils.compat import PatchedQEventLoop
 
-        _ = QApplication(['FeelUOwn'])
-        loop_factory = PatchedQEventLoop
+            _ = QApplication(['FeelUOwn'])
+            loop_factory = PatchedQEventLoop
 
-    with asyncio.Runner(loop_factory=loop_factory) as runner:
-        runner.run(start_app(args, config))
+        with asyncio.Runner(loop_factory=loop_factory) as runner:
+            runner.run(start_app(args, config))
 
 
 def before_start_app(args):
@@ -90,6 +96,9 @@ def before_start_app(args):
             import PyQt6.QtWebEngineWidgets  # type: ignore # noqa
         except ImportError:
             logger.info('import QtWebEngineWidgets failed')
+        if sys.version_info.major == 3 and sys.version_info.minor <= 10:
+            from feeluown.utils.compat import DefaultQEventLoopPolicy
+            asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
     return args, config
 
 
