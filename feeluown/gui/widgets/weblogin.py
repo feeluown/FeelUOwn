@@ -27,7 +27,8 @@ class WebLoginView(QWebEngineView):
     succeed = pyqtSignal(dict)
 
     def __init__(
-        self, uri: str, required_cookies: List[Union[str, List[str]]], parent=None, local_storage_path: str = None
+        self, uri: str, required_cookies: List[Union[str, List[str]]], parent=None,
+            local_storage_path: str = None
     ):
         """
         This utility class is used for automating the cookie login process.
@@ -39,7 +40,7 @@ class WebLoginView(QWebEngineView):
             You can also use a list of lists, for example:
                [['xx_key', 'xx_wxuin'], ['xx_key', 'xx_uin]]
         :param parent:
-        :param local_storage_path: Determine a local path where the Local Storage to be stored.
+        :param local_storage_path: Determine a local path where Local Storage stored.
             If none, the Local Storage support is disabled. Default value is none.
         """
         super().__init__(parent)
@@ -59,7 +60,8 @@ class WebLoginView(QWebEngineView):
             else:
                 self.required_cookies_options.append(required_cookies)
         if local_storage_path is not None:
-            profile.settings().setAttribute(QWebEngineSettings.WebAttribute.LocalStorageEnabled, True)
+            profile.settings().setAttribute(
+                QWebEngineSettings.WebAttribute.LocalStorageEnabled, True)
             profile.setPersistentStoragePath(local_storage_path)
         self.setPage(NoOutputWebPage(self))
         self.load(QUrl(uri))
