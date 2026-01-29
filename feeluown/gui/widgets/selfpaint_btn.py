@@ -492,6 +492,25 @@ class PlayNextButton(_PlayXButton):
     def __init__(self, *args, **kwargs):
         super().__init__("right", *args, **kwargs)
 
+    def mousePressEvent(self, event):
+        button_str = str(event.button())
+        mods_str = str(event.modifiers())
+
+        if "LeftButton" in button_str and "AltModifier" in mods_str:
+            playlist = self.parent()._app.playlist
+
+            if playlist.current_song is None:
+                return
+
+            current = playlist.current_song
+            song_count = len(playlist)
+
+            playlist.remove(current)
+
+            if len(playlist) > 0:
+                playlist.next()
+        else:
+            super().mousePressEvent(event)
 
 class PlayPreviousButton(_PlayXButton):
     def __init__(self, *args, **kwargs):
