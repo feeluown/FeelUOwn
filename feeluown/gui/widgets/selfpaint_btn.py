@@ -1,4 +1,4 @@
-from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
+from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF, QEvent
 from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton
 from PyQt6.QtGui import QPainter, QPalette, QPainterPath
 
@@ -491,26 +491,19 @@ class _PlayXButton(SelfPaintAbstractSquareButton):
 class PlayNextButton(_PlayXButton):
     def __init__(self, *args, **kwargs):
         super().__init__("right", *args, **kwargs)
+        self.installEventFilter(self)
 
-    def mousePressEvent(self, event):
-        button_str = str(event.button())
-        mods_str = str(event.modifiers())
+    def eventFilter(self, obj, event):
+        if obj == self and event.type() == QEvent.Type.MouseButtonPress:
 
-        if "LeftButton" in button_str and "AltModifier" in mods_str:
-            playlist = self.parent()._app.playlist
+            if (event.button() == Qt.MouseButton.LeftButton and
+                event.modifiers() == Qt.KeyboardModifier.AltModifier):
 
-            if playlist.current_song is None:
-                return
+                playlist = self.parent()._app.playlist
+                playlist.remove_current_and_next()
+                return True
 
-            current = playlist.current_song
-            song_count = len(playlist)
-
-            playlist.remove(current)
-
-            if len(playlist) > 0:
-                playlist.next()
-        else:
-            super().mousePressEvent(event)
+        return super().eventFilter(obj, event)
 
 class PlayPreviousButton(_PlayXButton):
     def __init__(self, *args, **kwargs):
