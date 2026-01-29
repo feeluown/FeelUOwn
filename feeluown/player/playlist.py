@@ -392,6 +392,17 @@ class Playlist:
         with self._queue_lock:
             self.remove_no_lock(song)
 
+    def remove_current_and_next(self):
+        """
+        Remove the current song and play the next one.
+        This is for user who don't like the current song playing.
+        """
+        if self.current_song is None:
+            return
+
+        # remove automatic plays the next song
+        self.remove(self.current_song)
+
     def _replace_song_no_lock(self, model, umodel):
         index = self._queue.index(model)
         self._queue_insert(index + 1, umodel)
