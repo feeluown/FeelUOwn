@@ -75,7 +75,9 @@ class Avatar(SelfPaintAbstractIconTextButton):
     def on_provider_added(self, provider: Provider):
         if isinstance(provider, SupportsCurrentUserChanged):
             provider.current_user_changed.connect(
-                self.create_provider_current_user_changed_cb(provider), weak=False
+                self.create_provider_current_user_changed_cb(provider),
+                weak=False,
+                aioqueue=True,
             )
 
     def create_provider_current_user_changed_cb(self, provider: Provider):
@@ -85,6 +87,16 @@ class Avatar(SelfPaintAbstractIconTextButton):
                 self._logging_state[provider.identifier] = user.name
             else:
                 self._logging_state.pop(provider.identifier, None)
+
+            current_pvd_ui = self._app.current_pvd_ui_mgr.get()
+            if user is not None and current_pvd_ui is not None:
+                if current_pvd_ui.provider is provider:
+                    run_afn(self.show_pvd_ui_current_user)
+                    run_afn(
+                        self._app.ui.sidebar.show_provider_current_user_playlists,
+                        provider,
+                    )
+
             if not self._app.current_pvd_ui_mgr.get():
                 if self._logging_state:
                     self._text = t("select-profile")
