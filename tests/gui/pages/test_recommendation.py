@@ -2,8 +2,6 @@ from unittest import mock
 
 import pytest
 
-from PyQt6.QtWidgets import QScrollArea
-
 from feeluown.utils.router import Request
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.pages.recommendation import View, render
@@ -93,23 +91,3 @@ def test_action_buttons_wrap_adaptively(qtbot, app_mock):
     view.resize(360, 600)
     view._reflow_action_buttons()
     assert view._action_cols == 1
-
-
-def test_action_buttons_wrap_with_scrollarea_parent(qtbot, app_mock):
-    app_mock.fm = mock.Mock(is_active=False)
-    view = View(app_mock)
-    scroll = QScrollArea()
-    scroll.setWidgetResizable(True)
-    scroll.setWidget(view)
-    qtbot.addWidget(scroll)
-    scroll.show()
-
-    scroll.resize(1200, 600)
-    qtbot.wait(10)
-    assert view._action_cols == 4
-
-    scroll.resize(520, 600)
-    qtbot.wait(10)
-    assert view._action_cols == 2
-    # The horizontal scrollbar should not be needed after reflow.
-    assert scroll.horizontalScrollBar().maximum() == 0

@@ -1,7 +1,6 @@
 import logging
 from typing import TYPE_CHECKING, Optional
 
-from PyQt6.QtCore import QEvent
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QSizePolicy
 from feeluown.library.provider_protocol import SupportsToplist
 
@@ -14,7 +13,7 @@ from feeluown.library import (
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
 from feeluown.gui.helpers import BgTransparentMixin
-from feeluown.gui.pages.recommendation_panels import RecPlaylistsPanel
+from feeluown.gui.components.recommendation_panel import RecPlaylistsPanel
 from feeluown.gui.pages.template import render_scroll_area_view
 from feeluown.i18n import t
 
@@ -70,7 +69,6 @@ class View(QWidget, BgTransparentMixin):
         for btn in self._action_btns:
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._action_cols = 0
-        self._resize_event_source = None
 
         self._playlist_section = QWidget(self)
         self._playlist_section_layout = QVBoxLayout(self._playlist_section)
@@ -106,13 +104,8 @@ class View(QWidget, BgTransparentMixin):
         self._reflow_action_buttons()
 
     def _calc_action_button_columns(self) -> int:
-        self._ensure_resize_event_source()
         margins = self._layout.contentsMargins()
-        if self._resize_event_source is not None:
-            available_width = self._resize_event_source.width()
-        else:
-            available_width = self.width()
-        available = max(1, available_width - margins.left() - margins.right())
+        available = max(1, self.width() - margins.left() - margins.right())
         # cols ~= available width / button footprint, then clamp to [1, button_count].
         unit = ActionButtonMinWidth + ActionButtonSpacing
         cols = (available + ActionButtonSpacing) // unit
@@ -137,28 +130,6 @@ class View(QWidget, BgTransparentMixin):
 
         for col in range(len(self._action_btns)):
             self._action_layout.setColumnStretch(col, 1 if col < cols else 0)
-
-    def _ensure_resize_event_source(self):
-        # When hosted by QScrollArea, the viewport width can change while this
-        # view width is temporarily constrained by minimum-size hints.
-        parent = self.parentWidget()
-        if parent is self._resize_event_source:
-            return
-        if self._resize_event_source is not None:
-            self._resize_event_source.removeEventFilter(self)
-        self._resize_event_source = parent
-        if self._resize_event_source is not None:
-            self._resize_event_source.installEventFilter(self)
-
-    def eventFilter(self, obj, event):
-        if obj is self._resize_event_source and event.type() == QEvent.Type.Resize:
-            self._reflow_action_buttons()
-        return super().eventFilter(obj, event)
-
-    def showEvent(self, event):
-        super().showEvent(event)
-        self._ensure_resize_event_source()
-        self._reflow_action_buttons()
 
     def resizeEvent(self, event):
         super().resizeEvent(event)

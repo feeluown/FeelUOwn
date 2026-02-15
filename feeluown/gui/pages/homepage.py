@@ -25,7 +25,7 @@ from feeluown.gui.widgets.song_minicard_list import (
 )
 from feeluown.gui.widgets.selfpaint_btn import PlayButton
 from feeluown.gui.helpers import BgTransparentMixin
-from feeluown.gui.pages.recommendation_panels import Panel, RecPlaylistsPanel
+from feeluown.gui.components.recommendation_panel import Panel, RecPlaylistsPanel
 from feeluown.gui.pages.template import render_scroll_area_view
 
 if TYPE_CHECKING:

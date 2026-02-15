@@ -12,3 +12,4 @@ from .volume_slider import *  # noqa
 from .song_tag import SongSourceTag  # noqa
 from .collections import CollectionListView  # noqa
 from .player_progress import PlayerProgressSliderAndLabel  # noqa
+from .recommendation_panel import Panel, RecPlaylistsPanel  # noqa
