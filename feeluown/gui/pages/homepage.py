@@ -13,7 +13,6 @@ from feeluown.library import (
     SupportsRecACollectionOfVideos,
 )
 from feeluown.utils.aio import run_fn, gather, run_afn
-from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
     VideoCardListView,
     VideoCardListModel,
