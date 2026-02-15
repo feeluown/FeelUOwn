@@ -42,7 +42,7 @@ Suggested setup:
 3. Run checks via `uv run`
 
 Useful commands:
-- `uv sync --group dev --extra qt --extra jsonrpc`
+- `uv sync --group dev --extra qt --extra jsonrpc --extra battery`
 - `uv run make pytest`
 - `uv run make test`
 - `uv run make integration_test`
