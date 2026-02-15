@@ -78,6 +78,7 @@ feeluown.egg-info/
 *.dat
 htmlcov/
 .aider*
+.tasks/
 
 # ignore *.dll
 *.dll

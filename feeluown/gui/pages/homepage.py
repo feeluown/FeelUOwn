@@ -1,9 +1,7 @@
 import logging
 from typing import TYPE_CHECKING, Optional, TypeVar, Generic
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QPixmap, QGuiApplication
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
+from PyQt6.QtWidgets import QWidget, QVBoxLayout
 
 from feeluown.i18n import t
 from feeluown.library import (
@@ -14,14 +12,9 @@ from feeluown.library import (
     Provider,
     SupportsRecACollectionOfVideos,
 )
-from feeluown.utils.reader import create_reader
 from feeluown.utils.aio import run_fn, gather, run_afn
 from feeluown.gui.widgets.header import LargeHeader
 from feeluown.gui.widgets.img_card_list import (
-    PlaylistCardListView,
-    PlaylistCardListModel,
-    PlaylistFilterProxyModel,
-    PlaylistCardListDelegate,
     VideoCardListView,
     VideoCardListModel,
     VideoCardListDelegate,
@@ -31,9 +24,10 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListDelegate,
     SongMiniCardListModel,
 )
-from feeluown.gui.widgets.selfpaint_btn import PlayButton, TriagleButton
+from feeluown.gui.widgets.selfpaint_btn import PlayButton
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.helpers import BgTransparentMixin
+from feeluown.gui.pages.recommendation_panels import Panel, RecPlaylistsPanel
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -41,8 +35,6 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-PlaylistCardMinWidth = 140
-PlaylistCardSpacing = 25
 SongCardHeight = 50
 SongCardPadding = (5, 5, 5, 5)  # left, top, right, bottom
 
@@ -55,77 +47,6 @@ async def render(req, **kwargs):
     scroll_area.setWidget(view)
     app.ui.right_panel.set_body(scroll_area)
     await view.render()
-
-
-class FoldButton(TriagleButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.setToolTip(t("fold-tooltip"))
-        self.setCheckable(True)
-        self.toggled.connect(self.on_toggled)
-        # Checked means folded, and show down direction. Click to unfold.
-        self.setChecked(True)
-
-    def on_toggled(self, checked):
-        self.setToolTip(
-            t("fold-expand") if checked else t("fold-collapse"),
-        )
-        self.set_direction("down" if checked else "up")
-
-
-class Panel(QWidget):
-    _id_pixmap_cache = {}
-
-    def __init__(self, title, body, pixmap):
-        super().__init__(parent=None)
-
-        self.icon_label = QLabel()
-        self.header = LargeHeader(title)
-        self.body = body
-
-        self.icon_label.setFixedSize(20, 20)
-        self.icon_label.setPixmap(pixmap)
-
-        self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(10)
-
-        # Create header layout with icon, title, and buttons
-        self._h_layout = QHBoxLayout()
-        self._h_layout.setSpacing(5)
-        self._layout.addLayout(self._h_layout)
-
-        # Add icon and header to the left
-        self._h_layout.addWidget(self.icon_label)
-        self._h_layout.addWidget(self.header)
-
-        # Add stretch to push the fold_unfold_btn to the right
-        self._h_layout.addStretch(1)
-
-        self.fold_unfold_btn = FoldButton(length=16)
-        self._h_layout.addWidget(self.fold_unfold_btn)
-        self._h_layout.addSpacing(20)
-
-        self._layout.addWidget(self.body)
-
-    @classmethod
-    def get_provider_pixmap(cls, app: "GuiApp", provider_id, width=20):
-        device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        if provider_id in cls._id_pixmap_cache:
-            return cls._id_pixmap_cache[provider_id]
-        pvd_ui = app.pvd_ui_mgr.get(provider_id)
-        if pvd_ui is None:
-            svg = "icons:feeluown.png"
-        else:
-            svg = pvd_ui.get_colorful_svg()
-        pixmap = QPixmap(svg).scaledToWidth(
-            int(width * device_pixel_ratio), Qt.TransformationMode.SmoothTransformation
-        )
-        pixmap.setDevicePixelRatio(device_pixel_ratio)
-        return pixmap
-
-    async def render(self):
-        pass
 
 
 class HBody(QWidget):
@@ -157,48 +78,6 @@ class Overview(QWidget):
     async def render(self):
         if self._ai_radio_card is not None:
             await self._ai_radio_card.render()
-
-
-class RecPlaylistsPanel(Panel):
-    def __init__(self, app: "GuiApp", provider: SupportsRecListDailyPlaylists):
-        self._provider = provider
-        self._app = app
-        title = t("recommended-playlist")
-        self._initial_row_count = 2
-        self.playlist_list_view = PlaylistCardListView(
-            no_scroll_v=True, fixed_row_count=self._initial_row_count
-        )
-        pixmap = Panel.get_provider_pixmap(app, provider.identifier)
-        super().__init__(title, self.playlist_list_view, pixmap)
-
-        # Connect the fold_unfold_btn to show more or less playlists
-        self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
-
-    def _show_more_or_less(self, checked):
-        if checked:
-            self.playlist_list_view.set_fixed_row_count(self._initial_row_count)
-        else:
-            self.playlist_list_view.set_fixed_row_count(-1)
-
-    async def render(self):
-        playlists = await run_fn(self._provider.rec_list_daily_playlists)
-        if not playlists:
-            return
-        playlist_list_view = self.playlist_list_view
-        playlist_list_view.show_playlist_needed.connect(
-            lambda model: self._app.browser.goto(model=model)
-        )
-        playlist_list_view.setItemDelegate(
-            PlaylistCardListDelegate(
-                playlist_list_view,
-                card_min_width=PlaylistCardMinWidth,
-                card_spacing=PlaylistCardSpacing,
-            )
-        )
-        model = PlaylistCardListModel.create(create_reader(playlists), self._app)
-        filter_model = PlaylistFilterProxyModel()
-        filter_model.setSourceModel(model)
-        playlist_list_view.setModel(filter_model)
 
 
 P = TypeVar("P", bound=Provider)
@@ -374,7 +253,9 @@ class View(QWidget, BgTransparentMixin):
         source = content["provider"]
         provider = self._app.library.get(source)
         if isinstance(provider, SupportsRecListDailyPlaylists):
-            return RecPlaylistsPanel(self._app, provider)
+            # Homepage can mix panels from multiple providers, keep provider icon
+            # visible to disambiguate each section's source.
+            return RecPlaylistsPanel(self._app, provider, show_icon=True)
         logger.warning(
             f"Invalid homepage content: {content}, "
             f"provider {source} not found or not supported"

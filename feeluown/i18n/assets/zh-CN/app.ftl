@@ -597,8 +597,8 @@ music-radio-radar-activated = { -music-radio-radar }已激活
 music-radio-radar-changed = { -music-radio-radar }已切换
 ## Find music recommendations
 music-discovery = 发现音乐
-## Similar to Spotify Discover Weekly
-music-customized-recommendation = 个性化推荐
+## 每日推荐歌单
+music-customized-recommendation = 每日推荐歌单
 
 # feeluown.gui.pages.provider_home
 # ----------------------------------------

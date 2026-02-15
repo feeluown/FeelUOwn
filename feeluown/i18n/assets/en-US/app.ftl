@@ -604,8 +604,8 @@ music-radio-radar-activated = { -music-radio-radar } activated
 music-radio-radar-changed = { -music-radio-radar } switched
 ## Find music recommendations
 music-discovery = Discover Music
-## Similar to Spotify Discover Weekly
-music-customized-recommendation = Discover Weekly
+## Daily recommended playlists
+music-customized-recommendation = Daily Recommended Playlists
 
 # feeluown.gui.pages.model
 # ----------------------------------------
