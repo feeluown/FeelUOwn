@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QPixmap, QGuiApplication
@@ -104,7 +104,6 @@ class RecPlaylistsPanel(Panel):
         app: "GuiApp",
         provider: SupportsRecListDailyPlaylists,
         *,
-        title: Optional[str] = None,
         initial_row_count: int = 2,
         show_icon: bool = True,
     ):
@@ -128,7 +127,7 @@ class RecPlaylistsPanel(Panel):
         )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(
-            title or t("recommended-playlist"),
+            t("recommended-playlist"),
             self.playlist_list_view,
             pixmap,
             show_icon=show_icon,

@@ -24,9 +24,9 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListModel,
 )
 from feeluown.gui.widgets.selfpaint_btn import PlayButton
-from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.helpers import BgTransparentMixin
 from feeluown.gui.pages.recommendation_panels import Panel, RecPlaylistsPanel
+from feeluown.gui.pages.template import render_scroll_area_view
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -39,13 +39,7 @@ SongCardPadding = (5, 5, 5, 5)  # left, top, right, bottom
 
 
 async def render(req, **kwargs):
-    app: "GuiApp" = req.ctx["app"]
-
-    view = View(app)
-    scroll_area = ScrollArea()
-    scroll_area.setWidget(view)
-    app.ui.right_panel.set_body(scroll_area)
-    await view.render()
+    await render_scroll_area_view(req, View)
 
 
 class HBody(QWidget):

@@ -13,9 +13,9 @@ from feeluown.library import (
 )
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
-from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.helpers import BgTransparentMixin
 from feeluown.gui.pages.recommendation_panels import RecPlaylistsPanel
+from feeluown.gui.pages.template import render_scroll_area_view
 from feeluown.i18n import t
 
 
@@ -32,14 +32,7 @@ ActionButtonSpacing = 10
 
 
 async def render(req, **kwargs):
-    app: "GuiApp" = req.ctx["app"]
-
-    view = View(app)
-    # Reuse page ScrollArea so this page behaves like homepage when content grows.
-    scroll_area = ScrollArea()
-    scroll_area.setWidget(view)
-    app.ui.right_panel.set_body(scroll_area)
-    await view.render()
+    await render_scroll_area_view(req, View)
 
 
 class View(QWidget, BgTransparentMixin):
@@ -183,12 +176,12 @@ class View(QWidget, BgTransparentMixin):
                 self._playlist_panel = RecPlaylistsPanel(
                     self._app,
                     provider,
-                    title=t("music-customized-recommendation"),
                     initial_row_count=1,
                     # /rec is scoped to the current provider, so provider icon is
                     # redundant here.
                     show_icon=False,
                 )
+                self._playlist_panel.header.setText(t("music-customized-recommendation"))
                 self._playlist_section_layout.addWidget(self._playlist_panel)
             self._playlist_section.show()
             await self._playlist_panel.render()
