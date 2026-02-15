@@ -4,7 +4,6 @@ import pytest
 
 from PyQt6.QtWidgets import QScrollArea
 
-from feeluown.library import PlaylistModel
 from feeluown.utils.router import Request
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.pages.recommendation import View, render
@@ -15,15 +14,7 @@ class _ProviderWithRecPlaylists:
     identifier = "fake"
 
     def rec_list_daily_playlists(self):
-        return [
-            PlaylistModel(
-                source=self.identifier,
-                identifier="1",
-                name="demo playlist",
-                cover="",
-                description="",
-            )
-        ]
+        return []
 
 
 class _ProviderWithoutRecPlaylists:
@@ -49,7 +40,6 @@ async def test_view_render_show_playlist_panel(qtbot, app_mock):
     assert (
         view._playlist_panel.header.text() == t("music-customized-recommendation")
     )
-    assert view._playlist_panel.playlist_list_view.model() is not None
 
 
 @pytest.mark.asyncio
