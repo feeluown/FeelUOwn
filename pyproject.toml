@@ -42,12 +42,12 @@ dependencies = [
 
 [project.optional-dependencies]
 battery = [
-    "fuo-netease>=1.0.3",
-    "fuo-qqmusic>=1.0.5",
-    "fuo-ytmusic>=0.4.4",
+    "fuo-netease>=1.0.8",
+    "fuo-qqmusic>=1.0.16",
+    "fuo-ytmusic>=0.4.16",
     # "fuo-kuwo>=0.1.1",
     # https://github.com/BruceZhang1993/feeluown-bilibili
-    "feeluown-bilibili>=0.4.1",
+    "feeluown-bilibili>=0.5.4",
 ]
 ai = ["langchain[openai]>=1.0"]
 qt = ["PyQt6"]
