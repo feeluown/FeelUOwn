@@ -67,6 +67,12 @@ async def test_multiple_eof_reached_signal(app_mock, song, mocker):
     app_mock.playlist.next()
     task_spec = app_mock.task_mgr.get_or_create(fm._fetch_songs_task_name)
     await task_spec._task  # this is a little bit tricky
+    # On Python 3.14, done-callback execution can lag behind the awaited
+    # executor future, so poll briefly for side effects from _on_songs_fetched.
+    for _ in range(20):
+        if mock_fm_add.called:
+            break
+        await asyncio.sleep(0.01)
     # called exactly once
     mock_fetch.assert_called_once_with(3)
     assert mock_fm_add.called

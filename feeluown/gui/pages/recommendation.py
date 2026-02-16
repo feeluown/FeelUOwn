@@ -1,18 +1,8 @@
 import logging
 from typing import TYPE_CHECKING, Optional
 
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QSizePolicy
 from feeluown.library.provider_protocol import SupportsToplist
-
-from feeluown.utils.reader import create_reader
-from feeluown.utils.aio import run_fn
-from feeluown.gui.widgets.header import LargeHeader, MidHeader
-from feeluown.gui.widgets.img_card_list import (
-    PlaylistCardListView,
-    PlaylistCardListModel,
-    PlaylistFilterProxyModel,
-    PlaylistCardListDelegate,
-)
 
 from feeluown.library import (
     SupportsRecListDailyPlaylists,
@@ -22,6 +12,9 @@ from feeluown.library import (
 )
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
+from feeluown.gui.helpers import BgTransparentMixin
+from feeluown.gui.components.recommendation_panel import RecPlaylistsPanel
+from feeluown.gui.pages.template import render_scroll_area_view
 from feeluown.i18n import t
 
 
@@ -31,51 +24,61 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# Keep action controls visually comparable with the recommendation panel title/content.
+ActionButtonHeight = 34
+ActionButtonMinWidth = 170
+ActionButtonSpacing = 10
+
 
 async def render(req, **kwargs):
-    app: "GuiApp" = req.ctx["app"]
-
-    view = View(app)
-    app.ui.right_panel.set_body(view)
-    await view.render()
+    await render_scroll_area_view(req, View)
 
 
-class View(QWidget):
+class View(QWidget, BgTransparentMixin):
     def __init__(self, app: "GuiApp"):
         super().__init__(parent=None)
         self._app = app
         self._heart_radar_provider: Optional[SupportsCurrentUserListRadioSongs] = None
+        self._playlist_panel: Optional[RecPlaylistsPanel] = None
 
-        self.header_title = LargeHeader()
-        self.header_playlist_list = MidHeader()
-        self.playlist_list_view = PlaylistCardListView(fixed_row_count=1)
-        self.playlist_list_view.setItemDelegate(
-            PlaylistCardListDelegate(
-                self.playlist_list_view,
-                card_min_width=100,
-            )
-        )
         self.daily_songs_btn = CalendarButton(
-            t("recommended-daily-playlist"), parent=self
+            t("recommended-daily-playlist"),
+            height=ActionButtonHeight,
+            parent=self,
         )
-        self.rank_btn = RankButton(parent=self)
+        self.rank_btn = RankButton(height=ActionButtonHeight, parent=self)
         # FIXME: design a new button for dislike
-        self.dislike_btn = EmojiButton("🚫", t("music-blacklisted"), parent=self)
-        self.heart_radar_btn = EmojiButton("📻", t("music-radio-radar"), parent=self)
-        self.daily_songs_btn.setMinimumWidth(150)
-        self.rank_btn.setMinimumWidth(150)
-        self.dislike_btn.setMinimumWidth(150)
-        self.heart_radar_btn.setMinimumWidth(150)
+        self.dislike_btn = EmojiButton(
+            "🚫", t("music-blacklisted"), height=ActionButtonHeight, parent=self
+        )
+        self.heart_radar_btn = EmojiButton(
+            "📻", t("music-radio-radar"), height=ActionButtonHeight, parent=self
+        )
+        # Buttons should have comparable visual weight with the panel title/body.
+        self.daily_songs_btn.setMinimumWidth(ActionButtonMinWidth)
+        self.rank_btn.setMinimumWidth(ActionButtonMinWidth)
+        self.dislike_btn.setMinimumWidth(ActionButtonMinWidth)
+        self.heart_radar_btn.setMinimumWidth(ActionButtonMinWidth)
+        self._action_btns = [
+            self.daily_songs_btn,
+            self.rank_btn,
+            self.heart_radar_btn,
+            self.dislike_btn,
+        ]
+        # Preserve semantic order when wrapping to 2/1 columns.
+        for btn in self._action_btns:
+            btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
+        self._action_cols = 0
 
-        self.header_title.setText(t("music-discovery"))
-        self.header_playlist_list.setText(t("music-customized-recommendation"))
+        self._playlist_section = QWidget(self)
+        self._playlist_section_layout = QVBoxLayout(self._playlist_section)
+        self._playlist_section_layout.setContentsMargins(0, 0, 0, 0)
+        self._playlist_section_layout.setSpacing(0)
+        self._playlist_section.hide()
 
         self._layout = QVBoxLayout(self)
         self._setup_ui()
 
-        self.playlist_list_view.show_playlist_needed.connect(
-            lambda model: self._app.browser.goto(model=model)
-        )
         self.daily_songs_btn.clicked.connect(
             lambda: self._app.browser.goto(page="/rec/daily_songs")
         )
@@ -86,26 +89,51 @@ class View(QWidget):
         )
 
     def _setup_ui(self):
-        self._h_layout = QHBoxLayout()
-        self._h_layout.addWidget(self.daily_songs_btn)
-        self._h_layout.addSpacing(10)
-        self._h_layout.addWidget(self.rank_btn)
-        self._h_layout.addSpacing(10)
-        self._h_layout.addWidget(self.heart_radar_btn)
-        self._h_layout.addSpacing(10)
-        self._h_layout.addWidget(self.dislike_btn)
-        self._h_layout.addStretch(0)
+        self._action_layout = QGridLayout()
+        self._action_layout.setContentsMargins(0, 0, 0, 0)
+        self._action_layout.setHorizontalSpacing(ActionButtonSpacing)
+        self._action_layout.setVerticalSpacing(ActionButtonSpacing)
 
         self._layout.setContentsMargins(20, 10, 20, 0)
         self._layout.setSpacing(0)
-        self._layout.addWidget(self.header_title)
-        self._layout.addSpacing(10)
-        self._layout.addLayout(self._h_layout)
-        self._layout.addSpacing(30)
-        self._layout.addWidget(self.header_playlist_list)
-        self._layout.addSpacing(10)
-        self._layout.addWidget(self.playlist_list_view)
+        # Keep discovery action buttons as the topmost section to reduce noise.
+        self._layout.addLayout(self._action_layout)
+        self._layout.addSpacing(20)
+        self._layout.addWidget(self._playlist_section)
         self._layout.addStretch(0)
+        self._reflow_action_buttons()
+
+    def _calc_action_button_columns(self) -> int:
+        margins = self._layout.contentsMargins()
+        available = max(1, self.width() - margins.left() - margins.right())
+        # cols ~= available width / button footprint, then clamp to [1, button_count].
+        unit = ActionButtonMinWidth + ActionButtonSpacing
+        cols = (available + ActionButtonSpacing) // unit
+        return max(1, min(len(self._action_btns), cols))
+
+    def _reflow_action_buttons(self):
+        cols = self._calc_action_button_columns()
+        # Avoid unnecessary teardown/rebuild when only height changed.
+        if cols == self._action_cols:
+            return
+        self._action_cols = cols
+
+        while self._action_layout.count():
+            item = self._action_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                self._action_layout.removeWidget(widget)
+
+        for i, btn in enumerate(self._action_btns):
+            row, col = divmod(i, cols)
+            self._action_layout.addWidget(btn, row, col)
+
+        for col in range(len(self._action_btns)):
+            self._action_layout.setColumnStretch(col, 1 if col < cols else 0)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._reflow_action_buttons()
 
     async def render(self):
         pvd_ui = self._app.current_pvd_ui_mgr.get()
@@ -115,11 +143,22 @@ class View(QWidget):
 
         provider = pvd_ui.provider
         if isinstance(provider, SupportsRecListDailyPlaylists):
-            playlists = await run_fn(provider.rec_list_daily_playlists)
-            model = PlaylistCardListModel.create(create_reader(playlists), self._app)
-            filter_model = PlaylistFilterProxyModel()
-            filter_model.setSourceModel(model)
-            self.playlist_list_view.setModel(filter_model)
+            if self._playlist_panel is None:
+                self._playlist_panel = RecPlaylistsPanel(
+                    self._app,
+                    provider,
+                    initial_row_count=1,
+                    # /rec is scoped to the current provider, so provider icon is
+                    # redundant here.
+                    show_icon=False,
+                )
+                self._playlist_panel.header.setText(t("music-customized-recommendation"))
+                self._playlist_section_layout.addWidget(self._playlist_panel)
+            self._playlist_section.show()
+            await self._playlist_panel.render()
+        else:
+            # Keep action buttons usable even when provider has no daily playlists.
+            self._playlist_section.hide()
 
         self.daily_songs_btn.setEnabled(isinstance(provider, SupportsRecListDailySongs))
         self.rank_btn.setEnabled(isinstance(provider, SupportsToplist))

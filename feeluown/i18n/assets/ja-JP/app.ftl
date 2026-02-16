@@ -597,8 +597,8 @@ music-radio-radar-activated = { -music-radio-radar } を有効化しました
 music-radio-radar-changed = { -music-radio-radar } を切り替えました
 ## Find music recommendations
 music-discovery = 音楽を発見
-## Similar to Spotify Discover Weekly
-music-customized-recommendation = パーソナライズドおすすめ
+## デイリーおすすめプレイリスト
+music-customized-recommendation = デイリーおすすめプレイリスト
 
 # feeluown.gui.pages.provider_home
 # ----------------------------------------
