@@ -158,43 +158,35 @@ class View(QWidget, BgTransparentMixin):
         self._collection_panels = []
 
     def _create_panel_from_collection(self, provider, collection) -> Optional[Panel]:
-        title = collection.name or t("recommended-playlist")
-        models = collection.models or []
+        if not collection.models:
+            return None
         if collection.type_ == CollectionType.only_playlists:
             return RecPlaylistsCollectionPanel(
                 self._app,
                 provider.identifier,
-                title,
-                models,
+                collection,
                 initial_row_count=1,
-                show_icon=False,
             )
         if collection.type_ == CollectionType.only_songs:
             return RecSongsCollectionPanel(
                 self._app,
                 provider.identifier,
-                title,
-                models,
+                collection,
                 initial_row_count=3,
-                show_icon=False,
             )
         if collection.type_ == CollectionType.only_albums:
             return RecAlbumsCollectionPanel(
                 self._app,
                 provider.identifier,
-                title,
-                models,
+                collection,
                 initial_row_count=2,
-                show_icon=False,
             )
         if collection.type_ == CollectionType.only_videos:
             return RecVideosCollectionPanel(
                 self._app,
                 provider.identifier,
-                title,
-                models,
+                collection,
                 initial_row_count=2,
-                show_icon=False,
             )
         logger.warning(
             "skip unsupported recommendation collection type: %s",

@@ -6,6 +6,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QLabel
 
 from feeluown.i18n import t
 from feeluown.library import (
+    Collection,
     BriefAlbumModel,
     SupportsRecListDailyPlaylists,
     BriefVideoModel,
@@ -43,6 +44,22 @@ PlaylistCardSpacing = 25
 SongCardHeight = 50
 SongCardPadding = (5, 5, 5, 5)
 VideoCardMinWidth = 200
+
+
+def create_song_list_view(app: "GuiApp", row_count: int) -> SongMiniCardListView:
+    songs_list_view = SongMiniCardListView(
+        no_scroll_v=True,
+        fixed_row_count=row_count,
+    )
+    songs_list_view.setItemDelegate(
+        SongMiniCardListDelegate(
+            songs_list_view,
+            card_height=SongCardHeight,
+            card_padding=SongCardPadding,
+        )
+    )
+    songs_list_view.play_song_needed.connect(app.playlist.play_model)
+    return songs_list_view
 
 
 def _resolve_collapsed_row_count(item_count: int, default_row_count: int) -> int:
@@ -132,7 +149,6 @@ class _PlaylistsPanelBase(Panel):
         provider_id: str,
         *,
         initial_row_count: int = 2,
-        show_icon: bool = True,
     ):
         self._app = app
         self._initial_row_count = initial_row_count
@@ -157,7 +173,7 @@ class _PlaylistsPanelBase(Panel):
             title,
             self.playlist_list_view,
             pixmap,
-            show_icon=show_icon,
+            show_icon=True,
         )
 
         self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
@@ -197,8 +213,9 @@ class RecPlaylistsPanel(_PlaylistsPanelBase):
             app,
             provider.identifier,
             initial_row_count=initial_row_count,
-            show_icon=show_icon,
         )
+        if not show_icon:
+            self.icon_label.hide()
 
     async def render(self):
         playlists = await run_fn(self._provider.rec_list_daily_playlists)
@@ -210,20 +227,18 @@ class RecPlaylistsCollectionPanel(_PlaylistsPanelBase):
         self,
         app: "GuiApp",
         provider_id: str,
-        title: str,
-        playlists,
+        collection: Collection,
         *,
         initial_row_count: int = 2,
-        show_icon: bool = True,
     ):
-        self._playlists = playlists
+        self._playlists = collection.models
         super().__init__(
-            title,
+            collection.name,
             app,
             provider_id,
             initial_row_count=initial_row_count,
-            show_icon=show_icon,
         )
+        self.icon_label.hide()
 
     async def render(self):
         self.set_playlists(self._playlists)
@@ -234,31 +249,20 @@ class RecSongsCollectionPanel(Panel):
         self,
         app: "GuiApp",
         provider_id: str,
-        title: str,
-        songs: Sequence[BriefSongModel],
+        collection: Collection,
         *,
         initial_row_count: int = 3,
-        show_icon: bool = True,
     ):
         self._app = app
-        self._songs = songs
+        self._songs: Sequence[BriefSongModel] = collection.models
         self._initial_row_count = initial_row_count
         self._collapsed_row_count = initial_row_count
-        self.songs_list_view = songs_list_view = SongMiniCardListView(
-            no_scroll_v=True,
-            fixed_row_count=self._initial_row_count,
+        self.songs_list_view = create_song_list_view(
+            self._app, self._initial_row_count
         )
-        songs_list_view.setItemDelegate(
-            SongMiniCardListDelegate(
-                songs_list_view,
-                card_height=SongCardHeight,
-                card_padding=SongCardPadding,
-            )
-        )
-        songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
         pixmap = Panel.get_provider_pixmap(app, provider_id)
-        super().__init__(title, songs_list_view, pixmap, show_icon=show_icon)
+        super().__init__(collection.name, self.songs_list_view, pixmap, show_icon=False)
         self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
 
     def _show_more_or_less(self, checked):
@@ -283,14 +287,12 @@ class RecAlbumsCollectionPanel(Panel):
         self,
         app: "GuiApp",
         provider_id: str,
-        title: str,
-        albums: Sequence[BriefAlbumModel],
+        collection: Collection,
         *,
         initial_row_count: int = 2,
-        show_icon: bool = True,
     ):
         self._app = app
-        self._albums = albums
+        self._albums: Sequence[BriefAlbumModel] = collection.models
         self._initial_row_count = initial_row_count
         self._collapsed_row_count = initial_row_count
         self.album_list_view = AlbumCardListView(
@@ -308,7 +310,9 @@ class RecAlbumsCollectionPanel(Panel):
         )
 
         pixmap = Panel.get_provider_pixmap(app, provider_id)
-        super().__init__(title, self.album_list_view, pixmap, show_icon=show_icon)
+        super().__init__(
+            collection.name, self.album_list_view, pixmap, show_icon=False
+        )
         self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
 
     def _show_more_or_less(self, checked):
@@ -335,14 +339,12 @@ class RecVideosCollectionPanel(Panel):
         self,
         app: "GuiApp",
         provider_id: str,
-        title: str,
-        videos: Sequence[BriefVideoModel],
+        collection: Collection,
         *,
         initial_row_count: int = 2,
-        show_icon: bool = True,
     ):
         self._app = app
-        self._videos = videos
+        self._videos: Sequence[BriefVideoModel] = collection.models
         self._initial_row_count = initial_row_count
         self._collapsed_row_count = initial_row_count
         self.video_list_view = VideoCardListView(
@@ -357,7 +359,9 @@ class RecVideosCollectionPanel(Panel):
         self.video_list_view.play_video_needed.connect(self._app.playlist.play_model)
 
         pixmap = Panel.get_provider_pixmap(app, provider_id)
-        super().__init__(title, self.video_list_view, pixmap, show_icon=show_icon)
+        super().__init__(
+            collection.name, self.video_list_view, pixmap, show_icon=False
+        )
         self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
 
     def _show_more_or_less(self, checked):

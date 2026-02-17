@@ -10,6 +10,7 @@ from feeluown.library import (
     BriefSongModel,
     BriefVideoModel,
 )
+from feeluown.gui.helpers import ReaderFetchMoreMixin
 from feeluown.utils.router import Request
 from feeluown.gui.page_containers.scroll_area import ScrollArea
 from feeluown.gui.pages.recommendation import View, render
@@ -123,7 +124,8 @@ async def test_view_render_hide_playlist_panel_for_unsupported_provider(
 
 
 @pytest.mark.asyncio
-async def test_view_render_collections_panel(qtbot, app_mock):
+async def test_view_render_collections_panel(qtbot, app_mock, monkeypatch):
+    monkeypatch.setattr(ReaderFetchMoreMixin, "fetchMore", lambda self, _: None)
     app_mock.current_pvd_ui_mgr.get.return_value = mock.Mock(
         provider=_ProviderWithRecCollections()
     )

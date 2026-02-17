@@ -18,24 +18,17 @@ from feeluown.gui.widgets.img_card_list import (
     VideoCardListModel,
     VideoCardListDelegate,
 )
-from feeluown.gui.widgets.song_minicard_list import (
-    SongMiniCardListView,
-    SongMiniCardListDelegate,
-    SongMiniCardListModel,
-)
+from feeluown.gui.widgets.song_minicard_list import SongMiniCardListModel
 from feeluown.gui.widgets.selfpaint_btn import PlayButton
 from feeluown.gui.helpers import BgTransparentMixin
 from feeluown.gui.components.recommendation_panel import Panel, RecPlaylistsPanel
+from feeluown.gui.components.recommendation_panel import create_song_list_view
 from feeluown.gui.pages.template import render_scroll_area_view
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
-
-
-SongCardHeight = 50
-SongCardPadding = (5, 5, 5, 5)  # left, top, right, bottom
 
 
 async def render(req, **kwargs):
@@ -85,16 +78,9 @@ class SongsBasePanel(Panel, Generic[P]):
         self._app = app
         self._provider = provider
         self._initial_row_count = 3
-        self.songs_list_view = songs_list_view = SongMiniCardListView(
-            no_scroll_v=True,
-            fixed_row_count=self._initial_row_count,
-        )
-        songs_list_view.setItemDelegate(
-            SongMiniCardListDelegate(
-                songs_list_view,
-                card_height=SongCardHeight,
-                card_padding=SongCardPadding,
-            )
+        self.songs_list_view = songs_list_view = create_song_list_view(
+            self._app,
+            self._initial_row_count,
         )
         pixmap = Panel.get_provider_pixmap(app, provider.identifier)
         super().__init__(title, songs_list_view, pixmap)
@@ -107,7 +93,6 @@ class SongsBasePanel(Panel, Generic[P]):
         # Connect buttons
         self.play_all_btn.clicked.connect(lambda: run_afn(self._play_all))
         self.fold_unfold_btn.clicked.connect(self._show_more_or_less)
-        songs_list_view.play_song_needed.connect(self._app.playlist.play_model)
 
     def _show_more_or_less(self, checked):
         if checked:
