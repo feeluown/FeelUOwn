@@ -472,6 +472,19 @@ class SupportsRecListDailySongs(Protocol):
 
 
 @runtime_checkable
+class SupportsRecListCollections(Protocol):
+    @abstractmethod
+    def rec_list_collections(self, limit: Optional[int] = None) -> List[Collection]:
+        """
+        Return ordered recommendation collections.
+
+        A collection should normally contain one resource type and use the
+        collection name as section title.
+        """
+        pass
+
+
+@runtime_checkable
 class SupportsRecACollectionOfSongs(Protocol):
     @abstractmethod
     def rec_a_collection_of_songs(self) -> Collection:

@@ -5,16 +5,26 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QGridLayout, QSizePolicy
 from feeluown.library.provider_protocol import SupportsToplist
 
 from feeluown.library import (
+    CollectionType,
     SupportsRecListDailyPlaylists,
     SupportsRecListDailySongs,
+    SupportsRecListCollections,
     SupportsCurrentUserDislikeSongsReader,
     SupportsCurrentUserListRadioSongs,
 )
 
 from feeluown.gui.widgets import CalendarButton, RankButton, EmojiButton
 from feeluown.gui.helpers import BgTransparentMixin
-from feeluown.gui.components.recommendation_panel import RecPlaylistsPanel
+from feeluown.gui.components.recommendation_panel import (
+    Panel,
+    RecAlbumsCollectionPanel,
+    RecPlaylistsPanel,
+    RecPlaylistsCollectionPanel,
+    RecSongsCollectionPanel,
+    RecVideosCollectionPanel,
+)
 from feeluown.gui.pages.template import render_scroll_area_view
+from feeluown.utils.aio import run_fn
 from feeluown.i18n import t
 
 
@@ -28,6 +38,7 @@ logger = logging.getLogger(__name__)
 ActionButtonHeight = 34
 ActionButtonMinWidth = 170
 ActionButtonSpacing = 10
+RecCollectionsLimit = 12
 
 
 async def render(req, **kwargs):
@@ -40,6 +51,7 @@ class View(QWidget, BgTransparentMixin):
         self._app = app
         self._heart_radar_provider: Optional[SupportsCurrentUserListRadioSongs] = None
         self._playlist_panel: Optional[RecPlaylistsPanel] = None
+        self._collection_panels: list[Panel] = []
 
         self.daily_songs_btn = CalendarButton(
             t("recommended-daily-playlist"),
@@ -70,11 +82,11 @@ class View(QWidget, BgTransparentMixin):
             btn.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Fixed)
         self._action_cols = 0
 
-        self._playlist_section = QWidget(self)
-        self._playlist_section_layout = QVBoxLayout(self._playlist_section)
-        self._playlist_section_layout.setContentsMargins(0, 0, 0, 0)
-        self._playlist_section_layout.setSpacing(0)
-        self._playlist_section.hide()
+        self._recommendation_section = QWidget(self)
+        self._recommendation_section_layout = QVBoxLayout(self._recommendation_section)
+        self._recommendation_section_layout.setContentsMargins(0, 0, 0, 0)
+        self._recommendation_section_layout.setSpacing(0)
+        self._recommendation_section.hide()
 
         self._layout = QVBoxLayout(self)
         self._setup_ui()
@@ -99,7 +111,7 @@ class View(QWidget, BgTransparentMixin):
         # Keep discovery action buttons as the topmost section to reduce noise.
         self._layout.addLayout(self._action_layout)
         self._layout.addSpacing(20)
-        self._layout.addWidget(self._playlist_section)
+        self._layout.addWidget(self._recommendation_section)
         self._layout.addStretch(0)
         self._reflow_action_buttons()
 
@@ -135,14 +147,79 @@ class View(QWidget, BgTransparentMixin):
         super().resizeEvent(event)
         self._reflow_action_buttons()
 
+    def _clear_recommendation_panels(self):
+        while self._recommendation_section_layout.count():
+            item = self._recommendation_section_layout.takeAt(0)
+            widget = item.widget()
+            if widget is not None:
+                widget.setParent(None)
+                widget.deleteLater()
+        self._playlist_panel = None
+        self._collection_panels = []
+
+    def _create_panel_from_collection(self, provider, collection) -> Optional[Panel]:
+        if not collection.models:
+            return None
+        if collection.type_ == CollectionType.only_playlists:
+            return RecPlaylistsCollectionPanel(
+                self._app,
+                provider.identifier,
+                collection,
+                initial_row_count=1,
+            )
+        if collection.type_ == CollectionType.only_songs:
+            return RecSongsCollectionPanel(
+                self._app,
+                provider.identifier,
+                collection,
+                initial_row_count=3,
+            )
+        if collection.type_ == CollectionType.only_albums:
+            return RecAlbumsCollectionPanel(
+                self._app,
+                provider.identifier,
+                collection,
+                initial_row_count=2,
+            )
+        if collection.type_ == CollectionType.only_videos:
+            return RecVideosCollectionPanel(
+                self._app,
+                provider.identifier,
+                collection,
+                initial_row_count=2,
+            )
+        logger.warning(
+            "skip unsupported recommendation collection type: %s",
+            collection.type_,
+        )
+        return None
+
     async def render(self):
         pvd_ui = self._app.current_pvd_ui_mgr.get()
         if pvd_ui is None:
             self._app.show_msg("wtf!")
             return
 
+        self._clear_recommendation_panels()
         provider = pvd_ui.provider
-        if isinstance(provider, SupportsRecListDailyPlaylists):
+        if isinstance(provider, SupportsRecListCollections):
+            collections = await run_fn(
+                lambda: provider.rec_list_collections(limit=RecCollectionsLimit)
+            )
+            for collection in collections:
+                panel = self._create_panel_from_collection(provider, collection)
+                if panel is None:
+                    continue
+                self._recommendation_section_layout.addWidget(panel)
+                self._collection_panels.append(panel)
+            if self._collection_panels:
+                self._recommendation_section.show()
+                for panel in self._collection_panels:
+                    await panel.render()
+            else:
+                # Keep action buttons usable even when no collection can be shown.
+                self._recommendation_section.hide()
+        elif isinstance(provider, SupportsRecListDailyPlaylists):
             if self._playlist_panel is None:
                 self._playlist_panel = RecPlaylistsPanel(
                     self._app,
@@ -153,12 +230,12 @@ class View(QWidget, BgTransparentMixin):
                     show_icon=False,
                 )
                 self._playlist_panel.header.setText(t("music-customized-recommendation"))
-                self._playlist_section_layout.addWidget(self._playlist_panel)
-            self._playlist_section.show()
+                self._recommendation_section_layout.addWidget(self._playlist_panel)
+            self._recommendation_section.show()
             await self._playlist_panel.render()
         else:
             # Keep action buttons usable even when provider has no daily playlists.
-            self._playlist_section.hide()
+            self._recommendation_section.hide()
 
         self.daily_songs_btn.setEnabled(isinstance(provider, SupportsRecListDailySongs))
         self.rank_btn.setEnabled(isinstance(provider, SupportsToplist))
