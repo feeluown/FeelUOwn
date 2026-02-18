@@ -54,7 +54,7 @@ async def test_server_app_run_with_mcp_enabled(signal_aio_support, args, config,
 
     app.run()
 
-    run_mcp_server.assert_called_once_with("127.0.0.1", 32335)
+    run_mcp_server.assert_called_once_with("127.0.0.1", 32335, debug=False)
     assert mock_create_task.call_count == 4
 
 

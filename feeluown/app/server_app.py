@@ -64,7 +64,7 @@ class ServerApp(App):
                 mcp_task = run_mcp_server(
                     listen_addr,
                     self.config.MCP_PORT,
-                    debug=self.config.DEBUG,
+                    debug=bool(self.config.DEBUG),
                 )
             except ImportError as e:
                 logger.error(f"can't enable mcp server, err: {e}")
