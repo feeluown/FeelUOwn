@@ -61,7 +61,11 @@ class ServerApp(App):
         if self.config.ENABLE_MCP_SERVER:
             try:
                 from feeluown.mcpserver import run_mcp_server
-                mcp_task = run_mcp_server(listen_addr, self.config.MCP_PORT)
+                mcp_task = run_mcp_server(
+                    listen_addr,
+                    self.config.MCP_PORT,
+                    debug=self.config.DEBUG,
+                )
             except ImportError as e:
                 logger.error(f"can't enable mcp server, err: {e}")
             else:
