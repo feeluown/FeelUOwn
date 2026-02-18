@@ -55,6 +55,7 @@ macOS = ["aionowplaying>=0.10"]
 win32 = ["pyshortcuts", "aionowplaying>=0.10"]
 jsonrpc = ["json-rpc"]
 webserver = ["sanic", "json-rpc"]
+mcpserver = ["mcp"]
 webengine = ["PyQt6-WebEngine"]
 cookies = ["yt-dlp"]
 ytdl = ["yt-dlp"]
@@ -66,6 +67,7 @@ dev = [
     "Flake8-pyproject",
     "pylint",
     "mypy",
+    "mcp",
     "pyqt5-stubs",
     "pytest>=9.0",
     "pytest-runner",
@@ -87,6 +89,7 @@ dev = [
     "Flake8-pyproject",
     "pylint",
     "mypy",
+    "mcp",
     # pyqt5-stubs seems more accurate than the stubs packaged in PyQt6 package.
     # For example, the stubs in PyQt6 has wrong type hint for Qt.ItemFlag.ItemIsSelectable.
     # Some pyqt5 package installed by system package manager may not

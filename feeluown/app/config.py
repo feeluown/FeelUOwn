@@ -41,7 +41,17 @@ def create_config() -> Config:
         desc=t("web-port-desc"),
     )
     config.deffield(
+        "MCP_PORT",
+        default=23335,
+        type_=int,
+    )
+    config.deffield(
         "ENABLE_WEB_SERVER",
+        default=False,
+        type_=bool,
+    )
+    config.deffield(
+        "ENABLE_MCP_SERVER",
         default=False,
         type_=bool,
     )
