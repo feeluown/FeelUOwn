@@ -5,7 +5,8 @@ import pytest
 
 import feeluown.mcpserver as mcpserver
 from feeluown.player import PlaybackMode, State
-from feeluown.library import ResolveFailed
+from feeluown.library import ResolveFailed, ModelType
+from feeluown.library.flags import Flags
 
 
 @pytest.fixture
@@ -19,6 +20,30 @@ def app():
     app.playlist.current_song = MagicMock()
     app.playlist.playback_mode = PlaybackMode.loop
     return app
+
+
+class FakeProvider:
+    class meta:
+        identifier = "fake"
+        name = "FAKE"
+        flags = {ModelType.song: Flags.get | Flags.lyric}
+
+    @property
+    def identifier(self):
+        return "fake"
+
+    @property
+    def name(self):
+        return "FAKE"
+
+    def has_current_user(self):
+        return False
+
+    def get_current_user(self):
+        raise NotImplementedError
+
+    def get_current_user_or_none(self):
+        return None
 
 
 def test_nowplaying_resource(mocker, app):
@@ -84,3 +109,27 @@ def test_run_mcp_server_sets_host_port(mocker):
     assert inspect.iscoroutine(result)
     result.close()
     mock_run.assert_called_once()
+
+
+def test_library_providers(mocker, app):
+    provider = FakeProvider()
+    app.library.list.return_value = [provider]
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+
+    payload = mcpserver.library_providers()
+
+    assert payload == [{"id": "fake", "name": "FAKE"}]
+
+
+def test_provider_capabilities(mocker, app):
+    provider = FakeProvider()
+    app.library.get.return_value = provider
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+
+    payload = mcpserver.provider_capabilities("fake")
+
+    assert payload["id"] == "fake"
+    assert "song" in payload["flags"]
+    assert "get" in payload["flags"]["song"]
+    assert "lyric" in payload["flags"]["song"]
+    assert "SupportsCurrentUser" in payload["protocols"]

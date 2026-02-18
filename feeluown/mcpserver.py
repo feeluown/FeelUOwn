@@ -2,11 +2,50 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from feeluown.app import App, get_app
-from feeluown.library import ResolveFailed, ResolverNotFound, resolve, reverse
+from feeluown.library import (
+    ResolveFailed,
+    ResolverNotFound,
+    resolve,
+    reverse,
+    ModelType,
+)
+from feeluown.library.flags import Flags
+from feeluown.library.provider_protocol import (
+    SupportsCurrentUser,
+    SupportsCurrentUserListPlaylists,
+    SupportsCurrentUserListRadioSongs,
+    SupportsRecListCollections,
+    SupportsRecListDailyPlaylists,
+    SupportsRecListDailySongs,
+    SupportsToplist,
+    SupportsPlaylistCreateByName,
+    SupportsPlaylistDelete,
+    SupportsPlaylistAddSong,
+    SupportsPlaylistRemoveSong,
+    SupportsSongLyric,
+    SupportsSongWebUrl,
+    SupportsVideoWebUrl,
+)
 from feeluown.serializers import serialize
 
 
 mcp = FastMCP("FeelUOwn")
+_PROTOCOLS = (
+    SupportsCurrentUser,
+    SupportsCurrentUserListPlaylists,
+    SupportsCurrentUserListRadioSongs,
+    SupportsRecListCollections,
+    SupportsRecListDailyPlaylists,
+    SupportsRecListDailySongs,
+    SupportsToplist,
+    SupportsPlaylistCreateByName,
+    SupportsPlaylistDelete,
+    SupportsPlaylistAddSong,
+    SupportsPlaylistRemoveSong,
+    SupportsSongLyric,
+    SupportsSongWebUrl,
+    SupportsVideoWebUrl,
+)
 
 
 def _require_app() -> App:
@@ -43,6 +82,28 @@ def _current_song_uri() -> str | None:
     return reverse(song)
 
 
+def _provider_flags(provider) -> dict[str, list[str]]:
+    flags_map: dict[str, list[str]] = {}
+    meta_flags = getattr(provider.meta, "flags", {}) or {}
+    for model_type, flags in meta_flags.items():
+        if not isinstance(model_type, ModelType):
+            continue
+        if flags is None:
+            continue
+        names = [
+            flag.name
+            for flag in Flags
+            if flag is not Flags.none and flag in flags
+        ]
+        if names:
+            flags_map[model_type.name] = names
+    return flags_map
+
+
+def _provider_protocols(provider) -> list[str]:
+    return [proto.__name__ for proto in _PROTOCOLS if isinstance(provider, proto)]
+
+
 @mcp.tool()
 def player_nowplaying_metadata() -> dict[str, Any] | None:
     """
@@ -72,6 +133,20 @@ def nowplaying() -> dict[str, Any] | None:
         "uri": _current_song_uri(),
         "metadata": metadata,
     }
+
+
+@mcp.resource("library://providers")
+def library_providers() -> list[dict[str, Any]]:
+    app = _require_app()
+    providers = []
+    for provider in app.library.list():
+        providers.append(
+            {
+                "id": provider.identifier,
+                "name": provider.name,
+            }
+        )
+    return providers
 
 
 @mcp.tool()
@@ -153,6 +228,20 @@ def playlist_play_uri(uri: str) -> bool:
     app.playlist.add(model)
     app.playlist.play_model(model)
     return True
+
+
+@mcp.tool()
+def provider_capabilities(provider_id: str) -> dict[str, Any] | None:
+    app = _require_app()
+    provider = app.library.get(provider_id)
+    if provider is None:
+        return None
+    return {
+        "id": provider.identifier,
+        "name": provider.name,
+        "flags": _provider_flags(provider),
+        "protocols": _provider_protocols(provider),
+    }
 
 
 def run_mcp_server(host: str = "127.0.0.1", port: int = 23335):
