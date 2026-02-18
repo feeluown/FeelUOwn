@@ -318,7 +318,10 @@ def test_provider_rec_list_daily_tools(mocker, app, tool_name, method_name):
     assert hasattr(provider, method_name)
     app.library.get.return_value = provider
     mocker.patch("feeluown.mcpserver.get_app", return_value=app)
-    mocker.patch("feeluown.mcpserver.serialize", side_effect=lambda _, items: list(items))
+    mocker.patch(
+        "feeluown.mcpserver.serialize",
+        side_effect=lambda _, items: list(items),
+    )
 
     tool = getattr(mcpserver, tool_name)
     payload = tool("fake", limit=1)
@@ -336,7 +339,10 @@ def test_provider_rec_list_collections(mocker, app):
     provider = RecCollectionsProvider(collection)
     app.library.get.return_value = provider
     mocker.patch("feeluown.mcpserver.get_app", return_value=app)
-    mocker.patch("feeluown.mcpserver.serialize", side_effect=lambda _, items: list(items))
+    mocker.patch(
+        "feeluown.mcpserver.serialize",
+        side_effect=lambda _, items: list(items),
+    )
 
     payload = mcpserver.provider_rec_list_collections("fake", limit=2)
 
@@ -369,7 +375,10 @@ def test_provider_rec_single_collection(mocker, app, tool_name, method_name):
     assert hasattr(provider, method_name)
     app.library.get.return_value = provider
     mocker.patch("feeluown.mcpserver.get_app", return_value=app)
-    mocker.patch("feeluown.mcpserver.serialize", side_effect=lambda _, items: list(items))
+    mocker.patch(
+        "feeluown.mcpserver.serialize",
+        side_effect=lambda _, items: list(items),
+    )
 
     tool = getattr(mcpserver, tool_name)
     payload = tool("fake")
