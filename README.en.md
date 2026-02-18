@@ -20,6 +20,7 @@ FeelUOwn is a stable, user-friendly, and highly customizable music player.
   - Powered by large models: AI radio, natural language to playlist conversion, etc.
 - High Playability:
   - Provides an interactive control protocol based on TCP
+  - Provides an MCP server (experimental) for programmatic player/resource control
   - Text-based playlists, easy to share with friends and sync across devices
   - Supports Python-based configuration file `.fuorc`, similar to `.vimrc` and `.emacs`
 
