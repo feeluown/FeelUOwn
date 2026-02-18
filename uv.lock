@@ -599,6 +599,7 @@ cookies = [
 dev = [
     { name = "flake8" },
     { name = "flake8-pyproject" },
+    { name = "mcp" },
     { name = "mypy" },
     { name = "pyinstaller" },
     { name = "pylint" },
@@ -646,6 +647,7 @@ ytdl = [
 dev = [
     { name = "flake8" },
     { name = "flake8-pyproject" },
+    { name = "mcp" },
     { name = "mypy" },
     { name = "pyinstaller" },
     { name = "pylint" },
@@ -679,6 +681,7 @@ requires-dist = [
     { name = "json-rpc", marker = "extra == 'webserver'" },
     { name = "langchain", extras = ["openai"], marker = "extra == 'ai'", specifier = ">=1.0" },
     { name = "langcodes", specifier = ">=3.5.1" },
+    { name = "mcp", marker = "extra == 'dev'" },
     { name = "mcp", marker = "extra == 'mcpserver'" },
     { name = "mutagen", specifier = ">=1.37" },
     { name = "mypy", marker = "extra == 'dev'" },
@@ -712,6 +715,7 @@ provides-extras = ["battery", "ai", "qt", "macos", "win32", "jsonrpc", "webserve
 dev = [
     { name = "flake8" },
     { name = "flake8-pyproject" },
+    { name = "mcp" },
     { name = "mypy" },
     { name = "pyinstaller" },
     { name = "pylint" },
