@@ -43,12 +43,12 @@ class ServerApp(App):
 
     def run(self):
         super().run()
+        listen_addr = self.get_listen_addr()
 
-        asyncio.create_task(
-            self.rpc_server.run(self.get_listen_addr(), self.config.RPC_PORT))
+        asyncio.create_task(self.rpc_server.run(listen_addr, self.config.RPC_PORT))
         asyncio.create_task(
             self.pubsub_server.run(
-                self.get_listen_addr(),
+                listen_addr,
                 self.config.PUBSUB_PORT,
             ))
         if self.config.ENABLE_WEB_SERVER:
@@ -57,13 +57,13 @@ class ServerApp(App):
             except ImportError as e:
                 logger.error(f"can't enable webserver, err: {e}")
             else:
-                asyncio.create_task(
-                    run_web_server(self.get_listen_addr(), self.config.WEB_PORT))
+                asyncio.create_task(run_web_server(listen_addr, self.config.WEB_PORT))
         if self.config.ENABLE_MCP_SERVER:
             try:
                 from feeluown.mcpserver import run_mcp_server
+                mcp_task = run_mcp_server(listen_addr, self.config.MCP_PORT)
             except ImportError as e:
                 logger.error(f"can't enable mcp server, err: {e}")
             else:
-                asyncio.create_task(run_mcp_server(self.get_listen_addr()))
+                asyncio.create_task(mcp_task)
         asyncio.create_task(run_nowplaying_server(self))

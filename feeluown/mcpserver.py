@@ -1,42 +1,29 @@
-from typing import Optional, List
+from typing import Any
 
-from mcp.server.fastmcp import FastMCP
-
-from feeluown.app import get_app
+from feeluown.app import App, get_app
 from feeluown.library import reverse
 from feeluown.serializers import serialize
 
 
-mcp = FastMCP("FeelUOwn")
-
-
-@mcp.tool()
-def player_nowplaying_metadata() -> Optional[dict]:
-    """
-    Get the metadata of the current playing song of the player.
-    For example, you can get the title/artist/album/uri of the song.
-    """
+def _require_app() -> App:
     app = get_app()
-    return serialize('python', app.player.current_metadata)
+    if app is None:
+        raise RuntimeError("app is not initialized")
+    return app
 
 
-@mcp.resource("player://playlist")
-def playlist_list() -> List[dict]:
-    """
-    Get all the songs in the playlist queue.
-    Each song is indentified by the `uri` field.
-    """
-    app = get_app()
-    return serialize('python', app.playlist.list())
+def _player_nowplaying_metadata() -> dict[str, Any] | None:
+    app = _require_app()
+    return serialize("python", app.player.current_metadata)
 
 
-@mcp.tool()
-def player_play_media_by_uri(uri: str) -> bool:
-    """
-    Play a song by its uri.
-    Return True if the song is played successfully.
-    """
-    app = get_app()
+def _playlist_list() -> list[dict[str, Any]]:
+    app = _require_app()
+    return serialize("python", app.playlist.list())
+
+
+def _player_play_media_by_uri(uri: str) -> bool:
+    app = _require_app()
     for model in app.playlist.list():
         if reverse(model) == uri:
             app.playlist.play_model(model)
@@ -44,28 +31,58 @@ def player_play_media_by_uri(uri: str) -> bool:
     return False
 
 
-async def run_mcp_server(host='127.0.0.1', port=23335):
-    """
-    Run the MCP server.
-    """
+def _build_mcp_server(host: str, port: int):
+    # Import lazily so the module can be imported without the optional
+    # `mcpserver` extra installed (e.g. in default test environments).
+    from mcp.server.fastmcp import FastMCP
+
+    mcp = FastMCP("FeelUOwn")
     mcp.settings.host = host
     mcp.settings.port = port
 
-    app = get_app()
-    mcp.add_tool(
-        app.player.toggle,
-        'player_toggle',
-        'Toggle the player',
-    )
+    @mcp.tool()
+    def player_nowplaying_metadata() -> dict[str, Any] | None:
+        """
+        Get the metadata of the currently playing track.
+        """
+
+        return _player_nowplaying_metadata()
+
+    @mcp.resource("player://playlist")
+    def playlist_list() -> list[dict[str, Any]]:
+        """
+        List all tracks in the current playlist queue.
+        Each item includes a `uri` field.
+        """
+
+        return _playlist_list()
+
+    @mcp.tool()
+    def player_play_media_by_uri(uri: str) -> bool:
+        """
+        Play a track by URI if it exists in the current playlist queue.
+        """
+
+        return _player_play_media_by_uri(uri)
+
+    app = _require_app()
+    mcp.add_tool(app.player.toggle, "player_toggle", "Toggle the player")
     mcp.add_tool(
         app.playlist.next,
-        'playlist_next',
-        'Switch to the next media in the playlist',
+        "playlist_next",
+        "Switch to the next media in the playlist",
     )
     mcp.add_tool(
         app.playlist.previous,
-        'playlist_previous',
-        'Switch to the previous media in the playlist',
+        "playlist_previous",
+        "Switch to the previous media in the playlist",
     )
+    return mcp
 
-    await mcp.run_sse_async()
+
+def run_mcp_server(host: str = "127.0.0.1", port: int = 23335):
+    """
+    Create and run the MCP server in SSE mode.
+    """
+    mcp = _build_mcp_server(host, port)
+    return mcp.run_sse_async()
