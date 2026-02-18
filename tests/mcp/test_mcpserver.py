@@ -5,8 +5,7 @@ import pytest
 
 import feeluown.mcpserver as mcpserver
 from feeluown.player import PlaybackMode, State
-from feeluown.library import ResolveFailed, ModelType
-from feeluown.library.flags import Flags
+from feeluown.library import ResolveFailed
 
 
 @pytest.fixture
@@ -26,7 +25,6 @@ class FakeProvider:
     class meta:
         identifier = "fake"
         name = "FAKE"
-        flags = {ModelType.song: Flags.get | Flags.lyric}
 
     @property
     def identifier(self):
@@ -129,7 +127,4 @@ def test_provider_capabilities(mocker, app):
     payload = mcpserver.provider_capabilities("fake")
 
     assert payload["id"] == "fake"
-    assert "song" in payload["flags"]
-    assert "get" in payload["flags"]["song"]
-    assert "lyric" in payload["flags"]["song"]
     assert "SupportsCurrentUser" in payload["protocols"]

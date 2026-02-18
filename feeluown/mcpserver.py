@@ -2,14 +2,7 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from feeluown.app import App, get_app
-from feeluown.library import (
-    ResolveFailed,
-    ResolverNotFound,
-    resolve,
-    reverse,
-    ModelType,
-)
-from feeluown.library.flags import Flags
+from feeluown.library import ResolveFailed, ResolverNotFound, resolve, reverse
 from feeluown.library.provider_protocol import (
     SupportsCurrentUser,
     SupportsCurrentUserListPlaylists,
@@ -80,24 +73,6 @@ def _current_song_uri() -> str | None:
     if song is None:
         return None
     return reverse(song)
-
-
-def _provider_flags(provider) -> dict[str, list[str]]:
-    flags_map: dict[str, list[str]] = {}
-    meta_flags = getattr(provider.meta, "flags", {}) or {}
-    for model_type, flags in meta_flags.items():
-        if not isinstance(model_type, ModelType):
-            continue
-        if flags is None:
-            continue
-        names = [
-            flag.name
-            for flag in Flags
-            if flag is not Flags.none and flag in flags
-        ]
-        if names:
-            flags_map[model_type.name] = names
-    return flags_map
 
 
 def _provider_protocols(provider) -> list[str]:
@@ -239,7 +214,6 @@ def provider_capabilities(provider_id: str) -> dict[str, Any] | None:
     return {
         "id": provider.identifier,
         "name": provider.name,
-        "flags": _provider_flags(provider),
         "protocols": _provider_protocols(provider),
     }
 
