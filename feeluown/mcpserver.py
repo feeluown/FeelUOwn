@@ -2,7 +2,7 @@ from typing import Any
 
 from mcp.server.fastmcp import FastMCP
 from feeluown.app import App, get_app
-from feeluown.library import reverse
+from feeluown.library import ResolveFailed, ResolverNotFound, resolve, reverse
 from feeluown.serializers import serialize
 
 
@@ -35,6 +35,14 @@ def _player_play_media_by_uri(uri: str) -> bool:
     return False
 
 
+def _current_song_uri() -> str | None:
+    app = _require_app()
+    song = app.playlist.current_song
+    if song is None:
+        return None
+    return reverse(song)
+
+
 @mcp.tool()
 def player_nowplaying_metadata() -> dict[str, Any] | None:
     """
@@ -52,6 +60,20 @@ def playlist_list() -> list[dict[str, Any]]:
     return _playlist_list()
 
 
+@mcp.resource("player://nowplaying")
+def nowplaying() -> dict[str, Any] | None:
+    """
+    Get the current playing track info.
+    """
+    metadata = _player_nowplaying_metadata()
+    if metadata is None:
+        return None
+    return {
+        "uri": _current_song_uri(),
+        "metadata": metadata,
+    }
+
+
 @mcp.tool()
 def player_play_media_by_uri(uri: str) -> bool:
     """
@@ -66,6 +88,36 @@ def player_toggle() -> None:
 
 
 @mcp.tool()
+def player_play() -> None:
+    _require_app().player.resume()
+
+
+@mcp.tool()
+def player_pause() -> None:
+    _require_app().player.pause()
+
+
+@mcp.tool()
+def player_seek(position: float) -> None:
+    _require_app().player.position = position
+
+
+@mcp.tool()
+def player_status() -> dict[str, Any]:
+    app = _require_app()
+    player = app.player
+    playlist = app.playlist
+    return {
+        "state": player.state.name,
+        "position": player.position,
+        "duration": player.duration,
+        "volume": player.volume,
+        "playback_mode": playlist.playback_mode.name,
+        "nowplaying": nowplaying(),
+    }
+
+
+@mcp.tool()
 def playlist_next() -> None:
     _require_app().playlist.next()
 
@@ -73,6 +125,34 @@ def playlist_next() -> None:
 @mcp.tool()
 def playlist_previous() -> None:
     _require_app().playlist.previous()
+
+
+@mcp.tool()
+def playlist_clear() -> None:
+    _require_app().playlist.clear()
+
+
+@mcp.tool()
+def playlist_add_uri(uri: str) -> bool:
+    app = _require_app()
+    try:
+        model = resolve(uri)
+    except (ResolveFailed, ResolverNotFound):
+        return False
+    app.playlist.add(model)
+    return True
+
+
+@mcp.tool()
+def playlist_play_uri(uri: str) -> bool:
+    app = _require_app()
+    try:
+        model = resolve(uri)
+    except (ResolveFailed, ResolverNotFound):
+        return False
+    app.playlist.add(model)
+    app.playlist.play_model(model)
+    return True
 
 
 def run_mcp_server(host: str = "127.0.0.1", port: int = 23335):
