@@ -112,7 +112,7 @@ def player_nowplaying_metadata() -> dict[str, Any] | None:
     return _player_nowplaying_metadata()
 
 
-@mcp.resource("player://playlist")
+@mcp.resource("fuo://player/playlist")
 def playlist_list() -> list[dict[str, Any]]:
     """
     List all tracks in the current playlist queue.
@@ -121,7 +121,7 @@ def playlist_list() -> list[dict[str, Any]]:
     return _playlist_list()
 
 
-@mcp.resource("player://nowplaying")
+@mcp.resource("fuo://player/nowplaying")
 def nowplaying() -> dict[str, Any] | None:
     """
     Get the current playing track info.
@@ -135,7 +135,7 @@ def nowplaying() -> dict[str, Any] | None:
     }
 
 
-@mcp.resource("library://providers")
+@mcp.resource("fuo://library/providers")
 def library_providers() -> list[dict[str, Any]]:
     app = _require_app()
     providers = []
