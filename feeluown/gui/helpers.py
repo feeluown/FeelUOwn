@@ -49,8 +49,14 @@ from feeluown.utils.aio import run_afn, run_fn
 from feeluown.utils.reader import AsyncReader, Reader
 from feeluown.utils.typing_ import Protocol
 from feeluown.excs import ProviderIOError, ResourceNotFound
-from feeluown.library import ModelNotFound, ModelType, BaseModel
+from feeluown.library import (
+    BaseModel,
+    ModelNotFound,
+    ModelType,
+    SupportsImgUrlToMedia,
+)
 from feeluown.library import reverse
+from feeluown.media import Media, MediaType
 from feeluown.gui.consts import FontFamilies
 
 
@@ -540,12 +546,20 @@ def fetch_cover_wrapper(app: GuiApp):
     """
     img_mgr, library = app.img_mgr, app.library
 
-    async def fetch_image_with_cb(img_uid, img_url, cb):
-        # Fetch image by url and invoke cb.
-        if img_url:
+    def to_cover_media(source: str, cover_url: str) -> Optional[Media]:
+        if not cover_url:
+            return None
+        provider = library.get(source)
+        if isinstance(provider, SupportsImgUrlToMedia):
+            return provider.img_url_to_media(cover_url)
+        return Media(cover_url, MediaType.image)
+
+    async def fetch_image_with_cb(img_uid, img_media: Optional[Media], cb):
+        # Fetch image media and invoke cb.
+        if img_media:
             # FIXME: sleep random second to avoid send too many request to provider
             await asyncio.sleep(random.randrange(100) / 100)
-            content = await img_mgr.get(img_url, img_uid)
+            content = await img_mgr.get(img_media, img_uid)
             cb(content)
         else:
             cb(None)
@@ -593,8 +607,8 @@ def fetch_cover_wrapper(app: GuiApp):
             # Note that some providers may not provide pic_url for songs.
             if upgraded_song.pic_url:
                 img_uid = reverse(model) + "/pic_url"
-                img_url = upgraded_song.pic_url
-                return await fetch_image_with_cb(img_uid, img_url, cb)
+                img_media = to_cover_media(upgraded_song.source, upgraded_song.pic_url)
+                return await fetch_image_with_cb(img_uid, img_media, cb)
 
             album = upgraded_song.album
             if album is None:
@@ -614,8 +628,8 @@ def fetch_cover_wrapper(app: GuiApp):
             cb(content)
             return
 
-        img_url = await run_fn(library.model_get_cover, model)
-        return await fetch_image_with_cb(img_uid, img_url, cb)
+        img_media = await run_fn(library.model_get_cover_media, model)
+        return await fetch_image_with_cb(img_uid, img_media, cb)
 
     async def fetch_model_cover(model, cb):
         if ModelType(model.meta.model_type) is ModelType.song:

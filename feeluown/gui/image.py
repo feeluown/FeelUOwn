@@ -11,6 +11,7 @@ from PyQt6.QtCore import QUrl
 from PyQt6.QtGui import QDesktopServices, QImage
 
 from feeluown.consts import CACHE_DIR
+from feeluown.media import Media
 
 
 logger = logging.getLogger(__name__)
@@ -35,7 +36,25 @@ class ImgManager(object):
             return content
         return None
 
-    async def get(self, img_url, img_name):
+    @staticmethod
+    def _build_proxies(http_proxy):
+        if not http_proxy:
+            return None
+        return {
+            "http": http_proxy,
+            "https": http_proxy,
+        }
+
+    async def get(self, img, img_name):
+        if isinstance(img, Media):
+            img_url = img.url
+            http_headers = img.http_headers
+            http_proxy = img.http_proxy
+        else:
+            img_url = img
+            http_headers = {}
+            http_proxy = ""
+
         if not img_url:
             return None
         if img_url.startswith("fuo://local"):
@@ -55,8 +74,15 @@ class ImgManager(object):
         event_loop = asyncio.get_event_loop()
         try:
             # May return None.
+            proxies = self._build_proxies(http_proxy)
             res = await event_loop.run_in_executor(
-                None, partial(self._app.request.get, img_url)
+                None,
+                partial(
+                    self._app.request.get,
+                    img_url,
+                    headers=http_headers,
+                    proxies=proxies,
+                ),
             )
         except:  # noqa
             res = None

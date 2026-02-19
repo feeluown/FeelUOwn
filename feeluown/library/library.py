@@ -4,7 +4,7 @@ import warnings
 from collections import Counter
 from typing import Optional, TypeVar, List, TYPE_CHECKING
 
-from feeluown.media import Media
+from feeluown.media import Media, MediaType
 from feeluown.utils.aio import run_fn, as_completed
 from feeluown.utils.dispatch import Signal
 from feeluown.library.base import SearchType, ModelType
@@ -40,6 +40,7 @@ from feeluown.library.provider_protocol import (
     SupportsVideoWebUrl,
     SupportsAlbumSongsReader,
     SupportsUserAutoLogin,
+    SupportsImgUrlToMedia,
 )
 from feeluown.library.standby import (
     get_standby_score,
@@ -191,9 +192,7 @@ class Library:
                     return res
                 # Pass empty err_msg, otherwise `track-search-result-empty`
                 # can be ignored.
-                return SimpleSearchResult(
-                    q=keyword, source=pvd.identifier, err_msg=""
-                )
+                return SimpleSearchResult(q=keyword, source=pvd.identifier, err_msg="")
 
             return search
 
@@ -483,6 +482,16 @@ class Library:
         else:
             cover = um.cover
         return cover
+
+    def model_get_cover_media(self, model) -> Optional[Media]:
+        """Get cover media and preserve provider-level network options."""
+        cover_url = self.model_get_cover(model)
+        if not cover_url:
+            return None
+        provider = self.get(model.source)
+        if isinstance(provider, SupportsImgUrlToMedia):
+            return provider.img_url_to_media(cover_url)
+        return Media(cover_url, MediaType.image)
 
     def _model_upgrade(self, model):
         """Upgrade a model to normal model.

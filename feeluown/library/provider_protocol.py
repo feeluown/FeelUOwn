@@ -4,9 +4,19 @@ from feeluown.media import Quality, Media
 from feeluown.excs import NoUserLoggedIn
 from feeluown.utils.dispatch import Signal
 from .models import (
-    BriefCommentModel, SongModel, VideoModel, AlbumModel, ArtistModel,
-    PlaylistModel, UserModel, ModelType, BriefArtistModel, BriefSongModel,
-    LyricModel, BriefVideoModel, BriefPlaylistModel,
+    BriefCommentModel,
+    SongModel,
+    VideoModel,
+    AlbumModel,
+    ArtistModel,
+    PlaylistModel,
+    UserModel,
+    ModelType,
+    BriefArtistModel,
+    BriefSongModel,
+    LyricModel,
+    BriefVideoModel,
+    BriefPlaylistModel,
 )
 from .collection import Collection
 
@@ -35,15 +45,18 @@ def check_flag(provider, model_type: ModelType, flag: PF) -> bool:
 
 def eq(model_type: ModelType, flag: PF):
     """Decorate a protocol class and associate it with a provider flag"""
+
     def wrapper(cls):
         _FlagProtocolMapping[(model_type, flag)] = cls
         return cls
+
     return wrapper
 
 
 #
 # Protocols for Song related functions.
 #
+
 
 @eq(ModelType.song, PF.get)
 @runtime_checkable
@@ -62,8 +75,7 @@ class SupportsSongGet(Protocol):
 class SupportsSongSimilar(Protocol):
     @abstractmethod
     def song_list_similar(self, song: BriefSongModel) -> List[BriefSongModel]:
-        """List similar songs
-        """
+        """List similar songs"""
         raise NotImplementedError
 
 
@@ -118,8 +130,7 @@ class SupportsSongWebUrl(Protocol):
 @runtime_checkable
 class SupportsSongLyric(Protocol):
     def song_get_lyric(self, song: BriefSongModel) -> Optional[LyricModel]:
-        """Get music video of the song
-        """
+        """Get music video of the song"""
         raise NotImplementedError
 
 
@@ -127,15 +138,14 @@ class SupportsSongLyric(Protocol):
 @runtime_checkable
 class SupportsSongMV(Protocol):
     def song_get_mv(self, song: BriefSongModel) -> Optional[VideoModel]:
-        """Get music video of the song
-
-        """
+        """Get music video of the song"""
         raise NotImplementedError
 
 
 #
 # Protocols for Album related functions.
 #
+
 
 @eq(ModelType.album, PF.get)
 @runtime_checkable
@@ -161,6 +171,7 @@ class SupportsAlbumSongsReader(Protocol):
 # Protocols for Album related functions.
 #
 
+
 @eq(ModelType.artist, PF.get)
 @runtime_checkable
 class SupportsArtistGet(Protocol):
@@ -178,8 +189,7 @@ class SupportsArtistGet(Protocol):
 class SupportsArtistSongsReader(Protocol):
     @abstractmethod
     def artist_create_songs_rd(self, artist: BriefArtistModel):
-        """Create songs reader of the artist
-        """
+        """Create songs reader of the artist"""
         raise NotImplementedError
 
 
@@ -188,8 +198,7 @@ class SupportsArtistSongsReader(Protocol):
 class SupportsArtistAlbumsReader(Protocol):
     @abstractmethod
     def artist_create_albums_rd(self, artist: BriefArtistModel):
-        """Create albums reader of the artist
-        """
+        """Create albums reader of the artist"""
         raise NotImplementedError
 
 
@@ -197,14 +206,14 @@ class SupportsArtistAlbumsReader(Protocol):
 class SupportsArtistContributedAlbumsReader(Protocol):
     @abstractmethod
     def artist_create_contributed_albums_rd(self, artist: BriefArtistModel):
-        """Create contributed albums reader of the artist
-        """
+        """Create contributed albums reader of the artist"""
         raise NotImplementedError
 
 
 #
 # Protocols for Video related functions.
 #
+
 
 @eq(ModelType.video, PF.get)
 @runtime_checkable
@@ -233,7 +242,8 @@ class SupportsVideoMultiQuality(Protocol):
 
     @abstractmethod
     def video_select_media(
-            self, video: BriefVideoModel, policy=None) -> Tuple[Media, Quality.Video]:
+        self, video: BriefVideoModel, policy=None
+    ) -> Tuple[Media, Quality.Video]:
         raise NotImplementedError
 
     @abstractmethod
@@ -244,6 +254,7 @@ class SupportsVideoMultiQuality(Protocol):
 #
 # Protocols for Album related functions.
 #
+
 
 @eq(ModelType.playlist, PF.get)
 @runtime_checkable
@@ -420,6 +431,7 @@ class SupportsCurrentUserFavVideosReader(Protocol):
 @runtime_checkable
 class SupportsCurrentUserDislikeSongsReader(Protocol):
     """Support reading the song dislike list."""
+
     @abstractmethod
     def current_user_dislike_create_songs_rd(self) -> List[BriefSongModel]:
         pass
@@ -428,6 +440,7 @@ class SupportsCurrentUserDislikeSongsReader(Protocol):
 @runtime_checkable
 class SupportsCurrentUserDislikeAddSong(Protocol):
     """Support adding a song to the song dislike list."""
+
     @abstractmethod
     def current_user_dislike_add_song(self, song: BriefSongModel) -> bool:
         """
@@ -438,6 +451,7 @@ class SupportsCurrentUserDislikeAddSong(Protocol):
 @runtime_checkable
 class SupportsCurrentUserDislikeRemoveSong(Protocol):
     """Support removing a song from the song dislike list."""
+
     @abstractmethod
     def current_user_dislike_remove_song(self, song: BriefSongModel) -> bool:
         """
@@ -459,6 +473,13 @@ class SupportsToplist(Protocol):
         PlaylistModel. They should think about a way to solve this. For example,
         turn the identifier into `toplist_{id}` and do some hack in playlist_get API.
         """
+
+
+@runtime_checkable
+class SupportsImgUrlToMedia(Protocol):
+    @abstractmethod
+    def img_url_to_media(self, pic_url: str) -> Media:
+        """Convert a picture url to image media with optional network options."""
 
 
 #
