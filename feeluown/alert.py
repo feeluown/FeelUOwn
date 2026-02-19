@@ -42,8 +42,7 @@ class AlertManager:
         if media and media.url:
             proxy = media.http_proxy if media.http_proxy else "none"
             hostname = urlparse(media.url).hostname
-            msg = ()
-            self.show_alert(msg, hostname=hostname, proxy=proxy)
+            self.show_alert('media-loading-failed', hostname=hostname, proxy=proxy)
 
     def show_alert(self, msg_id: str, **kwargs):
         logger.warning(t(msg_id, locale="en-US", **kwargs))

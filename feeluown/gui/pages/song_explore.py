@@ -364,12 +364,22 @@ class SongExploreView(QWidget):
 
     async def maybe_show_song_pic(self, song, album):
         if album:
+            cover_media = await aio.run_fn(
+                self._app.library.model_get_cover_media, album
+            )
             aio.run_afn(
-                self.cover_label.show_cover, album.cover, reverse(album) + "/cover"
+                self.cover_label.show_cover_media,
+                cover_media,
+                reverse(album) + "/cover",
             )
         else:
+            cover_media = await aio.run_fn(
+                self._app.library.model_get_cover_media, song
+            )
             aio.run_afn(
-                self.cover_label.show_cover, song.pic_url, reverse(song) + "/pic_url"
+                self.cover_label.show_cover_media,
+                cover_media,
+                reverse(song) + "/pic_url",
             )
 
     def resizeEvent(self, e: QResizeEvent) -> None:
