@@ -95,6 +95,9 @@ class Renderer:
         cover_media = (
             cover if isinstance(cover, Media) else Media(cover, MediaType.image)
         )
+        await self.show_cover_media(cover_media, cover_uid, as_background=as_background)
+
+    async def show_cover_media(self, cover_media: Media, cover_uid, as_background=False):
         app = self._app
         content = await app.img_mgr.get(cover_media, cover_uid)
         img = QImage()

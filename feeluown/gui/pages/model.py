@@ -115,9 +115,11 @@ class ArtistRenderer(Renderer, ModelTabBarRendererMixin):
             self.show_albums(reader)
 
         # finally, we render cover
-        cover = artist.pic_url
-        if cover:
-            await self.show_cover(cover, reverse(artist) + "/cover", as_background=True)
+        cover_media = await run_fn(self._app.library.model_get_cover_media, artist)
+        if cover_media:
+            await self.show_cover_media(
+                cover_media, reverse(artist) + "/cover", as_background=True
+            )
 
     async def _show_songs(self):
         artist = self.model
@@ -184,9 +186,9 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
             self.show_songs(reader, columns_mode=ColumnsMode.album)
 
         # fetch cover and description
-        cover = album.cover
-        if cover:
-            run_afn(self.show_cover, cover, reverse(album, "/cover"))
+        cover_media = await run_fn(self._app.library.model_get_cover_media, album)
+        if cover_media:
+            run_afn(self.show_cover_media, cover_media, reverse(album, "/cover"))
 
 
 class PlaylistRenderer(Renderer):
@@ -205,8 +207,9 @@ class PlaylistRenderer(Renderer):
         await self._show_songs()
 
         # show playlist cover
-        if playlist.cover:
-            run_afn(self.show_cover, playlist.cover, reverse(playlist) + "/cover")
+        cover_media = await run_fn(self._app.library.model_get_cover_media, playlist)
+        if cover_media:
+            run_afn(self.show_cover_media, cover_media, reverse(playlist) + "/cover")
 
         provider = self._app.library.get(self.playlist.source)
         if isinstance(provider, SupportsPlaylistRemoveSong):
