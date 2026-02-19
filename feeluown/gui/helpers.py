@@ -114,6 +114,13 @@ def disconnect_slots_if_has(signal):
         pass
 
 
+def to_cover_media_by_source(library, source: str, cover_url: str) -> Media:
+    provider = library.get(source)
+    if isinstance(provider, SupportsImgUrlToMedia):
+        return provider.img_url_to_media(cover_url)
+    return Media(cover_url, MediaType.image)
+
+
 def resize_font(font, delta):
     if font.pixelSize() > 0:
         font.setPixelSize(max(1, font.pixelSize() + delta))
@@ -546,14 +553,6 @@ def fetch_cover_wrapper(app: GuiApp):
     """
     img_mgr, library = app.img_mgr, app.library
 
-    def to_cover_media(source: str, cover_url: str) -> Optional[Media]:
-        if not cover_url:
-            return None
-        provider = library.get(source)
-        if isinstance(provider, SupportsImgUrlToMedia):
-            return provider.img_url_to_media(cover_url)
-        return Media(cover_url, MediaType.image)
-
     async def fetch_image_with_cb(img_uid, img_media: Optional[Media], cb):
         # Fetch image media and invoke cb.
         if img_media:
@@ -607,7 +606,9 @@ def fetch_cover_wrapper(app: GuiApp):
             # Note that some providers may not provide pic_url for songs.
             if upgraded_song.pic_url:
                 img_uid = reverse(model) + "/pic_url"
-                img_media = to_cover_media(upgraded_song.source, upgraded_song.pic_url)
+                img_media = to_cover_media_by_source(
+                    library, upgraded_song.source, upgraded_song.pic_url
+                )
                 return await fetch_image_with_cb(img_uid, img_media, cb)
 
             album = upgraded_song.album

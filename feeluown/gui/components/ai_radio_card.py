@@ -83,8 +83,10 @@ class AIRadioCard(QFrame):
                 self._play_btn.setEnabled(True)
                 self._play_btn.setToolTip('点击播放')
                 self._status_label.setText(f'{song.title} • {song.artists_name}')
-                cover = await aio.run_fn(self._app.library.model_get_cover, song)
-                await self._cover_label.show_cover(cover, reverse(song))
+                cover_media = await aio.run_fn(
+                    self._app.library.model_get_cover_media, song
+                )
+                await self._cover_label.show_cover_media(cover_media, reverse(song))
             else:
                 self._play_btn.setToolTip('未匹配到音源')
 
