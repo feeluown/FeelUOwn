@@ -92,10 +92,11 @@ class Renderer:
         self.container.current_extra = extra
 
     async def show_cover(self, cover, cover_uid, as_background=False):
-        cover = Media(cover, MediaType.image)
-        url = cover.url
+        cover_media = (
+            cover if isinstance(cover, Media) else Media(cover, MediaType.image)
+        )
         app = self._app
-        content = await app.img_mgr.get(url, cover_uid)
+        content = await app.img_mgr.get(cover_media, cover_uid)
         img = QImage()
         img.loadFromData(content)
         pixmap = QPixmap(img)

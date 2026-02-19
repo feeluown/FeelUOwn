@@ -82,8 +82,8 @@ class CoverLabelV2(CoverLabel):
 
         self._app = app
 
-    async def show_cover(self, url, cover_uid):
-        content = await self._app.img_mgr.get(url, cover_uid)
+    async def show_cover(self, cover, cover_uid):
+        content = await self._app.img_mgr.get(cover, cover_uid)
         img = QImage()
         img.loadFromData(content)
         self.show_img(img)

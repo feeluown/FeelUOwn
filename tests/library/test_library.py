@@ -1,62 +1,84 @@
 import pytest
 
 from feeluown.library import (
-    ModelType, BriefAlbumModel, BriefSongModel, Provider, Media,
-    SimpleSearchResult, Quality
+    ModelType,
+    BriefAlbumModel,
+    BriefSongModel,
+    Provider,
+    Media,
+    SimpleSearchResult,
+    Quality,
 )
+from feeluown.media import MediaType
 
 
 @pytest.mark.asyncio
 async def test_library_a_search(library):
-    result = [x async for x in library.a_search('xxx')][0]
-    assert result.q == 'xxx'
+    result = [x async for x in library.a_search("xxx")][0]
+    assert result.q == "xxx"
 
 
 def test_library_model_get(library, ekaf_provider, ekaf_album0):
-    album = library.model_get(ekaf_provider.identifier,
-                              ModelType.album,
-                              ekaf_album0.identifier)
+    album = library.model_get(
+        ekaf_provider.identifier, ModelType.album, ekaf_album0.identifier
+    )
     assert album.identifier == ekaf_album0.identifier
 
 
 def test_library_model_upgrade(library, ekaf_provider, ekaf_album0):
-    album = BriefAlbumModel(identifier=ekaf_album0.identifier,
-                            source=ekaf_provider.identifier)
+    album = BriefAlbumModel(
+        identifier=ekaf_album0.identifier, source=ekaf_provider.identifier
+    )
     album = library._model_upgrade(album)
     assert album.name == ekaf_album0.name
 
 
+def test_library_model_get_cover_media_uses_provider_hook(
+    library, ekaf_provider, ekaf_album0
+):
+    ekaf_album0.cover = "http://xxx.com/cover.jpg"
+
+    def to_cover_media(url):
+        return Media(url, MediaType.image, http_proxy="http://127.0.0.1:7890")
+
+    ekaf_provider.img_url_to_media = to_cover_media
+    media = library.model_get_cover_media(ekaf_album0)
+
+    assert media is not None
+    assert media.type_ == MediaType.image
+    assert media.url == "http://xxx.com/cover.jpg"
+    assert media.http_proxy == "http://127.0.0.1:7890"
+
+
 def test_prepare_mv_media(library, ekaf_brief_song0):
-    media = library.song_prepare_mv_media(ekaf_brief_song0, '<<<')
-    assert media.url != ''  # media url is valid(not empty)
+    media = library.song_prepare_mv_media(ekaf_brief_song0, "<<<")
+    assert media.url != ""  # media url is valid(not empty)
 
 
 @pytest.mark.asyncio
 async def test_library_a_list_song_standby_v2(library):
-
     class GoodProvider(Provider):
         @property
         def identifier(self):
-            return 'good'
+            return "good"
 
         @property
         def name(self):
-            return 'good'
+            return "good"
 
         def song_list_quality(self, _):
             return [Quality.Audio.hq]
 
         def song_get_media(self, _, __):
-            return Media('good.mp3')
+            return Media("good.mp3")
 
         def search(self, *_, **__):
             return SimpleSearchResult(
-                q='',
-                songs=[BriefSongModel(identifier='1', source=self.identifier)]
+                q="", songs=[BriefSongModel(identifier="1", source=self.identifier)]
             )
 
     library.register(GoodProvider())
-    song = BriefSongModel(identifier='1', title='', source='xxx')
+    song = BriefSongModel(identifier="1", title="", source="xxx")
     song_media_list = await library.a_list_song_standby_v2(song)
     assert song_media_list
-    assert song_media_list[0][1].url == 'good.mp3'
+    assert song_media_list[0][1].url == "good.mp3"
