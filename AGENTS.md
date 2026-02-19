@@ -117,3 +117,14 @@ Proposal:
 - Approach: ...
 - Tradeoffs: ...
 - Assumptions: ...
+
+## 7) Recent Engineering Notes
+
+- Prefer semantic API names over scenario-specific ones:
+  - Good: `show_cover_from_metadata(artwork, source, uid)`
+  - Avoid: names that encode one caller context (for example `show_current_song_*`)
+- For cover/image loading, keep a clear boundary:
+  - Data/adapter layer should convert `(url, source)` into `Media`.
+  - Widget layer should consume `Media` directly (`show_cover_media`) whenever possible.
+- Avoid broad fallback branches that hide failures. If input contract is wrong,
+  fail early with explicit type/shape checks.

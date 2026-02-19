@@ -132,9 +132,10 @@ class NowplayingArtwork(QWidget):
             self.setToolTip("")
         # Set song artwork.
         artwork = metadata.get("artwork", "")
+        source = metadata.get("source", "")
         artwork_uid = metadata.get("uri", artwork)
         if artwork:
-            run_afn(self._inner.show_current_song_cover, artwork_uid)
+            run_afn(self._inner.show_cover_with_source, artwork, source, artwork_uid)
         else:
             self._inner.show_img(None)
 

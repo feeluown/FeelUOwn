@@ -6,8 +6,8 @@ from PyQt6.QtGui import QPainter, QImage
 from PyQt6.QtWidgets import QLabel, QSizePolicy, QMenu
 
 from feeluown.i18n import t
+from feeluown.library import SupportsImgUrlToMedia
 from feeluown.media import Media, MediaType
-from feeluown.utils.aio import run_fn
 from feeluown.gui.drawers import PixmapDrawer
 from feeluown.gui.image import open_image
 
@@ -104,11 +104,17 @@ class CoverLabelV2(CoverLabel):
             raise TypeError(f"unsupported cover type: {type(cover)!r}")
         await self.show_cover_media(cover_media, cover_uid)
 
-    async def show_current_song_cover(self, cover_uid):
-        song = self._app.playlist.current_song
-        if song is None:
+    async def show_cover_with_source(
+        self, artwork: str, source: str, cover_uid: str
+    ):
+        if not artwork:
+            self.show_img(None)
             return
-        cover_media = await run_fn(self._app.library.model_get_cover_media, song)
+        provider = self._app.library.get(source) if source else None
+        if isinstance(provider, SupportsImgUrlToMedia):
+            cover_media = provider.img_url_to_media(artwork)
+        else:
+            cover_media = Media(artwork, MediaType.image)
         await self.show_cover_media(cover_media, cover_uid)
 
 
