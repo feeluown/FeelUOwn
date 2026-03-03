@@ -35,16 +35,16 @@ def rfc1766_langcode() -> str:
             lang = user_default_locale()
         case _:
             lang, _ = locale.getlocale(locale.LC_CTYPE)
-            if lang == "C":
+            if lang in ("C", None, ""):
                 lang = "en_US"
 
     return lang
 
 
 # BCP-47 language code
-OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE", None)
+OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE")
 # Default locale
-_DEFAULT_LOCALE = OVERRIDE_LOCALE if OVERRIDE_LOCALE is not None else rfc1766_langcode()
+_DEFAULT_LOCALE = OVERRIDE_LOCALE or rfc1766_langcode() or "en_US"
 
 
 def t(
@@ -157,8 +157,7 @@ def human_readable_number(n: int, locale: str = None) -> str:
     :param locale: BCP-47 language code,
     """
 
-    if locale is None:
-        locale = _DEFAULT_LOCALE
+    locale = locale or _DEFAULT_LOCALE
 
     if locale.startswith("zh"):
         levels = [
