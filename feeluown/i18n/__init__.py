@@ -42,7 +42,7 @@ def rfc1766_langcode() -> str:
 
 
 # BCP-47 language code
-OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE") or None
+OVERRIDE_LOCALE = os.environ.get("FEELUOWN_LOCALE")
 # Default locale
 _DEFAULT_LOCALE = OVERRIDE_LOCALE or rfc1766_langcode() or "en_US"
 
