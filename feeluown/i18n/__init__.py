@@ -35,7 +35,7 @@ def rfc1766_langcode() -> str:
             lang = user_default_locale()
         case _:
             lang, _ = locale.getlocale(locale.LC_CTYPE)
-            if lang == "C":
+            if lang in ("C", None, ""):
                 lang = "en_US"
 
     return lang
@@ -159,6 +159,8 @@ def human_readable_number(n: int, locale: str = None) -> str:
 
     if locale is None:
         locale = _DEFAULT_LOCALE
+    if not locale:
+        locale = "en_US"
 
     if locale.startswith("zh"):
         levels = [
