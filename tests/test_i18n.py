@@ -4,6 +4,7 @@ from feeluown import i18n
 
 
 def test_rfc1766_langcode_fallback_for_missing_language(monkeypatch):
+    monkeypatch.setattr(i18n.sys, "platform", "linux")
     monkeypatch.setattr(locale, "getlocale", lambda category=None: (None, "UTF-8"))
 
     assert i18n.rfc1766_langcode() == "en_US"
