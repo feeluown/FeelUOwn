@@ -1,5 +1,7 @@
 ## FeelUOwn - feel your own
 
+[简体中文](README.md) | [English](README.en.md)
+
 [![Documentation Status](https://readthedocs.org/projects/feeluown/badge/?version=latest)](http://feeluown.readthedocs.org)
 [![Build Status](https://github.com/feeluown/feeluown/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/feeluown/FeelUOwn)
 [![Coverage Status](https://coveralls.io/repos/github/feeluown/FeelUOwn/badge.svg)](https://coveralls.io/github/feeluown/FeelUOwn)
@@ -38,7 +40,7 @@ yay -S feeluown-bilibili
 
 # macOS（推荐优先尝试在 Release 页面下载打包好的安装包！）
 brew tap feeluown/feeluown
-brew install feeluown --with-battery # 安装 FeelUOwn 以及扩展
+brew install feeluown --with-battery --tsinghua-pypi # 安装 FeelUOwn 以及扩展
 feeluown genicon                     # 在桌面生成 FeelUOwn 图标
 ```
 
