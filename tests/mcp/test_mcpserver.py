@@ -306,6 +306,45 @@ def test_playlist_add_uri_success(mocker, app):
     assert app.playlist.add.called
 
 
+def test_playlist_add_model_json_success(mocker, app):
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+    payload = {
+        "__type__": "feeluown.library.BriefSongModel",
+        "identifier": "song1",
+        "source": "fake",
+        "title": "demo",
+        "artists_name": "artist",
+        "album_name": "album",
+        "duration_ms": "03:20",
+    }
+
+    assert mcpserver.playlist_add_model_json(payload) is True
+    app.playlist.add.assert_called_once()
+    model = app.playlist.add.call_args.args[0]
+    assert model.identifier == "song1"
+    assert model.title == "demo"
+
+
+def test_playlist_add_model_json_invalid_payload(mocker, app):
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+
+    assert mcpserver.playlist_add_model_json({}) is False
+    app.playlist.add.assert_not_called()
+
+
+def test_playlist_add_model_json_unsupported_model(mocker, app):
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+    payload = {
+        "__type__": "feeluown.library.BriefArtistModel",
+        "identifier": "artist1",
+        "source": "fake",
+        "name": "demo-artist",
+    }
+
+    assert mcpserver.playlist_add_model_json(payload) is False
+    app.playlist.add.assert_not_called()
+
+
 def test_playlist_add_uri_fail(mocker, app):
     mocker.patch("feeluown.mcpserver.get_app", return_value=app)
     mocker.patch("feeluown.mcpserver.resolve", side_effect=ResolveFailed("bad"))
@@ -321,6 +360,42 @@ def test_playlist_play_uri(mocker, app):
     assert mcpserver.playlist_play_uri("fuo://fake/songs/1") is True
     assert app.playlist.add.called
     assert app.playlist.play_model.called
+
+
+def test_playlist_play_model_json_success(mocker, app):
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+    payload = {
+        "__type__": "feeluown.library.BriefVideoModel",
+        "identifier": "video1",
+        "source": "fake",
+        "title": "demo-video",
+    }
+
+    assert mcpserver.playlist_play_model_json(payload) is True
+    app.playlist.play_model.assert_called_once()
+    model = app.playlist.play_model.call_args.args[0]
+    assert model.identifier == "video1"
+    assert model.title == "demo-video"
+
+
+def test_playlist_play_model_json_invalid_payload(mocker, app):
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+
+    assert mcpserver.playlist_play_model_json({}) is False
+    app.playlist.play_model.assert_not_called()
+
+
+def test_playlist_play_model_json_unsupported_model(mocker, app):
+    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
+    payload = {
+        "__type__": "feeluown.library.BriefArtistModel",
+        "identifier": "artist1",
+        "source": "fake",
+        "name": "demo-artist",
+    }
+
+    assert mcpserver.playlist_play_model_json(payload) is False
+    app.playlist.play_model.assert_not_called()
 
 
 def test_run_mcp_server_sets_host_port(mocker):
