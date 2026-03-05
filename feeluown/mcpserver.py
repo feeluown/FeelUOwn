@@ -3,6 +3,7 @@ from typing import Any
 from mcp.server.fastmcp import FastMCP
 from feeluown.app import App, get_app
 from feeluown.library import (
+    ModelType,
     ResolveFailed,
     ResolverNotFound,
     resolve,
@@ -51,7 +52,7 @@ from feeluown.library.provider_protocol import (
     SupportsVideoGet,
     SupportsVideoWebUrl,
 )
-from feeluown.serializers import serialize
+from feeluown.serializers import DeserializerError, serialize, deserialize
 
 
 mcp = FastMCP("FeelUOwn")
@@ -118,6 +119,14 @@ def _player_play_media_by_uri(uri: str) -> bool:
             app.playlist.play_model(model)
             return True
     return False
+
+
+def _model_from_json_payload(model_payload: dict[str, Any]):
+    model = deserialize("python", model_payload)
+    model_type = ModelType(model.meta.model_type)
+    if model_type not in {ModelType.song, ModelType.video}:
+        raise TypeError(f"unsupported model type: {model_type}")
+    return model
 
 
 def _current_song_uri() -> str | None:
@@ -351,6 +360,17 @@ def playlist_add_uri(uri: str) -> bool:
 
 
 @mcp.tool()
+def playlist_add_model_json(model: dict[str, Any]) -> bool:
+    app = _require_app()
+    try:
+        parsed_model = _model_from_json_payload(model)
+    except (DeserializerError, KeyError, TypeError, ValueError):
+        return False
+    app.playlist.add(parsed_model)
+    return True
+
+
+@mcp.tool()
 def playlist_play_uri(uri: str) -> bool:
     app = _require_app()
     try:
@@ -359,6 +379,17 @@ def playlist_play_uri(uri: str) -> bool:
         return False
     app.playlist.add(model)
     app.playlist.play_model(model)
+    return True
+
+
+@mcp.tool()
+def playlist_play_model_json(model: dict[str, Any]) -> bool:
+    app = _require_app()
+    try:
+        parsed_model = _model_from_json_payload(model)
+    except (DeserializerError, KeyError, TypeError, ValueError):
+        return False
+    app.playlist.play_model(parsed_model)
     return True
 
 
