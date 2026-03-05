@@ -4,9 +4,6 @@ from mcp.server.fastmcp import FastMCP
 from feeluown.app import App, get_app
 from feeluown.library import (
     ModelType,
-    ResolveFailed,
-    ResolverNotFound,
-    resolve,
     reverse,
     SearchType,
     BriefAlbumModel,
@@ -110,15 +107,6 @@ def _player_nowplaying_metadata() -> dict[str, Any] | None:
 def _playlist_list() -> list[dict[str, Any]]:
     app = _require_app()
     return serialize("python", app.playlist.list())
-
-
-def _player_play_media_by_uri(uri: str) -> bool:
-    app = _require_app()
-    for model in app.playlist.list():
-        if reverse(model) == uri:
-            app.playlist.play_model(model)
-            return True
-    return False
 
 
 def _model_from_json_payload(model_payload: dict[str, Any]):
@@ -291,14 +279,6 @@ def library_providers() -> list[dict[str, Any]]:
 
 
 @mcp.tool()
-def player_play_media_by_uri(uri: str) -> bool:
-    """
-    Play a track by URI if it exists in the current playlist queue.
-    """
-    return _player_play_media_by_uri(uri)
-
-
-@mcp.tool()
 def player_toggle() -> None:
     _require_app().player.toggle()
 
@@ -349,18 +329,14 @@ def playlist_clear() -> None:
 
 
 @mcp.tool()
-def playlist_add_uri(uri: str) -> bool:
-    app = _require_app()
-    try:
-        model = resolve(uri)
-    except (ResolveFailed, ResolverNotFound):
-        return False
-    app.playlist.add(model)
-    return True
-
-
-@mcp.tool()
 def playlist_add_model_json(model: dict[str, Any]) -> bool:
+    """
+    Deserialize a song/video model JSON payload and append it to the playlist.
+
+    The payload can be passed directly from provider tool outputs, such as
+    entries in ``provider_search(...)[i]["result"]["songs"]`` /
+    ``provider_search(...)[i]["result"]["videos"]``.
+    """
     app = _require_app()
     try:
         parsed_model = _model_from_json_payload(model)
@@ -371,19 +347,13 @@ def playlist_add_model_json(model: dict[str, Any]) -> bool:
 
 
 @mcp.tool()
-def playlist_play_uri(uri: str) -> bool:
-    app = _require_app()
-    try:
-        model = resolve(uri)
-    except (ResolveFailed, ResolverNotFound):
-        return False
-    app.playlist.add(model)
-    app.playlist.play_model(model)
-    return True
-
-
-@mcp.tool()
 def playlist_play_model_json(model: dict[str, Any]) -> bool:
+    """
+    Deserialize a song/video model JSON payload and play it immediately.
+
+    The payload shape is the same as ``playlist_add_model_json`` and can be
+    passed directly from provider tool outputs.
+    """
     app = _require_app()
     try:
         parsed_model = _model_from_json_payload(model)
@@ -415,6 +385,13 @@ def provider_search(
 ) -> list[dict[str, Any]] | None:
     """
     Search provider resources. Returns a list of results per search type.
+
+    Each returned item has the shape:
+    ``{"type": "...", "source": "...", "result": <serialized payload>}``.
+
+    For song/video results, serialized models inside ``result`` can be used
+    directly as the ``model`` argument of ``playlist_add_model_json`` or
+    ``playlist_play_model_json``.
     """
     provider = _provider_from_id(provider_id)
     if provider is None:

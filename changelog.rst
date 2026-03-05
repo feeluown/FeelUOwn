@@ -1,5 +1,12 @@
 版本变更历史
 ----------------------
+5.1.1.dev0 (unreleased)
+""""""""""""""""""""""""""
+- 兼容性变更
+
+  - MCP Server 移除 URI 形式的播放队列接口：`player_play_media_by_uri`、`playlist_add_uri`、`playlist_play_uri`。
+  - 统一使用 JSON model 接口：`playlist_add_model_json`、`playlist_play_model_json`（可直接复用 `provider_search` / `provider_song_get` 的模型输出）。
+
 5.1 (2026-02-28)
 """"""""""""""""""""""
 - 功能增强
