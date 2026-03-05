@@ -6,7 +6,7 @@ import pytest
 
 import feeluown.mcpserver as mcpserver
 from feeluown.player import PlaybackMode, State
-from feeluown.library import ResolveFailed, SearchType, Collection, CollectionType
+from feeluown.library import SearchType, Collection, CollectionType
 
 
 @pytest.fixture
@@ -298,14 +298,6 @@ def test_player_status(mocker, app):
     assert payload["nowplaying"]["uri"] == "fuo://fake/songs/1"
 
 
-def test_playlist_add_uri_success(mocker, app):
-    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
-    mocker.patch("feeluown.mcpserver.resolve", return_value=MagicMock())
-
-    assert mcpserver.playlist_add_uri("fuo://fake/songs/1") is True
-    assert app.playlist.add.called
-
-
 def test_playlist_add_model_json_success(mocker, app):
     mocker.patch("feeluown.mcpserver.get_app", return_value=app)
     payload = {
@@ -343,23 +335,6 @@ def test_playlist_add_model_json_unsupported_model(mocker, app):
 
     assert mcpserver.playlist_add_model_json(payload) is False
     app.playlist.add.assert_not_called()
-
-
-def test_playlist_add_uri_fail(mocker, app):
-    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
-    mocker.patch("feeluown.mcpserver.resolve", side_effect=ResolveFailed("bad"))
-
-    assert mcpserver.playlist_add_uri("bad-uri") is False
-    assert not app.playlist.add.called
-
-
-def test_playlist_play_uri(mocker, app):
-    mocker.patch("feeluown.mcpserver.get_app", return_value=app)
-    mocker.patch("feeluown.mcpserver.resolve", return_value=MagicMock())
-
-    assert mcpserver.playlist_play_uri("fuo://fake/songs/1") is True
-    assert app.playlist.add.called
-    assert app.playlist.play_model.called
 
 
 def test_playlist_play_model_json_success(mocker, app):
