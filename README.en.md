@@ -1,5 +1,7 @@
 ## FeelUOwn - feel your own
 
+[简体中文](README.md) | [English](README.en.md)
+
 [![Documentation Status](https://readthedocs.org/projects/feeluown/badge/?version=latest)](http://feeluown.readthedocs.org)
 [![Build Status](https://github.com/feeluown/feeluown/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/feeluown/FeelUOwn)
 [![Coverage Status](https://coveralls.io/repos/github/feeluown/FeelUOwn/badge.svg)](https://coveralls.io/github/feeluown/FeelUOwn)
@@ -8,7 +10,7 @@
 
 FeelUOwn is a stable, user-friendly, and highly customizable music player.
 
-[![macOS Preview](https://github.com/user-attachments/assets/6d96c655-e35b-46d8-aaec-4d4dc202347f)](https://www.bilibili.com/video/av46787694/)
+[![macOS Preview](https://github.com/user-attachments/assets/4d63d9db-1a51-4106-8c93-9f8a84197d7a)](https://www.bilibili.com/video/av46787694/)
 
 ### Features
 
