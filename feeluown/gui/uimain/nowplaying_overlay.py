@@ -54,8 +54,6 @@ class PlayerPanel(QWidget):
         self.return_btn.setFlat(True)
         self.return_btn.setFixedSize(36, 36)
         self.return_btn.setCursor(Qt.CursorShape.PointingHandCursor)
-        if parent is not None:
-            self.return_btn.clicked.connect(parent.hide)
 
         self._layout = QVBoxLayout(self)
         self.setup_ui()
@@ -171,6 +169,7 @@ class NowplayingOverlay(QWidget):
 
         self._splitter = QSplitter(self)
         self.player_panel = PlayerPanel(app, parent=self)
+        self.player_panel.return_btn.clicked.connect(self.hide)
         self.stacked_widget = QStackedWidget(parent=self)
         self.tabbar = QTabBar(self)
 
