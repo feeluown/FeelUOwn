@@ -90,7 +90,10 @@ def run():
     subprocess.run(['fuo', 'exec', 'app.exit()'])
     popen.wait(timeout=10)
 
-    exists = os.path.exists(os.path.expanduser('~/.FeelUOwn/data/state.json'))
+    # Use STATE_FILE from consts
+    import importlib
+    consts = importlib.import_module('feeluown.consts')
+    exists = os.path.exists(consts.STATE_FILE)
     # Since the app may crash during process terminating, the app is considered as
     # existing successfully when the state.json is saved.
     if not exists:

@@ -72,9 +72,10 @@ def gen_for_mac():
 
 
 def gen_for_win_linux():
+    from feeluown.consts import DATA_DIR
     DESKTOP_FILE = 'feeluown.desktop'
     from_icon = ICONS_DIR / 'feeluown.png'
-    to_icon = pathlib.Path.home() / '.FeelUOwn' / 'feeluown.png'
+    to_icon = pathlib.Path(DATA_DIR) / 'feeluown.png'
     to_icon.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(from_icon, to_icon)
 
