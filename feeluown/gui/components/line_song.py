@@ -136,7 +136,9 @@ class TwoLineSongLabel(QWidget):
         self.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred)
 
         self._title_label = QLabel()
+        self._title_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self._subtitle_label = QLabel()
+        self._subtitle_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
 
         palette = self._subtitle_label.palette()
         palette.setColor(QPalette.ColorRole.Text, QColor("grey"))
