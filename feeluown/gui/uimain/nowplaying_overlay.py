@@ -72,11 +72,17 @@ class PlayerPanel(QWidget):
         self._layout.setSpacing(0)
 
         header_layout = QHBoxLayout()
-        header_layout.addWidget(self.return_btn, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        header_layout.addWidget(
+            self.return_btn,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft,
+        )
         header_layout.addWidget(self.title_label)
         dummy = QWidget()
         dummy.setFixedSize(self.return_btn.size())
-        header_layout.addWidget(dummy, alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight)
+        header_layout.addWidget(
+            dummy,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+        )
         self._layout.addLayout(header_layout)
 
         # Put the cover_label in a vboxlayout and add strech around it,
