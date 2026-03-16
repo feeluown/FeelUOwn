@@ -1,7 +1,7 @@
 from typing import TYPE_CHECKING, cast
 
-from PyQt6.QtCore import QEvent, QSize
-from PyQt6.QtGui import QResizeEvent
+from PyQt6.QtCore import QEvent, QSize, Qt
+from PyQt6.QtGui import QResizeEvent, QIcon
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
@@ -9,6 +9,7 @@ from PyQt6.QtWidgets import (
     QTabBar,
     QStackedWidget,
     QSplitter,
+    QPushButton,
 )
 
 from feeluown.i18n import t
@@ -48,6 +49,12 @@ class PlayerPanel(QWidget):
         self.ctl_btns = CtlButtons(app, parent=self)
         self.progress = PlayerProgressSliderAndLabel(app, parent=self)
 
+        self.return_btn = QPushButton(self)
+        self.return_btn.setIcon(QIcon.fromTheme("go-previous"))
+        self.return_btn.setFlat(True)
+        self.return_btn.setFixedSize(36, 36)
+        self.return_btn.setCursor(Qt.CursorShape.PointingHandCursor)
+
         self._layout = QVBoxLayout(self)
         self.setup_ui()
 
@@ -61,9 +68,23 @@ class PlayerPanel(QWidget):
     def setup_ui(self):
         self._layout.setContentsMargins(0, 0, 11, 0)
         self._layout.setSpacing(0)
+
+        header_layout = QHBoxLayout()
+        header_layout.addWidget(
+            self.return_btn,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft,
+        )
+        header_layout.addWidget(self.title_label)
+        dummy = QWidget()
+        dummy.setFixedSize(self.return_btn.size())
+        header_layout.addWidget(
+            dummy,
+            alignment=Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignRight,
+        )
+        self._layout.addLayout(header_layout)
+
         # Put the cover_label in a vboxlayout and add strech around it,
         # so that cover_label's sizehint is respected.
-        self._layout.addWidget(self.title_label)
         self._layout.addSpacing(20)
         self._layout.addWidget(self.artwork_view)
         self._layout.setStretch(self._layout.indexOf(self.artwork_view), 1)
@@ -148,6 +169,7 @@ class NowplayingOverlay(QWidget):
 
         self._splitter = QSplitter(self)
         self.player_panel = PlayerPanel(app, parent=self)
+        self.player_panel.return_btn.clicked.connect(self.hide)
         self.stacked_widget = QStackedWidget(parent=self)
         self.tabbar = QTabBar(self)
 
