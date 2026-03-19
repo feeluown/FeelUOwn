@@ -685,7 +685,7 @@ provider-network-error = リクエストに失敗しました: { $errorMessage }
 
 # Provider Names
 provider-name-bilibili = ビリビリ
-provider-name-local = ローカルトラック
+provider-name-local = ローカル音楽
 provider-name-ytmusic = YouTube Music
 provider-name-qqmusic = QQ Music
 provider-name-netease = NetEase Music
