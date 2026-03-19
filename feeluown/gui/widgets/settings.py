@@ -31,7 +31,11 @@ class SearchProvidersFilter(QWidget):
         self._layout = QHBoxLayout(self)
 
         for provider in self.providers:
-            display_name = t(f"provider-name-{provider.identifier}")
+            translated_key = f"provider-name-{provider.identifier}"
+            display_name = t(translated_key)
+            # fallback
+            if display_name == translated_key:
+                display_name = provider.name
             btn = _ProviderCheckBox(display_name, self)
             btn.set_identifier(provider.identifier)
             btn.clicked.connect(self.on_btn_clicked)
