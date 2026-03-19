@@ -689,3 +689,10 @@ track-skip-to-next = No available playback link found, playing the next...
 ## errorMessage: [string]
 provider-missing-feature = { -provider(capitalization: "uppercase") } does not support this feature: { $errorMessage }
 provider-network-error = Request failed: { $errorMessage }
+
+# Provider Names
+provider-name-bilibili = Bilibili
+provider-name-local = Local tracks
+provider-name-ytmusic = YouTube Music
+provider-name-qqmusic = QQ Music
+provider-name-netease = NetEase Music

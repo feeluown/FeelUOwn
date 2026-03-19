@@ -682,3 +682,10 @@ track-skip-to-next = 未找到可用的播放链接，播放下一首...
 ## errorMessage: [string]
 provider-missing-feature = { -provider(capitalization: "uppercase") }不支持该功能: { $errorMessage }
 provider-network-error = 请求失败: { $errorMessage }
+
+# Provider Names
+provider-name-bilibili = 哔哩哔哩
+provider-name-local = 本地音乐
+provider-name-ytmusic = YouTube Music
+provider-name-qqmusic = QQ Music
+provider-name-netease = NetEase Music
