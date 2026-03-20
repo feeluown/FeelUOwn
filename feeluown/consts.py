@@ -9,10 +9,14 @@ import sys
 _old_home_dir = os.path.join(USER_HOME, '.FeelUOwn')
 
 if sys.platform == 'linux' and not os.path.exists(_old_home_dir):
-    CONFIG_DIR = os.environ.get('XDG_CONFIG_HOME', os.path.join(USER_HOME, '.config'))
-    DATA_DIR = os.environ.get('XDG_DATA_HOME', os.path.join(USER_HOME, '.local', 'share'))
-    STATE_DIR = os.environ.get('XDG_STATE_HOME', os.path.join(USER_HOME, '.local', 'state'))
-    CACHE_DIR = os.environ.get('XDG_CACHE_HOME', os.path.join(USER_HOME, '.cache'))
+    CONFIG_DIR = os.environ.get(
+        'XDG_CONFIG_HOME', os.path.join(USER_HOME, '.config'))
+    DATA_DIR = os.environ.get(
+        'XDG_DATA_HOME', os.path.join(USER_HOME, '.local', 'share'))
+    STATE_DIR = os.environ.get(
+        'XDG_STATE_HOME', os.path.join(USER_HOME, '.local', 'state'))
+    CACHE_DIR = os.environ.get(
+        'XDG_CACHE_HOME', os.path.join(USER_HOME, '.cache'))
 
     HOME_DIR = os.path.join(CONFIG_DIR, 'feeluown')
     DATA_DIR = os.path.join(DATA_DIR, 'feeluown')
