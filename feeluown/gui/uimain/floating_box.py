@@ -31,6 +31,7 @@ from feeluown.gui.components import (
     SongSourceTag,
     PlayerProgressRatioLabel,
 )
+from feeluown.consts import CACHE_DIR
 
 IS_MACOS = sys.platform == "darwin"
 
@@ -295,7 +296,7 @@ if __name__ == "__main__":
     img = QImage()
     # !!! You should change the image filename.
     img_fn = "7c90bb4edfa99cae1d142a33ebe26673-1685249600"
-    img_fp = os.path.expanduser(f"~/.FeelUOwn/cache/{img_fn}")
+    img_fp = os.path.join(CACHE_DIR, img_fn)
     with open(img_fp, "rb") as f:
         img.loadFromData(f.read())
 

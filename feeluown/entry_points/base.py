@@ -9,11 +9,14 @@ from feeluown.consts import (
     HOME_DIR, USER_PLUGINS_DIR, DATA_DIR,
     CACHE_DIR, USER_THEMES_DIR, SONG_DIR, COLLECTIONS_DIR
 )
+from feeluown.consts import LOG_FILE, STATE_FILE
 
 logger = logging.getLogger(__name__)
 
 
 def ensure_dirs():
+    # Also ensure STATE_DIR exists since STATE_FILE and LOG_FILE might reside there.
+    # We can't easily import STATE_DIR without changing imports, so we create parents:
     for d in (HOME_DIR,
               DATA_DIR,
               USER_THEMES_DIR,
@@ -22,7 +25,12 @@ def ensure_dirs():
               SONG_DIR,
               COLLECTIONS_DIR):
         if not os.path.exists(d):
-            os.mkdir(d)
+            os.makedirs(d, exist_ok=True)
+
+    for f in (LOG_FILE, STATE_FILE):
+        d = os.path.dirname(f)
+        if not os.path.exists(d):
+            os.makedirs(d, exist_ok=True)
 
 
 def setup_config(args, config):
