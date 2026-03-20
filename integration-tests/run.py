@@ -11,7 +11,7 @@ import traceback
 from contextlib import contextmanager
 
 from feeluown.cli import Client, Request
-
+from feeluown.consts import STATE_FILE
 
 @contextmanager
 def create_client():
@@ -90,10 +90,7 @@ def run():
     subprocess.run(['fuo', 'exec', 'app.exit()'])
     popen.wait(timeout=10)
 
-    # Use STATE_FILE from consts
-    import importlib
-    consts = importlib.import_module('feeluown.consts')
-    exists = os.path.exists(consts.STATE_FILE)
+    exists = os.path.exists(STATE_FILE)
     # Since the app may crash during process terminating, the app is considered as
     # existing successfully when the state.json is saved.
     if not exists:
