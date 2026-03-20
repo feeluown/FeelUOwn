@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 
 import os
-
+import sys
 # USER_HOME variable is design for mobile application (feeluownx)
 USER_HOME = os.environ.get('FEELUOWN_USER_HOME', os.path.expanduser('~'))
 
-import sys
 _old_home_dir = os.path.join(USER_HOME, '.FeelUOwn')
 
 if sys.platform == 'linux' and not os.path.exists(_old_home_dir):

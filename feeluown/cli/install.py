@@ -4,6 +4,7 @@ import shutil
 import os
 import sys
 import pathlib
+from feeluown.consts import DATA_DIR
 
 HERE = pathlib.Path(__file__).resolve()
 ICONS_DIR = HERE.parent.parent / 'gui' / 'assets' / 'icons'
@@ -72,7 +73,6 @@ def gen_for_mac():
 
 
 def gen_for_win_linux():
-    from feeluown.consts import DATA_DIR
     DESKTOP_FILE = 'feeluown.desktop'
     from_icon = ICONS_DIR / 'feeluown.png'
     to_icon = pathlib.Path(DATA_DIR) / 'feeluown.png'
