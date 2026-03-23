@@ -537,16 +537,13 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.save()
             # Override the content drawed by super().paint.
             painter.setPen(Qt.PenStyle.NoPen)
-            # HELP(cosven): when an item was hovered, super().paint may draw
-            # a semi-transparent rect over the item or draw a different color
-            # for the text. The rect/text color may not be in the palette.
-            # I checked the qt source code, and I think this behaviour is
-            # platform indenpent.It is drawed by something like KDE, kvantum.
-            # We have no way to draw a similar look (or please help find a way).
-            if index.row() % 2 == 0:
+            # Current background color
+            bg_brush = option.backgroundBrush
+            if bg_brush.style() == Qt.BrushStyle.NoBrush:
+                # Fallback
                 painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
             else:
-                painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
+                painter.setBrush(bg_brush)
             painter.drawRect(option.rect)
             # Draw play button.
             painter.setBrush(option.palette.color(QPalette.ColorRole.Text))
