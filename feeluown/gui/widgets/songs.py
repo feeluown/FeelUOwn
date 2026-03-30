@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from enum import IntEnum, Enum
 from functools import partial
@@ -537,14 +538,24 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.save()
             # Override the content drawed by super().paint.
             painter.setPen(Qt.PenStyle.NoPen)
-            # Current background color
-            bg_brush = option.backgroundBrush
-            if bg_brush.style() == Qt.BrushStyle.NoBrush:
-                # Fallback
-                painter.setBrush(option.palette.color(QPalette.ColorRole.Window))
+
+            if sys.platform == "win32":
+                # For Windows
+                if index.row() % 2 == 0:
+                    painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
+                else:
+                    painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
+                    painter.drawRect(option.rect)
+                    painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
+                painter.drawRect(option.rect)
             else:
-                painter.setBrush(bg_brush)
-            painter.drawRect(option.rect)
+                # For macOS/Linux
+                if index.row() % 2 == 0:
+                    painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
+                else:
+                    painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
+                painter.drawRect(option.rect)
+
             # Draw play button.
             painter.setBrush(option.palette.color(QPalette.ColorRole.Text))
             triangle_edge = 12
