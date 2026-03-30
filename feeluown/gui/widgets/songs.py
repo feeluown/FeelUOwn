@@ -539,22 +539,15 @@ class SongsTableDelegate(QStyledItemDelegate):
             # Override the content drawed by super().paint.
             painter.setPen(Qt.PenStyle.NoPen)
 
-            if sys.platform == "win32":
-                # For Windows
-                if index.row() % 2 == 0:
-                    painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
-                else:
+            if index.row() % 2 == 0:
+                painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
+            else:
+                if sys.platform == "win32":
+                    # For Windows
                     painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
                     painter.drawRect(option.rect)
-                    painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
-                painter.drawRect(option.rect)
-            else:
-                # For macOS/Linux
-                if index.row() % 2 == 0:
-                    painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
-                else:
-                    painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
-                painter.drawRect(option.rect)
+                painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
+            painter.drawRect(option.rect)
 
             # Draw play button.
             painter.setBrush(option.palette.color(QPalette.ColorRole.Text))
