@@ -541,7 +541,7 @@ class SongsTableDelegate(QStyledItemDelegate):
             bg_brush = option.backgroundBrush
             if bg_brush.style() == Qt.BrushStyle.NoBrush:
                 # Fallback
-                painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
+                painter.setBrush(option.palette.color(QPalette.ColorRole.Window))
             else:
                 painter.setBrush(bg_brush)
             painter.drawRect(option.rect)
