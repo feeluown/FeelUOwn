@@ -538,7 +538,6 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.save()
             # Override the content drawed by super().paint.
             painter.setPen(Qt.PenStyle.NoPen)
-
             if index.row() % 2 == 0:
                 painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
             else:
@@ -548,7 +547,6 @@ class SongsTableDelegate(QStyledItemDelegate):
                     painter.drawRect(option.rect)
                 painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
             painter.drawRect(option.rect)
-
             # Draw play button.
             painter.setBrush(option.palette.color(QPalette.ColorRole.Text))
             triangle_edge = 12
