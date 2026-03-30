@@ -222,7 +222,7 @@ class MediaButtonsV2(QWidget):
         self.pp_btn.setChecked(state == State.playing)
 
     def _on_remove_and_play_next(self):
-        current_song = self._app.playlist.current_song()
+        current_song = self._app.playlist.current_song
         if current_song:
             self._app.playlist.remove(current_song)
 
