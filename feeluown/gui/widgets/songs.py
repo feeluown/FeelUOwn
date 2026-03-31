@@ -543,8 +543,9 @@ class SongsTableDelegate(QStyledItemDelegate):
             else:
                 if sys.platform == "win32":
                     # For Windows, the AlternateBase is semi-transparent,
-                    # so the play button will appear in front of the numbers causing overlay,
-                    # adding a Base before AlternateBase can make the same color for even lines.
+                    # so the play button will appear in front of the numbers
+                    # causing overlay, adding a Base before AlternateBase
+                    # can make the same color for even lines.
                     painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
                     painter.drawRect(option.rect)
                 painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
