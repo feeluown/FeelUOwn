@@ -487,6 +487,7 @@ class _PlayXButton(SelfPaintAbstractSquareButton):
                 painter.setBrush(painter.pen().color())
                 painter.drawLine(*self._line)
 
+
 class PlayNextButton(_PlayXButton):
     remove_and_play_next = pyqtSignal()
 
@@ -498,6 +499,7 @@ class PlayNextButton(_PlayXButton):
         action = menu.addAction(t('track-playlist-remove'))
         action.triggered.connect(self.remove_and_play_next.emit)
         menu.exec(event.globalPos())
+
 
 class PlayPreviousButton(_PlayXButton):
     def __init__(self, *args, **kwargs):
