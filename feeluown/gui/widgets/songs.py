@@ -1,4 +1,5 @@
 import logging
+import sys
 
 from enum import IntEnum, Enum
 from functools import partial
@@ -537,15 +538,16 @@ class SongsTableDelegate(QStyledItemDelegate):
             painter.save()
             # Override the content drawed by super().paint.
             painter.setPen(Qt.PenStyle.NoPen)
-            # HELP(cosven): when an item was hovered, super().paint may draw
-            # a semi-transparent rect over the item or draw a different color
-            # for the text. The rect/text color may not be in the palette.
-            # I checked the qt source code, and I think this behaviour is
-            # platform indenpent.It is drawed by something like KDE, kvantum.
-            # We have no way to draw a similar look (or please help find a way).
             if index.row() % 2 == 0:
                 painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
             else:
+                if sys.platform == "win32":
+                    # For Windows, the AlternateBase is semi-transparent,
+                    # so the play button will appear in front of the numbers
+                    # causing overlay, adding a Base before AlternateBase
+                    # can make the same color for even lines.
+                    painter.setBrush(option.palette.color(QPalette.ColorRole.Base))
+                    painter.drawRect(option.rect)
                 painter.setBrush(option.palette.color(QPalette.ColorRole.AlternateBase))
             painter.drawRect(option.rect)
             # Draw play button.
