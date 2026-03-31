@@ -210,6 +210,7 @@ class MediaButtonsV2(QWidget):
         self.next_btn.clicked.connect(self._app.playlist.next)
         self.previous_btn.clicked.connect(self._app.playlist.previous)
         self.pp_btn.clicked.connect(self._app.player.toggle)
+        self.next_btn.remove_and_play_next.connect(self._on_remove_and_play_next)
         self._app.player.state_changed.connect(
             self._on_player_state_changed, aioqueue=True
         )
@@ -219,6 +220,11 @@ class MediaButtonsV2(QWidget):
 
     def _on_player_state_changed(self, state):
         self.pp_btn.setChecked(state == State.playing)
+
+    def _on_remove_and_play_next(self):
+        current_song = self._app.playlist.current_song
+        if current_song:
+            self._app.playlist.remove(current_song)
 
     def on_video_format_changed(self, video_format):
         if video_format is None:

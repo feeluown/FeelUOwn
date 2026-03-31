@@ -1,5 +1,5 @@
-from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF
-from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton
+from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF, pyqtSignal
+from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton, QMenu
 from PyQt6.QtGui import QPainter, QPalette, QPainterPath
 
 from feeluown.i18n import t
@@ -489,8 +489,16 @@ class _PlayXButton(SelfPaintAbstractSquareButton):
 
 
 class PlayNextButton(_PlayXButton):
+    remove_and_play_next = pyqtSignal()
+
     def __init__(self, *args, **kwargs):
         super().__init__("right", *args, **kwargs)
+
+    def contextMenuEvent(self, event):
+        menu = QMenu()
+        action = menu.addAction(t('track-playlist-remove'))
+        action.triggered.connect(self.remove_and_play_next.emit)
+        menu.exec(event.globalPos())
 
 
 class PlayPreviousButton(_PlayXButton):
