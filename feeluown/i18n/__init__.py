@@ -180,6 +180,50 @@ def human_readable_number(n: int, locale: str = None) -> str:
 
 DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
 
+
+# Plugin translation/localization
+_plugin_locales = {}
+
+def register_plugin_locales(plugin_id: str, locales_dir: str):
+    """
+    Registration for plugin locales dir
+    """
+    path = Path(locales_dir)
+    if path.exists():
+        _plugin_locales[plugin_id] = path
+        logger.info(f"Registered i18n for plugin: {plugin_id}")
+
+def plugin_t(plugin_id: str, key: str, default: str = None, **kwargs):
+    if plugin_id not in _plugin_locales:
+        return default or key
+
+    locales_dir = _plugin_locales[plugin_id]
+    loader = FluentResourceLoader(str(locales_dir / "locale"))
+
+    # Get .ftl files
+    locale_dir = locales_dir / _DEFAULT_LOCALE.split("-")[0]
+    if not locale_dir.exists():
+        locale_dir = locales_dir / _DEFAULT_LOCALE
+
+    if not locale_dir.exists():
+        for d in locale_dir.iterdir():
+            if d.is_dir():
+                locale_dir = d
+                break
+
+    if not locale_dir.exists():
+        return default or key
+
+    ftl_files = [f.stem for f in locale_dir.glob("*.ftl")]
+
+    bundle = FluentLocalization(locales=[_DEFAULT_LOCALE, "zh-CN", "en-US", "ja-JP"],
+                                resource_ids=ftl_files,
+                                resource_loader=loader)
+
+    result = bundle.format_value(key, kwargs)
+    return  result if result != key else (default or key)
+
+
 if __name__ == "__main__":
     for res_id in DEFAULT_RESOURCE_IDS:
         resource_ids = [res_id]
