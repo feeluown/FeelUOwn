@@ -184,6 +184,7 @@ DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
 # Plugin translation/localization
 _plugin_locales = {}
 
+
 def register_plugin_locales(plugin_id: str, locales_dir: str | Path):
     """
     Registration for plugin locales dir
@@ -192,6 +193,7 @@ def register_plugin_locales(plugin_id: str, locales_dir: str | Path):
     if path.exists():
         _plugin_locales[plugin_id] = path
         logger.info(f"Registered i18n for plugin: {plugin_id}")
+
 
 def plugin_t(plugin_id: str, key: str, default: str = None, **kwargs):
     if plugin_id not in _plugin_locales:
@@ -221,7 +223,7 @@ def plugin_t(plugin_id: str, key: str, default: str = None, **kwargs):
                                 resource_loader=loader)
 
     result = bundle.format_value(key, kwargs)
-    return  result if result != key else (default or key)
+    return result if result != key else (default or key)
 
 
 if __name__ == "__main__":
