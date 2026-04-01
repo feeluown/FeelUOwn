@@ -184,7 +184,7 @@ DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
 # Plugin translation/localization
 _plugin_locales = {}
 
-def register_plugin_locales(plugin_id: str, locales_dir: str):
+def register_plugin_locales(plugin_id: str, locales_dir: str | Path):
     """
     Registration for plugin locales dir
     """
