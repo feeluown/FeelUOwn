@@ -249,7 +249,7 @@ def _load_plugin_l10n_resource(plugin_id: str):
                                     resource_ids=ftl_files,
                                     resource_loader=loader)
         _plugin_l10n_bundles[plugin_id] = bundle
-        logger.info(f"Loaded i18n for {plugin_id}, locales={use_locales}, files={ftl_files}")
+        logger.info(f"Loaded i18n for {plugin_id}")
         return bundle
 
 
