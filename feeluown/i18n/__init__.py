@@ -54,6 +54,7 @@ def t(
 ) -> str:
     """
     :param msg_id: Message ID inside fluent translation files.
+                   Supports plugin translation format.
     :param locale: Optional BCP-47 language code
     :param kwargs: Any object that implements the `__str__`
 
@@ -61,6 +62,16 @@ def t(
 
     To format DATETIME() correctly, you must pass a date/datetime object.
     """
+    if "." in msg_id:
+        parts = msg_id.split(".", 1)
+        plugin_name = parts[0]
+        key = parts[1]
+
+        if plugin_name in _plugin_locales:
+            bundle = _load_plugin_l10n_resource(plugin_name)
+            if bundle:
+                return bundle.format_value(key, kwargs)
+
     if locale is None:
         locale = _DEFAULT_LOCALE
 
