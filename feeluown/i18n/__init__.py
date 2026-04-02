@@ -54,6 +54,7 @@ def t(
 ) -> str:
     """
     :param msg_id: Message ID inside fluent translation files.
+                   Supports plugin translation format.
     :param locale: Optional BCP-47 language code
     :param kwargs: Any object that implements the `__str__`
 
@@ -61,6 +62,16 @@ def t(
 
     To format DATETIME() correctly, you must pass a date/datetime object.
     """
+    if "." in msg_id:
+        parts = msg_id.split(".", 1)
+        plugin_name = parts[0]
+        key = parts[1]
+
+        if plugin_name in _plugin_locales:
+            bundle = _load_plugin_l10n_resource(plugin_name)
+            if bundle:
+                return bundle.format_value(key, kwargs)
+
     if locale is None:
         locale = _DEFAULT_LOCALE
 
@@ -179,6 +190,68 @@ def human_readable_number(n: int, locale: str = None) -> str:
 
 
 DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
+
+
+# Plugin translation/localization
+_plugin_locales = {}
+_plugin_l10n_bundles = {}
+_plugin_l10n_lock = RLock()
+
+
+def register_plugin_locales(plugin_id: str, locales_dir: str | Path):
+    """
+    Registration for plugin locales dir
+    """
+    path = Path(locales_dir)
+    if path.exists():
+        _plugin_locales[plugin_id] = path
+        logger.info(f"Registered i18n for plugin: {plugin_id}")
+
+
+def _load_plugin_l10n_resource(plugin_id: str):
+    if plugin_id not in _plugin_locales:
+        return None
+
+    with _plugin_l10n_lock:
+        if plugin_id in _plugin_l10n_bundles:
+            return _plugin_l10n_bundles[plugin_id]
+
+        locales_dir = _plugin_locales[plugin_id]
+        supported_locales = []
+
+        if locales_dir.exists():
+            supported_locales = [d.name for d in locales_dir.iterdir() if d.is_dir()]
+
+        if not supported_locales:
+            logger.warning(f"No locale directories found in {locales_dir}")
+            return None
+
+        use_locales = []
+        for loc in supported_locales:
+            if loc.replace("_", "-") == _DEFAULT_LOCALE:
+                use_locales.append(loc)
+
+        languages = ["zh-CN", "en-US", "ja-JP"]
+        for langs in languages:
+            if langs in supported_locales and langs not in use_locales:
+                use_locales.append(langs)
+
+        if not use_locales:
+            use_locales.append(supported_locales[0])
+
+        ftl_files = []
+        first_dir = locales_dir / use_locales[0]
+        for f in first_dir.glob("*.ftl"):
+            ftl_files.append(f.name)
+
+        loader = FluentResourceLoader(roots=[locales_dir/"{locale}"])
+        bundle = FluentLocalization(locales=use_locales,
+                                    resource_ids=ftl_files,
+                                    resource_loader=loader)
+        _plugin_l10n_bundles[plugin_id] = bundle
+        logger.info(f"Loaded i18n for {plugin_id}")
+        return bundle
+
 
 if __name__ == "__main__":
     for res_id in DEFAULT_RESOURCE_IDS:
