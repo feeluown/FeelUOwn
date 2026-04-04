@@ -595,9 +595,9 @@ class Playlist:
     def _on_media_finished(self):
         # Play next model when current media is finished.
         if self.playback_mode == PlaybackMode.one_loop:
-            with self._queue_lock:
-                return self.set_existing_song_as_current_song(self.current_song)
+            self._app.player.set_loop(True)
         else:
+            self._app.player.set_loop(False)
             self.next()
 
     def _on_song_changed(self, song):
