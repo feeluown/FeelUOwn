@@ -445,3 +445,14 @@ def test_playlist_next_song(pl):
     assert pl.next_song == pl.list()[0]
     pl.playback_mode = PlaybackMode.sequential
     assert pl.next_song is None
+
+
+def test_switch_to_one_loop(pl):
+    pl.playback_mode = PlaybackMode.one_loop
+    pl._app.player.set_loop.assert_called_with(True)
+
+
+def test_switch_from_one_loop(pl):
+    pl.playback_mode = PlaybackMode.one_loop
+    pl.playback_mode = PlaybackMode.loop
+    pl._app.player.set_loop.assert_called_with(False)
