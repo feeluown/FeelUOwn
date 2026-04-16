@@ -40,7 +40,8 @@ async def render(req, **kwargs):
             await app.ui.table_container.set_renderer(ar_renderer)
         elif model.meta.model_type == ModelType.playlist:
             playlist = await run_fn(app.library.playlist_upgrade, model)
-            pl_renderer = PlaylistRenderer(playlist)
+            tab_index = int(req.query.get("tab_index", 1))
+            pl_renderer = PlaylistRenderer(playlist, tab_index)
             await app.ui.table_container.set_renderer(pl_renderer)
         else:
             assert False, "this should not be called"
@@ -191,9 +192,15 @@ class AlbumRenderer(Renderer, ModelTabBarRendererMixin):
             run_afn(self.show_cover_media, cover_media, reverse(album, "/cover"))
 
 
-class PlaylistRenderer(Renderer):
-    def __init__(self, playlist):
+class PlaylistRenderer(Renderer, ModelTabBarRendererMixin):
+    def __init__(self, playlist, tab_index=0):
         self.playlist = playlist
+        self.model = playlist
+        self.tab_index = tab_index
+        self.tabs = [
+            (t("description"),),
+            (t("track"),),
+        ]
 
     async def render(self):
         playlist = self.playlist
@@ -203,8 +210,13 @@ class PlaylistRenderer(Renderer):
         self.meta_widget.title = playlist.name
         self.meta_widget.model = self.playlist
         self.meta_widget.source = self._get_source_alias(playlist.source)
+        self.render_tab_bar()
 
-        await self._show_songs()
+        if self.tab_index == 0:
+            desc = playlist.description or str(t("description") + " " + t("unknown"))
+            self.show_desc(desc)
+        else:
+            await self._show_songs()
 
         # show playlist cover
         cover_media = await run_fn(self._app.library.model_get_cover_media, playlist)
