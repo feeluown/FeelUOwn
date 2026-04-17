@@ -449,6 +449,7 @@ class Playlist:
             self._leave_shuffle_mode()
 
         self._playback_mode = playback_mode
+        self._app.player.set_infinite_loop(playback_mode is PlaybackMode.one_loop)
         self.playback_mode_changed.emit(self.playback_mode)
 
     def _enter_shuffle_mode(self):
@@ -594,11 +595,7 @@ class Playlist:
 
     def _on_media_finished(self):
         # Play next model when current media is finished.
-        if self.playback_mode == PlaybackMode.one_loop:
-            with self._queue_lock:
-                return self.set_existing_song_as_current_song(self.current_song)
-        else:
-            self.next()
+        self.next()
 
     def _on_song_changed(self, song):
         self._app.task_mgr.run_afn_preemptive(self._fetch_current_song_mv, song)
