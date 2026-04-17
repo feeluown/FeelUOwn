@@ -449,10 +449,7 @@ class Playlist:
             self._leave_shuffle_mode()
 
         self._playback_mode = playback_mode
-        if playback_mode == PlaybackMode.one_loop:
-            self._app.player.setInfiniteLoop(True)
-        else:
-            self._app.player.setInfiniteLoop(False)
+        self._app.player.set_infinite_loop(playback_mode is PlaybackMode.one_loop)
         self.playback_mode_changed.emit(self.playback_mode)
 
     def _enter_shuffle_mode(self):
