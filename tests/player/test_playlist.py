@@ -449,10 +449,10 @@ def test_playlist_next_song(pl):
 
 def test_switch_to_one_loop(pl):
     pl.playback_mode = PlaybackMode.one_loop
-    pl._app.player.setInfiniteLoop.assert_called_with(True)
+    pl._app.player.set_infinite_loop.assert_called_with(True)
 
 
 def test_switch_from_one_loop(pl):
     pl.playback_mode = PlaybackMode.one_loop
     pl.playback_mode = PlaybackMode.loop
-    pl._app.player.setInfiniteLoop.assert_called_with(False)
+    pl._app.player.set_infinite_loop.assert_called_with(False)
