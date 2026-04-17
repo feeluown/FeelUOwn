@@ -166,19 +166,19 @@ class MpvPlayer(AbstractPlayer):
             self._current_metadata = metadata
         self.metadata_changed.emit(self.current_metadata)
 
-    def set_loop(self, loop_mode):
+    def setInfiniteLoop(self, inf_loop):
         """
-        Set playback as loop mode
+        Set playback as Infinite Loop
 
-        :param loop_mode:
+        :param inf_loop:
                     - False: No loop
                     - True: Loop as infinite
         """
-        if loop_mode is False:
-            loop_mode = "no"
-        elif loop_mode is True:
-            loop_mode = "inf"
-        _mpv_set_property_string(self._mpv.handle, b'loop', bytes(loop_mode, 'utf-8'))
+        if inf_loop is False:
+            inf_loop = "no"
+        elif inf_loop is True:
+            inf_loop = "inf"
+        _mpv_set_property_string(self._mpv.handle, b'loop', bytes(inf_loop, 'utf-8'))
 
     def set_play_range(self, start=None, end=None):
         if self._version >= (1, 28):
