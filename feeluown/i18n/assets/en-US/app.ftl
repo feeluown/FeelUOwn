@@ -689,3 +689,8 @@ track-skip-to-next = No available playback link found, playing the next...
 ## errorMessage: [string]
 provider-missing-feature = { -provider(capitalization: "uppercase") } does not support this feature: { $errorMessage }
 provider-network-error = Request failed: { $errorMessage }
+
+## Proxy detection alert
+## $proxy_info: proxy settings description
+proxy-detected = System proxy detected: {$proxy_info}
+proxy-detected-title = Proxy Detected
