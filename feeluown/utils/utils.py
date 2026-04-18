@@ -240,6 +240,7 @@ def int_to_human_readable(i: int) -> str:
     )
     return human_readable_number(n=i)
 
+
 def detect_proxy() -> dict:
     """
     Detect system proxy settings.
