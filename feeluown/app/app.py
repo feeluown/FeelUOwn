@@ -131,7 +131,7 @@ class App:
         proxies = detect_proxy()
         if proxies:
             self._proxy_info = ", ".join(f"{k}={v}" for k, v in proxies.items())
-            logger.warning(t("proxy-detected") + ": " + self._proxy_info)
+            logger.info(t("proxy-detected") + ": " + self._proxy_info)
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(

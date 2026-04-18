@@ -245,7 +245,7 @@ def detect_proxy() -> dict:
     """
     Detect system proxy settings.
 
-    :return: Dict of proxies read from ENV or SYS, or None if no proxy detected.
+    :return: Dict of proxies read from ENV or SYS, or blank if no proxy detected.
     """
     proxies = {}
 
