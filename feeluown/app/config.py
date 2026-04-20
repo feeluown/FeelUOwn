@@ -224,4 +224,10 @@ def create_config() -> Config:
         default=True,
         desc=t("enable-replace-playlist-on-dblclick-desc"),
     )
+    config.deffield(
+        "ENABLE_FALLBACK",
+        type_=bool,
+        default=True,
+        desc=t("enable-fallback-desc"),
+    )
     return config

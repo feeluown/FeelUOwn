@@ -81,6 +81,23 @@ class WatchButton(TextButton):
         super().showEvent(e)
 
 
+class FallbackButton(TextButton):
+    def __init__(self, app: "GuiApp", *args, **kwargs):
+        super().__init__("↻", *args, **kwargs)
+        self._app = app
+        self.setToolTip(t("fallback-button-tooltip"))
+        self.setCheckable(True)
+        self.clicked.connect(self._toggle_fallback)
+
+    def _toggle_fallback(self):
+        self._app.config.ENABLE_FALLBACK = not self._app.config.ENABLE_FALLBACK
+        self.setChecked(self._app.config.ENABLE_FALLBACK)
+
+    def showEvent(self, e):
+        self.setChecked(self._app.config.ENABLE_FALLBACK)
+        super().showEvent(e)
+
+
 class FavButton(QPushButton):
     def __init__(self, app: "GuiApp", size=(13, 13), parent=None):
         super().__init__(parent=parent)

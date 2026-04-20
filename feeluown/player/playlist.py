@@ -674,11 +674,12 @@ class Playlist:
 
         # The song has no media, try to find and use standby unless it is in fm mode.
         if media is None:
-            if self._app.config.ENABLE_MV_AS_STANDBY:
-                self.play_model_stage_changed.emit(
-                    PlaylistPlayModelStage.find_standby_by_mv
-                )
-                media = await self._prepare_mv_media(song)
+            if self._app.config.ENABLE_FALLBACK:
+                if self._app.config.ENABLE_MV_AS_STANDBY:
+                    self.play_model_stage_changed.emit(
+                        PlaylistPlayModelStage.find_standby_by_mv
+                    )
+                    media = await self._prepare_mv_media(song)
 
             if media:
                 self._app.show_msg(t("track-fallback-music-video"))
@@ -687,7 +688,8 @@ class Playlist:
                 logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
                 self.play_model_stage_changed.emit(PlaylistPlayModelStage.find_standby)
-                target_song, media = await self.find_and_use_standby(song)
+                if self._app.config.ENABLE_FALLBACK:
+                    target_song, media = await self.find_and_use_standby(song)
 
         metadata = None
         if media is not None:
