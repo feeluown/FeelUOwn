@@ -26,3 +26,4 @@ openai-api-key-desc = OpenAI API key
 openai-model-desc = OpenAI model name
 ai-radio-prompt-desc = Prompt template for AI radio feature
 enable-replace-playlist-on-dblclick-desc = On double-clicking a { -track }, replace the current { playlist } with the { -track }’s source
+enable-fallback-desc = Enable fallback mechanism: when song has no playable media, try MV or search other providers

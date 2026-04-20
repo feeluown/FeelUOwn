@@ -26,3 +26,4 @@ openai-api-key-desc = OpenAI APIキー
 openai-model-desc = OpenAIモデル名
 ai-radio-prompt-desc = AI ラジオ機能のプロンプト
 enable-replace-playlist-on-dblclick-desc = { -track }をダブルクリックしたときに、{ -track }が属するリストで現在の{ playlist }を置き換える
+enable-fallback-desc = フォールバック機構を有効にする：曲に再生可能なメディアがない場合、MVや他のプロバイダーを代替として試す

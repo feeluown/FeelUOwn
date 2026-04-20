@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 from feeluown.i18n import t
 from feeluown.gui.widgets.magicbox import KeySourceIn
 from feeluown.gui.widgets.header import MidHeader
-from feeluown.gui.components import LyricButton, WatchButton
+from feeluown.gui.components import LyricButton, WatchButton, FallbackButton
 
 
 class _ProviderCheckBox(QCheckBox):
@@ -67,9 +67,11 @@ class PlayerSettings(QWidget):
         self._app = app
         self.lyric_btn = LyricButton(app, height=16)
         self.watch_btn = WatchButton(app, height=16)
+        self.fallback_btn = FallbackButton(app, height=16)
         self._layout = QHBoxLayout(self)
         self._layout.addWidget(self.lyric_btn)
         self._layout.addWidget(self.watch_btn)
+        self._layout.addWidget(self.fallback_btn)
         self._layout.addStretch(0)
 
 

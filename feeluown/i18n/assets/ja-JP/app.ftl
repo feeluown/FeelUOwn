@@ -123,7 +123,7 @@ lyric-button = 歌詞
 watch-mode-tooltip =
     ウォッチモードを有効にすると、プレイヤーはまず { -track } に合う { video } を探します。
     ベストプラクティス：ウォッチと同時に { video } の { picture-in-picture } モードもオンにしましょう。
-
+fallback-button-tooltip = 代替ソースから検索できるようにする
 local-liked-tracks = “ローカルお気に入り”
 local-liked-tracks-add = { local-liked-tracks } に追加
 local-liked-tracks-remove = { local-liked-tracks } から削除
