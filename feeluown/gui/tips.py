@@ -47,6 +47,7 @@ Contributors = [
     ("c-xk", "Shinka"),
     ("w568w", ""),
     ("mokurin000", "莯凛"),
+    ("LWWZH", "Zihao"),
 ]
 
 
