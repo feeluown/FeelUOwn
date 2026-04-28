@@ -1,3 +1,5 @@
+[![MseeP.ai Security Assessment Badge](https://mseep.net/pr/feeluown-feeluown-badge.png)](https://mseep.ai/app/feeluown-feeluown)
+
 ## FeelUOwn - feel your own
 
 [简体中文](README.md) | [English](README.en.md)
