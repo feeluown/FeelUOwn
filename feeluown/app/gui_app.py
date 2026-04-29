@@ -16,7 +16,6 @@ from feeluown.gui.tray import Tray
 from feeluown.gui.provider_ui import ProviderUiManager, CurrentProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
-from feeluown.i18n import t
 
 from .app import App
 

@@ -2,7 +2,9 @@ import logging
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy, QLabel
+from PyQt6.QtWidgets import (
+    QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy, QLabel,
+)
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 
 from feeluown.utils.aio import run_afn
