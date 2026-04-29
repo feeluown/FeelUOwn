@@ -92,10 +92,7 @@ def create_config() -> Config:
         "MPV_PREFETCH_PLAYLIST",
         type_=bool,
         default=True,
-        desc=(
-            "Enable mpv prefetch-playlist to pre-buffer next playlist item; "
-            "may increase bandwidth usage."
-        ),
+        desc=t("mpv-prefetch-playlist-desc"),
     )
     config.deffield(
         "COLLECTIONS_DIR",
@@ -199,9 +196,7 @@ def create_config() -> Config:
         "PLAYLIST_PRELOAD_THRESHOLD_SECONDS",
         type_=int,
         default=30,
-        desc=(
-            "Preload next song media when remaining seconds is within threshold; "
-        ),
+        desc=t("playlist-preload-threshold-seconds-desc"),
     )
     config.deffield(
         "OPENAI_API_BASEURL",
