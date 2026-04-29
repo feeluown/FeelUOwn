@@ -459,7 +459,9 @@ def test_switch_from_one_loop(pl):
 
 
 @pytest.mark.asyncio
-async def test_preload_scheduled_when_remaining_within_threshold(app_mock, song, song1):
+async def test_preload_scheduled_when_remaining_within_threshold(
+    app_mock, song, song1
+):
     app_mock.config.ENABLE_MV_AS_STANDBY = 0
     app_mock.has_gui = True
     app_mock.player.duration = 10
@@ -481,7 +483,9 @@ async def test_preload_scheduled_when_remaining_within_threshold(app_mock, song,
 
 
 @pytest.mark.asyncio
-async def test_preload_not_scheduled_when_remaining_above_threshold(app_mock, song, song1):
+async def test_preload_not_scheduled_when_remaining_above_threshold(
+    app_mock, song, song1
+):
     app_mock.config.ENABLE_MV_AS_STANDBY = 0
     app_mock.has_gui = True
     app_mock.player.duration = 10
@@ -498,7 +502,9 @@ async def test_preload_not_scheduled_when_remaining_above_threshold(app_mock, so
 
 
 @pytest.mark.asyncio
-async def test_preload_next_song_queues_media_and_sets_state(mocker, app_mock, song, song1):
+async def test_preload_next_song_queues_media_and_sets_state(
+    mocker, app_mock, song, song1
+):
     app_mock.config.ENABLE_MV_AS_STANDBY = 0
     app_mock.has_gui = True
     app_mock.player.queue_media = mocker.MagicMock()
@@ -524,7 +530,9 @@ async def test_preload_next_song_queues_media_and_sets_state(mocker, app_mock, s
 
 
 @pytest.mark.asyncio
-async def test_a_set_current_song_reuses_preloaded_media(mocker, app_mock, song, song1):
+async def test_a_set_current_song_reuses_preloaded_media(
+    mocker, app_mock, song, song1
+):
     app_mock.config.ENABLE_MV_AS_STANDBY = 0
     app_mock.has_gui = True
 
