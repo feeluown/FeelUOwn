@@ -686,3 +686,4 @@ provider-network-error = 请求失败: { $errorMessage }
 ## Proxy detection alert
 ## proxy_info: proxy settings description
 proxy-detected = 检测到系统代理: {$proxy_info}
+proxy-indicator = 代理

@@ -693,3 +693,4 @@ provider-network-error = Request failed: { $errorMessage }
 ## Proxy detection alert
 ## $proxy_info: proxy settings description
 proxy-detected = System proxy detected: {$proxy_info}
+proxy-indicator = Proxy

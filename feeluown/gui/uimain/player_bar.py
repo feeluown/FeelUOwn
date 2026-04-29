@@ -2,7 +2,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt
-from PyQt6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy
+from PyQt6.QtWidgets import QFrame, QHBoxLayout, QVBoxLayout, QPushButton, QSizePolicy, QLabel
 from feeluown.gui.widgets.cover_label import CoverLabelV2
 
 from feeluown.utils.aio import run_afn
@@ -74,6 +74,9 @@ class PlayerControlPanel(QFrame):
         self.cover_label = ClickableCover(app)
         self.duration_label = DurationLabel(app, parent=self)
         self.position_label = ProgressLabel(app, parent=self)
+        self.proxy_label = QLabel(self)
+        self.proxy_label.setObjectName("proxy_label")
+        self.proxy_label.hide()
 
         # we should enable focus since we want to have shortcut keys
         self.setFocusPolicy(Qt.FocusPolicy.StrongFocus)
@@ -105,6 +108,8 @@ class PlayerControlPanel(QFrame):
         self.duration_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.mv_btn.setFixedHeight(16)
         self.toggle_watch_btn.setFixedHeight(16)
+        self.proxy_label.setFixedHeight(16)
+        self.proxy_label.setText(t("proxy-indicator"))
 
         self.progress_slider.setSizePolicy(
             QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Preferred
@@ -166,7 +171,9 @@ class PlayerControlPanel(QFrame):
         self._layout.addStretch(0)
         self._layout.addSpacing(18)
         self._layout.addWidget(self.playlist_btn)
-        self._layout.addSpacing(18)
+        self._layout.addSpacing(8)
+        self._layout.addWidget(self.proxy_label)
+        self._layout.addSpacing(10)
         self._layout.setSpacing(0)
         self._layout.setContentsMargins(0, 0, 0, 0)
 

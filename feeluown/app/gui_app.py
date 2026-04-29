@@ -109,7 +109,9 @@ class GuiApp(App, QWidget):
 
     def _show_proxy_info_if_needed(self, *_):
         if self._proxy_info:
-            self.show_msg(t("proxy-detected", proxy_info=self._proxy_info), timeout=5000)
+            pc_panel = self.ui.top_panel.pc_panel
+            pc_panel.proxy_label.setToolTip(self._proxy_info)
+            pc_panel.proxy_label.show()
 
     def run(self):
         self.show()
