@@ -38,6 +38,7 @@ class MpvPlayer(AbstractPlayer):
         _=None,
         audio_device=b'auto',
         winid=None,
+        prefetch_playlist: bool = True,
         fade=False,
         fade_time_ms=500,
         **kwargs
@@ -51,6 +52,7 @@ class MpvPlayer(AbstractPlayer):
         mpvkwargs = {}
         if winid is not None:
             mpvkwargs['wid'] = winid
+        mpvkwargs['prefetch_playlist'] = prefetch_playlist
         self._version = _mpv_client_api_version()
 
         # From libmpv 0.38, libmpv is not the default vo.

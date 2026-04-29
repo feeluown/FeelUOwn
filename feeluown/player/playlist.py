@@ -180,18 +180,32 @@ class Playlist:
         self.song_changed.connect(self._on_song_changed)
 
         # Preload next song media when remaining time is within threshold.
-        self._preload_threshold_seconds = 5.0
+        app_config = getattr(self._app, 'config', None)
+        if app_config is None:
+            cfg_threshold = 30
+        else:
+            cfg_threshold = getattr(
+                app_config, 'PLAYLIST_PRELOAD_THRESHOLD_SECONDS', 30
+            )
+        if not isinstance(cfg_threshold, Real):
+            cfg_threshold = 30
+        self._preload_threshold_seconds = float(cfg_threshold)
         self._preloading_song = None
         self._preloaded_song = None
         self._preloaded_media = None
         self._preloaded_metadata = None
 
-        try:
-            self._app.player.position_changed.connect(self._on_player_progress_changed)
-            self._app.player.duration_changed.connect(self._on_player_progress_changed)
-        except Exception:
-            # In tests or in some app modes, player may not expose these signals.
-            pass
+        if self._preload_threshold_seconds > 0:
+            try:
+                self._app.player.position_changed.connect(
+                    self._on_player_progress_changed
+                )
+                self._app.player.duration_changed.connect(
+                    self._on_player_progress_changed
+                )
+            except Exception:
+                # In tests or in some app modes, player may not expose these signals.
+                pass
 
     def _on_player_progress_changed(self, *args, **kwargs):
         # Keep it light-weight: only schedule preload when needed.
@@ -211,6 +225,10 @@ class Playlist:
         - also covers very short tracks (duration <= threshold)
         """
         if self.current_song is None:
+            return
+
+        # Disable preload when threshold is 0.
+        if self._preload_threshold_seconds <= 0:
             return
 
         next_song = self.next_song
