@@ -9,7 +9,6 @@ from collections import OrderedDict
 from copy import copy, deepcopy
 from functools import wraps
 from itertools import filterfalse
-import os
 import urllib.request
 
 from feeluown.i18n import human_readable_number
@@ -245,22 +244,12 @@ def detect_proxy() -> dict:
     """
     Detect system proxy settings.
 
-    :return: Dict of proxies read from ENV or SYS, or blank if no proxy detected.
+    :return: Dict of proxies read from system, or empty dict if no proxy detected.
     """
-    proxies = {}
-
-    env_proxies = {
-        "http": os.environ.get("http_proxy") or os.environ.get("HTTP_PROXY"),
-        "https": os.environ.get("https_proxy") or os.environ.get("HTTPS_PROXY")
-    }
-
-    for scheme, proxy_url in env_proxies.items():
-        if proxy_url:
-            proxies[scheme] = proxy_url
-
-    if not proxies:
-        try:
-            proxies = urllib.request.getproxies()
-        except Exception:
-            pass
+    try:
+        proxies = urllib.request.getproxies()
+    except Exception:
+        proxies = {}
+    # getproxies may include a 'no' key from NO_PROXY; it is not a real proxy.
+    proxies.pop("no", None)
     return proxies
