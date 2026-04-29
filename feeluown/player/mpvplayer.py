@@ -106,6 +106,111 @@ class MpvPlayer(AbstractPlayer):
             self.fade_lock = RLock()
             self.fade_time_ms = fade_time_ms
 
+        # Track items we explicitly queued into mpv playlist.
+        # Key is the normalized media source (url/path).
+        self._queued_sources = set()
+
+    def _normalize_media_source(self, media: Media) -> str:
+        """Normalize media source for mpv playlist matching.
+
+        For mpv playlist matching we only handle the common case where
+        ``media.manifest is None`` (a single playable url/path).
+        """
+        return str(media.url)
+
+    def _find_source_in_mpv_playlist(self, source: str) -> int:
+        """Return playlist index if source exists, else -1."""
+        try:
+            filenames = self._mpv.playlist_filenames
+        except Exception:
+            return -1
+        try:
+            return filenames.index(source)
+        except ValueError:
+            return -1
+
+    def _prune_playlist_before_current(self):
+        """Remove items before current playlist-pos to avoid unbounded growth."""
+        try:
+            playlist_pos = getattr(self._mpv, 'playlist_pos', None)
+            if not isinstance(playlist_pos, int) or playlist_pos <= 0:
+                return
+            for idx in range(playlist_pos - 1, -1, -1):
+                try:
+                    self._mpv.playlist_remove(idx)
+                except Exception:
+                    break
+        except Exception:
+            return
+
+    def queue_media(self, media: Media, video: bool = True) -> bool:
+        """Queue media into mpv playlist using the current mpv instance.
+
+        Returns True when the media is queued (or already queued), otherwise False.
+        """
+        if media is None:
+            return False
+        if not isinstance(media, Media):
+            media = Media(media)
+        if media.manifest is not None:
+            # Keep it simple: only queue single-url media for now.
+            return False
+
+        source = self._normalize_media_source(media)
+        if not source:
+            return False
+
+        # If it's already in playlist, consider it queued.
+        if self._find_source_in_mpv_playlist(source) != -1:
+            self._queued_sources.add(source)
+            return True
+
+        self._set_http_headers(media.http_headers)
+        self._set_http_proxy(media.http_proxy)
+
+        insert_index = None
+        try:
+            playlist_pos = getattr(self._mpv, 'playlist_pos', None)
+            if isinstance(playlist_pos, int) and playlist_pos >= 0:
+                insert_index = playlist_pos + 1
+        except Exception:
+            insert_index = None
+
+        try:
+            if insert_index is None:
+                self._mpv.loadfile(source, 'append')
+            else:
+                self._mpv.loadfile(source, 'append', index=insert_index)
+        except Exception:
+            logger.exception('queue_media failed')
+            return False
+
+        self._queued_sources.add(source)
+        return True
+
+    def discard_queued_media(self):
+        """Discard queued items after the current mpv playlist position."""
+        try:
+            playlist_pos = getattr(self._mpv, 'playlist_pos', None)
+            playlist_count = getattr(self._mpv, 'playlist_count', None)
+            if not isinstance(playlist_pos, int) or not isinstance(playlist_count, int):
+                # Fallback: clear all playlist items.
+                self._mpv.playlist_clear()
+                self._queued_sources.clear()
+                return
+            for idx in range(playlist_count - 1, playlist_pos, -1):
+                try:
+                    self._mpv.playlist_remove(idx)
+                except Exception:
+                    break
+        except Exception:
+            try:
+                self._mpv.playlist_clear()
+            except Exception:
+                pass
+        finally:
+            self._queued_sources.clear()
+
     def shutdown(self):
         # The mpv has already been terminated.
         # The mpv can't terminate twice.
@@ -120,6 +225,10 @@ class MpvPlayer(AbstractPlayer):
 
         self.media_about_to_changed.emit(self._current_media, media)
         if media is None:
+            try:
+                self.discard_queued_media()
+            except Exception:
+                pass
             self._stop_mpv()
         else:
             logger.debug("Player will play: '%s'", media)
@@ -130,12 +239,21 @@ class MpvPlayer(AbstractPlayer):
             self._set_http_headers(media.http_headers)
             self._set_http_proxy(media.http_proxy)
             self._set_decryption_key(media.decryption_key)
-            self._stop_mpv()
             if media.manifest is None:
-                url = media.url
-                # Clear playlist before play next song,
-                # otherwise, mpv will seek to the last position and play.
-                self._mpv.play(url)
+                source = self._normalize_media_source(media)
+                idx = self._find_source_in_mpv_playlist(source)
+                playlist_pos = getattr(self._mpv, 'playlist_pos', None)
+                if idx != -1:
+                    # If mpv already advanced to this item, avoid restarting.
+                    if not (isinstance(playlist_pos, int) and playlist_pos == idx):
+                        self._mpv.playlist_play_index(idx)
+                    self._prune_playlist_before_current()
+                else:
+                    # Use replace-mode load within the same mpv instance.
+                    self._mpv.play(source)
+                    # New current item replaces playlist; queued items from previous
+                    # track are no longer meaningful.
+                    self._queued_sources.clear()
             elif isinstance(media.manifest, VideoAudioManifest):
                 video_url = media.manifest.video_url
                 audio_url = media.manifest.audio_url
@@ -155,6 +273,7 @@ class MpvPlayer(AbstractPlayer):
                     self.media_loaded.connect(add_audio, weak=False)
                 else:
                     self._mpv.play(audio_url)
+                self._queued_sources.clear()
             else:
                 assert False, 'Unknown manifest'
         self._current_media = media

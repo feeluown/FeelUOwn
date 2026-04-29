@@ -2,6 +2,7 @@ import asyncio
 import logging
 import random
 from enum import IntEnum, Enum
+from numbers import Real
 from typing import Optional, TYPE_CHECKING
 from threading import Lock
 
@@ -30,6 +31,7 @@ logger = logging.getLogger(__name__)
 TASK_SET_CURRENT_MODEL = "playlist.set_current_model"
 TASK_PLAY_MODEL = "playlist.play_model"
 TASK_PREPARE_MEDIA = "playlist.prepare_media"
+TASK_PRELOAD_MEDIA = "playlist.preload_media"
 
 
 class PlaybackMode(IntEnum):
@@ -176,6 +178,110 @@ class Playlist:
 
         self._app.player.media_finished.connect(self._on_media_finished)
         self.song_changed.connect(self._on_song_changed)
+
+        # Preload next song media when remaining time is within threshold.
+        self._preload_threshold_seconds = 5.0
+        self._preloading_song = None
+        self._preloaded_song = None
+        self._preloaded_media = None
+        self._preloaded_metadata = None
+
+        try:
+            self._app.player.position_changed.connect(self._on_player_progress_changed)
+            self._app.player.duration_changed.connect(self._on_player_progress_changed)
+        except Exception:
+            # In tests or in some app modes, player may not expose these signals.
+            pass
+
+    def _on_player_progress_changed(self, *args, **kwargs):
+        # Keep it light-weight: only schedule preload when needed.
+        self._maybe_preload_next_song(force=False)
+
+    def _clear_preloaded_state(self):
+        self._preloading_song = None
+        self._preloaded_song = None
+        self._preloaded_media = None
+        self._preloaded_metadata = None
+
+    def _maybe_preload_next_song(self, force: bool = False):
+        """Preload the next song when it's close to the end.
+
+        Trigger condition:
+        - remaining <= threshold (inclusive)
+        - also covers very short tracks (duration <= threshold)
+        """
+        if self.current_song is None:
+            return
+
+        next_song = self.next_song
+        if next_song is None:
+            return
+
+        # If next song changed, drop stale preloaded state.
+        if self._preloaded_song is not None and self._preloaded_song != next_song:
+            self._clear_preloaded_state()
+
+        if self._preloaded_song == next_song or self._preloading_song == next_song:
+            return
+
+        if not force:
+            duration = getattr(self._app.player, 'duration', None)
+            position = getattr(self._app.player, 'position', None)
+            if not isinstance(duration, Real) or duration <= 0:
+                return
+            if not isinstance(position, Real) or position < 0:
+                position = 0
+            remaining = duration - position
+            if remaining > self._preload_threshold_seconds:
+                return
+
+        self._preloading_song = next_song
+        self._app.task_mgr.run_afn_preemptive(
+            self._preload_next_song,
+            next_song,
+            name=TASK_PRELOAD_MEDIA,
+        )
+
+    async def _preload_next_song(self, song: SongModel):
+        """Prepare next song media (URL) early and queue into mpv ASAP."""
+        try:
+            try:
+                media = await self._prepare_media(song)
+            except Exception:
+                logger.exception('preload prepare_media failed')
+                return
+
+            # Song may become irrelevant while awaiting.
+            if song != self.next_song:
+                return
+
+            if not media:
+                return
+
+            self._preloaded_song = song
+            self._preloaded_media = media
+
+            # Queue into mpv immediately (URL/path ready), metadata can come later.
+            try:
+                queue_media = getattr(self._app.player, 'queue_media', None)
+                if callable(queue_media):
+                    kwargs = {}
+                    if not self._app.has_gui:
+                        kwargs['video'] = False
+                    queue_media(media, **kwargs)
+            except Exception:
+                logger.debug('queue next media into mpv failed', exc_info=True)
+
+            try:
+                self._preloaded_metadata = await self._metadata_mgr.prepare_for_song(
+                    song
+                )
+            except Exception:
+                # Metadata is best-effort; do not block playback.
+                self._preloaded_metadata = None
+        finally:
+            if self._preloading_song == song:
+                self._preloading_song = None
 
     @property
     def mode(self):
@@ -599,6 +705,8 @@ class Playlist:
 
     def _on_song_changed(self, song):
         self._app.task_mgr.run_afn_preemptive(self._fetch_current_song_mv, song)
+        # Current song changed, any previous preload state is no longer reliable.
+        self._clear_preloaded_state()
 
     async def _fetch_current_song_mv(self, song):
         if song is None:
@@ -649,6 +757,25 @@ class Playlist:
 
         target_song = song  # The song to be set.
         media = None  # The corresponding media to be set.
+
+        # Fast path: reuse preloaded media/metadata.
+        if self._preloaded_song == song and self._preloaded_media is not None:
+            media = self._preloaded_media
+            # Metadata may still be None (best-effort preload).
+            metadata = self._preloaded_metadata
+            self._clear_preloaded_state()
+            self.play_model_stage_changed.emit(PlaylistPlayModelStage.load_media)
+            if metadata is None:
+                try:
+                    self.play_model_stage_changed.emit(
+                        PlaylistPlayModelStage.prepare_metadata
+                    )
+                    metadata = await self._metadata_mgr.prepare_for_song(target_song)
+                except Exception:
+                    metadata = None
+            self.set_current_song_with_media(target_song, media, metadata)
+            return
+
         try:
             self.play_model_stage_changed.emit(PlaylistPlayModelStage.prepare_media)
             media = await self._app.task_mgr.run_afn_preemptive(
