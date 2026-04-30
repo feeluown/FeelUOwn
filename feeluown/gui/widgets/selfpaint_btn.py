@@ -209,6 +209,37 @@ class SettingsButton(SelfPaintAbstractSquareButton):
         painter.drawPoint(QPoint(x, int(self.width() * 0.7)))
 
 
+class ProxyButton(SelfPaintAbstractSquareButton):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+
+        set_pen_1_5(painter)
+        padding = self._padding
+        length = self.width()
+        center = length // 2
+        radius = (length - 2 * padding) // 2
+
+        # Draw outer circle
+        painter.drawEllipse(center - radius, center - radius, radius * 2, radius * 2)
+        # Draw horizontal line
+        painter.drawLine(padding, center, length - padding, center)
+        # Draw left arc
+        arc_rect_left = QRect(
+            center - radius * 2, center - radius, radius * 2, radius * 2
+        )
+        painter.drawArc(arc_rect_left, 90 * 16, 180 * 16)
+        # Draw right arc
+        arc_rect_right = QRect(
+            center, center - radius, radius * 2, radius * 2
+        )
+        painter.drawArc(arc_rect_right, 270 * 16, 180 * 16)
+
+
 class PlusButton(SelfPaintAbstractSquareButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
