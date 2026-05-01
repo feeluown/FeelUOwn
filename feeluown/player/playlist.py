@@ -676,9 +676,11 @@ class Playlist:
             assert media, "media must not be empty"
 
         # The song has no media, try to find and use standby unless it is in fm mode.
+        providers_standby = self._app.config.PROVIDERS_STANDBY
         standby_disabled = (
-            self._app.config.PROVIDERS_STANDBY is not None
-            and len(self._app.config.PROVIDERS_STANDBY) == 0
+            providers_standby is not None
+            and isinstance(providers_standby, list)
+            and len(providers_standby) == 0
         )
         if media is None:
             if not standby_disabled:
