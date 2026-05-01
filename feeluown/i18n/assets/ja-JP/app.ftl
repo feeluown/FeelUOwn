@@ -443,6 +443,7 @@ lyric-window-auto-resize = 自動リサイズ
 # ----------------------------------------
 similar-tracks = 類似 { -track }
 track-hot-comments = ホットコメント
+track-comments-source-current = 現在のプラットフォーム
 movie-mode-exit = ビデオモードを終了
 
 # feeluown.gui.uimain.sidebar

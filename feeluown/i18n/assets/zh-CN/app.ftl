@@ -443,6 +443,7 @@ lyric-window-auto-resize = 大小自动
 # ----------------------------------------
 similar-tracks = 相似{ -track }
 track-hot-comments = 热门评论
+track-comments-source-current = 当前平台
 movie-mode-exit = 退出视频模式
 
 # feeluown.gui.uimain.sidebar

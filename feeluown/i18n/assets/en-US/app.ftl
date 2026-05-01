@@ -447,6 +447,7 @@ lyric-window-auto-resize = Auto resize
 # ----------------------------------------
 similar-tracks = Similar{ -track }
 track-hot-comments = Hot comments
+track-comments-source-current = Current Platform
 movie-mode-exit = Exit movie mode
 
 # feeluown.gui.uimain.sidebar

@@ -1,8 +1,10 @@
+import asyncio
+import logging
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFontMetrics, QPalette, QColor, QPainter
-from PyQt6.QtWidgets import QHBoxLayout, QStackedLayout, QWidget
+from PyQt6.QtWidgets import QComboBox, QHBoxLayout, QStackedLayout, QVBoxLayout, QWidget
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.helpers import (
@@ -26,6 +28,8 @@ from feeluown.utils.reader import create_reader
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+logger = logging.getLogger(__name__)
 
 
 class RefreshOnSongChangedMixin:
@@ -200,24 +204,157 @@ class NowplayingLyricView(LyricView):
             item.setSizeHint(item.data(Qt.ItemDataRole.UserRole)[1])
 
 
-class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
+class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
     def __init__(self, app: "GuiApp", parent=None):
         self._app = app
-        super().__init__(
-            parent=parent,
-            no_scroll_v=False,
-            delegate_options={"quoted_bg_color_role": QPalette.ColorRole.Base},
+        super().__init__(parent=parent)
+
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(5)
+
+        self._source_combo = QComboBox(self)
+        self._source_combo.currentIndexChanged.connect(
+            lambda idx: run_afn(self._on_source_changed, idx)
         )
+        self._layout.addWidget(self._source_combo)
+
+        source_name_map = {
+            pvd.identifier: pvd.name for pvd in self._app.library.list()
+        }
+        self._list_view = CommentListView(
+            parent=self,
+            no_scroll_v=False,
+            delegate_options={
+                "quoted_bg_color_role": QPalette.ColorRole.Base,
+                "source_name_map": source_name_map,
+            },
+        )
+        self._layout.addWidget(self._list_view)
+
+        self._current_song = None
+        self._matches: dict[str, object] = {}
+        self._source_fetch_task = None
+        self._refresh_gen = 0
+
+    def viewport(self):
+        # Shim: nowplaying_overlay.py calls comments_view.viewport().
+        return self._list_view.viewport()
 
     async def refresh(self):
         song = self._app.playlist.current_song
-        reader = create_reader([])
-        if song is not None:
-            provider = self._app.library.get(song.source)
-            if isinstance(provider, SupportsSongHotComments):
+        self._current_song = song
+        self._matches = {}
+        self._refresh_gen += 1
+        gen = self._refresh_gen
+
+        if self._source_fetch_task is not None and not self._source_fetch_task.done():
+            self._source_fetch_task.cancel()
+
+        self._source_combo.blockSignals(True)
+        self._source_combo.clear()
+
+        if song is None:
+            self._list_view.setModel(CommentListModel(create_reader([])))
+            self._source_combo.blockSignals(False)
+            return
+
+        self._source_combo.addItem(t("track-comments-source-current"), song.source)
+        self._source_combo.blockSignals(False)
+        await self._fetch_and_show_comments(song.source, song, gen)
+
+        # Search for matches on other providers.
+        await self._search_other_sources(song, gen)
+
+    async def _fetch_and_show_comments(self, provider_id, song, expected_gen=None):
+        if expected_gen is not None and expected_gen != self._refresh_gen:
+            return
+        provider = self._app.library.get(provider_id)
+        if provider is not None and isinstance(provider, SupportsSongHotComments):
+            try:
                 comments = await run_fn(provider.song_list_hot_comments, song)
-                reader = create_reader(comments)
-        self.setModel(CommentListModel(reader))  # type: ignore
+            except asyncio.CancelledError:
+                raise
+            except Exception:
+                logger.exception("Failed to load comments from %s", provider_id)
+                comments = []
+            comments = comments or []
+            if expected_gen is not None and expected_gen != self._refresh_gen:
+                return
+            # Guard against the user having switched to a different source.
+            if self._source_combo.currentData() != provider_id:
+                return
+            patched_comments = []
+            for c in comments:
+                if not c.source or c.source == "dummy":
+                    c = c.model_copy(update={"source": provider_id})
+                patched_comments.append(c)
+            # Refresh source name map in case providers were added dynamically.
+            self._list_view.set_source_name_map({
+                pvd.identifier: pvd.name for pvd in self._app.library.list()
+            })
+            self._list_view.setModel(CommentListModel(create_reader(patched_comments)))
+        else:
+            if self._source_combo.currentData() != provider_id:
+                return
+            self._list_view.setModel(CommentListModel(create_reader([])))
+
+    async def _search_other_sources(self, song, expected_gen=None):
+        try:
+            matches = await self._app.library.a_search_song_matches(song)
+        except asyncio.CancelledError:
+            raise
+        except Exception:
+            logger.exception("Failed to search song matches for comments")
+            return
+
+        if expected_gen is not None and expected_gen != self._refresh_gen:
+            return
+
+        valid_matches = []
+        for pid, matched_song, _ in matches:
+            provider = self._app.library.get(pid)
+            if provider is not None and isinstance(provider, SupportsSongHotComments):
+                valid_matches.append((pid, matched_song))
+
+        if not valid_matches:
+            return
+
+        if expected_gen is not None and expected_gen != self._refresh_gen:
+            return
+
+        # Also guard against the song having changed to a different track.
+        current = self._app.playlist.current_song
+        if current is None or current.source != song.source or current.identifier != song.identifier:
+            return
+
+        self._source_combo.blockSignals(True)
+        for pid, matched_song in valid_matches:
+            self._matches[pid] = matched_song
+            provider = self._app.library.get(pid)
+            name = provider.name if provider else pid
+            self._source_combo.addItem(name, pid)
+        self._source_combo.blockSignals(False)
+
+    async def _on_source_changed(self, index):
+        if index < 0:
+            return
+        if self._current_song is None:
+            return
+        provider_id = self._source_combo.itemData(index)
+        if provider_id == self._current_song.source:
+            song = self._current_song
+        else:
+            song = self._matches.get(provider_id)
+        if song is not None:
+            if self._source_fetch_task is not None and not self._source_fetch_task.done():
+                self._source_fetch_task.cancel()
+            task = run_afn(self._fetch_and_show_comments, provider_id, song, self._refresh_gen)
+            self._source_fetch_task = task
+            try:
+                await task
+            except asyncio.CancelledError:
+                pass
 
 
 class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView):

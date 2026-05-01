@@ -30,3 +30,26 @@ def test_comment_list_view(qtbot):
     widget.show()
 
     qtbot.addWidget(widget)
+
+
+def test_comment_list_view_with_source_name_map(qtbot):
+    user = BriefUserModel(identifier='u1', source='test', name='user')
+    comment = CommentModel(
+        identifier='c1',
+        source='netease',
+        user=user,
+        liked_count=1,
+        content='hello',
+        time=int(time.time()),
+    )
+    reader = create_reader([comment])
+    model = CommentListModel(reader)
+    widget = CommentListView(
+        delegate_options={"source_name_map": {"netease": "网易云音乐"}}
+    )
+    widget.setModel(model)
+    widget.show()
+
+    qtbot.addWidget(widget)
+    delegate = widget.itemDelegate()
+    assert delegate._source_name_map == {"netease": "网易云音乐"}

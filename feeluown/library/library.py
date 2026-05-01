@@ -312,6 +312,65 @@ class Library:
                 return song_media_list
         return song_media_list
 
+    async def a_search_song_matches(
+        self,
+        song,
+        source_in=None,
+        score_fn=None,
+        min_score=STANDBY_DEFAULT_MIN_SCORE,
+        timeout=None,
+    ):
+        """Search for the same song on other providers.
+
+        Returns a list of (provider_id, matched_song, score) tuples,
+        one per provider, sorted by score descending.
+
+        .. note::
+            This method searches all registered providers (or those in
+            ``source_in``). It does **not** consult ``_providers_standby``.
+
+        .. versionadded:: 5.1
+        """
+        if source_in is None:
+            pvd_ids = [pvd.identifier for pvd in self.list()]
+        else:
+            pvd_ids = list(source_in)
+
+        # Exclude the song's own source.
+        pvd_ids = [pid for pid in pvd_ids if pid != song.source]
+
+        if score_fn is None:
+            score_fn = get_standby_score
+
+        q = "{} {}".format(song.title_display, song.artists_name_display)
+        standby_score_list = []
+        async for result in self.a_search(q, source_in=pvd_ids, timeout=timeout):
+            if result is None or not result.songs:
+                continue
+            for standby in result.songs:
+                if standby.source == "local":
+                    continue
+                score = score_fn(song, standby)
+                if score >= min_score:
+                    standby_score_list.append((standby, score))
+
+        if not standby_score_list:
+            return []
+
+        # Pick the best match per source.
+        best_per_source = {}
+        for standby, score in standby_score_list:
+            pid = standby.source
+            if pid not in best_per_source or score > best_per_source[pid][1]:
+                best_per_source[pid] = (standby, score)
+
+        sorted_results = sorted(
+            [(pid, song_, score) for pid, (song_, score) in best_per_source.items()],
+            key=lambda x: x[2],
+            reverse=True,
+        )
+        return sorted_results
+
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
         """Check if a provider satisfies the specific ability for a model type
 

@@ -37,7 +37,8 @@ class CommentListModel(QAbstractListModel):
 
 
 class CommentListDelegate(QStyledItemDelegate):
-    def __init__(self, parent: QWidget, quoted_bg_color_role=QPalette.ColorRole.Window):
+    def __init__(self, parent: QWidget, quoted_bg_color_role=QPalette.ColorRole.Window,
+                 source_name_map=None):
         super().__init__(parent=parent)
 
         # macOS scrollbar may overlap with the content.
@@ -46,6 +47,7 @@ class CommentListDelegate(QStyledItemDelegate):
         self._margin_v = 10
         self._name_content_margin = 5
         self._quoted_bg_color_role = quoted_bg_color_role
+        self._source_name_map = source_name_map or {}
         self._name_height = QFontMetrics(parent.font()).height()
         self._parent_comment_paddings = Paddings(8, 3, 8, 3)
         self._parent_comment_margins = Margins(20, 5, 10, 5)
@@ -86,6 +88,9 @@ class CommentListDelegate(QStyledItemDelegate):
         painter.save()
         metadata_rect = QRect(0, 0, body_width, self._name_height)
         text_list = []
+        if comment.source and comment.source != "dummy":
+            source_name = self._source_name_map.get(comment.source, comment.source)
+            text_list.append(source_name)
         if comment.time:
             dt = datetime.fromtimestamp(comment.time)
             text_list.append(dt.strftime("%Y-%m-%d %H:%M"))
@@ -190,6 +195,9 @@ class CommentListView(ItemViewNoScrollMixin, QListView):
         self.setMouseTracking(True)
         self.setFrameShape(QFrame.Shape.NoFrame)
         self.setResizeMode(QListView.ResizeMode.Adjust)
+
+    def set_source_name_map(self, source_name_map):
+        self._delegate._source_name_map = source_name_map
 
     def min_height(self):
         """

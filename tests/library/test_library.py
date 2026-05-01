@@ -8,6 +8,7 @@ from feeluown.library import (
     Media,
     SimpleSearchResult,
     Quality,
+    SupportsSongHotComments,
 )
 from feeluown.media import MediaType
 
@@ -82,3 +83,103 @@ async def test_library_a_list_song_standby_v2(library):
     song_media_list = await library.a_list_song_standby_v2(song)
     assert song_media_list
     assert song_media_list[0][1].url == "good.mp3"
+
+
+@pytest.mark.asyncio
+async def test_library_a_search_song_matches(library):
+    class CommentProvider(Provider, SupportsSongHotComments):
+        @property
+        def identifier(self):
+            return "comment_pvd"
+
+        @property
+        def name(self):
+            return "comment_pvd"
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="1",
+                        source=self.identifier,
+                        title="hello world",
+                        artists_name="mary",
+                    )
+                ],
+            )
+
+        def song_list_hot_comments(self, _):
+            return []
+
+    library.register(CommentProvider())
+    song = BriefSongModel(
+        identifier="1",
+        title="hello world",
+        source="xxx",
+        artists_name="mary",
+    )
+    matches = await library.a_search_song_matches(song)
+    assert len(matches) == 1
+    assert matches[0][0] == "comment_pvd"
+    assert matches[0][1].identifier == "1"
+
+
+@pytest.mark.asyncio
+async def test_library_a_search_song_matches_excludes_own_source(library):
+    """Matches from the song's own source should be excluded."""
+    class SameProvider(Provider):
+        @property
+        def identifier(self):
+            return "same"
+
+        @property
+        def name(self):
+            return "same"
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="1",
+                        source=self.identifier,
+                        title="hello world",
+                        artists_name="mary",
+                    )
+                ],
+            )
+
+    class OtherProvider(Provider):
+        @property
+        def identifier(self):
+            return "other"
+
+        @property
+        def name(self):
+            return "other"
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="1",
+                        source=self.identifier,
+                        title="hello world",
+                        artists_name="mary",
+                    )
+                ],
+            )
+
+    library.register(SameProvider())
+    library.register(OtherProvider())
+    song = BriefSongModel(
+        identifier="1",
+        title="hello world",
+        source="same",
+        artists_name="mary",
+    )
+    matches = await library.a_search_song_matches(song)
+    assert len(matches) == 1
+    assert matches[0][0] == "other"
