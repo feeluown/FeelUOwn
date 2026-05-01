@@ -676,8 +676,12 @@ class Playlist:
             assert media, "media must not be empty"
 
         # The song has no media, try to find and use standby unless it is in fm mode.
+        standby_disabled = (
+            self._app.config.PROVIDERS_STANDBY is not None
+            and len(self._app.config.PROVIDERS_STANDBY) == 0
+        )
         if media is None:
-            if self._app.config.ENABLE_FALLBACK:
+            if not standby_disabled:
                 if self._app.config.ENABLE_MV_AS_STANDBY:
                     self.play_model_stage_changed.emit(
                         PlaylistPlayModelStage.find_standby_by_mv
@@ -691,7 +695,7 @@ class Playlist:
                 logger.info(f"no media found for {song}, mark it as bad")
                 self.mark_as_bad(song)
                 self.play_model_stage_changed.emit(PlaylistPlayModelStage.find_standby)
-                if self._app.config.ENABLE_FALLBACK:
+                if not standby_disabled:
                     target_song, media = await self.find_and_use_standby(song)
 
         metadata = None

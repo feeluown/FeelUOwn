@@ -64,6 +64,10 @@ class App:
         self.version_mgr = VersionManager(self)
         self.task_mgr = TaskManager(self)
         # Library.
+        # Migrate deprecated ENABLE_FALLBACK config: if it was explicitly set to
+        # False, disable standby by setting PROVIDERS_STANDBY to an empty list.
+        if config.ENABLE_FALLBACK is False and config.PROVIDERS_STANDBY is None:
+            config.PROVIDERS_STANDBY = []
         self.library = Library(
             config.PROVIDERS_STANDBY, config.ENABLE_AI_STANDBY_MATCHER
         )

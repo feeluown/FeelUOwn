@@ -26,4 +26,6 @@ openai-api-key-desc = OpenAI API 密钥
 openai-model-desc = OpenAI 模型名称
 ai-radio-prompt-desc = AI 电台功能的提示词
 enable-replace-playlist-on-dblclick-desc = 双击{ -track }时，用{ -track }所在列表替换当前{ playlist }
-enable-fallback-desc = 启用 fallback 机制：当歌曲无可用播放资源时，尝试 MV 或搜索其他provider作为备选
+providers-standby-desc = 备选歌曲来源列表（空列表表示禁用 fallback）
+enable-fallback-desc = 启用 fallback 机制（已废弃，请使用 PROVIDERS_STANDBY）
+enable-fallback-deprecated = ENABLE_FALLBACK 已废弃，请改用 PROVIDERS_STANDBY 来控制 fallback
