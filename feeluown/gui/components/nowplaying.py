@@ -273,8 +273,6 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
         if provider is not None and isinstance(provider, SupportsSongHotComments):
             try:
                 comments = await run_fn(provider.song_list_hot_comments, song)
-            except asyncio.CancelledError:
-                raise
             except Exception:
                 logger.exception("Failed to load comments from %s", provider_id)
                 comments = []
@@ -302,8 +300,6 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
     async def _search_other_sources(self, song, expected_gen=None):
         try:
             matches = await self._app.library.a_search_song_matches(song)
-        except asyncio.CancelledError:
-            raise
         except Exception:
             logger.exception("Failed to search song matches for comments")
             return
