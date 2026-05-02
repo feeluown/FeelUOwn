@@ -325,7 +325,9 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
 
         # Also guard against the song having changed to a different track.
         current = self._app.playlist.current_song
-        if current is None or current.source != song.source or current.identifier != song.identifier:
+        if current is None:
+            return
+        if current.source != song.source or current.identifier != song.identifier:
             return
 
         self._source_combo.blockSignals(True)
@@ -347,9 +349,17 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
         else:
             song = self._matches.get(provider_id)
         if song is not None:
-            if self._source_fetch_task is not None and not self._source_fetch_task.done():
+            if (
+                self._source_fetch_task is not None
+                and not self._source_fetch_task.done()
+            ):
                 self._source_fetch_task.cancel()
-            task = run_afn(self._fetch_and_show_comments, provider_id, song, self._refresh_gen)
+            task = run_afn(
+                self._fetch_and_show_comments,
+                provider_id,
+                song,
+                self._refresh_gen,
+            )
             self._source_fetch_task = task
             try:
                 await task
