@@ -1,6 +1,6 @@
 import sys
 from types import SimpleNamespace
-from unittest.mock import AsyncMock, MagicMock, Mock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
@@ -14,7 +14,6 @@ from feeluown.gui.components.nowplaying import NowplayingCommentListView
 from feeluown.i18n import t
 from feeluown.library import (
     BriefSongModel,
-    BriefCommentModel,
     BriefUserModel,
     CommentModel,
     SupportsSongHotComments,
@@ -44,7 +43,11 @@ class DummyProvider(SupportsSongHotComments):
             CommentModel(
                 identifier="c1",
                 source=self.identifier,
-                user=BriefUserModel(identifier="u1", source=self.identifier, name="user"),
+                user=BriefUserModel(
+                    identifier="u1",
+                    source=self.identifier,
+                    name="user",
+                ),
                 content=f"comment from {self.identifier}",
                 liked_count=1,
                 time=0,
