@@ -89,7 +89,7 @@ def create_config() -> Config:
         desc=t("mpv-audio-device-desc"),
     )
     config.deffield(
-        "MPV_PREFETCH_PLAYLIST",
+        "ENABLE_PREFETCH_PLAYLIST",
         type_=bool,
         default=True,
         desc=t("mpv-prefetch-playlist-desc"),
@@ -193,7 +193,7 @@ def create_config() -> Config:
         desc=t("playback-crossfade-desc"),
     )
     config.deffield(
-        "PLAYLIST_PRELOAD_THRESHOLD_SECONDS",
+        "PREFETCH_PLAYLIST_THRESHOLD_SECONDS",
         type_=int,
         default=30,
         desc=t("playlist-preload-threshold-seconds-desc"),

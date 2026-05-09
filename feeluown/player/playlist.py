@@ -185,7 +185,7 @@ class Playlist:
             cfg_threshold = 30
         else:
             cfg_threshold = getattr(
-                app_config, 'PLAYLIST_PRELOAD_THRESHOLD_SECONDS', 30
+                app_config, 'PREFETCH_PLAYLIST_THRESHOLD_SECONDS', 30
             )
         if not isinstance(cfg_threshold, Real):
             cfg_threshold = 30
@@ -281,12 +281,10 @@ class Playlist:
 
             # Queue into mpv immediately (URL/path ready), metadata can come later.
             try:
-                queue_media = getattr(self._app.player, 'queue_media', None)
-                if callable(queue_media):
-                    kwargs = {}
-                    if not self._app.has_gui:
-                        kwargs['video'] = False
-                    queue_media(media, **kwargs)
+                kwargs = {}
+                if not self._app.has_gui:
+                    kwargs['video'] = False
+                self._app.player.queue_media(media, **kwargs)
             except Exception:
                 logger.debug('queue next media into mpv failed', exc_info=True)
 
