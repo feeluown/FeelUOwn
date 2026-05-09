@@ -1,11 +1,30 @@
 from typing import TYPE_CHECKING
+from urllib.parse import urlsplit, urlunsplit
 
 from feeluown.gui.widgets import EmojiButton
 from feeluown.i18n import t
-from feeluown.utils.utils import format_proxies_for_display
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+
+def sanitize_proxy_url(url: str) -> str:
+    """Remove userinfo from a proxy URL before display."""
+    split = urlsplit(url)
+    netloc = split.netloc
+    if "@" not in netloc:
+        return url
+    netloc = netloc.rsplit("@", 1)[-1]
+    return urlunsplit((split.scheme, netloc, split.path, split.query, split.fragment))
+
+
+def sanitize_proxies(proxies: dict) -> dict:
+    return {name: sanitize_proxy_url(url) for name, url in proxies.items()}
+
+
+def format_proxies_for_display(proxies: dict) -> str:
+    sanitized = sanitize_proxies(proxies)
+    return ", ".join(f"{name}={url}" for name, url in sanitized.items())
 
 
 class ProxyStatusButton(EmojiButton):
