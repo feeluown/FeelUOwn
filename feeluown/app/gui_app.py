@@ -107,7 +107,6 @@ class GuiApp(App, QWidget):
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
-        self.ui.bottom_panel.update_proxy_status(self.proxies)
 
     def run(self):
         self.show()

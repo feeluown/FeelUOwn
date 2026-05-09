@@ -138,6 +138,3 @@ class BottomPanel(QWidget):
         if self._stacked_widget.indexOf(self.magicbox) != -1:
             self.set_top_stacked_widget(self.magicbox)
             self.magicbox.setFocus()
-
-    def update_proxy_status(self, proxies):
-        self.proxy_button.update_proxies(proxies)

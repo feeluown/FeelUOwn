@@ -11,7 +11,7 @@ def test_proxy_status_button_updates_sanitized_tooltip(qtbot, app_mock):
     btn = ProxyStatusButton(app_mock)
     qtbot.addWidget(btn)
 
-    btn.update_proxies({"http": "http://user:pass@127.0.0.1:7890"})
+    btn.update_proxy_status({"http": "http://user:pass@127.0.0.1:7890"})
 
     assert btn.toolTip() == t(
         "proxy-detected", proxy_info="http=http://127.0.0.1:7890"
@@ -22,9 +22,23 @@ def test_proxy_status_button_shows_no_proxy_tooltip(qtbot, app_mock):
     btn = ProxyStatusButton(app_mock)
     qtbot.addWidget(btn)
 
-    btn.update_proxies({})
+    btn.update_proxy_status({})
 
     assert btn.toolTip() == t("proxy-not-detected")
+
+
+def test_proxy_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatch):
+    monkeypatch.setattr(
+        "feeluown.gui.components.proxy_status.detect_proxy",
+        lambda: {"http": "http://user:pass@127.0.0.1:7890"},
+    )
+
+    btn = ProxyStatusButton(app_mock)
+    qtbot.addWidget(btn)
+
+    assert btn.toolTip() == t(
+        "proxy-detected", proxy_info="http=http://127.0.0.1:7890"
+    )
 
 
 def test_sanitize_proxy_url_removes_userinfo():

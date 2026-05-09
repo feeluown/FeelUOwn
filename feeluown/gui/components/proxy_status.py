@@ -3,6 +3,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 from feeluown.gui.widgets import EmojiButton
 from feeluown.i18n import t
+from feeluown.utils.utils import detect_proxy
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -31,12 +32,15 @@ class ProxyStatusButton(EmojiButton):
     def __init__(self, app: "GuiApp", *args, **kwargs):
         super().__init__("🌐", "", *args, **kwargs)
         self._app = app
-        self.update_proxies({})
+        self.refresh()
 
-    def update_proxies(self, proxies: dict):
+    def update_proxy_status(self, proxies: dict):
         if proxies:
             self.setToolTip(
                 t("proxy-detected", proxy_info=format_proxies_for_display(proxies))
             )
         else:
             self.setToolTip(t("proxy-not-detected"))
+
+    def refresh(self):
+        self.update_proxy_status(detect_proxy())

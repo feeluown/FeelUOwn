@@ -20,10 +20,9 @@ def test_gui_app_initialize_updates_proxy_button_tooltip(
 ):
     mocker.patch('feeluown.app.app.TaskManager')
     mocker.patch.object(CollectionManager, 'scan')
-    mocker.patch(
-        'feeluown.app.app.detect_proxy',
-        return_value={'http': 'http://user:pass@127.0.0.1:7890'},
-    )
+    mocker.patch('feeluown.gui.components.proxy_status.detect_proxy')
+    from feeluown.gui.components.proxy_status import detect_proxy
+    detect_proxy.return_value = {'http': 'http://user:pass@127.0.0.1:7890'}
     app = GuiApp(args, config)
     qtbot.addWidget(app)
 
