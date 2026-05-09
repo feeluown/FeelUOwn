@@ -686,5 +686,4 @@ provider-network-error = リクエストに失敗しました: { $errorMessage }
 ## Proxy detection alert
 ## $proxy_info: proxy settings description
 proxy-detected = システムプロキシが検出されました: { $proxy_info }
-proxy-detected-dialog-title = プロキシ検出
-proxy-detected-dialog-msg = システムプロキシが有効です: { $proxy_info }
+proxy-not-detected = プロキシは検出されませんでした

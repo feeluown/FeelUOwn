@@ -693,5 +693,4 @@ provider-network-error = Request failed: { $errorMessage }
 ## Proxy detection alert
 ## $proxy_info: proxy settings description
 proxy-detected = System proxy detected: { $proxy_info }
-proxy-detected-dialog-title = Proxy Detected
-proxy-detected-dialog-msg = System proxy is active: { $proxy_info }
+proxy-not-detected = No proxy detected

@@ -24,5 +24,4 @@ from .selfpaint_btn import (  # noqa
     HotButton,
     EmojiButton,
     AIButton,
-    ProxyButton,
 )

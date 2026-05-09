@@ -3,7 +3,7 @@ import sys
 
 from PyQt6.QtCore import Qt, QDir
 from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
-from PyQt6.QtWidgets import QApplication, QWidget, QMessageBox
+from PyQt6.QtWidgets import QApplication, QWidget
 
 from feeluown.gui.browser import Browser
 from feeluown.gui.hotkey import HotkeyManager
@@ -105,25 +105,16 @@ class GuiApp(App, QWidget):
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
+        self.started.connect(self._update_proxy_tooltip)
+
+    def _update_proxy_tooltip(self, *_):
         proxy_item = self.ui.bottom_panel.status_line.get_item("proxy")
-        if proxy_item is not None:
-            proxy_item.widget.clicked.connect(self._on_proxy_btn_clicked)
-        self.started.connect(self._show_proxy_info_if_needed)
-
-    def _show_proxy_info_if_needed(self, *_):
+        if proxy_item is None:
+            return
         if self._proxy_info:
-            proxy_item = self.ui.bottom_panel.status_line.get_item("proxy")
-            if proxy_item is not None:
-                proxy_item.widget.setToolTip(self._proxy_info)
-                proxy_item.widget.show()
-
-    def _on_proxy_btn_clicked(self):
-        if self._proxy_info:
-            QMessageBox.information(
-                self,
-                t("proxy-detected-dialog-title"),
-                t("proxy-detected-dialog-msg", proxy_info=self._proxy_info),
-            )
+            proxy_item.widget.setToolTip(self._proxy_info)
+        else:
+            proxy_item.widget.setToolTip(t("proxy-not-detected"))
 
     def run(self):
         self.show()
