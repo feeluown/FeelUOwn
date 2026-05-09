@@ -1,5 +1,6 @@
 from feeluown.collection import CollectionManager
 from feeluown.app.gui_app import GuiApp
+from feeluown.i18n import t
 
 
 def test_gui_app_initialize(qtbot, mocker, args, config, noharm):
@@ -12,3 +13,24 @@ def test_gui_app_initialize(qtbot, mocker, args, config, noharm):
     mocker.patch.object(app.live_lyric.sentence_changed, 'connect')
     mocker.patch.object(app, 'about_to_exit')
     app.initialize()
+
+
+def test_gui_app_initialize_updates_proxy_button_tooltip(
+    qtbot, mocker, args, config, noharm
+):
+    mocker.patch('feeluown.app.app.TaskManager')
+    mocker.patch.object(CollectionManager, 'scan')
+    mocker.patch(
+        'feeluown.app.app.detect_proxy',
+        return_value={'http': 'http://user:pass@127.0.0.1:7890'},
+    )
+    app = GuiApp(args, config)
+    qtbot.addWidget(app)
+
+    mocker.patch.object(app.live_lyric.sentence_changed, 'connect')
+    mocker.patch.object(app, 'about_to_exit')
+    app.initialize()
+
+    assert app.ui.bottom_panel.proxy_button.toolTip() == t(
+        "proxy-detected", proxy_info="http=http://127.0.0.1:7890"
+    )

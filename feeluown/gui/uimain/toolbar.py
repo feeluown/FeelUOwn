@@ -8,8 +8,8 @@ from feeluown.gui.widgets import (
     RightArrowButton,
     SearchSwitchButton,
     SettingsButton,
-    EmojiButton,
 )
+from feeluown.gui.components import ProxyStatusButton
 from feeluown.gui.widgets.magicbox import MagicBox
 from feeluown.gui.widgets.statusline import StatusLine, StatusLineItem
 from feeluown.i18n import t
@@ -45,9 +45,8 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
-        self.proxy_btn = EmojiButton("🌐", "", height=ButtonSize[0])
-        self.proxy_btn.setToolTip(t("proxy-not-detected"))
-        self.status_line.add_item(StatusLineItem("proxy", self.proxy_btn))
+        self.proxy_button = ProxyStatusButton(self._app, height=ButtonSize[0])
+        self.status_line.add_item(StatusLineItem("proxy", self.proxy_button))
         self.settings_btn = SettingsButton(length=ButtonSize[0])
 
         # initialize widgets
@@ -139,3 +138,6 @@ class BottomPanel(QWidget):
         if self._stacked_widget.indexOf(self.magicbox) != -1:
             self.set_top_stacked_widget(self.magicbox)
             self.magicbox.setFocus()
+
+    def update_proxy_status(self, proxies):
+        self.proxy_button.update_proxies(proxies)

@@ -29,7 +29,7 @@ from feeluown.plugin import plugins_mgr
 from feeluown.version import VersionManager
 from feeluown.task import TaskManager
 from feeluown.alert import AlertManager
-from feeluown.utils.utils import detect_proxy
+from feeluown.utils.utils import detect_proxy, format_proxies_for_display
 from feeluown.i18n import t
 
 from .mode import AppMode
@@ -127,11 +127,14 @@ class App:
     def initialize(self):
         self.coll_mgr.scan()
         self.alert_mgr.initialize(self)
-        self._proxy_info = ""
-        proxies = detect_proxy()
-        if proxies:
-            self._proxy_info = ", ".join(f"{k}={v}" for k, v in proxies.items())
-            logger.info(t("proxy-detected", proxy_info=self._proxy_info))
+        self.proxies = detect_proxy()
+        if self.proxies:
+            logger.info(
+                t(
+                    "proxy-detected",
+                    proxy_info=format_proxies_for_display(self.proxies),
+                )
+            )
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
         self.playlist.song_changed.connect(

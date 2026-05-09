@@ -5,6 +5,7 @@ import sys
 import socket
 import time
 import warnings
+from urllib.parse import urlsplit, urlunsplit
 from collections import OrderedDict
 from copy import copy, deepcopy
 from functools import wraps
@@ -238,6 +239,25 @@ def int_to_human_readable(i: int) -> str:
         stacklevel=2,
     )
     return human_readable_number(n=i)
+
+
+def sanitize_proxy_url(url: str) -> str:
+    """Remove userinfo from a proxy URL before display or logging."""
+    split = urlsplit(url)
+    netloc = split.netloc
+    if "@" not in netloc:
+        return url
+    netloc = netloc.rsplit("@", 1)[-1]
+    return urlunsplit((split.scheme, netloc, split.path, split.query, split.fragment))
+
+
+def sanitize_proxies(proxies: dict) -> dict:
+    return {name: sanitize_proxy_url(url) for name, url in proxies.items()}
+
+
+def format_proxies_for_display(proxies: dict) -> str:
+    sanitized = sanitize_proxies(proxies)
+    return ", ".join(f"{name}={url}" for name, url in sanitized.items())
 
 
 def detect_proxy() -> dict:

@@ -16,7 +16,6 @@ from feeluown.gui.tray import Tray
 from feeluown.gui.provider_ui import ProviderUiManager, CurrentProviderUiManager
 from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
-from feeluown.i18n import t
 
 from .app import App
 
@@ -32,7 +31,10 @@ class GuiApp(App, QWidget):
         # macOS: must initialize QApplication before constructing a pixmap object.
         # Arch Linux: it may core if QApplication is initialized here.
         if sys.platform == 'darwin':
-            GuiApp.__q_app = QApplication(['FeelUOwn'])
+            qapp = QApplication.instance()
+            if qapp is None:
+                qapp = QApplication(['FeelUOwn'])
+            GuiApp.__q_app = qapp
         # Set desktopFileName so that the window icon is properly shown under wayland.
         # I don't know if this setting brings other benefits or not.
         # https://github.com/pyfa-org/Pyfa/issues/1607#issuecomment-392099878
@@ -105,16 +107,7 @@ class GuiApp(App, QWidget):
         self.watch_mgr.initialize()
         self.browser.initialize()
         QApplication.instance().aboutToQuit.connect(self.about_to_exit)
-        self.started.connect(self._update_proxy_tooltip)
-
-    def _update_proxy_tooltip(self, *_):
-        proxy_item = self.ui.bottom_panel.status_line.get_item("proxy")
-        if proxy_item is None:
-            return
-        if self._proxy_info:
-            proxy_item.widget.setToolTip(self._proxy_info)
-        else:
-            proxy_item.widget.setToolTip(t("proxy-not-detected"))
+        self.ui.bottom_panel.update_proxy_status(self.proxies)
 
     def run(self):
         self.show()

@@ -13,3 +13,4 @@ from .song_tag import SongSourceTag  # noqa
 from .collections import CollectionListView  # noqa
 from .player_progress import PlayerProgressSliderAndLabel  # noqa
 from .recommendation_panel import Panel, RecPlaylistsPanel  # noqa
+from .proxy_status import ProxyStatusButton  # noqa
