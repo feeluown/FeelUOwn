@@ -224,13 +224,4 @@ def create_config() -> Config:
         default=True,
         desc=t("enable-replace-playlist-on-dblclick-desc"),
     )
-    # Deprecated since v4.x: use PROVIDERS_STANDBY instead.
-    # Kept so that old rc files can still load the value for migration.
-    config.deffield(
-        "ENABLE_FALLBACK",
-        type_=bool,
-        default=True,
-        desc=t("enable-fallback-desc"),
-        warn=t("enable-fallback-deprecated"),
-    )
     return config

@@ -27,5 +27,3 @@ openai-model-desc = OpenAI model name
 ai-radio-prompt-desc = Prompt template for AI radio feature
 enable-replace-playlist-on-dblclick-desc = On double-clicking a { -track }, replace the current { playlist } with the { -track }’s source
 providers-standby-desc = Standby provider list (empty list disables fallback)
-enable-fallback-desc = Enable fallback mechanism (deprecated; use PROVIDERS_STANDBY instead)
-enable-fallback-deprecated = ENABLE_FALLBACK is deprecated. Use PROVIDERS_STANDBY to control fallback behavior.
