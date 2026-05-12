@@ -2,7 +2,8 @@
 import logging
 import warnings
 from collections import Counter
-from typing import Optional, TypeVar, List, TYPE_CHECKING
+from dataclasses import dataclass
+from typing import Callable, Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media, MediaType
 from feeluown.utils.aio import run_fn, as_completed
@@ -55,6 +56,13 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 T_p = TypeVar("T_p")
+
+
+@dataclass
+class SongMatchOptions:
+    source_in: Optional[List[str]] = None
+    score_fn: Optional[Callable[[BriefSongModel, BriefSongModel], float]] = None
+    min_score: float = STANDBY_DEFAULT_MIN_SCORE
 
 
 def raise_(e):
@@ -222,17 +230,18 @@ class Library:
     async def a_match_song(
         self,
         song,
-        source_in=None,
-        score_fn=None,
-        min_score=STANDBY_DEFAULT_MIN_SCORE,
+        options=None,
     ):
         """Search matching songs from providers without preparing media."""
-        if source_in is None:
+        if options is None:
+            options = SongMatchOptions()
+        if options.source_in is None:
             pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
         else:
-            pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
-        if score_fn is None:
-            score_fn = get_standby_score
+            pvd_ids = [
+                pvd.identifier for pvd in self._filter(identifier_in=options.source_in)
+            ]
+        score_fn = options.score_fn or get_standby_score
 
         q = "{} {}".format(song.title_display, song.artists_name_display)
         if not q.strip():
@@ -247,7 +256,7 @@ class Library:
                 if source in matches:
                     continue
                 score = score_fn(song, standby)
-                if score >= min_score:
+                if score >= options.min_score:
                     matches[source] = standby
         return matches
 

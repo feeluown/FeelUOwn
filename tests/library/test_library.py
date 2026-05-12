@@ -8,6 +8,7 @@ from feeluown.library import (
     Media,
     SimpleSearchResult,
     Quality,
+    SongMatchOptions,
 )
 from feeluown.media import MediaType
 
@@ -116,7 +117,7 @@ async def test_library_a_match_song_returns_matches_without_media(library):
         artists_name="Artist",
     )
 
-    matches = await library.a_match_song(song, source_in=["match"])
+    matches = await library.a_match_song(song, SongMatchOptions(source_in=["match"]))
 
     assert matches == {
         "match": BriefSongModel(
