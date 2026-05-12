@@ -45,7 +45,7 @@ class NetworkStatusButton(SelfPaintAbstractSquareButton):
         if proxies:
             self.setToolTip(
                 with_refresh_hint(
-                    t("proxy-detected", proxy_info=format_proxies_for_display(proxies))
+                    t("proxy-detected", proxyInfo=format_proxies_for_display(proxies))
                 )
             )
         else:

@@ -684,7 +684,7 @@ provider-missing-feature = { -provider(capitalization: "uppercase") }不支持�
 provider-network-error = 请求失败: { $errorMessage }
 
 ## Proxy detection alert
-## proxy_info: proxy settings description
-proxy-detected = 检测到系统代理: { $proxy_info }
+## $proxyInfo: proxy settings description
+proxy-detected = 检测到系统代理: { $proxyInfo }
 proxy-not-detected = 未检测到代理
 proxy-click-to-refresh = 点击刷新

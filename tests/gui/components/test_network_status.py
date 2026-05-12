@@ -24,7 +24,7 @@ def test_network_status_button_updates_sanitized_tooltip(qtbot, app_mock):
 
     assert btn.toolTip() == t(
         "proxy-detected",
-        proxy_info="http=http://127.0.0.1:7890\nhttps=socks5://127.0.0.1:7891",
+        proxyInfo="http=http://127.0.0.1:7890\nhttps=socks5://127.0.0.1:7891",
     ) + "\n\n" + t("proxy-click-to-refresh")
     assert btn._has_proxy is True
 
@@ -51,7 +51,7 @@ def test_network_status_button_click_refreshes_detected_proxy(
 
     assert btn.toolTip() == t(
         "proxy-detected",
-        proxy_info="http=http://127.0.0.1:7890\nhttps=socks5://127.0.0.1:7891",
+        proxyInfo="http=http://127.0.0.1:7890\nhttps=socks5://127.0.0.1:7891",
     ) + "\n\n" + t("proxy-click-to-refresh")
     assert btn._has_proxy is True
 
@@ -82,7 +82,7 @@ def test_network_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatc
 
     assert btn.toolTip() == t(
         "proxy-detected",
-        proxy_info="http=http://127.0.0.1:7890\nhttps=socks5://127.0.0.1:7891",
+        proxyInfo="http=http://127.0.0.1:7890\nhttps=socks5://127.0.0.1:7891",
     ) + "\n\n" + t("proxy-click-to-refresh")
     assert btn._has_proxy is True
 

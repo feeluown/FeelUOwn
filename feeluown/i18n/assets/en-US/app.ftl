@@ -691,7 +691,7 @@ provider-missing-feature = { -provider(capitalization: "uppercase") } does not s
 provider-network-error = Request failed: { $errorMessage }
 
 ## Proxy detection alert
-## $proxy_info: proxy settings description
-proxy-detected = System proxy detected: { $proxy_info }
+## $proxyInfo: proxy settings description
+proxy-detected = System proxy detected: { $proxyInfo }
 proxy-not-detected = No proxy detected
 proxy-click-to-refresh = Click to refresh
