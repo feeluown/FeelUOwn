@@ -694,3 +694,4 @@ provider-network-error = Request failed: { $errorMessage }
 ## $proxy_info: proxy settings description
 proxy-detected = System proxy detected: { $proxy_info }
 proxy-not-detected = No proxy detected
+proxy-click-to-refresh = Click to refresh

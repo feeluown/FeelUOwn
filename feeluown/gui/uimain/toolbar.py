@@ -45,7 +45,7 @@ class BottomPanel(QWidget):
         self._stack_switch.hide()
 
         self.status_line = StatusLine(self._app)
-        self.proxy_button = ProxyStatusButton(self._app, height=ButtonSize[0])
+        self.proxy_button = ProxyStatusButton(length=ButtonSize[0])
         self.status_line.add_item(StatusLineItem("proxy", self.proxy_button))
         self.settings_btn = SettingsButton(length=ButtonSize[0])
 

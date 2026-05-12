@@ -687,3 +687,4 @@ provider-network-error = 请求失败: { $errorMessage }
 ## proxy_info: proxy settings description
 proxy-detected = 检测到系统代理: { $proxy_info }
 proxy-not-detected = 未检测到代理
+proxy-click-to-refresh = 点击刷新

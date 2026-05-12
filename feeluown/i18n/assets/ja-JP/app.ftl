@@ -687,3 +687,4 @@ provider-network-error = リクエストに失敗しました: { $errorMessage }
 ## $proxy_info: proxy settings description
 proxy-detected = システムプロキシが検出されました: { $proxy_info }
 proxy-not-detected = プロキシは検出されませんでした
+proxy-click-to-refresh = クリックして更新

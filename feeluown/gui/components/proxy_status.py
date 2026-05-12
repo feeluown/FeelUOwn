@@ -1,12 +1,11 @@
-from typing import TYPE_CHECKING
 from urllib.parse import urlsplit, urlunsplit
 
-from feeluown.gui.widgets import EmojiButton
+from PyQt6.QtGui import QPainter
+
+from feeluown.gui.drawers import ProxyIconDrawer, ProxyShieldBadgeDrawer
+from feeluown.gui.widgets import SelfPaintAbstractSquareButton
 from feeluown.i18n import t
 from feeluown.utils.utils import detect_proxy
-
-if TYPE_CHECKING:
-    from feeluown.app.gui_app import GuiApp
 
 
 def sanitize_proxy_url(url: str) -> str:
@@ -25,22 +24,44 @@ def sanitize_proxies(proxies: dict) -> dict:
 
 def format_proxies_for_display(proxies: dict) -> str:
     sanitized = sanitize_proxies(proxies)
-    return ", ".join(f"{name}={url}" for name, url in sanitized.items())
+    return "\n".join(f"{name}={url}" for name, url in sanitized.items())
 
 
-class ProxyStatusButton(EmojiButton):
-    def __init__(self, app: "GuiApp", *args, **kwargs):
-        super().__init__("🌐", "", *args, **kwargs)
-        self._app = app
+def with_refresh_hint(text: str) -> str:
+    return text + "\n\n" + t("proxy-click-to-refresh")
+
+
+class ProxyStatusButton(SelfPaintAbstractSquareButton):
+    def __init__(self, length=30, parent=None):
+        super().__init__(length=length, padding=0.2, parent=parent)
+        self._icon_drawer = ProxyIconDrawer(self.width(), self._padding)
+        self._badge_drawer = ProxyShieldBadgeDrawer(self.width(), self._padding)
+        self._has_proxy = False
+        self.clicked.connect(self.refresh)
         self.refresh()
 
     def update_proxy_status(self, proxies: dict):
+        self._has_proxy = bool(proxies)
         if proxies:
             self.setToolTip(
-                t("proxy-detected", proxy_info=format_proxies_for_display(proxies))
+                with_refresh_hint(
+                    t("proxy-detected", proxy_info=format_proxies_for_display(proxies))
+                )
             )
         else:
-            self.setToolTip(t("proxy-not-detected"))
+            self.setToolTip(with_refresh_hint(t("proxy-not-detected")))
+        self.update()
 
     def refresh(self):
         self.update_proxy_status(detect_proxy())
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
+        self._icon_drawer.draw(painter)
+
+        if self._has_proxy is False:
+            return
+
+        self._badge_drawer.draw(painter, self.palette())

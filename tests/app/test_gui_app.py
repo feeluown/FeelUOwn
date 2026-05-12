@@ -32,4 +32,4 @@ def test_gui_app_initialize_updates_proxy_button_tooltip(
 
     assert app.ui.bottom_panel.proxy_button.toolTip() == t(
         "proxy-detected", proxy_info="http=http://127.0.0.1:7890"
-    )
+    ) + "\n\n" + t("proxy-click-to-refresh")

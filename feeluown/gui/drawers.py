@@ -204,6 +204,92 @@ class SearchIconDrawer:
         painter.drawLine(self._center, self._bottom_right)
 
 
+class ProxyIconDrawer:
+    def __init__(self, length, padding):
+        body_width = length - 2 * padding
+        center_x = length / 2
+        center_y = length / 2
+        meridian_width = body_width * 0.42
+        latitude_offset = body_width * 0.22
+
+        self._globe_rect = QRectF(padding, padding, body_width, body_width)
+        self._meridian_rect = QRectF(
+            center_x - meridian_width / 2,
+            padding,
+            meridian_width,
+            body_width,
+        )
+        radius = body_width / 2
+
+        self._equator = self._create_latitude_line(center_x, center_y, radius, center_y)
+        self._north_latitude = self._create_latitude_line(
+            center_x,
+            center_y,
+            radius,
+            center_y - latitude_offset,
+        )
+        self._south_latitude = self._create_latitude_line(
+            center_x,
+            center_y,
+            radius,
+            center_y + latitude_offset,
+        )
+
+    @staticmethod
+    def _create_latitude_line(center_x, center_y, radius, y):
+        dy = y - center_y
+        dx = math.sqrt(max(radius * radius - dy * dy, 0))
+        return QPointF(center_x - dx, y), QPointF(center_x + dx, y)
+
+    def draw(self, painter: QPainter):
+        pen = painter.pen()
+        pen.setWidthF(1.25)
+        painter.setPen(pen)
+        painter.drawEllipse(self._globe_rect)
+        painter.drawEllipse(self._meridian_rect)
+        painter.drawLine(*self._equator)
+        painter.drawLine(*self._north_latitude)
+        painter.drawLine(*self._south_latitude)
+
+
+class ProxyShieldBadgeDrawer:
+    def __init__(self, length, padding):
+        size = length / 3.6
+        right = length - padding + padding * 0.25
+        bottom = length - padding + padding * 0.25
+        left = right - size
+        top = bottom - size
+        mid_x = (left + right) / 2
+        body_top = top + size * 0.24
+        body_mid = top + size * 0.66
+
+        self._bounding_rect = QRectF(left, top, size, size)
+        self._polygon = QPolygonF(
+            [
+                QPointF(mid_x, top),
+                QPointF(right, body_top),
+                QPointF(right - size * 0.08, body_mid),
+                QPointF(mid_x, bottom),
+                QPointF(left + size * 0.08, body_mid),
+                QPointF(left, body_top),
+            ]
+        )
+        self._path = QPainterPath(self._polygon.at(0))
+        for i in range(1, self._polygon.count()):
+            self._path.lineTo(self._polygon.at(i))
+        self._path.closeSubpath()
+
+    def draw(self, painter: QPainter, palette: QPalette):
+        painter.save()
+        pen = painter.pen()
+        pen.setWidthF(1.0)
+        pen.setColor(palette.color(QPalette.ColorRole.Window))
+        painter.setPen(pen)
+        painter.setBrush(palette.color(QPalette.ColorRole.ButtonText))
+        painter.drawPath(self._path)
+        painter.restore()
+
+
 class TriangleIconDrawer:
     def __init__(self, length, padding, direction="up", brush=False):
         self._length = length
