@@ -551,7 +551,7 @@ class VolumeButton(SelfPaintAbstractSquareButton):
 if __name__ == "__main__":
     from PyQt6.QtWidgets import QHBoxLayout, QVBoxLayout
 
-    from feeluown.gui.components.proxy_status import NetworkStatusButton
+    from feeluown.gui.components.network_status import NetworkStatusButton
     from feeluown.gui.debug import simple_layout
 
     length = 40

@@ -2,7 +2,7 @@ import pytest
 from PyQt6.QtCore import Qt
 
 from feeluown.gui.drawers import ProxyIconDrawer, ProxyShieldBadgeDrawer
-from feeluown.gui.components.proxy_status import (
+from feeluown.gui.components.network_status import (
     NetworkStatusButton,
     sanitize_proxy_url,
     sanitize_proxies,
@@ -11,7 +11,7 @@ from feeluown.gui.components.proxy_status import (
 from feeluown.i18n import t
 
 
-def test_proxy_status_button_updates_sanitized_tooltip(qtbot, app_mock):
+def test_network_status_button_updates_sanitized_tooltip(qtbot, app_mock):
     btn = NetworkStatusButton()
     qtbot.addWidget(btn)
 
@@ -29,7 +29,7 @@ def test_proxy_status_button_updates_sanitized_tooltip(qtbot, app_mock):
     assert btn._has_proxy is True
 
 
-def test_proxy_status_button_click_refreshes_detected_proxy(
+def test_network_status_button_click_refreshes_detected_proxy(
     qtbot, app_mock, monkeypatch
 ):
     proxies = [
@@ -41,7 +41,7 @@ def test_proxy_status_button_click_refreshes_detected_proxy(
     ]
 
     monkeypatch.setattr(
-        "feeluown.gui.components.proxy_status.detect_proxy",
+        "feeluown.gui.components.network_status.detect_proxy",
         lambda: proxies.pop(0),
     )
 
@@ -56,7 +56,7 @@ def test_proxy_status_button_click_refreshes_detected_proxy(
     assert btn._has_proxy is True
 
 
-def test_proxy_status_button_shows_no_proxy_tooltip(qtbot, app_mock):
+def test_network_status_button_shows_no_proxy_tooltip(qtbot, app_mock):
     btn = NetworkStatusButton()
     qtbot.addWidget(btn)
 
@@ -68,9 +68,9 @@ def test_proxy_status_button_shows_no_proxy_tooltip(qtbot, app_mock):
     assert btn._has_proxy is False
 
 
-def test_proxy_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatch):
+def test_network_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatch):
     monkeypatch.setattr(
-        "feeluown.gui.components.proxy_status.detect_proxy",
+        "feeluown.gui.components.network_status.detect_proxy",
         lambda: {
             "http": "http://user:pass@127.0.0.1:7890",
             "https": "socks5://127.0.0.1:7891",
@@ -87,7 +87,7 @@ def test_proxy_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatch)
     assert btn._has_proxy is True
 
 
-def test_proxy_status_button_has_fixed_square_width(qtbot, app_mock):
+def test_network_status_button_has_fixed_square_width(qtbot, app_mock):
     btn = NetworkStatusButton(length=30)
     qtbot.addWidget(btn)
 
