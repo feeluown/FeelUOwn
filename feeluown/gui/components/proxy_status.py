@@ -31,7 +31,7 @@ def with_refresh_hint(text: str) -> str:
     return text + "\n\n" + t("proxy-click-to-refresh")
 
 
-class ProxyStatusButton(SelfPaintAbstractSquareButton):
+class NetworkStatusButton(SelfPaintAbstractSquareButton):
     def __init__(self, length=30, parent=None):
         super().__init__(length=length, padding=0.2, parent=parent)
         self._icon_drawer = ProxyIconDrawer(self.width(), self._padding)

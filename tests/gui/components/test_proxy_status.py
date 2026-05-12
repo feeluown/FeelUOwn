@@ -3,7 +3,7 @@ from PyQt6.QtCore import Qt
 
 from feeluown.gui.drawers import ProxyIconDrawer, ProxyShieldBadgeDrawer
 from feeluown.gui.components.proxy_status import (
-    ProxyStatusButton,
+    NetworkStatusButton,
     sanitize_proxy_url,
     sanitize_proxies,
     format_proxies_for_display,
@@ -12,7 +12,7 @@ from feeluown.i18n import t
 
 
 def test_proxy_status_button_updates_sanitized_tooltip(qtbot, app_mock):
-    btn = ProxyStatusButton()
+    btn = NetworkStatusButton()
     qtbot.addWidget(btn)
 
     btn.update_proxy_status(
@@ -45,7 +45,7 @@ def test_proxy_status_button_click_refreshes_detected_proxy(
         lambda: proxies.pop(0),
     )
 
-    btn = ProxyStatusButton()
+    btn = NetworkStatusButton()
     qtbot.addWidget(btn)
     qtbot.mouseClick(btn, Qt.MouseButton.LeftButton)
 
@@ -57,7 +57,7 @@ def test_proxy_status_button_click_refreshes_detected_proxy(
 
 
 def test_proxy_status_button_shows_no_proxy_tooltip(qtbot, app_mock):
-    btn = ProxyStatusButton()
+    btn = NetworkStatusButton()
     qtbot.addWidget(btn)
 
     btn.update_proxy_status({})
@@ -77,7 +77,7 @@ def test_proxy_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatch)
         },
     )
 
-    btn = ProxyStatusButton()
+    btn = NetworkStatusButton()
     qtbot.addWidget(btn)
 
     assert btn.toolTip() == t(
@@ -88,7 +88,7 @@ def test_proxy_status_button_detects_proxy_on_init(qtbot, app_mock, monkeypatch)
 
 
 def test_proxy_status_button_has_fixed_square_width(qtbot, app_mock):
-    btn = ProxyStatusButton(length=30)
+    btn = NetworkStatusButton(length=30)
     qtbot.addWidget(btn)
 
     assert btn.width() == 30
