@@ -15,7 +15,7 @@ def test_gui_app_initialize(qtbot, mocker, args, config, noharm):
     app.initialize()
 
 
-def test_gui_app_initialize_updates_proxy_button_tooltip(
+def test_gui_app_initialize_updates_network_status_button_tooltip(
     qtbot, mocker, args, config, noharm
 ):
     mocker.patch('feeluown.app.app.TaskManager')
@@ -30,6 +30,6 @@ def test_gui_app_initialize_updates_proxy_button_tooltip(
     mocker.patch.object(app, 'about_to_exit')
     app.initialize()
 
-    assert app.ui.bottom_panel.proxy_button.toolTip() == t(
+    assert app.ui.bottom_panel.network_status_button.toolTip() == t(
         "proxy-detected", proxyInfo="http=http://127.0.0.1:7890"
     ) + "\n\n" + t("proxy-click-to-refresh")

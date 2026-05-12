@@ -581,9 +581,9 @@ if __name__ == "__main__":
         volume_button = VolumeButton(length=length)
         volume_button.set_volume(60)
         l2.addWidget(volume_button)
-        proxy_button = NetworkStatusButton(length=length)
-        proxy_button.update_proxy_status({"http": "http://127.0.0.1:7890"})
-        l2.addWidget(proxy_button)
+        network_status_button = NetworkStatusButton(length=length)
+        network_status_button.update_proxy_status({"http": "http://127.0.0.1:7890"})
+        l2.addWidget(network_status_button)
         l2.addStretch(0)
 
         l3.addWidget(HotButton(height=length))
