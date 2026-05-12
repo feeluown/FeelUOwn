@@ -219,6 +219,38 @@ class Library:
             logger.exception(f"get standby:{standby} media failed")
         return media
 
+    async def a_match_song(
+        self,
+        song,
+        source_in=None,
+        score_fn=None,
+        min_score=STANDBY_DEFAULT_MIN_SCORE,
+    ):
+        """Search matching songs from providers without preparing media."""
+        if source_in is None:
+            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        else:
+            pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
+        if score_fn is None:
+            score_fn = get_standby_score
+
+        q = "{} {}".format(song.title_display, song.artists_name_display)
+        if not q.strip():
+            return {}
+
+        matches = {}
+        async for result in self.a_search(q, source_in=pvd_ids):
+            if result is None:
+                continue
+            for standby in result.songs:
+                source = standby.source
+                if source in matches:
+                    continue
+                score = score_fn(song, standby)
+                if score >= min_score:
+                    matches[source] = standby
+        return matches
+
     async def a_list_song_standby_v2(
         self,
         song,

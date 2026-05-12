@@ -82,3 +82,47 @@ async def test_library_a_list_song_standby_v2(library):
     song_media_list = await library.a_list_song_standby_v2(song)
     assert song_media_list
     assert song_media_list[0][1].url == "good.mp3"
+
+
+@pytest.mark.asyncio
+async def test_library_a_match_song_returns_matches_without_media(library):
+    class MatchProvider(Provider):
+        @property
+        def identifier(self):
+            return "match"
+
+        @property
+        def name(self):
+            return "match"
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="matched",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    )
+                ],
+            )
+
+    library.register(MatchProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+    )
+
+    matches = await library.a_match_song(song, source_in=["match"])
+
+    assert matches == {
+        "match": BriefSongModel(
+            identifier="matched",
+            source="match",
+            title="Song",
+            artists_name="Artist",
+        )
+    }

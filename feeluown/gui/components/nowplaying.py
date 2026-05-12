@@ -28,7 +28,6 @@ from feeluown.gui.widgets.song_minicard_list import (
 )
 from feeluown.i18n import t
 from feeluown.library import SupportsSongHotComments, SupportsSongSimilar
-from feeluown.library.standby import get_standby_score, STANDBY_DEFAULT_MIN_SCORE
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.reader import create_reader
 
@@ -339,36 +338,14 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
         if not comment_providers:
             return {}
 
-        q = " ".join(
-            s for s in (song.title_display, song.artists_name_display) if s
-        )
-        if not q:
-            return {}
-        standby_map = {}
-
         try:
-            async for result in self._app.library.a_search(
-                q, source_in=list(comment_providers)
-            ):
-                if result is None:
-                    continue
-                for standby in result.songs:
-                    source = standby.source
-                    # Already found a match for this source.
-                    if source in standby_map:
-                        continue
-                    provider = self._app.library.get(source)
-                    if provider is None:
-                        continue
-                    score = get_standby_score(song, standby)
-                    if score >= STANDBY_DEFAULT_MIN_SCORE:
-                        standby_map[source] = standby
-                        if len(standby_map) == len(comment_providers):
-                            return standby_map
+            return await self._app.library.a_match_song(
+                song, source_in=list(comment_providers)
+            )
         except Exception:
             logger.exception("Standby song search failed")
 
-        return standby_map
+        return {}
 
     def _update_platform_selector(self, song):
         self._platform_selector.blockSignals(True)
