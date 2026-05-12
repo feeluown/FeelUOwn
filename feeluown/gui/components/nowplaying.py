@@ -62,6 +62,52 @@ class RefreshOnSongChangedMixin:
         self._need_refresh = False
 
 
+class CommentSourceState:
+    def __init__(self):
+        self._song = None
+        self._source_song_map = {}
+        self._current_source_id: Optional[str] = None
+
+    @property
+    def song(self):
+        return self._song
+
+    @property
+    def current_source_id(self):
+        return self._current_source_id
+
+    def reset(self, song=None):
+        self._song = song
+        self._source_song_map = {}
+        self._current_source_id = None
+        if song is not None:
+            self._source_song_map[song.source] = song
+            self._current_source_id = song.source
+
+    def set_standby_map(self, standby_map):
+        if self._song is None:
+            return
+        self._source_song_map = {self._song.source: self._song}
+        self._source_song_map.update(standby_map)
+
+    def source_ids(self):
+        return self._source_song_map.keys()
+
+    def has_standby_sources(self):
+        if self._song is None:
+            return False
+        return len(self._source_song_map) > 1
+
+    def get_song(self, source_id):
+        return self._source_song_map.get(source_id)
+
+    def set_current_source(self, source_id):
+        self._current_source_id = source_id
+
+    def belongs_to(self, song):
+        return self._song is song
+
+
 class MVWrapper(QWidget):
     def __init__(self, parent):
         super().__init__(parent=parent)
@@ -238,9 +284,7 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
             )
         )
 
-        self._standby_map = {}  # provider_id -> matched BriefSongModel
-        self._standby_song = None  # song whose standby_map belongs to
-        self._current_source_id: Optional[str] = None
+        self._source_state = CommentSourceState()
 
     def viewport(self):
         return self._comment_list.viewport()
@@ -256,12 +300,10 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
         if song is None:
             self._comment_list.setModel(CommentListModel(create_reader([])))
             self._platform_selector.hide()
-            self._standby_map = {}
-            self._standby_song = None
-            self._current_source_id = None
+            self._source_state.reset()
             return
 
-        self._current_source_id = song.source
+        self._source_state.reset(song)
 
         # Load current platform comments.
         reader = create_reader([])
@@ -274,12 +316,10 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
         # Find the same song on other platforms that support hot comments.
         # Reset state and hide the selector before the async search so
         # stale entries from the previous song are not shown in the interim.
-        self._standby_map = {}
-        self._standby_song = None
         self._platform_selector.hide()
-        self._standby_map = await self._find_standby_songs(song)
-        if self._standby_map:
-            self._standby_song = song
+        standby_map = await self._find_standby_songs(song)
+        if self._source_state.belongs_to(song):
+            self._source_state.set_standby_map(standby_map)
         self._update_platform_selector(song)
 
     async def _find_standby_songs(self, song):
@@ -341,13 +381,16 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
             self._platform_selector.addItem(current_name, song.source)
 
             # Additional items: other platforms with a matched song.
-            for source_id in self._standby_map:
+            for source_id in self._source_state.source_ids():
+                if source_id == song.source:
+                    continue
                 provider = self._app.library.get(source_id)
                 name = provider.name if provider else source_id
                 self._platform_selector.addItem(name, source_id)
 
-            has_other_platforms = len(self._standby_map) > 0
-            self._platform_selector.setVisible(has_other_platforms)
+            self._platform_selector.setVisible(
+                self._source_state.has_standby_sources()
+            )
             self._platform_selector.setCurrentIndex(0)
         finally:
             self._platform_selector.blockSignals(False)
@@ -356,36 +399,36 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
         if index < 0:
             return
         source_id = self._platform_selector.itemData(index)
-        if source_id == self._current_source_id:
+        if source_id == self._source_state.current_source_id:
             return
 
         # Guard: if the current song has changed since this platform-switch
         # was initiated, discard the result — a subsequent refresh will
-        # have reset _current_source_id and rebuilt _standby_map.
-        if source_id not in self._standby_map:
+        # have reset source state and rebuilt the source-to-song map.
+        song = self._source_state.get_song(source_id)
+        if song is None:
             return
-        standby = self._standby_map[source_id]
         provider = self._app.library.get(source_id)
         if not isinstance(provider, SupportsSongHotComments):
             return
 
-        # Capture the song this standby data belongs to.  If the song
+        # Capture the song this source data belongs to.  If the song
         # changes while we're fetching comments, the last check below
         # will discard the now-stale result.
-        standby_song = self._standby_song
+        current_song = self._source_state.song
 
         # Disable the selector during the fetch — keep the current comments
         # visible so there's no flicker and they're not lost on failure.
         self._platform_selector.setEnabled(False)
         try:
-            comments = await run_fn(provider.song_list_hot_comments, standby)
+            comments = await run_fn(provider.song_list_hot_comments, song)
         except Exception:
             # Fetch failed — snap the selector back to match displayed comments.
-            if self._standby_song is standby_song:
+            if self._source_state.belongs_to(current_song):
                 self._platform_selector.blockSignals(True)
                 try:
                     previous_idx = self._platform_selector.findData(
-                        self._current_source_id
+                        self._source_state.current_source_id
                     )
                     if previous_idx >= 0:
                         self._platform_selector.setCurrentIndex(previous_idx)
@@ -396,12 +439,12 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
             self._platform_selector.setEnabled(True)
 
         # Only apply the result if the song hasn't changed in the meantime.
-        if self._standby_song is not standby_song:
+        if not self._source_state.belongs_to(current_song):
             return
 
         reader = create_reader(comments)
         self._comment_list.setModel(CommentListModel(reader))
-        self._current_source_id = source_id
+        self._source_state.set_current_source(source_id)
 
 
 class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView):
