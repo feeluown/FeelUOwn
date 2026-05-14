@@ -231,7 +231,7 @@ class Library:
         self,
         song,
         options=None,
-    ):
+    ) -> dict[str, BriefSongModel]:
         """Search matching songs from providers without preparing media."""
         if options is None:
             options = SongMatchOptions()
