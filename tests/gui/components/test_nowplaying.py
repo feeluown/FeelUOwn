@@ -65,8 +65,8 @@ async def test_nowplaying_comments_can_switch_back_to_current_source(
 
     view._platform_selector.addItem("CURRENT", "current")
     view._platform_selector.addItem("STANDBY", "standby")
-    view._source_state.reset(current_song)
-    view._source_state.set_standby_map({"standby": standby_song})
+    view._comment_sources.reset(current_song)
+    view._comment_sources.add_standby_songs({"standby": standby_song})
 
     await view._on_platform_changed(1)
     model = view._comment_list.model()
