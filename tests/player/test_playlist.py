@@ -474,11 +474,11 @@ async def test_preload_scheduled_when_remaining_within_threshold(
     playlist._current_song = song
 
     app_mock.task_mgr.run_afn_preemptive.reset_mock()
-    playlist._maybe_preload_next_song(force=False)
+    playlist._preload_mgr.maybe_preload_next_song(force=False)
     app_mock.task_mgr.run_afn_preemptive.assert_called_once()
 
     args, kwargs = app_mock.task_mgr.run_afn_preemptive.call_args
-    assert args[0] == playlist._preload_next_song
+    assert args[0] == playlist._preload_mgr.preload_next_song
     assert args[1] == song1
     assert kwargs['name'] == 'playlist.preload_media'
 
@@ -499,7 +499,7 @@ async def test_preload_not_scheduled_when_remaining_above_threshold(
     playlist._current_song = song
 
     app_mock.task_mgr.run_afn_preemptive.reset_mock()
-    playlist._maybe_preload_next_song(force=False)
+    playlist._preload_mgr.maybe_preload_next_song(force=False)
     app_mock.task_mgr.run_afn_preemptive.assert_not_called()
 
 
@@ -516,19 +516,19 @@ async def test_preload_next_song_queues_media_and_sets_state(
     playlist.add(song)
     playlist.add(song1)
     playlist._current_song = song
-    playlist._preloading_song = song1
+    playlist._preload_mgr._preloading_song = song1
 
     media = mocker.Mock()
     mocker.patch.object(Playlist, '_prepare_media', return_value=media)
     metadata = {'k': 'v'}
     mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=metadata)
 
-    await playlist._preload_next_song(song1)
+    await playlist._preload_mgr.preload_next_song(song1)
 
-    assert playlist._preloaded_song == song1
-    assert playlist._preloaded_media == media
-    assert playlist._preloaded_metadata == metadata
-    assert playlist._preloading_song is None
+    assert playlist._preload_mgr._preloaded_song == song1
+    assert playlist._preload_mgr._preloaded_media == media
+    assert playlist._preload_mgr._preloaded_metadata == metadata
+    assert playlist._preload_mgr._preloading_song is None
     app_mock.player.queue_media.assert_called_once_with(media)
 
 
@@ -547,13 +547,13 @@ async def test_a_set_current_song_reuses_preloaded_media(
 
     preloaded_media = mocker.Mock()
     preloaded_metadata = {'a': 1}
-    playlist._preloaded_song = song1
-    playlist._preloaded_media = preloaded_media
-    playlist._preloaded_metadata = preloaded_metadata
+    playlist._preload_mgr._preloaded_song = song1
+    playlist._preload_mgr._preloaded_media = preloaded_media
+    playlist._preload_mgr._preloaded_metadata = preloaded_metadata
 
     mock_set = mocker.patch.object(Playlist, 'set_current_song_with_media')
     await playlist.a_set_current_song(song1)
 
     mock_set.assert_called_once_with(song1, preloaded_media, preloaded_metadata)
-    assert playlist._preloaded_song is None
-    assert playlist._preloaded_media is None
+    assert playlist._preload_mgr._preloaded_song is None
+    assert playlist._preload_mgr._preloaded_media is None
