@@ -248,7 +248,7 @@ class Library:
         self,
         song,
         options=None,
-    ) -> list[BriefSongModel]:
+    ) -> List[BriefSongModel]:
         """List song standbys without preparing media."""
         if options is None:
             options = SongStandbyOptions()
