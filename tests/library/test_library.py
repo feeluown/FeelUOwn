@@ -8,7 +8,7 @@ from feeluown.library import (
     Media,
     SimpleSearchResult,
     Quality,
-    SongMatchOptions,
+    SongStandbyOptions,
 )
 from feeluown.media import MediaType
 
@@ -86,7 +86,7 @@ async def test_library_a_list_song_standby_v2(library):
 
 
 @pytest.mark.asyncio
-async def test_library_a_match_song_returns_matches_without_media(library):
+async def test_library_a_list_song_standby_v3_returns_standbys_without_media(library):
     class MatchProvider(Provider):
         @property
         def identifier(self):
@@ -117,7 +117,9 @@ async def test_library_a_match_song_returns_matches_without_media(library):
         artists_name="Artist",
     )
 
-    matches = await library.a_match_song(song, SongMatchOptions(source_in=["match"]))
+    matches = await library.a_list_song_standby_v3(
+        song, SongStandbyOptions(source_in=["match"])
+    )
 
     assert matches == {
         "match": BriefSongModel(

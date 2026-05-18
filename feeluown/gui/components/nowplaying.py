@@ -28,7 +28,7 @@ from feeluown.gui.widgets.song_minicard_list import (
 )
 from feeluown.i18n import t
 from feeluown.library import (
-    SongMatchOptions,
+    SongStandbyOptions,
     SupportsSongHotComments,
     SupportsSongSimilar,
 )
@@ -339,8 +339,8 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
             return {}
 
         try:
-            return await self._app.library.a_match_song(
-                song, SongMatchOptions(source_in=list(comment_providers))
+            return await self._app.library.a_list_song_standby_v3(
+                song, SongStandbyOptions(source_in=list(comment_providers))
             )
         except Exception:
             logger.exception("Standby song search failed")

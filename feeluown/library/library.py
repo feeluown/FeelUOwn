@@ -59,7 +59,7 @@ T_p = TypeVar("T_p")
 
 
 @dataclass
-class SongMatchOptions:
+class SongStandbyOptions:
     source_in: Optional[List[str]] = None
     score_fn: Optional[Callable[[BriefSongModel, BriefSongModel], float]] = None
     min_score: float = STANDBY_DEFAULT_MIN_SCORE
@@ -227,14 +227,14 @@ class Library:
             logger.exception(f"get standby:{standby} media failed")
         return media
 
-    async def a_match_song(
+    async def a_list_song_standby_v3(
         self,
         song,
         options=None,
     ) -> dict[str, BriefSongModel]:
-        """Search matching songs from providers without preparing media."""
+        """List song standbys without preparing media."""
         if options is None:
-            options = SongMatchOptions()
+            options = SongStandbyOptions()
         if options.source_in is None:
             pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
         else:
