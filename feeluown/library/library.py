@@ -60,6 +60,21 @@ T_p = TypeVar("T_p")
 
 @dataclass
 class SongStandbyOptions:
+    """Options for listing standby songs.
+
+    :param source_in: Provider identifiers to search. Search providers configured
+        for standby lookup when it is None.
+    :param score_fn: Function used to score whether a candidate is the same song.
+        Defaults to :func:`get_standby_score`.
+    :param min_score: Minimum score required for a candidate to be returned.
+    :param limit_per_source: Maximum number of candidates returned for each
+        provider. Values smaller than 1 are treated as 1.
+    :param single_full_score_per_source: If enabled, once a provider yields a
+        candidate with ``STANDBY_FULL_SCORE``, only that candidate is returned
+        for the provider. Earlier lower-score candidates from the same provider
+        are discarded, and later candidates from that provider are ignored.
+    """
+
     source_in: Optional[List[str]] = None
     score_fn: Optional[Callable[[BriefSongModel, BriefSongModel], float]] = None
     min_score: float = STANDBY_DEFAULT_MIN_SCORE
