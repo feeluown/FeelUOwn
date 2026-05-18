@@ -8,6 +8,7 @@ from feeluown.library import (
     Media,
     SimpleSearchResult,
     Quality,
+    SongStandbyOptions,
 )
 from feeluown.media import MediaType
 
@@ -55,6 +56,29 @@ def test_prepare_mv_media(library, ekaf_brief_song0):
     assert media.url != ""  # media url is valid(not empty)
 
 
+class MatchProvider(Provider):
+    @property
+    def identifier(self):
+        return "match"
+
+    @property
+    def name(self):
+        return "match"
+
+    def search(self, *_, **__):
+        return SimpleSearchResult(
+            q="",
+            songs=[
+                BriefSongModel(
+                    identifier="matched",
+                    source=self.identifier,
+                    title="Song",
+                    artists_name="Artist",
+                )
+            ],
+        )
+
+
 @pytest.mark.asyncio
 async def test_library_a_list_song_standby_v2(library):
     class GoodProvider(Provider):
@@ -82,3 +106,126 @@ async def test_library_a_list_song_standby_v2(library):
     song_media_list = await library.a_list_song_standby_v2(song)
     assert song_media_list
     assert song_media_list[0][1].url == "good.mp3"
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_returns_standbys_without_media(library):
+    library.register(MatchProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+    )
+
+    standbys = await library.a_list_song_standby_v3(
+        song, SongStandbyOptions(source_in=["match"])
+    )
+
+    assert standbys == [
+        BriefSongModel(
+            identifier="matched",
+            source="match",
+            title="Song",
+            artists_name="Artist",
+        )
+    ]
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_can_return_multiple_per_source(library):
+    class MultiMatchProvider(MatchProvider):
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="matched-1",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    ),
+                    BriefSongModel(
+                        identifier="matched-2",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    ),
+                    BriefSongModel(
+                        identifier="matched-3",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    ),
+                ],
+            )
+
+    library.register(MultiMatchProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+    )
+
+    standbys = await library.a_list_song_standby_v3(
+        song, SongStandbyOptions(source_in=["match"], limit_per_source=2)
+    )
+
+    assert [standby.identifier for standby in standbys] == ["matched-1", "matched-2"]
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_keeps_one_full_score_per_source(library):
+    class FullScoreProvider(MatchProvider):
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="similar",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                        album_name="Other Album",
+                        duration_ms="03:00",
+                    ),
+                    BriefSongModel(
+                        identifier="full-score",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                        album_name="Album",
+                        duration_ms="03:00",
+                    ),
+                    BriefSongModel(
+                        identifier="another-similar",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                        album_name="Other Album",
+                        duration_ms="03:00",
+                    ),
+                ],
+            )
+
+    library.register(FullScoreProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+        album_name="Album",
+        duration_ms="03:00",
+    )
+
+    standbys = await library.a_list_song_standby_v3(
+        song,
+        SongStandbyOptions(
+            source_in=["match"],
+            limit_per_source=3,
+            single_full_score_per_source=True,
+        ),
+    )
+
+    assert [standby.identifier for standby in standbys] == ["full-score"]

@@ -1,8 +1,15 @@
 from typing import TYPE_CHECKING
+import logging
 
 from PyQt6.QtCore import Qt, QSize
 from PyQt6.QtGui import QFontMetrics, QPalette, QColor, QPainter
-from PyQt6.QtWidgets import QHBoxLayout, QStackedLayout, QWidget
+from PyQt6.QtWidgets import (
+    QComboBox,
+    QHBoxLayout,
+    QStackedLayout,
+    QVBoxLayout,
+    QWidget,
+)
 
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.helpers import (
@@ -20,9 +27,15 @@ from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListModel,
 )
 from feeluown.i18n import t
-from feeluown.library import SupportsSongHotComments, SupportsSongSimilar
+from feeluown.library import (
+    SongStandbyOptions,
+    SupportsSongHotComments,
+    SupportsSongSimilar,
+)
 from feeluown.utils.aio import run_fn, run_afn
 from feeluown.utils.reader import create_reader
+
+logger = logging.getLogger(__name__)
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
@@ -50,6 +63,56 @@ class RefreshOnSongChangedMixin:
     def run_refresh_task(self):
         self._app.task_mgr.run_afn_preemptive(self.refresh)
         self._need_refresh = False
+
+
+class CommentStandbyManager:
+    def __init__(self):
+        self._song = None
+        self._songs = []
+        self._current_song_id = None
+
+    @property
+    def song(self):
+        return self._song
+
+    @property
+    def current_song_id(self):
+        return self._current_song_id
+
+    def reset(self, song=None):
+        self._song = song
+        self._songs = []
+        self._current_song_id = None
+        if song is not None:
+            self._songs = [song]
+            self._current_song_id = self.get_song_id(song)
+
+    def add_standby_songs(self, standbys):
+        if self._song is None:
+            return
+        self._songs = [self._song]
+        self._songs.extend(standbys)
+
+    @staticmethod
+    def get_song_id(song):
+        return (song.source, song.identifier)
+
+    def songs(self):
+        return self._songs
+
+    def has_standby(self):
+        if self._song is None:
+            return False
+        return len(self._songs) > 1
+
+    def get_song(self, song_id):
+        for song in self._songs:
+            if self.get_song_id(song) == song_id:
+                return song
+        return None
+
+    def set_current_song(self, song):
+        self._current_song_id = self.get_song_id(song)
 
 
 class MVWrapper(QWidget):
@@ -200,24 +263,166 @@ class NowplayingLyricView(LyricView):
             item.setSizeHint(item.data(Qt.ItemDataRole.UserRole)[1])
 
 
-class NowplayingCommentListView(RefreshOnSongChangedMixin, CommentListView):
+class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
     def __init__(self, app: "GuiApp", parent=None):
         self._app = app
-        super().__init__(
-            parent=parent,
+        super().__init__(parent=parent)
+
+        self._comment_source_selector = QComboBox(self)
+        self._comment_source_selector.setSizeAdjustPolicy(
+            QComboBox.SizeAdjustPolicy.AdjustToContents
+        )
+        self._comment_list = CommentListView(
+            parent=self,
             no_scroll_v=False,
             delegate_options={"quoted_bg_color_role": QPalette.ColorRole.Base},
         )
 
+        self._layout = QVBoxLayout(self)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+        self._layout.setSpacing(4)
+        self._layout.addWidget(self._comment_source_selector)
+        self._layout.addWidget(self._comment_list)
+
+        self._comment_source_selector.hide()
+        self._comment_source_selector.currentIndexChanged.connect(
+            lambda idx: self._app.task_mgr.run_afn_preemptive(
+                self._on_comment_source_changed, idx
+            )
+        )
+
+        self._comment_standby_manager = CommentStandbyManager()
+
+    def viewport(self):
+        return self._comment_list.viewport()
+
+    def setModel(self, model):
+        self._comment_list.setModel(model)
+
+    def min_height(self):
+        return self._comment_list.min_height()
+
     async def refresh(self):
         song = self._app.playlist.current_song
+        if song is None:
+            self._comment_list.setModel(CommentListModel(create_reader([])))
+            self._comment_source_selector.hide()
+            self._comment_standby_manager.reset()
+            return
+
+        self._comment_standby_manager.reset(song)
+
+        # Load current platform comments.
         reader = create_reader([])
-        if song is not None:
-            provider = self._app.library.get(song.source)
-            if isinstance(provider, SupportsSongHotComments):
-                comments = await run_fn(provider.song_list_hot_comments, song)
-                reader = create_reader(comments)
-        self.setModel(CommentListModel(reader))  # type: ignore
+        provider = self._app.library.get(song.source)
+        if isinstance(provider, SupportsSongHotComments):
+            comments = await run_fn(provider.song_list_hot_comments, song)
+            reader = create_reader(comments)
+        self._comment_list.setModel(CommentListModel(reader))
+
+        # Find matching songs on other platforms that support hot comments.
+        # Reset state and hide the selector before the async search so
+        # stale entries from the previous song are not shown in the interim.
+        self._comment_source_selector.hide()
+        standbys = await self._find_standby_songs(song)
+        self._comment_standby_manager.add_standby_songs(standbys)
+        self._update_comment_source_selector()
+
+    async def _find_standby_songs(self, song):
+        """Search all providers for the same song.
+
+        Returns the matched BriefSongModel list.
+        Only includes providers that support hot comments.
+        """
+        # Only search providers that can supply comments for the matched song.
+        comment_providers = {
+            p.identifier
+            for p in self._app.library.list()
+            if p.identifier != song.source
+            and isinstance(p, SupportsSongHotComments)
+        }
+        if not comment_providers:
+            return []
+
+        try:
+            return await self._app.library.a_list_song_standby_v3(
+                song,
+                SongStandbyOptions(
+                    source_in=list(comment_providers),
+                    limit_per_source=3,
+                    single_full_score_per_source=True,
+                ),
+            )
+        except Exception:
+            logger.exception("Standby song search failed")
+
+        return []
+
+    @staticmethod
+    def _format_comment_source_label(provider_name, song):
+        title = song.title or song.identifier
+        if song.artists_name:
+            return f"{provider_name} · {title} - {song.artists_name}"
+        return f"{provider_name} · {title}"
+
+    def _update_comment_source_selector(self):
+        self._comment_source_selector.blockSignals(True)
+        try:
+            self._comment_source_selector.clear()
+
+            for candidate in self._comment_standby_manager.songs():
+                provider = self._app.library.get(candidate.source)
+                provider_name = provider.name if provider else candidate.source
+                label = self._format_comment_source_label(provider_name, candidate)
+                self._comment_source_selector.addItem(
+                    label,
+                    self._comment_standby_manager.get_song_id(candidate),
+                )
+
+            self._comment_source_selector.setVisible(
+                self._comment_standby_manager.has_standby()
+            )
+            self._comment_source_selector.setCurrentIndex(0)
+        finally:
+            self._comment_source_selector.blockSignals(False)
+
+    async def _on_comment_source_changed(self, index):
+        if index < 0:
+            return
+        song_id = self._comment_source_selector.itemData(index)
+        if song_id == self._comment_standby_manager.current_song_id:
+            return
+
+        song = self._comment_standby_manager.get_song(song_id)
+        if song is None:
+            return
+        provider = self._app.library.get(song.source)
+        if not isinstance(provider, SupportsSongHotComments):
+            return
+
+        # Disable the selector during the fetch — keep the current comments
+        # visible so there's no flicker and they're not lost on failure.
+        self._comment_source_selector.setEnabled(False)
+        try:
+            comments = await run_fn(provider.song_list_hot_comments, song)
+        except Exception:
+            # Fetch failed — snap the selector back to match displayed comments.
+            self._comment_source_selector.blockSignals(True)
+            try:
+                previous_idx = self._comment_source_selector.findData(
+                    self._comment_standby_manager.current_song_id
+                )
+                if previous_idx >= 0:
+                    self._comment_source_selector.setCurrentIndex(previous_idx)
+            finally:
+                self._comment_source_selector.blockSignals(False)
+            return
+        finally:
+            self._comment_source_selector.setEnabled(True)
+
+        reader = create_reader(comments)
+        self._comment_list.setModel(CommentListModel(reader))
+        self._comment_standby_manager.set_current_song(song)
 
 
 class NowplayingSimilarSongsView(RefreshOnSongChangedMixin, SongMiniCardListView):

@@ -2,7 +2,8 @@
 import logging
 import warnings
 from collections import Counter
-from typing import Optional, TypeVar, List, TYPE_CHECKING
+from dataclasses import dataclass
+from typing import Callable, Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media, MediaType
 from feeluown.utils.aio import run_fn, as_completed
@@ -55,6 +56,30 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 T_p = TypeVar("T_p")
+
+
+@dataclass
+class SongStandbyOptions:
+    """Options for listing standby songs.
+
+    :param source_in: Provider identifiers to search. Search providers configured
+        for standby lookup when it is None.
+    :param score_fn: Function used to score whether a candidate is the same song.
+        Defaults to :func:`get_standby_score`.
+    :param min_score: Minimum score required for a candidate to be returned.
+    :param limit_per_source: Maximum number of candidates returned for each
+        provider. Values smaller than 1 are treated as 1.
+    :param single_full_score_per_source: If enabled, once a provider yields a
+        candidate with ``STANDBY_FULL_SCORE``, only that candidate is returned
+        for the provider. Earlier lower-score candidates from the same provider
+        are discarded, and later candidates from that provider are ignored.
+    """
+
+    source_in: Optional[List[str]] = None
+    score_fn: Optional[Callable[[BriefSongModel, BriefSongModel], float]] = None
+    min_score: float = STANDBY_DEFAULT_MIN_SCORE
+    limit_per_source: int = 1
+    single_full_score_per_source: bool = False
 
 
 def raise_(e):
@@ -218,6 +243,59 @@ class Library:
         except:  # noqa
             logger.exception(f"get standby:{standby} media failed")
         return media
+
+    async def a_list_song_standby_v3(
+        self,
+        song,
+        options=None,
+    ) -> List[BriefSongModel]:
+        """List song standbys without preparing media."""
+        if options is None:
+            options = SongStandbyOptions()
+        if options.source_in is None:
+            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
+        else:
+            pvd_ids = [
+                pvd.identifier for pvd in self._filter(identifier_in=options.source_in)
+            ]
+        score_fn = options.score_fn or get_standby_score
+        limit_per_source = max(options.limit_per_source, 1)
+
+        q = "{} {}".format(song.title_display, song.artists_name_display)
+        if not q.strip():
+            return []
+
+        standbys = []
+        standby_counter = Counter()
+        full_score_sources = set()
+        async for result in self.a_search(q, source_in=pvd_ids):
+            if result is None:
+                continue
+            for standby in result.songs:
+                source = standby.source
+                if source in full_score_sources:
+                    continue
+                if (
+                    standby_counter[source] >= limit_per_source
+                    and not options.single_full_score_per_source
+                ):
+                    continue
+                score = score_fn(song, standby)
+                if (
+                    options.single_full_score_per_source
+                    and score == STANDBY_FULL_SCORE
+                ):
+                    standbys = [s for s in standbys if s.source != source]
+                    standbys.append(standby)
+                    standby_counter[source] = 1
+                    full_score_sources.add(source)
+                    continue
+                if standby_counter[source] >= limit_per_source:
+                    continue
+                if score >= options.min_score:
+                    standbys.append(standby)
+                    standby_counter[source] += 1
+        return standbys
 
     async def a_list_song_standby_v2(
         self,
