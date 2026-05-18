@@ -117,15 +117,15 @@ async def test_library_a_list_song_standby_v3_returns_standbys_without_media(lib
         artists_name="Artist",
     )
 
-    matches = await library.a_list_song_standby_v3(
+    standbys = await library.a_list_song_standby_v3(
         song, SongStandbyOptions(source_in=["match"])
     )
 
-    assert matches == {
-        "match": BriefSongModel(
+    assert standbys == [
+        BriefSongModel(
             identifier="matched",
             source="match",
             title="Song",
             artists_name="Artist",
         )
-    }
+    ]

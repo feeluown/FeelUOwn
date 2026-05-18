@@ -339,9 +339,10 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
             return {}
 
         try:
-            return await self._app.library.a_list_song_standby_v3(
+            standbys = await self._app.library.a_list_song_standby_v3(
                 song, SongStandbyOptions(source_in=list(comment_providers))
             )
+            return {standby.source: standby for standby in standbys}
         except Exception:
             logger.exception("Standby song search failed")
 

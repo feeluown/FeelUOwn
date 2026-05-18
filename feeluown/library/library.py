@@ -231,7 +231,7 @@ class Library:
         self,
         song,
         options=None,
-    ) -> dict[str, BriefSongModel]:
+    ) -> list[BriefSongModel]:
         """List song standbys without preparing media."""
         if options is None:
             options = SongStandbyOptions()
@@ -245,20 +245,22 @@ class Library:
 
         q = "{} {}".format(song.title_display, song.artists_name_display)
         if not q.strip():
-            return {}
+            return []
 
-        matches = {}
+        standbys = []
+        standby_sources = set()
         async for result in self.a_search(q, source_in=pvd_ids):
             if result is None:
                 continue
             for standby in result.songs:
                 source = standby.source
-                if source in matches:
+                if source in standby_sources:
                     continue
                 score = score_fn(song, standby)
                 if score >= options.min_score:
-                    matches[source] = standby
-        return matches
+                    standbys.append(standby)
+                    standby_sources.add(source)
+        return standbys
 
     async def a_list_song_standby_v2(
         self,
