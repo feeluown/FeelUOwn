@@ -56,6 +56,29 @@ def test_prepare_mv_media(library, ekaf_brief_song0):
     assert media.url != ""  # media url is valid(not empty)
 
 
+class MatchProvider(Provider):
+    @property
+    def identifier(self):
+        return "match"
+
+    @property
+    def name(self):
+        return "match"
+
+    def search(self, *_, **__):
+        return SimpleSearchResult(
+            q="",
+            songs=[
+                BriefSongModel(
+                    identifier="matched",
+                    source=self.identifier,
+                    title="Song",
+                    artists_name="Artist",
+                )
+            ],
+        )
+
+
 @pytest.mark.asyncio
 async def test_library_a_list_song_standby_v2(library):
     class GoodProvider(Provider):
@@ -87,28 +110,6 @@ async def test_library_a_list_song_standby_v2(library):
 
 @pytest.mark.asyncio
 async def test_library_a_list_song_standby_v3_returns_standbys_without_media(library):
-    class MatchProvider(Provider):
-        @property
-        def identifier(self):
-            return "match"
-
-        @property
-        def name(self):
-            return "match"
-
-        def search(self, *_, **__):
-            return SimpleSearchResult(
-                q="",
-                songs=[
-                    BriefSongModel(
-                        identifier="matched",
-                        source=self.identifier,
-                        title="Song",
-                        artists_name="Artist",
-                    )
-                ],
-            )
-
     library.register(MatchProvider())
     song = BriefSongModel(
         identifier="origin",
@@ -129,3 +130,46 @@ async def test_library_a_list_song_standby_v3_returns_standbys_without_media(lib
             artists_name="Artist",
         )
     ]
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_can_return_multiple_per_source(library):
+    class MultiMatchProvider(MatchProvider):
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="matched-1",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    ),
+                    BriefSongModel(
+                        identifier="matched-2",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    ),
+                    BriefSongModel(
+                        identifier="matched-3",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    ),
+                ],
+            )
+
+    library.register(MultiMatchProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+    )
+
+    standbys = await library.a_list_song_standby_v3(
+        song, SongStandbyOptions(source_in=["match"], limit_per_source=2)
+    )
+
+    assert [standby.identifier for standby in standbys] == ["matched-1", "matched-2"]

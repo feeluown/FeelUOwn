@@ -63,6 +63,7 @@ class SongStandbyOptions:
     source_in: Optional[List[str]] = None
     score_fn: Optional[Callable[[BriefSongModel, BriefSongModel], float]] = None
     min_score: float = STANDBY_DEFAULT_MIN_SCORE
+    limit_per_source: int = 1
 
 
 def raise_(e):
@@ -242,24 +243,25 @@ class Library:
                 pvd.identifier for pvd in self._filter(identifier_in=options.source_in)
             ]
         score_fn = options.score_fn or get_standby_score
+        limit_per_source = max(options.limit_per_source, 1)
 
         q = "{} {}".format(song.title_display, song.artists_name_display)
         if not q.strip():
             return []
 
         standbys = []
-        standby_sources = set()
+        standby_counter = Counter()
         async for result in self.a_search(q, source_in=pvd_ids):
             if result is None:
                 continue
             for standby in result.songs:
                 source = standby.source
-                if source in standby_sources:
+                if standby_counter[source] >= limit_per_source:
                     continue
                 score = score_fn(song, standby)
                 if score >= options.min_score:
                     standbys.append(standby)
-                    standby_sources.add(source)
+                    standby_counter[source] += 1
         return standbys
 
     async def a_list_song_standby_v2(
