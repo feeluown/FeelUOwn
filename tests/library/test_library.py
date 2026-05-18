@@ -173,3 +173,59 @@ async def test_library_a_list_song_standby_v3_can_return_multiple_per_source(lib
     )
 
     assert [standby.identifier for standby in standbys] == ["matched-1", "matched-2"]
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_keeps_one_full_score_per_source(library):
+    class FullScoreProvider(MatchProvider):
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="similar",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                        album_name="Other Album",
+                        duration_ms="03:00",
+                    ),
+                    BriefSongModel(
+                        identifier="full-score",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                        album_name="Album",
+                        duration_ms="03:00",
+                    ),
+                    BriefSongModel(
+                        identifier="another-similar",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                        album_name="Other Album",
+                        duration_ms="03:00",
+                    ),
+                ],
+            )
+
+    library.register(FullScoreProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+        album_name="Album",
+        duration_ms="03:00",
+    )
+
+    standbys = await library.a_list_song_standby_v3(
+        song,
+        SongStandbyOptions(
+            source_in=["match"],
+            limit_per_source=3,
+            single_full_score_per_source=True,
+        ),
+    )
+
+    assert [standby.identifier for standby in standbys] == ["full-score"]

@@ -350,6 +350,7 @@ class NowplayingCommentListView(RefreshOnSongChangedMixin, QWidget):
                 SongStandbyOptions(
                     source_in=list(comment_providers),
                     limit_per_source=3,
+                    single_full_score_per_source=True,
                 ),
             )
         except Exception:
