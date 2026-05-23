@@ -130,16 +130,15 @@ class Body(QFrame, BgTransparentMixin):
             table_container = TableContainer(app, view.accordion)
             table_container.layout().setContentsMargins(0, 0, 0, 0)
 
-            # HACK: set fixed row for tables.
             # pylint: disable=protected-access
             for table in table_container._tables:
                 assert isinstance(table, QAbstractItemView)
                 delegate = table.itemDelegate()
                 if isinstance(delegate, ImgCardListDelegate):
-                    table.set_fixed_row_count(2)
+                    table.set_fixed_row_count(-1)
                     delegate.update_settings("card_min_width", 140)
                 elif isinstance(table, SongsTableView):
-                    table.set_fixed_row_count(8)
+                    table.set_fixed_row_count(-1)
                     table.set_row_height(table.verticalHeader().defaultSectionSize())
 
             renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
