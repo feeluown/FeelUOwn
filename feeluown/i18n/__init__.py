@@ -131,8 +131,13 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
         supported = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
 
-        return _create_or_get_bundle(namespace="CORE", roots=roots, locales=[locale],
-                                 resource_ids=DEFAULT_RESOURCE_IDS, supported=supported)
+        return _create_or_get_bundle(
+            namespace="CORE",
+            roots=roots,
+            locales=[locale],
+            resource_ids=DEFAULT_RESOURCE_IDS,
+            supported=supported,
+        )
 
 
 def plugin_l10n_bundle(domain: str, locale: str | None = None) -> FluentLocalization:
