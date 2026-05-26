@@ -106,6 +106,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.fetch_image = fetch_image
         self.colors = []
         self.image_cache = ThumbnailImageCache()
+        self._image_fetching = set()
 
     @classmethod
     def create(cls, reader, app: "GuiApp"):
@@ -160,11 +161,13 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.colors.extend(colors)
         self.on_items_fetched(items)
         for item in items:
+            self._image_fetching.add(reverse(item))
             aio.create_task(self.fetch_image(item, self._fetch_image_callback(item)))
 
     def _fetch_image_callback(self, item):
         def cb(content):
             uri = reverse(item)
+            self._image_fetching.discard(uri)
             if content is None:
                 self.image_cache.set(uri, None)
                 return
@@ -179,15 +182,24 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
 
         return cb
 
+    def get_image_unblocking(self, item):
+        uri = reverse(item)
+        cached, image = self.image_cache.get(uri)
+        if cached:
+            return image
+        if uri not in self._image_fetching:
+            self._image_fetching.add(uri)
+            aio.create_task(self.fetch_image(item, self._fetch_image_callback(item)))
+        return None
+
     def data(self, index, role):
         offset = index.row()
         if not index.isValid() or offset >= len(self._items):
             return None
         item = self._items[offset]
         if role == Qt.ItemDataRole.DecorationRole:
-            uri = reverse(item)
-            cached, image = self.image_cache.get(uri)
-            if cached and image is not None:
+            image = self.get_image_unblocking(item)
+            if image is not None:
                 return image
             color_str = self.colors[offset]
             color = QColor(color_str)
