@@ -14,6 +14,7 @@ from PyQt6.QtCore import (
 from PyQt6.QtGui import (
     QPainter,
     QPixmap,
+    QPixmapCache,
     QImage,
     QColor,
     QPalette,
@@ -45,12 +46,14 @@ Fetching = object()
 
 
 class BaseSongMiniCardListModel(QAbstractListModel):
+    _max_cache_edge = 256
+
     def __init__(self, fetch_image, parent=None):
         super().__init__(parent)
 
         self._items = []
         self.fetch_image = fetch_image
-        self.pixmaps = {}  # {uri: (Option<pixmap>, Option<color>)}
+        self.images = {}  # {uri: (Option<QImage>, Option<QColor>)}
         self.rowsAboutToBeRemoved.connect(self.on_rows_about_to_be_removed)
 
     def rowCount(self, _=QModelIndex()):
@@ -66,14 +69,17 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         # TODO: duplicate code with ImgListModel
         def cb(content):
             uri = reverse(item)
-            if content is None and uri in self.pixmaps:
-                self.pixmaps[uri] = (self.pixmaps[uri][1], None)
+            if content is None:
+                color = None
+                if uri in self.images:
+                    color = self.images[uri][1]
+                self.images[uri] = (None, color)
                 return
 
             img = QImage()
             img.loadFromData(content)
-            pixmap = QPixmap(img)
-            self.pixmaps[uri] = (pixmap, None)
+            img = self._scale_image_for_cache(img)
+            self.images[uri] = (img, None)
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -81,20 +87,35 @@ class BaseSongMiniCardListModel(QAbstractListModel):
 
         return cb
 
-    def get_pixmap_unblocking(self, song):
+    def _scale_image_for_cache(self, img: QImage) -> QImage:
+        if img.isNull():
+            return img
+        max_edge = self._max_cache_edge
+        if img.width() <= max_edge and img.height() <= max_edge:
+            return img
+        return img.scaled(
+            max_edge,
+            max_edge,
+            Qt.AspectRatioMode.KeepAspectRatio,
+            Qt.TransformationMode.SmoothTransformation,
+        )
+
+    def get_image_unblocking(self, song):
         """
-        return QColor means the song has no pixmap or the pixmap is currently not feched.
+        return QColor means the song has no image or the image is currently not fetched.
         """
         uri = reverse(song)
-        if uri in self.pixmaps:
-            pixmap, color = self.pixmaps[uri]
-            if pixmap is Fetching:
+        if uri in self.images:
+            image, color = self.images[uri]
+            if image is Fetching:
                 return color
-            return pixmap
+            if image is None:
+                return color
+            return image
         aio.run_afn(self.fetch_image, song, self._fetch_image_callback(song))
         color = QColor(random.choice(list(SOLARIZED_COLORS.values())))
         color.setAlphaF(0.8)
-        self.pixmaps[uri] = (Fetching, color)
+        self.images[uri] = (Fetching, color)
         return color
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -105,16 +126,16 @@ class BaseSongMiniCardListModel(QAbstractListModel):
             return self._items[offset].title_display
         elif role == Qt.ItemDataRole.UserRole:
             song = self._items[offset]
-            pixmap = self.get_pixmap_unblocking(song)
-            return (song, pixmap)
+            image = self.get_image_unblocking(song)
+            return (song, image)
         return None
 
     def on_rows_about_to_be_removed(self, _, first, last):
         for i in range(first, last + 1):
             item = self._items[i]
             uri = reverse(item)
-            # clear pixmap cache
-            self.pixmaps.pop(uri, None)
+            # clear image cache
+            self.images.pop(uri, None)
 
 
 class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
@@ -132,6 +153,7 @@ class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
 
 class SongMiniCardListDelegate(QStyledItemDelegate):
     img_padding = 2
+    _pixmap_cache_limit_kb = 128 * 1024
 
     def __init__(
         self,
@@ -160,6 +182,14 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.view.set_row_height(card_height + card_padding[1] + card_padding[3])
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
+        self._ensure_pixmap_cache_limit()
+
+    def _ensure_pixmap_cache_limit(self):
+        if QPixmapCache.cacheLimit() < self._pixmap_cache_limit_kb:
+            QPixmapCache.setCacheLimit(self._pixmap_cache_limit_kb)
+
+    def _pixmap_cache_key(self, img: QImage, width: int, height: int) -> str:
+        return f"song-mini:{img.cacheKey()}:{width}x{height}@{self._device_pixel_ratio}"
 
     def item_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
@@ -316,18 +346,30 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             brush = QBrush(color)
             painter.setBrush(brush)
         else:  # QImage
-            if decoration.height() < decoration.width():
-                pixmap = decoration.scaledToHeight(
-                    int(height * self._device_pixel_ratio),
-                    Qt.TransformationMode.SmoothTransformation,
-                )
+            img = decoration
+            if img.isNull() or width <= 0 or height <= 0:
+                brush = QBrush(border_color)
             else:
-                pixmap = decoration.scaledToWidth(
-                    int(width * self._device_pixel_ratio),
-                    Qt.TransformationMode.SmoothTransformation,
-                )
-            pixmap.setDevicePixelRatio(self._device_pixel_ratio)
-            brush = QBrush(pixmap)
+                cache_key = self._pixmap_cache_key(img, width, height)
+                pixmap = QPixmapCache.find(cache_key)
+                if pixmap is None or pixmap.isNull():
+                    if img.height() < img.width():
+                        pixmap = QPixmap.fromImage(
+                            img.scaledToHeight(
+                                int(height * self._device_pixel_ratio),
+                                Qt.TransformationMode.SmoothTransformation,
+                            )
+                        )
+                    else:
+                        pixmap = QPixmap.fromImage(
+                            img.scaledToWidth(
+                                int(width * self._device_pixel_ratio),
+                                Qt.TransformationMode.SmoothTransformation,
+                            )
+                        )
+                    pixmap.setDevicePixelRatio(self._device_pixel_ratio)
+                    QPixmapCache.insert(cache_key, pixmap)
+                brush = QBrush(pixmap)
             painter.setBrush(brush)
         cover_rect = QRect(0, 0, width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
