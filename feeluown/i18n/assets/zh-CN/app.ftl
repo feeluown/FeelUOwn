@@ -299,6 +299,7 @@ app-config = 应用配置
 save-config = 保存
 search-providers = 搜索来源
 ai-radio-prompt = AI 电台 (提示词)
+network = 网络
 player = 播放器
 
 # feeluown.gui.widgets.login
