@@ -552,6 +552,8 @@ remove-item-succeed = Removed { $item } successfully
 # ----------------------------------------
 fold-expand = Expand
 fold-collapse = Collapse
+show-more = Show More
+show-less = Show Less
 fold-tooltip = { fold-expand }/{ fold-collapse }
 recommended-playlist = Made for You
 recommended-daily-playlist = Daily Mixes

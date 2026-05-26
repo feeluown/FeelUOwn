@@ -30,6 +30,10 @@ class ClickableHeader(ClickableMixin, QWidget):
         self._is_checked = not self._is_checked
         self.btn.setText(self._get_btn_text(self._is_checked))
 
+    def add_header_widget(self, widget):
+        index = self._layout.indexOf(self.btn)
+        self._layout.insertWidget(index, widget)
+
     def _get_btn_text(self, checked):
         return self.btn_text_unfold if checked else self.btn_text_fold
 
@@ -68,3 +72,4 @@ class Accordion(QWidget):
         self._layout.addSpacing(header_spacing)
         self._layout.addWidget(content)
         self._layout.addSpacing(section_spacing)
+        return clickable_header
