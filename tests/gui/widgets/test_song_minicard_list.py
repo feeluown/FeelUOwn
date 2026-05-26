@@ -14,11 +14,11 @@ async def test_song_mini_card_list_model_remove_pixmap(qtbot, song):
     model.fetchMore(QModelIndex())
     await aio.sleep(0.1)
     assert model.rowCount() == 1
-    model.get_pixmap_unblocking(song)
+    model.get_image_unblocking(song)
     await aio.sleep(0.1)
-    assert len(model.pixmaps) == 1
+    assert len(model.images) == 1
     with qtbot.waitSignal(model.rowsAboutToBeRemoved):
         model.beginRemoveRows(QModelIndex(), 0, 0)
         model._items.pop(0)
         model.endRemoveRows()
-    assert len(model.pixmaps) == 0
+    assert len(model.images) == 0
