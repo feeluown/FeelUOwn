@@ -94,8 +94,12 @@ class Ui:
 
         self._app.resize(960, 600)
 
-    def _open_settings_dialog(self):
+    def create_settings_dialog(self):
         dialog = SettingsDialog(self._app, self._app)
+        return dialog
+
+    def _open_settings_dialog(self):
+        dialog = self.create_settings_dialog()
         dialog.exec()
 
     def toggle_player_bar(self):

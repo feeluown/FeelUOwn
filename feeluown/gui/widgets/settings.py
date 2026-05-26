@@ -12,7 +12,7 @@ from PyQt6.QtWidgets import (
 from feeluown.i18n import t
 from feeluown.gui.widgets.magicbox import KeySourceIn
 from feeluown.gui.widgets.header import MidHeader
-from feeluown.gui.components import LyricButton, WatchButton
+from feeluown.gui.components import LyricButton, NetworkStatusButton, WatchButton
 
 
 class _ProviderCheckBox(QCheckBox):
@@ -73,6 +73,16 @@ class PlayerSettings(QWidget):
         self._layout.addStretch(0)
 
 
+class NetworkSettings(QWidget):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.network_status_button = NetworkStatusButton()
+        self._layout = QHBoxLayout(self)
+        self._layout.addWidget(self.network_status_button)
+        self._layout.addStretch(0)
+
+
 class AISettings(QWidget):
     def __init__(self, app, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -85,7 +95,7 @@ class AISettings(QWidget):
         self._layout.addWidget(self._prompt_editor)
         self._layout.addWidget(self._save_btn)
         self._prompt_editor.setPlainText(self._app.config.AI_RADIO_PROMPT)
-        self._prompt_editor.setMaximumHeight(200)
+        self._prompt_editor.setMaximumHeight(96)
 
         self._save_btn.clicked.connect(self.save_prompt)
 
@@ -116,6 +126,10 @@ class SettingsDialog(QDialog):
         self._layout.addWidget(toolbar)
         self._layout.addWidget(MidHeader(t("ai-radio-prompt")))
         self._layout.addWidget(AISettings(self._app))
+        self._layout.addWidget(MidHeader(t("network")))
+        network_settings = NetworkSettings()
+        self.network_status_button = network_settings.network_status_button
+        self._layout.addWidget(network_settings)
         self._layout.addWidget(MidHeader(t("player")))
         self._layout.addWidget(PlayerSettings(self._app))
         self._layout.addStretch(0)

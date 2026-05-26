@@ -324,6 +324,7 @@ app-config = App Configuration
 save-config = Save
 search-providers = Search { -provider(capitalization: "uppercase") }s
 ai-radio-prompt = AI Radio (Prompt)
+network = Network
 player = Player
 # feeluown.gui.widgets.login
 # ----------------------------------------

@@ -97,7 +97,9 @@ def t(
 def register_plugin_i18n(domain: str, locales_dir: str | Path,
                          resource_ids: list[str]):
     """
-    Registration for plugin i18n
+    Registration for plugin i18n.
+
+    You must call `plugin_i18n_bundle` to actually initialize the i10n bundle.
 
     :param domain: Plugin id, e.g. "fuo-netease"
     :param locales_dir: Parent path of the locale files
@@ -129,8 +131,13 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
         supported = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
 
-    return _create_or_get_bundle(namespace="CORE", roots=roots, locales=[locale],
-                                 resource_ids=DEFAULT_RESOURCE_IDS, supported=supported)
+        return _create_or_get_bundle(
+            namespace="CORE",
+            roots=roots,
+            locales=[locale],
+            resource_ids=DEFAULT_RESOURCE_IDS,
+            supported=supported,
+        )
 
 
 def plugin_l10n_bundle(domain: str, locale: str | None = None) -> FluentLocalization:
@@ -182,6 +189,7 @@ def _create_or_get_bundle(
 
     locales_to_load = matched_locales
     if not skip_fallback:
+        # add en-US, zh-CN for fallback
         locales_to_load += ["en-US", "zh-CN"]
 
     cache_key = (tuple(locales_to_load), tuple(resource_ids),
@@ -197,7 +205,6 @@ def _create_or_get_bundle(
         # so current_dir can be cleaned safely.
         res_loader = FluentResourceLoader(roots=roots)
         bundle = FluentLocalization(
-            # add en-US, zh-CN for fallback
             locales=locales_to_load,
             resource_ids=resource_ids,
             resource_loader=res_loader,

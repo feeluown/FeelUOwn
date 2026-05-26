@@ -69,7 +69,7 @@ def to_dbus_playback_status(state):
     return status
 
 
-def to_dbus_metadata(metadata):
+def to_dbus_metadata(metadata, duration=None):
     if metadata:
         artists = metadata.get('artists', ['Unknown'])[:1]
     else:
@@ -77,7 +77,7 @@ def to_dbus_metadata(metadata):
         # KDE will not update artist field if the length>=1
         artists = ['']
     uri = metadata.get('uri', 'fuo://unknown/unknown/unknown')
-    return dbus.Dictionary({
+    payload = {
         # If there is no artist, we give a empty string in case mpris complains
         # 'ValueError: Unable to guess signature from an empty list'
         'xesam:artist': artists or [''],
@@ -87,7 +87,10 @@ def to_dbus_metadata(metadata):
         'mpris:artUrl': metadata.get('artwork', ''),
         'xesam:album': metadata.get('album', ''),
         'xesam:title': metadata.get('title', ''),
-    }, signature='sv')
+    }
+    if duration is not None and duration > 0:
+        payload['mpris:length'] = to_dbus_position(duration)
+    return dbus.Dictionary(payload, signature='sv')
 
 
 class Mpris2Service(dbus.service.Object):
@@ -131,20 +134,29 @@ class Mpris2Service(dbus.service.Object):
     def update_duration(self, duration):
         if duration <= 0:  # Duration can be 0 when media is changed.
             return
-        length = to_dbus_position(duration or 0)
-        metadata = to_dbus_metadata(self._app.player.current_metadata)
-        metadata['mpris:length'] = length
+        metadata = to_dbus_metadata(
+            self._app.player.current_metadata,
+            duration=duration,
+        )
         props = dbus.Dictionary({'Metadata': metadata})
         self.PropertiesChanged(PlayerInterface, props, [])
 
     def update_song_props(self, metadata):
-        props = dbus.Dictionary({'Metadata': to_dbus_metadata(metadata)})
+        props = dbus.Dictionary({
+            'Metadata': to_dbus_metadata(
+                metadata,
+                duration=self._app.player.duration,
+            )
+        })
         self.PropertiesChanged(PlayerInterface, props, [])
 
     def get_player_properties(self):
         return dbus.Dictionary(
             {
-                'Metadata': to_dbus_metadata(self._app.player.current_metadata),
+                'Metadata': to_dbus_metadata(
+                    self._app.player.current_metadata,
+                    duration=self._app.player.duration,
+                ),
                 'Rate': 1.0,
                 'MinimumRate': 1.0,
                 'MaximumRate': 1.0,
