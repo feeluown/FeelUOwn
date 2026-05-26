@@ -29,8 +29,6 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import (
     QImage,
-    QPixmap,
-    QPixmapCache,
     QColor,
     QResizeEvent,
     QGuiApplication,
@@ -62,6 +60,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     random_solarized_color,
 )
+from feeluown.gui.thumbnail_cache import ThumbnailCache
 from feeluown.i18n import human_readable_number
 
 if TYPE_CHECKING:
@@ -85,6 +84,7 @@ COLORS = {
 
 class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
     _max_cache_edge = 512
+    _thumb_cache = ThumbnailCache()
 
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
@@ -209,12 +209,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         max_edge = self._max_cache_edge
         if img.width() <= max_edge and img.height() <= max_edge:
             return img
-        return img.scaled(
-            max_edge,
-            max_edge,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
+        return self._thumb_cache.scale_image(img, max_edge)
 
 
 class ImgCardListDelegate(QAbstractItemDelegate):
@@ -250,8 +245,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.w_h_ratio = 1.0
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._pixmap_cache_limit_kb = 128 * 1024
-        self._ensure_pixmap_cache_limit()
+        self._thumb_cache = ThumbnailCache()
 
         self.card_min_width = card_min_width
         self.card_spacing = card_spacing
@@ -270,13 +264,6 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         setattr(self, name, value)
         self.re_calc_all()
         self.view.update()
-
-    def _ensure_pixmap_cache_limit(self):
-        if QPixmapCache.cacheLimit() < self._pixmap_cache_limit_kb:
-            QPixmapCache.setCacheLimit(self._pixmap_cache_limit_kb)
-
-    def _pixmap_cache_key(self, img: QImage, width: int, height: int) -> str:
-        return f"img-card:{img.cacheKey()}:{width}x{height}@{self._device_pixel_ratio}"
 
     def paint(self, painter, option, index):
         obj: Optional[Union[QImage, QColor]] = index.data(
@@ -344,26 +331,14 @@ class ImgCardListDelegate(QAbstractItemDelegate):
                 # Fall back to a flat fill when the image is invalid or height is zero.
                 brush = QBrush(border_color)
             else:
-                cache_key = self._pixmap_cache_key(obj, draw_width, height)
-                pixmap = QPixmapCache.find(cache_key)
-                if pixmap is None or pixmap.isNull():
-                    if img_w / img_h > draw_width / height:
-                        pixmap = QPixmap.fromImage(
-                            obj.scaledToHeight(
-                                int(height * self._device_pixel_ratio),
-                                Qt.TransformationMode.SmoothTransformation,
-                            )
-                        )
-                    else:
-                        pixmap = QPixmap.fromImage(
-                            obj.scaledToWidth(
-                                int(draw_width * self._device_pixel_ratio),
-                                Qt.TransformationMode.SmoothTransformation,
-                            )
-                        )
-                    pixmap.setDevicePixelRatio(self._device_pixel_ratio)
-                    QPixmapCache.insert(cache_key, pixmap)
-                brush = QBrush(pixmap)
+                pixmap = self._thumb_cache.pixmap_for_image(
+                    obj,
+                    draw_width,
+                    height,
+                    self._device_pixel_ratio,
+                    "img-card",
+                )
+                brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
             painter.setBrush(brush)
         border_radius = 3
         if self.as_circle:

@@ -13,8 +13,6 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import (
     QPainter,
-    QPixmap,
-    QPixmapCache,
     QImage,
     QColor,
     QPalette,
@@ -36,6 +34,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     painter_save,
 )
+from feeluown.gui.thumbnail_cache import ThumbnailCache
 
 if TYPE_CHECKING:
     from feeluown.gui import GuiApp
@@ -47,6 +46,7 @@ Fetching = object()
 
 class BaseSongMiniCardListModel(QAbstractListModel):
     _max_cache_edge = 256
+    _thumb_cache = ThumbnailCache()
 
     def __init__(self, fetch_image, parent=None):
         super().__init__(parent)
@@ -93,12 +93,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         max_edge = self._max_cache_edge
         if img.width() <= max_edge and img.height() <= max_edge:
             return img
-        return img.scaled(
-            max_edge,
-            max_edge,
-            Qt.AspectRatioMode.KeepAspectRatio,
-            Qt.TransformationMode.SmoothTransformation,
-        )
+        return self._thumb_cache.scale_image(img, max_edge)
 
     def get_image_unblocking(self, song):
         """
@@ -153,7 +148,6 @@ class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
 
 class SongMiniCardListDelegate(QStyledItemDelegate):
     img_padding = 2
-    _pixmap_cache_limit_kb = 128 * 1024
 
     def __init__(
         self,
@@ -182,14 +176,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.view.set_row_height(card_height + card_padding[1] + card_padding[3])
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._ensure_pixmap_cache_limit()
-
-    def _ensure_pixmap_cache_limit(self):
-        if QPixmapCache.cacheLimit() < self._pixmap_cache_limit_kb:
-            QPixmapCache.setCacheLimit(self._pixmap_cache_limit_kb)
-
-    def _pixmap_cache_key(self, img: QImage, width: int, height: int) -> str:
-        return f"song-mini:{img.cacheKey()}:{width}x{height}@{self._device_pixel_ratio}"
+        self._thumb_cache = ThumbnailCache()
 
     def item_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
@@ -350,26 +337,14 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             if img.isNull() or width <= 0 or height <= 0:
                 brush = QBrush(border_color)
             else:
-                cache_key = self._pixmap_cache_key(img, width, height)
-                pixmap = QPixmapCache.find(cache_key)
-                if pixmap is None or pixmap.isNull():
-                    if img.height() < img.width():
-                        pixmap = QPixmap.fromImage(
-                            img.scaledToHeight(
-                                int(height * self._device_pixel_ratio),
-                                Qt.TransformationMode.SmoothTransformation,
-                            )
-                        )
-                    else:
-                        pixmap = QPixmap.fromImage(
-                            img.scaledToWidth(
-                                int(width * self._device_pixel_ratio),
-                                Qt.TransformationMode.SmoothTransformation,
-                            )
-                        )
-                    pixmap.setDevicePixelRatio(self._device_pixel_ratio)
-                    QPixmapCache.insert(cache_key, pixmap)
-                brush = QBrush(pixmap)
+                pixmap = self._thumb_cache.pixmap_for_image(
+                    img,
+                    width,
+                    height,
+                    self._device_pixel_ratio,
+                    "song-mini",
+                )
+                brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
             painter.setBrush(brush)
         cover_rect = QRect(0, 0, width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
