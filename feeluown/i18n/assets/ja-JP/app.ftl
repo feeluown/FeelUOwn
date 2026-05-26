@@ -299,6 +299,7 @@ app-config = アプリ設定
 save-config = 保存
 search-providers = 検索ソース
 ai-radio-prompt = AI ラジオ（プロンプト）
+network = ネットワーク
 player = プレイヤー
 
 # feeluown.gui.widgets.login

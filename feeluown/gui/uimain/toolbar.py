@@ -9,9 +9,7 @@ from feeluown.gui.widgets import (
     SearchSwitchButton,
     SettingsButton,
 )
-from feeluown.gui.components import NetworkStatusButton
 from feeluown.gui.widgets.magicbox import MagicBox
-from feeluown.gui.widgets.statusline import StatusLine, StatusLineItem
 from feeluown.i18n import t
 
 if TYPE_CHECKING:
@@ -44,11 +42,6 @@ class BottomPanel(QWidget):
         self._stacked_widget.addWidget(self.magicbox)
         self._stack_switch.hide()
 
-        self.status_line = StatusLine(self._app)
-        self.network_status_button = NetworkStatusButton(length=ButtonSize[0])
-        self.status_line.add_item(
-            StatusLineItem("network-status", self.network_status_button)
-        )
         self.settings_btn = SettingsButton(length=ButtonSize[0])
 
         # initialize widgets
@@ -73,7 +66,6 @@ class BottomPanel(QWidget):
         self._layout.addWidget(self._stacked_widget)
         self._layout.addWidget(self._stack_switch)
         self._layout.addSpacing(40)
-        self._layout.addWidget(self.status_line)
         self._layout.addWidget(self.settings_btn)
 
         # assume the magicbox height is about 30
