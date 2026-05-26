@@ -60,7 +60,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     random_solarized_color,
 )
-from feeluown.gui.thumbnail_cache import ThumbnailCache
+from feeluown.gui.thumbnail_cache import ThumbnailCache, ThumbnailImageCache
 from feeluown.i18n import human_readable_number
 
 if TYPE_CHECKING:
@@ -105,7 +105,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.source_name_map = source_name_map or {}
         self.fetch_image = fetch_image
         self.colors = []
-        self.images = {}  # {uri: QImage}
+        self.image_cache = ThumbnailImageCache()
 
     @classmethod
     def create(cls, reader, app: "GuiApp"):
@@ -166,12 +166,12 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         def cb(content):
             uri = reverse(item)
             if content is None:
-                self.images[uri] = None
+                self.image_cache.set(uri, None)
                 return
 
             img = QImage()
             img.loadFromData(content)
-            self.images[uri] = self._scale_image_for_cache(img)
+            self.image_cache.set(uri, self._scale_image_for_cache(img))
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -186,8 +186,8 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         item = self._items[offset]
         if role == Qt.ItemDataRole.DecorationRole:
             uri = reverse(item)
-            image = self.images.get(uri)
-            if image is not None:
+            cached, image = self.image_cache.get(uri)
+            if cached and image is not None:
                 return image
             color_str = self.colors[offset]
             color = QColor(color_str)

@@ -34,7 +34,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     painter_save,
 )
-from feeluown.gui.thumbnail_cache import ThumbnailCache
+from feeluown.gui.thumbnail_cache import ThumbnailCache, ThumbnailImageCache
 
 if TYPE_CHECKING:
     from feeluown.gui import GuiApp
@@ -53,7 +53,9 @@ class BaseSongMiniCardListModel(QAbstractListModel):
 
         self._items = []
         self.fetch_image = fetch_image
-        self.images = {}  # {uri: (Option<QImage>, Option<QColor>)}
+        self.image_cache = ThumbnailImageCache()
+        self._image_colors = {}
+        self._image_fetching = set()
         self.rowsAboutToBeRemoved.connect(self.on_rows_about_to_be_removed)
 
     def rowCount(self, _=QModelIndex()):
@@ -70,16 +72,15 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         def cb(content):
             uri = reverse(item)
             if content is None:
-                color = None
-                if uri in self.images:
-                    color = self.images[uri][1]
-                self.images[uri] = (None, color)
+                self._image_fetching.discard(uri)
+                self.image_cache.set(uri, None)
                 return
 
             img = QImage()
             img.loadFromData(content)
             img = self._scale_image_for_cache(img)
-            self.images[uri] = (img, None)
+            self._image_fetching.discard(uri)
+            self.image_cache.set(uri, img)
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -100,17 +101,18 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         return QColor means the song has no image or the image is currently not fetched.
         """
         uri = reverse(song)
-        if uri in self.images:
-            image, color = self.images[uri]
-            if image is Fetching:
-                return color
+        cached, image = self.image_cache.get(uri)
+        if cached:
             if image is None:
-                return color
+                return self._image_colors.get(uri)
             return image
+        if uri in self._image_fetching:
+            return self._image_colors.get(uri)
         aio.run_afn(self.fetch_image, song, self._fetch_image_callback(song))
         color = QColor(random.choice(list(SOLARIZED_COLORS.values())))
         color.setAlphaF(0.8)
-        self.images[uri] = (Fetching, color)
+        self._image_colors[uri] = color
+        self._image_fetching.add(uri)
         return color
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -130,7 +132,9 @@ class BaseSongMiniCardListModel(QAbstractListModel):
             item = self._items[i]
             uri = reverse(item)
             # clear image cache
-            self.images.pop(uri, None)
+            self.image_cache.remove(uri)
+            self._image_colors.pop(uri, None)
+            self._image_fetching.discard(uri)
 
 
 class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
