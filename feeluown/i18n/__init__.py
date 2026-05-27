@@ -300,7 +300,7 @@ if __name__ == "__main__":
     with resources.as_file(
         resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
-        supported = [lang for lang in os.listdir(current_dir)]
+        supported_lang = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
 
         for res_id in DEFAULT_RESOURCE_IDS:
@@ -314,6 +314,7 @@ if __name__ == "__main__":
                     locales=["zh-CN"],
                     skip_fallback=True,
                     resource_ids=resource_ids,
+                    supported_lang=supported_lang,
                 )._bundles()
             )
             total_term_len = len(l10n_zh._terms)
@@ -330,6 +331,7 @@ if __name__ == "__main__":
                             locales=[locale],
                             skip_fallback=True,
                             resource_ids=resource_ids,
+                            supported_lang=supported_lang,
                         )._bundles()
                     )
                 except StopIteration:
