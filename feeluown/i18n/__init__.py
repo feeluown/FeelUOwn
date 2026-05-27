@@ -33,7 +33,7 @@ try:
             supported_languages=supported_lang,
             max_distance=200,
         )
-except ImportError | ModuleNotFoundError:
+except ModuleNotFoundError:
 
     def langcode_best_match(locale: str, supported_lang: list[str]) -> str | None:
         """
