@@ -8,7 +8,6 @@ from importlib import resources
 from threading import RLock
 from collections import defaultdict
 
-import langcodes
 from fluent.runtime import FluentBundle, FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
@@ -21,6 +20,19 @@ _L10N_BUNDLE: dict[tuple[str, ...], FluentLocalization] = {}
 _L10N_BUNDLE_LOCK: dict[tuple[str, ...], RLock] = defaultdict(RLock)
 
 _PLUGIN_LOCALES = {}
+
+try:
+    import langcodes
+
+    def langcode_best_match(locale: str, supported: list[str]) -> str | None:
+        matched_best = langcodes.closest_supported_match(
+            desired_language=locale,
+            supported_languages=supported,
+            max_distance=200,
+        )
+        return matched_best
+except ImportError | ModuleNotFoundError:
+    pass
 
 
 def rfc1766_langcode() -> str:
@@ -94,8 +106,7 @@ def t(
     return bundle.format_value(msg_id, kwargs)
 
 
-def register_plugin_i18n(domain: str, locales_dir: str | Path,
-                         resource_ids: list[str]):
+def register_plugin_i18n(domain: str, locales_dir: str | Path, resource_ids: list[str]):
     """
     Registration for plugin i18n.
 
@@ -126,7 +137,7 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
             locale = OVERRIDE_LOCALE
 
     with resources.as_file(
-            resources.files(feeluown.i18n) / "assets",
+        resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
         supported = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
@@ -160,17 +171,22 @@ def plugin_l10n_bundle(domain: str, locale: str | None = None) -> FluentLocaliza
     supported = [d.name for d in localedir.iterdir() if d.is_dir()]
     roots = [localedir / "{locale}"]
 
-    return _create_or_get_bundle(namespace=domain, roots=roots, locales=[locale],
-                                 resource_ids=resource_ids, supported=supported)
+    return _create_or_get_bundle(
+        namespace=domain,
+        roots=roots,
+        locales=[locale],
+        resource_ids=resource_ids,
+        supported=supported,
+    )
 
 
 def _create_or_get_bundle(
-        namespace: str,
-        roots: str | list[str],
-        locales: list[str | None],
-        resource_ids: list[str] = None,
-        supported: list[str] = None,
-        skip_fallback: bool = False
+    namespace: str,
+    roots: str | list[str],
+    locales: list[str | None],
+    resource_ids: list[str] = None,
+    supported: list[str] = None,
+    skip_fallback: bool = False,
 ) -> FluentLocalization:
     """
     General logic for creating bundle
@@ -179,22 +195,22 @@ def _create_or_get_bundle(
     """
 
     matched_locales = []
-    for locale in locales:
-        matched_best = langcodes.closest_supported_match(
-            desired_language=locale,
-            supported_languages=supported,
-            max_distance=200,
-        )
-        if matched_best is not None:
-            matched_locales.append(matched_best)
+    if supported:
+        for locale in locales:
+            matched_best = langcode_best_match(locale, supported=supported)
+            if matched_best is not None:
+                matched_locales.append(matched_best)
 
     locales_to_load = matched_locales
     if not skip_fallback:
         # add en-US, zh-CN for fallback
         locales_to_load += ["en-US", "zh-CN"]
 
-    cache_key = (tuple(locales_to_load), tuple(resource_ids),
-                 tuple(namespace))
+    cache_key = (
+        tuple(locales_to_load),
+        tuple(resource_ids),
+        tuple(namespace),
+    )
 
     with _L10N_BUNDLE_LOCK[cache_key]:
         if cache_key in _L10N_BUNDLE:
@@ -250,7 +266,7 @@ DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
 
 if __name__ == "__main__":
     with resources.as_file(
-            resources.files(feeluown.i18n) / "assets",
+        resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
         supported = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
