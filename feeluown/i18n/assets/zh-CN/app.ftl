@@ -599,7 +599,7 @@ music-radio-radar-changed = { -music-radio-radar }已切换
 ## Find music recommendations
 music-discovery = 发现音乐
 ## 每日推荐歌单
-music-customized-recommendation = 每日推荐歌单
+music-customized-recommendation = 每日推荐{ -track-list }
 
 # feeluown.gui.pages.provider_home
 # ----------------------------------------
