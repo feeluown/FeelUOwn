@@ -24,15 +24,40 @@ _PLUGIN_LOCALES = {}
 try:
     import langcodes
 
-    def langcode_best_match(locale: str, supported: list[str]) -> str | None:
-        matched_best = langcodes.closest_supported_match(
+    def langcode_best_match(locale: str, supported_lang: list[str]) -> str | None:
+        """
+        language code matching, based on langcodes
+        """
+        return langcodes.closest_supported_match(
             desired_language=locale,
-            supported_languages=supported,
+            supported_languages=supported_lang,
             max_distance=200,
         )
-        return matched_best
 except ImportError | ModuleNotFoundError:
-    pass
+
+    def langcode_best_match(locale: str, supported_lang: list[str]) -> str | None:
+        """
+        language code matching, tricky but zero-dependency
+        """
+        def _lang_tag(lang: str):
+            return lang.replace("-", "_").split("_", 1)[0]
+
+        locale_tag = _lang_tag(locale)
+        supported_tags = map(_lang_tag, supported_lang)
+
+        for supported_tag, supported_locale in zip(supported_tags, supported_lang):
+            if supported_tag != locale_tag:
+                continue
+
+            # full best match
+            if locale == supported_locale:
+                return supported_locale
+
+            # TODO: region variants support, for example,
+            # zh-HK, zh-TW -> zh-Hant; zh-SG, zh-CN -> zh-Hans
+            return supported_locale
+
+        return "en-US"
 
 
 def rfc1766_langcode() -> str:
@@ -147,7 +172,7 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
             roots=roots,
             locales=[locale],
             resource_ids=DEFAULT_RESOURCE_IDS,
-            supported=supported,
+            supported_lang=supported,
         )
 
 
@@ -176,7 +201,7 @@ def plugin_l10n_bundle(domain: str, locale: str | None = None) -> FluentLocaliza
         roots=roots,
         locales=[locale],
         resource_ids=resource_ids,
-        supported=supported,
+        supported_lang=supported,
     )
 
 
@@ -185,7 +210,7 @@ def _create_or_get_bundle(
     roots: str | list[str],
     locales: list[str | None],
     resource_ids: list[str] = None,
-    supported: list[str] = None,
+    supported_lang: list[str] = None,
     skip_fallback: bool = False,
 ) -> FluentLocalization:
     """
@@ -195,9 +220,9 @@ def _create_or_get_bundle(
     """
 
     matched_locales = []
-    if supported:
+    if supported_lang:
         for locale in locales:
-            matched_best = langcode_best_match(locale, supported=supported)
+            matched_best = langcode_best_match(locale, supported_lang=supported_lang)
             if matched_best is not None:
                 matched_locales.append(matched_best)
 
@@ -205,6 +230,13 @@ def _create_or_get_bundle(
     if not skip_fallback:
         # add en-US, zh-CN for fallback
         locales_to_load += ["en-US", "zh-CN"]
+
+    # Avoid locale duplication, which may cause further bundle cache miss.
+    locales_to_load_ = []
+    for locale in locales_to_load:
+        if locale in locales_to_load_:
+            continue
+        locales_to_load_.append(locale)
 
     cache_key = (
         tuple(locales_to_load),
