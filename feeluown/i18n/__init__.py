@@ -183,6 +183,7 @@ def _create_or_get_bundle(
         matched_best = langcodes.closest_supported_match(
             desired_language=locale,
             supported_languages=supported,
+            max_distance=200,
         )
         if matched_best is not None:
             matched_locales.append(matched_best)
