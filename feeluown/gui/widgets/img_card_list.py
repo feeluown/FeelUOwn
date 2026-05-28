@@ -60,7 +60,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     random_solarized_color,
 )
-from feeluown.gui.thumbnail_cache import ThumbnailCache, ThumbnailImageCache
+from feeluown.gui.thumbnail_cache import ThumbnailImageCache, scale_image
 from feeluown.i18n import human_readable_number
 
 if TYPE_CHECKING:
@@ -84,7 +84,6 @@ COLORS = {
 
 class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
     _max_cache_edge = 512
-    _thumb_cache = ThumbnailCache()
 
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
@@ -221,7 +220,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         max_edge = self._max_cache_edge
         if img.width() <= max_edge and img.height() <= max_edge:
             return img
-        return self._thumb_cache.scale_image(img, max_edge)
+        return scale_image(img, max_edge)
 
 
 class ImgCardListDelegate(QAbstractItemDelegate):
@@ -257,7 +256,6 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.w_h_ratio = 1.0
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._thumb_cache = ThumbnailCache()
 
         self.card_min_width = card_min_width
         self.card_spacing = card_spacing
@@ -343,14 +341,18 @@ class ImgCardListDelegate(QAbstractItemDelegate):
                 # Fall back to a flat fill when the image is invalid or height is zero.
                 brush = QBrush(border_color)
             else:
-                pixmap = self._thumb_cache.pixmap_for_image(
-                    obj,
-                    draw_width,
-                    height,
-                    self._device_pixel_ratio,
-                    "img-card",
-                )
-                brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
+                if img_w / img_h > draw_width / height:
+                    img = obj.scaledToHeight(
+                        int(height * self._device_pixel_ratio),
+                        Qt.TransformationMode.SmoothTransformation,
+                    )
+                else:
+                    img = obj.scaledToWidth(
+                        int(draw_width * self._device_pixel_ratio),
+                        Qt.TransformationMode.SmoothTransformation,
+                    )
+                img.setDevicePixelRatio(self._device_pixel_ratio)
+                brush = QBrush(img)
             painter.setBrush(brush)
         border_radius = 3
         if self.as_circle:

@@ -14,7 +14,6 @@ from feeluown.gui.helpers import BgTransparentMixin, BaseScrollAreaForNoScrollIt
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
 from feeluown.gui.base_renderer import VFillableBg
-from feeluown.gui.thumbnail_cache import ThumbnailCache
 
 logger = logging.getLogger(__name__)
 
@@ -81,9 +80,6 @@ class RightPanel(QFrame):
 
         self._app = app
         self._pixmap = None
-        self._pixmap_img = None
-        self._pixmap_dpr = 1.0
-        self._thumb_cache = ThumbnailCache()
 
         self._layout = QVBoxLayout(self)
         self._stacked_layout = QStackedLayout()
@@ -164,12 +160,6 @@ class RightPanel(QFrame):
 
     def show_background_image(self, pixmap):
         self._pixmap = pixmap
-        if pixmap is None:
-            self._pixmap_img = None
-            self._pixmap_dpr = 1.0
-        else:
-            self._pixmap_img = pixmap.toImage()
-            self._pixmap_dpr = pixmap.devicePixelRatio()
         self._adjust_meta_widget_height()
         self.update()
 
@@ -290,22 +280,13 @@ class RightPanel(QFrame):
         # scale pixmap
         assert self._pixmap is not None
         pixmap_size = self._pixmap.size()
-        if self._pixmap_img is None:
-            return
 
         # draw the center part of the pixmap on available rect
         painter.save()
         if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
-            scaled_pixmap = self._thumb_cache.pixmap_for_image(
-                self._pixmap_img,
-                draw_width,
-                draw_height,
-                self._pixmap_dpr,
-                "page-bg",
+            scaled_pixmap = self._pixmap.scaledToHeight(
+                draw_height, mode=Qt.TransformationMode.SmoothTransformation
             )
-            if scaled_pixmap is None:
-                painter.restore()
-                return
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)
             pixmap_size = scaled_pixmap.size()
@@ -313,16 +294,9 @@ class RightPanel(QFrame):
             painter.translate(-x, -scrolled)
             rect = QRect(0, 0, pixmap_size.width(), draw_height)
         else:
-            scaled_pixmap = self._thumb_cache.pixmap_for_image(
-                self._pixmap_img,
-                draw_width,
-                draw_height,
-                self._pixmap_dpr,
-                "page-bg",
+            scaled_pixmap = self._pixmap.scaledToWidth(
+                draw_width, mode=Qt.TransformationMode.SmoothTransformation
             )
-            if scaled_pixmap is None:
-                painter.restore()
-                return
             pixmap_size = scaled_pixmap.size()
             brush = QBrush(scaled_pixmap)
             painter.setBrush(brush)

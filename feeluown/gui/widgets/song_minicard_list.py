@@ -34,7 +34,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     painter_save,
 )
-from feeluown.gui.thumbnail_cache import ThumbnailCache, ThumbnailImageCache
+from feeluown.gui.thumbnail_cache import ThumbnailImageCache, scale_image
 
 if TYPE_CHECKING:
     from feeluown.gui import GuiApp
@@ -46,7 +46,6 @@ Fetching = object()
 
 class BaseSongMiniCardListModel(QAbstractListModel):
     _max_cache_edge = 256
-    _thumb_cache = ThumbnailCache()
 
     def __init__(self, fetch_image, parent=None):
         super().__init__(parent)
@@ -94,7 +93,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         max_edge = self._max_cache_edge
         if img.width() <= max_edge and img.height() <= max_edge:
             return img
-        return self._thumb_cache.scale_image(img, max_edge)
+        return scale_image(img, max_edge)
 
     def get_image_unblocking(self, song):
         """
@@ -180,7 +179,6 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.view.set_row_height(card_height + card_padding[1] + card_padding[3])
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._thumb_cache = ThumbnailCache()
 
     def item_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
@@ -337,18 +335,18 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             brush = QBrush(color)
             painter.setBrush(brush)
         else:  # QImage
-            img = decoration
-            if img.isNull() or width <= 0 or height <= 0:
-                brush = QBrush(border_color)
-            else:
-                pixmap = self._thumb_cache.pixmap_for_image(
-                    img,
-                    width,
-                    height,
-                    self._device_pixel_ratio,
-                    "song-mini",
+            if decoration.height() < decoration.width():
+                pixmap = decoration.scaledToHeight(
+                    int(height * self._device_pixel_ratio),
+                    Qt.TransformationMode.SmoothTransformation,
                 )
-                brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
+            else:
+                pixmap = decoration.scaledToWidth(
+                    int(width * self._device_pixel_ratio),
+                    Qt.TransformationMode.SmoothTransformation,
+                )
+            pixmap.setDevicePixelRatio(self._device_pixel_ratio)
+            brush = QBrush(pixmap)
             painter.setBrush(brush)
         cover_rect = QRect(0, 0, width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
