@@ -14,6 +14,7 @@ from feeluown.gui.helpers import BgTransparentMixin, BaseScrollAreaForNoScrollIt
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
 from feeluown.gui.base_renderer import VFillableBg
+from feeluown.gui.thumbnail_cache import ScaledPixmapCache
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +80,8 @@ class RightPanel(QFrame):
         super().__init__(parent)
 
         self._app = app
-        self._pixmap = None
+        self._background_img = None
+        self._pixmap_cache = ScaledPixmapCache()
 
         self._layout = QVBoxLayout(self)
         self._stacked_layout = QStackedLayout()
@@ -159,7 +161,7 @@ class RightPanel(QFrame):
             logger.warning("can't render this kind of collection")
 
     def show_background_image(self, pixmap):
-        self._pixmap = pixmap
+        self._background_img = None if pixmap is None else pixmap.toImage()
         self._adjust_meta_widget_height()
         self.update()
 
@@ -202,9 +204,11 @@ class RightPanel(QFrame):
             painter.restore()
             return
 
-        if self._pixmap is not None:
-            self._draw_pixmap(painter, draw_width, draw_height, scrolled)
-            self._draw_pixmap_overlay(painter, draw_width, draw_height, scrolled)
+        if self._background_img is not None:
+            self._draw_background_image(painter, draw_width, draw_height, scrolled)
+            self._draw_background_image_overlay(
+                painter, draw_width, draw_height, scrolled
+            )
             curve = QEasingCurve(QEasingCurve.Type.OutCubic)
             if max_scroll_height == 0:
                 alpha_ratio = 1.0
@@ -237,7 +241,9 @@ class RightPanel(QFrame):
             painter.restore()
         painter.end()
 
-    def _draw_pixmap_overlay(self, painter, draw_width, draw_height, scrolled):
+    def _draw_background_image_overlay(
+        self, painter, draw_width, draw_height, scrolled
+    ):
         painter.save()
         rect = QRect(0, 0, draw_width, draw_height)
         painter.translate(0, -scrolled)
@@ -276,30 +282,30 @@ class RightPanel(QFrame):
         painter.drawRect(rect)
         painter.restore()
 
-    def _draw_pixmap(self, painter, draw_width, draw_height, scrolled):
-        # scale pixmap
-        assert self._pixmap is not None
-        pixmap_size = self._pixmap.size()
+    def _draw_background_image(self, painter, draw_width, draw_height, scrolled):
+        # Scale once per target size and reuse the resulting pixmap for painting.
+        img = self._background_img
+        assert img is not None
+        image_size = img.size()
+        scaled_pixmap = self._pixmap_cache.scaled_to_fill(
+            img,
+            draw_width,
+            draw_height,
+            img.devicePixelRatio(),
+        )
+        if scaled_pixmap is None:
+            return
+        pixmap_size = scaled_pixmap.size()
 
         # draw the center part of the pixmap on available rect
         painter.save()
-        if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
-            scaled_pixmap = self._pixmap.scaledToHeight(
-                draw_height, mode=Qt.TransformationMode.SmoothTransformation
-            )
-            brush = QBrush(scaled_pixmap)
-            painter.setBrush(brush)
-            pixmap_size = scaled_pixmap.size()
+        brush = QBrush(scaled_pixmap)
+        painter.setBrush(brush)
+        if image_size.width() / draw_width * draw_height >= image_size.height():
             x = (pixmap_size.width() - draw_width) // 2
             painter.translate(-x, -scrolled)
             rect = QRect(0, 0, pixmap_size.width(), draw_height)
         else:
-            scaled_pixmap = self._pixmap.scaledToWidth(
-                draw_width, mode=Qt.TransformationMode.SmoothTransformation
-            )
-            pixmap_size = scaled_pixmap.size()
-            brush = QBrush(scaled_pixmap)
-            painter.setBrush(brush)
             # note: in practice, most of the time, we can't show the
             # whole artist pixmap, as a result, the artist head will be cut,
             # which causes bad visual effect. So we render the top-center part
@@ -316,13 +322,16 @@ class RightPanel(QFrame):
 
     def resizeEvent(self, e):
         super().resizeEvent(e)
-        if self._pixmap is not None and e.oldSize().width() != e.size().width():
+        if (
+            self._background_img is not None
+            and e.oldSize().width() != e.size().width()
+        ):
             self._adjust_meta_widget_height()
 
     def _adjust_meta_widget_height(self):
         # HACK: adjust height of table_container's meta_widget to
         # adapt to background image.
-        if self._pixmap is None:
+        if self._background_img is None:
             self.table_container.meta_widget.setMinimumHeight(0)
         else:
             height = (
