@@ -60,6 +60,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     random_solarized_color,
 )
+from feeluown.gui.thumbnail_cache import ThumbnailImageCache, scale_image
 from feeluown.i18n import human_readable_number
 
 if TYPE_CHECKING:
@@ -82,6 +83,8 @@ COLORS = {
 
 
 class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
+    _max_cache_edge = 512
+
     def __init__(self, reader, fetch_image, source_name_map=None, parent=None):
         """
 
@@ -101,7 +104,8 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.source_name_map = source_name_map or {}
         self.fetch_image = fetch_image
         self.colors = []
-        self.images = {}  # {uri: QImage}
+        self.image_cache = ThumbnailImageCache()
+        self._image_fetching = set()
 
     @classmethod
     def create(cls, reader, app: "GuiApp"):
@@ -156,18 +160,20 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         self.colors.extend(colors)
         self.on_items_fetched(items)
         for item in items:
+            self._image_fetching.add(reverse(item))
             aio.create_task(self.fetch_image(item, self._fetch_image_callback(item)))
 
     def _fetch_image_callback(self, item):
         def cb(content):
             uri = reverse(item)
+            self._image_fetching.discard(uri)
             if content is None:
-                self.images[uri] = None
+                self.image_cache.set(uri, None)
                 return
 
             img = QImage()
             img.loadFromData(content)
-            self.images[uri] = img
+            self.image_cache.set(uri, self._scale_image_for_cache(img))
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -175,14 +181,24 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
 
         return cb
 
+    def get_image_unblocking(self, item):
+        """Return a cached image or schedule cover loading without blocking paint."""
+        uri = reverse(item)
+        cached, image = self.image_cache.get(uri)
+        if cached:
+            return image
+        if uri not in self._image_fetching:
+            self._image_fetching.add(uri)
+            aio.create_task(self.fetch_image(item, self._fetch_image_callback(item)))
+        return None
+
     def data(self, index, role):
         offset = index.row()
         if not index.isValid() or offset >= len(self._items):
             return None
         item = self._items[offset]
         if role == Qt.ItemDataRole.DecorationRole:
-            uri = reverse(item)
-            image = self.images.get(uri)
+            image = self.get_image_unblocking(item)
             if image is not None:
                 return image
             color_str = self.colors[offset]
@@ -198,6 +214,15 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         elif role == Qt.ItemDataRole.ToolTipRole:
             return item.name
         return None
+
+    def _scale_image_for_cache(self, img: QImage) -> QImage:
+        """Keep only a bounded thumbnail in the model cache."""
+        if img.isNull():
+            return img
+        max_edge = self._max_cache_edge
+        if img.width() <= max_edge and img.height() <= max_edge:
+            return img
+        return scale_image(img, max_edge)
 
 
 class ImgCardListDelegate(QAbstractItemDelegate):

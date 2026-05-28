@@ -13,7 +13,6 @@ from PyQt6.QtCore import (
 )
 from PyQt6.QtGui import (
     QPainter,
-    QPixmap,
     QImage,
     QColor,
     QPalette,
@@ -35,6 +34,7 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     painter_save,
 )
+from feeluown.gui.thumbnail_cache import ThumbnailImageCache, scale_image
 
 if TYPE_CHECKING:
     from feeluown.gui import GuiApp
@@ -45,12 +45,16 @@ Fetching = object()
 
 
 class BaseSongMiniCardListModel(QAbstractListModel):
+    _max_cache_edge = 256
+
     def __init__(self, fetch_image, parent=None):
         super().__init__(parent)
 
         self._items = []
         self.fetch_image = fetch_image
-        self.pixmaps = {}  # {uri: (Option<pixmap>, Option<color>)}
+        self.image_cache = ThumbnailImageCache()
+        self._image_colors = {}
+        self._image_fetching = set()
         self.rowsAboutToBeRemoved.connect(self.on_rows_about_to_be_removed)
 
     def rowCount(self, _=QModelIndex()):
@@ -66,14 +70,16 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         # TODO: duplicate code with ImgListModel
         def cb(content):
             uri = reverse(item)
-            if content is None and uri in self.pixmaps:
-                self.pixmaps[uri] = (self.pixmaps[uri][1], None)
+            if content is None:
+                self._image_fetching.discard(uri)
+                self.image_cache.set(uri, None)
                 return
 
             img = QImage()
             img.loadFromData(content)
-            pixmap = QPixmap(img)
-            self.pixmaps[uri] = (pixmap, None)
+            img = self._scale_image_for_cache(img)
+            self._image_fetching.discard(uri)
+            self.image_cache.set(uri, img)
             row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
@@ -81,20 +87,30 @@ class BaseSongMiniCardListModel(QAbstractListModel):
 
         return cb
 
-    def get_pixmap_unblocking(self, song):
-        """
-        return QColor means the song has no pixmap or the pixmap is currently not feched.
-        """
+    def _scale_image_for_cache(self, img: QImage) -> QImage:
+        """Keep only a bounded thumbnail in the model cache."""
+        if img.isNull():
+            return img
+        max_edge = self._max_cache_edge
+        if img.width() <= max_edge and img.height() <= max_edge:
+            return img
+        return scale_image(img, max_edge)
+
+    def get_image_unblocking(self, song):
+        """Return a cached image/color or schedule cover loading without blocking."""
         uri = reverse(song)
-        if uri in self.pixmaps:
-            pixmap, color = self.pixmaps[uri]
-            if pixmap is Fetching:
-                return color
-            return pixmap
+        cached, image = self.image_cache.get(uri)
+        if cached:
+            if image is None:
+                return self._image_colors.get(uri)
+            return image
+        if uri in self._image_fetching:
+            return self._image_colors.get(uri)
         aio.run_afn(self.fetch_image, song, self._fetch_image_callback(song))
         color = QColor(random.choice(list(SOLARIZED_COLORS.values())))
         color.setAlphaF(0.8)
-        self.pixmaps[uri] = (Fetching, color)
+        self._image_colors[uri] = color
+        self._image_fetching.add(uri)
         return color
 
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
@@ -105,16 +121,18 @@ class BaseSongMiniCardListModel(QAbstractListModel):
             return self._items[offset].title_display
         elif role == Qt.ItemDataRole.UserRole:
             song = self._items[offset]
-            pixmap = self.get_pixmap_unblocking(song)
-            return (song, pixmap)
+            image = self.get_image_unblocking(song)
+            return (song, image)
         return None
 
     def on_rows_about_to_be_removed(self, _, first, last):
         for i in range(first, last + 1):
             item = self._items[i]
             uri = reverse(item)
-            # clear pixmap cache
-            self.pixmaps.pop(uri, None)
+            # clear image cache
+            self.image_cache.remove(uri)
+            self._image_colors.pop(uri, None)
+            self._image_fetching.discard(uri)
 
 
 class SongMiniCardListModel(ReaderFetchMoreMixin, BaseSongMiniCardListModel):
