@@ -88,6 +88,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         return cb
 
     def _scale_image_for_cache(self, img: QImage) -> QImage:
+        """Keep only a bounded thumbnail in the model cache."""
         if img.isNull():
             return img
         max_edge = self._max_cache_edge
@@ -96,9 +97,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         return scale_image(img, max_edge)
 
     def get_image_unblocking(self, song):
-        """
-        return QColor means the song has no image or the image is currently not fetched.
-        """
+        """Return a cached image/color or schedule cover loading without blocking."""
         uri = reverse(song)
         cached, image = self.image_cache.get(uri)
         if cached:

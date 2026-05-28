@@ -6,6 +6,7 @@ from PyQt6.QtGui import QImage
 
 
 def scale_image(img: QImage, max_edge: int) -> QImage:
+    """Return an image capped by max_edge while preserving its aspect ratio."""
     if img.isNull():
         return img
     if img.width() <= max_edge and img.height() <= max_edge:
@@ -19,6 +20,12 @@ def scale_image(img: QImage, max_edge: int) -> QImage:
 
 
 class ThumbnailImageCache:
+    """LRU cache for decoded thumbnail images.
+
+    The cache stores QImage objects instead of QPixmap objects so model-side
+    memory is bounded without depending on paint-device resources.
+    """
+
     def __init__(self, max_bytes: int = 64 * 1024 * 1024, max_items: int = 1024):
         self._max_bytes = max_bytes
         self._max_items = max_items
@@ -29,6 +36,7 @@ class ThumbnailImageCache:
         return len(self._items)
 
     def get(self, key: str) -> Tuple[bool, Optional[QImage]]:
+        """Return (cached, image); image may be None for a cached miss."""
         if key not in self._items:
             return False, None
         img, size = self._items.pop(key)
@@ -36,6 +44,7 @@ class ThumbnailImageCache:
         return True, img
 
     def set(self, key: str, img: Optional[QImage]) -> None:
+        """Store an image result, including None for models without artwork."""
         size = self._image_cost(img)
         if key in self._items:
             _, old_size = self._items.pop(key)

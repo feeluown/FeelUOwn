@@ -182,6 +182,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         return cb
 
     def get_image_unblocking(self, item):
+        """Return a cached image or schedule cover loading without blocking paint."""
         uri = reverse(item)
         cached, image = self.image_cache.get(uri)
         if cached:
@@ -215,6 +216,7 @@ class ImgCardListModel(QAbstractListModel, ReaderFetchMoreMixin[T]):
         return None
 
     def _scale_image_for_cache(self, img: QImage) -> QImage:
+        """Keep only a bounded thumbnail in the model cache."""
         if img.isNull():
             return img
         max_edge = self._max_cache_edge
