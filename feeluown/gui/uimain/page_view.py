@@ -82,7 +82,6 @@ class RightPanel(QFrame):
         self._app = app
         self._pixmap = None
         self._pixmap_img = None
-        self._pixmap_dpr = 1.0
         self._pixmap_cache = ScaledPixmapCache()
 
         self._layout = QVBoxLayout(self)
@@ -166,10 +165,8 @@ class RightPanel(QFrame):
         self._pixmap = pixmap
         if pixmap is None:
             self._pixmap_img = None
-            self._pixmap_dpr = 1.0
         else:
             self._pixmap_img = pixmap.toImage()
-            self._pixmap_dpr = pixmap.devicePixelRatio()
         self._adjust_meta_widget_height()
         self.update()
 
@@ -300,7 +297,7 @@ class RightPanel(QFrame):
                 self._pixmap_img,
                 draw_width,
                 draw_height,
-                self._pixmap_dpr,
+                self._pixmap.devicePixelRatio(),
                 "page-bg",
             )
             if scaled_pixmap is None:
@@ -317,7 +314,7 @@ class RightPanel(QFrame):
                 self._pixmap_img,
                 draw_width,
                 draw_height,
-                self._pixmap_dpr,
+                self._pixmap.devicePixelRatio(),
                 "page-bg",
             )
             if scaled_pixmap is None:
