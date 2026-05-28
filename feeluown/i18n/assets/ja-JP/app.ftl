@@ -599,7 +599,7 @@ music-radio-radar-changed = { -music-radio-radar } を切り替えました
 ## Find music recommendations
 music-discovery = 音楽を発見
 ## デイリーおすすめプレイリスト
-music-customized-recommendation = デイリーおすすめプレイリスト
+music-customized-recommendation = デイリーおすすめ{ -track-list }
 
 # feeluown.gui.pages.provider_home
 # ----------------------------------------

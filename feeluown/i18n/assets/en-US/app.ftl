@@ -606,7 +606,7 @@ music-radio-radar-changed = { -music-radio-radar } switched
 ## Find music recommendations
 music-discovery = Discover Music
 ## Daily recommended playlists
-music-customized-recommendation = Daily Recommended Playlists
+music-customized-recommendation = Daily Recommended { -track-list(plural: "plural") }
 
 # feeluown.gui.pages.model
 # ----------------------------------------
