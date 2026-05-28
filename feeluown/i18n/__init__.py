@@ -8,7 +8,6 @@ from importlib import resources
 from threading import RLock
 from collections import defaultdict
 
-import langcodes
 from fluent.runtime import FluentBundle, FluentLocalization, FluentResourceLoader
 
 import feeluown.i18n
@@ -21,6 +20,44 @@ _L10N_BUNDLE: dict[tuple[str, ...], FluentLocalization] = {}
 _L10N_BUNDLE_LOCK: dict[tuple[str, ...], RLock] = defaultdict(RLock)
 
 _PLUGIN_LOCALES = {}
+
+try:
+    import langcodes
+
+    def langcode_best_match(locale: str, supported_lang: list[str]) -> str | None:
+        """
+        language code matching, based on langcodes
+        """
+        return langcodes.closest_supported_match(
+            desired_language=locale,
+            supported_languages=supported_lang,
+            max_distance=200,
+        )
+except ModuleNotFoundError:
+
+    def langcode_best_match(locale: str, supported_lang: list[str]) -> str | None:
+        """
+        language code matching, tricky but zero-dependency
+        """
+        def _lang_tag(lang: str):
+            return lang.replace("-", "_").split("_", 1)[0]
+
+        locale_tag = _lang_tag(locale)
+        supported_tags = map(_lang_tag, supported_lang)
+
+        for supported_tag, supported_locale in zip(supported_tags, supported_lang):
+            if supported_tag != locale_tag:
+                continue
+
+            # full best match
+            if locale == supported_locale:
+                return supported_locale
+
+            # TODO: region variants support, for example,
+            # zh-HK, zh-TW -> zh-Hant; zh-SG, zh-CN -> zh-Hans
+            return supported_locale
+
+        return "en-US"
 
 
 def rfc1766_langcode() -> str:
@@ -94,8 +131,7 @@ def t(
     return bundle.format_value(msg_id, kwargs)
 
 
-def register_plugin_i18n(domain: str, locales_dir: str | Path,
-                         resource_ids: list[str]):
+def register_plugin_i18n(domain: str, locales_dir: str | Path, resource_ids: list[str]):
     """
     Registration for plugin i18n.
 
@@ -126,7 +162,7 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
             locale = OVERRIDE_LOCALE
 
     with resources.as_file(
-            resources.files(feeluown.i18n) / "assets",
+        resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
         supported = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
@@ -136,7 +172,7 @@ def l10n_bundle(locale: str | None = None) -> FluentLocalization:
             roots=roots,
             locales=[locale],
             resource_ids=DEFAULT_RESOURCE_IDS,
-            supported=supported,
+            supported_lang=supported,
         )
 
 
@@ -160,17 +196,22 @@ def plugin_l10n_bundle(domain: str, locale: str | None = None) -> FluentLocaliza
     supported = [d.name for d in localedir.iterdir() if d.is_dir()]
     roots = [localedir / "{locale}"]
 
-    return _create_or_get_bundle(namespace=domain, roots=roots, locales=[locale],
-                                 resource_ids=resource_ids, supported=supported)
+    return _create_or_get_bundle(
+        namespace=domain,
+        roots=roots,
+        locales=[locale],
+        resource_ids=resource_ids,
+        supported_lang=supported,
+    )
 
 
 def _create_or_get_bundle(
-        namespace: str,
-        roots: str | list[str],
-        locales: list[str | None],
-        resource_ids: list[str] = None,
-        supported: list[str] = None,
-        skip_fallback: bool = False
+    namespace: str,
+    roots: str | list[str],
+    locales: list[str | None],
+    resource_ids: list[str] = None,
+    supported_lang: list[str] = None,
+    skip_fallback: bool = False,
 ) -> FluentLocalization:
     """
     General logic for creating bundle
@@ -179,21 +220,29 @@ def _create_or_get_bundle(
     """
 
     matched_locales = []
-    for locale in locales:
-        matched_best = langcodes.closest_supported_match(
-            desired_language=locale,
-            supported_languages=supported,
-        )
-        if matched_best is not None:
-            matched_locales.append(matched_best)
+    if supported_lang:
+        for locale in locales:
+            matched_best = langcode_best_match(locale, supported_lang=supported_lang)
+            if matched_best is not None:
+                matched_locales.append(matched_best)
 
     locales_to_load = matched_locales
     if not skip_fallback:
         # add en-US, zh-CN for fallback
         locales_to_load += ["en-US", "zh-CN"]
 
-    cache_key = (tuple(locales_to_load), tuple(resource_ids),
-                 tuple(namespace))
+    # Avoid locale duplication, which may cause further bundle cache miss.
+    locales_to_load_ = []
+    for locale in locales_to_load:
+        if locale in locales_to_load_:
+            continue
+        locales_to_load_.append(locale)
+
+    cache_key = (
+        tuple(locales_to_load),
+        tuple(resource_ids),
+        tuple(namespace),
+    )
 
     with _L10N_BUNDLE_LOCK[cache_key]:
         if cache_key in _L10N_BUNDLE:
@@ -249,9 +298,9 @@ DEFAULT_RESOURCE_IDS = ["app.ftl", "argparser.ftl", "config.ftl"]
 
 if __name__ == "__main__":
     with resources.as_file(
-            resources.files(feeluown.i18n) / "assets",
+        resources.files(feeluown.i18n) / "assets",
     ) as current_dir:
-        supported = [lang for lang in os.listdir(current_dir)]
+        supported_lang = [lang for lang in os.listdir(current_dir)]
         roots = [str(current_dir / "{locale}")]
 
         for res_id in DEFAULT_RESOURCE_IDS:
@@ -265,6 +314,7 @@ if __name__ == "__main__":
                     locales=["zh-CN"],
                     skip_fallback=True,
                     resource_ids=resource_ids,
+                    supported_lang=supported_lang,
                 )._bundles()
             )
             total_term_len = len(l10n_zh._terms)
@@ -281,6 +331,7 @@ if __name__ == "__main__":
                             locales=[locale],
                             skip_fallback=True,
                             resource_ids=resource_ids,
+                            supported_lang=supported_lang,
                         )._bundles()
                     )
                 except StopIteration:
