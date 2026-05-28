@@ -78,9 +78,9 @@ class SizedPixmapDrawer:
 
     def draw(self, painter: QPainter):
         with painter_save(painter):
-            if self._pixmap is None:
+            if self._pixmap is None and self._color is not None:
                 self._draw_random_color(painter)
-            else:
+            elif self._pixmap is not None:
                 self._draw_pixmap(painter)
 
     def _draw_random_color(self, painter: QPainter):
