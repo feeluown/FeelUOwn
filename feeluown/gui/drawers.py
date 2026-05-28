@@ -22,6 +22,7 @@ from feeluown.gui.helpers import (
     IS_MACOS,
     SOLARIZED_COLORS,
 )
+from feeluown.gui.thumbnail_cache import ThumbnailCache
 
 
 class SizedPixmapDrawer:
@@ -37,23 +38,21 @@ class SizedPixmapDrawer:
         self._img_old_width = rect.width()
         self._radius = radius
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
+        self._thumb_cache = ThumbnailCache()
 
-        if img is None:
+        if img is None or img.isNull():
             self._color = random_solarized_color()
             self._img = None
             self._pixmap = None
         else:
             self._img = img
             self._color = None
-            new_img = self._scale_image(img)
-            self._pixmap = QPixmap(new_img)
-            self._pixmap.setDevicePixelRatio(self._device_pixel_ratio)
-
-    def _scale_image(self, img: QImage) -> QImage:
-        return img.scaledToWidth(
-            int(self._img_old_width * self._device_pixel_ratio),
-            Qt.TransformationMode.SmoothTransformation,
-        )
+            self._pixmap = self._thumb_cache.pixmap_for_width(
+                img,
+                self._img_old_width,
+                self._device_pixel_ratio,
+                "drawer",
+            )
 
     def get_radius(self):
         return (
@@ -137,10 +136,12 @@ class PixmapDrawer(SizedPixmapDrawer):
         if self._widget.width() != self._img_old_width:
             self._img_old_width = self._widget.width()
             assert self._img is not None
-            new_img = self._img.scaledToWidth(
-                self._img_old_width, Qt.TransformationMode.SmoothTransformation
+            self._pixmap = self._thumb_cache.pixmap_for_width(
+                self._img,
+                self._img_old_width,
+                self._device_pixel_ratio,
+                "drawer",
             )
-            self._pixmap = QPixmap(new_img)
 
     def _draw_pixmap(self, painter: QPainter):
         self.maybe_update_pixmap()

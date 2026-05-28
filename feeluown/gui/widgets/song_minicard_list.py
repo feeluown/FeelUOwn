@@ -34,7 +34,11 @@ from feeluown.gui.helpers import (
     fetch_cover_wrapper,
     painter_save,
 )
-from feeluown.gui.thumbnail_cache import ThumbnailImageCache, scale_image
+from feeluown.gui.thumbnail_cache import (
+    ThumbnailCache,
+    ThumbnailImageCache,
+    scale_image,
+)
 
 if TYPE_CHECKING:
     from feeluown.gui import GuiApp
@@ -178,6 +182,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.view.set_row_height(card_height + card_padding[1] + card_padding[3])
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
+        self._thumb_cache = ThumbnailCache()
 
     def item_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
@@ -334,18 +339,18 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             brush = QBrush(color)
             painter.setBrush(brush)
         else:  # QImage
-            if decoration.height() < decoration.width():
-                pixmap = decoration.scaledToHeight(
-                    int(height * self._device_pixel_ratio),
-                    Qt.TransformationMode.SmoothTransformation,
-                )
+            img = decoration
+            if img.isNull() or width <= 0 or height <= 0:
+                brush = QBrush(border_color)
             else:
-                pixmap = decoration.scaledToWidth(
-                    int(width * self._device_pixel_ratio),
-                    Qt.TransformationMode.SmoothTransformation,
+                pixmap = self._thumb_cache.pixmap_for_image(
+                    img,
+                    width,
+                    height,
+                    self._device_pixel_ratio,
+                    "song-mini",
                 )
-            pixmap.setDevicePixelRatio(self._device_pixel_ratio)
-            brush = QBrush(pixmap)
+                brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
             painter.setBrush(brush)
         cover_rect = QRect(0, 0, width, height)
         painter.drawRoundedRect(cover_rect, border_radius, border_radius)
