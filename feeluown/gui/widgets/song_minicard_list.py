@@ -348,7 +348,6 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
                     width,
                     height,
                     self._device_pixel_ratio,
-                    "song-mini",
                 )
                 brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
             painter.setBrush(brush)

@@ -51,7 +51,6 @@ class SizedPixmapDrawer:
                 img,
                 self._img_old_width,
                 self._device_pixel_ratio,
-                "drawer",
             )
 
     def get_radius(self):
@@ -140,7 +139,6 @@ class PixmapDrawer(SizedPixmapDrawer):
                 self._img,
                 self._img_old_width,
                 self._device_pixel_ratio,
-                "drawer",
             )
 
     def _draw_pixmap(self, painter: QPainter):

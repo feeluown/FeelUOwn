@@ -63,10 +63,8 @@ def test_scaled_pixmap_cache_reuses_pixmap_for_same_image_and_fill_size(qapp):
     image.fill(QColor("red"))
     cache = ScaledPixmapCache()
 
-    pixmap = cache.scaled_to_fill(image, 8, 8, 1.0, "test-scaled-pixmap-cache")
-    cached_pixmap = cache.scaled_to_fill(
-        image, 8, 8, 1.0, "test-scaled-pixmap-cache"
-    )
+    pixmap = cache.scaled_to_fill(image, 8, 8, 1.0)
+    cached_pixmap = cache.scaled_to_fill(image, 8, 8, 1.0)
 
     assert pixmap is not None
     assert cached_pixmap is not None
@@ -76,6 +74,6 @@ def test_scaled_pixmap_cache_reuses_pixmap_for_same_image_and_fill_size(qapp):
 def test_scaled_pixmap_cache_returns_none_for_null_image(qapp):
     cache = ScaledPixmapCache()
 
-    pixmap = cache.scaled_to_width(QImage(), 8, 1.0, "test-null-image")
+    pixmap = cache.scaled_to_width(QImage(), 8, 1.0)
 
     assert pixmap is None

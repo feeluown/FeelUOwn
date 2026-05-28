@@ -292,7 +292,6 @@ class RightPanel(QFrame):
             draw_width,
             draw_height,
             img.devicePixelRatio(),
-            "page-bg",
         )
         if scaled_pixmap is None:
             return

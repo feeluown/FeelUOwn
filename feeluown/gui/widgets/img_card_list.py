@@ -353,7 +353,6 @@ class ImgCardListDelegate(QAbstractItemDelegate):
                     draw_width,
                     height,
                     self._device_pixel_ratio,
-                    "img-card",
                 )
                 brush = QBrush(pixmap) if pixmap is not None else QBrush(border_color)
             painter.setBrush(brush)

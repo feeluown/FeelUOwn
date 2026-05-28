@@ -15,11 +15,10 @@ class ScaledPixmapCache:
         img: QImage,
         width: int,
         device_pixel_ratio: float,
-        key_prefix: str,
     ) -> QPixmap | None:
         if img.isNull() or width <= 0:
             return None
-        cache_key = f"{key_prefix}:{img.cacheKey()}:{width}@{device_pixel_ratio}"
+        cache_key = f"scaled-width:{img.cacheKey()}:{width}@{device_pixel_ratio}"
         pixmap = QPixmapCache.find(cache_key)
         if pixmap is not None and not pixmap.isNull():
             return pixmap
@@ -39,12 +38,11 @@ class ScaledPixmapCache:
         width: int,
         height: int,
         device_pixel_ratio: float,
-        key_prefix: str,
     ) -> QPixmap | None:
         if img.isNull() or width <= 0 or height <= 0:
             return None
         cache_key = (
-            f"{key_prefix}:{img.cacheKey()}:{width}x{height}@{device_pixel_ratio}"
+            f"scaled-fill:{img.cacheKey()}:{width}x{height}@{device_pixel_ratio}"
         )
         pixmap = QPixmapCache.find(cache_key)
         if pixmap is not None and not pixmap.isNull():
