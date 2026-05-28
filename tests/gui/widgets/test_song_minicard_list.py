@@ -1,23 +1,25 @@
 import pytest
-from PyQt6.QtCore import QModelIndex
+from PyQt6.QtCore import Qt
 
 from feeluown.utils import aio
-from feeluown.utils.reader import create_reader
-from feeluown.gui.widgets.song_minicard_list import SongMiniCardListModel
+from feeluown.player import Playlist
+from feeluown.gui.components.player_playlist import PlayerPlaylistModel
 
 
 @pytest.mark.asyncio
-async def test_song_mini_card_list_model_remove_pixmap(qtbot, song):
-    async def fetch_cover(*_): return b'image content'
-    model = SongMiniCardListModel(create_reader([song]), fetch_cover)
+async def test_player_playlist_model_removes_cached_image(app_mock, qtbot, song):
+    async def fetch_cover(_, cb): cb(b"image content")
+
+    playlist = Playlist(app_mock)
+    model = PlayerPlaylistModel(playlist, fetch_cover)
+
     assert model.rowCount() == 0
-    model.fetchMore(QModelIndex())
-    await aio.sleep(0.1)
+    playlist.add(song)
     assert model.rowCount() == 1
-    model._fetch_image_callback(song)(b"image content")
+
+    model.data(model.index(0, 0), Qt.ItemDataRole.UserRole)
+    await aio.sleep(0.1)
     assert len(model.image_cache) == 1
-    with qtbot.waitSignal(model.rowsAboutToBeRemoved):
-        model.beginRemoveRows(QModelIndex(), 0, 0)
-        model._items.pop(0)
-        model.endRemoveRows()
+
+    playlist.remove(song)
     assert len(model.image_cache) == 0
