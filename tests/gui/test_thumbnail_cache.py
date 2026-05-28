@@ -1,6 +1,10 @@
 from PyQt6.QtGui import QImage, QColor
 
-from feeluown.gui.thumbnail_cache import ThumbnailCache, ThumbnailImageCache, scale_image
+from feeluown.gui.thumbnail_cache import (
+    ScaledPixmapCache,
+    ThumbnailImageCache,
+    scale_image,
+)
 
 
 def test_thumbnail_image_cache_evicts_least_recently_used_item_by_count():
@@ -54,22 +58,24 @@ def test_scale_image_limits_large_images_to_max_edge():
     assert scaled.height() == 2
 
 
-def test_thumbnail_cache_reuses_pixmap_for_same_image_and_size(qapp):
+def test_scaled_pixmap_cache_reuses_pixmap_for_same_image_and_fill_size(qapp):
     image = QImage(20, 10, QImage.Format.Format_ARGB32)
     image.fill(QColor("red"))
-    cache = ThumbnailCache()
+    cache = ScaledPixmapCache()
 
-    pixmap = cache.pixmap_for_image(image, 8, 8, 1.0, "test-thumbnail-cache")
-    cached_pixmap = cache.pixmap_for_image(image, 8, 8, 1.0, "test-thumbnail-cache")
+    pixmap = cache.scaled_to_fill(image, 8, 8, 1.0, "test-scaled-pixmap-cache")
+    cached_pixmap = cache.scaled_to_fill(
+        image, 8, 8, 1.0, "test-scaled-pixmap-cache"
+    )
 
     assert pixmap is not None
     assert cached_pixmap is not None
     assert pixmap.cacheKey() == cached_pixmap.cacheKey()
 
 
-def test_thumbnail_cache_returns_none_for_null_image(qapp):
-    cache = ThumbnailCache()
+def test_scaled_pixmap_cache_returns_none_for_null_image(qapp):
+    cache = ScaledPixmapCache()
 
-    pixmap = cache.pixmap_for_width(QImage(), 8, 1.0, "test-null-image")
+    pixmap = cache.scaled_to_width(QImage(), 8, 1.0, "test-null-image")
 
     assert pixmap is None

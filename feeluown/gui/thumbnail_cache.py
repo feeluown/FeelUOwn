@@ -5,12 +5,12 @@ from PyQt6.QtCore import Qt
 from PyQt6.QtGui import QImage, QPixmap, QPixmapCache
 
 
-class ThumbnailCache:
+class ScaledPixmapCache:
     def __init__(self, cache_limit_kb: int = 128 * 1024) -> None:
         if QPixmapCache.cacheLimit() < cache_limit_kb:
             QPixmapCache.setCacheLimit(cache_limit_kb)
 
-    def pixmap_for_width(
+    def scaled_to_width(
         self,
         img: QImage,
         width: int,
@@ -33,7 +33,7 @@ class ThumbnailCache:
         QPixmapCache.insert(cache_key, pixmap)
         return pixmap
 
-    def pixmap_for_image(
+    def scaled_to_fill(
         self,
         img: QImage,
         width: int,

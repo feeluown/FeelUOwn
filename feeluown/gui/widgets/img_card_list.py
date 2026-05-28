@@ -61,7 +61,7 @@ from feeluown.gui.helpers import (
     random_solarized_color,
 )
 from feeluown.gui.thumbnail_cache import (
-    ThumbnailCache,
+    ScaledPixmapCache,
     ThumbnailImageCache,
     scale_image,
 )
@@ -262,7 +262,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
         self.w_h_ratio = 1.0
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._thumb_cache = ThumbnailCache()
+        self._pixmap_cache = ScaledPixmapCache()
 
         self.card_min_width = card_min_width
         self.card_spacing = card_spacing
@@ -348,7 +348,7 @@ class ImgCardListDelegate(QAbstractItemDelegate):
                 # Fall back to a flat fill when the image is invalid or height is zero.
                 brush = QBrush(border_color)
             else:
-                pixmap = self._thumb_cache.pixmap_for_image(
+                pixmap = self._pixmap_cache.scaled_to_fill(
                     obj,
                     draw_width,
                     height,

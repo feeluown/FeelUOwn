@@ -14,7 +14,7 @@ from feeluown.gui.helpers import BgTransparentMixin, BaseScrollAreaForNoScrollIt
 from feeluown.gui.uimain.toolbar import BottomPanel
 from feeluown.gui.page_containers.table import TableContainer
 from feeluown.gui.base_renderer import VFillableBg
-from feeluown.gui.thumbnail_cache import ThumbnailCache
+from feeluown.gui.thumbnail_cache import ScaledPixmapCache
 
 logger = logging.getLogger(__name__)
 
@@ -83,7 +83,7 @@ class RightPanel(QFrame):
         self._pixmap = None
         self._pixmap_img = None
         self._pixmap_dpr = 1.0
-        self._thumb_cache = ThumbnailCache()
+        self._pixmap_cache = ScaledPixmapCache()
 
         self._layout = QVBoxLayout(self)
         self._stacked_layout = QStackedLayout()
@@ -296,7 +296,7 @@ class RightPanel(QFrame):
         # draw the center part of the pixmap on available rect
         painter.save()
         if pixmap_size.width() / draw_width * draw_height >= pixmap_size.height():
-            scaled_pixmap = self._thumb_cache.pixmap_for_image(
+            scaled_pixmap = self._pixmap_cache.scaled_to_fill(
                 self._pixmap_img,
                 draw_width,
                 draw_height,
@@ -313,7 +313,7 @@ class RightPanel(QFrame):
             painter.translate(-x, -scrolled)
             rect = QRect(0, 0, pixmap_size.width(), draw_height)
         else:
-            scaled_pixmap = self._thumb_cache.pixmap_for_image(
+            scaled_pixmap = self._pixmap_cache.scaled_to_fill(
                 self._pixmap_img,
                 draw_width,
                 draw_height,

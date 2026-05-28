@@ -22,7 +22,7 @@ from feeluown.gui.helpers import (
     IS_MACOS,
     SOLARIZED_COLORS,
 )
-from feeluown.gui.thumbnail_cache import ThumbnailCache
+from feeluown.gui.thumbnail_cache import ScaledPixmapCache
 
 
 class SizedPixmapDrawer:
@@ -38,7 +38,7 @@ class SizedPixmapDrawer:
         self._img_old_width = rect.width()
         self._radius = radius
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._thumb_cache = ThumbnailCache()
+        self._pixmap_cache = ScaledPixmapCache()
 
         if img is None or img.isNull():
             self._color = random_solarized_color()
@@ -47,7 +47,7 @@ class SizedPixmapDrawer:
         else:
             self._img = img
             self._color = None
-            self._pixmap = self._thumb_cache.pixmap_for_width(
+            self._pixmap = self._pixmap_cache.scaled_to_width(
                 img,
                 self._img_old_width,
                 self._device_pixel_ratio,
@@ -136,7 +136,7 @@ class PixmapDrawer(SizedPixmapDrawer):
         if self._widget.width() != self._img_old_width:
             self._img_old_width = self._widget.width()
             assert self._img is not None
-            self._pixmap = self._thumb_cache.pixmap_for_width(
+            self._pixmap = self._pixmap_cache.scaled_to_width(
                 self._img,
                 self._img_old_width,
                 self._device_pixel_ratio,

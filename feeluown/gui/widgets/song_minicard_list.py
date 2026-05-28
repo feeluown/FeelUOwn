@@ -35,7 +35,7 @@ from feeluown.gui.helpers import (
     painter_save,
 )
 from feeluown.gui.thumbnail_cache import (
-    ThumbnailCache,
+    ScaledPixmapCache,
     ThumbnailImageCache,
     scale_image,
 )
@@ -182,7 +182,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         self.view.set_row_height(card_height + card_padding[1] + card_padding[3])
 
         self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
-        self._thumb_cache = ThumbnailCache()
+        self._pixmap_cache = ScaledPixmapCache()
 
     def item_sizehint(self) -> tuple:
         # HELP: listview needs about 20 spacing left on macOS
@@ -343,7 +343,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             if img.isNull() or width <= 0 or height <= 0:
                 brush = QBrush(border_color)
             else:
-                pixmap = self._thumb_cache.pixmap_for_image(
+                pixmap = self._pixmap_cache.scaled_to_fill(
                     img,
                     width,
                     height,
