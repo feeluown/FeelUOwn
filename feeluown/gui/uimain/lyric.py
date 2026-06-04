@@ -12,7 +12,6 @@ from PyQt6.QtGui import (
     QShortcut,
 )
 from PyQt6.QtWidgets import (
-    QLabel,
     QWidget,
     QVBoxLayout,
     QSizeGrip,
@@ -20,12 +19,11 @@ from PyQt6.QtWidgets import (
     QColorDialog,
     QMenu,
     QFontDialog,
-    QSpacerItem,
 )
 
 from feeluown.i18n import t
-from feeluown.gui.helpers import esc_hide_widget, resize_font, elided_text
-from feeluown.player import LyricLine
+from feeluown.gui.helpers import esc_hide_widget, resize_font
+from feeluown.gui.components.desktop_lyric import DesktopLyricView
 
 
 IS_MACOS = sys.platform == "darwin"
@@ -53,6 +51,10 @@ Tooltip = """
 * Mouse forward/back buttons can play the previous/next track
 * ESC key can close this lyrics window
 """
+
+
+DEFAULT_HEIGHT_LINES = 3
+HEIGHT_LINE_OPTIONS = (1, 3, 5, 7)
 
 
 class SizeGrip(QSizeGrip):
@@ -164,6 +166,7 @@ class LyricWindow(QWidget):
             "fg": p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Text).name(
                 QColor.NameFormat.HexArgb
             ),
+            "height_lines": inner.height_lines,
         }
 
     def apply_state(self, state):
@@ -172,10 +175,10 @@ class LyricWindow(QWidget):
 
         inner = self._inner
 
-        geo = state.get("geometry")
-        if geo:
-            self.resize(geo[2], geo[3])
-            self.setGeometry(*geo)
+        height_lines = state.get("height_lines")
+        if height_lines is not None:
+            inner.set_height_lines(height_lines, refresh=False)
+
         font = inner.font()
         font.fromString(state["font"])
         inner.setFont(font)
@@ -184,105 +187,26 @@ class LyricWindow(QWidget):
         set_fg_color(palette, QColor(state["fg"]))
         inner.setPalette(palette)
 
+        geo = state.get("geometry")
+        if geo:
+            # Apply geometry last so the user-saved size overrides the
+            # auto-sized height produced by setFont -> _apply_height_lines.
+            self.resize(geo[2], geo[3])
+            self.setGeometry(*geo)
+
     def sizeHint(self):
-        return QSize(500, 60)
-
-    def resizeEvent(self, e):
-        return super().resizeEvent(e)
-
-
-class SentenceLabel(QLabel):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.setAlignment(
-            Qt.AlignmentFlag.AlignBaseline
-            | Qt.AlignmentFlag.AlignVCenter
-            | Qt.AlignmentFlag.AlignHCenter
+        inner_hint = self._inner.sizeHint()
+        return QSize(
+            max(500, inner_hint.width()),
+            max(60, inner_hint.height()),
         )
-        self.setWordWrap(False)
-
-
-class LineLabel(QWidget):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-
-        self.v_spacing = 10
-        self.show_trans = True  # Show translated lyric or not.
-        self.label = SentenceLabel(parent=self)
-        self.trans_label = SentenceLabel(parent=self)
-        self.spacer = QSpacerItem(0, 0)
-
-        self._layout = QVBoxLayout(self)
-        self._layout.setContentsMargins(0, 0, 0, 0)
-        self._layout.setSpacing(0)
-
-        self._layout.addSpacing(self.v_spacing // 2)
-        self._layout.addWidget(self.label)
-        self._layout.addSpacerItem(self.spacer)
-        self._layout.addWidget(self.trans_label)
-        self._layout.addSpacing(self.v_spacing // 2)
-
-        line = LyricLine("...", "...", False)
-        self.set_line(line)
-        # The default size(calculated by Qt) may be different from the size
-        # calculated by line_sizehint. Remember to specify size at very first,
-        # otherwise it may show with the default size(calculated by Qt).
-        self.resize(self.line_sizehint(line))
-
-    def toggle_show_trans(self):
-        self.show_trans = not self.show_trans
-        if self.show_trans:
-            self.trans_label.show()
-            self.spacer.changeSize(0, self.v_spacing // 3)
-        else:
-            self.trans_label.hide()
-            self.spacer.changeSize(0, 0)
-
-    def set_line(self, line: LyricLine):
-        self.label.setText(elided_text(line.origin, self.width(), self.font()))
-        if self.show_trans and line.has_trans:
-            self.trans_label.show()
-            self.trans_label.setText(elided_text(line.trans, self.width(), self.font()))
-        else:
-            self.trans_label.hide()
-
-    def line_sizehint(self, line: LyricLine):
-        """Proper size to show the line."""
-        rect = self.label.fontMetrics().boundingRect(line.origin)
-        height = rect.height()
-        if self.show_trans and line.has_trans:
-            height = height * 2
-        # Sometimes width is not enough for text, so add buffer.
-        h_buffer = rect.height()
-        # Add some padding for vertical so that it looks more beautiful.
-        v_buffer = rect.height() // 4
-        height += self.v_spacing + v_buffer + self.spacer.geometry().height()
-        return QSize(rect.width() + h_buffer, height)
-
-    def setFont(self, font):
-        super().setFont(font)
-
-        self.label.setFont(font)
-        font2 = QFont(font)
-        font2.setBold(False)
-        if font.pointSize() != 0:
-            resize_font(font2, -4)
-        else:
-            resize_font(font2, -8)
-        self.trans_label.setFont(font2)
-
-    def setPalette(self, palette):
-        super().setPalette(palette)
-        self.label.setPalette(palette)
-        self.trans_label.setPalette(palette)
 
 
 class InnerLyricWindow(QWidget):
     """
-    This window is responsible for rendering one line of a lyric.
-    This window need not to know which song is playing, or if
-    the song is changed.
+    Renders the inner content of the lyric window. It hosts a
+    :class:`DesktopLyricView` which is responsible for the
+    multi-line scrolling lyric rendering.
     """
 
     def __init__(self, app, parent=None):
@@ -290,14 +214,10 @@ class InnerLyricWindow(QWidget):
         self._app = app
 
         self._border_radius = 0
-        # When _auto_resize is True,
-        # the window size adapts to the lyric sentence width.
-        self._auto_resize = True
+        self._height_lines = DEFAULT_HEIGHT_LINES
         self._size_grip = SizeGrip(self)
-        self.line_label = LineLabel(self)
+        self.lyric_view = DesktopLyricView(self._app, self)
 
-        self._app.live_lyric.line_changed.connect(self.set_line)
-        self._app.live_lyric.lyrics_changed.connect(self.on_lyrics_changed)
         QShortcut(QKeySequence.StandardKey.ZoomIn, self).activated.connect(self.zoomin)
         QShortcut(QKeySequence.StandardKey.ZoomOut, self).activated.connect(
             self.zoomout
@@ -305,34 +225,47 @@ class InnerLyricWindow(QWidget):
         QShortcut(QKeySequence("Ctrl+="), self).activated.connect(self.zoomin)
 
         self._layout = QHBoxLayout(self)
+        # Sync the inner's font with the view's font so Ctrl+/- operates
+        # on the same font that drives the line metrics.
+        self.setFont(self.lyric_view.font())
         self.setup_ui()
 
+    @property
+    def height_lines(self):
+        return self._height_lines
+
     def setup_ui(self):
-        if self._auto_resize:
-            self._size_grip.hide()
         self.on_font_size_changed()
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
-        self._layout.addWidget(self.line_label)
+        self._layout.addWidget(self.lyric_view)
         self._layout.addWidget(self._size_grip)
         self._layout.setAlignment(self._size_grip, Qt.AlignmentFlag.AlignBottom)
+        self.resize(500, self._line_height_for_lines(self._height_lines))
 
-    def set_line(self, line: LyricLine):
-        # Ignore updating when the window is invisible.
-        if not self.isVisible():
-            return
-        size = self.line_label.line_sizehint(line)
-        self.line_label.resize(size)
-        if self._auto_resize:
-            self_size = QSize(size.width(), size.height())
-            self.resize(self_size)
-            self.parent().resize(self_size)  # type: ignore
-            self.parent().updateGeometry()  # type: ignore
-        self.line_label.set_line(line)
+    def set_height_lines(self, n, refresh=True):
+        n = max(1, int(n))
+        self._height_lines = n
+        if refresh:
+            self._apply_height_lines()
 
-    def on_lyrics_changed(self, lyric, *_):
-        if lyric is None:
-            self.set_line(LyricLine(t("lyric-not-available"), "", False))
+    def _line_height_for_lines(self, n):
+        item_slot = max(1, self.lyric_view.item_slot_height())
+        return item_slot * n + self._border_radius * 2
+
+    def _apply_height_lines(self):
+        new_height = self._line_height_for_lines(self._height_lines)
+        self.resize(self.width(), new_height)
+        parent = self.parent()
+        if parent is not None:
+            parent.resize(parent.width(), new_height)
+            parent.updateGeometry()
+
+    def on_font_size_changed(self):
+        self._border_radius = self.fontMetrics().height() // 3
+        width = max(1, self._border_radius * 2)
+        self._size_grip.setFixedWidth(width)
+        self._apply_height_lines()
 
     def zoomin(self):
         font = self.font()
@@ -344,10 +277,11 @@ class InnerLyricWindow(QWidget):
         resize_font(font, -1)
         self.setFont(font)
 
-    def on_font_size_changed(self):
-        self._border_radius = self.fontMetrics().height() // 3
-        width = max(1, self._border_radius * 2)
-        self._size_grip.setFixedWidth(width)
+    def sizeHint(self):
+        return QSize(
+            500,
+            self._line_height_for_lines(self._height_lines),
+        )
 
     def paintEvent(self, e):
         """Draw shapes to make the size_grip more obvious.
@@ -361,9 +295,6 @@ class InnerLyricWindow(QWidget):
         painter.setBrush(self.palette().color(QPalette.ColorRole.Window))
         painter.drawRoundedRect(self.rect(), self._border_radius, self._border_radius)
 
-        # Draw an circle button to indicate that the window can be resized.
-        if self._auto_resize:
-            return
         painter.save()
         painter.setPen(QColor("white"))
         option = QTextOption()
@@ -376,11 +307,11 @@ class InnerLyricWindow(QWidget):
 
     def setPalette(self, a0: QPalette) -> None:
         super().setPalette(a0)
-        self.line_label.setPalette(a0)
+        self.lyric_view.setPalette(a0)
 
     def setFont(self, a0: QFont) -> None:
         super().setFont(a0)
-        self.line_label.setFont(a0)
+        self.lyric_view.setFont(a0)
         self.on_font_size_changed()
 
     def show_color_dialog(self, bg=True):
@@ -420,40 +351,32 @@ class InnerLyricWindow(QWidget):
         dialog.fontSelected.connect(self.setFont)
         dialog.open()
 
-    def toggle_auto_resize(self):
-        self._auto_resize = not self._auto_resize
-        if self._auto_resize:
-            self._size_grip.hide()
-        else:
-            self._size_grip.show()
-
     def contextMenuEvent(self, e):
         menu = QMenu()
         bg_color_action = QAction(t("lyric-background-color"), menu)
         fg_color_action = QAction(t("lyric-text-color"), menu)
         font_action = QAction(t("lyric-font"), menu)
-        toggle_trans_action = QAction(t("lyric-show-bilingual"), menu)
-        toggle_trans_action.setCheckable(True)
-        toggle_trans_action.setChecked(self.line_label.show_trans)
-        toggle_fiexed_size_action = QAction(t("lyric-window-auto-resize"), menu)
-        toggle_fiexed_size_action.setCheckable(True)
-        toggle_fiexed_size_action.setChecked(self._auto_resize)
+
         menu.addAction(bg_color_action)
         menu.addAction(fg_color_action)
         menu.addSeparator()
         menu.addAction(font_action)
         menu.addSeparator()
-        menu.addAction(toggle_trans_action)
-        menu.addAction(toggle_fiexed_size_action)
+        lines_menu = menu.addMenu(t("lyric-show-lines"))
 
         bg_color_action.triggered.connect(lambda: self.show_color_dialog(bg=True))
         fg_color_action.triggered.connect(lambda: self.show_color_dialog(bg=False))
         font_action.triggered.connect(self.show_font_dialog)
-        toggle_trans_action.triggered.connect(self.line_label.toggle_show_trans)
-        toggle_fiexed_size_action.triggered.connect(self.toggle_auto_resize)
+
+        for n in HEIGHT_LINE_OPTIONS:
+            action = QAction(str(n), lines_menu)
+            action.setCheckable(True)
+            action.setChecked(self._height_lines == n)
+            action.triggered.connect(lambda checked, n=n: self.set_height_lines(n))
+            lines_menu.addAction(action)
 
         menu.exec(e.globalPos())
 
     def showEvent(self, e) -> None:
-        self.set_line(self._app.live_lyric.current_line)
+        self.lyric_view.scroll_to_current()
         return super().showEvent(e)
