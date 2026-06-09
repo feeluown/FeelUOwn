@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from typing import Callable, Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media, MediaType
-from feeluown.utils.aio import run_fn, as_completed
+from feeluown.utils.aio import run_fn, as_completed, gather
 from feeluown.utils.dispatch import Signal
 from feeluown.library.base import SearchType, ModelType
 from feeluown.library.provider import Provider
@@ -375,7 +375,7 @@ class Library:
         limit = max(limit, 1)
 
         q = "{} {}".format(song.title_display, song.artists_name_display)
-        standby_score_list = []  # [(standby, score), (standby, score)]
+        standby_score_list = []  # [(standby, score, result_position), ...]
         song_media_list = []  # [(standby, media), (standby, media)]
         top2_standby = []
         async for result in self.a_search(q, source_in=pvd_ids):
@@ -400,9 +400,11 @@ class Library:
                         # Return as early as possible to get better performance
                         return song_media_list
                 elif score >= min_score:
-                    standby_score_list.append((standby, score))
+                    standby_score_list.append((standby, score, i))
         if standby_score_list:
-            standby_pvd_id_set = {standby.source for standby, _ in standby_score_list}
+            standby_pvd_id_set = {
+                standby.source for standby, _, _ in standby_score_list
+            }
             logger.info(
                 f"Find {len(standby_score_list)} similar songs "
                 f"from {','.join(standby_pvd_id_set)}. Try to get a valid media"
@@ -410,23 +412,25 @@ class Library:
             max_per_source = 2
             standby_score_list_2 = []
             counter = Counter()
-            for s, score in standby_score_list:
+            for s, score, pos in standby_score_list:
                 if counter[s.source] >= max_per_source:
                     continue
                 counter[s.source] += 1
-                standby_score_list_2.append((s, score))
+                standby_score_list_2.append((s, score, pos))
 
             assert len(standby_score_list_2) <= max_per_source * len(standby_pvd_id_set)
             sorted_standby_score_list = sorted(
                 standby_score_list_2,
-                key=lambda song_score: song_score[1],
-                reverse=True,
+                key=lambda entry: (-entry[1], entry[2]),
             )
-            for standby, _ in sorted_standby_score_list:
-                # TODO: send multiple requests at a time.
-                media = await self.a_song_prepare_media_no_exc(
-                    standby, audio_select_policy
-                )
+            media_tasks = [
+                self.a_song_prepare_media_no_exc(standby, audio_select_policy)
+                for standby, _, _ in sorted_standby_score_list
+            ]
+            media_results = await gather(*media_tasks)
+            for (standby, _, _), media in zip(
+                sorted_standby_score_list, media_results
+            ):
                 if media is not None:
                     song_media_list.append((standby, media))
                     if len(song_media_list) >= limit:
