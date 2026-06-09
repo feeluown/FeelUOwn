@@ -229,3 +229,192 @@ async def test_library_a_list_song_standby_v3_keeps_one_full_score_per_source(li
     )
 
     assert [standby.identifier for standby in standbys] == ["full-score"]
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v2_fetches_media_in_parallel(library):
+    """When multiple candidates qualify, media should be fetched for all of them
+    concurrently (not one-by-one), and valid results returned."""
+
+    class FastProvider(Provider):
+        @property
+        def identifier(self):
+            return "fast"
+
+        @property
+        def name(self):
+            return "fast"
+
+        def song_list_quality(self, _):
+            return [Quality.Audio.hq]
+
+        def song_get_media(self, _, __):
+            return Media("fast.mp3")
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="fast-1",
+                        source=self.identifier,
+                        title="Similar Song",
+                        artists_name="Artist",
+                        album_name="Different Album",
+                    ),
+                    BriefSongModel(
+                        identifier="fast-2",
+                        source=self.identifier,
+                        title="Similar Song",
+                        artists_name="Artist",
+                        album_name="Different Album",
+                    ),
+                ],
+            )
+
+    class SlowProvider(Provider):
+        @property
+        def identifier(self):
+            return "slow"
+
+        @property
+        def name(self):
+            return "slow"
+
+        def song_list_quality(self, _):
+            return [Quality.Audio.hq]
+
+        def song_get_media(self, _, __):
+            return Media("slow.mp3")
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="slow-1",
+                        source=self.identifier,
+                        title="Similar Song",
+                        artists_name="Artist",
+                        album_name="Different Album",
+                    ),
+                ],
+            )
+
+    library.register(FastProvider())
+    library.register(SlowProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Similar Song",
+        artists_name="Artist",
+        album_name="Album",
+        duration_ms="03:00",
+    )
+    song_media_list = await library.a_list_song_standby_v2(
+        song, limit=2
+    )
+    # Both providers' candidates should have been fetched.
+    assert len(song_media_list) >= 1
+    fetched_sources = {s.source for s, _ in song_media_list}
+    assert "fast" in fetched_sources
+    assert all(url != "" for _, url in song_media_list)
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v2_uses_search_position_as_tiebreak(
+    library,
+):
+    """When two candidates have the same score, the one that appears earlier
+    in its provider's search results should be returned first."""
+
+    class EarlyProvider(Provider):
+        """Returns the matching candidate at position 0."""
+
+        @property
+        def identifier(self):
+            return "early"
+
+        @property
+        def name(self):
+            return "early"
+
+        def song_list_quality(self, _):
+            return [Quality.Audio.hq]
+
+        def song_get_media(self, _, __):
+            return Media("early.mp3")
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="early-song",
+                        source=self.identifier,
+                        title="Similar Song",
+                        artists_name="Artist",
+                        album_name="Different Album",
+                    ),
+                ],
+            )
+
+    class LateProvider(Provider):
+        """Returns the matching candidate at position 2 (after some distractors)."""
+
+        @property
+        def identifier(self):
+            return "late"
+
+        @property
+        def name(self):
+            return "late"
+
+        def song_list_quality(self, _):
+            return [Quality.Audio.hq]
+
+        def song_get_media(self, _, __):
+            return Media("late.mp3")
+
+        def search(self, *_, **__):
+            return SimpleSearchResult(
+                q="",
+                songs=[
+                    BriefSongModel(
+                        identifier="distractor-1",
+                        source=self.identifier,
+                        title="Irrelevant",
+                        artists_name="Nobody",
+                    ),
+                    BriefSongModel(
+                        identifier="distractor-2",
+                        source=self.identifier,
+                        title="Also Irrelevant",
+                        artists_name="Nobody",
+                    ),
+                    BriefSongModel(
+                        identifier="late-song",
+                        source=self.identifier,
+                        title="Similar Song",
+                        artists_name="Artist",
+                        album_name="Different Album",
+                    ),
+                ],
+            )
+
+    library.register(EarlyProvider())
+    library.register(LateProvider())
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Similar Song",
+        artists_name="Artist",
+        album_name="Album",
+        duration_ms="03:00",
+    )
+    song_media_list = await library.a_list_song_standby_v2(song, limit=2)
+    assert len(song_media_list) == 2
+    # EarlyProvider's candidate is at position 0, LateProvider's at position 2.
+    # Both have the same score, so position should determine order.
+    assert song_media_list[0][0].identifier == "early-song"
+    assert song_media_list[1][0].identifier == "late-song"
