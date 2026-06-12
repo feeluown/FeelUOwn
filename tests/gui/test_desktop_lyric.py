@@ -7,7 +7,7 @@ from collections import OrderedDict
 from unittest.mock import MagicMock
 
 import pytest
-from PyQt6.QtCore import Qt, QEvent, QPoint
+from PyQt6.QtCore import Qt, QEvent, QPointF, QPoint
 from PyQt6.QtGui import QColor, QFont, QPalette, QMouseEvent
 from PyQt6.QtWidgets import QApplication
 
@@ -289,8 +289,8 @@ def test_lyric_window_event_filter_installed(qtbot):
     pos = viewport.mapToGlobal(QPoint(10, 10))
     event = QMouseEvent(
         QEvent.Type.MouseButtonPress,
-        viewport.mapFromGlobal(pos),
-        pos,
+        QPointF(viewport.mapFromGlobal(pos)),
+        QPointF(pos),
         Qt.MouseButton.LeftButton,
         Qt.MouseButton.LeftButton,
         Qt.KeyboardModifier.NoModifier,
