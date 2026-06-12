@@ -3,6 +3,7 @@ import logging
 import warnings
 from collections import Counter
 from dataclasses import dataclass
+from itertools import groupby
 from typing import Callable, Optional, TypeVar, List, TYPE_CHECKING
 
 from feeluown.media import Media, MediaType
@@ -423,20 +424,20 @@ class Library:
                 standby_score_list_2,
                 key=lambda entry: (-entry[1], entry[2]),
             )
-            media_tasks = [
-                self.a_song_prepare_media_no_exc(standby, audio_select_policy)
-                for standby, _, _ in sorted_standby_score_list
-            ]
-            media_results = await gather(*media_tasks)
-            for (standby, _, _), media in zip(
-                sorted_standby_score_list, media_results
+            for _, group in groupby(
+                sorted_standby_score_list, key=lambda e: e[1]
             ):
-                if media is not None:
-                    song_media_list.append((standby, media))
-                    if len(song_media_list) >= limit:
-                        return song_media_list
-            if song_media_list:
-                return song_media_list
+                entries = list(group)
+                media_tasks = [
+                    self.a_song_prepare_media_no_exc(standby, audio_select_policy)
+                    for standby, _, _ in entries
+                ]
+                media_results = await gather(*media_tasks)
+                for (standby, _, _), media in zip(entries, media_results):
+                    if media is not None:
+                        song_media_list.append((standby, media))
+                        if len(song_media_list) >= limit:
+                            return song_media_list
         return song_media_list
 
     def check_flags(self, source: str, model_type: ModelType, flags: PF) -> bool:
