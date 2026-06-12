@@ -7,8 +7,9 @@ from collections import OrderedDict
 from unittest.mock import MagicMock
 
 import pytest
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QFont, QPalette
+from PyQt6.QtCore import Qt, QEvent, QPoint
+from PyQt6.QtGui import QColor, QFont, QPalette, QMouseEvent
+from PyQt6.QtWidgets import QApplication
 
 from feeluown.gui.components.desktop_lyric import DesktopLyricView
 from feeluown.gui.uimain.lyric import (
@@ -214,3 +215,100 @@ def test_desktop_lyric_view_set_font_refreshes_item_sizes(qtbot):
     after = view.item(1).sizeHint().height()
     assert after > before
     assert view.item(1).data(Qt.ItemDataRole.UserRole) is not None
+
+
+def test_lyric_window_default_auto_resize_is_true(qtbot):
+    app = _build_app_mock()
+    win = LyricWindow(app)
+    qtbot.addWidget(win)
+    assert win._inner.auto_resize is True
+    assert win._inner._size_grip.isHidden()
+
+
+def test_toggle_auto_resize(qtbot):
+    app = _build_app_mock()
+    inner = InnerLyricWindow(app)
+    qtbot.addWidget(inner)
+    assert inner.auto_resize is True
+    inner.toggle_auto_resize()
+    assert inner.auto_resize is False
+    assert not inner._size_grip.isHidden()
+    inner.toggle_auto_resize()
+    assert inner.auto_resize is True
+    assert inner._size_grip.isHidden()
+
+
+def test_dump_state_includes_auto_resize(qtbot):
+    app = _build_app_mock()
+    win = LyricWindow(app)
+    qtbot.addWidget(win)
+    state = win.dump_state()
+    assert "auto_resize" in state
+    assert state["auto_resize"] is True
+
+
+def test_apply_state_restores_auto_resize(qtbot):
+    app = _build_app_mock()
+    win = LyricWindow(app)
+    qtbot.addWidget(win)
+    win._inner.toggle_auto_resize()  # set to False
+    state = win.dump_state()
+    assert state["auto_resize"] is False
+
+    win2 = LyricWindow(app)
+    qtbot.addWidget(win2)
+    win2.apply_state(state)
+    assert win2._inner.auto_resize is False
+    assert not win2._inner._size_grip.isHidden()
+
+
+def test_apply_state_backward_compatible_auto_resize(qtbot):
+    """Legacy state without auto_resize should default to True."""
+    app = _build_app_mock()
+    win = LyricWindow(app)
+    qtbot.addWidget(win)
+    legacy_state = {
+        "geometry": (10, 20, 400, 120),
+        "font": win._inner.font().toString(),
+        "bg": "#ff202020",
+        "fg": "#ffffffff",
+        "height_lines": 3,
+    }
+    win.apply_state(legacy_state)
+    assert win._inner.auto_resize is True
+
+
+def test_lyric_window_event_filter_installed(qtbot):
+    app = _build_app_mock()
+    win = LyricWindow(app)
+    qtbot.addWidget(win)
+    # The event filter should be installed on the viewport
+    viewport = win._inner.lyric_view.viewport()
+    # Verify by checking that mouse events on the viewport
+    # set _old_pos on the window (the event filter handles this)
+    pos = viewport.mapToGlobal(QPoint(10, 10))
+    event = QMouseEvent(
+        QEvent.Type.MouseButtonPress,
+        viewport.mapFromGlobal(pos),
+        pos,
+        Qt.MouseButton.LeftButton,
+        Qt.MouseButton.LeftButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    QApplication.sendEvent(viewport, event)
+    assert win._old_pos is not None
+
+
+def test_auto_resize_on_line_changed(qtbot):
+    app = _build_app_mock()
+    win = LyricWindow(app)
+    qtbot.addWidget(win)
+    win._inner._auto_resize = True
+    win.show()
+    initial_width = win.width()
+    # Simulate a line_changed with a long text
+    lyric = _make_lyric(["a" * 200], active_index=0)
+    win._inner.lyric_view.set_lyric(lyric)
+    win._inner._on_line_changed(LyricLine("a" * 200, "", False))
+    # Window should have resized to accommodate the long text
+    assert win.width() >= initial_width

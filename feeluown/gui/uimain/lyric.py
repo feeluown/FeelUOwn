@@ -1,6 +1,6 @@
 import sys
 
-from PyQt6.QtCore import Qt, QRectF, QRect, QSize
+from PyQt6.QtCore import Qt, QRectF, QRect, QSize, QEvent
 from PyQt6.QtGui import (
     QPalette,
     QColor,
@@ -130,8 +130,44 @@ class LyricWindow(QWidget):
         self._layout.addWidget(self._inner)
 
         self._old_pos = None
+        self._drag_started = False
 
         esc_hide_widget(self)
+
+        # Install event filter on the lyric view's viewport so we can
+        # detect mouse events for window dragging.  QListWidget consumes
+        # mouse events via QAbstractItemView's internal filter, preventing
+        # them from reaching LyricWindow's own mouse handlers.
+        self._inner.lyric_view.viewport().installEventFilter(self)
+
+    def eventFilter(self, obj, e):
+        if obj is self._inner.lyric_view.viewport():
+            etype = e.type()
+            if etype == QEvent.Type.MouseButtonPress:
+                self._old_pos = e.globalPosition()
+                self._drag_started = False
+            elif etype == QEvent.Type.MouseMove:
+                if self._old_pos is not None:
+                    delta = e.globalPosition() - self._old_pos
+                    if not self._drag_started and (delta.x() or delta.y()):
+                        self._drag_started = True
+                    self.move(
+                        int(self.x() + delta.x()), int(self.y() + delta.y())
+                    )
+                    self._old_pos = e.globalPosition()
+            elif etype == QEvent.Type.MouseButtonRelease:
+                if not self._drag_started:
+                    if e.button() == Qt.MouseButton.BackButton:
+                        self._app.playlist.previous()
+                        self._old_pos = None
+                        return True
+                    elif e.button() == Qt.MouseButton.ForwardButton:
+                        self._app.playlist.next()
+                        self._old_pos = None
+                        return True
+                self._old_pos = None
+                self._drag_started = False
+        return False
 
     def mousePressEvent(self, e):
         self._old_pos = e.globalPosition()
@@ -167,6 +203,7 @@ class LyricWindow(QWidget):
                 QColor.NameFormat.HexArgb
             ),
             "height_lines": inner.height_lines,
+            "auto_resize": inner.auto_resize,
         }
 
     def apply_state(self, state):
@@ -178,6 +215,11 @@ class LyricWindow(QWidget):
         height_lines = state.get("height_lines")
         if height_lines is not None:
             inner.set_height_lines(height_lines, refresh=False)
+
+        # auto_resize defaults to True for backward compatibility with
+        # state files saved before this field was added.
+        auto_resize = state.get("auto_resize", True)
+        inner._set_auto_resize(auto_resize)
 
         font = inner.font()
         font.fromString(state["font"])
@@ -214,9 +256,12 @@ class InnerLyricWindow(QWidget):
         self._app = app
 
         self._border_radius = 0
+        self._auto_resize = True
         self._height_lines = DEFAULT_HEIGHT_LINES
         self._size_grip = SizeGrip(self)
         self.lyric_view = DesktopLyricView(self._app, self)
+
+        self._app.live_lyric.line_changed.connect(self._on_line_changed, weak=True)
 
         QShortcut(QKeySequence.StandardKey.ZoomIn, self).activated.connect(self.zoomin)
         QShortcut(QKeySequence.StandardKey.ZoomOut, self).activated.connect(
@@ -234,7 +279,13 @@ class InnerLyricWindow(QWidget):
     def height_lines(self):
         return self._height_lines
 
+    @property
+    def auto_resize(self):
+        return self._auto_resize
+
     def setup_ui(self):
+        if self._auto_resize:
+            self._size_grip.hide()
         self.on_font_size_changed()
         self._layout.setContentsMargins(0, 0, 0, 0)
         self._layout.setSpacing(0)
@@ -248,6 +299,34 @@ class InnerLyricWindow(QWidget):
         self._height_lines = n
         if refresh:
             self._apply_height_lines()
+
+    def toggle_auto_resize(self):
+        self._set_auto_resize(not self._auto_resize)
+
+    def _set_auto_resize(self, value):
+        self._auto_resize = value
+        if value:
+            self._size_grip.hide()
+        else:
+            self._size_grip.show()
+        self._apply_height_lines()
+
+    def _on_line_changed(self, line):
+        if not self.isVisible():
+            return
+        if self._auto_resize and line is not None:
+            # In auto-resize mode, resize the window to fit the current
+            # line text width (single-line behavior).
+            rect = self.fontMetrics().boundingRect(line.origin)
+            h_buffer = rect.height()
+            width = rect.width() + h_buffer
+            width = max(500, width)
+            height = self._line_height_for_lines(1)
+            self.resize(width, height)
+            parent = self.parent()
+            if parent is not None:
+                parent.resize(width, height)
+                parent.updateGeometry()
 
     def _line_height_for_lines(self, n):
         item_slot = max(1, self.lyric_view.item_slot_height())
@@ -356,17 +435,23 @@ class InnerLyricWindow(QWidget):
         bg_color_action = QAction(t("lyric-background-color"), menu)
         fg_color_action = QAction(t("lyric-text-color"), menu)
         font_action = QAction(t("lyric-font"), menu)
+        toggle_auto_resize_action = QAction(t("lyric-window-auto-resize"), menu)
+        toggle_auto_resize_action.setCheckable(True)
+        toggle_auto_resize_action.setChecked(self._auto_resize)
 
         menu.addAction(bg_color_action)
         menu.addAction(fg_color_action)
         menu.addSeparator()
         menu.addAction(font_action)
         menu.addSeparator()
+        menu.addAction(toggle_auto_resize_action)
         lines_menu = menu.addMenu(t("lyric-show-lines"))
+        lines_menu.setEnabled(not self._auto_resize)
 
         bg_color_action.triggered.connect(lambda: self.show_color_dialog(bg=True))
         fg_color_action.triggered.connect(lambda: self.show_color_dialog(bg=False))
         font_action.triggered.connect(self.show_font_dialog)
+        toggle_auto_resize_action.triggered.connect(self.toggle_auto_resize)
 
         for n in HEIGHT_LINE_OPTIONS:
             action = QAction(str(n), lines_menu)
