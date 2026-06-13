@@ -110,6 +110,30 @@ class TestPlayer(TestCase):
         assert mock_set_option_string.called
         self.player.stop()
 
+    @mock.patch('feeluown.player.mpvplayer._mpv_set_option_string')
+    def test_play_media_with_decryption_key(self, mock_set_option_string):
+        media = Media('http://xxx', decryption_key='0123456789abcdef')
+        self.player.play(media)
+
+        mock_set_option_string.assert_any_call(
+            self.player._mpv.handle,
+            b'demuxer-lavf-o',
+            b'decryption_key=0123456789abcdef',
+        )
+        self.player.stop()
+
+    @mock.patch('feeluown.player.mpvplayer._mpv_set_option_string')
+    def test_play_media_without_decryption_key_clears_mpv_option(
+        self, mock_set_option_string
+    ):
+        media = Media('http://xxx')
+        self.player.play(media)
+
+        mock_set_option_string.assert_any_call(
+            self.player._mpv.handle, b'demuxer-lavf-o', b''
+        )
+        self.player.stop()
+
 
 class TestPlaylist(TestCase):
     def setUp(self):

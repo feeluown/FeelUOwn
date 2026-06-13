@@ -226,6 +226,7 @@ class Media:
     def __init__(self, obj, type_=MediaType.audio,
                  http_headers=None,
                  http_proxy=None,
+                 decryption_key=None,
                  **kwargs):
         if isinstance(obj, Media):
             self._copy(obj)
@@ -244,10 +245,14 @@ class Media:
         self.http_headers = http_headers or {}
         # Example: http://127.0.0.1:7890
         self.http_proxy = http_proxy or ''
+        # Optional DRM decryption key forwarded to mpv as demuxer-lavf-o.
+        self.decryption_key = decryption_key
 
     def _copy(self, media):
         self.url = media.url
         self.http_headers = media.http_headers
+        self.http_proxy = media.http_proxy
+        self.decryption_key = media.decryption_key
         self.type_ = media.type_
         self._props = media._props
         self._manifest = media.manifest
