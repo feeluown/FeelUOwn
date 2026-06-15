@@ -98,6 +98,7 @@ class SupportsSongMultiQuality(Protocol):
         """Select a media by the quality sorting policy
 
         If the song has some valid medias, this method can always return one of them.
+        Providers may return a Media object with decryption_key for DRM streams.
         """
         raise NotImplementedError
 
@@ -108,6 +109,7 @@ class SupportsSongMultiQuality(Protocol):
         """Get song's media by a specified quality
 
         :return: when quality is invalid, return None
+        Providers may return a Media object with decryption_key for DRM streams.
         """
         raise NotImplementedError
 
@@ -244,10 +246,18 @@ class SupportsVideoMultiQuality(Protocol):
     def video_select_media(
         self, video: BriefVideoModel, policy=None
     ) -> Tuple[Media, Quality.Video]:
+        """Select a media by quality.
+
+        Providers may return a Media object with decryption_key for DRM streams.
+        """
         raise NotImplementedError
 
     @abstractmethod
     def video_get_media(self, video: BriefVideoModel, quality) -> Optional[Media]:
+        """Get video's media by a specified quality.
+
+        Providers may return a Media object with decryption_key for DRM streams.
+        """
         raise NotImplementedError
 
 

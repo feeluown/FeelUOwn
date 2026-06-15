@@ -129,6 +129,7 @@ class MpvPlayer(AbstractPlayer):
                 media = Media(media)
             self._set_http_headers(media.http_headers)
             self._set_http_proxy(media.http_proxy)
+            self._set_decryption_key(media.decryption_key)
             self._stop_mpv()
             if media.manifest is None:
                 url = media.url
@@ -364,6 +365,13 @@ class MpvPlayer(AbstractPlayer):
         _mpv_set_option_string(
             self._mpv.handle, b'http-proxy', bytes(http_proxy, 'utf-8')
         )
+
+    def _set_decryption_key(self, decryption_key):
+        if decryption_key is not None:
+            value = bytes(f'decryption_key={decryption_key}', 'utf-8')
+        else:
+            value = b''
+        _mpv_set_option_string(self._mpv.handle, b'demuxer-lavf-o', value)
 
     def __log_handler(self, loglevel, component, message):
         print('[{}] {}: {}'.format(loglevel, component, message))
