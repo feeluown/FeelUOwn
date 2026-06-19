@@ -547,6 +547,8 @@ remove-item-succeed = { $item } を削除しました
 # ----------------------------------------
 fold-expand = 展開
 fold-collapse = 収縮
+show-more = もっと見る
+show-less = 収縮
 fold-tooltip = { fold-expand }/{ fold-collapse }
 
 recommended-playlist = おすすめプレイリスト

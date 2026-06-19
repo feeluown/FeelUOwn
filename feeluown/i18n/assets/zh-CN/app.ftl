@@ -547,6 +547,8 @@ remove-item-succeed = 移除 { $item } 成功
 # ----------------------------------------
 fold-expand = 展开
 fold-collapse = 收起
+show-more = 显示更多
+show-less = 收起
 fold-tooltip = { fold-expand }/{ fold-collapse }
 
 recommended-playlist = 推荐歌单

@@ -1,6 +1,12 @@
 from datetime import datetime
 
-from PyQt6.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout, QScrollArea
+from PyQt6.QtWidgets import (
+    QFrame,
+    QScrollArea,
+    QVBoxLayout,
+)
+
+from feeluown.gui.widgets.textbtn import TextButton
 
 from feeluown.library import SearchType
 from feeluown.utils.aio import run_afn
@@ -20,6 +26,20 @@ from feeluown.gui.widgets.accordion import Accordion
 from feeluown.gui.widgets.labels import MessageLabel
 from feeluown.utils.reader import create_reader
 from feeluown.i18n import t
+
+
+def _toggle_rows(checked, default_count, table, btn):
+    table.set_fixed_row_count(default_count if checked else -1)
+    btn.setText(t("show-more") if checked else t("show-less"))
+
+
+_ACTIVE_TABLE_ATTR = {
+    "songs": "songs_table",
+    "albums": "albums_table",
+    "artists": "artists_table",
+    "playlists": "playlists_table",
+    "videos": "videos_table",
+}
 
 
 Tabs = [
@@ -130,21 +150,27 @@ class Body(QFrame, BgTransparentMixin):
             table_container = TableContainer(app, view.accordion)
             table_container.layout().setContentsMargins(0, 0, 0, 0)
 
-            # HACK: set fixed row for tables.
-            # pylint: disable=protected-access
-            for table in table_container._tables:
-                assert isinstance(table, QAbstractItemView)
-                delegate = table.itemDelegate()
-                if isinstance(delegate, ImgCardListDelegate):
-                    table.set_fixed_row_count(2)
-                    delegate.update_settings("card_min_width", 140)
-                elif isinstance(table, SongsTableView):
-                    table.set_fixed_row_count(8)
-                    table.set_row_height(table.verticalHeader().defaultSectionSize())
-
             renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
             await table_container.set_renderer(renderer)
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
+
+            # Find the active table and set its fixed row count.
+            active_table = getattr(
+                table_container, _ACTIVE_TABLE_ATTR[attrname]
+            )
+            if isinstance(active_table, SongsTableView):
+                default_count = 8
+                active_table.set_fixed_row_count(default_count)
+                active_table.set_row_height(
+                    active_table.verticalHeader().defaultSectionSize()
+                )
+            else:
+                default_count = 2
+                delegate = active_table.itemDelegate()
+                if isinstance(delegate, ImgCardListDelegate):
+                    active_table.set_fixed_row_count(default_count)
+                    delegate.update_settings("card_min_width", 140)
+
             objects = getattr(result, attrname) or []
             if not objects:  # Result is empty.
                 hint_msgs.append(
@@ -165,7 +191,23 @@ class Body(QFrame, BgTransparentMixin):
             provider_name = provider.name
             if is_first is False:
                 table_container.hide()
-            view.accordion.add_section(MidHeader(provider_name), table_container, 6, 12)
+
+            header_label = MidHeader(provider_name)
+
+            expand_btn = TextButton(t("show-more"))
+            expand_btn.setCheckable(True)
+            expand_btn.setChecked(True)
+            expand_btn.setFixedHeight(20)
+
+            expand_btn.toggled.connect(
+                lambda checked, tbl=active_table, count=default_count,
+                btn=expand_btn: _toggle_rows(checked, count, tbl, btn)
+            )
+
+            clickable_header = view.accordion.add_section(
+                header_label, table_container, 6, 12
+            )
+            clickable_header.add_header_widget(expand_btn)
             renderer.meta_widget.hide()
             renderer.toolbar.hide()
             is_first = False
