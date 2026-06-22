@@ -104,6 +104,14 @@ class Library:
         # TODO: implement this feature
         self.enable_ai_standby_matcher = enable_ai_standby_matcher
 
+    def set_providers_standby(self, providers_standby):
+        """Set the standby provider list at runtime.
+
+        :param providers_standby: ``None`` means all providers,
+            ``[]`` means disabled, and a list means specific providers.
+        """
+        self._providers_standby = providers_standby
+
     def setup_ytdl(self, *args, **kwargs):
         from .ytdl import Ytdl
 
@@ -311,7 +319,10 @@ class Library:
         .. versionadded:: 3.7.8
         """
         if source_in is None:
-            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
+            if self._providers_standby is None:
+                pvd_ids = [pvd.identifier for pvd in self.list()]
+            else:
+                pvd_ids = self._providers_standby
         else:
             pvd_ids = [pvd.identifier for pvd in self._filter(identifier_in=source_in)]
         if score_fn is None:

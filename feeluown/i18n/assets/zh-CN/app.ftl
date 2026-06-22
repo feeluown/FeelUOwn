@@ -123,7 +123,8 @@ lyric-button = 词
 watch-mode-tooltip =
     开启 watch 模式时，播放器会优先尝试为{ -track }找一个合适的{ video }来播放。
     最佳实践：开启 watch 的同时建议开启{ video }的{ picture-in-picture }模式。
-
+standby-providers-label = 备选来源：
+standby-providers-placeholder = * 或 netease,qqmusic（空 = 禁用）
 local-liked-tracks = “本地收藏”
 local-liked-tracks-add = 添加到{ local-liked-tracks }
 local-liked-tracks-remove = 从{ local-liked-tracks }中移除

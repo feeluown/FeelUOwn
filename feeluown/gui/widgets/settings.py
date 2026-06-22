@@ -7,6 +7,8 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QPlainTextEdit,
     QPushButton,
+    QLineEdit,
+    QLabel,
 )
 
 from feeluown.i18n import t
@@ -67,10 +69,47 @@ class PlayerSettings(QWidget):
         self._app = app
         self.lyric_btn = LyricButton(app, height=16)
         self.watch_btn = WatchButton(app, height=16)
-        self._layout = QHBoxLayout(self)
-        self._layout.addWidget(self.lyric_btn)
-        self._layout.addWidget(self.watch_btn)
-        self._layout.addStretch(0)
+
+        btn_layout = QHBoxLayout()
+        btn_layout.addWidget(self.lyric_btn)
+        btn_layout.addWidget(self.watch_btn)
+        btn_layout.addStretch(0)
+
+        standby_label = QLabel(t("standby-providers-label"))
+        self.standby_edit = QLineEdit(self)
+        self.standby_edit.setPlaceholderText(t("standby-providers-placeholder"))
+        self._refresh_standby_edit()
+        self.standby_edit.editingFinished.connect(self._on_standby_editing_finished)
+
+        standby_layout = QHBoxLayout()
+        standby_layout.addWidget(standby_label)
+        standby_layout.addWidget(self.standby_edit)
+
+        self._layout = QVBoxLayout(self)
+        self._layout.addLayout(btn_layout)
+        self._layout.addLayout(standby_layout)
+        self._layout.setSpacing(5)
+        self._layout.setContentsMargins(0, 0, 0, 0)
+
+    def _refresh_standby_edit(self):
+        val = self._app.config.PROVIDERS_STANDBY
+        if val is None:
+            self.standby_edit.setText("*")
+        else:
+            self.standby_edit.setText(",".join(val))
+
+    def _on_standby_editing_finished(self):
+        text = self.standby_edit.text().strip()
+        if not text:
+            self._app.config.PROVIDERS_STANDBY = []
+            self._app.library.set_providers_standby([])
+        elif text == "*":
+            self._app.config.PROVIDERS_STANDBY = None
+            self._app.library.set_providers_standby(None)
+        else:
+            providers = [p.strip() for p in text.split(",") if p.strip()]
+            self._app.config.PROVIDERS_STANDBY = providers
+            self._app.library.set_providers_standby(providers)
 
 
 class NetworkSettings(QWidget):
