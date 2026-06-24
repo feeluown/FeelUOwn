@@ -21,6 +21,7 @@ from feeluown.library import (
 from feeluown.media import Media
 from feeluown.i18n import t
 from .metadata_assembler import MetadataAssembler
+from .preload_manager import PreloadManager
 
 if TYPE_CHECKING:
     from feeluown.app import App
@@ -107,6 +108,7 @@ class Playlist:
         """
         self._app = app
         self._metadata_mgr = MetadataAssembler(app)
+        self._preload_mgr = PreloadManager(self)
 
         #: init playlist mode normal
         self._mode = PlaylistMode.normal
@@ -176,6 +178,18 @@ class Playlist:
 
         self._app.player.media_finished.connect(self._on_media_finished)
         self.song_changed.connect(self._on_song_changed)
+
+        if self._preload_mgr.threshold_seconds > 0:
+            try:
+                self._app.player.position_changed.connect(
+                    self._preload_mgr.on_progress_changed
+                )
+                self._app.player.duration_changed.connect(
+                    self._preload_mgr.on_progress_changed
+                )
+            except Exception:
+                # In tests or in some app modes, player may not expose these signals.
+                pass
 
     @property
     def mode(self):
@@ -599,6 +613,8 @@ class Playlist:
 
     def _on_song_changed(self, song):
         self._app.task_mgr.run_afn_preemptive(self._fetch_current_song_mv, song)
+        # Current song changed, any previous preload state is no longer reliable.
+        self._preload_mgr.on_song_changed(song)
 
     async def _fetch_current_song_mv(self, song):
         if song is None:
@@ -649,6 +665,22 @@ class Playlist:
 
         target_song = song  # The song to be set.
         media = None  # The corresponding media to be set.
+
+        # Fast path: reuse preloaded media/metadata.
+        media, metadata = self._preload_mgr.consume_preloaded(song)
+        if media is not None:
+            self.play_model_stage_changed.emit(PlaylistPlayModelStage.load_media)
+            if metadata is None:
+                try:
+                    self.play_model_stage_changed.emit(
+                        PlaylistPlayModelStage.prepare_metadata
+                    )
+                    metadata = await self._metadata_mgr.prepare_for_song(target_song)
+                except Exception:
+                    metadata = None
+            self.set_current_song_with_media(target_song, media, metadata)
+            return
+
         try:
             self.play_model_stage_changed.emit(PlaylistPlayModelStage.prepare_media)
             media = await self._app.task_mgr.run_afn_preemptive(

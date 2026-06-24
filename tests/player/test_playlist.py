@@ -456,3 +456,104 @@ def test_switch_from_one_loop(pl):
     pl.playback_mode = PlaybackMode.one_loop
     pl.playback_mode = PlaybackMode.loop
     pl._app.player.set_infinite_loop.assert_called_with(False)
+
+
+@pytest.mark.asyncio
+async def test_preload_scheduled_when_remaining_within_threshold(
+    app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+    app_mock.player.duration = 10
+    app_mock.player.position = 5
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    app_mock.task_mgr.run_afn_preemptive.reset_mock()
+    playlist._preload_mgr.maybe_preload_next_song(force=False)
+    app_mock.task_mgr.run_afn_preemptive.assert_called_once()
+
+    args, kwargs = app_mock.task_mgr.run_afn_preemptive.call_args
+    assert args[0] == playlist._preload_mgr.preload_next_song
+    assert args[1] == song1
+    assert kwargs['name'] == 'playlist.preload_media'
+
+
+@pytest.mark.asyncio
+async def test_preload_not_scheduled_when_remaining_above_threshold(
+    app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+    app_mock.player.duration = 10
+    app_mock.player.position = 1
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    app_mock.task_mgr.run_afn_preemptive.reset_mock()
+    playlist._preload_mgr.maybe_preload_next_song(force=False)
+    app_mock.task_mgr.run_afn_preemptive.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_preload_next_song_queues_media_and_sets_state(
+    mocker, app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+    app_mock.player.queue_media = mocker.MagicMock()
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+    playlist._preload_mgr._preloading_song = song1
+
+    media = mocker.Mock()
+    mocker.patch.object(Playlist, '_prepare_media', return_value=media)
+    metadata = {'k': 'v'}
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=metadata)
+
+    await playlist._preload_mgr.preload_next_song(song1)
+
+    assert playlist._preload_mgr._preloaded_song == song1
+    assert playlist._preload_mgr._preloaded_media == media
+    assert playlist._preload_mgr._preloaded_metadata == metadata
+    assert playlist._preload_mgr._preloading_song is None
+    app_mock.player.queue_media.assert_called_once_with(media)
+
+
+@pytest.mark.asyncio
+async def test_a_set_current_song_reuses_preloaded_media(
+    mocker, app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    preloaded_media = mocker.Mock()
+    preloaded_metadata = {'a': 1}
+    playlist._preload_mgr._preloaded_song = song1
+    playlist._preload_mgr._preloaded_media = preloaded_media
+    playlist._preload_mgr._preloaded_metadata = preloaded_metadata
+
+    mock_set = mocker.patch.object(Playlist, 'set_current_song_with_media')
+    await playlist.a_set_current_song(song1)
+
+    mock_set.assert_called_once_with(song1, preloaded_media, preloaded_metadata)
+    assert playlist._preload_mgr._preloaded_song is None
+    assert playlist._preload_mgr._preloaded_media is None

@@ -89,6 +89,12 @@ def create_config() -> Config:
         desc=t("mpv-audio-device-desc"),
     )
     config.deffield(
+        "ENABLE_PREFETCH_PLAYLIST",
+        type_=bool,
+        default=True,
+        desc=t("mpv-prefetch-playlist-desc"),
+    )
+    config.deffield(
         "COLLECTIONS_DIR",
         desc=t("collections-dir-desc"),
     )
@@ -185,6 +191,12 @@ def create_config() -> Config:
         type_=int,
         default=500,
         desc=t("playback-crossfade-desc"),
+    )
+    config.deffield(
+        "PREFETCH_PLAYLIST_THRESHOLD_SECONDS",
+        type_=int,
+        default=30,
+        desc=t("playlist-preload-threshold-seconds-desc"),
     )
     config.deffield(
         "OPENAI_API_BASEURL",
