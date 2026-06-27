@@ -416,6 +416,33 @@ class Playlist:
         """Get all songs in playlists"""
         return self._queue
 
+    def current_song_index(self):
+        """Return current song index in playlist, or None if not found."""
+        current_song = self.current_song
+        if current_song is None:
+            return None
+        for index, song in enumerate(self._queue):
+            if song is current_song:
+                return index
+        try:
+            return self._queue.index(current_song)
+        except ValueError:
+            return None
+
+    def list_fm_candidates(self):
+        """Return upcoming FM candidates from the playlist.
+
+        In FM mode, the playlist is the canonical candidate storage. Songs after
+        the current song are candidates. When no current song is selected yet,
+        all playlist songs are upcoming candidates.
+        """
+        if self.mode is not PlaylistMode.fm:
+            return []
+        current_index = self.current_song_index()
+        if current_index is None:
+            return list(self._queue)
+        return list(self._queue[current_index + 1:])
+
     def list_unshuffled(self):
         """Get all songs in original order"""
         if self._shuffled_songs is not None:

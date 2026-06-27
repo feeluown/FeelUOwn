@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout, QScrollArea
 
 from feeluown.library import SearchType
 from feeluown.utils.aio import run_afn
-from feeluown.gui.components.overlay import AppOverlayContainer
+from feeluown.gui.components.overlay import AppOverlayContainer, AppOverlayOptions
 from feeluown.gui.page_containers.table import TableContainer, Renderer
 from feeluown.gui.widgets.img_card_list import ImgCardListDelegate
 from feeluown.gui.widgets.songs import SongsTableView, ColumnsMode
@@ -41,7 +41,12 @@ def get_tab_idx(search_type):
 def create_search_result_view(app, song):
     q = f"{song.title} {song.artists_name}"
     body = SearchResultView(app, transparent_bg=False)
-    view = AppOverlayContainer(app, body, parent=app, adhoc=True)
+    view = AppOverlayContainer(
+        app,
+        body,
+        parent=app,
+        options=AppOverlayOptions(adhoc=True),
+    )
 
     source_in = app.browser.local_storage.get(KeySourceIn, None)
     run_afn(body.search_and_render, q, SearchType.so, source_in)

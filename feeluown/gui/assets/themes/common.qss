@@ -63,7 +63,7 @@ TextButton {
     height: 18px;
     background-color: transparent;
     padding: 2px 8px;
-    border-radius: 3px;
+    border-radius: 6px;
 }
 
 VideoPlayerCtlBar Button {
@@ -78,7 +78,7 @@ ToolbarButton {
     border: 0px;
 }
 TextButton:hover, ToolbarButton:hover {
-    border: 1px solid #777;
+    border: 1px solid #999;
 }
 TextButton:checked {
     border: 1px solid #d75a4a;  /* same as like_btn red color */

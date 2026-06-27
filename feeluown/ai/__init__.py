@@ -1,4 +1,7 @@
 # flake8: noqa
 
-from .copilot import AISongModel, Copilot, AISongMatcher
+from .models import SongSuggestion
+from .copilot import Copilot
+from .matcher import SongSuggestionMatcher
 from .ai import AI
+from .radio import AIRadioSession

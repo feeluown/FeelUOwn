@@ -1,6 +1,7 @@
+from dataclasses import dataclass
 from typing import TYPE_CHECKING, Optional, cast
 
-from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtCore import QEvent, QMargins, Qt
 from PyQt6.QtGui import QColor, QPainter, QResizeEvent
 from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
@@ -8,6 +9,14 @@ from feeluown.gui.helpers import esc_hide_widget
 
 if TYPE_CHECKING:
     from feeluown.app.gui_app import GuiApp
+
+
+@dataclass
+class AppOverlayOptions:
+    adhoc: bool = False
+    margins: Optional[QMargins] = None
+    dim_background: bool = True
+    close_on_focus_in: bool = True
 
 
 class AppOverlayContainer(QWidget):
@@ -26,15 +35,21 @@ class AppOverlayContainer(QWidget):
         app: "GuiApp",
         body: QWidget,
         parent: Optional[QWidget] = None,
-        adhoc=False,
+        options: Optional[AppOverlayOptions] = None,
     ):
         super().__init__(parent=parent)
+        options = options or AppOverlayOptions()
         self._app = app
-        self._adhoc = adhoc
+        self._adhoc = options.adhoc
+        self._dim_background = options.dim_background
+        self._close_on_focus_in = options.close_on_focus_in
 
         self.body = body
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(100, 80, 100, 80)
+        margins = options.margins
+        if margins is None:
+            margins = QMargins(100, 80, 100, 80)
+        self._layout.setContentsMargins(margins)
         self._layout.addWidget(self.body)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         # Add ClickFocus for the body so that when Overlay will not
@@ -58,6 +73,9 @@ class AppOverlayContainer(QWidget):
 
     def paintEvent(self, event):
         """Draw semi-transparent background"""
+        if self._dim_background is False:
+            super().paintEvent(event)
+            return
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0, 100))
 
@@ -69,5 +87,6 @@ class AppOverlayContainer(QWidget):
         return super().eventFilter(obj, event)
 
     def focusInEvent(self, event):
-        self.hide()
+        if self._close_on_focus_in:
+            self.hide()
         super().focusInEvent(event)
