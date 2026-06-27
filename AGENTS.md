@@ -58,7 +58,8 @@ Notes:
 
 Primary docs:
 - `docs/source/dev_quickstart.rst`
-- `docs/source/coding_style.rst`
+- `docs/source/dev_best_practice.rst` (read on demand for coding style,
+  UI design, runtime debugging, and recent engineering practices)
 - `docs/source/contributing.rst`
 - `docs/source/arch.rst`
 
@@ -94,44 +95,3 @@ Responsive layout rule:
 - Let a page own its responsive reflow logic based on its own available width.
 - Avoid parent-coupled resize orchestration unless there is a proven structural
   need.
-
-## 6) Workflow
-
-Keep a lightweight todo list for the current task:
-- Update it before/after each meaningful step.
-- Mark items done as soon as they are completed.
-- Save it under `.tasks/` (for example, `.tasks/todo.md`).
-
-Keep a short proposal note for design changes:
-- Capture the intended approach, tradeoffs, and assumptions.
-- Use it to confirm alignment before coding.
-- Save it under `.tasks/` (for example, `.tasks/proposal.md`).
-
-Minimal templates:
-
-Todo:
-- [ ] Step 1
-- [ ] Step 2
-
-Proposal:
-- Approach: ...
-- Tradeoffs: ...
-- Assumptions: ...
-
-## 7) Recent Engineering Notes
-
-- Prefer semantic API names over scenario-specific ones:
-  - Good: `show_cover_with_source(artwork, source, uid)`
-  - Avoid: names that encode one caller context (for example `show_current_song_*`)
-- For cover/image loading, keep a clear boundary:
-  - Data/adapter layer should convert `(url, source)` into `Media`.
-  - Widget layer should consume `Media` directly (`show_cover_media`) whenever possible.
-- Avoid broad fallback branches that hide failures. If input contract is wrong,
-  fail early with explicit type/shape checks.
-- Before removing helper functions, run an explicit usage check (`rg`) and keep
-  shared helpers when they are still used in multiple GUI paths.
-- For GUI-heavy changes, run focused GUI/library test sets first; if full Qt/mpv
-  pytest is unstable in local environment, report it explicitly in PR notes.
-- When creating/updating PR descriptions via `gh`, prefer `--body-file` or GraphQL
-  `updatePullRequest` with a file-loaded body; avoid inline escaped `\n` strings
-  that may show up literally in the PR description.
