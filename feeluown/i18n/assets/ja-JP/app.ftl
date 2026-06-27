@@ -403,9 +403,42 @@ remove-from-playlist = { -track } を削除
 # ----------------------------------------
 ai-chat-header = AI アシスタント
 ai-chat-new = 新しい会話
-ai-chat-match-resource = リソースをマッチング中…
-ai-chat-match-resource-failed = マッチングに失敗
-ai-chat-track-candidate-list = { -track } 候補リスト
+ai-chat-open-sidebar = サイドバーを開く
+ai-chat-collapse = 折りたたむ
+ai-chat-artifact-songs = { $count } 曲
+ai-chat-artifact-open = 開く
+ai-chat-artifact-sidebar-title = 曲リスト
+ai-chat-link-search = 曲を検索
+ai-chat-link-play = 再生
+ai-chat-link-add-to-playlist = プレイリストに追加
+ai-chat-link-copy = リンクをコピー
+ai-chat-song-match-failed = 再生可能な一致曲が見つかりません
+ai-chat-match-resource = 一致するリソースを検索中...
+ai-chat-match-resource-failed = 一致する曲が見つかりません
+ai-chat-stream-thinking = AI が考えています
+ai-chat-stream-writing = AI が返信を生成しています
+ai-chat-stream-tool = AI がツールを使用しています: { $tool }
+ai-chat-stream-failed = AI の返信に失敗しました
+ai-chat-tool-called = ツールを呼び出しました: { $tool }
+
+ai-radio-title = AI ラジオ
+ai-radio-header = AI ラジオ
+ai-radio-active-status = AI ラジオ：オン
+ai-radio-activate-tooltip = AI ラジオを開始
+ai-radio-activated = AI ラジオを開始しました
+ai-radio-chat-hint = AI ラジオが有効です。候補曲はプレイリストで確認できます
+ai-radio-input-placeholder = 次に聴きたい内容を AI に伝えてください...
+ai-radio-instruction-updated = AI ラジオの推薦条件を更新しました
+ai-radio-candidates-clearing = AI ラジオの候補曲をクリアしています
+ai-radio-candidates-cleared = AI ラジオの候補曲をクリアしました
+ai-radio-candidates-kept = AI ラジオの候補曲を保持しました
+ai-radio-candidates-requesting = { $count } 曲の候補をリクエストしています
+ai-radio-candidates-matching = マッチング中：{ $title }
+ai-radio-candidates-adding = AI ラジオの候補曲を { $count } 曲追加しています
+ai-radio-candidates-updated = AI ラジオの候補曲を更新しました：{ $count } 曲
+ai-radio-candidates-update-failed = AI ラジオの候補曲更新に失敗しました
+ai-radio-preview-loading = AI ラジオの曲を取得中...
+ai-radio-preview-failed = AI の曲推薦に失敗しました...
 
 # feeluown.gui.uimain.player_bar
 # ----------------------------------------

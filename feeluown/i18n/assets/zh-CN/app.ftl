@@ -403,9 +403,42 @@ remove-from-playlist = 移除{ -track }
 # ----------------------------------------
 ai-chat-header = AI 助手
 ai-chat-new = 新的对话
-ai-chat-match-resource = 正在匹配资源...
-ai-chat-match-resource-failed = 匹配资源失败
-ai-chat-track-candidate-list = { -track }候选列表
+ai-chat-open-sidebar = 打开侧边栏
+ai-chat-collapse = 折叠
+ai-chat-artifact-songs = { $count } 首歌曲
+ai-chat-artifact-open = 打开
+ai-chat-artifact-sidebar-title = 歌曲列表
+ai-chat-link-search = 搜索歌曲
+ai-chat-link-play = 播放
+ai-chat-link-add-to-playlist = 添加到播放队列
+ai-chat-link-copy = 复制链接
+ai-chat-song-match-failed = 没有找到可播放的匹配歌曲
+ai-chat-match-resource = 正在搜索匹配资源...
+ai-chat-match-resource-failed = 未找到可匹配的歌曲
+ai-chat-stream-thinking = AI 正在思考
+ai-chat-stream-writing = AI 正在生成回复
+ai-chat-stream-tool = AI 正在使用工具：{ $tool }
+ai-chat-stream-failed = AI 回复失败
+ai-chat-tool-called = 已调用工具：{ $tool }
+
+ai-radio-title = AI 电台
+ai-radio-header = AI 电台
+ai-radio-active-status = AI 电台：开启
+ai-radio-activate-tooltip = 开启 AI 电台
+ai-radio-activated = AI 电台已开启
+ai-radio-chat-hint = AI 电台开启中，候选歌曲可在播放列表中查看
+ai-radio-input-placeholder = 告诉 AI 接下来想听什么...
+ai-radio-instruction-updated = 已更新 AI 电台推荐要求
+ai-radio-candidates-clearing = 正在清理 AI 电台候选歌曲
+ai-radio-candidates-cleared = AI 电台候选歌曲已清空
+ai-radio-candidates-kept = 已保留 AI 电台候选歌曲
+ai-radio-candidates-requesting = 正在请求 { $count } 首歌曲建议
+ai-radio-candidates-matching = 正在匹配：{ $title }
+ai-radio-candidates-adding = 正在添加 { $count } 首 AI 电台候选歌曲
+ai-radio-candidates-updated = AI 电台候选歌曲已更新：{ $count } 首
+ai-radio-candidates-update-failed = AI 电台候选歌曲更新失败
+ai-radio-preview-loading = 正在获取电台歌曲...
+ai-radio-preview-failed = AI 推荐歌曲失败...
 
 # feeluown.gui.uimain.player_bar
 # ----------------------------------------

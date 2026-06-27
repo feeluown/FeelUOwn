@@ -116,11 +116,14 @@ class PlayerPlaylistView(SongMiniCardListView):
             SongMenuInitializer(self._app, songs[0]).apply(menu)
         menu.exec(e.globalPos())
 
-    def scroll_to_current_song(self):
+    def scroll_to_current_song(
+        self,
+        hint=QAbstractItemView.ScrollHint.PositionAtCenter,
+    ):
         """Scroll to the current song, and select it to highlight it."""
         current_song = self._app.playlist.current_song
         songs = self._app.playlist.list()
-        if current_song is not None:
+        if current_song is not None and current_song in songs:
             model = self.model()
             row = songs.index(current_song)
             index = model.index(row, 0)
@@ -128,7 +131,7 @@ class PlayerPlaylistView(SongMiniCardListView):
             self.selectionModel().select(
                 index, QItemSelectionModel.SelectionFlag.SelectCurrent
             )
-            self.scrollTo(index, QAbstractItemView.ScrollHint.PositionAtCenter)
+            self.scrollTo(index, hint)
 
     async def _dislike_and_remove_songs(self, songs):
         song: BriefSongModel = songs[0]

@@ -5,7 +5,8 @@ from PyQt6.QtWidgets import (
 )
 
 from feeluown.app.gui_app import GuiApp
-from feeluown.ai import AISongMatcher
+from feeluown.ai import SongSuggestionMatcher, AIRadioSession
+from feeluown.i18n import t
 from feeluown.library import reverse
 from feeluown.gui.widgets import PlayButton
 from feeluown.gui.widgets.cover_label import CoverLabelV2
@@ -25,17 +26,17 @@ class AIRadioCard(QFrame):
     def __init__(self, app: GuiApp, parent=None):
         super().__init__(parent)
         self._app = app
-        self.ai_radio = self._app.ai.get_copilot()
+        self._copilot = self._app.ai.get_copilot()
 
         # Widgets and layouts
-        self._header = Header('AI 电台')
-        self._header.setToolTip('暂未实现，欢迎 PR :)')
+        self._header = Header(t("ai-radio-title"))
+        self._header.setToolTip(t("ai-radio-activate-tooltip"))
         self._summary_label = QLabel(self)
         self._summary_label.setWordWrap(True)
         self._cover_label = CoverLabelV2(self._app, self)
         self._status_label = QLabel(self)
         self._play_btn = PlayButton(length=20, padding=0.2)
-        self._play_btn.setDisabled(True)
+        self._play_btn.setToolTip(t("ai-radio-activate-tooltip"))
         self._play_btn.clicked.connect(self.on_play_btn_clicked)
         self._header.clicked.connect(self.on_header_clicked)
         self.setup_ui()
@@ -67,32 +68,54 @@ class AIRadioCard(QFrame):
         self._layout.addWidget(self._cover_label)
 
     async def render(self):
-        self._status_label.setText('正在获取电台歌曲...')
-        ai_songs = await self.ai_radio.recommend_a_song()
-        if not ai_songs:
-            self._status_label.setText('AI 推荐歌曲失败...')
+        self._status_label.setText(t("ai-radio-preview-loading"))
+        try:
+            suggestions = await self._copilot.recommend_a_song()
+        except Exception:  # noqa
+            logger.exception("AI radio preview failed")
+            suggestions = []
+        if not suggestions:
+            self._status_label.setText(t("ai-radio-preview-failed"))
             logger.warning("AI radio recommend_a_song return empty")
         else:
-            first = ai_songs[0]
+            first = suggestions[0]
             self._status_label.setText(f'{first.title} • {first.artists_name}')
             self._summary_label.setText(first.description)
-            song = await AISongMatcher(self._app).match(first)
-            logger.info(f"matched song: {song}, ai_song: {first}")
+            song = await SongSuggestionMatcher(self._app).match(first)
+            logger.info(f"matched song: {song}, suggestion: {first}")
             if song is not None:
                 self._song = song
                 self._play_btn.setEnabled(True)
-                self._play_btn.setToolTip('点击播放')
+                self._play_btn.setToolTip(t("ai-radio-activate-tooltip"))
                 self._status_label.setText(f'{song.title} • {song.artists_name}')
                 cover_media = await aio.run_fn(
                     self._app.library.model_get_cover_media, song
                 )
                 await self._cover_label.show_cover_media(cover_media, reverse(song))
             else:
-                self._play_btn.setToolTip('未匹配到音源')
+                self._play_btn.setToolTip(t("ai-radio-activate-tooltip"))
 
     def on_play_btn_clicked(self):
-        self._app.playlist.play_model(self._song)
+        self.enter_ai_radio()
 
     def on_header_clicked(self):
-        # TODO: to be implemented
-        pass
+        self.enter_ai_radio()
+
+    def enter_ai_radio(self):
+        active_radio = self._app.ai.radio
+        if active_radio is not None and active_radio.is_active:
+            self._app.show_msg(t("ai-radio-activated"))
+            self._show_ai_chat_overlay()
+            return
+
+        initial_songs = [self._song] if self._song is not None else None
+        radio = AIRadioSession(self._app, initial_songs=initial_songs)
+        radio.activate()
+        self._app.show_msg(t("ai-radio-activated"))
+        self._show_ai_chat_overlay()
+
+    def _show_ai_chat_overlay(self):
+        overlay = self._app.ui.ai_chat_overlay
+        if overlay is not None:
+            overlay.show()
+            overlay.raise_()

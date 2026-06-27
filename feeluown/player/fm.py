@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
 import asyncio
+import inspect
 import logging
 
 from feeluown.excs import ProviderIOError
@@ -46,6 +47,7 @@ class FM:
         """change playlist mode to fm
 
         :param fetch_songs_func: `func(minimum, *args, **kwargs): -> list`
+            or `async func(minimum, *args, **kwargs): -> list`
             please ensure that fetch_songs_func can receive keyword arguments,
             we may send some keyword args(such as timeout) in the future.
             If exception occured in fetch_songs_func, it should raise
@@ -86,9 +88,12 @@ class FM:
 
         self._is_fetching_songs = True
         task_spec = self._app.task_mgr.get_or_create(self._fetch_songs_task_name)
-        task = task_spec.bind_blocking_io(
-            self._fetch_songs_func, self._minimum_per_fetch
-        )
+        if inspect.iscoroutinefunction(self._fetch_songs_func):
+            task = task_spec.bind_coro(self._fetch_songs_func(self._minimum_per_fetch))
+        else:
+            task = task_spec.bind_blocking_io(
+                self._fetch_songs_func, self._minimum_per_fetch
+            )
         task.add_done_callback(self._on_songs_fetched)
 
     def _on_playlist_mode_changed(self, mode):
