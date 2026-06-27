@@ -72,7 +72,7 @@ Ubuntu
     pipx inject feeluown pyopengl
 
     # 运行 feeluown -h 来测试安装是否成功
-    # 如果提示 Commmand Not Found，请查看文档「常见问题」部分
+    # 如果提示 Command Not Found，请检查 pipx 的 PATH 配置
     feeluown -h
 
     # 生成桌面图标
