@@ -401,9 +401,42 @@ remove-from-playlist = Remove { -track }
 # ----------------------------------------
 ai-chat-header = AI Assistant
 ai-chat-new = New chat
-ai-chat-match-resource = Matching resources...
-ai-chat-match-resource-failed = Resource matching failed
-ai-chat-track-candidate-list = { -track(capitalization: "uppercase") } candidate list
+ai-chat-open-sidebar = Open Sidebar
+ai-chat-collapse = Collapse
+ai-chat-artifact-songs = { $count } songs
+ai-chat-artifact-open = Open
+ai-chat-artifact-sidebar-title = Songs
+ai-chat-link-search = Search Song
+ai-chat-link-play = Play
+ai-chat-link-add-to-playlist = Add to Playlist
+ai-chat-link-copy = Copy Link
+ai-chat-song-match-failed = No playable matching song found
+ai-chat-match-resource = Searching for matching resources...
+ai-chat-match-resource-failed = No matching song found
+ai-chat-stream-thinking = AI is thinking
+ai-chat-stream-writing = AI is writing
+ai-chat-stream-tool = AI is using tool: { $tool }
+ai-chat-stream-failed = AI response failed
+ai-chat-tool-called = Tool called: { $tool }
+
+ai-radio-title = AI Radio
+ai-radio-header = AI Radio
+ai-radio-active-status = AI Radio: On
+ai-radio-activate-tooltip = Start AI Radio
+ai-radio-activated = AI Radio activated
+ai-radio-chat-hint = AI Radio is active. Candidate songs are shown in the playlist.
+ai-radio-input-placeholder = Tell AI what to play next...
+ai-radio-instruction-updated = AI Radio recommendation instructions updated
+ai-radio-candidates-clearing = Clearing upcoming AI Radio candidates
+ai-radio-candidates-cleared = AI Radio candidates cleared
+ai-radio-candidates-kept = AI Radio candidates kept
+ai-radio-candidates-requesting = Requesting { $count } song suggestions
+ai-radio-candidates-matching = Matching: { $title }
+ai-radio-candidates-adding = Adding { $count } AI Radio candidates
+ai-radio-candidates-updated = AI Radio candidates updated: { $count } songs
+ai-radio-candidates-update-failed = AI Radio failed to update candidates
+ai-radio-preview-loading = Fetching AI Radio songs...
+ai-radio-preview-failed = AI failed to recommend a song...
 
 # feeluown.gui.uimain.player_bar
 # ----------------------------------------

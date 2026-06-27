@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, Optional, cast
 
-from PyQt6.QtCore import QEvent, Qt
+from PyQt6.QtCore import QEvent, QMargins, Qt
 from PyQt6.QtGui import QColor, QPainter, QResizeEvent
 from PyQt6.QtWidgets import QWidget, QHBoxLayout
 
@@ -27,14 +27,21 @@ class AppOverlayContainer(QWidget):
         body: QWidget,
         parent: Optional[QWidget] = None,
         adhoc=False,
+        margins: Optional[QMargins] = None,
+        dim_background=True,
+        close_on_focus_in=True,
     ):
         super().__init__(parent=parent)
         self._app = app
         self._adhoc = adhoc
+        self._dim_background = dim_background
+        self._close_on_focus_in = close_on_focus_in
 
         self.body = body
         self._layout = QHBoxLayout(self)
-        self._layout.setContentsMargins(100, 80, 100, 80)
+        if margins is None:
+            margins = QMargins(100, 80, 100, 80)
+        self._layout.setContentsMargins(margins)
         self._layout.addWidget(self.body)
         self.setFocusPolicy(Qt.FocusPolicy.ClickFocus)
         # Add ClickFocus for the body so that when Overlay will not
@@ -58,6 +65,9 @@ class AppOverlayContainer(QWidget):
 
     def paintEvent(self, event):
         """Draw semi-transparent background"""
+        if self._dim_background is False:
+            super().paintEvent(event)
+            return
         painter = QPainter(self)
         painter.fillRect(self.rect(), QColor(0, 0, 0, 100))
 
@@ -69,5 +79,6 @@ class AppOverlayContainer(QWidget):
         return super().eventFilter(obj, event)
 
     def focusInEvent(self, event):
-        self.hide()
+        if self._close_on_focus_in:
+            self.hide()
         super().focusInEvent(event)

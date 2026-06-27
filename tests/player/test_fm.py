@@ -79,6 +79,26 @@ async def test_multiple_eof_reached_signal(app_mock, song, mocker):
 
 
 @pytest.mark.asyncio
+async def test_fm_mode_accepts_async_fetch(app_mock, song, mocker):
+    async def fetch(number):
+        assert number == 3
+        return [song] * 3
+
+    mock_fm_add = mocker.patch.object(Playlist, 'fm_add')
+    app_mock.playlist = Playlist(app_mock)
+    app_mock.task_mgr = TaskManager(app_mock)
+    fm = FM(app_mock)
+    fm.activate(fetch)
+    task_spec = app_mock.task_mgr.get_or_create(fm._fetch_songs_task_name)
+    await task_spec._task
+    for _ in range(20):
+        if mock_fm_add.called:
+            break
+        await asyncio.sleep(0.01)
+    assert mock_fm_add.called
+
+
+@pytest.mark.asyncio
 async def test_reactivate_fm_mode_after_playing_other_songs(
         app_mock, song, song1, mocker):
 

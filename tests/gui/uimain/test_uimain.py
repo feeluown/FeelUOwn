@@ -1,7 +1,168 @@
+import asyncio
+from types import SimpleNamespace
+
+from PyQt6.QtCore import QPointF, QSize, Qt, QTimer
+from PyQt6.QtGui import QColor, QGuiApplication, QMouseEvent, QPalette
+from PyQt6.QtWidgets import QListWidget, QWidget
+
+from feeluown.ai import SongSuggestion
+from feeluown.ai.copilot import CopilotArtifact
+from feeluown.gui.helpers import secondary_text_color
+from feeluown.library import BriefSongModel
 from feeluown.media import Media
-from feeluown.player import PlaybackMode
+from feeluown.player import PlaybackMode, PlaylistMode
+from feeluown.utils.dispatch import Signal
+from feeluown.gui.components.player_playlist import PlayerPlaylistView
 from feeluown.gui.uimain.player_bar import PlayerControlPanel
+from feeluown.gui.uimain.ai_chat import (
+    AIChatOverlay,
+    SongSuggestionItemWidget,
+    song_suggestion_to_markdown_url,
+    create_aichat_overlay,
+    parse_song_link,
+)
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
+from feeluown.gui.widgets.ai_chat import (
+    ChatArtifactCard,
+    ChatHistoryWidget,
+    ChatMessageRow,
+    ChatSendButton,
+    ChatStreamingStatusCard,
+    ChatToolEventCard,
+    RoundedLabel,
+    surface_border_color,
+)
+from feeluown.gui.widgets import PlayButton, PlusButton
+from feeluown.gui.widgets.song_minicard_list import SongMiniCardListDelegate
+from feeluown.gui.widgets.textbtn import TextButton
+
+
+class FakeCopilot:
+    def __init__(self):
+        self.working_state_changed = Signal()
+        self.candidates_changed = Signal()
+        self.artifact_added = Signal()
+        self._artifacts = []
+
+    def new_thread(self):
+        self._artifacts = []
+
+    def add_songs_artifact(self, songs, title="", view="list"):
+        artifact = CopilotArtifact(
+            identifier=len(self._artifacts) + 1,
+            type="songs",
+            title=title or "Songs",
+            songs=songs,
+            view=view,
+        )
+        self._artifacts.append(artifact)
+        self.artifact_added.emit(artifact)
+        return artifact
+
+    def get_artifacts(self):
+        return list(self._artifacts)
+
+    async def match_song_suggestion(self, suggestion):
+        return BriefSongModel(
+            source="fake",
+            identifier="matched",
+            title=suggestion.title,
+            artists_name=suggestion.artists_name,
+        )
+
+
+class FakeAI:
+    def __init__(self, copilot=None):
+        self._copilot = copilot or FakeCopilot()
+        self.radio = None
+
+    def get_copilot(self):
+        return self._copilot
+
+
+class FakeAIRadio:
+    is_active = True
+
+    def __init__(self):
+        self.status = ""
+        self.status_changed = Signal()
+        self.instructions = []
+
+    async def update_candidates(self, query):
+        self.instructions.append(query)
+        self.status = "Updating candidates"
+        self.status_changed.emit(self.status)
+        return SimpleNamespace(
+            kept_count=0,
+            removed_count=1,
+            requested_count=2,
+            added_songs=[
+                BriefSongModel(
+                    source="fake",
+                    identifier="candidate",
+                    title="candidate",
+                    artists_name="mary",
+                )
+            ],
+        )
+
+
+class FakeThemeManager:
+    def __init__(self):
+        self.theme_changed = Signal()
+
+
+class FakeStreamingCopilot(FakeCopilot):
+    async def astream_user_query(self, _query):
+        yield SimpleNamespace(
+            content_blocks=[{"type": "text", "text": "我来"}]
+        ), {"langgraph_node": "model"}
+        self.add_songs_artifact(
+            [
+                SongSuggestion(
+                    title="hello world",
+                    artists_name="mary",
+                    description="",
+                )
+            ],
+            title="Night Songs",
+        )
+        yield SimpleNamespace(name="create_song_suggestions_artifact"), {
+            "langgraph_node": "tools"
+        }
+        yield SimpleNamespace(
+            content_blocks=[{"type": "text", "text": "我为您推荐了这些歌曲"}]
+        ), {"langgraph_node": "model"}
+
+
+class PausedStreamingCopilot(FakeCopilot):
+    def __init__(self):
+        super().__init__()
+        self.first_token_seen = asyncio.Event()
+        self.resume = asyncio.Event()
+
+    async def astream_user_query(self, _query):
+        yield SimpleNamespace(
+            content_blocks=[{"type": "text", "text": "我来"}]
+        ), {"langgraph_node": "model"}
+        self.first_token_seen.set()
+        await self.resume.wait()
+        yield SimpleNamespace(
+            content_blocks=[{"type": "text", "text": "我为您推荐了这些歌曲"}]
+        ), {"langgraph_node": "model"}
+
+
+def _palette_with_colors(window, base, text="#111111", highlight="#3366cc"):
+    pal = QPalette(QGuiApplication.palette())
+    pal.setColor(QPalette.ColorRole.Window, QColor(window))
+    pal.setColor(QPalette.ColorRole.Base, QColor(base))
+    pal.setColor(QPalette.ColorRole.Text, QColor(text))
+    pal.setColor(QPalette.ColorRole.WindowText, QColor(text))
+    pal.setColor(QPalette.ColorRole.ToolTipText, QColor(text))
+    pal.setColor(QPalette.ColorRole.ToolTipBase, QColor(base))
+    pal.setColor(QPalette.ColorRole.Highlight, QColor(highlight))
+    pal.setColor(QPalette.ColorRole.HighlightedText, QColor("#ffffff"))
+    return pal
 
 
 def test_show_bitrate(qtbot, app_mock):
@@ -16,8 +177,784 @@ def test_show_bitrate(qtbot, app_mock):
 def test_playlist_overlay(qtbot, app_mock):
     app_mock.playlist.playback_mode = PlaybackMode.one_loop
     app_mock.playlist.list.return_value = []
+    app_mock.ai = None
     w = PlaylistOverlay(app_mock)
     qtbot.addWidget(w)
     w.show()
     # assert no error.
     w.show_tab(0)
+    assert not w._ai_radio_btn.isEnabled()
+
+
+def test_playlist_overlay_enter_ai_radio(qtbot, app_mock, mocker):
+    app_mock.playlist.playback_mode = PlaybackMode.one_loop
+    app_mock.playlist.mode = PlaylistMode.normal
+    app_mock.ai = FakeAI()
+    app_mock.fm.is_active = False
+    app_mock.ui.ai_chat_overlay.show = mocker.MagicMock()
+    app_mock.ui.ai_chat_overlay.raise_ = mocker.MagicMock()
+    w = PlaylistOverlay(app_mock)
+    qtbot.addWidget(w)
+
+    w.enter_ai_radio()
+
+    assert app_mock.ai.radio is not None
+    assert app_mock.fm.activate.called
+    app_mock.ui.ai_chat_overlay.show.assert_called_once()
+
+
+def test_ai_chat_overlay_is_app_fullscreen(qtbot, app_mock):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+
+    overlay.show()
+    qtbot.waitUntil(lambda: overlay.size() == parent.size())
+
+    assert overlay.size() == parent.size()
+    assert overlay.layout().contentsMargins().left() == 0
+    assert overlay.layout().contentsMargins().top() == 0
+    assert overlay.layout().contentsMargins().right() == 0
+    assert overlay.layout().contentsMargins().bottom() == 0
+    assert overlay.body._header.text() == "AI Assistant"
+    assert not overlay.body._radio_status_label.isVisible()
+    assert not overlay.body._sidebar_panel.isVisible()
+    assert isinstance(overlay.body._new_thread_btn, TextButton)
+    assert isinstance(overlay.body._sidebar_btn, TextButton)
+    assert isinstance(overlay.body._collapse_btn, TextButton)
+
+    overlay.body._collapse_overlay()
+    assert not overlay.isVisible()
+
+
+def test_ai_chat_keeps_assistant_header_when_ai_radio_is_active(qtbot, app_mock):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = type("AIRadio", (), {"is_active": True})()
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+
+    overlay.show()
+
+    assert overlay.body._header.text() == "AI Assistant"
+    assert overlay.body._radio_status_label.isVisibleTo(overlay.body)
+    assert overlay.body._new_thread_btn.isVisibleTo(overlay.body)
+    assert overlay.body._sidebar_btn.isVisibleTo(overlay.body)
+    assert overlay.body._collapse_btn.isVisibleTo(overlay.body)
+
+
+def test_ai_chat_sidebar_button_toggles_inline_playlist(qtbot, app_mock, mocker):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = type("AIRadio", (), {"is_active": True})()
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+
+    overlay.show()
+    assert not overlay.body._sidebar_panel.isVisible()
+    assert isinstance(
+        overlay.body._playlist_sidebar.itemDelegate(),
+        SongMiniCardListDelegate,
+    )
+    overlay.body._playlist_sidebar.scroll_to_current_song = mocker.MagicMock()
+
+    overlay.body._sidebar_btn.click()
+    assert overlay.body._sidebar_panel.isVisible()
+    assert overlay.body._sidebar_shadow.isVisible()
+    assert overlay.body._right_sidebar_stack.currentWidget() is (
+        overlay.body._playlist_sidebar
+    )
+    assert overlay.isVisible()
+    overlay.body._playlist_sidebar.scroll_to_current_song.assert_called_once()
+
+    overlay.body._sidebar_btn.click()
+    assert not overlay.body._sidebar_panel.isVisible()
+    assert not overlay.body._sidebar_shadow.isVisible()
+
+
+def test_ai_chat_radio_query_updates_playlist_sidebar(qtbot, app_mock, mocker):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = FakeAIRadio()
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    overlay.body._playlist_sidebar.scroll_to_current_song = mocker.MagicMock()
+
+    asyncio.run(overlay.body._chat_box.exec_user_query("换一批"))
+
+    assert app_mock.ai.radio.instructions == ["换一批"]
+    assert overlay.body._sidebar_panel.isVisibleTo(overlay.body)
+    assert overlay.body._right_sidebar_stack.currentWidget() is (
+        overlay.body._playlist_sidebar
+    )
+    assert overlay.body._sidebar_status_label.text() == "Updating candidates"
+    assert overlay.body._sidebar_status_label.isVisibleTo(overlay.body)
+    overlay.body._playlist_sidebar.scroll_to_current_song.assert_called()
+    history_text = "\n".join(
+        label.toPlainText()
+        for label in overlay.body._chat_box.history_widget.findChildren(RoundedLabel)
+    )
+    assert "AI Radio candidates updated: 1 songs" in history_text
+
+
+def test_ai_chat_body_and_sidebar_use_distinct_background_roles(qtbot, app_mock):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    qtbot.waitUntil(
+        lambda: overlay.body._artifact_sidebar._song_list_view.palette().color(
+            overlay.body._artifact_sidebar._song_list_view.palette().ColorRole.Window
+        )
+        == overlay.body.palette().color(overlay.body.palette().ColorRole.Base)
+    )
+
+    body_pal = overlay.body.palette()
+    panel_pal = overlay.body._sidebar_panel.palette()
+    sidebar_pal = overlay.body._right_sidebar_stack.palette()
+    artifact_view = overlay.body._artifact_sidebar._song_list_view
+    artifact_pal = artifact_view.palette()
+    artifact_viewport_pal = artifact_view.viewport().palette()
+
+    assert body_pal.color(body_pal.ColorRole.Window) == body_pal.color(
+        body_pal.ColorRole.Base
+    )
+    assert sidebar_pal.color(sidebar_pal.ColorRole.Window) == sidebar_pal.color(
+        sidebar_pal.ColorRole.Base
+    )
+    assert body_pal.color(body_pal.ColorRole.Window) != sidebar_pal.color(
+        sidebar_pal.ColorRole.Window
+    )
+    assert panel_pal.color(panel_pal.ColorRole.Window) == sidebar_pal.color(
+        sidebar_pal.ColorRole.Window
+    )
+    assert not overlay.body._sidebar_panel.autoFillBackground()
+    assert not overlay.body._right_sidebar_stack.autoFillBackground()
+    assert not overlay.body._playlist_sidebar.autoFillBackground()
+    assert not overlay.body._playlist_sidebar.viewport().autoFillBackground()
+    assert artifact_pal.color(artifact_pal.ColorRole.Window) == body_pal.color(
+        body_pal.ColorRole.Base
+    )
+    assert artifact_viewport_pal.color(
+        artifact_viewport_pal.ColorRole.Window
+    ) == body_pal.color(body_pal.ColorRole.Base)
+    assert not artifact_view.autoFillBackground()
+    assert not artifact_view.viewport().autoFillBackground()
+    history = overlay.body._chat_box.history_widget
+    history_pal = history._history_area.palette()
+    viewport_pal = history._history_area.viewport().palette()
+    content_pal = history.history_widget.palette()
+    assert history_pal.color(history_pal.ColorRole.Window) == body_pal.color(
+        body_pal.ColorRole.Base
+    )
+    assert viewport_pal.color(viewport_pal.ColorRole.Window) == body_pal.color(
+        body_pal.ColorRole.Base
+    )
+    assert content_pal.color(content_pal.ColorRole.Window) == body_pal.color(
+        body_pal.ColorRole.Base
+    )
+    input_pal = overlay.body._chat_box.input_widget.palette()
+    assert input_pal.color(input_pal.ColorRole.Window) != body_pal.color(
+        body_pal.ColorRole.Window
+    )
+    editor = overlay.body._chat_box.input_widget._editor
+    editor_pal = editor.palette()
+    editor_viewport_pal = editor.viewport().palette()
+    assert editor_pal.color(editor_pal.ColorRole.Window) == editor_pal.color(
+        editor_pal.ColorRole.Base
+    )
+    assert editor_viewport_pal.color(
+        editor_viewport_pal.ColorRole.Window
+    ) == editor_pal.color(editor_pal.ColorRole.Window)
+    assert editor.styleSheet()
+    assert not editor.autoFillBackground()
+    assert not editor.viewport().autoFillBackground()
+    send_btn = overlay.body._chat_box.input_widget._send_btn
+    assert isinstance(send_btn, ChatSendButton)
+    assert send_btn.text() == ""
+    assert send_btn.parent() is overlay.body._chat_box.input_widget
+
+
+def test_ai_chat_renders_assistant_markdown(qtbot):
+    history = ChatHistoryWidget()
+    qtbot.addWidget(history)
+
+    label = history.create_message_label("assistant", "**Bold**\n\n- item")
+
+    assert 'name="qrichtext"' in label.text()
+    assert "font-weight:700" in label.text()
+    assert "Bold" in label.text()
+    assert ">item</li>" in label.text()
+
+
+def test_ai_chat_user_message_has_limited_width(qtbot):
+    history = ChatHistoryWidget()
+    history.resize(900, 400)
+    qtbot.addWidget(history)
+    history.show()
+
+    user_label = history.create_message_label(
+        "user",
+        "这是一段比较长的用户输入，显示在对话流里时不应该铺满整行。",
+    )
+    assistant_label = history.create_message_label("assistant", "assistant")
+    qtbot.waitUntil(lambda: user_label.parent().width() > 400)
+
+    user_row = user_label.parent()
+    assert isinstance(user_row, ChatMessageRow)
+    assert user_row.role == "user"
+    assert user_label.maximumWidth() < user_row.width()
+    assert user_label.maximumWidth() == max(240, int(user_row.width() * 0.7))
+    assert assistant_label.maximumWidth() == 16777215
+
+
+def test_ai_chat_message_background_roles(qtbot):
+    original_palette = QGuiApplication.palette()
+    test_palette = _palette_with_colors("#eeeeee", "#ffffff")
+    QGuiApplication.setPalette(test_palette)
+    try:
+        history = ChatHistoryWidget()
+        qtbot.addWidget(history)
+
+        user_label = history.create_message_label("user", "hello")
+        assistant_label = history.create_message_label("assistant", "hello")
+
+        user_pal = user_label.palette()
+        assistant_pal = assistant_label.palette()
+        assert user_label.backgroundRole() == user_pal.ColorRole.Window
+        assert assistant_label.backgroundRole() == assistant_pal.ColorRole.Base
+        assert user_label._surface_visible
+        assert not assistant_label._surface_visible
+        assert user_pal.color(user_label.backgroundRole()) == test_palette.color(
+            test_palette.ColorRole.Window
+        )
+        assert assistant_pal.color(
+            assistant_label.backgroundRole()
+        ) == test_palette.color(test_palette.ColorRole.Base)
+        assert user_pal.color(user_label.backgroundRole()) != assistant_pal.color(
+            assistant_label.backgroundRole()
+        )
+    finally:
+        QGuiApplication.setPalette(original_palette)
+
+
+def test_ai_chat_refreshes_palette_roles(qtbot, app_mock):
+    original_palette = QGuiApplication.palette()
+    light_palette = _palette_with_colors("#f0f0f0", "#ffffff")
+    dark_palette = _palette_with_colors(
+        "#303030", "#202020", text="#eeeeee", highlight="#6d8dff"
+    )
+    QGuiApplication.setPalette(light_palette)
+    try:
+        app_mock.ai = FakeAI()
+        app_mock.ai.radio = type("AIRadio", (), {"is_active": True})()
+        app_mock.playlist.list.return_value = []
+        app_mock.theme_mgr = FakeThemeManager()
+        parent = QWidget()
+        parent.resize(QSize(960, 600))
+        parent.show()
+        qtbot.addWidget(parent)
+        app_mock.size.return_value = parent.size()
+        overlay = create_aichat_overlay(app_mock, parent=parent)
+        history = overlay.body._chat_box.history_widget
+        user_label = history.create_message_label("user", "hello")
+        assistant_label = history.create_message_label("assistant", "hello")
+        status_card = history.add_streaming_status("thinking")
+        tool_card = history.add_tool_event(
+            "Tool called: create_song_suggestions_artifact"
+        )
+        overlay.body._chat_box.input_widget.set_msg("AI Radio is active")
+
+        QGuiApplication.setPalette(dark_palette)
+        app_mock.theme_mgr.theme_changed.emit("dark")
+        qtbot.waitUntil(
+            lambda: overlay.body._sidebar_panel.palette().color(
+                overlay.body._sidebar_panel.palette().ColorRole.Window
+            ) == dark_palette.color(dark_palette.ColorRole.Window)
+        )
+
+        body_pal = overlay.body.palette()
+        sidebar_pal = overlay.body._sidebar_panel.palette()
+        input_widget = overlay.body._chat_box.input_widget
+        assert body_pal.color(body_pal.ColorRole.Window) == dark_palette.color(
+            dark_palette.ColorRole.Base
+        )
+        assert sidebar_pal.color(sidebar_pal.ColorRole.Window) == dark_palette.color(
+            dark_palette.ColorRole.Window
+        )
+        assert user_label.palette().color(
+            user_label.backgroundRole()
+        ) == dark_palette.color(dark_palette.ColorRole.Window)
+        assert assistant_label.palette().color(
+            assistant_label.backgroundRole()
+        ) == dark_palette.color(dark_palette.ColorRole.Base)
+        assert history._history_area.palette().color(
+            history._history_area.palette().ColorRole.Window
+        ) == dark_palette.color(dark_palette.ColorRole.Base)
+        assert input_widget.palette().color(
+            input_widget.palette().ColorRole.Window
+        ) == dark_palette.color(dark_palette.ColorRole.Window)
+        assert not overlay.body._playlist_sidebar.autoFillBackground()
+        assert not overlay.body._playlist_sidebar.viewport().autoFillBackground()
+        assert input_widget._msg_label.textFormat() == Qt.TextFormat.PlainText
+        assert input_widget._msg_label.text() == "AI Radio is active"
+        assert "color:" not in input_widget._msg_label.text()
+        assert input_widget._msg_label.palette().color(
+            input_widget._msg_label.palette().ColorRole.WindowText
+        ) == secondary_text_color(dark_palette)
+        assert status_card._label.palette().color(
+            status_card._label.palette().ColorRole.WindowText
+        ) == dark_palette.color(dark_palette.ColorRole.WindowText)
+        assert status_card.palette().color(
+            status_card.palette().ColorRole.Window
+        ) == dark_palette.color(dark_palette.ColorRole.Window)
+        assert tool_card._label.palette().color(
+            tool_card._label.palette().ColorRole.WindowText
+        ) == secondary_text_color(dark_palette)
+        assert overlay.body._radio_status_label.palette().color(
+            overlay.body._radio_status_label.palette().ColorRole.WindowText
+        ) == secondary_text_color(dark_palette)
+        border_color = surface_border_color(dark_palette, QPalette.ColorRole.Base)
+        assert border_color.alpha() > 0
+        assert border_color != dark_palette.color(dark_palette.ColorRole.Mid)
+    finally:
+        QGuiApplication.setPalette(original_palette)
+
+
+def test_ai_chat_theme_change_refreshes_after_delayed_palette(qtbot, app_mock):
+    original_palette = QGuiApplication.palette()
+    light_palette = _palette_with_colors("#f0f0f0", "#ffffff")
+    dark_palette = _palette_with_colors(
+        "#303030", "#202020", text="#eeeeee", highlight="#6d8dff"
+    )
+    QGuiApplication.setPalette(light_palette)
+    try:
+        app_mock.ai = FakeAI()
+        app_mock.ai.radio = None
+        app_mock.playlist.list.return_value = []
+        app_mock.theme_mgr = FakeThemeManager()
+        parent = QWidget()
+        parent.resize(QSize(960, 600))
+        parent.show()
+        qtbot.addWidget(parent)
+        app_mock.size.return_value = parent.size()
+        overlay = create_aichat_overlay(app_mock, parent=parent)
+
+        QTimer.singleShot(10, lambda: QGuiApplication.setPalette(dark_palette))
+        QTimer.singleShot(20, lambda: app_mock.theme_mgr.theme_changed.emit("dark"))
+
+        qtbot.waitUntil(
+            lambda: overlay.body.palette().color(
+                overlay.body.palette().ColorRole.Window
+            ) == dark_palette.color(dark_palette.ColorRole.Base)
+        )
+
+        history_area = overlay.body._chat_box.history_widget._history_area
+        assert history_area.palette().color(
+            history_area.palette().ColorRole.Window
+        ) == dark_palette.color(dark_palette.ColorRole.Base)
+        assert overlay.body._chat_box.input_widget.palette().color(
+            overlay.body._chat_box.input_widget.palette().ColorRole.Window
+        ) == dark_palette.color(dark_palette.ColorRole.Window)
+    finally:
+        QGuiApplication.setPalette(original_palette)
+
+
+def test_ai_chat_theme_change_reapplies_self_painted_palettes(qtbot, app_mock):
+    original_palette = QGuiApplication.palette()
+    light_palette = _palette_with_colors("#f0f0f0", "#ffffff")
+    dirty_palette = _palette_with_colors("#111111", "#121212")
+    QGuiApplication.setPalette(light_palette)
+    try:
+        app_mock.ai = FakeAI()
+        app_mock.ai.radio = None
+        app_mock.playlist.list.return_value = []
+        app_mock.theme_mgr = FakeThemeManager()
+        parent = QWidget()
+        parent.resize(QSize(960, 600))
+        parent.show()
+        qtbot.addWidget(parent)
+        app_mock.size.return_value = parent.size()
+        overlay = create_aichat_overlay(app_mock, parent=parent)
+
+        overlay.body._sidebar_panel.setPalette(dirty_palette)
+        overlay.body._chat_box.input_widget.setPalette(dirty_palette)
+        app_mock.theme_mgr.theme_changed.emit("light")
+
+        sidebar_pal = overlay.body._sidebar_panel.palette()
+        input_pal = overlay.body._chat_box.input_widget.palette()
+        assert sidebar_pal.color(sidebar_pal.ColorRole.Window) == light_palette.color(
+            light_palette.ColorRole.Window
+        )
+        assert input_pal.color(input_pal.ColorRole.Window) == light_palette.color(
+            light_palette.ColorRole.Window
+        )
+    finally:
+        QGuiApplication.setPalette(original_palette)
+
+
+def test_ai_chat_assistant_rows_keep_content_height(qtbot):
+    history = ChatHistoryWidget()
+    history.resize(900, 500)
+    qtbot.addWidget(history)
+    history.show()
+
+    first_label = history.create_message_label("assistant", "第一段回复")
+    second_label = history.create_message_label("assistant", "第二段回复")
+    first_row = first_label.parent()
+    second_row = second_label.parent()
+
+    qtbot.waitUntil(lambda: second_row.y() > first_row.y())
+
+    assert first_row.height() == first_row.sizeHint().height()
+    assert second_row.y() - first_row.y() == (
+        first_row.height() + history._history_layout.spacing()
+    )
+
+
+def test_ai_chat_emits_markdown_link_signal(qtbot):
+    history = ChatHistoryWidget()
+    qtbot.addWidget(history)
+    urls = []
+    history.link_activated.connect(urls.append)
+
+    label = history.create_message_label(
+        "assistant",
+        "[Song](fuo://song-suggestion?title=hello&artists=mary)",
+    )
+
+    label.link_activated.emit("fuo://song-suggestion?title=hello&artists=mary")
+    assert urls == ["fuo://song-suggestion?title=hello&artists=mary"]
+
+
+def test_ai_chat_history_renders_artifact_card(qtbot):
+    history = ChatHistoryWidget()
+    qtbot.addWidget(history)
+    artifact = CopilotArtifact(
+        identifier=1,
+        type="songs",
+        title="Night Songs",
+        songs=[
+            SongSuggestion(
+                title="hello world",
+                artists_name="mary",
+                description="",
+            )
+        ],
+    )
+
+    card = history.add_artifact(artifact)
+
+    assert isinstance(card, ChatArtifactCard)
+    assert card.artifact is artifact
+
+
+def test_ai_chat_shows_song_artifact_in_right_sidebar(qtbot, app_mock):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    artifact = CopilotArtifact(
+        identifier=1,
+        type="songs",
+        title="Night Songs",
+        songs=[
+            SongSuggestion(
+                title="hello world",
+                artists_name="mary",
+                description="",
+            )
+        ],
+    )
+
+    overlay.body.show_artifact(artifact)
+
+    assert overlay.body._sidebar_panel.isVisibleTo(overlay.body)
+    assert overlay.body._right_sidebar_stack.currentWidget() is (
+        overlay.body._artifact_sidebar
+    )
+    view = overlay.body._artifact_sidebar._song_list_view
+    assert isinstance(view, QListWidget)
+    assert view._radius == 8
+    model = view.model()
+    assert model.rowCount() == 1
+    item = view.item(0)
+    item_widget = view.itemWidget(item)
+    assert isinstance(item_widget, SongSuggestionItemWidget)
+    assert isinstance(item_widget.play_btn, PlayButton)
+    assert isinstance(item_widget.add_btn, PlusButton)
+    display_song = item.data(Qt.ItemDataRole.UserRole)
+    assert display_song.title == "hello world"
+    assert display_song.artists_name == "mary"
+    assert item_widget.song is display_song
+
+
+def test_ai_chat_parses_song_links():
+    suggestion = SongSuggestion(title="hello world", artists_name="mary", description="")
+
+    parsed_suggestion = parse_song_link(song_suggestion_to_markdown_url(suggestion))
+    assert isinstance(parsed_suggestion, SongSuggestion)
+    assert parsed_suggestion.title == "hello world"
+    assert parsed_suggestion.artists_name == "mary"
+    parsed_legacy_suggestion = parse_song_link(
+        "fuo://ai-song?title=hello&artists=mary"
+    )
+    assert isinstance(parsed_legacy_suggestion, SongSuggestion)
+
+    parsed_song = parse_song_link(
+        "fuo://song?source=fake&identifier=1&title=hello&artists=mary"
+    )
+    assert isinstance(parsed_song, BriefSongModel)
+    assert parsed_song.source == "fake"
+    assert parsed_song.identifier == "1"
+
+
+def test_ai_chat_toolbar_starts_system_move(qtbot, app_mock, mocker):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    window = mocker.Mock()
+    window.startSystemMove.return_value = True
+    overlay.body._toolbar._window_handle = mocker.Mock(return_value=window)
+
+    overlay.show()
+    event = QMouseEvent(
+        QMouseEvent.Type.MouseButtonPress,
+        QPointF(1, 1),
+        Qt.MouseButton.LeftButton,
+        Qt.MouseButton.LeftButton,
+        Qt.KeyboardModifier.NoModifier,
+    )
+    overlay.body._toolbar.mousePressEvent(event)
+
+    window.startSystemMove.assert_called_once()
+
+
+def test_player_playlist_view_does_not_own_delegate(qtbot, app_mock):
+    app_mock.playlist.list.return_value = []
+    view = PlayerPlaylistView(app_mock)
+    qtbot.addWidget(view)
+
+    assert not isinstance(view.itemDelegate(), SongMiniCardListDelegate)
+
+
+def test_ai_chat_overlay_toggles_titlebar_mode(qtbot, app_mock, mocker):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    assert isinstance(overlay, AIChatOverlay)
+    overlay._titlebar_mode.enter = mocker.MagicMock()
+    overlay._titlebar_mode.exit = mocker.MagicMock()
+
+    overlay.show()
+    overlay.hide()
+
+    overlay._titlebar_mode.enter.assert_called_once()
+    overlay._titlebar_mode.exit.assert_called_once()
+
+
+def test_ai_chat_overlay_reapplies_titlebar_mode_on_resize(qtbot, app_mock, mocker):
+    app = QWidget()
+    app.ai = FakeAI()
+    app.ai.radio = None
+    app.theme_mgr = FakeThemeManager()
+    app.playlist = app_mock.playlist
+    app.playlist.mode_changed = Signal()
+    app.playlist.list.return_value = []
+    app.resize(QSize(960, 600))
+    app.show()
+    qtbot.addWidget(app)
+    overlay = create_aichat_overlay(app, parent=app)
+    assert isinstance(overlay, AIChatOverlay)
+    overlay._titlebar_mode.enter = mocker.MagicMock()
+    overlay._titlebar_mode.reapply = mocker.MagicMock()
+
+    overlay.show()
+    app.resize(QSize(1000, 640))
+    qtbot.waitUntil(lambda: overlay._titlebar_mode.reapply.called)
+
+    overlay._titlebar_mode.reapply.assert_called_once()
+
+
+def test_ai_chat_copilot_artifact_signal_renders_card(qtbot, app_mock):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    artifact = CopilotArtifact(
+        identifier=1,
+        type="songs",
+        title="Night Songs",
+        songs=[
+            SongSuggestion(
+                title="hello world",
+                artists_name="mary",
+                description="",
+            )
+        ],
+    )
+
+    overlay.body._chat_box.copilot.artifact_added.emit(artifact)
+
+    qtbot.waitUntil(
+        lambda: bool(
+            overlay.body._chat_box.history_widget.findChildren(ChatArtifactCard)
+        )
+    )
+
+
+def test_ai_chat_renders_song_artifact_after_final_response(qtbot, app_mock):
+    app_mock.ai = FakeAI(FakeStreamingCopilot())
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+
+    asyncio.run(overlay.body._chat_box.exec_user_query("推荐几首华语经典歌曲"))
+
+    history = overlay.body._chat_box.history_widget
+    cards = history.findChildren(ChatArtifactCard)
+    tool_events = history.findChildren(ChatToolEventCard)
+    assert len(cards) == 1
+    assert len(tool_events) == 1
+    assert "create_song_suggestions_artifact" in tool_events[0].text()
+    assert cards[0].artifact.title == "Night Songs"
+    history_text = "\n".join(
+        label.toPlainText() for label in history.findChildren(RoundedLabel)
+    )
+    assert "我为您推荐了这些歌曲" in history_text
+    assert "我来" not in history_text
+    assert "我来我为您" not in history_text
+    tool_event_index = history._history_layout.indexOf(tool_events[0])
+    card_index = history._history_layout.indexOf(cards[0])
+    assert tool_event_index < card_index
+    last_history_widget = history._history_layout.itemAt(
+        history._history_layout.count() - 1
+    ).widget()
+    assert last_history_widget is cards[0]
+
+
+def test_ai_chat_shows_streaming_status_without_pre_tool_text(qtbot, app_mock):
+    copilot = PausedStreamingCopilot()
+    app_mock.ai = FakeAI(copilot)
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+
+    async def run_query():
+        task = asyncio.create_task(
+            overlay.body._chat_box.exec_user_query("推荐几首华语经典歌曲")
+        )
+        await asyncio.wait_for(copilot.first_token_seen.wait(), timeout=1)
+
+        history = overlay.body._chat_box.history_widget
+        status_cards = history.findChildren(ChatStreamingStatusCard)
+        assert len(status_cards) == 1
+        assert "AI is writing" in status_cards[0].text()
+        history_text = "\n".join(
+            label.toPlainText() for label in history.findChildren(RoundedLabel)
+        )
+        assert "我来" not in history_text
+
+        copilot.resume.set()
+        await asyncio.wait_for(task, timeout=1)
+
+    asyncio.run(run_query())
+
+    history = overlay.body._chat_box.history_widget
+    assert not history.findChildren(ChatStreamingStatusCard)
+    history_text = "\n".join(
+        label.toPlainText() for label in history.findChildren(RoundedLabel)
+    )
+    assert "我为您推荐了这些歌曲" in history_text
+
+
+def test_ai_chat_does_not_show_pre_tool_streaming_text(qtbot, app_mock):
+    app_mock.ai = FakeAI(FakeStreamingCopilot())
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+
+    async def run_until_tool():
+        chat_box = overlay.body._chat_box
+        chat_box.history_widget.add_message("user", "推荐几首华语经典歌曲")
+        chat_box._collecting_artifacts = True
+        chat_box._pending_artifacts = []
+        response_message = ""
+        async for token, metadata in chat_box.copilot.astream_user_query("query"):
+            node = metadata["langgraph_node"]
+            if node == "model":
+                for block in token.content_blocks:
+                    if block["type"] == "text":
+                        response_message += block["text"]
+            elif node == "tools":
+                chat_box._collecting_artifacts = False
+                return response_message
+
+    pre_tool_text = asyncio.run(run_until_tool())
+    history = overlay.body._chat_box.history_widget
+    history_text = "\n".join(
+        label.toPlainText() for label in history.findChildren(RoundedLabel)
+    )
+
+    assert pre_tool_text == "我来"
+    assert "我来" not in history_text

@@ -22,8 +22,8 @@ from feeluown.utils.dispatch import Signal
 
 
 @dataclass
-class AISongModel:
-    """A song recommended by the AI.
+class SongSuggestion:
+    """A song suggested by the AI before it is matched to a provider song.
 
     :param description: Recommendation reason or song description.
     """
@@ -40,6 +40,17 @@ class AISongModel:
             title=self.title,
             artists_name=self.artists_name,
         )
+
+
+@dataclass
+class CopilotArtifact:
+    """A structured UI artifact produced by AI tools."""
+
+    identifier: int
+    type: str
+    title: str
+    songs: List[SongSuggestion]
+    view: str = "list"
 
 
 def create_chat_model_with_config(config):
@@ -60,32 +71,61 @@ class CopilotContext:
 
 @tool
 def add_songs_to_playlist_candidates(
-    songs: List[AISongModel], runtime: ToolRuntime
+    songs: List[SongSuggestion], runtime: ToolRuntime
 ) -> bool:
     """Add songs to playlist candidates.
 
-    :param songs: A list of AISongModel.
+    :param songs: A list of SongSuggestion.
     """
     runtime.context.copilot.set_candidates(songs)
 
 
 @tool
-def play_song(song: AISongModel, runtime: ToolRuntime):
+def play_song(song: SongSuggestion, runtime: ToolRuntime):
     """Play a song.
 
-    :param song: A AISongModel.
+    :param song: A SongSuggestion.
     """
     runtime.context.app.playlist.play_model(song.to_brief_song())
 
 
-tools = [add_songs_to_playlist_candidates, play_song]
+@tool
+def create_song_suggestions_artifact(
+    songs: List[SongSuggestion],
+    runtime: ToolRuntime,
+    title: str = "",
+    view: str = "list",
+) -> bool:
+    """Create an interactive artifact for song suggestions.
+
+    Use this when you recommend multiple songs and want the user to inspect them
+    in the AI assistant UI.
+
+    :param songs: A list of SongSuggestion.
+    :param title: Optional artifact title.
+    :param view: Preferred display mode. Current supported value is "list".
+    """
+    runtime.context.copilot.add_songs_artifact(songs, title=title, view=view)
+    return True
+
+
+tools = [add_songs_to_playlist_candidates, play_song, create_song_suggestions_artifact]
+
+
+_AGENT_SYSTEM_PROMPT = (
+    "你是一个音乐播放器 AI 助手。"
+    "当你向用户推荐或整理一组歌曲时，优先调用 create_song_suggestions_artifact "
+    "工具创建可交互歌曲建议列表。"
+    "如果你在回复正文里展示歌曲标题，可以使用 Markdown 链接："
+    "[歌名](fuo://song-suggestion?title=歌名&artists=歌手)。"
+)
 
 
 def create_agent_with_config(config):
     model = create_chat_model_with_config(config)
     return create_agent(
         model=model,
-        system_prompt="你是一个音乐播放器 AI 助手。",
+        system_prompt=_AGENT_SYSTEM_PROMPT,
         tools=tools,
         context_schema=CopilotContext,
         checkpointer=InMemorySaver(),
@@ -102,17 +142,17 @@ def create_recommendation_agent_with_config(config):
     )
 
 
-class AISongMatcher:
+class SongSuggestionMatcher:
     def __init__(self, app: App):
         self._app = app
 
-    async def match(self, ai_song: AISongModel) -> BriefSongModel:
-        """Math a song by title and artists name.
+    async def match(self, suggestion: SongSuggestion) -> BriefSongModel:
+        """Match a suggested song by title and artists name.
 
         This API is in alpha stage.
         """
-        origin = ai_song.to_brief_song()
-        title, artists_name = ai_song.title, ai_song.artists_name
+        origin = suggestion.to_brief_song()
+        title, artists_name = suggestion.title, suggestion.artists_name
         candidates = []
         async for result in self._app.library.a_search(f"{title} {artists_name}"):
             if result is None:
@@ -148,8 +188,11 @@ class Copilot:
         self._agent = create_agent_with_config(self._app.config)
         self._agent_context = CopilotContext(copilot=self, app=app)
         self._agent_stream_callback = AgentStreamCallback(self)
-        self._candidates: List[AISongModel] = []
+        self._candidates: List[SongSuggestion] = []
         self.candidates_changed = Signal()
+        self._artifacts: List[CopilotArtifact] = []
+        self._next_artifact_id = 1
+        self.artifact_added = Signal()
         self._current_thread_id = 1
         # Agent is working or not
         # When the agent is streaming messages, it is working.
@@ -168,21 +211,40 @@ class Copilot:
 
     def new_thread(self):
         self._current_thread_id += 1
+        self._artifacts.clear()
 
-    async def recommend_a_song(self) -> List[AISongModel]:
-        """Create an adhoc agent to recommend a song.
+    async def recommend_songs(
+        self, count: int, instructions: List[str] | None = None
+    ) -> List[SongSuggestion]:
+        """Create an adhoc agent to recommend songs.
 
-        :return: A list of AISongModel.
+        :return: A list of SongSuggestion.
         """
+        count = max(1, count)
+        self.set_candidates([])
         agent = create_recommendation_agent_with_config(self._app.config)
+        user_instructions = "\n".join(
+            f"- {instruction}" for instruction in instructions or []
+        )
+        instruction_prompt = (
+            f"用户希望 AI 电台接下来的推荐满足以下要求：\n{user_instructions}\n"
+            if user_instructions
+            else ""
+        )
         input = {
             "messages": [
+                {
+                    "role": "system",
+                    "content": self._app.config.AI_RADIO_PROMPT,
+                },
                 {"role": "system", "content": await generate_prompt(self._app)},
                 {
                     "role": "system",
                     "content": (
+                        f"{instruction_prompt}"
                         "根据用户的音乐库收藏，分析用户的喜好，并且综合当前日期/时间等信息，"
-                        "推荐1首合适的歌给用户，并将歌曲加入到播放列表候选中。"
+                        f"推荐{count}首适合继续播放的歌给用户，"
+                        "并将歌曲加入到播放列表候选中。"
                     ),
                 },
             ]
@@ -193,6 +255,19 @@ class Copilot:
         )
         return self._candidates
 
+    async def recommend_a_song(self) -> List[SongSuggestion]:
+        """Create an adhoc agent to recommend a song.
+
+        :return: A list of SongSuggestion.
+        """
+        return await self.recommend_songs(1)
+
+    async def match_song_suggestion(
+        self, suggestion: SongSuggestion
+    ) -> BriefSongModel | None:
+        matcher = SongSuggestionMatcher(self._app)
+        return await matcher.match(suggestion)
+
     async def astream_user_query(self, query: str):
         async for v in self._agent.astream(
             {"messages": [{"role": "user", "content": query}]},
@@ -202,9 +277,27 @@ class Copilot:
         ):
             yield v
 
-    def set_candidates(self, ai_songs: List[AISongModel]):
-        self._candidates = ai_songs
-        self.candidates_changed.emit(ai_songs)
+    def set_candidates(self, suggestions: List[SongSuggestion]):
+        self._candidates = suggestions
+        self.candidates_changed.emit(suggestions)
+
+    def add_songs_artifact(
+        self, songs: List[SongSuggestion], title: str = "", view: str = "list"
+    ) -> CopilotArtifact:
+        artifact = CopilotArtifact(
+            identifier=self._next_artifact_id,
+            type="songs",
+            title=title or "Songs",
+            songs=songs,
+            view=view,
+        )
+        self._next_artifact_id += 1
+        self._artifacts.append(artifact)
+        self.artifact_added.emit(artifact)
+        return artifact
+
+    def get_artifacts(self) -> List[CopilotArtifact]:
+        return list(self._artifacts)
 
     def get_config(self):
         return {

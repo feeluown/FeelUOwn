@@ -14,6 +14,7 @@ from PyQt6.QtGui import (
 )
 
 from feeluown.i18n import t
+from feeluown.ai import AIRadioSession
 from feeluown.player import PlaybackMode, SongsRadio
 from feeluown.gui.helpers import fetch_cover_wrapper, esc_hide_widget
 from feeluown.gui.components.player_playlist import PlayerPlaylistView
@@ -53,12 +54,14 @@ class PlaylistOverlay(QWidget):
         self._playback_mode_switch = PlaybackModeSwitch(app)
         self._goto_current_song_btn = TextButton(t("jump-to-playing-track"))
         self._songs_radio_btn = TextButton(t("song-radio-mode"))
+        self._ai_radio_btn = TextButton(t("ai-radio-title"))
         # Please update the list when you add new buttons.
         self._btns = [
             self._clear_playlist_btn,
             self._playback_mode_switch,
             self._goto_current_song_btn,
             self._songs_radio_btn,
+            self._ai_radio_btn,
         ]
         self._stacked_layout = QStackedLayout()
         self._shadow_width = 15
@@ -72,6 +75,12 @@ class PlaylistOverlay(QWidget):
         self._clear_playlist_btn.clicked.connect(self._app.playlist.clear)
         self._goto_current_song_btn.clicked.connect(self.goto_current_song)
         self._songs_radio_btn.clicked.connect(self.enter_songs_radio)
+        self._ai_radio_btn.clicked.connect(self.enter_ai_radio)
+        if self._app.ai is None:
+            self._ai_radio_btn.setDisabled(True)
+            self._ai_radio_btn.setToolTip(t("ai-configure-tooltip"))
+        else:
+            self._ai_radio_btn.setToolTip(t("ai-radio-activate-tooltip"))
         esc_hide_widget(self)
         q_app = QApplication.instance()
         assert q_app is not None  # make type checker happy.
@@ -105,6 +114,7 @@ class PlaylistOverlay(QWidget):
         self._btn_layout.addWidget(self._playback_mode_switch)
         self._btn_layout.addWidget(self._goto_current_song_btn)
         self._btn_layout2.addWidget(self._songs_radio_btn)
+        self._btn_layout2.addWidget(self._ai_radio_btn)
         self._btn_layout.addStretch(0)
         self._btn_layout2.addStretch(0)
 
@@ -132,6 +142,24 @@ class PlaylistOverlay(QWidget):
             radio = SongsRadio(self._app, songs)
             self._app.fm.activate(radio.fetch_songs_func, reset=False)
             self._app.show_msg(t("song-radio-mode-activated"))
+
+    def enter_ai_radio(self):
+        active_radio = self._app.ai.radio
+        if active_radio is not None and active_radio.is_active:
+            self._app.show_msg(t("ai-radio-activated"))
+            self._show_ai_chat_overlay()
+            return
+
+        radio = AIRadioSession(self._app)
+        radio.activate()
+        self._app.show_msg(t("ai-radio-activated"))
+        self._show_ai_chat_overlay()
+
+    def _show_ai_chat_overlay(self):
+        overlay = self._app.ui.ai_chat_overlay
+        if overlay is not None:
+            overlay.show()
+            overlay.raise_()
 
     def show_tab(self, index):
         if not self.isVisible():

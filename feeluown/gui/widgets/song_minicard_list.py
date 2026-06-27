@@ -204,7 +204,7 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         card_right_spacing = self.card_right_spacing
         card_height = self.card_height
         card_left_padding = self.card_left_padding
-        border_radius = 3
+        border_radius = 8
 
         rect = option.rect
         # HACK(cosven): from the QFontMetrics doc, there is usually a small spacing
@@ -218,24 +218,33 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
             return
 
         selected = option.state & QStyle.StateFlag.State_Selected
+        item_width, _ = self.item_sizehint()
+        bg_rect = QRectF(
+            rect.x() + card_left_padding,
+            rect.y() + card_top_padding,
+            min(rect.width() - card_left_padding - card_right_spacing, item_width),
+            card_height,
+        )
         if selected:
             with painter_save(painter):
                 painter.setPen(Qt.PenStyle.NoPen)
-                painter.setBrush(option.palette.color(QPalette.ColorRole.Highlight))
-                painter.drawRect(rect)
+                color = option.palette.color(QPalette.ColorRole.Highlight)
+                color.setAlpha(55)
+                painter.setBrush(color)
+                painter.drawRoundedRect(bg_rect, border_radius, border_radius)
         elif option.state & QStyle.StateFlag.State_MouseOver:
             with painter_save(painter):
                 painter.setPen(Qt.PenStyle.NoPen)
                 painter.setBrush(option.palette.color(self.hover_color_role))
-                painter.drawRect(rect)
+                painter.drawRoundedRect(bg_rect, border_radius, border_radius)
 
         with painter_save(painter):
             painter.translate(rect.x() + card_left_padding, rect.y() + card_top_padding)
 
             if selected:
-                text_color = option.palette.color(QPalette.ColorRole.HighlightedText)
+                text_color = option.palette.color(QPalette.ColorRole.Text)
                 non_text_color = QColor(text_color)
-                non_text_color.setAlpha(200)
+                non_text_color.setAlpha(140)
             else:
                 text_color = option.palette.color(QPalette.ColorRole.Text)
                 if text_color.lightness() > 150:

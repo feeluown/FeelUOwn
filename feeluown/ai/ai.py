@@ -10,6 +10,7 @@ class AI:
     def __init__(self, app: App):
         self._app = app
         self._copilot = Copilot(self._app)
+        self.radio = None
 
     def get_copilot(self):
         return self._copilot

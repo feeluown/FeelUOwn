@@ -6,7 +6,7 @@ TopPanel {
 }
 
 TextButton {
-    border: 1px solid #AAA;
+    border: 1px solid #CCC;
 }
 
 TextButton:pressed, ToolbarButton:pressed {
