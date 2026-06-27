@@ -59,7 +59,7 @@ FeelUOwn 这个项目从 2015 年初开发到现在，已经 4 年有余，
 和大家同步并讨论，之后再动手开发。
 
 如果需要进行修改代码（包括文档等），可以参考 :doc:`dev_quickstart` ，
-代码风格请参考 :doc:`coding_style` ，一些 FeelUOwn
+开发最佳实践请参考 :doc:`dev_best_practice` ，一些 FeelUOwn
 架构设计相关的决策，可以参考 :doc:`arch` 和 :doc:`api` 等文档。
 
 最后值得一提的是，我们有一个开发者/用户交流群（邀请链接在 README_ 中），大家可以加入群里，
