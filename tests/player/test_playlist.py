@@ -316,6 +316,33 @@ async def test_playlist_fm_mode_play_previous(app_mock, song, song1):
     assert pl.mode is PlaylistMode.fm
 
 
+def test_playlist_fm_candidates_are_songs_after_current_song(
+        app_mock, song, song1, song2):
+    pl = Playlist(app_mock)
+    pl.mode = PlaylistMode.fm
+    pl.fm_add(song)
+    pl.fm_add(song1)
+    pl.fm_add(song2)
+    pl._current_song = song
+
+    assert pl.current_song_index() == 0
+    assert pl.list_fm_candidates() == [song1, song2]
+
+    pl._current_song = song1
+    assert pl.current_song_index() == 1
+    assert pl.list_fm_candidates() == [song2]
+
+
+def test_playlist_fm_candidates_are_empty_outside_fm(
+        app_mock, song, song1):
+    pl = Playlist(app_mock)
+    pl.add(song)
+    pl.add(song1)
+    pl._current_song = song
+
+    assert pl.list_fm_candidates() == []
+
+
 @pytest.mark.asyncio
 async def test_playlist_eof_reached(app_mock, song, mocker,
                                     mock_a_set_cursong):

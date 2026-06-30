@@ -165,9 +165,9 @@ def dump_colors():
     json_ = defaultdict(dict)  # type: ignore[var-annotated]
     palette = QGuiApplication.palette()
     for group_attr in Groups:
-        group = getattr(QPalette, group_attr)
+        group = getattr(QPalette.ColorGroup, group_attr)
         for role_attr in Roles:
-            role = getattr(QPalette, role_attr)
+            role = getattr(QPalette.ColorRole, role_attr)
             json_[group_attr][role_attr] = palette.color(group, role).name()
     return json_
 
@@ -177,8 +177,8 @@ def load_colors(colors):
     for group_attr, value in colors.items():
         for role_attr, color_name in value.items():
             try:
-                role = getattr(QPalette, role_attr)
-                group = getattr(QPalette, group_attr)
+                role = getattr(QPalette.ColorRole, role_attr)
+                group = getattr(QPalette.ColorGroup, group_attr)
                 palette.setColor(group, role, QColor(color_name))
             except AttributeError:
                 pass

@@ -1,6 +1,7 @@
 from typing import TYPE_CHECKING
 
-from PyQt6.QtCore import Qt, QModelIndex, QItemSelectionModel
+from PyQt6.QtCore import Qt, QModelIndex, QItemSelectionModel, QRectF
+from PyQt6.QtGui import QPainter, QPalette
 from PyQt6.QtWidgets import QMenu, QAbstractItemView
 
 from feeluown.utils.aio import run_fn, run_afn
@@ -15,6 +16,7 @@ from feeluown.gui.helpers import fetch_cover_wrapper
 from feeluown.gui.widgets.song_minicard_list import (
     SongMiniCardListView,
     SongMiniCardListModel,
+    SongMiniCardListDelegate,
 )
 from feeluown.i18n import t
 from feeluown.utils.reader import create_reader
@@ -64,6 +66,62 @@ class PlayerPlaylistModel(SongMiniCardListModel):
     def on_songs_reordered(self, index, count):
         self.on_songs_removed(index, count)
         self.on_songs_added(index, count)
+
+
+class FMCandidatePlaylistDelegate(SongMiniCardListDelegate):
+    def __init__(self, app: "GuiApp", view, *args, **kwargs):
+        super().__init__(view, *args, **kwargs)
+        self._app = app
+
+    def paint(self, painter, option, index):
+        super().paint(painter, option, index)
+        if self.is_fm_candidate(index):
+            self._paint_candidate_badge(painter, option)
+
+    def is_fm_candidate(self, index) -> bool:
+        if not index.isValid():
+            return False
+        playlist = self._app.playlist
+        if playlist.mode is not PlaylistMode.fm:
+            return False
+        row = index.row()
+        songs = playlist.list()
+        if not 0 <= row < len(songs):
+            return False
+        current_row = playlist.current_song_index()
+        return current_row is None or row > current_row
+
+    def _paint_candidate_badge(self, painter, option):
+        text = t("fm-candidate-badge")
+        painter.save()
+        font = painter.font()
+        pixel_size = font.pixelSize()
+        if pixel_size > 0:
+            font.setPixelSize(max(9, pixel_size - 2))
+        painter.setFont(font)
+        text_width = painter.fontMetrics().horizontalAdvance(text)
+        rect = option.rect
+        item_width, _ = self.item_sizehint()
+        bg_width = min(
+            rect.width() - self.card_left_padding - self.card_right_spacing,
+            item_width,
+        )
+        badge_width = max(22, text_width + 12)
+        badge_rect = QRectF(
+            rect.x() + self.card_left_padding + bg_width - badge_width - 6,
+            rect.y() + self.card_top_padding + 5,
+            badge_width,
+            14,
+        )
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(Qt.PenStyle.NoPen)
+        color = option.palette.color(QPalette.ColorRole.Highlight)
+        color.setAlpha(90)
+        painter.setBrush(color)
+        painter.drawRoundedRect(badge_rect, 7, 7)
+        painter.setPen(option.palette.color(QPalette.ColorRole.HighlightedText))
+        painter.drawText(badge_rect, Qt.AlignmentFlag.AlignCenter, text)
+        painter.restore()
 
 
 class PlayerPlaylistView(SongMiniCardListView):
@@ -116,11 +174,14 @@ class PlayerPlaylistView(SongMiniCardListView):
             SongMenuInitializer(self._app, songs[0]).apply(menu)
         menu.exec(e.globalPos())
 
-    def scroll_to_current_song(self):
+    def scroll_to_current_song(
+        self,
+        hint=QAbstractItemView.ScrollHint.PositionAtCenter,
+    ):
         """Scroll to the current song, and select it to highlight it."""
         current_song = self._app.playlist.current_song
         songs = self._app.playlist.list()
-        if current_song is not None:
+        if current_song is not None and current_song in songs:
             model = self.model()
             row = songs.index(current_song)
             index = model.index(row, 0)
@@ -128,7 +189,7 @@ class PlayerPlaylistView(SongMiniCardListView):
             self.selectionModel().select(
                 index, QItemSelectionModel.SelectionFlag.SelectCurrent
             )
-            self.scrollTo(index, QAbstractItemView.ScrollHint.PositionAtCenter)
+            self.scrollTo(index, hint)
 
     async def _dislike_and_remove_songs(self, songs):
         song: BriefSongModel = songs[0]
