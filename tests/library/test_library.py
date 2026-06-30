@@ -4,6 +4,7 @@ from feeluown.library import (
     ModelType,
     BriefAlbumModel,
     BriefSongModel,
+    Library,
     Provider,
     Media,
     SimpleSearchResult,
@@ -229,3 +230,100 @@ async def test_library_a_list_song_standby_v3_keeps_one_full_score_per_source(li
     )
 
     assert [standby.identifier for standby in standbys] == ["full-score"]
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_prefers_standby_providers():
+    class SearchProvider(Provider):
+        def __init__(self, identifier):
+            self._identifier = identifier
+            self.search_calls = []
+
+        @property
+        def identifier(self):
+            return self._identifier
+
+        @property
+        def name(self):
+            return self._identifier
+
+        def search(self, keyword, **kwargs):
+            self.search_calls.append((keyword, kwargs))
+            return SimpleSearchResult(
+                q=keyword,
+                songs=[
+                    BriefSongModel(
+                        identifier=f"{self.identifier}-song",
+                        source=self.identifier,
+                        title="Song",
+                        artists_name="Artist",
+                    )
+                ],
+            )
+
+    library = Library(providers_standby=["standby"])
+    normal = SearchProvider("normal")
+    standby_provider = SearchProvider("standby")
+    library.register(normal)
+    library.register(standby_provider)
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+    )
+
+    standbys = await library.a_list_song_standby_v3(song)
+
+    assert [song.identifier for song in standbys] == ["standby-song"]
+    assert standby_provider.search_calls
+    assert normal.search_calls == []
+
+
+@pytest.mark.asyncio
+async def test_library_a_list_song_standby_v3_falls_back_to_other_providers():
+    class SearchProvider(Provider):
+        def __init__(self, identifier, title="Song"):
+            self._identifier = identifier
+            self._title = title
+            self.search_calls = []
+
+        @property
+        def identifier(self):
+            return self._identifier
+
+        @property
+        def name(self):
+            return self._identifier
+
+        def search(self, keyword, **kwargs):
+            self.search_calls.append((keyword, kwargs))
+            return SimpleSearchResult(
+                q=keyword,
+                songs=[
+                    BriefSongModel(
+                        identifier=f"{self.identifier}-song",
+                        source=self.identifier,
+                        title=self._title,
+                        artists_name="Artist",
+                    )
+                ],
+            )
+
+    library = Library(providers_standby=["standby"])
+    normal = SearchProvider("normal")
+    standby_provider = SearchProvider("standby", title="Other")
+    library.register(normal)
+    library.register(standby_provider)
+    song = BriefSongModel(
+        identifier="origin",
+        source="origin",
+        title="Song",
+        artists_name="Artist",
+    )
+
+    standbys = await library.a_list_song_standby_v3(song)
+
+    assert [song.identifier for song in standbys] == ["normal-song"]
+    assert standby_provider.search_calls
+    assert normal.search_calls
