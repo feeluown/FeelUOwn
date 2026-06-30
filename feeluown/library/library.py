@@ -252,23 +252,62 @@ class Library:
         """List song standbys without preparing media."""
         if options is None:
             options = SongStandbyOptions()
-        if options.source_in is None:
-            pvd_ids = self._providers_standby or [pvd.identifier for pvd in self.list()]
-        else:
-            pvd_ids = [
-                pvd.identifier for pvd in self._filter(identifier_in=options.source_in)
-            ]
-        score_fn = options.score_fn or get_standby_score
-        limit_per_source = max(options.limit_per_source, 1)
 
         q = "{} {}".format(song.title_display, song.artists_name_display)
         if not q.strip():
             return []
 
-        standbys = []
+        if options.source_in is not None:
+            pvd_ids = self._get_registered_provider_ids(options.source_in)
+            return await self._a_list_song_standby_v3_from_sources(
+                song, q, pvd_ids, options
+            )
+
+        standby_pvd_ids = self._get_registered_provider_ids(self._providers_standby)
+        if standby_pvd_ids:
+            standbys = await self._a_list_song_standby_v3_from_sources(
+                song, q, standby_pvd_ids, options
+            )
+            if standbys:
+                return standbys
+
+        standby_pvd_id_set = set(standby_pvd_ids)
+        other_pvd_ids = [
+            pvd.identifier
+            for pvd in self.list()
+            if pvd.identifier not in standby_pvd_id_set
+        ]
+        return await self._a_list_song_standby_v3_from_sources(
+            song, q, other_pvd_ids, options
+        )
+
+    def _get_registered_provider_ids(self, source_in):
+        if not source_in:
+            return []
+        registered_provider_ids = {pvd.identifier for pvd in self.list()}
+        return [
+            source
+            for source in dict.fromkeys(source_in)
+            if source in registered_provider_ids
+        ]
+
+    async def _a_list_song_standby_v3_from_sources(
+        self,
+        song,
+        query,
+        source_in,
+        options,
+    ) -> List[BriefSongModel]:
+        if not source_in:
+            return []
+
+        score_fn = options.score_fn or get_standby_score
+        limit_per_source = max(options.limit_per_source, 1)
+
+        scored_standbys = []
         standby_counter = Counter()
         full_score_sources = set()
-        async for result in self.a_search(q, source_in=pvd_ids):
+        async for result in self.a_search(query, source_in=source_in):
             if result is None:
                 continue
             for standby in result.songs:
@@ -285,17 +324,23 @@ class Library:
                     options.single_full_score_per_source
                     and score == STANDBY_FULL_SCORE
                 ):
-                    standbys = [s for s in standbys if s.source != source]
-                    standbys.append(standby)
+                    scored_standbys = [
+                        (s, s_score)
+                        for s, s_score in scored_standbys
+                        if s.source != source
+                    ]
+                    scored_standbys.append((standby, score))
                     standby_counter[source] = 1
                     full_score_sources.add(source)
                     continue
                 if standby_counter[source] >= limit_per_source:
                     continue
                 if score >= options.min_score:
-                    standbys.append(standby)
+                    scored_standbys.append((standby, score))
                     standby_counter[source] += 1
-        return standbys
+
+        scored_standbys.sort(key=lambda item: item[1], reverse=True)
+        return [standby for standby, _ in scored_standbys]
 
     async def a_list_song_standby_v2(
         self,

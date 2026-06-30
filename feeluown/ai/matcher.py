@@ -1,10 +1,5 @@
 from feeluown.app import App
-from feeluown.library import (
-    BriefSongModel,
-    get_standby_score,
-    STANDBY_FULL_SCORE,
-    STANDBY_DEFAULT_MIN_SCORE,
-)
+from feeluown.library import BriefSongModel, SongStandbyOptions
 
 
 class SongSuggestionMatcher:
@@ -17,16 +12,8 @@ class SongSuggestionMatcher:
         This API is in alpha stage.
         """
         origin = suggestion.to_brief_song()
-        title, artists_name = suggestion.title, suggestion.artists_name
-        candidates = []
-        async for result in self._app.library.a_search(f"{title} {artists_name}"):
-            if result is None:
-                continue
-            for standby in result.songs:
-                score = get_standby_score(origin, standby)
-                if score == STANDBY_FULL_SCORE:
-                    return standby
-                elif score >= STANDBY_DEFAULT_MIN_SCORE:
-                    candidates.append((score, standby))
-        sorted_candidates = sorted(candidates, key=lambda x: x[0], reverse=True)
-        return sorted_candidates[0][1] if sorted_candidates else None
+        standbys = await self._app.library.a_list_song_standby_v3(
+            origin,
+            SongStandbyOptions(single_full_score_per_source=True),
+        )
+        return standbys[0] if standbys else None
