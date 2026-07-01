@@ -26,3 +26,4 @@ openai-api-key-desc = OpenAI API 密钥
 openai-model-desc = OpenAI 模型名称
 ai-radio-prompt-desc = AI 电台功能的提示词
 enable-replace-playlist-on-dblclick-desc = 双击{ -track }时，用{ -track }所在列表替换当前{ playlist }
+providers-standby-desc = 备选歌曲来源列表（空列表表示禁用 fallback）

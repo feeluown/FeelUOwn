@@ -136,6 +136,8 @@ lyric-button = LRC
 watch-mode-tooltip =
     When watch mode is enabled, the player will first try to find a suitable { video } to play for the { -track }.
     Best practice: when enabling watch, it’s recommended to also enable the { picture-in-picture } mode of the { video }.
+standby-providers-label = Standby providers:
+standby-providers-placeholder = * or netease,qqmusic (empty = disable)
 local-liked-tracks = the Local favorites
 local-liked-tracks-add = Add to { local-liked-tracks }
 local-liked-tracks-remove = Remove from { local-liked-tracks }
