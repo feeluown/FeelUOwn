@@ -29,9 +29,12 @@ from feeluown.gui.uimain.ai_chat import (
 )
 from feeluown.gui.uimain.dynamic_island_bar import (
     COMPACT_MIN_WIDTH,
+    CONTENT_SPACING,
     COVER_COMPACT,
     COVER_EXPANDED,
     ISLAND_HEIGHT,
+    PADDING_LEFT,
+    PADDING_RIGHT,
     SEEK_STEP,
     DynamicIslandStatusBar,
     EXPANDED_WIDTH,
@@ -883,6 +886,20 @@ def test_dynamic_island_compact_lyric_has_width_padding(qtbot, app_mock):
         island._lyric_label.fontMetrics().horizontalAdvance("abc")
     )
     assert island._lyric_label.text() == "abc"
+
+
+def test_dynamic_island_compact_right_padding_matches_cover_left(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    island = DynamicIslandStatusBar(app_mock)
+    qtbot.addWidget(island)
+
+    island._on_lyric_line_changed(Line("padding check lyric", "", False))
+
+    assert PADDING_RIGHT == PADDING_LEFT
+    assert island.width() == (
+        PADDING_LEFT + COVER_COMPACT + CONTENT_SPACING +
+        island._lyric_label.width() + PADDING_RIGHT
+    )
 
 
 def test_dynamic_island_compact_width_tracks_lyric(qtbot, app_mock):

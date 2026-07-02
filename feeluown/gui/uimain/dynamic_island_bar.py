@@ -50,9 +50,9 @@ COMPACT_MAX_WIDTH = EXPANDED_WIDTH
 CONTENT_SWITCH_RATIO = 0.6  # switch content visibility at 60% progress
 CONTENT_SPACING = 8
 PADDING_LEFT = 7
-PADDING_RIGHT = 8
+PADDING_RIGHT = PADDING_LEFT
 CONTROL_SPACING = 2
-LYRIC_TEXT_WIDTH_PADDING = 8
+LYRIC_TEXT_WIDTH_PADDING = PADDING_LEFT * 2
 SEEK_STEP = 5
 VOLUME_STEP = 10
 
@@ -338,10 +338,7 @@ class DynamicIslandStatusBar(QWidget):
     def _calc_compact_width(self):
         """Calculate the natural width when in compact state."""
         text = self._compact_text
-        fm = self._lyric_label.fontMetrics()
-        text_w = min(fm.horizontalAdvance(text), self._compact_text_max_width())
-        if not text:
-            text_w = 0
+        text_w = self._compact_label_width(text)
         # left pad + cover + gap + text + right pad
         return max(
             COMPACT_MIN_WIDTH,
@@ -351,6 +348,20 @@ class DynamicIslandStatusBar(QWidget):
                     text_w + PADDING_RIGHT
                 ),
                 COMPACT_MAX_WIDTH,
+            ),
+        )
+
+    def _compact_label_width(self, text):
+        if not text:
+            return 0
+        return min(
+            self._compact_text_max_width(),
+            max(
+                (
+                    self._lyric_label.fontMetrics().horizontalAdvance(text) +
+                    LYRIC_TEXT_WIDTH_PADDING
+                ),
+                1,
             ),
         )
 
@@ -409,16 +420,7 @@ class DynamicIslandStatusBar(QWidget):
 
     def _set_compact_text(self, text):
         self._compact_text = text
-        label_width = min(
-            self._compact_text_max_width(),
-            max(
-                (
-                    self._lyric_label.fontMetrics().horizontalAdvance(text) +
-                    LYRIC_TEXT_WIDTH_PADDING
-                ),
-                1,
-            ),
-        )
+        label_width = max(1, self._compact_label_width(text))
         self._lyric_label.setFixedWidth(label_width)
         self._lyric_label.setText(
             elided_text(text, label_width, self._lyric_label.font())

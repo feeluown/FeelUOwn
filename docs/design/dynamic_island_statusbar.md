@@ -133,7 +133,7 @@ playlist/sidebar 展示，不再占用输入框底部状态栏。
 已执行：
 
 - `uv run flake8 feeluown/gui/uimain/ai_chat.py feeluown/gui/uimain/dynamic_island_bar.py feeluown/gui/widgets/ai_chat.py tests/gui/uimain/test_uimain.py` — passed
-- `uv run pytest tests/gui/uimain/test_uimain.py -q` — 43 passed
+- `uv run pytest tests/gui/uimain/test_uimain.py -q` — 44 passed
 
 ## 后续可做
 
