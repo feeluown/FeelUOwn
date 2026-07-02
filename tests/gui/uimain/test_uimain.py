@@ -206,7 +206,7 @@ class FakeStreamingCopilot(FakeCopilot):
 
 class FakeAIRadioToolCopilot(FakeCopilot):
     async def astream_user_query(self, _query):
-        yield SimpleNamespace(name="fm_candidates_replace"), {
+        yield SimpleNamespace(name="fm_candidates_remove"), {
             "langgraph_node": "tools"
         }
         yield SimpleNamespace(
@@ -405,7 +405,7 @@ def test_ai_chat_radio_query_updates_playlist_sidebar(qtbot, app_mock, mocker):
         ChatToolEventCard
     )
     assert len(tool_events) == 1
-    assert "fm_candidates_replace" in tool_events[0].text()
+    assert "fm_candidates_remove" in tool_events[0].text()
 
 
 def test_ai_chat_radio_lifecycle_tool_opens_sidebar(qtbot, app_mock, mocker):
@@ -855,6 +855,41 @@ def test_ai_chat_shows_song_artifact_in_right_sidebar(qtbot, app_mock):
     assert display_song.title == "hello world"
     assert display_song.artists_name == "mary"
     assert item_widget.song is display_song
+
+
+def test_ai_chat_shows_search_result_artifact_song(qtbot, app_mock):
+    app_mock.ai = FakeAI()
+    app_mock.ai.radio = None
+    app_mock.playlist.list.return_value = []
+    parent = QWidget()
+    parent.resize(QSize(960, 600))
+    parent.show()
+    qtbot.addWidget(parent)
+    app_mock.size.return_value = parent.size()
+    overlay = create_aichat_overlay(app_mock, parent=parent)
+    song = BriefSongModel(
+        source="fake",
+        identifier="song-1",
+        title="Song",
+        artists_name="Mary",
+    )
+    artifact = CopilotArtifact(
+        identifier=1,
+        type="search_result",
+        title="Song",
+        songs=[song],
+        result=object(),
+    )
+
+    overlay.body.show_artifact(artifact)
+
+    view = overlay.body._artifact_sidebar._song_list_view
+    item = view.item(0)
+    item_widget = view.itemWidget(item)
+    display_song = item.data(Qt.ItemDataRole.UserRole)
+    assert item_widget.song is song
+    assert display_song is song
+    assert view._suggestion_by_display_song == {}
 
 
 def test_ai_chat_parses_song_links():

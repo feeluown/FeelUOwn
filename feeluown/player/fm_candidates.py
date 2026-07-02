@@ -20,33 +20,12 @@ class FMCandidateManager:
     def list_candidates(self) -> list["BriefSongModel"]:
         return self._playlist.list_fm_candidates()
 
-    def clear(self) -> bool:
-        if not self._is_active:
-            return False
-        for song in self.list_candidates():
-            self._playlist.remove(song)
-        return True
-
     def remove(self, positions: list[int]) -> bool:
         if not self._is_active:
             return False
         candidates = self.list_candidates()
         remove_positions = _normalize_positions(positions, len(candidates))
         removed_songs = [candidates[position - 1] for position in remove_positions]
-        for song in removed_songs:
-            self._playlist.remove(song)
-        return True
-
-    def keep(self, positions: list[int]) -> bool:
-        if not self._is_active:
-            return False
-        candidates = self.list_candidates()
-        keep_positions = _normalize_positions(positions, len(candidates))
-        removed_songs = [
-            song
-            for index, song in enumerate(candidates, start=1)
-            if index not in keep_positions
-        ]
         for song in removed_songs:
             self._playlist.remove(song)
         return True
@@ -58,17 +37,6 @@ class FMCandidateManager:
             if song in self._playlist.list():
                 continue
             self._playlist.fm_add(song)
-        return True
-
-    def replace(
-        self,
-        songs: list["BriefSongModel"],
-        keep_positions: list[int] | None = None,
-    ) -> bool:
-        if not self._is_active:
-            return False
-        self.keep(keep_positions or [])
-        self.append(songs)
         return True
 
     @property

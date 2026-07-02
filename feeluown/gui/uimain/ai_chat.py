@@ -261,11 +261,14 @@ class AIArtifactSongListView(QListWidget):
     def set_artifact(self, artifact):
         self.clear()
         self._suggestion_by_display_song = {}
-        for index, suggestion in enumerate(artifact.songs):
-            display_song = _song_suggestion_to_display_song(
-                suggestion, f"{artifact.identifier}-{index}"
-            )
-            self._suggestion_by_display_song[display_song] = suggestion
+        for index, song in enumerate(artifact.songs):
+            if isinstance(song, SongSuggestion):
+                display_song = _song_suggestion_to_display_song(
+                    song, f"{artifact.identifier}-{index}"
+                )
+                self._suggestion_by_display_song[display_song] = song
+            else:
+                display_song = song
 
             list_item = QListWidgetItem(self)
             list_item.setData(Qt.ItemDataRole.UserRole, display_song)
@@ -343,7 +346,7 @@ class AIArtifactSongListView(QListWidget):
     async def _match_display_song(self, song: BriefSongModel):
         suggestion = self._suggestion_by_display_song.get(song)
         if suggestion is None:
-            return None
+            return song
         return await self._app.ai.get_copilot().match_song_suggestion(suggestion)
 
 

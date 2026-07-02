@@ -1,5 +1,6 @@
 from langchain.tools import tool, ToolRuntime
 
+from feeluown.ai.tools.result import tool_success
 from feeluown.library import BriefSongModel
 from feeluown.serializers import serialize
 
@@ -30,12 +31,7 @@ def _playback_state(app):
 
 
 def _playback_result(app, action: str, message: str = ""):
-    return {
-        "ok": True,
-        "action": action,
-        **_playback_state(app),
-        "message": message,
-    }
+    return tool_success(action, data=_playback_state(app), message=message)
 
 
 @tool

@@ -10,6 +10,7 @@ from feeluown.ai.llm import create_chat_model_with_config
 from feeluown.ai.matcher import SongSuggestionMatcher
 from feeluown.ai.models import SongSuggestion
 from feeluown.ai.prompt import generate_prompt_for_library
+from feeluown.ai.tools.result import tool_success
 from feeluown.i18n import t
 from feeluown.player.playlist import PlaylistMode
 from feeluown.serializers import serialize
@@ -24,53 +25,6 @@ logger = logging.getLogger(__name__)
 
 
 DEFAULT_CANDIDATE_BATCH_SIZE = 3
-
-
-def _get_active_ai_radio(runtime: ToolRuntime):
-    ai = runtime.context.app.ai
-    if ai is None:
-        return None
-    return ai.get_active_radio()
-
-
-def _get_fm_candidates(runtime: ToolRuntime):
-    return runtime.context.app.fm.candidates
-
-
-def _ai_radio_status_result(
-    ok: bool,
-    message: str,
-    action: str = "",
-    error_code: str = "",
-) -> dict:
-    result = {
-        "ok": ok,
-        "active": False,
-        "candidates": [],
-        "candidate_count": 0,
-        "message": message,
-    }
-    if action:
-        result["action"] = action
-    if error_code:
-        result["error_code"] = error_code
-    return result
-
-
-def _ai_radio_inactive_result():
-    return _ai_radio_status_result(
-        ok=False,
-        error_code="AI_RADIO_INACTIVE",
-        message="AI Radio is not active.",
-    )
-
-
-def _ai_radio_unavailable_result():
-    return _ai_radio_status_result(
-        ok=False,
-        error_code="AI_UNAVAILABLE",
-        message="AI is not available.",
-    )
 
 
 @dataclass
@@ -121,13 +75,16 @@ def song_to_ai_dict(song: "BriefSongModel", position: int | None = None):
 def collect_ai_radio_suggestions(
     songs: list[SongSuggestion],
     runtime: ToolRuntime,
-) -> bool:
+) -> dict:
     """Collect song suggestions for AI radio playback.
 
     :param songs: A list of SongSuggestion.
     """
     runtime.context.suggestions = songs
-    return True
+    return tool_success(
+        "collect_ai_radio_suggestions",
+        data={"song_count": len(songs)},
+    )
 
 
 def create_recommendation_agent_with_config(config):
@@ -150,206 +107,6 @@ async def generate_prompt(app: "App"):
     )
     library_prompt = await generate_prompt_for_library(app.coll_mgr.get_coll_library())
     return f"{time_prompt}\n\n{library_prompt}"
-
-
-@tool
-def ai_radio_activate(runtime: ToolRuntime, reset: bool = True) -> bool:
-    """Activate AI Radio.
-
-    This switches the playlist into FM mode and lets the current AI radio
-    session provide future candidate songs.
-
-    :param reset: Whether to reset the current playlist when entering FM mode.
-    """
-    app = runtime.context.app
-    if app.ai is None:
-        return False
-
-    radio = app.ai.get_active_radio()
-    if radio is not None:
-        return True
-
-    app.ai.activate_radio(reset=reset)
-    return True
-
-
-@tool
-def ai_radio_deactivate(runtime: ToolRuntime) -> bool:
-    """Deactivate AI Radio and leave playlist FM mode."""
-    app = runtime.context.app
-    if app.ai is None:
-        return False
-    app.ai.deactivate_radio()
-    return True
-
-
-@tool
-def ai_radio_get_state(runtime: ToolRuntime) -> dict:
-    """Get current AI radio state and upcoming candidate songs."""
-    if runtime.context.app.ai is None:
-        return _ai_radio_unavailable_result()
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return _ai_radio_inactive_result()
-    return {"ok": True, **radio.get_state_for_ai()}
-
-
-@tool
-def fm_candidates_clear(runtime: ToolRuntime) -> bool:
-    """Clear all upcoming FM candidate songs while AI Radio is active."""
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return False
-    radio.set_candidate_status(t("ai-radio-candidates-clearing"))
-    ok = _get_fm_candidates(runtime).clear()
-    radio.set_candidate_status(t("ai-radio-candidates-cleared"))
-    return ok
-
-
-@tool
-def fm_candidates_remove(positions: list[int], runtime: ToolRuntime) -> bool:
-    """Remove upcoming FM candidate songs by 1-based positions.
-
-    :param positions: 1-based candidate positions to remove.
-    """
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return False
-    fm_candidates = _get_fm_candidates(runtime)
-    old_candidates = fm_candidates.list_candidates()
-    remove_positions = _normalize_positions(positions, len(old_candidates))
-    ok = fm_candidates.remove(positions)
-    removed_count = len(remove_positions) if ok else 0
-    radio.set_candidate_status(
-        t("ai-radio-candidates-updated", count=removed_count)
-    )
-    return ok
-
-
-@tool
-def fm_candidates_keep(positions: list[int], runtime: ToolRuntime) -> bool:
-    """Keep only selected upcoming FM candidates by 1-based positions.
-
-    :param positions: 1-based candidate positions to keep.
-    """
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return False
-    ok = _get_fm_candidates(runtime).keep(positions)
-    radio.set_candidate_status(t("ai-radio-candidates-kept"))
-    return ok
-
-
-@tool
-async def fm_candidates_append(
-    songs: list[SongSuggestion], runtime: ToolRuntime
-) -> bool:
-    """Append song suggestions to the FM candidate list.
-
-    The input songs are AI song suggestions, not playlist candidates yet. This
-    tool conservatively matches at most the radio batch size into real provider
-    songs, then appends those real songs as upcoming FM candidates.
-
-    :param songs: Suggested songs to match and append.
-    """
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return False
-    fm_candidates = _get_fm_candidates(runtime)
-    matched_songs = await radio.match_suggestions(songs)
-    old_candidates = fm_candidates.list_candidates()
-    if matched_songs:
-        radio.set_candidate_status(
-            t("ai-radio-candidates-adding", count=len(matched_songs))
-        )
-        ok = fm_candidates.append(matched_songs)
-        candidates = fm_candidates.list_candidates()
-        added_count = len(candidates) - len(old_candidates) if ok else 0
-        radio.set_candidate_status(
-            t("ai-radio-candidates-updated", count=added_count)
-        )
-    else:
-        ok = fm_candidates.append([])
-        radio.set_candidate_status(t("ai-radio-candidates-update-failed"))
-    return ok
-
-
-@tool
-async def fm_candidates_replace(
-    songs: list[SongSuggestion],
-    runtime: ToolRuntime,
-    keep_positions: list[int] | None = None,
-) -> bool:
-    """Replace FM candidates, optionally keeping selected 1-based positions.
-
-    FM candidates are real songs already in the playlist after the current song.
-    The input songs are AI song suggestions to match into new real candidates.
-
-    :param songs: Suggested songs to match and append.
-    :param keep_positions: Existing 1-based candidate positions to preserve.
-    """
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return False
-    fm_candidates = _get_fm_candidates(runtime)
-    matched_songs = await radio.match_suggestions(songs)
-    candidates_count = len(fm_candidates.list_candidates())
-    keep_positions = _normalize_positions(keep_positions or [], candidates_count)
-    if matched_songs:
-        radio.set_candidate_status(
-            t("ai-radio-candidates-adding", count=len(matched_songs))
-        )
-        ok = fm_candidates.replace(
-            matched_songs, keep_positions=keep_positions
-        )
-        candidates = fm_candidates.list_candidates()
-        added_count = max(0, len(candidates) - len(keep_positions)) if ok else 0
-        radio.set_candidate_status(
-            t("ai-radio-candidates-updated", count=added_count)
-        )
-    else:
-        ok = fm_candidates.replace([], keep_positions=keep_positions)
-        radio.set_candidate_status(t("ai-radio-candidates-update-failed"))
-    return ok
-
-
-@tool
-def ai_radio_update_preferences(
-    runtime: ToolRuntime,
-    preferences: list[str] | None = None,
-    avoidances: list[str] | None = None,
-    reason: str = "",
-) -> bool:
-    """Update current-session AI radio preferences.
-
-    Use this when the user gives feedback that should affect future automatic
-    AI radio recommendations.
-
-    :param preferences: Musical traits the user wants more of.
-    :param avoidances: Musical traits the user wants less of.
-    :param reason: Short reason derived from the user's feedback.
-    """
-    radio = _get_active_ai_radio(runtime)
-    if radio is None:
-        return False
-    return radio.update_preferences(
-        preferences=preferences or [],
-        avoidances=avoidances or [],
-        reason=reason,
-    )
-
-
-ai_radio_tools = [
-    ai_radio_activate,
-    ai_radio_deactivate,
-    ai_radio_get_state,
-    fm_candidates_clear,
-    fm_candidates_remove,
-    fm_candidates_keep,
-    fm_candidates_append,
-    fm_candidates_replace,
-    ai_radio_update_preferences,
-]
 
 
 class AIRadioRecommender:
@@ -704,11 +461,3 @@ class AIRadioSession:
 
 def _clean_texts(texts: list[str]) -> list[str]:
     return [text.strip() for text in texts if text.strip()]
-
-
-def _normalize_positions(positions: list[int], candidate_count: int) -> list[int]:
-    normalized = []
-    for position in positions:
-        if 1 <= position <= candidate_count and position not in normalized:
-            normalized.append(position)
-    return normalized

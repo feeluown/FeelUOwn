@@ -3,17 +3,17 @@ from unittest.mock import MagicMock
 
 import pytest
 
-from feeluown.ai.radio import AIRadioSession
-from feeluown.ai.radio import (
+from feeluown.ai.radio import AIRadioSession, collect_ai_radio_suggestions
+from feeluown.ai.tools.ai_radio import (
     ai_radio_activate,
     ai_radio_deactivate,
     ai_radio_get_state,
     ai_radio_update_preferences,
+)
+from feeluown.ai.tools.fm_candidates import (
     fm_candidates_append,
-    fm_candidates_clear,
-    fm_candidates_keep,
+    fm_candidates_get_state,
     fm_candidates_remove,
-    fm_candidates_replace,
 )
 from feeluown.player.fm_candidates import FMCandidateManager
 from feeluown.player import Playlist, PlaylistMode
@@ -123,6 +123,16 @@ def create_runtime_with_radio(song, *candidates, matcher_cls=None):
     return FakeRuntime(app), radio
 
 
+def create_runtime_with_fm(song, *candidates):
+    app = create_radio_app()
+    app.playlist.fm_add(song)
+    for candidate in candidates:
+        app.playlist.fm_add(candidate)
+    app.playlist._current_song = song
+    app.ai.radio = None
+    return FakeRuntime(app)
+
+
 def create_recommendation_agent_factory(suggestions):
     agent = FakeRecommendationAgent(suggestions)
 
@@ -130,6 +140,22 @@ def create_recommendation_agent_factory(suggestions):
         return agent
 
     return factory, agent
+
+
+def test_collect_ai_radio_suggestions_tool_returns_standard_result():
+    context = SimpleNamespace(suggestions=[])
+    runtime = SimpleNamespace(context=context)
+    suggestions = [SimpleNamespace(title="hello world")]
+
+    result = collect_ai_radio_suggestions.func(
+        songs=suggestions,
+        runtime=runtime,
+    )
+
+    assert context.suggestions == suggestions
+    assert result["ok"] is True
+    assert result["action"] == "collect_ai_radio_suggestions"
+    assert result["data"]["song_count"] == 1
 
 
 @pytest.mark.asyncio
@@ -200,36 +226,19 @@ async def test_ai_radio_fetch_recommends_songs_without_local_candidate_queue(son
     assert "推荐2首适合继续播放的歌给用户" in prompt
 
 
-@pytest.mark.asyncio
-async def test_fm_candidates_append_tool_matches_suggestions_in_small_batch(
+def test_fm_candidates_append_tool_appends_real_songs_without_ai_radio(
     song, song1, song2, song3
 ):
-    app = create_radio_app()
-    app.playlist.fm_add(song)
-    app.playlist._current_song = song
-    FakeMatcher.songs_by_title = {
-        "hello world": song1,
-        "second": song2,
-        "third": song3,
-    }
-    radio = AIRadioSession(app, matcher_cls=FakeMatcher, candidate_batch_size=2)
-    radio.activate(reset=False)
-    app.ai.radio = radio
-    statuses = []
-    radio.status_changed.connect(statuses.append, weak=False)
+    runtime = create_runtime_with_fm(song)
 
-    result = await fm_candidates_append.coroutine(
-        songs=[
-            SimpleNamespace(title="hello world"),
-            SimpleNamespace(title="second"),
-            SimpleNamespace(title="third"),
-        ],
-        runtime=FakeRuntime(app),
+    result = fm_candidates_append.func(
+        songs=[song1, song2, song3],
+        runtime=runtime,
     )
 
-    assert app.playlist.list() == [song, song1, song2]
-    assert result is True
-    assert statuses[-1] == "Radio candidates updated: 2 songs"
+    assert runtime.context.app.playlist.list() == [song, song1, song2, song3]
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
 
 
 def test_ai_radio_tools_return_inactive_error():
@@ -238,22 +247,35 @@ def test_ai_radio_tools_return_inactive_error():
     result = ai_radio_get_state.func(runtime=runtime)
 
     assert result["ok"] is False
-    assert result["error_code"] == "AI_RADIO_INACTIVE"
-    assert result["active"] is False
-    assert result["candidate_count"] == 0
+    assert result["error"]["code"] == "AI_RADIO_INACTIVE"
+    assert result["data"]["active"] is False
+    assert result["data"]["candidate_count"] == 0
 
 
 def test_ai_radio_command_tools_return_false_when_unavailable():
     runtime = FakeRuntime(SimpleNamespace(ai=None))
 
-    assert ai_radio_activate.func(runtime=runtime) is False
-    assert ai_radio_deactivate.func(runtime=runtime) is False
+    activate_result = ai_radio_activate.func(runtime=runtime)
+    deactivate_result = ai_radio_deactivate.func(runtime=runtime)
+
+    assert activate_result["ok"] is False
+    assert activate_result["error"]["code"] == "AI_UNAVAILABLE"
+    assert activate_result["data"]["success"] is False
+    assert deactivate_result["ok"] is False
+    assert deactivate_result["error"]["code"] == "AI_UNAVAILABLE"
+    assert deactivate_result["data"]["success"] is False
 
 
-def test_ai_radio_candidate_tools_return_false_when_inactive():
-    runtime = FakeRuntime(SimpleNamespace(ai=FakeAI()))
+def test_fm_candidate_tools_return_false_outside_fm(song):
+    runtime = create_runtime_with_fm(song)
+    runtime.context.app.playlist.mode = PlaylistMode.normal
 
-    assert fm_candidates_clear.func(runtime=runtime) is False
+    result = fm_candidates_remove.func(positions=[1], runtime=runtime)
+
+    assert result["ok"] is False
+    assert result["error"]["code"] == "FM_INACTIVE"
+    assert result["data"]["success"] is False
+    assert result["data"]["active"] is False
 
 
 def test_ai_radio_activate_tool_creates_active_session():
@@ -262,7 +284,9 @@ def test_ai_radio_activate_tool_creates_active_session():
 
     result = ai_radio_activate.func(runtime=runtime, reset=False)
 
-    assert result is True
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
+    assert result["data"]["already_active"] is False
     assert app.ai.radio is not None
     assert app.ai.radio.is_active is True
     assert app.fm.is_active is True
@@ -280,7 +304,9 @@ def test_ai_radio_activate_tool_is_idempotent(song):
 
     result = ai_radio_activate.func(runtime=runtime)
 
-    assert result is True
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
+    assert result["data"]["already_active"] is True
     assert app.ai.radio is radio
     assert app.fm.activate_count == 1
 
@@ -292,7 +318,9 @@ def test_ai_radio_deactivate_tool_stops_active_session():
 
     result = ai_radio_deactivate.func(runtime=runtime)
 
-    assert result is True
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
+    assert result["data"]["was_active"] is True
     assert app.ai.radio is None
     assert app.fm.is_active is False
     assert app.playlist.mode is PlaylistMode.normal
@@ -304,7 +332,9 @@ def test_ai_radio_deactivate_tool_is_idempotent():
 
     result = ai_radio_deactivate.func(runtime=runtime)
 
-    assert result is True
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
+    assert result["data"]["was_active"] is False
 
 
 def test_ai_radio_tools_expose_state_and_update_preferences(song, song1):
@@ -316,12 +346,14 @@ def test_ai_radio_tools_expose_state_and_update_preferences(song, song1):
         avoidances=["too popular"],
         reason="user dislikes current candidates",
     )
-    state = ai_radio_get_state.func(runtime=runtime)
+    state_result = ai_radio_get_state.func(runtime=runtime)
+    state = state_result["data"]
 
-    assert pref_result is True
+    assert pref_result["ok"] is True
+    assert pref_result["data"]["success"] is True
     assert radio.preferences == ["more 90s classics"]
     assert radio.avoidances == ["too popular"]
-    assert state["ok"] is True
+    assert state_result["ok"] is True
     assert state["active"] is True
     assert state["candidates"][0]["position"] == 1
     assert state["candidates"][0]["identifier"] == song1.identifier
@@ -329,37 +361,33 @@ def test_ai_radio_tools_expose_state_and_update_preferences(song, song1):
     assert state["preferences"] == ["more 90s classics"]
 
 
-def test_fm_candidates_clear_tool(song, song1, song2):
-    runtime, _radio = create_runtime_with_radio(song, song1, song2)
+def test_fm_candidates_get_state_tool_does_not_require_ai_radio(song, song1):
+    runtime = create_runtime_with_fm(song, song1)
 
-    result = fm_candidates_clear.func(runtime=runtime)
+    result = fm_candidates_get_state.func(runtime=runtime)
+    state = result["data"]
 
-    assert result is True
+    assert result["ok"] is True
+    assert state["active"] is True
+    assert state["candidate_count"] == 1
+    assert state["candidates"][0]["identifier"] == song1.identifier
+
+
+def test_fm_candidates_remove_tool_can_clear_candidates(song, song1, song2):
+    runtime = create_runtime_with_fm(song, song1, song2)
+
+    result = fm_candidates_remove.func(positions=[1, 2], runtime=runtime)
+
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
     assert runtime.context.app.playlist.list() == [song]
 
 
-def test_fm_candidates_remove_and_keep_tools_use_fm_candidates(song, song1, song2):
-    runtime, _radio = create_runtime_with_radio(song, song1, song2)
+def test_fm_candidates_remove_tool_uses_fm_candidates(song, song1, song2):
+    runtime = create_runtime_with_fm(song, song1, song2)
 
-    remove_result = fm_candidates_remove.func(positions=[1], runtime=runtime)
-    keep_result = fm_candidates_keep.func(positions=[1], runtime=runtime)
+    result = fm_candidates_remove.func(positions=[1], runtime=runtime)
 
-    assert remove_result is True
-    assert keep_result is True
+    assert result["ok"] is True
+    assert result["data"]["success"] is True
     assert runtime.context.app.playlist.list() == [song, song2]
-
-
-@pytest.mark.asyncio
-async def test_fm_candidates_replace_tool_uses_fm_candidates(song, song1, song2):
-    FakeMatcher.songs_by_title = {"second": song2}
-    runtime, radio = create_runtime_with_radio(song, song1, matcher_cls=FakeMatcher)
-
-    result = await fm_candidates_replace.coroutine(
-        songs=[SimpleNamespace(title="second")],
-        keep_positions=[],
-        runtime=runtime,
-    )
-
-    assert result is True
-    assert runtime.context.app.playlist.list() == [song, song2]
-    assert radio.status == "Radio candidates updated: 1 songs"

@@ -1,7 +1,7 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-from feeluown.ai.playback import (
+from feeluown.ai.tools.playback import (
     playback_adjust_volume,
     playback_get_state,
     playback_next_track,
@@ -66,12 +66,12 @@ def test_playback_get_state_exposes_current_playback_state():
 
     assert result["ok"] is True
     assert result["action"] == "get_state"
-    assert result["player_state"] == "paused"
-    assert result["volume"] == 50
-    assert result["position"] == 12
-    assert result["duration"] == 120
-    assert result["current_song"]["source"] == "fake"
-    assert result["current_song"]["identifier"] == "1"
+    assert result["data"]["player_state"] == "paused"
+    assert result["data"]["volume"] == 50
+    assert result["data"]["position"] == 12
+    assert result["data"]["duration"] == 120
+    assert result["data"]["current_song"]["source"] == "fake"
+    assert result["data"]["current_song"]["identifier"] == "1"
 
 
 def test_playback_track_navigation_uses_playlist():
@@ -112,6 +112,6 @@ def test_playback_volume_tools_clamp_values():
     down = playback_adjust_volume.func(delta=-130, runtime=runtime)
     up = playback_adjust_volume.func(delta=20, runtime=runtime)
 
-    assert too_high["volume"] == 100
-    assert down["volume"] == 0
-    assert up["volume"] == 20
+    assert too_high["data"]["volume"] == 100
+    assert down["data"]["volume"] == 0
+    assert up["data"]["volume"] == 20
