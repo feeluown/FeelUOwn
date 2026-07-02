@@ -16,8 +16,8 @@ AI 聊天输入框底部原本有一个 `_msg_label`，用于显示类似
 
 | 状态 | 触发条件 | 显示内容 | 尺寸 |
 |------|---------|---------|------|
-| 紧凑态 (Compact) | 播放中 + 无 hover | 封面(20x20) + 居中的当前歌词行 | 高36px，宽随歌词动态变化(96-256px) |
-| 展开态 (Expanded) | 暂停 / 播放中 hover | 封面(24x24) + LineSongLabel + prev/play/next/volume 按钮(22px) | 高36px，宽256px |
+| 紧凑态 (Compact) | 播放中 + 无 hover | 封面(20x20) + 居中的当前歌词行 | 高36px，宽随歌词动态变化(96-280px) |
+| 展开态 (Expanded) | 暂停 / 播放中 hover | 封面(24x24) + LineSongLabel + prev/play/next/volume 按钮(22px) | 高36px，宽280px |
 | 隐藏 | player.state == stopped | 不显示 | — |
 
 ### 组件结构
