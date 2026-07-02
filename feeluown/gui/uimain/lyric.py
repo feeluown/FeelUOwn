@@ -379,16 +379,17 @@ class InnerLyricWindow(QWidget):
         painter.drawRoundedRect(self.rect(), self._border_radius, self._border_radius)
 
         # Draw a small handle indicator at the size grip location.
-        # Use local widget coordinates (not mapToParent).
-        painter.save()
-        painter.setPen(QColor("white"))
-        option = QTextOption()
-        option.setAlignment(
-            Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
-        )
-        rect = QRect(self._size_grip.pos(), self._size_grip.size())
-        painter.drawText(QRectF(rect), "●", option)
-        painter.restore()
+        # Only show when the grip is visible (multi-line mode).
+        if not self._size_grip.isHidden():
+            painter.save()
+            painter.setPen(QColor("white"))
+            option = QTextOption()
+            option.setAlignment(
+                Qt.AlignmentFlag.AlignHCenter | Qt.AlignmentFlag.AlignVCenter
+            )
+            rect = QRect(self._size_grip.pos(), self._size_grip.size())
+            painter.drawText(QRectF(rect), "●", option)
+            painter.restore()
 
     def setPalette(self, a0: QPalette) -> None:
         super().setPalette(a0)
