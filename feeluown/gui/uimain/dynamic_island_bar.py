@@ -12,7 +12,7 @@ from numbers import Real
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QRectF, Qt, QTimer
-from PyQt6.QtGui import QGuiApplication, QPainter, QPalette
+from PyQt6.QtGui import QGuiApplication, QPainter, QPainterPath, QPalette
 from PyQt6.QtWidgets import (
     QHBoxLayout,
     QLabel,
@@ -80,6 +80,8 @@ class DynamicIslandStatusBar(QWidget):
         self._anim_current = 0  # current animated width
         self._has_song = False
         self._compact_text = ""
+        self._position = _number_or_zero(self._app.player.position)
+        self._duration = _number_or_zero(self._app.player.duration)
 
         self._anim_timer = QTimer(self)
         self._anim_timer.timeout.connect(self._tick_animation)
@@ -176,6 +178,12 @@ class DynamicIslandStatusBar(QWidget):
         self._app.player.volume_changed.connect(
             self._volume_btn.on_volume_changed, aioqueue=True
         )
+        self._app.player.position_changed.connect(
+            self._on_position_changed, aioqueue=True
+        )
+        self._app.player.duration_changed.connect(
+            self._on_duration_changed, aioqueue=True
+        )
 
     # ---- public methods ----
 
@@ -184,6 +192,16 @@ class DynamicIslandStatusBar(QWidget):
     def _on_player_state_for_pp_btn(self, state):
         """Sync play/pause button checked state with player."""
         self._pp_btn.setChecked(state == State.playing)
+
+    def _on_position_changed(self, position):
+        self._position = _number_or_zero(position)
+        if self._expansion_state == "expanded":
+            self.update()
+
+    def _on_duration_changed(self, duration):
+        self._duration = _number_or_zero(duration)
+        if self._expansion_state == "expanded":
+            self.update()
 
     def _on_metadata_changed(self, metadata):
         """Load cover art and prepare text when song changes.
@@ -290,6 +308,7 @@ class DynamicIslandStatusBar(QWidget):
         radius = self.height() / 2.0
         rect = QRectF(self.rect()).adjusted(0.75, 0.75, -0.75, -0.75)
         painter.drawRoundedRect(rect, radius, radius)
+        self._draw_progress_background(painter, rect, radius, pal)
 
         super().paintEvent(event)
 
@@ -334,6 +353,30 @@ class DynamicIslandStatusBar(QWidget):
             ),
         )
 
+    def _playback_progress(self):
+        if not self._duration:
+            return 0
+        return max(0.0, min(1.0, self._position / self._duration))
+
+    def _draw_progress_background(self, painter, rect, radius, palette):
+        progress = self._playback_progress()
+        if self._expansion_state != "expanded" or progress <= 0:
+            return
+
+        progress_color = palette.color(QPalette.ColorRole.Highlight)
+        progress_color.setAlpha(46 if self._hovered else 36)
+        progress_rect = QRectF(rect)
+        progress_rect.setWidth(rect.width() * progress)
+
+        path = QPainterPath()
+        path.addRoundedRect(rect, radius, radius)
+        painter.save()
+        painter.setClipPath(path)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(progress_color)
+        painter.drawRect(progress_rect)
+        painter.restore()
+
     def _seek_forward(self):
         old_position = self._app.player.position
         duration = self._app.player.duration
@@ -355,6 +398,8 @@ class DynamicIslandStatusBar(QWidget):
         self._on_metadata_changed(getattr(self._app.player, "current_metadata", None))
         self._on_player_state_for_pp_btn(self._app.player.state)
         self._volume_btn.on_volume_changed(_number_or_zero(self._app.player.volume))
+        self._on_position_changed(self._app.player.position)
+        self._on_duration_changed(self._app.player.duration)
         if self._expansion_state == "compact":
             self._set_compact_text(
                 self._format_lyric_line(self._app.live_lyric.current_line)
