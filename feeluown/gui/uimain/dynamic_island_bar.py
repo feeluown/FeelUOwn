@@ -364,7 +364,7 @@ class DynamicIslandStatusBar(QWidget):
             return
 
         progress_color = palette.color(QPalette.ColorRole.Highlight)
-        progress_color.setAlpha(46 if self._hovered else 36)
+        progress_color.setAlpha(92 if self._hovered else 76)
         progress_rect = QRectF(rect)
         progress_rect.setWidth(rect.width() * progress)
 
