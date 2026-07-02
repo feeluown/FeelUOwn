@@ -864,6 +864,19 @@ def test_dynamic_island_metadata_does_not_replace_compact_lyric(qtbot, app_mock)
     assert island._lyric_label.alignment() == Qt.AlignmentFlag.AlignCenter
 
 
+def test_dynamic_island_compact_lyric_has_width_padding(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    island = DynamicIslandStatusBar(app_mock)
+    qtbot.addWidget(island)
+
+    island._on_lyric_line_changed(Line("abc", "", False))
+
+    assert island._lyric_label.width() > (
+        island._lyric_label.fontMetrics().horizontalAdvance("abc")
+    )
+    assert island._lyric_label.text() == "abc"
+
+
 def test_dynamic_island_compact_width_tracks_lyric(qtbot, app_mock):
     _prepare_dynamic_island_app(app_mock)
     island = DynamicIslandStatusBar(app_mock)

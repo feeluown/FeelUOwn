@@ -43,13 +43,14 @@ COVER_EXPANDED = 24
 BTN_SIZE = 22
 ANIMATION_STEP = 12  # px per tick at 16ms (~750 px/s)
 COMPACT_MIN_WIDTH = 96
-EXPANDED_WIDTH = 320
+EXPANDED_WIDTH = 256
 COMPACT_MAX_WIDTH = EXPANDED_WIDTH
 CONTENT_SWITCH_RATIO = 0.6  # switch content visibility at 60% progress
 CONTENT_SPACING = 8
 PADDING_LEFT = 7
 PADDING_RIGHT = 8
 CONTROL_SPACING = 2
+LYRIC_TEXT_WIDTH_PADDING = 8
 
 
 class DynamicIslandStatusBar(QWidget):
@@ -308,7 +309,13 @@ class DynamicIslandStatusBar(QWidget):
         self._compact_text = text
         label_width = min(
             self._compact_text_max_width(),
-            max(self._lyric_label.fontMetrics().horizontalAdvance(text), 1),
+            max(
+                (
+                    self._lyric_label.fontMetrics().horizontalAdvance(text) +
+                    LYRIC_TEXT_WIDTH_PADDING
+                ),
+                1,
+            ),
         )
         self._lyric_label.setFixedWidth(label_width)
         self._lyric_label.setText(
