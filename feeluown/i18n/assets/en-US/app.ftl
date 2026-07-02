@@ -422,7 +422,6 @@ ai-radio-active-status = AI Radio: On
 ai-radio-activate-tooltip = Start AI Radio
 ai-radio-activated = AI Radio activated
 ai-radio-deactivated = AI Radio deactivated
-ai-radio-chat-hint = AI Radio is active. Candidate songs are shown in the playlist.
 ai-radio-input-placeholder = Tell AI what to play next...
 ai-radio-instruction-updated = AI Radio recommendation instructions updated
 ai-radio-candidates-clearing = Clearing upcoming radio candidates

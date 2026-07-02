@@ -423,7 +423,6 @@ ai-radio-active-status = AI ラジオ：オン
 ai-radio-activate-tooltip = AI ラジオを開始
 ai-radio-activated = AI ラジオを開始しました
 ai-radio-deactivated = AI ラジオを停止しました
-ai-radio-chat-hint = AI ラジオが有効です。候補曲はプレイリストで確認できます
 ai-radio-input-placeholder = 次に聴きたい内容を AI に伝えてください...
 ai-radio-instruction-updated = AI ラジオの推薦条件を更新しました
 ai-radio-candidates-clearing = ラジオ候補曲をクリアしています

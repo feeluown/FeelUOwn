@@ -32,6 +32,7 @@ from feeluown.gui.helpers import IS_MACOS, secondary_text_color
 from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.header import MidHeader
+from feeluown.gui.uimain.dynamic_island_bar import DynamicIslandStatusBar
 from feeluown.gui.widgets.ai_chat import (
     ChatHistoryWidget,
     ChatInputWidget,
@@ -466,7 +467,11 @@ class AIChatBox(QWidget):
         self.copilot = self._app.ai.get_copilot()
 
         self.history_widget = ChatHistoryWidget(self)
-        self.input_widget = ChatInputWidget(self)
+        self._dynamic_island = DynamicIslandStatusBar(app)
+        self.input_widget = ChatInputWidget(
+            self,
+            status_widget=self._dynamic_island,
+        )
         self._collecting_artifacts = False
         self._pending_artifacts = []
 
@@ -602,10 +607,9 @@ class AIChatBox(QWidget):
     def _refresh_context(self, *_):
         if self._get_active_ai_radio() is not None:
             self.input_widget.set_placeholder(t("ai-radio-input-placeholder"))
-            self.input_widget.set_msg(t("ai-radio-chat-hint"))
         else:
             self.input_widget.set_placeholder(t("ai-chat-input-placeholder"))
-            self.input_widget.set_msg("")
+        self.input_widget.set_msg("")
 
 
 class Body(QWidget):
@@ -617,7 +621,6 @@ class Body(QWidget):
         self._palette_refresh_scheduled = False
         self._palette_ready = False
         self._header = MidHeader(t("ai-chat-header"))
-        self._radio_status_label = QLabel(t("ai-radio-active-status"))
         self._new_thread_btn = TextButton(t("ai-chat-new"), height=26)
         self._sidebar_btn = TextButton(t("ai-chat-open-sidebar"), height=26)
         self._collapse_btn = TextButton(t("fold-collapse"), height=26)
@@ -691,7 +694,6 @@ class Body(QWidget):
         self._toolbar_layout.setContentsMargins(0, 0, 0, 0)
         self._toolbar_layout.addWidget(self._header)
         self._toolbar_layout.addStretch(0)
-        self._toolbar_layout.addWidget(self._radio_status_label)
         self._toolbar_layout.addWidget(self._new_thread_btn)
         self._toolbar_layout.addWidget(self._sidebar_btn)
         self._toolbar_layout.addWidget(self._collapse_btn)
@@ -790,12 +792,7 @@ class Body(QWidget):
             self._chat_box.input_widget._apply_palette()
             self._refresh_artist_labels()
 
-            radio_pal = QPalette(app_pal)
-            secondary_color = secondary_text_color(app_pal)
-            radio_pal.setColor(QPalette.ColorRole.WindowText, secondary_color)
-            radio_pal.setColor(QPalette.ColorRole.Text, secondary_color)
-            self._radio_status_label.setPalette(radio_pal)
-            self._sidebar_status_label.setPalette(radio_pal)
+            self._sidebar_status_label.setPalette(app_pal)
             self._sidebar_shadow.setPalette(body_pal)
             self.update()
             self._toolbar_separator.update()
@@ -932,10 +929,6 @@ class Body(QWidget):
 
     def _refresh_context(self, *_):
         self._header.setText(t("ai-chat-header"))
-        if self._get_active_ai_radio() is not None:
-            self._radio_status_label.show()
-        else:
-            self._radio_status_label.hide()
         self._connect_ai_radio_status()
         self._sync_sidebar_status_visibility()
 

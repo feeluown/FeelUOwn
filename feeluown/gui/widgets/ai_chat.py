@@ -605,7 +605,7 @@ class ChatInputWidget(QWidget):
 
     send_clicked = pyqtSignal(str)  # emits query text
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, status_widget=None):
         super().__init__(parent=parent)
         self._radius = SurfaceRadius
         self._editor = ChatInputEditor(self)
@@ -625,6 +625,9 @@ class ChatInputWidget(QWidget):
         )
         self._msg_label = QLabel(self)
         self._msg_label.setWordWrap(True)
+        self._status_widget = status_widget
+        if self._status_widget is not None:
+            self._status_widget.setParent(self)
         self._send_btn = ChatSendButton(self)
         self._msg_level = "hint"
         self._updating_palette = False
@@ -686,7 +689,16 @@ class ChatInputWidget(QWidget):
         footer_layout = QHBoxLayout()
         footer_layout.setContentsMargins(0, 0, 0, 0)
         footer_layout.setSpacing(8)
-        footer_layout.addWidget(self._msg_label, 1)
+        if self._status_widget is not None:
+            self._msg_label.hide()
+            footer_layout.addWidget(
+                self._status_widget,
+                0,
+                Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignVCenter,
+            )
+            footer_layout.addStretch(1)
+        else:
+            footer_layout.addWidget(self._msg_label, 1)
         footer_layout.addWidget(self._send_btn, 0, Qt.AlignmentFlag.AlignRight)
         layout.addLayout(footer_layout)
 
@@ -707,6 +719,8 @@ class ChatInputWidget(QWidget):
         self._msg_level = level
         self._apply_msg_palette(level)
         self._msg_label.setText(text)
+        if self._status_widget is None:
+            self._msg_label.setVisible(bool(text))
 
     def clear_input(self):
         self._editor.clear()

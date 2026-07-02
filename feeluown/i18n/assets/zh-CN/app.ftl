@@ -423,7 +423,6 @@ ai-radio-active-status = AI 电台：开启
 ai-radio-activate-tooltip = 开启 AI 电台
 ai-radio-activated = AI 电台已开启
 ai-radio-deactivated = AI 电台已关闭
-ai-radio-chat-hint = AI 电台开启中，候选歌曲可在播放列表中查看
 ai-radio-input-placeholder = 告诉 AI 接下来想听什么...
 ai-radio-instruction-updated = 已更新 AI 电台推荐要求
 ai-radio-candidates-clearing = 正在清理电台候选歌曲
