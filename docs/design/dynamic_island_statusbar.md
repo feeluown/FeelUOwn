@@ -53,7 +53,6 @@ alpha，避免组件自己私有感知系统主题变化。
 - 组件可聚焦；焦点在组件上时，左右方向键快退/快进 5 秒。
 - 上下方向键降低/提高 10 音量。
 - 展开态控制按钮组包含上一首、播放/暂停、下一首和音量按钮。
-- `paintEvent` 使用当前播放进度在胶囊边框上绘制一段进度线。
 
 ## 涉及文件
 
@@ -72,7 +71,7 @@ alpha，避免组件自己私有感知系统主题变化。
 | `_on_lyric_line_changed(line)` | 更新歌词行文本，重算紧凑宽度 |
 | `enterEvent/leaveEvent` | hover 展开/收拢 |
 | `keyPressEvent` | 处理方向键快进/快退/音量调节 |
-| `paintEvent` | 绘制胶囊形半透明背景和边框播放进度 |
+| `paintEvent` | 绘制胶囊形半透明背景 |
 | `_start_expand/_start_compact` | 启动动画 |
 | `_tick_animation` | 动画每帧，更新 setFixedWidth |
 | `_switch_to_expanded/_switch_to_compact` | 切换内容可见性和尺寸 |
@@ -133,7 +132,7 @@ playlist/sidebar 展示，不再占用输入框底部状态栏。
 已执行：
 
 - `uv run flake8 feeluown/gui/uimain/ai_chat.py feeluown/gui/uimain/dynamic_island_bar.py feeluown/gui/widgets/ai_chat.py tests/gui/uimain/test_uimain.py` — passed
-- `uv run pytest tests/gui/uimain/test_uimain.py -q` — 44 passed
+- `uv run pytest tests/gui/uimain/test_uimain.py -q` — 43 passed
 
 ## 后续可做
 

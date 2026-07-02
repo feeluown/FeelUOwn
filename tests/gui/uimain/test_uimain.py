@@ -781,8 +781,6 @@ def _prepare_dynamic_island_app(app_mock):
     app_mock.player.metadata_changed = Signal()
     app_mock.player.state_changed = Signal()
     app_mock.player.volume_changed = Signal()
-    app_mock.player.position_changed = Signal()
-    app_mock.player.duration_changed = Signal()
     app_mock.player.state = State.playing
     app_mock.player.current_metadata = {}
     app_mock.player.position = 20
@@ -985,18 +983,6 @@ def test_dynamic_island_expanded_controls_include_volume(qtbot, app_mock):
     assert not island._volume_btn.isHidden()
     assert island._control_widget.layout().indexOf(island._volume_btn) >= 0
     assert app_mock.player.volume == 72
-
-
-def test_dynamic_island_tracks_playback_progress(qtbot, app_mock):
-    _prepare_dynamic_island_app(app_mock)
-    island = DynamicIslandStatusBar(app_mock)
-    qtbot.addWidget(island)
-
-    assert island._playback_progress() == 0.2
-    island._on_position_changed(80)
-    island._on_duration_changed(160)
-
-    assert island._playback_progress() == 0.5
 
 
 def test_ai_chat_assistant_rows_keep_content_height(qtbot):
