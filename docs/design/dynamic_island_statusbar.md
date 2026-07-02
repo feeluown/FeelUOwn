@@ -17,7 +17,7 @@ AI 聊天输入框底部原本有一个 `_msg_label`，用于显示类似
 | 状态 | 触发条件 | 显示内容 | 尺寸 |
 |------|---------|---------|------|
 | 紧凑态 (Compact) | 播放中 + 无 hover | 封面(20x20) + 居中的当前歌词行 | 高36px，宽随歌词动态变化(96-256px) |
-| 展开态 (Expanded) | 暂停 / 播放中 hover | 封面(24x24) + LineSongLabel + prev/play/next 按钮(22px) | 高36px，宽256px |
+| 展开态 (Expanded) | 暂停 / 播放中 hover | 封面(24x24) + LineSongLabel + prev/play/next/volume 按钮(22px) | 高36px，宽256px |
 | 隐藏 | player.state == stopped | 不显示 | — |
 
 ### 组件结构
@@ -29,9 +29,10 @@ DynamicIslandStatusBar(QWidget)
 │   ├── QLabel (lyric_label) — 歌词行，elided_text 省略
 │   ├── LineSongLabel (song_label) — "标题 • 歌手" 单行，复用现有组件
 │   └── QWidget (control_widget)
-│       ├── PlayPreviousButton(length=24, draw_circle=False)
-│       ├── PlayPauseButton(length=24, draw_circle=False)
-│       └── PlayNextButton(length=24, draw_circle=False)
+│       ├── PlayPreviousButton(length=22)
+│       ├── PlayPauseButton(length=22, draw_circle=False)
+│       ├── PlayNextButton(length=22)
+│       └── VolumeButton(length=22)
 ```
 
 ### 动画方案
@@ -46,6 +47,13 @@ DynamicIslandStatusBar(QWidget)
 遵循 `docs/source/dev_best_practice.rst`：所有颜色来自 `QPalette`。
 pill 背景在绘制时读取当前 `QGuiApplication.palette().Base` 并设置
 alpha，避免组件自己私有感知系统主题变化。
+
+### 播放控制
+
+- 组件可聚焦；焦点在组件上时，左右方向键快退/快进 5 秒。
+- 上下方向键降低/提高 10 音量。
+- 展开态控制按钮组包含上一首、播放/暂停、下一首和音量按钮。
+- `paintEvent` 使用当前播放进度在胶囊边框上绘制一段进度线。
 
 ## 涉及文件
 
@@ -63,7 +71,8 @@ alpha，避免组件自己私有感知系统主题变化。
 | `_on_player_state_changed(state)` | stopped→隐藏, paused→展开, playing→紧凑(无 hover) |
 | `_on_lyric_line_changed(line)` | 更新歌词行文本，重算紧凑宽度 |
 | `enterEvent/leaveEvent` | hover 展开/收拢 |
-| `paintEvent` | 绘制胶囊形半透明背景 |
+| `keyPressEvent` | 处理方向键快进/快退/音量调节 |
+| `paintEvent` | 绘制胶囊形半透明背景和边框播放进度 |
 | `_start_expand/_start_compact` | 启动动画 |
 | `_tick_animation` | 动画每帧，更新 setFixedWidth |
 | `_switch_to_expanded/_switch_to_compact` | 切换内容可见性和尺寸 |
@@ -77,6 +86,7 @@ alpha，避免组件自己私有感知系统主题变化。
 | `CoverLabelV2` | `feeluown/gui/widgets/cover_label.py` |
 | `LineSongLabel` | `feeluown/gui/components/line_song.py` |
 | `PlayPauseButton`, `PlayNextButton`, `PlayPreviousButton` | `feeluown/gui/widgets/selfpaint_btn.py` |
+| `VolumeButton` | `feeluown/gui/widgets/volume_button.py` |
 | `LiveLyric.line_changed` / `Line` 命名元组 | `feeluown/player/lyric.py` |
 | `State` 枚举 | `feeluown/player/base_player.py` |
 
@@ -123,7 +133,7 @@ playlist/sidebar 展示，不再占用输入框底部状态栏。
 已执行：
 
 - `uv run flake8 feeluown/gui/uimain/ai_chat.py feeluown/gui/uimain/dynamic_island_bar.py feeluown/gui/widgets/ai_chat.py tests/gui/uimain/test_uimain.py` — passed
-- `uv run pytest tests/gui/uimain/test_uimain.py -q` — 40 passed
+- `uv run pytest tests/gui/uimain/test_uimain.py -q` — 43 passed
 
 ## 后续可做
 

@@ -32,8 +32,10 @@ from feeluown.gui.uimain.dynamic_island_bar import (
     COVER_COMPACT,
     COVER_EXPANDED,
     ISLAND_HEIGHT,
+    SEEK_STEP,
     DynamicIslandStatusBar,
     EXPANDED_WIDTH,
+    VOLUME_STEP,
 )
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 from feeluown.gui.widgets.ai_chat import (
@@ -775,8 +777,14 @@ def test_ai_chat_theme_change_reapplies_self_painted_palettes(qtbot, app_mock):
 def _prepare_dynamic_island_app(app_mock):
     app_mock.player.metadata_changed = Signal()
     app_mock.player.state_changed = Signal()
+    app_mock.player.volume_changed = Signal()
+    app_mock.player.position_changed = Signal()
+    app_mock.player.duration_changed = Signal()
     app_mock.player.state = State.playing
     app_mock.player.current_metadata = {}
+    app_mock.player.position = 20
+    app_mock.player.duration = 100
+    app_mock.player.volume = 50
     app_mock.live_lyric.line_changed = Signal()
     app_mock.live_lyric.current_line = Line("", "", False)
     app_mock.playlist.play_model_stage_changed = Signal()
@@ -923,6 +931,55 @@ def test_dynamic_island_restores_current_lyric_after_hover(qtbot, app_mock):
 
     assert island._lyric_label.toolTip() == "Lyric while expanded"
     assert island._lyric_label.text().startswith("Lyric while")
+
+
+def test_dynamic_island_keyboard_controls_player(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    island = DynamicIslandStatusBar(app_mock)
+    qtbot.addWidget(island)
+
+    island.keyPressEvent(
+        SimpleNamespace(key=lambda: Qt.Key.Key_Right, accept=lambda: None)
+    )
+    assert app_mock.player.position == 20 + SEEK_STEP
+    island.keyPressEvent(
+        SimpleNamespace(key=lambda: Qt.Key.Key_Left, accept=lambda: None)
+    )
+    assert app_mock.player.position == 20
+    island.keyPressEvent(
+        SimpleNamespace(key=lambda: Qt.Key.Key_Up, accept=lambda: None)
+    )
+    assert app_mock.player.volume == 50 + VOLUME_STEP
+    island.keyPressEvent(
+        SimpleNamespace(key=lambda: Qt.Key.Key_Down, accept=lambda: None)
+    )
+    assert app_mock.player.volume == 50
+
+
+def test_dynamic_island_expanded_controls_include_volume(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    island = DynamicIslandStatusBar(app_mock)
+    qtbot.addWidget(island)
+
+    assert island.focusPolicy() == Qt.FocusPolicy.StrongFocus
+    island._switch_to_expanded()
+    island._volume_btn.setValue(72)
+
+    assert not island._volume_btn.isHidden()
+    assert island._control_widget.layout().indexOf(island._volume_btn) >= 0
+    assert app_mock.player.volume == 72
+
+
+def test_dynamic_island_tracks_playback_progress(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    island = DynamicIslandStatusBar(app_mock)
+    qtbot.addWidget(island)
+
+    assert island._playback_progress() == 0.2
+    island._on_position_changed(80)
+    island._on_duration_changed(160)
+
+    assert island._playback_progress() == 0.5
 
 
 def test_ai_chat_assistant_rows_keep_content_height(qtbot):
