@@ -14,3 +14,4 @@ from .collections import CollectionListView  # noqa
 from .player_progress import PlayerProgressSliderAndLabel  # noqa
 from .recommendation_panel import Panel, RecPlaylistsPanel  # noqa
 from .network_status import NetworkStatusButton  # noqa
+from .dynamic_island import DynamicIslandStatusBar  # noqa

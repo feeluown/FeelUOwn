@@ -36,9 +36,25 @@ class PlayerPlaylistModel(SongMiniCardListModel):
         super().__init__(reader, *args, **kwargs)
 
         self._playlist = playlist
+        # PlayerPlaylistModel mirrors the live playback queue. It must not keep
+        # a partially fetched _items list because playlist.songs_removed emits
+        # ranges from the full queue; a shorter _items list would make Qt's
+        # remove notification handlers index past the local cache.
+        self._items = list(playlist.list())
         self._playlist.songs_added.connect(self.on_songs_added)
         self._playlist.songs_removed.connect(self.on_songs_removed)
         self._playlist.songs_reordered.connect(self.on_songs_reordered)
+
+    # Disable ReaderFetchMoreMixin for the live playback queue. The model rows
+    # are driven by playlist signals instead of reader pagination.
+    def can_fetch_more(self, _=None):
+        return False
+
+    def canFetchMore(self, _):
+        return False
+
+    def fetchMore(self, _):
+        return None
 
     def flags(self, index):
         flags = super().flags(index)
@@ -49,6 +65,14 @@ class PlayerPlaylistModel(SongMiniCardListModel):
         return flags
 
     def on_songs_added(self, index, count):
+        if count <= 0:
+            return
+        if index < 0 or index > len(self._items):
+            self._reset_from_playlist()
+            return
+        if index + count > len(self._playlist.list()):
+            self._reset_from_playlist()
+            return
         self.beginInsertRows(QModelIndex(), index, index + count - 1)
         # Insert from tail to front.
         while count > 0:
@@ -57,6 +81,11 @@ class PlayerPlaylistModel(SongMiniCardListModel):
         self.endInsertRows()
 
     def on_songs_removed(self, index, count):
+        if count <= 0:
+            return
+        if index < 0 or index + count > len(self._items):
+            self._reset_from_playlist()
+            return
         self.beginRemoveRows(QModelIndex(), index, index + count - 1)
         while count > 0:
             self._items.pop(index + count - 1)
@@ -64,8 +93,15 @@ class PlayerPlaylistModel(SongMiniCardListModel):
         self.endRemoveRows()
 
     def on_songs_reordered(self, index, count):
-        self.on_songs_removed(index, count)
-        self.on_songs_added(index, count)
+        self._reset_from_playlist()
+
+    def _reset_from_playlist(self):
+        self.beginResetModel()
+        self._items = list(self._playlist.list())
+        self.image_cache.clear()
+        self._image_colors.clear()
+        self._image_fetching.clear()
+        self.endResetModel()
 
 
 class FMCandidatePlaylistDelegate(SongMiniCardListDelegate):

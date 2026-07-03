@@ -6,6 +6,8 @@
 # ----------------------------------------
 minimize-window = 最小化
 fullscreen-window = 窗口全屏
+mini-mode = 迷你模式
+mini-mode-exit = 退出迷你播放器
 playlist = 播放列表
 recently-played = 最近播放
 unknown = 未知

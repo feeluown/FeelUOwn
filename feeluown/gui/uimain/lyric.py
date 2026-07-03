@@ -128,28 +128,55 @@ class LyricWindow(QWidget):
         self._layout.addWidget(self._inner)
 
         self._old_pos = None
+        self._using_system_move = False
 
         esc_hide_widget(self)
 
     def mousePressEvent(self, e):
-        self._old_pos = e.globalPosition()
+        if e.button() != Qt.MouseButton.LeftButton:
+            return
+        if self._start_system_move():
+            self._using_system_move = True
+            self._old_pos = None
+        else:
+            self._old_pos = e.globalPosition()
+        e.accept()
 
     def mouseMoveEvent(self, e):
         # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
         # on Windows, even I drag with LeftButton, the e.button() return 0,
         # which means no button
+        if self._using_system_move:
+            e.accept()
+            return
         if self._old_pos is not None:
             delta = e.globalPosition() - self._old_pos
             self.move(int(self.x() + delta.x()), int(self.y() + delta.y()))
             self._old_pos = e.globalPosition()
+            e.accept()
 
     def mouseReleaseEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton:
+            if self._old_pos is not None or self._using_system_move:
+                self._old_pos = None
+                self._using_system_move = False
+                e.accept()
+                return
         if not self.rect().contains(e.position().toPoint()):
             return
         if e.button() == Qt.MouseButton.BackButton:
             self._app.playlist.previous()
         elif e.button() == Qt.MouseButton.ForwardButton:
             self._app.playlist.next()
+
+    def _start_system_move(self):
+        handle = self.windowHandle()
+        if handle is None:
+            return False
+        try:
+            return bool(handle.startSystemMove())
+        except RuntimeError:
+            return False
 
     def dump_state(self):
         inner = self._inner

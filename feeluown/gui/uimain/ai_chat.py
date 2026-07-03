@@ -32,7 +32,7 @@ from feeluown.gui.helpers import IS_MACOS, secondary_text_color
 from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.header import MidHeader
-from feeluown.gui.uimain.dynamic_island_bar import DynamicIslandStatusBar
+from feeluown.gui.components.dynamic_island import DynamicIslandStatusBar
 from feeluown.gui.widgets.ai_chat import (
     ChatHistoryWidget,
     ChatInputWidget,

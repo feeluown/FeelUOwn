@@ -70,6 +70,14 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         # TODO: duplicate code with ImgListModel
         def cb(content):
             uri = reverse(item)
+            try:
+                row = self._items.index(item)
+            except ValueError:
+                self._image_fetching.discard(uri)
+                self.image_cache.remove(uri)
+                self._image_colors.pop(uri, None)
+                return
+
             if content is None:
                 self._image_fetching.discard(uri)
                 self.image_cache.set(uri, None)
@@ -80,7 +88,6 @@ class BaseSongMiniCardListModel(QAbstractListModel):
             img = self._scale_image_for_cache(img)
             self._image_fetching.discard(uri)
             self.image_cache.set(uri, img)
-            row = self._items.index(item)
             top_left = self.createIndex(row, 0)
             bottom_right = self.createIndex(row, 0)
             self.dataChanged.emit(top_left, bottom_right)
@@ -126,6 +133,7 @@ class BaseSongMiniCardListModel(QAbstractListModel):
         return None
 
     def on_rows_about_to_be_removed(self, _, first, last):
+        last = min(last, len(self._items) - 1)
         for i in range(first, last + 1):
             item = self._items[i]
             uri = reverse(item)

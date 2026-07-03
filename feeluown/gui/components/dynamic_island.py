@@ -62,7 +62,7 @@ def _number_or_zero(value):
 
 
 class DynamicIslandStatusBar(QWidget):
-    """A pill-shaped player status bar for the AI chat input.
+    """A pill-shaped player status bar for the current song.
 
     Uses system palette colors and reuses existing components.
     """

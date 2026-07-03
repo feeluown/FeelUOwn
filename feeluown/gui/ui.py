@@ -12,6 +12,7 @@ from feeluown.gui.uimain.page_view import RightPanel
 from feeluown.gui.uimain.player_bar import TopPanel
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 from feeluown.gui.uimain.nowplaying_overlay import NowplayingOverlay
+from feeluown.gui.uimain.mini_mode import MiniModeManager
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,7 @@ class Ui:
                 self.ai_chat_overlay.hide()
         self.lyric_window = LyricWindow(self._app)
         self.lyric_window.hide()
+        self.mini_mode = MiniModeManager(self._app, parent=self._app)
         self.playlist_overlay = PlaylistOverlay(app, parent=app)
         self.nowplaying_overlay = NowplayingOverlay(app, parent=app)
 
@@ -109,3 +111,15 @@ class Ui:
         else:
             self.top_panel.show()
             self._top_separator.show()
+
+    def enter_mini_mode(self):
+        self.mini_mode.enter()
+
+    def exit_mini_mode(self):
+        self.mini_mode.exit()
+
+    def toggle_mini_mode(self):
+        self.mini_mode.toggle()
+
+    def set_mini_mode_enabled(self, enabled):
+        self.mini_mode.set_enabled(enabled)

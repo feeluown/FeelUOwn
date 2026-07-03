@@ -6,6 +6,8 @@
 # ----------------------------------------
 minimize-window = 最小化
 fullscreen-window = ウィンドウ全画面
+mini-mode = ミニモード
+mini-mode-exit = ミニプレーヤーを終了
 playlist = プレイリスト
 recently-played = 最近再生
 unknown = 不明

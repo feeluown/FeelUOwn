@@ -2,7 +2,7 @@ import asyncio
 import sys
 from types import SimpleNamespace
 
-from PyQt6.QtCore import QPoint, QPointF, QSize, Qt, QTimer
+from PyQt6.QtCore import QEvent, QPoint, QPointF, QRect, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QGuiApplication, QMouseEvent, QPalette
 from PyQt6.QtWidgets import QListWidget, QWidget
 
@@ -27,7 +27,7 @@ from feeluown.gui.uimain.ai_chat import (
     parse_song_link,
     parse_song_link_info,
 )
-from feeluown.gui.uimain.dynamic_island_bar import (
+from feeluown.gui.components.dynamic_island import (
     COMPACT_MIN_WIDTH,
     CONTENT_SPACING,
     COVER_COMPACT,
@@ -40,6 +40,8 @@ from feeluown.gui.uimain.dynamic_island_bar import (
     EXPANDED_WIDTH,
     VOLUME_STEP,
 )
+from feeluown.gui.uimain.mini_mode import MiniModeManager, MiniModeWindow
+from feeluown.gui.uimain.lyric import LyricWindow
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 from feeluown.gui.widgets.ai_chat import (
     ChatArtifactCard,
@@ -836,7 +838,7 @@ def test_dynamic_island_syncs_current_cover_and_lyric_on_init(
     app_mock.live_lyric.current_line = Line("Current lyric", "", False)
     calls = []
     monkeypatch.setattr(
-        "feeluown.gui.uimain.dynamic_island_bar.run_afn",
+        "feeluown.gui.components.dynamic_island.run_afn",
         lambda *args: calls.append(args),
     )
 
@@ -1003,6 +1005,228 @@ def test_dynamic_island_progress_updates_only_when_expanded(qtbot, app_mock, moc
 
     assert island._playback_progress() == 0.25
     update.assert_called_once()
+
+
+class _FakeMouseEvent:
+    def __init__(
+        self,
+        event_type,
+        global_pos,
+        button=Qt.MouseButton.LeftButton,
+        local_pos=None,
+    ):
+        self._event_type = event_type
+        self._global_pos = QPointF(global_pos)
+        self._local_pos = QPointF(local_pos if local_pos is not None else global_pos)
+        self._button = button
+        self.accepted = False
+
+    def type(self):
+        return self._event_type
+
+    def button(self):
+        return self._button
+
+    def globalPosition(self):
+        return self._global_pos
+
+    def position(self):
+        return self._local_pos
+
+    def accept(self):
+        self.accepted = True
+
+
+class _FakeContextMenuEvent:
+    def __init__(self, global_pos):
+        self._global_pos = QPoint(global_pos)
+
+    def type(self):
+        return QEvent.Type.ContextMenu
+
+    def globalPos(self):
+        return self._global_pos
+
+
+def test_mini_mode_window_is_frameless_and_uses_island(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    window = MiniModeWindow(app_mock)
+    qtbot.addWidget(window)
+    margins = window.layout().contentsMargins()
+
+    assert isinstance(window.island, DynamicIslandStatusBar)
+    assert window.windowFlags() & Qt.WindowType.FramelessWindowHint
+    assert window.windowFlags() & Qt.WindowType.WindowStaysOnTopHint
+    assert window.testAttribute(Qt.WidgetAttribute.WA_TranslucentBackground)
+    assert margins.left() == 0
+    assert margins.top() == 0
+    assert margins.right() == 0
+    assert margins.bottom() == 0
+
+
+def test_mini_mode_window_drags_from_island_body(qtbot, app_mock, monkeypatch):
+    _prepare_dynamic_island_app(app_mock)
+    window = MiniModeWindow(app_mock)
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: False)
+
+    window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10)),
+    )
+    window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28)),
+    )
+    window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28)),
+    )
+
+    assert window.pos() == QPoint(115, 138)
+    assert window._drag_global_pos is None
+
+
+def test_mini_mode_window_prefers_system_move(qtbot, app_mock, monkeypatch):
+    _prepare_dynamic_island_app(app_mock)
+    window = MiniModeWindow(app_mock)
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: True)
+
+    handled = window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10)),
+    )
+    moved = window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28)),
+    )
+    released = window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28)),
+    )
+
+    assert handled
+    assert moved
+    assert released
+    assert window.pos() == QPoint(100, 120)
+    assert window._drag_global_pos is None
+    assert not window._using_system_move
+
+
+def test_mini_mode_window_does_not_drag_from_controls(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    window = MiniModeWindow(app_mock)
+    qtbot.addWidget(window)
+    window.move(100, 120)
+
+    window._handle_drag_event(
+        window.island._pp_btn,
+        _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10)),
+    )
+    window._handle_drag_event(
+        window.island._pp_btn,
+        _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28)),
+    )
+
+    assert window.pos() == QPoint(100, 120)
+
+
+def test_mini_mode_window_intercepts_child_context_menu(
+    qtbot, app_mock, monkeypatch
+):
+    _prepare_dynamic_island_app(app_mock)
+    window = MiniModeWindow(app_mock)
+    qtbot.addWidget(window)
+    positions = []
+    monkeypatch.setattr(window, "_show_context_menu", positions.append)
+
+    handled = window.eventFilter(
+        window.island._song_label,
+        _FakeContextMenuEvent(QPoint(20, 30)),
+    )
+
+    assert handled
+    assert positions == [QPoint(20, 30)]
+
+
+def test_mini_mode_manager_hides_and_restores_main_window(qtbot, app_mock):
+    _prepare_dynamic_island_app(app_mock)
+    app_mock.isVisible.return_value = True
+    app_mock.geometry.return_value = QRect(100, 120, 640, 480)
+    manager = MiniModeManager(app_mock)
+    qtbot.addWidget(manager.window)
+    changes = []
+    manager.mode_changed.connect(changes.append)
+
+    manager.enter()
+
+    assert manager.is_active
+    assert manager.window.isVisible()
+    app_mock.hide.assert_called_once()
+    assert changes == [True]
+
+    manager.exit()
+
+    assert not manager.is_active
+    assert not manager.window.isVisible()
+    app_mock.show.assert_called_once()
+    app_mock.activateWindow.assert_called_once()
+    assert changes == [True, False]
+
+
+def _prepare_lyric_window_app(app_mock):
+    app_mock.live_lyric.line_changed = Signal()
+    app_mock.live_lyric.lyrics_changed = Signal()
+    app_mock.live_lyric.current_line = Line("", "", False)
+    return app_mock
+
+
+def test_lyric_window_drag_uses_system_move(qtbot, app_mock, monkeypatch):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: True)
+
+    press = _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10))
+    move = _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28))
+    release = _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28))
+
+    window.mousePressEvent(press)
+    window.mouseMoveEvent(move)
+    window.mouseReleaseEvent(release)
+
+    assert press.accepted
+    assert move.accepted
+    assert release.accepted
+    assert window.pos() == QPoint(100, 120)
+    assert window._old_pos is None
+    assert not window._using_system_move
+
+
+def test_lyric_window_drag_falls_back_to_manual_move(
+    qtbot, app_mock, monkeypatch
+):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: False)
+
+    press = _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10))
+    move = _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28))
+    release = _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28))
+
+    window.mousePressEvent(press)
+    window.mouseMoveEvent(move)
+    window.mouseReleaseEvent(release)
+
+    assert window.pos() == QPoint(115, 138)
+    assert window._old_pos is None
+    assert not window._using_system_move
 
 
 def test_ai_chat_assistant_rows_keep_content_height(qtbot):

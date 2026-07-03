@@ -37,6 +37,8 @@ class Tray(QSystemTrayIcon):
         self._prev_action = QAction(
             QIcon.fromTheme("media-skip-backward"), t("tray-skip-track-prev")
         )
+        self._toggle_mini_mode_action = QAction(t("mini-mode"))
+        self._toggle_mini_mode_action.setCheckable(True)
         self._quit_action = QAction(QIcon.fromTheme("exit"), t("tray-quit-application"))
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
@@ -53,6 +55,7 @@ class Tray(QSystemTrayIcon):
         self._toggle_player_action.triggered.connect(self._app.player.toggle)
         self._prev_action.triggered.connect(self._app.playlist.previous)
         self._next_action.triggered.connect(self._app.playlist.next)
+        self._toggle_mini_mode_action.triggered.connect(self._toggle_mini_mode)
         if self._toggle_app_action is not None:
             self._toggle_app_action.triggered.connect(self._toggle_app_state)
         self._app.player.state_changed.connect(
@@ -60,6 +63,7 @@ class Tray(QSystemTrayIcon):
         )
         self._app.playlist.song_changed.connect(self.on_player_song_changed)
         self._app.theme_mgr.theme_changed.connect(self.on_theme_changed)
+        self._app.ui.mini_mode.mode_changed.connect(self.on_mini_mode_changed)
         get_qapp().applicationStateChanged.connect(self.on_app_state_changed)
 
         self._app.installEventFilter(self)
@@ -78,6 +82,7 @@ class Tray(QSystemTrayIcon):
         self._menu.addSeparator()
         if self._toggle_app_action is not None:
             self._menu.addAction(self._toggle_app_action)
+        self._menu.addAction(self._toggle_mini_mode_action)
         self._menu.addAction(self._quit_action)
         self._status_action.setEnabled(False)
 
@@ -104,6 +109,9 @@ class Tray(QSystemTrayIcon):
         else:
             self._app.hide()
 
+    def _toggle_mini_mode(self, checked):
+        self._app.ui.set_mini_mode_enabled(checked)
+
     def _set_icon(self):
         # respect system icon
         icon = QIcon.fromTheme(
@@ -113,6 +121,11 @@ class Tray(QSystemTrayIcon):
 
     def on_theme_changed(self, _):
         self._set_icon()
+
+    def on_mini_mode_changed(self, active):
+        self._toggle_mini_mode_action.blockSignals(True)
+        self._toggle_mini_mode_action.setChecked(active)
+        self._toggle_mini_mode_action.blockSignals(False)
 
     def on_player_song_changed(self, song):
         if song is not None:
@@ -156,7 +169,7 @@ class Tray(QSystemTrayIcon):
             # * the dock icon is clicked (on macOS)
             # * the Qt.Tool widget got focus (on macOS and Linux)
             # * the Qt.ColorRole.Window widget got focus (on Linux)
-            if IS_MACOS:
+            if IS_MACOS and not self._app.ui.mini_mode.is_active:
                 self._app.show()
                 self._app.activateWindow()
         elif state == Qt.ApplicationState.ApplicationInactive:

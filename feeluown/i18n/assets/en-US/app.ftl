@@ -6,6 +6,8 @@
 # ----------------------------------------
 minimize-window = Minimize
 fullscreen-window = Full Screen
+mini-mode = Mini Mode
+mini-mode-exit = Exit Mini Player
 playlist = Playlist
 recently-played = Recently Played
 unknown = Unknown
