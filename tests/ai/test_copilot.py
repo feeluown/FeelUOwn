@@ -93,7 +93,7 @@ def test_play_song_suggestion_tool_plays_song_suggestion():
     assert result["action"] == "play_song_suggestion"
 
 
-def test_create_song_suggestions_artifact_normalizes_songs(mocker):
+def test_create_song_suggestions_artifact_normalizes_valid_songs(mocker):
     app = SimpleNamespace(config=SimpleNamespace())
     mocker.patch("feeluown.ai.copilot.create_agent_with_config")
     copilot = Copilot(app)
@@ -105,11 +105,6 @@ def test_create_song_suggestions_artifact_normalizes_songs(mocker):
                 title=" hello world ",
                 artists_name=" mary ",
                 description=" nice ",
-            ),
-            SongSuggestion(
-                title="HELLO WORLD",
-                artists_name="MARY",
-                description="duplicate",
             ),
             SongSuggestion(title=" ", artists_name="nobody", description=""),
         ],

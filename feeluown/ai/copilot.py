@@ -100,7 +100,7 @@ _AGENT_SYSTEM_PROMPT = """你是一个音乐播放器 AI 助手。
 通用规则：
 - 当你向用户推荐或整理一组歌曲时，优先调用 create_song_suggestions_artifact 工具创建可交互歌曲建议列表。
 - SongSuggestion 是尚未匹配成 SongModel 的歌曲建议；不要把一组 SongSuggestion 一次性转换或播放。
-- create_song_suggestions_artifact 会清洗、去重并校验歌曲建议；单个 artifact 最多包含 20 首。
+- create_song_suggestions_artifact 会清洗并校验歌曲建议；单个 artifact 最多包含 20 首。
 - play_song_suggestion 只用于“最新用户消息明确要求播放某一首建议歌曲”的场景。
 - 对 SongSuggestion artifact 中的歌曲，如果用户要求播放，先用 library_search 找到 SongModel。
 - 找到 SongModel 后，再用搜索结果 artifact 调用 play_library_search_result_song。

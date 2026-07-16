@@ -20,26 +20,6 @@ def _normalize_song_suggestion(song: SongSuggestion) -> SongSuggestion | None:
     )
 
 
-def _normalize_song_suggestions(
-    songs: list[SongSuggestion],
-) -> list[SongSuggestion]:
-    normalized = []
-    seen = set()
-    for song in songs:
-        normalized_song = _normalize_song_suggestion(song)
-        if normalized_song is None:
-            continue
-        key = (
-            normalized_song.title.casefold(),
-            normalized_song.artists_name.casefold(),
-        )
-        if key in seen:
-            continue
-        seen.add(key)
-        normalized.append(normalized_song)
-    return normalized
-
-
 @tool
 def play_song_suggestion(
     song: SongSuggestion,
@@ -78,7 +58,10 @@ def create_song_suggestions_artifact(
     :param songs: A list of SongSuggestion.
     :param title: Optional artifact title.
     """
-    normalized_songs = _normalize_song_suggestions(songs)
+    normalized_songs = [
+        song for song in (_normalize_song_suggestion(song) for song in songs)
+        if song is not None
+    ]
     if not normalized_songs:
         return tool_error(
             "create_song_suggestions_artifact",
