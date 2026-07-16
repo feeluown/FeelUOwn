@@ -13,29 +13,29 @@ def _song_to_ai_dict(song: BriefSongModel):
 
 
 @tool
-def play_library_search_result_song(
+def play_song_by_uri(
     song_uri: str,
     runtime: ToolRuntime,
 ) -> dict:
     """Play a SongModel by URI.
 
-    Use this after library_search returns SongModel item URIs and the user asks
-    to play one of them.
+    Use this when the user asks to play a real SongModel URI returned by
+    library_search or another FeelUOwn tool.
 
-    :param song_uri: SongModel URI returned by library_search.
+    :param song_uri: SongModel URI.
     """
     try:
         song = runtime.context.copilot.get_song_by_uri(song_uri)
     except ValueError:
         return tool_error(
-            "play_library_search_result_song",
+            "play_song_by_uri",
             "INVALID_SONG_URI",
             "A valid SongModel URI is required.",
             data={"song_uri": song_uri},
         )
     except Exception:  # noqa
         return tool_error(
-            "play_library_search_result_song",
+            "play_song_by_uri",
             "SONG_MODEL_NOT_FOUND",
             "SongModel was not found for the given URI.",
             data={"song_uri": song_uri},
@@ -43,7 +43,7 @@ def play_library_search_result_song(
 
     runtime.context.app.playlist.play_model(song)
     return tool_success(
-        "play_library_search_result_song",
+        "play_song_by_uri",
         data={
             "song_uri": song_uri,
             "song": _song_to_ai_dict(song),
@@ -51,6 +51,6 @@ def play_library_search_result_song(
     )
 
 
-artifact_tools = [
-    play_library_search_result_song,
+song_tools = [
+    play_song_by_uri,
 ]

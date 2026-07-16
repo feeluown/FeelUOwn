@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from feeluown.ai.tools.library import DEFAULT_SEARCH_TIMEOUT, library_search
-from feeluown.ai.tools.artifacts import play_library_search_result_song
+from feeluown.ai.tools.songs import play_song_by_uri
 from feeluown.library import (
     AlbumModel,
     ArtistModel,
@@ -250,7 +250,7 @@ async def test_library_search_artifact_song_can_be_played_by_uri():
         for result in search_result["data"]["results"]
         for song in result["songs"]
     ]
-    play_result = play_library_search_result_song.func(
+    play_result = play_song_by_uri.func(
         song_uri=song_uris[2],
         runtime=runtime,
     )

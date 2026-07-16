@@ -1,5 +1,5 @@
 from feeluown.ai.tools.library import library_search, library_tools
-from feeluown.ai.tools.artifacts import play_library_search_result_song, artifact_tools
+from feeluown.ai.tools.songs import play_song_by_uri, song_tools
 from feeluown.ai.tools.playback import (
     playback_adjust_volume,
     playback_get_state,
@@ -35,7 +35,7 @@ from feeluown.ai.tools.suggestions import (
 copilot_tools = [
     *suggestion_tools,
     *library_tools,
-    *artifact_tools,
+    *song_tools,
     *playback_tools,
     *ai_radio_tools,
     *fm_candidates_tools,
@@ -56,9 +56,9 @@ __all__ = [
     "fm_candidates_tools",
     "library_search",
     "library_tools",
-    "artifact_tools",
+    "song_tools",
     "play_song_suggestion",
-    "play_library_search_result_song",
+    "play_song_by_uri",
     "playback_adjust_volume",
     "playback_get_state",
     "playback_next_track",
