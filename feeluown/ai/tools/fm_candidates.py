@@ -1,9 +1,12 @@
 from langchain.tools import tool, ToolRuntime
 
-from feeluown.ai.tools.result import tool_bool_result, tool_success
+from feeluown.ai.tools.result import tool_bool_result, tool_error, tool_success
 from feeluown.library import BriefSongModel
 from feeluown.player.playlist import PlaylistMode
 from feeluown.serializers import serialize
+
+
+MAX_APPEND_SONGS = 3
 
 
 def _get_fm_candidates(runtime: ToolRuntime):
@@ -71,11 +74,26 @@ def fm_candidates_append(
 ) -> dict:
     """Append real songs to the FM candidate list.
 
-    FM candidates are real provider songs. Use library_search first when you
-    need to discover real provider songs from text.
+    FM candidates are SongModel items. Use library_search first when you need
+    to discover SongModel items from text.
 
-    :param songs: Real provider songs to append.
+    Append at most 3 songs in one call. When adding more songs, split the work
+    into smaller batches so matching/searching remains observable and bounded.
+
+    :param songs: SongModel items to append.
     """
+    if len(songs) > MAX_APPEND_SONGS:
+        return tool_error(
+            "fm_candidates_append",
+            "TOO_MANY_SONGS",
+            "Append at most 3 songs in one fm_candidates_append call.",
+            data={
+                "success": False,
+                "max_song_count": MAX_APPEND_SONGS,
+                "song_count": len(songs),
+                "active": _is_fm_active(runtime),
+            },
+        )
     fm_candidates = _get_fm_candidates(runtime)
     return _fm_candidate_result(
         "fm_candidates_append",

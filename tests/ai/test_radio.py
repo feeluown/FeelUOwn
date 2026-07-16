@@ -241,6 +241,23 @@ def test_fm_candidates_append_tool_appends_real_songs_without_ai_radio(
     assert result["data"]["success"] is True
 
 
+def test_fm_candidates_append_tool_rejects_large_batches(
+    song, song1, song2, song3
+):
+    runtime = create_runtime_with_fm(song)
+    song4 = SimpleNamespace(source="fake", identifier="4")
+
+    result = fm_candidates_append.func(
+        songs=[song1, song2, song3, song4],
+        runtime=runtime,
+    )
+
+    assert runtime.context.app.playlist.list() == [song]
+    assert result["ok"] is False
+    assert result["error"]["code"] == "TOO_MANY_SONGS"
+    assert result["data"]["max_song_count"] == 3
+
+
 def test_ai_radio_tools_return_inactive_error():
     runtime = FakeRuntime(SimpleNamespace(ai=FakeAI()))
 

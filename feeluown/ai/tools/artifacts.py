@@ -1,6 +1,5 @@
 from langchain.tools import tool, ToolRuntime
 
-from feeluown.ai.models import SongSuggestion
 from feeluown.ai.tools.result import tool_error, tool_success
 from feeluown.library import BriefSongModel
 from feeluown.serializers import serialize
@@ -13,50 +12,49 @@ def _song_to_ai_dict(song: BriefSongModel):
     return data
 
 
-def _to_playable_song(song: SongSuggestion | BriefSongModel):
-    if isinstance(song, SongSuggestion):
-        return song.to_brief_song()
-    return song
-
-
 @tool
-def play_artifact_song(
+def play_library_search_result_song(
     artifact_id: int,
     song_position: int,
     runtime: ToolRuntime,
 ) -> dict:
-    """Play a song from a Copilot artifact by 1-based song position.
+    """Play a SongModel from a library_search result artifact.
 
     Use this after library_search returns an artifact_id and the user asks to
-    play one of the songs in that artifact.
+    play one of the SongModel items in that search result artifact.
 
     :param artifact_id: Artifact identifier returned by a tool.
     :param song_position: 1-based song position in the artifact song list.
     """
-    song = runtime.context.copilot.get_artifact_song(artifact_id, song_position)
+    song = runtime.context.copilot.get_library_search_result_song(
+        artifact_id,
+        song_position,
+    )
     if song is None:
         return tool_error(
-            "play_artifact_song",
-            "ARTIFACT_SONG_NOT_FOUND",
-            "Artifact song was not found.",
+            "play_library_search_result_song",
+            "SEARCH_RESULT_SONG_NOT_FOUND",
+            (
+                "Search result SongModel was not found. Use this tool only "
+                "with library_search result artifacts."
+            ),
             data={
                 "artifact_id": artifact_id,
                 "song_position": song_position,
             },
         )
 
-    playable_song = _to_playable_song(song)
-    runtime.context.app.playlist.play_model(playable_song)
+    runtime.context.app.playlist.play_model(song)
     return tool_success(
-        "play_artifact_song",
+        "play_library_search_result_song",
         data={
             "artifact_id": artifact_id,
             "song_position": song_position,
-            "song": _song_to_ai_dict(playable_song),
+            "song": _song_to_ai_dict(song),
         },
     )
 
 
 artifact_tools = [
-    play_artifact_song,
+    play_library_search_result_song,
 ]

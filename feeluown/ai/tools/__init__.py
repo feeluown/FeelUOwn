@@ -1,5 +1,5 @@
 from feeluown.ai.tools.library import library_search, library_tools
-from feeluown.ai.tools.artifacts import play_artifact_song, artifact_tools
+from feeluown.ai.tools.artifacts import play_library_search_result_song, artifact_tools
 from feeluown.ai.tools.playback import (
     playback_adjust_volume,
     playback_get_state,
@@ -58,7 +58,7 @@ __all__ = [
     "library_tools",
     "artifact_tools",
     "play_song_suggestion",
-    "play_artifact_song",
+    "play_library_search_result_song",
     "playback_adjust_volume",
     "playback_get_state",
     "playback_next_track",

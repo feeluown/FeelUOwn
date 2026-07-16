@@ -3,7 +3,7 @@ from types import SimpleNamespace
 import pytest
 
 from feeluown.ai.tools.library import DEFAULT_SEARCH_TIMEOUT, library_search
-from feeluown.ai.tools.artifacts import play_artifact_song
+from feeluown.ai.tools.artifacts import play_library_search_result_song
 from feeluown.library import (
     AlbumModel,
     ArtistModel,
@@ -45,6 +45,12 @@ class FakeCopilot:
 
     def get_artifact_song(self, artifact_id, song_position):
         artifact = self.artifacts[artifact_id - 1]
+        return artifact.songs[song_position - 1]
+
+    def get_library_search_result_song(self, artifact_id, song_position):
+        artifact = self.artifacts[artifact_id - 1]
+        if artifact.type != "search_result":
+            return None
         return artifact.songs[song_position - 1]
 
 
@@ -235,7 +241,7 @@ async def test_library_search_artifact_song_can_be_played_by_position():
         for result in search_result["data"]["results"]
         for song in result["songs"]
     ]
-    play_result = play_artifact_song.func(
+    play_result = play_library_search_result_song.func(
         artifact_id=search_result["data"]["artifact_id"],
         song_position=3,
         runtime=runtime,

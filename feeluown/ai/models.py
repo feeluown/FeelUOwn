@@ -5,7 +5,7 @@ from feeluown.library import BriefSongModel, ModelState
 
 @dataclass
 class SongSuggestion:
-    """A song suggested by the AI before it is matched to a provider song.
+    """A song suggested by the AI before it is matched to a SongModel.
 
     :param description: Recommendation reason or song description.
     """

@@ -29,7 +29,10 @@ def _ai_radio_unavailable_result():
 
 
 @tool
-def ai_radio_activate(runtime: ToolRuntime, reset: bool = True) -> dict:
+def ai_radio_activate(
+    runtime: ToolRuntime,
+    reset: bool = True,
+) -> dict:
     """Activate AI Radio.
 
     This switches the playlist into FM mode and lets the current AI radio

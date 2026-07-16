@@ -99,18 +99,24 @@ _AGENT_SYSTEM_PROMPT = """你是一个音乐播放器 AI 助手。
 
 通用规则：
 - 当你向用户推荐或整理一组歌曲时，优先调用 create_song_suggestions_artifact 工具创建可交互歌曲建议列表。
+- SongSuggestion 是尚未匹配成 SongModel 的歌曲建议；不要把一组 SongSuggestion 一次性转换或播放。
+- create_song_suggestions_artifact 会清洗、去重并校验歌曲建议；单个 artifact 最多包含 20 首。
+- play_song_suggestion 只用于“最新用户消息明确要求播放某一首建议歌曲”的场景。
+- 对 SongSuggestion artifact 中的歌曲，如果用户要求播放，先用 library_search 找到 SongModel。
+- 找到 SongModel 后，再用搜索结果 artifact 调用 play_library_search_result_song。
 - 上一首、下一首、暂停、继续、停止、音量调整等基础播放控制，应通过 playback_ 开头的工具完成。
 - 当用户要求搜索在线音乐资源时，优先使用 library_search 工具，并用 timeout 控制最长等待时间。
 - library_search 返回的 data.results 中的 uri 是真实资源 URI，可以在 Markdown 链接里使用。
 - library_search 会创建搜索结果 artifact，并在 data.artifact_id 返回编号。
-- 当用户要求播放搜索结果中的某首歌时，使用歌曲的 artifact_song_position 调用 play_artifact_song。
+- 当用户要求播放搜索结果中的某首歌时，使用歌曲的 artifact_song_position 调用 play_library_search_result_song。
 
 AI 电台：
 - AI 电台开关、状态和偏好应优先通过 ai_radio_ 开头的工具完成，不要要求用户去其它界面操作。
 - AI 电台只是激活 FM 模式的一种方式；FeelUOwn 也可以通过歌曲电台等其它方式进入 FM 模式。
-- 当用户要求开启、启动、进入 AI 电台时，调用 ai_radio_activate。
+- 当用户明确要求开启、启动、进入 AI 电台时，才调用 ai_radio_activate。
 - 当用户要求关闭、停止、退出 AI 电台时，调用 ai_radio_deactivate。
 - 当用户反馈会影响后续 AI 电台推荐偏好时，调用 ai_radio_update_preferences。
+- 在执行依赖 AI 电台已开启的操作前，先调用 ai_radio_get_state；如果返回 inactive，不要自动开启，除非最新用户消息明确要求开启 AI 电台。
 
 FM 候选列表：
 - FM 候选歌曲指播放列表中当前播放歌曲后面的真实歌曲。
@@ -118,7 +124,8 @@ FM 候选列表：
 - FM 候选列表和 AI 电台是否开启无直接关系。
 - 查看 FM 候选列表时调用 fm_candidates_get_state。
 - 修改 FM 候选列表时只使用 fm_candidates_remove 和 fm_candidates_append。
-- fm_candidates_append 接收真实 provider 歌曲。
+- fm_candidates_append 接收 SongModel。
+- fm_candidates_append 一次最多追加 3 首真实歌曲；更多歌曲需要分批处理。
 - 如果只有文字描述，先调用 library_search 找到真实歌曲资源。
 - 清空候选列表时，先调用 fm_candidates_get_state，再用 fm_candidates_remove 删除全部候选位置。
 - 替换候选列表时，先 remove 不需要的候选，再 append 新候选。
@@ -231,6 +238,17 @@ class Copilot:
         if not 1 <= song_position <= len(artifact.songs):
             return None
         return artifact.songs[song_position - 1]
+
+    def get_library_search_result_song(
+        self, artifact_id: int, song_position: int
+    ) -> BriefSongModel | None:
+        artifact = self.get_artifact(artifact_id)
+        if artifact is None or artifact.type != "search_result":
+            return None
+        song = self.get_artifact_song(artifact_id, song_position)
+        if isinstance(song, SongSuggestion):
+            return None
+        return song
 
     def get_config(self):
         return {
