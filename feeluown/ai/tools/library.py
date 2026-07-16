@@ -49,11 +49,10 @@ def _models_to_ai_list(models, limit: int):
     ]
 
 
-def _songs_to_ai_list(songs, limit: int, artifact_position_start: int):
+def _songs_to_ai_list(songs, limit: int):
     data = []
-    for offset, song in enumerate(list(songs)[:limit], start=0):
-        song_data = _model_to_ai_dict(song, offset + 1)
-        song_data["artifact_song_position"] = artifact_position_start + offset
+    for position, song in enumerate(list(songs)[:limit], start=1):
+        song_data = _model_to_ai_dict(song, position)
         data.append(song_data)
     return data
 
@@ -87,15 +86,12 @@ def _error_result(action: str, error: Exception):
 def _search_result_to_ai_dict(
     result,
     limit: int,
-    artifact_song_position_start: int = 1,
 ):
     return {
         "source": result.source,
         "query": result.q,
         "error_message": result.err_msg,
-        "songs": _songs_to_ai_list(
-            result.songs, limit, artifact_song_position_start
-        ),
+        "songs": _songs_to_ai_list(result.songs, limit),
         "albums": _models_to_ai_list(result.albums, limit),
         "artists": _models_to_ai_list(result.artists, limit),
         "videos": _models_to_ai_list(result.videos, limit),
@@ -153,16 +149,13 @@ async def library_search(
             title=keyword,
         )
         result_dicts = []
-        artifact_song_position = 1
         for result in results:
             result_dicts.append(
                 _search_result_to_ai_dict(
                     result,
                     limit,
-                    artifact_song_position,
                 )
             )
-            artifact_song_position += len(result.songs)
         return tool_success(
             action,
             data={

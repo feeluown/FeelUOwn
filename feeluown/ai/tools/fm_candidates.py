@@ -70,19 +70,19 @@ def fm_candidates_remove(positions: list[int], runtime: ToolRuntime) -> dict:
 
 @tool
 def fm_candidates_append(
-    songs: list[BriefSongModel], runtime: ToolRuntime
+    song_uris: list[str], runtime: ToolRuntime
 ) -> dict:
-    """Append real songs to the FM candidate list.
+    """Append songs to the FM candidate list by SongModel URI.
 
     FM candidates are SongModel items. Use library_search first when you need
-    to discover SongModel items from text.
+    to discover SongModel URIs from text.
 
     Append at most 3 songs in one call. When adding more songs, split the work
     into smaller batches so matching/searching remains observable and bounded.
 
-    :param songs: SongModel items to append.
+    :param song_uris: SongModel URI list to append.
     """
-    if len(songs) > MAX_APPEND_SONGS:
+    if len(song_uris) > MAX_APPEND_SONGS:
         return tool_error(
             "fm_candidates_append",
             "TOO_MANY_SONGS",
@@ -90,10 +90,40 @@ def fm_candidates_append(
             data={
                 "success": False,
                 "max_song_count": MAX_APPEND_SONGS,
-                "song_count": len(songs),
+                "song_count": len(song_uris),
                 "active": _is_fm_active(runtime),
             },
         )
+    if not _is_fm_active(runtime):
+        return _fm_candidate_result("fm_candidates_append", False, runtime)
+
+    songs = []
+    for uri in song_uris:
+        try:
+            song = runtime.context.copilot.get_song_by_uri(uri)
+        except ValueError:
+            return tool_error(
+                "fm_candidates_append",
+                "INVALID_SONG_URI",
+                "A valid SongModel URI is required.",
+                data={
+                    "success": False,
+                    "song_uri": uri,
+                    "active": _is_fm_active(runtime),
+                },
+            )
+        except Exception:  # noqa
+            return tool_error(
+                "fm_candidates_append",
+                "SONG_MODEL_NOT_FOUND",
+                "SongModel was not found for the given URI.",
+                data={
+                    "success": False,
+                    "song_uri": uri,
+                    "active": _is_fm_active(runtime),
+                },
+            )
+        songs.append(song)
     fm_candidates = _get_fm_candidates(runtime)
     return _fm_candidate_result(
         "fm_candidates_append",

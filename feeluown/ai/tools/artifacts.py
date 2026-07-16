@@ -14,42 +14,38 @@ def _song_to_ai_dict(song: BriefSongModel):
 
 @tool
 def play_library_search_result_song(
-    artifact_id: int,
-    song_position: int,
+    song_uri: str,
     runtime: ToolRuntime,
 ) -> dict:
-    """Play a SongModel from a library_search result artifact.
+    """Play a SongModel by URI.
 
-    Use this after library_search returns an artifact_id and the user asks to
-    play one of the SongModel items in that search result artifact.
+    Use this after library_search returns SongModel item URIs and the user asks
+    to play one of them.
 
-    :param artifact_id: Artifact identifier returned by a tool.
-    :param song_position: 1-based song position in the artifact song list.
+    :param song_uri: SongModel URI returned by library_search.
     """
-    song = runtime.context.copilot.get_library_search_result_song(
-        artifact_id,
-        song_position,
-    )
-    if song is None:
+    try:
+        song = runtime.context.copilot.get_song_by_uri(song_uri)
+    except ValueError:
         return tool_error(
             "play_library_search_result_song",
-            "SEARCH_RESULT_SONG_NOT_FOUND",
-            (
-                "Search result SongModel was not found. Use this tool only "
-                "with library_search result artifacts."
-            ),
-            data={
-                "artifact_id": artifact_id,
-                "song_position": song_position,
-            },
+            "INVALID_SONG_URI",
+            "A valid SongModel URI is required.",
+            data={"song_uri": song_uri},
+        )
+    except Exception:  # noqa
+        return tool_error(
+            "play_library_search_result_song",
+            "SONG_MODEL_NOT_FOUND",
+            "SongModel was not found for the given URI.",
+            data={"song_uri": song_uri},
         )
 
     runtime.context.app.playlist.play_model(song)
     return tool_success(
         "play_library_search_result_song",
         data={
-            "artifact_id": artifact_id,
-            "song_position": song_position,
+            "song_uri": song_uri,
             "song": _song_to_ai_dict(song),
         },
     )

@@ -11,7 +11,7 @@ from feeluown.ai.tools.suggestions import (
     play_song_suggestion,
 )
 from feeluown.ai.tools.artifacts import play_library_search_result_song
-from feeluown.library import BriefSongModel, SimpleSearchResult
+from feeluown.library import BriefSongModel, ModelType, SimpleSearchResult, reverse
 
 
 def test_copilot_adds_song_artifact_without_mutating_playlist(mocker):
@@ -67,8 +67,50 @@ def test_copilot_adds_search_result_artifact(mocker):
     assert artifact.songs == [song]
     assert copilot.get_artifact(1) is artifact
     assert copilot.get_artifact_song(1, 1) is song
-    assert copilot.get_library_search_result_song(1, 1) is song
+    assert copilot.get_song_by_uri(reverse(song)) is song
     assert received == [artifact]
+
+
+def test_copilot_resolves_song_uri_from_library_on_cache_miss(mocker):
+    song = BriefSongModel(
+        source="fake",
+        identifier="song-1",
+        title="Song",
+        artists_name="Mary",
+    )
+    library = SimpleNamespace(model_get=MagicMock(return_value=song))
+    app = SimpleNamespace(config=SimpleNamespace(), library=library)
+    mocker.patch("feeluown.ai.copilot.create_agent_with_config")
+    copilot = Copilot(app)
+
+    result = copilot.get_song_by_uri("fuo://fake/songs/song-1")
+
+    assert result is song
+    library.model_get.assert_called_once_with(
+        "fake", ModelType.song, "song-1"
+    )
+
+
+def test_copilot_model_cache_is_cleared_on_new_thread(mocker):
+    song = BriefSongModel(
+        source="fake",
+        identifier="song-1",
+        title="Song",
+        artists_name="Mary",
+    )
+    library = SimpleNamespace(model_get=MagicMock(return_value=song))
+    app = SimpleNamespace(config=SimpleNamespace(), library=library)
+    mocker.patch("feeluown.ai.copilot.create_agent_with_config")
+    copilot = Copilot(app)
+    copilot.cache_model(song)
+
+    assert copilot.get_song_by_uri(reverse(song)) is song
+    copilot.new_thread()
+    assert copilot.get_song_by_uri(reverse(song)) is song
+
+    library.model_get.assert_called_once_with(
+        "fake", ModelType.song, "song-1"
+    )
 
 
 def test_play_song_suggestion_tool_plays_song_suggestion():
@@ -158,8 +200,7 @@ def test_play_library_search_result_song_tool_plays_search_result_song(mocker):
     runtime = SimpleNamespace(context=SimpleNamespace(app=app, copilot=copilot))
 
     result = play_library_search_result_song.func(
-        artifact_id=1,
-        song_position=1,
+        song_uri=reverse(song),
         runtime=runtime,
     )
 
@@ -169,7 +210,7 @@ def test_play_library_search_result_song_tool_plays_search_result_song(mocker):
     assert result["data"]["song"]["identifier"] == "song-1"
 
 
-def test_play_library_search_result_song_rejects_song_suggestion_artifact(mocker):
+def test_play_library_search_result_song_rejects_song_suggestion_uri(mocker):
     playlist = SimpleNamespace(play_model=MagicMock())
     app = SimpleNamespace(config=SimpleNamespace(), playlist=playlist)
     mocker.patch("feeluown.ai.copilot.create_agent_with_config")
@@ -186,15 +227,13 @@ def test_play_library_search_result_song_rejects_song_suggestion_artifact(mocker
     runtime = SimpleNamespace(context=SimpleNamespace(app=app, copilot=copilot))
 
     result = play_library_search_result_song.func(
-        artifact_id=1,
-        song_position=1,
+        song_uri="fuo://song-suggestion?title=hello",
         runtime=runtime,
     )
 
     playlist.play_model.assert_not_called()
     assert result["ok"] is False
-    assert result["error"]["code"] == "SEARCH_RESULT_SONG_NOT_FOUND"
-    assert copilot.get_library_search_result_song(1, 1) is None
+    assert result["error"]["code"] == "INVALID_SONG_URI"
 
 
 def test_copilot_tool_names_are_specific_to_song_suggestions():

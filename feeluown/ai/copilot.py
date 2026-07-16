@@ -9,9 +9,15 @@ from langchain_core.callbacks import BaseCallbackHandler
 from feeluown.app import App
 from feeluown.ai.llm import create_chat_model_with_config
 from feeluown.ai.matcher import SongSuggestionMatcher
+from feeluown.ai.model_cache import ModelLRUCache
 from feeluown.ai.models import SongSuggestion
 from feeluown.ai.tools import copilot_tools
-from feeluown.library import BriefSongModel, SimpleSearchResult
+from feeluown.library import (
+    BaseModel,
+    BriefSongModel,
+    ModelType,
+    SimpleSearchResult,
+)
 from feeluown.utils.dispatch import Signal
 
 
@@ -103,12 +109,12 @@ _AGENT_SYSTEM_PROMPT = """你是一个音乐播放器 AI 助手。
 - create_song_suggestions_artifact 会清洗并校验歌曲建议；单个 artifact 最多包含 20 首。
 - play_song_suggestion 只用于“最新用户消息明确要求播放某一首建议歌曲”的场景。
 - 对 SongSuggestion artifact 中的歌曲，如果用户要求播放，先用 library_search 找到 SongModel。
-- 找到 SongModel 后，再用搜索结果 artifact 调用 play_library_search_result_song。
+- 拿到真实歌曲 URI 后，再调用 play_library_search_result_song。
 - 上一首、下一首、暂停、继续、停止、音量调整等基础播放控制，应通过 playback_ 开头的工具完成。
 - 当用户要求搜索在线音乐资源时，优先使用 library_search 工具，并用 timeout 控制最长等待时间。
 - library_search 返回的 data.results 中的 uri 是真实资源 URI，可以在 Markdown 链接里使用。
 - library_search 会创建搜索结果 artifact，并在 data.artifact_id 返回编号。
-- 当用户要求播放搜索结果中的某首歌时，使用歌曲的 artifact_song_position 调用 play_library_search_result_song。
+- 当用户要求播放搜索结果中的某首歌时，使用歌曲的 uri 调用 play_library_search_result_song。
 
 AI 电台：
 - AI 电台开关、状态和偏好应优先通过 ai_radio_ 开头的工具完成，不要要求用户去其它界面操作。
@@ -124,7 +130,7 @@ FM 候选列表：
 - FM 候选列表和 AI 电台是否开启无直接关系。
 - 查看 FM 候选列表时调用 fm_candidates_get_state。
 - 修改 FM 候选列表时只使用 fm_candidates_remove 和 fm_candidates_append。
-- fm_candidates_append 接收 SongModel。
+- fm_candidates_append 接收真实歌曲 URI 列表，不接收 SongModel 对象。
 - fm_candidates_append 一次最多追加 3 首真实歌曲；更多歌曲需要分批处理。
 - 如果只有文字描述，先调用 library_search 找到真实歌曲资源。
 - 清空候选列表时，先调用 fm_candidates_get_state，再用 fm_candidates_remove 删除全部候选位置。
@@ -177,6 +183,7 @@ class Copilot:
         self._agent_context = CopilotContext(copilot=self, app=app)
         self._agent_stream_callback = AgentStreamCallback(self)
         self._artifacts = ArtifactsManager()
+        self._model_cache = ModelLRUCache()
         self.artifact_added = self._artifacts.added
         self._current_thread_id = 1
         # Agent is working or not
@@ -197,6 +204,7 @@ class Copilot:
     def new_thread(self):
         self._current_thread_id += 1
         self._artifacts.clear()
+        self._model_cache.clear()
 
     async def match_song_suggestion(
         self, suggestion: SongSuggestion
@@ -221,7 +229,26 @@ class Copilot:
     def add_search_result_artifact(
         self, results: List[SimpleSearchResult], title: str = ""
     ) -> CopilotArtifact:
-        return self._artifacts.add_search_result(results, title=title)
+        artifact = self._artifacts.add_search_result(results, title=title)
+        for song in artifact.songs:
+            if not isinstance(song, SongSuggestion):
+                self.cache_model(song)
+        return artifact
+
+    def cache_model(self, model: BaseModel):
+        self._model_cache.set_model(model)
+
+    def get_model_by_uri(
+        self, uri: str, expected_type: ModelType | None = None
+    ) -> BaseModel:
+        return self._model_cache.model_get(
+            getattr(self._app, "library", None),
+            uri,
+            expected_type=expected_type,
+        )
+
+    def get_song_by_uri(self, uri: str) -> BriefSongModel:
+        return self.get_model_by_uri(uri, expected_type=ModelType.song)
 
     def get_artifacts(self) -> List[CopilotArtifact]:
         return self._artifacts.list()
@@ -238,17 +265,6 @@ class Copilot:
         if not 1 <= song_position <= len(artifact.songs):
             return None
         return artifact.songs[song_position - 1]
-
-    def get_library_search_result_song(
-        self, artifact_id: int, song_position: int
-    ) -> BriefSongModel | None:
-        artifact = self.get_artifact(artifact_id)
-        if artifact is None or artifact.type != "search_result":
-            return None
-        song = self.get_artifact_song(artifact_id, song_position)
-        if isinstance(song, SongSuggestion):
-            return None
-        return song
 
     def get_config(self):
         return {

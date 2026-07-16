@@ -14,6 +14,9 @@ from feeluown.library import (
     SimpleSearchResult,
     SongModel,
     VideoModel,
+    reverse,
+    parse_line,
+    ModelType,
 )
 
 
@@ -28,6 +31,7 @@ class FakeRuntime:
 class FakeCopilot:
     def __init__(self):
         self.artifacts = []
+        self.models = {}
 
     def add_search_result_artifact(self, results, title=""):
         songs = []
@@ -41,17 +45,22 @@ class FakeCopilot:
             result=list(results),
         )
         self.artifacts.append(artifact)
+        for song in songs:
+            self.cache_model(song)
         return artifact
+
+    def cache_model(self, model):
+        self.models[reverse(model)] = model
 
     def get_artifact_song(self, artifact_id, song_position):
         artifact = self.artifacts[artifact_id - 1]
         return artifact.songs[song_position - 1]
 
-    def get_library_search_result_song(self, artifact_id, song_position):
-        artifact = self.artifacts[artifact_id - 1]
-        if artifact.type != "search_result":
-            return None
-        return artifact.songs[song_position - 1]
+    def get_song_by_uri(self, uri):
+        model, _ = parse_line(uri)
+        if ModelType(model.meta.model_type) != ModelType.song:
+            raise ValueError
+        return self.models[reverse(model)]
 
 
 class FakeProvider(Provider):
@@ -202,7 +211,7 @@ async def test_library_search_tool_returns_online_resource_results():
     assert search_result["songs"][0]["source"] == "fake"
     assert search_result["songs"][0]["model_type"] == "song"
     assert search_result["songs"][0]["uri"] == "fuo://fake/songs/song-1"
-    assert search_result["songs"][0]["artifact_song_position"] == 1
+    assert "artifact_song_position" not in search_result["songs"][0]
     assert search_result["artists"][0]["uri"] == "fuo://fake/artists/artist-1"
     artifact = runtime.context.copilot.artifacts[0]
     assert artifact.type == "search_result"
@@ -227,7 +236,7 @@ async def test_library_search_tool_passes_timeout_to_library():
 
 
 @pytest.mark.asyncio
-async def test_library_search_artifact_song_can_be_played_by_position():
+async def test_library_search_artifact_song_can_be_played_by_uri():
     library = MultiResultLibrary()
     playlist = SimpleNamespace(play_model=lambda song: setattr(playlist, "song", song))
     runtime = FakeRuntime(SimpleNamespace(library=library, playlist=playlist))
@@ -236,17 +245,20 @@ async def test_library_search_artifact_song_can_be_played_by_position():
         keyword="Song",
         runtime=runtime,
     )
-    positions = [
-        song["artifact_song_position"]
+    song_uris = [
+        song["uri"]
         for result in search_result["data"]["results"]
         for song in result["songs"]
     ]
     play_result = play_library_search_result_song.func(
-        artifact_id=search_result["data"]["artifact_id"],
-        song_position=3,
+        song_uri=song_uris[2],
         runtime=runtime,
     )
 
-    assert positions == [1, 2, 3]
+    assert song_uris == [
+        "fuo://fake/songs/song-1",
+        "fuo://fake/songs/song-2",
+        "fuo://other/songs/song-3",
+    ]
     assert play_result["ok"] is True
     assert playlist.song is library.song3

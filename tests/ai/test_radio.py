@@ -15,6 +15,7 @@ from feeluown.ai.tools.fm_candidates import (
     fm_candidates_get_state,
     fm_candidates_remove,
 )
+from feeluown.library import reverse
 from feeluown.player.fm_candidates import FMCandidateManager
 from feeluown.player import Playlist, PlaylistMode
 from feeluown.utils.dispatch import Signal
@@ -70,9 +71,20 @@ class FakeFM:
         self._app.playlist.mode = PlaylistMode.normal
 
 
+class FakeCopilot:
+    def __init__(self):
+        self._songs = {}
+
+    def cache_model(self, song):
+        self._songs[reverse(song)] = song
+
+    def get_song_by_uri(self, uri):
+        return self._songs[uri]
+
+
 class FakeRuntime:
     def __init__(self, app):
-        self.context = SimpleNamespace(app=app)
+        self.context = SimpleNamespace(app=app, copilot=FakeCopilot())
 
 
 class FakeRecommendationAgent:
@@ -230,9 +242,11 @@ def test_fm_candidates_append_tool_appends_real_songs_without_ai_radio(
     song, song1, song2, song3
 ):
     runtime = create_runtime_with_fm(song)
+    for candidate in [song1, song2, song3]:
+        runtime.context.copilot.cache_model(candidate)
 
     result = fm_candidates_append.func(
-        songs=[song1, song2, song3],
+        song_uris=[reverse(song1), reverse(song2), reverse(song3)],
         runtime=runtime,
     )
 
@@ -245,10 +259,14 @@ def test_fm_candidates_append_tool_rejects_large_batches(
     song, song1, song2, song3
 ):
     runtime = create_runtime_with_fm(song)
-    song4 = SimpleNamespace(source="fake", identifier="4")
 
     result = fm_candidates_append.func(
-        songs=[song1, song2, song3, song4],
+        song_uris=[
+            reverse(song1),
+            reverse(song2),
+            reverse(song3),
+            "fuo://fake/songs/4",
+        ],
         runtime=runtime,
     )
 
@@ -256,6 +274,23 @@ def test_fm_candidates_append_tool_rejects_large_batches(
     assert result["ok"] is False
     assert result["error"]["code"] == "TOO_MANY_SONGS"
     assert result["data"]["max_song_count"] == 3
+
+
+def test_fm_candidates_append_tool_does_not_resolve_when_fm_inactive(song):
+    runtime = create_runtime_with_fm(song)
+    runtime.context.app.playlist.mode = PlaylistMode.normal
+    runtime.context.copilot.get_song_by_uri = MagicMock(
+        side_effect=AssertionError("should not resolve URI when FM is inactive")
+    )
+
+    result = fm_candidates_append.func(
+        song_uris=["fuo://fake/songs/1"],
+        runtime=runtime,
+    )
+
+    assert result["ok"] is False
+    assert result["error"]["code"] == "FM_INACTIVE"
+    runtime.context.copilot.get_song_by_uri.assert_not_called()
 
 
 def test_ai_radio_tools_return_inactive_error():
