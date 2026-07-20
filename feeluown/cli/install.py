@@ -110,7 +110,7 @@ def gen_for_win32():
     #     PythonSoftwareFoundation.Python.3.8_3.8.496.0_x64__qbz5n2kfra8p0
     #
     #   user can't directly run the python.exe under sys.prefix, windows
-    #   will tell user it has no priviledge to run this program
+    #   will tell user it has no privilege to run this program
     pyexe = os.path.join(os.path.dirname(sys.executable), 'pythonw')
     command = '{} -m feeluown'.format(pyexe)
     ico = HERE.parent.parent / 'gui' / 'assets' / 'icons' / 'feeluown.ico'
