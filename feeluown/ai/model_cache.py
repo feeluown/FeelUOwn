@@ -1,4 +1,5 @@
-from functools import lru_cache
+from collections import OrderedDict
+from threading import Lock
 
 from feeluown.library import BaseModel, ModelType, parse_line, reverse
 
@@ -19,44 +20,46 @@ def parse_model_uri(uri: str) -> BaseModel:
 class ModelCache:
     """Session scoped cache for resolving model URI to model objects."""
 
-    def __init__(self, maxsize: int = 256):
-        self._seed_models: dict[str, BaseModel] = {}
-        self._libraries = {}
-        self._model_get = lru_cache(maxsize=maxsize)(self._model_get_uncached)
+    def __init__(self, library, maxsize: int = 256):
+        if maxsize < 0:
+            raise ValueError("maxsize must not be negative")
+        self._library = library
+        self._maxsize = maxsize
+        self._models: OrderedDict[str, BaseModel] = OrderedDict()
+        self._lock = Lock()
 
     def set_model(self, model: BaseModel):
-        self._seed_models[reverse(model)] = model
+        with self._lock:
+            self._set(reverse(model), model)
 
-    def clear(self):
-        self._seed_models.clear()
-        self._libraries.clear()
-        self._model_get.cache_clear()
-
-    def model_get(self, library, uri: str) -> BaseModel:
+    def get(self, uri: str) -> BaseModel:
         model = parse_model_uri(uri)
         cache_key = reverse(model)
 
-        seeded_model = self._seed_models.get(cache_key)
-        if seeded_model is not None:
-            return seeded_model
+        with self._lock:
+            cached_model = self._models.get(cache_key)
+            if cached_model is not None:
+                self._models.move_to_end(cache_key)
+                return cached_model
 
-        if library is None:
+        if self._library is None:
             raise RuntimeError("library is required on cache miss")
-        library_key = id(library)
-        self._libraries[library_key] = library
-        return self._model_get(
-            library_key,
+        fetched_model = self._library.model_get(
             model.source,
             ModelType(model.meta.model_type),
             model.identifier,
         )
 
-    def _model_get_uncached(
-        self,
-        library_key: int,
-        source: str,
-        model_type: ModelType,
-        identifier: str,
-    ) -> BaseModel:
-        library = self._libraries[library_key]
-        return library.model_get(source, model_type, identifier)
+        with self._lock:
+            cached_model = self._models.get(cache_key)
+            if cached_model is not None:
+                self._models.move_to_end(cache_key)
+                return cached_model
+            self._set(cache_key, fetched_model)
+        return fetched_model
+
+    def _set(self, uri: str, model: BaseModel):
+        self._models[uri] = model
+        self._models.move_to_end(uri)
+        while len(self._models) > self._maxsize:
+            self._models.popitem(last=False)

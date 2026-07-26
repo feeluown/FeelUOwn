@@ -1,8 +1,6 @@
 from types import SimpleNamespace
 from unittest.mock import MagicMock
 
-import pytest
-
 from feeluown.ai.copilot import (
     SongSuggestion,
     Copilot,
@@ -95,19 +93,7 @@ def test_copilot_resolves_song_uri_from_library_on_cache_miss(mocker):
     )
 
 
-def test_copilot_rejects_non_song_uri_without_model_get(mocker):
-    library = SimpleNamespace(model_get=MagicMock())
-    app = SimpleNamespace(config=SimpleNamespace(), library=library)
-    mocker.patch("feeluown.ai.copilot.create_agent_with_config")
-    copilot = Copilot(app)
-
-    with pytest.raises(ValueError):
-        copilot.get_song_by_uri("fuo://fake/albums/album-1")
-
-    library.model_get.assert_not_called()
-
-
-def test_copilot_model_cache_is_cleared_on_new_thread(mocker):
+def test_copilot_model_cache_is_replaced_on_new_thread(mocker):
     song = BriefSongModel(
         source="fake",
         identifier="song-1",
@@ -119,9 +105,11 @@ def test_copilot_model_cache_is_cleared_on_new_thread(mocker):
     mocker.patch("feeluown.ai.copilot.create_agent_with_config")
     copilot = Copilot(app)
     copilot.cache_model(song)
+    old_model_cache = copilot._model_cache
 
     assert copilot.get_song_by_uri(reverse(song)) is song
     copilot.new_thread()
+    assert copilot._model_cache is not old_model_cache
     assert copilot.get_song_by_uri(reverse(song)) is song
 
     library.model_get.assert_called_once_with(

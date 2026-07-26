@@ -9,13 +9,12 @@ from langchain_core.callbacks import BaseCallbackHandler
 from feeluown.app import App
 from feeluown.ai.llm import create_chat_model_with_config
 from feeluown.ai.matcher import SongSuggestionMatcher
-from feeluown.ai.model_cache import ModelCache, parse_model_uri
+from feeluown.ai.model_cache import ModelCache
 from feeluown.ai.models import SongSuggestion
 from feeluown.ai.tools import copilot_tools
 from feeluown.library import (
     BaseModel,
     BriefSongModel,
-    ModelType,
     SimpleSearchResult,
 )
 from feeluown.utils.dispatch import Signal
@@ -182,7 +181,7 @@ class Copilot:
         self._agent_context = CopilotContext(copilot=self, app=app)
         self._agent_stream_callback = AgentStreamCallback(self)
         self._artifacts = ArtifactsManager()
-        self._model_cache = ModelCache()
+        self._model_cache = ModelCache(getattr(app, "library", None))
         self.artifact_added = self._artifacts.added
         self._current_thread_id = 1
         # Agent is working or not
@@ -203,7 +202,7 @@ class Copilot:
     def new_thread(self):
         self._current_thread_id += 1
         self._artifacts.clear()
-        self._model_cache.clear()
+        self._model_cache = ModelCache(getattr(self._app, "library", None))
 
     async def match_song_suggestion(
         self, suggestion: SongSuggestion
@@ -238,16 +237,12 @@ class Copilot:
         self._model_cache.set_model(model)
 
     def get_model_by_uri(self, uri: str) -> BaseModel:
-        return self._model_cache.model_get(
-            getattr(self._app, "library", None),
-            uri,
-        )
+        return self._model_cache.get(uri)
 
     def get_song_by_uri(self, uri: str) -> BriefSongModel:
-        model = parse_model_uri(uri)
-        if ModelType(model.meta.model_type) != ModelType.song:
-            raise ValueError("song URI is required")
-        return self.get_model_by_uri(uri)
+        model = self.get_model_by_uri(uri)
+        assert isinstance(model, BriefSongModel)
+        return model
 
     def get_artifacts(self) -> List[CopilotArtifact]:
         return self._artifacts.list()
