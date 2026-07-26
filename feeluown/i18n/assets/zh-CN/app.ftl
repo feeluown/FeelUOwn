@@ -234,6 +234,7 @@ track-fallback-failed = 提供方 “{ $providerName }” 没有找到可用的�
 # feeluown.gui.widgets.ai_chat
 # ----------------------------------------
 ai-chat-input-placeholder = 和助手聊聊
+mini-ai-chat-input-placeholder = 用 AI 控制播放
 ai-chat-send-button = 发送
 
 # feeluown.gui.widgets.cover_label

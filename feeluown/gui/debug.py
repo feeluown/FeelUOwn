@@ -118,6 +118,7 @@ def create_mini_player_debug_app():
         playlist=_MiniPlayerDebugPlaylist(),
         live_lyric=_MiniPlayerDebugLiveLyric(),
         library=SimpleNamespace(get=lambda _source: None),
+        ai=None,
     )
 
 

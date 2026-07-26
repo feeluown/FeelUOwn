@@ -234,6 +234,7 @@ track-fallback-failed = プロバイダー “{ $providerName }” で利用可�
 # feeluown.gui.widgets.ai_chat
 # ----------------------------------------
 ai-chat-input-placeholder = アシスタントとおしゃべり
+mini-ai-chat-input-placeholder = AI で再生を操作
 ai-chat-send-button = 送信
 
 # feeluown.gui.widgets.cover_label

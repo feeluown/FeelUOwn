@@ -86,11 +86,11 @@ class ChatInputEditor(QPlainTextEdit):
 
     enter_pressed = pyqtSignal()
 
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, min_height=30, max_height=300):
         super().__init__(parent)
         self.setWordWrapMode(QTextOption.WrapMode.WrapAtWordBoundaryOrAnywhere)
-        self.setMinimumHeight(30)
-        self.setMaximumHeight(300)  # TODO: set maximum height based on parent size
+        self.setMinimumHeight(min_height)
+        self.setMaximumHeight(max_height)
         self.textChanged.connect(self.adjust_height)
         self.adjust_height()
         # The size policy matters
@@ -605,10 +605,22 @@ class ChatInputWidget(QWidget):
 
     send_clicked = pyqtSignal(str)  # emits query text
 
-    def __init__(self, parent=None, status_widget=None):
+    def __init__(
+        self,
+        parent=None,
+        status_widget=None,
+        editor_min_height=80,
+        editor_max_height=300,
+        contents_margins=(14, 10, 12, 6),
+    ):
         super().__init__(parent=parent)
         self._radius = SurfaceRadius
-        self._editor = ChatInputEditor(self)
+        self._contents_margins = contents_margins
+        self._editor = ChatInputEditor(
+            self,
+            min_height=editor_min_height,
+            max_height=editor_max_height,
+        )
         self._editor.setPlaceholderText(t("ai-chat-input-placeholder"))
         self._editor.setFrameShape(QFrame.Shape.NoFrame)
         self._editor.setObjectName("ai_chat_input_editor")
@@ -634,7 +646,6 @@ class ChatInputWidget(QWidget):
 
         self._editor.enter_pressed.connect(self._on_enter_pressed)
         self._send_btn.clicked.connect(self._on_send_clicked)
-        self._editor.setMinimumHeight(80)
         self.setAutoFillBackground(False)
         self._apply_palette()
         self.setup_ui()
@@ -682,7 +693,7 @@ class ChatInputWidget(QWidget):
         self._msg_label.setTextFormat(Qt.TextFormat.PlainText)
 
         layout = QVBoxLayout(self)
-        layout.setContentsMargins(14, 10, 12, 6)
+        layout.setContentsMargins(*self._contents_margins)
         layout.setSpacing(4)
         layout.addWidget(self._editor)
 
@@ -701,6 +712,28 @@ class ChatInputWidget(QWidget):
             footer_layout.addWidget(self._msg_label, 1)
         footer_layout.addWidget(self._send_btn, 0, Qt.AlignmentFlag.AlignRight)
         layout.addLayout(footer_layout)
+        self._footer_layout = footer_layout
+        QTimer.singleShot(0, self._update_status_widget_width)
+
+    def resizeEvent(self, event):
+        super().resizeEvent(event)
+        self._update_status_widget_width()
+
+    def _update_status_widget_width(self):
+        status_widget = self._status_widget
+        if status_widget is None or not hasattr(
+            status_widget, "set_available_width"
+        ):
+            return
+        footer_width = self._footer_layout.geometry().width()
+        if footer_width <= 0:
+            return
+        available_width = (
+            footer_width
+            - self._send_btn.sizeHint().width()
+            - self._footer_layout.spacing()
+        )
+        status_widget.set_available_width(max(1, available_width))
 
     def paintEvent(self, event):
         draw_round_surface(self, self._radius)
@@ -727,6 +760,9 @@ class ChatInputWidget(QWidget):
 
     def get_input(self):
         return self._editor.toPlainText()
+
+    def focus_editor(self):
+        self._editor.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
 
     def enable_send(self, enabled):
         self._send_btn.setEnabled(enabled)

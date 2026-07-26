@@ -1,6 +1,7 @@
 import logging
 import time
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 from urllib.parse import parse_qs, urlencode, urlparse
 
 from PyQt6.QtCore import QEvent, QMargins, QRectF, QSize, Qt, QTimer, pyqtSignal
@@ -26,7 +27,6 @@ from PyQt6.QtWidgets import (
 )
 
 from feeluown.ai import SongSuggestion
-from feeluown.app.gui_app import GuiApp
 from feeluown.gui.components.search import create_search_result_view
 from feeluown.gui.helpers import IS_MACOS, secondary_text_color
 from feeluown.gui.widgets import PlayButton, PlusButton
@@ -51,6 +51,9 @@ from feeluown.gui.components.overlay import AppOverlayContainer, AppOverlayOptio
 from feeluown.library import BriefSongModel, ModelState, ResolveFailed, parse_line
 from feeluown.i18n import t
 from feeluown.utils import aio
+
+if TYPE_CHECKING:
+    from feeluown.app.gui_app import GuiApp
 
 logger = logging.getLogger(__name__)
 
@@ -461,16 +464,35 @@ class AIChatBox(QWidget):
     working_state_changed = pyqtSignal(bool)
     playlist_sidebar_requested = pyqtSignal()
 
-    def __init__(self, app, parent=None):
+    def __init__(
+        self,
+        app,
+        parent=None,
+        status_widget=True,
+        history_fixed_height=None,
+        input_editor_min_height=80,
+        input_editor_max_height=300,
+        input_contents_margins=(14, 10, 12, 6),
+        placeholder_text=None,
+    ):
         super().__init__(parent=parent)
         self._app = app
         self.copilot = self._app.ai.get_copilot()
+        self._placeholder_text = placeholder_text
 
         self.history_widget = ChatHistoryWidget(self)
-        self._dynamic_island = DynamicIslandStatusBar(app)
+        if history_fixed_height is not None:
+            self.history_widget.setFixedHeight(history_fixed_height)
+        if status_widget is True:
+            self._dynamic_island = DynamicIslandStatusBar(app)
+        else:
+            self._dynamic_island = status_widget
         self.input_widget = ChatInputWidget(
             self,
             status_widget=self._dynamic_island,
+            editor_min_height=input_editor_min_height,
+            editor_max_height=input_editor_max_height,
+            contents_margins=input_contents_margins,
         )
         self._collecting_artifacts = False
         self._pending_artifacts = []
@@ -605,7 +627,9 @@ class AIChatBox(QWidget):
         return self._app.ai.get_active_radio()
 
     def _refresh_context(self, *_):
-        if self._get_active_ai_radio() is not None:
+        if self._placeholder_text is not None:
+            self.input_widget.set_placeholder(self._placeholder_text)
+        elif self._get_active_ai_radio() is not None:
             self.input_widget.set_placeholder(t("ai-radio-input-placeholder"))
         else:
             self.input_widget.set_placeholder(t("ai-chat-input-placeholder"))

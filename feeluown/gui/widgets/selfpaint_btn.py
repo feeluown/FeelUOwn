@@ -269,11 +269,29 @@ class RecentlyPlayedButton(SelfPaintAbstractIconTextButton):
 
 
 class AIButton(SelfPaintAbstractIconTextButton):
-    def __init__(self, *args, **kwargs):
-        super().__init__("AI", *args, **kwargs)
-        self.ai_icon = AIIconDrawer(self.height(), self._padding)
+    def __init__(self, text="AI", colorful=False, *args, **kwargs):
+        super().__init__(text, *args, **kwargs)
+        if not text:
+            self.setFixedWidth(self.height())
+        self.ai_icon = AIIconDrawer(
+            self.height(), self._padding, colorful=colorful
+        )
 
     def draw_icon(self, painter):
+        self.ai_icon.draw(painter, self.palette())
+
+
+class AIIconButton(SelfPaintAbstractSquareButton):
+    def __init__(self, colorful=False, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.ai_icon = AIIconDrawer(
+            self.height(), self._padding, colorful=colorful
+        )
+
+    def paintEvent(self, _):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        self.paint_round_bg_when_hover(painter)
         self.ai_icon.draw(painter, self.palette())
 
 

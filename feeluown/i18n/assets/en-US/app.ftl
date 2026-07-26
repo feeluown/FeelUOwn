@@ -239,6 +239,7 @@ track-fallback-failed = { -provider(capitalization: "uppercase") } “{ $provide
 # feeluown.gui.widgets.ai_chat
 # ----------------------------------------
 ai-chat-input-placeholder = Chat with the assistant
+mini-ai-chat-input-placeholder = Control playback with AI
 ai-chat-send-button = Send
 
 # feeluown.gui.widgets.cover_label
