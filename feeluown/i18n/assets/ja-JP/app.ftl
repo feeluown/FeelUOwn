@@ -468,8 +468,8 @@ lyric-not-available = 利用可能な歌詞が見つかりません
 lyric-background-color = 背景色
 lyric-text-color = 文字色
 lyric-font = フォント
-lyric-show-bilingual = バイリンガル表示
 lyric-window-auto-resize = 自動リサイズ
+lyric-show-lines = 表示行数
 
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------

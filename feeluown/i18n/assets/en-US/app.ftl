@@ -472,8 +472,8 @@ lyric-not-available = Lyrics not available
 lyric-background-color = Background color
 lyric-text-color = Text color
 lyric-font = Font
-lyric-show-bilingual = Bilingual lyrics
 lyric-window-auto-resize = Auto resize
+lyric-show-lines = Show lines
 
 # feeluown.gui.uimain.nowplaying_overlay
 # ----------------------------------------
