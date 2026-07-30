@@ -1,3 +1,4 @@
+from typing import Any
 import locale
 import logging
 import time
@@ -38,6 +39,7 @@ class MpvPlayer(AbstractPlayer):
         _=None,
         audio_device=b'auto',
         winid=None,
+        prefetch_playlist: bool = True,
         fade=False,
         fade_time_ms=500,
         **kwargs
@@ -48,7 +50,7 @@ class MpvPlayer(AbstractPlayer):
         super().__init__(**kwargs)
         # https://github.com/cosven/FeelUOwn/issues/246
         locale.setlocale(locale.LC_NUMERIC, 'C')
-        mpvkwargs = {}
+        mpvkwargs: dict[str, Any] = {'prefetch_playlist': prefetch_playlist}
         if winid is not None:
             mpvkwargs['wid'] = winid
         self._version = _mpv_client_api_version()
@@ -106,13 +108,139 @@ class MpvPlayer(AbstractPlayer):
             self.fade_lock = RLock()
             self.fade_time_ms = fade_time_ms
 
+        # Track items we explicitly queued into mpv playlist.
+        # queued_id -> {'media': Media, 'metadata': dict|None}
+        self._queued_items: dict[int, dict] = {}
+        # source -> queued_id (internal reverse lookup for mpv playlist matching)
+        self._queued_source_to_id: dict[str, int] = {}
+        self._next_queued_id = 1
+        # True when we called play() and expect a matching START_FILE soon.
+        self._handling_programmatic_play = False
+
+        # Emitted when mpv auto-advances to a previously queued item:
+        #   (queued_id, media, metadata)
+        self.queued_media_activated = Signal()
+
+    def _normalize_media_source(self, media: Media) -> str:
+        """Normalize media source for mpv playlist matching.
+
+        For mpv playlist matching we only handle the common case where
+        ``media.manifest is None`` (a single playable url/path).
+        """
+        return str(media.url)
+
+    def _prune_playlist_before_current(self):
+        """Remove items before current playlist-pos to avoid unbounded growth."""
+        try:
+            playlist_pos = self._mpv.playlist_pos
+            if not isinstance(playlist_pos, int) or playlist_pos <= 0:
+                return
+            for idx in range(playlist_pos - 1, -1, -1):
+                try:
+                    self._mpv.playlist_remove(idx)
+                except Exception:
+                    break
+        except Exception:
+            return
+
+    def queue_media(self, media: Media, video: bool = True,
+                    metadata: dict | None = None) -> int | None:
+        """Queue media into mpv playlist.
+
+        Returns a ``queued_id`` on success, or ``None`` if the media cannot
+        be queued (manifest media, media with http_headers/http_proxy/
+        decryption_key which conflict with prefetch-playlist, etc.).
+        """
+        if media is None:
+            return None
+        if media.manifest is not None:
+            return None
+
+        source = self._normalize_media_source(media)
+        if not source:
+            return None
+
+        # Already queued: return the existing id.
+        existing_id = self._queued_source_to_id.get(source)
+        if existing_id is not None:
+            return existing_id
+
+        # Media with per-file network settings cannot be prefetched
+        # reliably (mpv prefetch-playlist does not apply per-file
+        # http-header-fields/http-proxy).  Return None so the caller
+        # falls back to the normal play path.
+        if media.http_headers or media.http_proxy or media.decryption_key:
+            return None
+
+        insert_index = None
+        try:
+            playlist_pos = self._mpv.playlist_pos
+            if isinstance(playlist_pos, int) and playlist_pos >= 0:
+                insert_index = playlist_pos + 1
+        except Exception:
+            insert_index = None
+
+        try:
+            if insert_index is None:
+                self._mpv.loadfile(source, 'append')
+            else:
+                self._mpv.loadfile(source, 'append', index=insert_index)
+        except Exception:
+            logger.exception('queue_media failed')
+            return None
+
+        queued_id = self._next_queued_id
+        self._next_queued_id += 1
+        self._queued_items[queued_id] = {
+            'media': media,
+            'metadata': metadata,
+        }
+        self._queued_source_to_id[source] = queued_id
+        logger.debug("[preload] queue_media: queued_id=%s, source=%s, index=%s",
+                     queued_id, source, insert_index)
+        return queued_id
+
+    def _find_queued_item_by_source(self, source: str) -> tuple[int, dict] | None:
+        """Return (queued_id, item) if source matches a queued item."""
+        queued_id = self._queued_source_to_id.get(source)
+        if queued_id is None:
+            return None
+        item = self._queued_items.get(queued_id)
+        if item is None:
+            return None
+        return queued_id, item
+
+    def discard_queued_media(self):
+        """Discard queued items after the current mpv playlist position."""
+        try:
+            playlist_pos = self._mpv.playlist_pos
+            playlist_count = self._mpv.playlist_count
+            if not isinstance(playlist_pos, int) or not isinstance(playlist_count, int):
+                self._mpv.playlist_clear()
+                self._queued_items.clear()
+                self._queued_source_to_id.clear()
+                return
+            for idx in range(playlist_count - 1, playlist_pos, -1):
+                try:
+                    self._mpv.playlist_remove(idx)
+                except Exception:
+                    break
+        except Exception:
+            try:
+                self._mpv.playlist_clear()
+            except Exception:
+                pass
+        finally:
+            self._queued_items.clear()
+            self._queued_source_to_id.clear()
+
     def shutdown(self):
         # The mpv has already been terminated.
         # The mpv can't terminate twice.
         if self._mpv.handle is not None:
             self._mpv.terminate()
 
-    def play(self, media, video=True, metadata=None):
+    def play(self, media, video=True, metadata=None, queued_id=None):
         if video is False:
             _mpv_set_property_string(self._mpv.handle, b'vid', b'no')
         else:
@@ -120,22 +248,46 @@ class MpvPlayer(AbstractPlayer):
 
         self.media_about_to_changed.emit(self._current_media, media)
         if media is None:
+            try:
+                self.discard_queued_media()
+            except Exception:
+                pass
             self._stop_mpv()
         else:
             logger.debug("Player will play: '%s'", media)
             if isinstance(media, Media):
                 media = media
-            else:  # media is a url(string)
+            else:
                 media = Media(media)
             self._set_http_headers(media.http_headers)
             self._set_http_proxy(media.http_proxy)
             self._set_decryption_key(media.decryption_key)
-            self._stop_mpv()
             if media.manifest is None:
-                url = media.url
-                # Clear playlist before play next song,
-                # otherwise, mpv will seek to the last position and play.
-                self._mpv.play(url)
+                source = self._normalize_media_source(media)
+
+                if queued_id is not None and queued_id in self._queued_items:
+                    queued_item = self._queued_items.pop(queued_id, None)
+                    if queued_item is not None:
+                        self._queued_source_to_id.pop(source, None)
+                    self._handling_programmatic_play = True
+                    try:
+                        playlist_pos = self._mpv.playlist_pos
+                        filenames = self._mpv.playlist_filenames
+                        try:
+                            idx = filenames.index(source)
+                        except ValueError:
+                            idx = -1
+                        if idx != -1 and not (isinstance(playlist_pos, int)
+                                              and playlist_pos == idx):
+                            self._mpv.playlist_play_index(idx)
+                    except Exception:
+                        self._mpv.play(source)
+                    self._prune_playlist_before_current()
+                else:
+                    self._handling_programmatic_play = True
+                    self._mpv.play(source)
+                    self._queued_items.clear()
+                    self._queued_source_to_id.clear()
             elif isinstance(media.manifest, VideoAudioManifest):
                 video_url = media.manifest.video_url
                 audio_url = media.manifest.audio_url
@@ -150,21 +302,20 @@ class MpvPlayer(AbstractPlayer):
 
                 if video is True:
                     self._mpv.play(video_url)
-                    # It seems we can only add audio after the video is loaded.
-                    # TODO: add method connect_once for signal
                     self.media_loaded.connect(add_audio, weak=False)
                 else:
                     self._mpv.play(audio_url)
+                self._queued_items.clear()
+                self._queued_source_to_id.clear()
             else:
                 assert False, 'Unknown manifest'
         self._current_media = media
         self.media_changed.emit(media)
         if metadata is None:
-            self._current_metadata = {}
+            self._current_metadata = Metadata()
         else:
-            # The metadata may be set by manual or automatic
             metadata['__setby__'] = 'manual'
-            self._current_metadata = metadata
+            self._current_metadata = Metadata(metadata)
         self.metadata_changed.emit(self.current_metadata)
 
     def set_infinite_loop(self, on: bool):
@@ -316,7 +467,9 @@ class MpvPlayer(AbstractPlayer):
 
     def _on_event(self, event):
         event_id = event['event_id']
-        if event_id == MpvEventID.END_FILE:
+        if event_id == MpvEventID.START_FILE:
+            self._on_mpv_start_file()
+        elif event_id == MpvEventID.END_FILE:
             reason = event['event']['reason']
             logger.debug('Current song finished. reason: %d' % reason)
             if self.state != State.stopped and reason != MpvEventEndFile.ABORTED:
@@ -346,6 +499,53 @@ class MpvPlayer(AbstractPlayer):
                             value = [value]
                         self._current_metadata[src] = value
                 self.metadata_changed.emit(self.current_metadata)
+
+    def _on_mpv_start_file(self):
+        """Handle mpv START_FILE event.
+
+        When mpv auto-advances to a previously queued item, this method
+        updates player state BEFORE FILE_LOADED fires, keeping the
+        media_changed / media_loaded ordering correct.
+        """
+        if self._handling_programmatic_play:
+            self._handling_programmatic_play = False
+            logger.debug("[preload] START_FILE skipped (programmatic play)")
+            return
+
+        try:
+            playlist_pos = self._mpv.playlist_pos
+            if not isinstance(playlist_pos, int) or playlist_pos < 0:
+                return
+            filenames = self._mpv.playlist_filenames
+            source = filenames[playlist_pos]
+        except Exception:
+            return
+
+        found = self._find_queued_item_by_source(source)
+        if found is None:
+            logger.debug("[preload] START_FILE no queued item for %s", source)
+            return
+
+        queued_id, item = found
+        media = item['media']
+        metadata = item.get('metadata')
+        logger.debug("[preload] auto-advance detected: queued_id=%s, source=%s",
+                     queued_id, source)
+
+        old_media = self._current_media
+        self.media_about_to_changed.emit(old_media, media)
+        self._current_media = media
+        if metadata is None:
+            self._current_metadata = Metadata()
+        else:
+            self._current_metadata = Metadata(metadata)
+        self.media_changed.emit(media)
+        self.metadata_changed.emit(self.current_metadata)
+
+        self.queued_media_activated.emit(queued_id, media, metadata)
+
+        del self._queued_items[queued_id]
+        self._queued_source_to_id.pop(source, None)
 
     def _set_http_headers(self, http_headers):
         if http_headers:

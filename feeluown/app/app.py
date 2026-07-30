@@ -101,6 +101,7 @@ class App:
         # Player.
         self.player = Player(
             audio_device=bytes(config.MPV_AUDIO_DEVICE, "utf-8"),
+            prefetch_playlist=config.ENABLE_PREFETCH_PLAYLIST,
             fade=config.PLAYBACK_CROSSFADE,
             fade_time_ms=config.PLAYBACK_CROSSFADE_DURATION,
         )

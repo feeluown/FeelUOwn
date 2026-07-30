@@ -7,7 +7,7 @@ import pytest_asyncio
 from feeluown.library.excs import MediaNotFound
 from feeluown.player import (
     Playlist, PlaylistMode, Player, PlaybackMode,
-    PlaylistRepeatMode, PlaylistShuffleMode, MetadataAssembler
+    PlaylistRepeatMode, PlaylistShuffleMode, MetadataAssembler, State,
 )
 from feeluown.utils.dispatch import Signal
 
@@ -483,3 +483,240 @@ def test_switch_from_one_loop(pl):
     pl.playback_mode = PlaybackMode.one_loop
     pl.playback_mode = PlaybackMode.loop
     pl._app.player.set_infinite_loop.assert_called_with(False)
+
+
+@pytest.mark.asyncio
+async def test_preload_scheduled_when_remaining_within_threshold(
+    app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+    app_mock.player.duration = 10
+    app_mock.player.position = 5
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    app_mock.task_mgr.run_afn_preemptive.reset_mock()
+    playlist._preload_mgr.maybe_preload_next_song(force=False)
+    app_mock.task_mgr.run_afn_preemptive.assert_called_once()
+
+    args, kwargs = app_mock.task_mgr.run_afn_preemptive.call_args
+    assert args[0] == playlist._preload_mgr.preload_next_song
+    assert args[1] == song1
+    assert kwargs['name'] == 'playlist.preload_media'
+
+
+@pytest.mark.asyncio
+async def test_preload_not_scheduled_when_remaining_above_threshold(
+    app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+    app_mock.player.duration = 10
+    app_mock.player.position = 1
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    app_mock.task_mgr.run_afn_preemptive.reset_mock()
+    playlist._preload_mgr.maybe_preload_next_song(force=False)
+    app_mock.task_mgr.run_afn_preemptive.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_preload_next_song_queues_media_and_sets_state(
+    mocker, app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+    app_mock.player.queue_media = mocker.MagicMock(return_value=42)
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+    playlist._preload_mgr._preloading_song = song1
+
+    media = mocker.Mock()
+    mocker.patch.object(Playlist, '_prepare_media', return_value=media)
+    metadata = {'k': 'v'}
+    mocker.patch.object(MetadataAssembler, 'prepare_for_song', return_value=metadata)
+
+    await playlist._preload_mgr.preload_next_song(song1)
+
+    assert playlist._preload_mgr._preloaded_song == song1
+    assert playlist._preload_mgr._preloaded_media == media
+    assert playlist._preload_mgr._preloaded_metadata == metadata
+    assert playlist._preload_mgr._preloaded_queued_id == 42
+    assert playlist._preload_mgr._preloading_song is None
+    app_mock.player.queue_media.assert_called_once_with(media, metadata=metadata)
+
+
+@pytest.mark.asyncio
+async def test_a_set_current_song_reuses_preloaded_media(
+    mocker, app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    app_mock.config.PREFETCH_PLAYLIST_THRESHOLD_SECONDS = 5
+    app_mock.has_gui = True
+
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    preloaded_media = mocker.Mock()
+    preloaded_metadata = {'a': 1}
+    playlist._preload_mgr._preloaded_song = song1
+    playlist._preload_mgr._preloaded_media = preloaded_media
+    playlist._preload_mgr._preloaded_metadata = preloaded_metadata
+    playlist._preload_mgr._preloaded_queued_id = 7
+
+    mock_set = mocker.patch.object(Playlist, 'set_current_song_with_media')
+    await playlist.a_set_current_song(song1)
+
+    mock_set.assert_called_once_with(song1, preloaded_media, preloaded_metadata,
+                                     queued_id=7)
+    assert playlist._preload_mgr._preloaded_song is None
+    assert playlist._preload_mgr._preloaded_media is None
+    assert playlist._preload_mgr._preloaded_queued_id is None
+
+
+# ---------------------------------------------------------------------------
+# Queued-id lifecycle tests
+# ---------------------------------------------------------------------------
+
+def test_pop_song_for_queued_id_returns_song_and_clears_state(
+    app_mock, song, song1, mocker
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+
+    mgr = playlist._preload_mgr
+    mgr._preloaded_song = song1
+    mgr._preloaded_queued_id = 10
+    mgr._preloaded_media = mocker.Mock()
+    mgr._preloaded_metadata = {'k': 'v'}
+
+    result = mgr.pop_song_for_queued_id(10)
+    assert result == song1
+    assert mgr._preloaded_song is None
+    assert mgr._preloaded_queued_id is None
+    assert mgr._preloaded_media is None
+    assert mgr._preloaded_metadata is None
+
+
+def test_pop_song_for_queued_id_mismatch_returns_none(
+    app_mock, song, song1, mocker
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+
+    mgr = playlist._preload_mgr
+    mgr._preloaded_song = song1
+    mgr._preloaded_queued_id = 10
+    mgr._preloaded_media = mocker.Mock()
+
+    result = mgr.pop_song_for_queued_id(99)
+    assert result is None
+
+
+def test_on_queued_media_activated_sets_current_song(
+    app_mock, song, song1
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    media = mock.Mock()
+    mgr = playlist._preload_mgr
+    mgr._preloaded_song = song1
+    mgr._preloaded_queued_id = 5
+    mgr._preloaded_media = media
+    mgr._preloaded_metadata = {'k': 'v'}
+
+    playlist._on_queued_media_activated(5, media, {'k': 'v'})
+
+    assert playlist._current_song == song1
+    assert mgr._preloaded_song is None
+
+
+def test_on_media_finished_calls_next(
+    app_mock, song, song1, mocker
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song
+
+    mock_next = mocker.patch.object(Playlist, 'next')
+
+    playlist._on_media_finished()
+
+    mock_next.assert_called_once()
+
+
+@pytest.mark.asyncio
+async def test_a_set_current_song_returns_early_when_already_playing(
+    app_mock, song, song1, mocker
+):
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist._current_song = song1
+    app_mock.player.state = State.playing
+
+    mock_set = mocker.patch.object(Playlist, 'set_current_song_with_media')
+    mock_prepare = mocker.patch.object(Playlist, '_prepare_media')
+
+    result = await playlist.a_set_current_song(song1)
+
+    assert result is None
+    mock_set.assert_not_called()
+    mock_prepare.assert_not_called()
+
+
+@pytest.mark.asyncio
+async def test_a_set_current_song_returns_early_when_already_playing_v2(
+    app_mock, song, song1, song2, mocker
+):
+    """Both consecutive auto-advances return early via
+    song == _current_song and state == playing."""
+    app_mock.config.ENABLE_MV_AS_STANDBY = 0
+    playlist = Playlist(app_mock)
+    playlist.add(song)
+    playlist.add(song1)
+    playlist.add(song2)
+
+    mock_set = mocker.patch.object(Playlist, 'set_current_song_with_media')
+    mock_prepare = mocker.patch.object(Playlist, '_prepare_media')
+    app_mock.player.state = State.playing
+
+    # Auto-advance A→B: song is current and playing
+    playlist._current_song = song1
+    result_b = await playlist.a_set_current_song(song1)
+    assert result_b is None
+
+    # Auto-advance B→C
+    playlist._current_song = song2
+    result_c = await playlist.a_set_current_song(song2)
+    assert result_c is None
+
+    mock_set.assert_not_called()
+    mock_prepare.assert_not_called()
