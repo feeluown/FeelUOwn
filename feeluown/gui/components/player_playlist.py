@@ -58,10 +58,12 @@ class PlayerPlaylistModel(SongMiniCardListModel):
 
     def flags(self, index):
         flags = super().flags(index)
-        song = index.data(Qt.ItemDataRole.UserRole)[0]
-        if self._playlist.is_bad(song):
-            # Disable bad song.
-            flags &= ~Qt.ItemFlag.ItemIsEnabled
+        data = index.data(Qt.ItemDataRole.UserRole)
+        if data is not None:
+            song = data[0]
+            if self._playlist.is_bad(song):
+                # Disable bad song.
+                flags &= ~Qt.ItemFlag.ItemIsEnabled
         return flags
 
     def on_songs_added(self, index, count):

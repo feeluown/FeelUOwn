@@ -2,6 +2,7 @@ import logging
 import time
 from dataclasses import dataclass
 from urllib.parse import parse_qs, urlencode, urlparse
+from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import QEvent, QMargins, QRectF, QSize, Qt, QTimer, pyqtSignal
 from PyQt6.QtGui import (
@@ -28,7 +29,7 @@ from PyQt6.QtWidgets import (
 from feeluown.ai import SongSuggestion
 from feeluown.app.gui_app import GuiApp
 from feeluown.gui.components.search import create_search_result_view
-from feeluown.gui.helpers import IS_MACOS, secondary_text_color
+from feeluown.gui.helpers import secondary_text_color
 from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.textbtn import TextButton
 from feeluown.gui.widgets.header import MidHeader
@@ -52,15 +53,10 @@ from feeluown.library import BriefSongModel, ModelState, ResolveFailed, parse_li
 from feeluown.i18n import t
 from feeluown.utils import aio
 
+if TYPE_CHECKING:
+    from feeluown.app import App
+
 logger = logging.getLogger(__name__)
-
-
-def _create_titlebar_mode(app):
-    if not IS_MACOS:
-        return None
-    from feeluown.gui.macos_titlebar import MacOSNativeTitlebarMode
-
-    return MacOSNativeTitlebarMode(app)
 
 
 @dataclass
@@ -138,7 +134,7 @@ def parse_song_link_info(url: str):
 
 
 class SongSuggestionItemWidget(QWidget):
-    row_height = 56
+    row_height = 40
     _palette_ready = False
 
     def __init__(self, song: BriefSongModel, list_view: QListWidget):
@@ -461,7 +457,7 @@ class AIChatBox(QWidget):
     working_state_changed = pyqtSignal(bool)
     playlist_sidebar_requested = pyqtSignal()
 
-    def __init__(self, app, parent=None):
+    def __init__(self, app: 'App', parent=None):
         super().__init__(parent=parent)
         self._app = app
         self.copilot = self._app.ai.get_copilot()
@@ -620,7 +616,6 @@ class Body(QWidget):
         self._updating_palette = False
         self._palette_refresh_scheduled = False
         self._palette_ready = False
-        self._header = MidHeader(t("ai-chat-header"))
         self._new_thread_btn = TextButton(t("ai-chat-new"), height=26)
         self._sidebar_btn = TextButton(t("ai-chat-open-sidebar"), height=26)
         self._collapse_btn = TextButton(t("fold-collapse"), height=26)
@@ -682,19 +677,15 @@ class Body(QWidget):
         self._app.playlist.mode_changed.connect(self._refresh_context)
 
         self._layout = QVBoxLayout(self)
-        if IS_MACOS:
-            self._layout.setContentsMargins(86, 10, 10, 10)
-        else:
-            self._layout.setContentsMargins(10, 10, 10, 10)
+        self._layout.setContentsMargins(10, 10, 10, 10)
         self._layout.setSpacing(10)
         self._toolbar = DraggableToolbar(self)
         self._toolbar_separator = ToolbarSeparator(self)
         self._toolbar_layout = QHBoxLayout(self._toolbar)
         self._content_layout = QHBoxLayout()
         self._toolbar_layout.setContentsMargins(0, 0, 0, 0)
-        self._toolbar_layout.addWidget(self._header)
-        self._toolbar_layout.addStretch(0)
         self._toolbar_layout.addWidget(self._new_thread_btn)
+        self._toolbar_layout.addStretch(0)
         self._toolbar_layout.addWidget(self._sidebar_btn)
         self._toolbar_layout.addWidget(self._collapse_btn)
 
@@ -928,8 +919,7 @@ class Body(QWidget):
         return self._app.ai.get_active_radio()
 
     def _refresh_context(self, *_):
-        self._header.setText(t("ai-chat-header"))
-        self._connect_ai_radio_status()
+        # self._connect_ai_radio_status()
         self._sync_sidebar_status_visibility()
 
     def _connect_ai_radio_status(self):
@@ -973,43 +963,6 @@ class AIChatOverlay(AppOverlayContainer):
                 close_on_focus_in=False,
             ),
         )
-        self._titlebar_mode = _create_titlebar_mode(app)
-        self._titlebar_reapply_scheduled = False
-        self.body._schedule_palette_refresh(force=True)
-
-    def showEvent(self, event):
-        if self._titlebar_mode is not None:
-            self._titlebar_mode.enter()
-        super().showEvent(event)
-        self.body._schedule_palette_refresh(force=True)
-
-    def hideEvent(self, event):
-        super().hideEvent(event)
-        if self._titlebar_mode is not None:
-            self._titlebar_mode.exit()
-
-    def eventFilter(self, obj, event):
-        result = super().eventFilter(obj, event)
-        if (
-            self.isVisible()
-            and obj == self._app
-            and self._titlebar_mode is not None
-            and event.type()
-            in (QEvent.Type.Resize, QEvent.Type.WindowStateChange)
-        ):
-            self._schedule_titlebar_reapply()
-        return result
-
-    def _schedule_titlebar_reapply(self):
-        if self._titlebar_reapply_scheduled:
-            return
-        self._titlebar_reapply_scheduled = True
-        QTimer.singleShot(0, self._reapply_titlebar_mode)
-
-    def _reapply_titlebar_mode(self):
-        self._titlebar_reapply_scheduled = False
-        if self.isVisible() and self._titlebar_mode is not None:
-            self._titlebar_mode.reapply()
 
 
 def create_aichat_overlay(app: "GuiApp", parent=None) -> AppOverlayContainer:
