@@ -70,7 +70,7 @@ class PlaylistOverlay(QWidget):
         self._shadow_width = 15
         self._view_options = dict(row_height=60, no_scroll_v=False)
         self._player_playlist_view = PlayerPlaylistView(self._app, **self._view_options)
-        self._ai_radio_config = AIRadioConfigView(self._app, self)
+        self._ai_radio_config_view = AIRadioConfigView(self._app, self)
 
         # AutoFillBackground should be disabled for PlaylistOverlay so that shadow
         # effects can be simulated. AutoFillBackground should be enabled for tabbar.
@@ -117,7 +117,7 @@ class PlaylistOverlay(QWidget):
         self._layout.addLayout(self._btn_layout)
         self._layout.addLayout(self._btn_layout2)
         self._layout.addLayout(self._stacked_layout)
-        self._layout.addWidget(self._ai_radio_config)
+        self._layout.addWidget(self._ai_radio_config_view)
 
         self._btn_layout.addWidget(self._clear_playlist_btn)
         self._btn_layout.addWidget(self._playback_mode_switch)
@@ -162,7 +162,7 @@ class PlaylistOverlay(QWidget):
             self._app.ai is not None
             and self._app.ai.get_active_radio() is not None
         )
-        self._ai_radio_config.set_visible(
+        self._ai_radio_config_view.set_visible(
             radio_active and self._tabbar.currentIndex() == 0
         )
 

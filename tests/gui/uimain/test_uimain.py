@@ -52,7 +52,6 @@ from feeluown.gui.widgets.ai_chat import (
     ChatMessageRow,
     ChatSendButton,
     ChatStreamingStatusCard,
-    ChatToolEventCard,
     RoundedLabel,
     surface_border_color,
 )
@@ -132,16 +131,6 @@ class FakeCopilot:
 
     def add_callback(self, callback):
         self._extra_callbacks.append(callback)
-
-    def _fire_tool_start(self, name, inputs=None):
-        """Simulate the agent callback firing when a tool starts."""
-        for callback in self._extra_callbacks:
-            callback.on_tool_start(
-                {"name": name, "description": ""},
-                "",
-                run_id="run_1",
-                inputs=inputs or {},
-            )
 
     def new_thread(self):
         self._artifacts = []
@@ -229,9 +218,6 @@ class FakeStreamingCopilot(FakeCopilot):
             ],
             title="Night Songs",
         )
-        self._fire_tool_start(
-            "create_song_suggestions_artifact", inputs={"title": "Night Songs"}
-        )
         yield SimpleNamespace(name="create_song_suggestions_artifact"), {
             "langgraph_node": "tools"
         }
@@ -242,7 +228,6 @@ class FakeStreamingCopilot(FakeCopilot):
 
 class FakeAIRadioToolCopilot(FakeCopilot):
     async def astream_user_query(self, _query):
-        self._fire_tool_start("fm_candidates_remove")
         yield SimpleNamespace(name="fm_candidates_remove"), {
             "langgraph_node": "tools"
         }
@@ -253,7 +238,6 @@ class FakeAIRadioToolCopilot(FakeCopilot):
 
 class FakeAIRadioLifecycleToolCopilot(FakeCopilot):
     async def astream_user_query(self, _query):
-        self._fire_tool_start("ai_radio_activate")
         yield SimpleNamespace(name="ai_radio_activate"), {
             "langgraph_node": "tools"
         }
@@ -442,11 +426,6 @@ def test_ai_chat_radio_query_updates_playlist_sidebar(qtbot, app_mock, mocker):
         for label in overlay.body._chat_box.history_widget.findChildren(RoundedLabel)
     )
     assert "已更新候选歌曲" in history_text
-    tool_events = overlay.body._chat_box.history_widget.findChildren(
-        ChatToolEventCard
-    )
-    assert len(tool_events) == 1
-    assert "fm_candidates_remove" in tool_events[0].text()
 
 
 def test_ai_chat_radio_lifecycle_tool_opens_sidebar(qtbot, app_mock, mocker):
@@ -473,11 +452,6 @@ def test_ai_chat_radio_lifecycle_tool_opens_sidebar(qtbot, app_mock, mocker):
         for label in overlay.body._chat_box.history_widget.findChildren(RoundedLabel)
     )
     assert "AI 电台已开启" in history_text
-    tool_events = overlay.body._chat_box.history_widget.findChildren(
-        ChatToolEventCard
-    )
-    assert len(tool_events) == 1
-    assert "ai_radio_activate" in tool_events[0].text()
 
 
 def test_ai_chat_tool_call_callback_raises_on_unserializable_args():
@@ -1690,10 +1664,7 @@ def test_ai_chat_renders_song_artifact_after_final_response(qtbot, app_mock):
 
     history = overlay.body._chat_box.history_widget
     cards = history.findChildren(ChatArtifactCard)
-    tool_events = history.findChildren(ChatToolEventCard)
     assert len(cards) == 1
-    assert len(tool_events) == 1
-    assert "create_song_suggestions_artifact" in tool_events[0].text()
     assert cards[0].artifact.title == "Night Songs"
     history_text = "\n".join(
         label.toPlainText() for label in history.findChildren(RoundedLabel)
@@ -1701,9 +1672,6 @@ def test_ai_chat_renders_song_artifact_after_final_response(qtbot, app_mock):
     assert "我为您推荐了这些歌曲" in history_text
     assert "我来" not in history_text
     assert "我来我为您" not in history_text
-    tool_event_index = history._history_layout.indexOf(tool_events[0])
-    card_index = history._history_layout.indexOf(cards[0])
-    assert tool_event_index < card_index
     last_history_widget = history._history_layout.itemAt(
         history._history_layout.count() - 1
     ).widget()

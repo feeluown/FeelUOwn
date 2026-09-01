@@ -51,6 +51,7 @@ class AIRadioConfigView(QWidget):
         layout.setSpacing(6)
         layout.addWidget(self._footer)
         layout.addWidget(self._details_label)
+        layout.addSpacing(6)
 
         self.setVisible(False)
         self.apply_palette()
