@@ -11,7 +11,7 @@ from feeluown.ai.tools.suggestions import (
     play_song_suggestion,
 )
 from feeluown.ai.tools.songs import play_song_by_uri
-from feeluown.library import BriefSongModel, ModelType, SimpleSearchResult, reverse
+from feeluown.library import BriefSongModel, ModelType, reverse
 
 
 def test_copilot_adds_song_artifact_without_mutating_playlist(mocker):
@@ -35,39 +35,6 @@ def test_copilot_adds_song_artifact_without_mutating_playlist(mocker):
     assert artifact.title == "Night Songs"
     assert artifact.songs == songs
     assert copilot.get_artifacts() == [artifact]
-    assert received == [artifact]
-
-
-def test_copilot_adds_search_result_artifact(mocker):
-    app = SimpleNamespace(config=SimpleNamespace())
-    mocker.patch("feeluown.ai.copilot.create_agent_with_config")
-    copilot = Copilot(app)
-    received = []
-    copilot.artifact_added.connect(received.append, weak=False)
-    song = BriefSongModel(
-        source="fake",
-        identifier="song-1",
-        title="Song",
-        artists_name="Mary",
-    )
-    search_result = SimpleSearchResult(
-        q="Song",
-        source="fake",
-        songs=[song],
-    )
-
-    artifact = copilot.add_search_result_artifact(
-        [search_result], title="Song"
-    )
-
-    assert artifact.identifier == 1
-    assert artifact.type == "search_result"
-    assert artifact.title == "Song"
-    assert artifact.result == [search_result]
-    assert artifact.songs == [song]
-    assert copilot.get_artifact(1) is artifact
-    assert copilot.get_artifact_song(1, 1) is song
-    assert copilot.get_song_by_uri(reverse(song)) is song
     assert received == [artifact]
 
 
@@ -198,9 +165,7 @@ def test_play_song_by_uri_tool_plays_song(mocker):
         title="Song",
         artists_name="Mary",
     )
-    copilot.add_search_result_artifact(
-        [SimpleSearchResult(q="Song", source="fake", songs=[song])]
-    )
+    copilot.cache_model(song)
     runtime = SimpleNamespace(context=SimpleNamespace(app=app, copilot=copilot))
 
     result = play_song_by_uri.func(

@@ -30,31 +30,10 @@ class FakeRuntime:
 
 class FakeCopilot:
     def __init__(self):
-        self.artifacts = []
         self.models = {}
-
-    def add_search_result_artifact(self, results, title=""):
-        songs = []
-        for result in results:
-            songs.extend(result.songs)
-        artifact = SimpleNamespace(
-            identifier=len(self.artifacts) + 1,
-            type="search_result",
-            title=title or "Search Results",
-            songs=songs,
-            result=list(results),
-        )
-        self.artifacts.append(artifact)
-        for song in songs:
-            self.cache_model(song)
-        return artifact
 
     def cache_model(self, model):
         self.models[reverse(model)] = model
-
-    def get_artifact_song(self, artifact_id, song_position):
-        artifact = self.artifacts[artifact_id - 1]
-        return artifact.songs[song_position - 1]
 
     def get_song_by_uri(self, uri):
         model, _ = parse_line(uri)
@@ -203,7 +182,6 @@ async def test_library_search_tool_returns_online_resource_results():
     assert result["ok"] is True
     assert result["action"] == "search"
     assert result["data"]["timeout"] == DEFAULT_SEARCH_TIMEOUT
-    assert result["data"]["artifact_id"] == 1
     assert "song_count" not in result["data"]
     assert "songs" not in result["data"]
     search_result = result["data"]["results"][0]
@@ -213,9 +191,7 @@ async def test_library_search_tool_returns_online_resource_results():
     assert search_result["songs"][0]["uri"] == "fuo://fake/songs/song-1"
     assert "artifact_song_position" not in search_result["songs"][0]
     assert search_result["artists"][0]["uri"] == "fuo://fake/artists/artist-1"
-    artifact = runtime.context.copilot.artifacts[0]
-    assert artifact.type == "search_result"
-    assert artifact.result[0].songs[0].identifier == "song-1"
+    assert "fuo://fake/songs/song-1" in runtime.context.copilot.models
 
 
 @pytest.mark.asyncio
@@ -231,12 +207,11 @@ async def test_library_search_tool_passes_timeout_to_library():
 
     assert result["ok"] is True
     assert result["data"]["timeout"] == 2.5
-    assert result["data"]["artifact_id"] == 1
     assert library.search_kwargs["timeout"] == 2.5
 
 
 @pytest.mark.asyncio
-async def test_library_search_artifact_song_can_be_played_by_uri():
+async def test_library_search_song_can_be_played_by_uri():
     library = MultiResultLibrary()
     playlist = SimpleNamespace(play_model=lambda song: setattr(playlist, "song", song))
     runtime = FakeRuntime(SimpleNamespace(library=library, playlist=playlist))

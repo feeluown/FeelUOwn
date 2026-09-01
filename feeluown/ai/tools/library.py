@@ -144,10 +144,9 @@ async def library_search(
         ):
             if result is not None:
                 results.append(_limit_search_result(result, limit))
-        artifact = runtime.context.copilot.add_search_result_artifact(
-            results,
-            title=keyword,
-        )
+        for result in results:
+            for song in result.songs:
+                runtime.context.copilot.cache_model(song)
         result_dicts = []
         for result in results:
             result_dicts.append(
@@ -163,7 +162,6 @@ async def library_search(
                 "type_in": type_in,
                 "source_in": sources or [],
                 "timeout": search_timeout,
-                "artifact_id": artifact.identifier,
                 "results": result_dicts,
             },
         )
