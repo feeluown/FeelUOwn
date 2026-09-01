@@ -6,7 +6,6 @@ from urllib.parse import parse_qs, urlencode, urlparse
 from typing import TYPE_CHECKING
 
 from PyQt6.QtCore import (
-    QEvent,
     QMargins,
     QObject,
     QRectF,
@@ -43,7 +42,6 @@ from feeluown.gui.components.search import create_search_result_view
 from feeluown.gui.helpers import secondary_text_color
 from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.textbtn import TextButton
-from feeluown.gui.widgets.header import MidHeader
 from feeluown.gui.components.dynamic_island import DynamicIslandStatusBar
 from feeluown.gui.components.ai_radio_config import AIRadioConfigView
 from feeluown.gui.widgets.ai_chat import (

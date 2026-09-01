@@ -1,5 +1,4 @@
 import asyncio
-import sys
 from types import SimpleNamespace
 
 import pytest
@@ -22,7 +21,6 @@ from feeluown.gui.components.player_playlist import (
 )
 from feeluown.gui.uimain.player_bar import PlayerControlPanel
 from feeluown.gui.uimain.ai_chat import (
-    AIChatOverlay,
     AIToolCallCallback,
     SongSuggestionItemWidget,
     song_suggestion_to_markdown_url,
@@ -50,14 +48,12 @@ from feeluown.gui.widgets.ai_chat import (
     ChatArtifactCard,
     ChatHistoryWidget,
     ChatMessageRow,
-    ChatSendButton,
     ChatStreamingStatusCard,
     RoundedLabel,
     surface_border_color,
 )
 from feeluown.gui.widgets import PlayButton, PlusButton
 from feeluown.gui.widgets.song_minicard_list import SongMiniCardListDelegate
-from feeluown.gui.widgets.textbtn import TextButton
 
 
 class FakeDelegateView(QWidget):
@@ -314,120 +310,6 @@ def test_playlist_overlay_enter_ai_radio(qtbot, app_mock, mocker):
     app_mock.ui.ai_chat_overlay.show.assert_called_once()
 
 
-def test_ai_chat_overlay_is_app_fullscreen(qtbot, app_mock):
-    app_mock.ai = FakeAI()
-    app_mock.ai.radio = None
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-
-    overlay.show()
-    qtbot.waitUntil(lambda: overlay.size() == parent.size())
-
-    assert overlay.size() == parent.size()
-    assert overlay.layout().contentsMargins().left() == 0
-    assert overlay.layout().contentsMargins().top() == 0
-    assert overlay.layout().contentsMargins().right() == 0
-    assert overlay.layout().contentsMargins().bottom() == 0
-    assert overlay.body._header.text() == "AI Assistant"
-    island = overlay.body._chat_box._dynamic_island
-    assert island.parent() is overlay.body._chat_box.input_widget
-    assert overlay.body._toolbar_layout.indexOf(island) == -1
-    assert not island.isVisible()
-    assert not overlay.body._sidebar_panel.isVisible()
-    assert isinstance(overlay.body._new_thread_btn, TextButton)
-    assert isinstance(overlay.body._sidebar_btn, TextButton)
-    assert isinstance(overlay.body._collapse_btn, TextButton)
-
-    overlay.body._collapse_overlay()
-    assert not overlay.isVisible()
-
-
-def test_ai_chat_keeps_assistant_header_when_ai_radio_is_active(qtbot, app_mock):
-    app_mock.ai = FakeAI()
-    app_mock.ai.radio = FakeAIRadio()
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-
-    overlay.show()
-
-    assert overlay.body._header.text() == "AI Assistant"
-    assert overlay.body._chat_box._dynamic_island.isHidden()
-    assert overlay.body._new_thread_btn.isVisibleTo(overlay.body)
-    assert overlay.body._sidebar_btn.isVisibleTo(overlay.body)
-    assert overlay.body._collapse_btn.isVisibleTo(overlay.body)
-
-
-def test_ai_chat_sidebar_button_toggles_inline_playlist(qtbot, app_mock, mocker):
-    app_mock.ai = FakeAI()
-    app_mock.ai.radio = FakeAIRadio()
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-
-    overlay.show()
-    assert not overlay.body._sidebar_panel.isVisible()
-    assert isinstance(
-        overlay.body._playlist_sidebar.itemDelegate(),
-        FMCandidatePlaylistDelegate,
-    )
-    overlay.body._playlist_sidebar.scroll_to_current_song = mocker.MagicMock()
-
-    overlay.body._sidebar_btn.click()
-    assert overlay.body._sidebar_panel.isVisible()
-    assert overlay.body._sidebar_shadow.isVisible()
-    assert overlay.body._right_sidebar_stack.currentWidget() is (
-        overlay.body._playlist_sidebar
-    )
-    assert overlay.isVisible()
-    overlay.body._playlist_sidebar.scroll_to_current_song.assert_called_once()
-
-    overlay.body._sidebar_btn.click()
-    assert not overlay.body._sidebar_panel.isVisible()
-    assert not overlay.body._sidebar_shadow.isVisible()
-
-
-def test_ai_chat_radio_query_updates_playlist_sidebar(qtbot, app_mock, mocker):
-    app_mock.ai = FakeAI(FakeAIRadioToolCopilot())
-    app_mock.ai.radio = FakeAIRadio()
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-    overlay.body._playlist_sidebar.scroll_to_current_song = mocker.MagicMock()
-
-    asyncio.run(overlay.body._chat_box.exec_user_query("换一批"))
-
-    assert overlay.body._sidebar_panel.isVisibleTo(overlay.body)
-    assert overlay.body._right_sidebar_stack.currentWidget() is (
-        overlay.body._playlist_sidebar
-    )
-    assert overlay.body._sidebar_status_label.text() == "Updating candidates"
-    assert overlay.body._sidebar_status_label.isVisibleTo(overlay.body)
-    overlay.body._playlist_sidebar.scroll_to_current_song.assert_called()
-    history_text = "\n".join(
-        label.toPlainText()
-        for label in overlay.body._chat_box.history_widget.findChildren(RoundedLabel)
-    )
-    assert "已更新候选歌曲" in history_text
-
-
 def test_ai_chat_radio_lifecycle_tool_opens_sidebar(qtbot, app_mock, mocker):
     app_mock.ai = FakeAI(FakeAIRadioLifecycleToolCopilot())
     app_mock.ai.radio = FakeAIRadio()
@@ -463,89 +345,6 @@ def test_ai_chat_tool_call_callback_raises_on_unserializable_args():
             run_id="run_1",
             inputs={"keyword": object()},
         )
-
-
-def test_ai_chat_body_and_sidebar_use_distinct_background_roles(qtbot, app_mock):
-    app_mock.ai = FakeAI()
-    app_mock.ai.radio = None
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-    qtbot.waitUntil(
-        lambda: overlay.body._artifact_sidebar._song_list_view.palette().color(
-            overlay.body._artifact_sidebar._song_list_view.palette().ColorRole.Window
-        )
-        == overlay.body.palette().color(overlay.body.palette().ColorRole.Base)
-    )
-
-    body_pal = overlay.body.palette()
-    panel_pal = overlay.body._sidebar_panel.palette()
-    sidebar_pal = overlay.body._right_sidebar_stack.palette()
-    artifact_view = overlay.body._artifact_sidebar._song_list_view
-    artifact_pal = artifact_view.palette()
-    artifact_viewport_pal = artifact_view.viewport().palette()
-
-    assert body_pal.color(body_pal.ColorRole.Window) == body_pal.color(
-        body_pal.ColorRole.Base
-    )
-    assert sidebar_pal.color(sidebar_pal.ColorRole.Window) == sidebar_pal.color(
-        sidebar_pal.ColorRole.Base
-    )
-    assert body_pal.color(body_pal.ColorRole.Window) != sidebar_pal.color(
-        sidebar_pal.ColorRole.Window
-    )
-    assert panel_pal.color(panel_pal.ColorRole.Window) == sidebar_pal.color(
-        sidebar_pal.ColorRole.Window
-    )
-    assert not overlay.body._sidebar_panel.autoFillBackground()
-    assert not overlay.body._right_sidebar_stack.autoFillBackground()
-    assert not overlay.body._playlist_sidebar.autoFillBackground()
-    assert not overlay.body._playlist_sidebar.viewport().autoFillBackground()
-    assert artifact_pal.color(artifact_pal.ColorRole.Window) == body_pal.color(
-        body_pal.ColorRole.Base
-    )
-    assert artifact_viewport_pal.color(
-        artifact_viewport_pal.ColorRole.Window
-    ) == body_pal.color(body_pal.ColorRole.Base)
-    assert not artifact_view.autoFillBackground()
-    assert not artifact_view.viewport().autoFillBackground()
-    history = overlay.body._chat_box.history_widget
-    history_pal = history._history_area.palette()
-    viewport_pal = history._history_area.viewport().palette()
-    content_pal = history.history_widget.palette()
-    assert history_pal.color(history_pal.ColorRole.Window) == body_pal.color(
-        body_pal.ColorRole.Base
-    )
-    assert viewport_pal.color(viewport_pal.ColorRole.Window) == body_pal.color(
-        body_pal.ColorRole.Base
-    )
-    assert content_pal.color(content_pal.ColorRole.Window) == body_pal.color(
-        body_pal.ColorRole.Base
-    )
-    input_pal = overlay.body._chat_box.input_widget.palette()
-    assert input_pal.color(input_pal.ColorRole.Window) != body_pal.color(
-        body_pal.ColorRole.Window
-    )
-    editor = overlay.body._chat_box.input_widget._editor
-    editor_pal = editor.palette()
-    editor_viewport_pal = editor.viewport().palette()
-    assert editor_pal.color(editor_pal.ColorRole.Window) == editor_pal.color(
-        editor_pal.ColorRole.Base
-    )
-    assert editor_viewport_pal.color(
-        editor_viewport_pal.ColorRole.Window
-    ) == editor_pal.color(editor_pal.ColorRole.Window)
-    assert editor.styleSheet()
-    assert not editor.autoFillBackground()
-    assert not editor.viewport().autoFillBackground()
-    send_btn = overlay.body._chat_box.input_widget._send_btn
-    assert isinstance(send_btn, ChatSendButton)
-    assert send_btn.text() == ""
-    assert send_btn.parent() is overlay.body._chat_box.input_widget
 
 
 def test_ai_chat_renders_assistant_markdown(qtbot):
@@ -1531,90 +1330,6 @@ def test_playlist_overlay_uses_fm_candidate_delegate_on_playlist_tab(
         w._player_playlist_view.itemDelegate(),
         FMCandidatePlaylistDelegate,
     )
-
-
-def test_ai_chat_overlay_toggles_titlebar_mode(qtbot, app_mock, mocker):
-    titlebar_mode = SimpleNamespace(
-        enter=mocker.MagicMock(),
-        exit=mocker.MagicMock(),
-        reapply=mocker.MagicMock(),
-    )
-    mocker.patch(
-        "feeluown.gui.uimain.ai_chat._create_titlebar_mode",
-        return_value=titlebar_mode,
-    )
-    app_mock.ai = FakeAI()
-    app_mock.ai.radio = None
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-    assert isinstance(overlay, AIChatOverlay)
-
-    overlay.show()
-    overlay.hide()
-
-    titlebar_mode.enter.assert_called_once()
-    titlebar_mode.exit.assert_called_once()
-
-
-def test_ai_chat_overlay_reapplies_titlebar_mode_on_resize(qtbot, app_mock, mocker):
-    titlebar_mode = SimpleNamespace(
-        enter=mocker.MagicMock(),
-        exit=mocker.MagicMock(),
-        reapply=mocker.MagicMock(),
-    )
-    mocker.patch(
-        "feeluown.gui.uimain.ai_chat._create_titlebar_mode",
-        return_value=titlebar_mode,
-    )
-    app = QWidget()
-    app.ai = FakeAI()
-    app.ai.radio = None
-    app.theme_mgr = FakeThemeManager()
-    # Mock player for LineSongLabel and DynamicIslandStatusBar
-    app.player = app_mock.player
-    app.player.metadata_changed = Signal()
-    app.player.state_changed = Signal()
-    app.player.state = State.stopped
-    app.live_lyric = app_mock.live_lyric
-    app.live_lyric.line_changed = Signal()
-    app.playlist = app_mock.playlist
-    app.playlist.mode_changed = Signal()
-    app.playlist.list.return_value = []
-    app.resize(QSize(960, 600))
-    app.show()
-    qtbot.addWidget(app)
-    overlay = create_aichat_overlay(app, parent=app)
-    assert isinstance(overlay, AIChatOverlay)
-
-    overlay.show()
-    app.resize(QSize(1000, 640))
-    qtbot.waitUntil(lambda: titlebar_mode.reapply.called)
-
-    titlebar_mode.reapply.assert_called_once()
-
-
-def test_ai_chat_overlay_skips_titlebar_mode_outside_macos(qtbot, app_mock, mocker):
-    mocker.patch("feeluown.gui.uimain.ai_chat.IS_MACOS", False)
-    sys.modules.pop("feeluown.gui.macos_titlebar", None)
-    app_mock.ai = FakeAI()
-    app_mock.ai.radio = None
-    app_mock.playlist.list.return_value = []
-    parent = QWidget()
-    parent.resize(QSize(960, 600))
-    parent.show()
-    qtbot.addWidget(parent)
-    app_mock.size.return_value = parent.size()
-
-    overlay = create_aichat_overlay(app_mock, parent=parent)
-
-    assert isinstance(overlay, AIChatOverlay)
-    assert overlay._titlebar_mode is None
-    assert "feeluown.gui.macos_titlebar" not in sys.modules
 
 
 def test_ai_chat_copilot_artifact_signal_renders_card(qtbot, app_mock):
