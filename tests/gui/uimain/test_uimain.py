@@ -2,6 +2,8 @@ import asyncio
 import sys
 from types import SimpleNamespace
 
+import pytest
+
 from PyQt6.QtCore import QEvent, QPoint, QPointF, QRect, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QGuiApplication, QMouseEvent, QPalette
 from PyQt6.QtWidgets import QListWidget, QWidget
@@ -21,6 +23,7 @@ from feeluown.gui.components.player_playlist import (
 from feeluown.gui.uimain.player_bar import PlayerControlPanel
 from feeluown.gui.uimain.ai_chat import (
     AIChatOverlay,
+    AIToolCallCallback,
     SongSuggestionItemWidget,
     song_suggestion_to_markdown_url,
     create_aichat_overlay,
@@ -125,6 +128,20 @@ class FakeCopilot:
         self.working_state_changed = Signal()
         self.artifact_added = Signal()
         self._artifacts = []
+        self._extra_callbacks = []
+
+    def add_callback(self, callback):
+        self._extra_callbacks.append(callback)
+
+    def _fire_tool_start(self, name, inputs=None):
+        """Simulate the agent callback firing when a tool starts."""
+        for callback in self._extra_callbacks:
+            callback.on_tool_start(
+                {"name": name, "description": ""},
+                "",
+                run_id="run_1",
+                inputs=inputs or {},
+            )
 
     def new_thread(self):
         self._artifacts = []
@@ -212,6 +229,9 @@ class FakeStreamingCopilot(FakeCopilot):
             ],
             title="Night Songs",
         )
+        self._fire_tool_start(
+            "create_song_suggestions_artifact", inputs={"title": "Night Songs"}
+        )
         yield SimpleNamespace(name="create_song_suggestions_artifact"), {
             "langgraph_node": "tools"
         }
@@ -222,6 +242,7 @@ class FakeStreamingCopilot(FakeCopilot):
 
 class FakeAIRadioToolCopilot(FakeCopilot):
     async def astream_user_query(self, _query):
+        self._fire_tool_start("fm_candidates_remove")
         yield SimpleNamespace(name="fm_candidates_remove"), {
             "langgraph_node": "tools"
         }
@@ -232,6 +253,7 @@ class FakeAIRadioToolCopilot(FakeCopilot):
 
 class FakeAIRadioLifecycleToolCopilot(FakeCopilot):
     async def astream_user_query(self, _query):
+        self._fire_tool_start("ai_radio_activate")
         yield SimpleNamespace(name="ai_radio_activate"), {
             "langgraph_node": "tools"
         }
@@ -458,6 +480,17 @@ def test_ai_chat_radio_lifecycle_tool_opens_sidebar(qtbot, app_mock, mocker):
     assert "ai_radio_activate" in tool_events[0].text()
 
 
+def test_ai_chat_tool_call_callback_raises_on_unserializable_args():
+    callback = AIToolCallCallback(lambda *args: None, lambda *args: None)
+    with pytest.raises(TypeError):
+        callback.on_tool_start(
+            {"name": "library_search", "description": ""},
+            "",
+            run_id="run_1",
+            inputs={"keyword": object()},
+        )
+
+
 def test_ai_chat_body_and_sidebar_use_distinct_background_roles(qtbot, app_mock):
     app_mock.ai = FakeAI()
     app_mock.ai.radio = None
@@ -611,7 +644,7 @@ def test_ai_chat_tool_event_aligns_with_assistant_text(qtbot):
     history.show()
 
     assistant_label = history.create_message_label("assistant", "assistant")
-    tool_card = history.add_tool_event("Tool called: ai_radio_get_state")
+    tool_card = history.add_tool_event("ai_radio_get_state")
     qtbot.waitUntil(lambda: tool_card._label.x() > 0)
 
     assert tool_card._label.mapTo(history.history_widget, QPoint(0, 0)).x() == (
@@ -642,9 +675,7 @@ def test_ai_chat_refreshes_palette_roles(qtbot, app_mock):
         user_label = history.create_message_label("user", "hello")
         assistant_label = history.create_message_label("assistant", "hello")
         status_card = history.add_streaming_status("thinking")
-        tool_card = history.add_tool_event(
-            "Tool called: create_song_suggestions_artifact"
-        )
+        tool_card = history.add_tool_event("create_song_suggestions_artifact")
         overlay.body._chat_box.input_widget.set_msg("AI Radio is active")
 
         QGuiApplication.setPalette(dark_palette)

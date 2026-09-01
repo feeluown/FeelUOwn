@@ -419,10 +419,17 @@ ai-chat-stream-writing = AI 正在生成回复
 ai-chat-stream-tool = AI 正在使用工具：{ $tool }
 ai-chat-stream-failed = AI 回复失败
 ai-chat-tool-called = 已调用工具：{ $tool }
+ai-chat-tool-args = 参数：{ $args }
+ai-chat-tool-output = 输出：{ $output }
 
 ai-radio-title = AI 电台
 ai-radio-active-status = AI 电台：开启
 ai-radio-activate-tooltip = 开启 AI 电台
+ai-radio-config = 电台配置
+ai-radio-config-preferences = 偏好
+ai-radio-config-avoidances = 想避免
+ai-radio-config-notes = 近期反馈
+ai-radio-config-empty = 暂无
 ai-radio-activated = AI 电台已开启
 ai-radio-deactivated = AI 电台已关闭
 ai-radio-input-placeholder = 告诉 AI 接下来想听什么...

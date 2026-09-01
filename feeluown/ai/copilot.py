@@ -180,6 +180,7 @@ class Copilot:
         self._agent = create_agent_with_config(self._app.config)
         self._agent_context = CopilotContext(copilot=self, app=app)
         self._agent_stream_callback = AgentStreamCallback(self)
+        self._extra_callbacks = []
         self._artifacts = ArtifactsManager()
         self._model_cache = ModelCache(getattr(app, "library", None))
         self.artifact_added = self._artifacts.added
@@ -203,6 +204,10 @@ class Copilot:
         self._current_thread_id += 1
         self._artifacts.clear()
         self._model_cache = ModelCache(getattr(self._app, "library", None))
+
+    def add_callback(self, callback):
+        """Register an extra callback handler for agent invocations."""
+        self._extra_callbacks.append(callback)
 
     async def match_song_suggestion(
         self, suggestion: SongSuggestion
@@ -263,7 +268,7 @@ class Copilot:
     def get_config(self):
         return {
             "configurable": {"thread_id": str(self._current_thread_id)},
-            "callbacks": [self._agent_stream_callback],
+            "callbacks": [self._agent_stream_callback, *self._extra_callbacks],
         }
 
     def get_current_thread_history_messages(self) -> List[BaseMessage]:

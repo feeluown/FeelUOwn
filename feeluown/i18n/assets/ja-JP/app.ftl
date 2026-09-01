@@ -419,10 +419,17 @@ ai-chat-stream-writing = AI が返信を生成しています
 ai-chat-stream-tool = AI がツールを使用しています: { $tool }
 ai-chat-stream-failed = AI の返信に失敗しました
 ai-chat-tool-called = ツールを呼び出しました: { $tool }
+ai-chat-tool-args = 引数：{ $args }
+ai-chat-tool-output = 出力：{ $output }
 
 ai-radio-title = AI ラジオ
 ai-radio-active-status = AI ラジオ：オン
 ai-radio-activate-tooltip = AI ラジオを開始
+ai-radio-config = AI ラジオ設定
+ai-radio-config-preferences = 好み
+ai-radio-config-avoidances = 避けたいもの
+ai-radio-config-notes = 最近のフィードバック
+ai-radio-config-empty = なし
 ai-radio-activated = AI ラジオを開始しました
 ai-radio-deactivated = AI ラジオを停止しました
 ai-radio-input-placeholder = 次に聴きたい内容を AI に伝えてください...

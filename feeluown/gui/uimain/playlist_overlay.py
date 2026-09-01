@@ -16,6 +16,7 @@ from PyQt6.QtGui import (
 from feeluown.i18n import t
 from feeluown.player import PlaybackMode, SongsRadio
 from feeluown.gui.helpers import fetch_cover_wrapper, esc_hide_widget
+from feeluown.gui.components.ai_radio_config import AIRadioConfigView
 from feeluown.gui.components.player_playlist import (
     PlayerPlaylistView,
     FMCandidatePlaylistDelegate,
@@ -69,6 +70,7 @@ class PlaylistOverlay(QWidget):
         self._shadow_width = 15
         self._view_options = dict(row_height=60, no_scroll_v=False)
         self._player_playlist_view = PlayerPlaylistView(self._app, **self._view_options)
+        self._ai_radio_config = AIRadioConfigView(self._app, self)
 
         # AutoFillBackground should be disabled for PlaylistOverlay so that shadow
         # effects can be simulated. AutoFillBackground should be enabled for tabbar.
@@ -83,6 +85,9 @@ class PlaylistOverlay(QWidget):
             self._ai_radio_btn.setToolTip(t("ai-configure-tooltip"))
         else:
             self._ai_radio_btn.setToolTip(t("ai-radio-activate-tooltip"))
+        self._app.playlist.mode_changed.connect(
+            self._update_ai_radio_config_visibility
+        )
         esc_hide_widget(self)
         q_app = QApplication.instance()
         assert q_app is not None  # make type checker happy.
@@ -92,6 +97,7 @@ class PlaylistOverlay(QWidget):
         self._tabbar.currentChanged.connect(self.show_tab)
 
         self.setup_ui()
+        self._update_ai_radio_config_visibility()
 
     def setup_ui(self):
         self._layout = QVBoxLayout(self)
@@ -111,6 +117,7 @@ class PlaylistOverlay(QWidget):
         self._layout.addLayout(self._btn_layout)
         self._layout.addLayout(self._btn_layout2)
         self._layout.addLayout(self._stacked_layout)
+        self._layout.addWidget(self._ai_radio_config)
 
         self._btn_layout.addWidget(self._clear_playlist_btn)
         self._btn_layout.addWidget(self._playback_mode_switch)
@@ -149,6 +156,15 @@ class PlaylistOverlay(QWidget):
         self._app.ai.activate_radio()
         self._app.show_msg(t("ai-radio-activated"))
         self._show_ai_chat_overlay()
+
+    def _update_ai_radio_config_visibility(self, *_):
+        radio_active = (
+            self._app.ai is not None
+            and self._app.ai.get_active_radio() is not None
+        )
+        self._ai_radio_config.set_visible(
+            radio_active and self._tabbar.currentIndex() == 0
+        )
 
     def _show_ai_chat_overlay(self):
         overlay = self._app.ui.ai_chat_overlay
@@ -190,6 +206,7 @@ class PlaylistOverlay(QWidget):
         view.setItemDelegate(delegate)
         self._stacked_layout.addWidget(view)
         self._stacked_layout.setCurrentWidget(view)
+        self._update_ai_radio_config_visibility()
 
     def _hide_btns(self):
         for btn in self._btns:

@@ -31,6 +31,7 @@ from feeluown.gui.widgets.textbtn import TextButton
 logger = logging.getLogger(__name__)
 
 SurfaceRadius = 8
+_MAX_DETAILS_HEIGHT = 200
 
 
 def _application_palette():
@@ -396,26 +397,116 @@ class ChatStreamingStatusCard(QFrame):
 
 
 class ChatToolEventCard(QWidget):
-    def __init__(self, text="", parent=None):
+    def __init__(self, tool_name="", args="", parent=None):
         super().__init__(parent=parent)
+        self._args = args
+        self._output = ""
+        self._expanded = False
         self.setSizePolicy(QSizePolicy.Policy.Preferred, QSizePolicy.Policy.Fixed)
 
-        self._label = QLabel(text, self)
+        self._label = QLabel(tool_name, self)
         self._label.setWordWrap(True)
         self._label.setTextInteractionFlags(Qt.TextInteractionFlag.NoTextInteraction)
+
+        self._args_label = QLabel(
+            t("ai-chat-tool-args", args=args) if args else "", self
+        )
+        self._args_label.setWordWrap(True)
+        self._args_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.NoTextInteraction
+        )
+        self._args_label.hide()
+
+        self._output_label = QLabel("", self)
+        self._output_label.setWordWrap(True)
+        self._output_label.setTextInteractionFlags(
+            Qt.TextInteractionFlag.NoTextInteraction
+        )
+        self._output_label.hide()
+
+        self._details_widget = QWidget(self)
+        details_layout = QVBoxLayout(self._details_widget)
+        details_layout.setContentsMargins(0, 0, 0, 0)
+        details_layout.setSpacing(2)
+        details_layout.addWidget(self._args_label)
+        details_layout.addWidget(self._output_label)
+
+        self._details_scroll = QScrollArea(self)
+        self._details_scroll.setWidget(self._details_widget)
+        self._details_scroll.setWidgetResizable(True)
+        self._details_scroll.setFrameShape(QFrame.Shape.NoFrame)
+        self._details_scroll.setHorizontalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+        )
+        self._details_scroll.setVerticalScrollBarPolicy(
+            Qt.ScrollBarPolicy.ScrollBarAsNeeded
+        )
+        self._details_scroll.setMaximumHeight(_MAX_DETAILS_HEIGHT)
+        self._details_scroll.hide()
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(8, 2, 2, 2)
+        layout.setSpacing(2)
+        layout.addWidget(self._label)
+        layout.addWidget(self._details_scroll)
+        self._update_expandable()
         self._apply_palette()
 
-        layout = QHBoxLayout(self)
-        layout.setContentsMargins(8, 2, 2, 2)
-        layout.setSpacing(0)
-        layout.addWidget(self._label)
+    def mousePressEvent(self, event):
+        if self._args or self._output:
+            self.set_expanded(not self._expanded)
+        super().mousePressEvent(event)
+
+    def set_expanded(self, expanded):
+        self._expanded = bool(expanded)
+        self._update_details_visibility()
+        self.updateGeometry()
+
+    def is_expanded(self):
+        return self._expanded
+
+    def set_output(self, output):
+        self._output = output
+        self._output_label.setText(
+            t("ai-chat-tool-output", output=output) if output else ""
+        )
+        self._update_expandable()
+        if self._expanded:
+            self._update_details_visibility()
+        self.updateGeometry()
+
+    def _update_expandable(self):
+        expandable = bool(self._args or self._output)
+        self.setCursor(
+            Qt.CursorShape.PointingHandCursor
+            if expandable
+            else Qt.CursorShape.ArrowCursor
+        )
+
+    def _update_details_visibility(self):
+        has_args = bool(self._args)
+        has_output = bool(self._output)
+        self._args_label.setVisible(self._expanded and has_args)
+        self._output_label.setVisible(self._expanded and has_output)
+        visible = self._expanded and (has_args or has_output)
+        self._details_scroll.setVisible(visible)
 
     def _apply_palette(self):
         _set_text_color(self._label, secondary_text_color(_application_palette()))
+        _set_text_color(self._args_label, secondary_text_color(_application_palette()))
+        _set_text_color(
+            self._output_label, secondary_text_color(_application_palette())
+        )
         self.update()
 
     def text(self):
         return self._label.text()
+
+    def args_text(self):
+        return self._args_label.text()
+
+    def output_text(self):
+        return self._output_label.text()
 
 
 class ChatHistoryWidget(QWidget):
@@ -486,8 +577,8 @@ class ChatHistoryWidget(QWidget):
         self.scroll_to_bottom()
         return status
 
-    def add_tool_event(self, text):
-        event = ChatToolEventCard(text, self)
+    def add_tool_event(self, tool_name, args=""):
+        event = ChatToolEventCard(tool_name, args, self)
         self._history_layout.addWidget(event)
         self.scroll_to_bottom()
         return event

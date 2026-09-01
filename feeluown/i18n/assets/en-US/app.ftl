@@ -418,10 +418,17 @@ ai-chat-stream-writing = AI is writing
 ai-chat-stream-tool = AI is using tool: { $tool }
 ai-chat-stream-failed = AI response failed
 ai-chat-tool-called = Tool called: { $tool }
+ai-chat-tool-args = Args: { $args }
+ai-chat-tool-output = Output: { $output }
 
 ai-radio-title = AI Radio
 ai-radio-active-status = AI Radio: On
 ai-radio-activate-tooltip = Start AI Radio
+ai-radio-config = AI Radio Config
+ai-radio-config-preferences = Preferences
+ai-radio-config-avoidances = Avoid
+ai-radio-config-notes = Recent feedback
+ai-radio-config-empty = None
 ai-radio-activated = AI Radio activated
 ai-radio-deactivated = AI Radio deactivated
 ai-radio-input-placeholder = Tell AI what to play next...
