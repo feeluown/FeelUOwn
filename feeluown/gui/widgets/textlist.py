@@ -62,7 +62,7 @@ class TextlistModel(QAbstractListModel):
 
     def flags(self, index):  # pylint: disable=no-self-use
         if not index.isValid():
-            return 0
+            return Qt.ItemFlag.NoItemFlags
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 

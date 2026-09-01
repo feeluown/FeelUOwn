@@ -26,7 +26,7 @@ class CommentListModel(QAbstractListModel):
 
     def flags(self, index):
         if not index.isValid():
-            return 0
+            return Qt.ItemFlag.NoItemFlags
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         return flags
 

@@ -69,7 +69,7 @@ class PlaylistsModel(TextlistModel):
 
     def flags(self, index):
         if not index.isValid():
-            return 0
+            return Qt.ItemFlag.NoItemFlags
         flags = Qt.ItemFlag.ItemIsSelectable | Qt.ItemFlag.ItemIsEnabled
         if index.row() < len(self._playlists):
             flags |= Qt.ItemFlag.ItemIsDropEnabled

@@ -99,7 +99,7 @@ class CollectionListView(TextlistView):
 class CollectionListModel(TextlistModel):
     def flags(self, index):
         if not index.isValid():
-            return 0
+            return Qt.ItemFlag.NoItemFlags
         flags = (
             Qt.ItemFlag.ItemIsSelectable
             | Qt.ItemFlag.ItemIsEnabled
