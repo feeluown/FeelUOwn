@@ -378,13 +378,16 @@ def test_run_mcp_server_sets_host_port(mocker):
 
     result = mcpserver.run_mcp_server("0.0.0.0", 12345, debug=True)
 
-    assert mcpserver.mcp.settings.host == "0.0.0.0"
-    assert mcpserver.mcp.settings.port == 12345
     assert mcpserver.mcp.settings.debug is True
     assert mcpserver.mcp.settings.log_level == "DEBUG"
     assert inspect.iscoroutine(result)
     result.close()
-    mock_run.assert_called_once()
+    if mcpserver.MCP_V2:
+        mock_run.assert_called_once_with(host="0.0.0.0", port=12345)
+    else:
+        assert mcpserver.mcp.settings.host == "0.0.0.0"
+        assert mcpserver.mcp.settings.port == 12345
+        mock_run.assert_called_once_with()
 
 
 def test_library_providers(mocker, app):

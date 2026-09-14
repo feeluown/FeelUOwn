@@ -1,6 +1,16 @@
 from typing import Any
 
-from mcp.server.fastmcp import FastMCP
+try:
+    # MCP Python SDK >= 2: FastMCP was renamed to MCPServer.
+    from mcp.server.mcpserver import MCPServer
+
+    MCP_V2 = True
+except ImportError:
+    # MCP Python SDK 1.x
+    from mcp.server.fastmcp import FastMCP as MCPServer
+
+    MCP_V2 = False
+
 from feeluown.app import App, get_app
 from feeluown.library import (
     ModelType,
@@ -52,7 +62,7 @@ from feeluown.library.provider_protocol import (
 from feeluown.serializers import DeserializerError, serialize, deserialize
 
 
-mcp = FastMCP("FeelUOwn")
+mcp = MCPServer("FeelUOwn")
 _PROTOCOLS = (
     SupportsAlbumGet,
     SupportsAlbumSongsReader,
@@ -946,8 +956,11 @@ def run_mcp_server(host: str = "127.0.0.1", port: int = 23335, debug: bool = Fal
     """
     Run the MCP server in Streamable HTTP mode.
     """
-    mcp.settings.host = host
-    mcp.settings.port = port
     mcp.settings.debug = debug
     mcp.settings.log_level = "DEBUG" if debug else "WARNING"
+    if MCP_V2:
+        # MCP SDK >= 2 takes transport options in the run method, not settings.
+        return mcp.run_streamable_http_async(host=host, port=port)
+    mcp.settings.host = host
+    mcp.settings.port = port
     return mcp.run_streamable_http_async()
