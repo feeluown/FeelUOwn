@@ -221,7 +221,10 @@ class SongMiniCardListDelegate(QStyledItemDelegate):
         img_padding = self.img_padding
         cover_height = card_height - 2 * img_padding
         cover_width = cover_height
-        song, obj = index.data(Qt.ItemDataRole.UserRole)
+        data = index.data(Qt.ItemDataRole.UserRole)
+        if data is None:
+            return
+        song, obj = data
         if obj is None:
             return
 
