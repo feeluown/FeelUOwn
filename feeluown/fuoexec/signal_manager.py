@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import Callable, Optional, List, Tuple, Dict
 
@@ -73,6 +74,12 @@ class SignalConnector:
                 else:
                     logger.warning(
                         'No aio support is available, a slot is ignored.')
+            elif Signal.has_aio_support and self._running_loop() is None:
+                # Signals may be emitted from a thread that has no running
+                # event loop (e.g. the mpv event thread). Dispatch the slot
+                # to the aio worker in this case, otherwise asyncio helpers
+                # used in the slot (such as ``aio.run_fn``) will fail.
+                Signal.aioqueue.sync_q.put_nowait((func, args))  # type: ignore
             else:
                 try:
                     func(*args)
@@ -80,6 +87,13 @@ class SignalConnector:
                     logger.exception('error during calling slot:%s', e)
                 except:  # noqa: E722, pylint: disable=bare-except
                     logger.exception('error during calling slot')
+
+    @staticmethod
+    def _running_loop():
+        try:
+            return asyncio.get_running_loop()
+        except RuntimeError:
+            return None
 
 
 class SignalManager:
