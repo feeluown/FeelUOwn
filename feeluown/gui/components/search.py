@@ -1,6 +1,15 @@
 from datetime import datetime
 
-from PyQt6.QtWidgets import QAbstractItemView, QFrame, QVBoxLayout, QScrollArea
+from PyQt6.QtCore import QEvent, QObject
+from PyQt6.QtGui import QColor
+from PyQt6.QtWidgets import (
+    QFrame,
+    QGraphicsDropShadowEffect,
+    QScrollArea,
+    QVBoxLayout,
+)
+
+from feeluown.gui.widgets.textbtn import TextButton
 
 from feeluown.library import SearchType
 from feeluown.utils.aio import run_afn
@@ -20,6 +29,48 @@ from feeluown.gui.widgets.accordion import Accordion
 from feeluown.gui.widgets.labels import MessageLabel
 from feeluown.utils.reader import create_reader
 from feeluown.i18n import t
+
+
+def _toggle_rows(checked, default_count, table, btn):
+    table.set_fixed_row_count(default_count if checked else -1)
+    btn.setText(t("show-more") if checked else t("show-less"))
+
+
+_BTN_MARGIN_BOTTOM = 8
+_BTN_MIN_WIDTH = 120
+
+
+class _BtnRepositionFilter(QObject):
+    """Repositions a floating button at the bottom-center of a parent widget."""
+
+    def __init__(self, btn, parent_widget):
+        super().__init__()
+        self._btn = btn
+        self._pw = parent_widget
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.Resize:
+            self._reposition()
+        return False
+
+    def reposition(self):
+        btn_hint = self._btn.sizeHint()
+        btn_w = max(btn_hint.width(), _BTN_MIN_WIDTH)
+        btn_h = btn_hint.height()
+        w = self._pw.width()
+        h = self._pw.height()
+        x = max(0, (w - btn_w) // 2)
+        y = max(0, h - btn_h - _BTN_MARGIN_BOTTOM)
+        self._btn.move(x, y)
+
+
+_ACTIVE_TABLE_ATTR = {
+    "songs": "songs_table",
+    "albums": "albums_table",
+    "artists": "artists_table",
+    "playlists": "playlists_table",
+    "videos": "videos_table",
+}
 
 
 Tabs = [
@@ -89,6 +140,7 @@ class Body(QFrame, BgTransparentMixin):
         self.title = LargeHeader()
         self.hint = MessageLabel()
         self.accordion = Accordion()
+        self._reposition_filters = []
 
         self._layout = QVBoxLayout(self)
         self._layout.setContentsMargins(20, 0, 20, 0)
@@ -111,7 +163,7 @@ class Body(QFrame, BgTransparentMixin):
         tab_index = get_tab_idx(search_type)
         succeed = 0
         start = datetime.now()
-        is_first = True  # Is first search result.
+        self._reposition_filters.clear()
         if source_in is not None:
             source_count = len(source_in)
         else:
@@ -135,21 +187,27 @@ class Body(QFrame, BgTransparentMixin):
             table_container = TableContainer(app, view.accordion)
             table_container.layout().setContentsMargins(0, 0, 0, 0)
 
-            # HACK: set fixed row for tables.
-            # pylint: disable=protected-access
-            for table in table_container._tables:
-                assert isinstance(table, QAbstractItemView)
-                delegate = table.itemDelegate()
-                if isinstance(delegate, ImgCardListDelegate):
-                    table.set_fixed_row_count(2)
-                    delegate.update_settings("card_min_width", 140)
-                elif isinstance(table, SongsTableView):
-                    table.set_fixed_row_count(8)
-                    table.set_row_height(table.verticalHeader().defaultSectionSize())
-
             renderer = SearchResultRenderer(q, tab_index, source_in=source_in)
             await table_container.set_renderer(renderer)
             _, search_type, attrname, show_handler = renderer.tabs[tab_index]
+
+            # Find the active table and set its fixed row count.
+            active_table = getattr(
+                table_container, _ACTIVE_TABLE_ATTR[attrname]
+            )
+            if isinstance(active_table, SongsTableView):
+                default_count = 8
+                active_table.set_fixed_row_count(default_count)
+                active_table.set_row_height(
+                    active_table.verticalHeader().defaultSectionSize()
+                )
+            else:
+                default_count = 2
+                delegate = active_table.itemDelegate()
+                if isinstance(delegate, ImgCardListDelegate):
+                    active_table.set_fixed_row_count(default_count)
+                    delegate.update_settings("card_min_width", 140)
+
             objects = getattr(result, attrname) or []
             if not objects:  # Result is empty.
                 hint_msgs.append(
@@ -168,12 +226,56 @@ class Body(QFrame, BgTransparentMixin):
             source = objects[0].source
             provider = app.library.get(source)
             provider_name = provider.name
-            if is_first is False:
-                table_container.hide()
-            view.accordion.add_section(MidHeader(provider_name), table_container, 6, 12)
+
+            header_label = MidHeader(provider_name)
+
+            expand_btn = TextButton(t("show-more"))
+            expand_btn.setCheckable(True)
+            expand_btn.setChecked(True)
+            expand_btn.setStyleSheet(
+                "QPushButton {"
+                f"  min-width: {_BTN_MIN_WIDTH}px;"
+                "  border: 1px solid palette(mid);"
+                "  border-radius: 4px;"
+                "  padding: 4px 16px;"
+                "  background: palette(window);"
+                "  color: palette(text);"
+                "}"
+                "QPushButton:hover {"
+                "  border-color: palette(foreground);"
+                "}"
+            )
+            shadow = QGraphicsDropShadowEffect()
+            shadow.setBlurRadius(6)
+            shadow.setOffset(0, 1)
+            shadow.setColor(QColor(0, 0, 0, 40))
+            expand_btn.setGraphicsEffect(shadow)
+            content_widget = QFrame()
+            content_layout = QVBoxLayout(content_widget)
+            content_layout.setContentsMargins(0, 0, 0, 0)
+            content_layout.setSpacing(0)
+            content_layout.addWidget(table_container)
+
+            expand_btn.setParent(active_table)
+            expand_btn.raise_()
+            btn_filter = _BtnRepositionFilter(expand_btn, active_table)
+            btn_filter.setParent(active_table)
+            active_table.installEventFilter(btn_filter)
+            self._reposition_filters.append(btn_filter)
+
+            def _on_toggle(checked, tbl=active_table, count=default_count,
+                           btn=expand_btn, f=btn_filter):
+                _toggle_rows(checked, count, tbl, btn)
+                f.reposition()
+
+            expand_btn.toggled.connect(_on_toggle)
+            btn_filter.reposition()
+
+            view.accordion.add_section(
+                header_label, content_widget, 6, 12
+            )
             renderer.meta_widget.hide()
             renderer.toolbar.hide()
-            is_first = False
         time_cost = (datetime.now() - start).total_seconds()
         hint_msgs.pop(0)
         hint_msgs.insert(
