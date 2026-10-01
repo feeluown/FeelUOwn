@@ -21,6 +21,7 @@ from feeluown.library import (
 from feeluown.media import Media
 from feeluown.i18n import t
 from .metadata_assembler import MetadataAssembler
+from .preload_manager import PreloadManager
 
 if TYPE_CHECKING:
     from feeluown.app import App
@@ -107,6 +108,7 @@ class Playlist:
         """
         self._app = app
         self._metadata_mgr = MetadataAssembler(app)
+        self._preload_mgr = PreloadManager(self)
 
         #: init playlist mode normal
         self._mode = PlaylistMode.normal
@@ -176,6 +178,26 @@ class Playlist:
 
         self._app.player.media_finished.connect(self._on_media_finished)
         self.song_changed.connect(self._on_song_changed)
+
+        try:
+            self._app.player.queued_media_activated.connect(
+                self._on_queued_media_activated
+            )
+        except Exception:
+            # Player may not expose queued_media_activated in tests.
+            pass
+
+        if self._preload_mgr.threshold_seconds > 0:
+            try:
+                self._app.player.position_changed.connect(
+                    self._preload_mgr.on_progress_changed
+                )
+                self._app.player.duration_changed.connect(
+                    self._preload_mgr.on_progress_changed
+                )
+            except Exception:
+                # In tests or in some app modes, player may not expose these signals.
+                pass
 
     @property
     def mode(self):
@@ -621,11 +643,29 @@ class Playlist:
             return self._next_no_lock()
 
     def _on_media_finished(self):
-        # Play next model when current media is finished.
         self.next()
+
+    def _on_queued_media_activated(self, queued_id, media, metadata):
+        """Handle mpv auto-advancing to a previously queued item."""
+        song = self._preload_mgr.pop_song_for_queued_id(queued_id)
+        if song is None:
+            logger.debug("[preload] queued_media_activated queued_id=%s "
+                         "not found", queued_id)
+            return
+        logger.debug("[preload] queued_media_activated: song=%s, "
+                     "queued_id=%s", song, queued_id)
+        with self._queue_lock:
+            # If _on_media_finished -> next() already set _current_song, it
+            # should be the same song; we still emit song_changed so that
+            # MV fetch / preload-clear side-effects fire.
+            self._current_song = song
+            self.song_changed.emit(song)
+            self.song_changed_v2.emit(song, media)
 
     def _on_song_changed(self, song):
         self._app.task_mgr.run_afn_preemptive(self._fetch_current_song_mv, song)
+        # Current song changed, any previous preload state is no longer reliable.
+        self._preload_mgr.on_song_changed(song)
 
     async def _fetch_current_song_mv(self, song):
         if song is None:
@@ -674,8 +714,32 @@ class Playlist:
         if self.mode is PlaylistMode.fm and song not in self._queue:
             self.mode = PlaylistMode.normal
 
+        # State.playing == 2.  Using the literal avoids a circular import
+        # (base_player.py imports Playlist from this module).
+        if song == self._current_song and self._app.player.state == 2:
+            logger.debug("[preload] a_set_current_song skip "
+                         "(already playing): %s", song)
+            return None
+
         target_song = song  # The song to be set.
         media = None  # The corresponding media to be set.
+
+        # Fast path: reuse preloaded media/metadata.
+        media, metadata, queued_id = self._preload_mgr.consume_preloaded(song)
+        if media is not None:
+            self.play_model_stage_changed.emit(PlaylistPlayModelStage.load_media)
+            if metadata is None:
+                try:
+                    self.play_model_stage_changed.emit(
+                        PlaylistPlayModelStage.prepare_metadata
+                    )
+                    metadata = await self._metadata_mgr.prepare_for_song(target_song)
+                except Exception:
+                    metadata = None
+            self.set_current_song_with_media(target_song, media, metadata,
+                                             queued_id=queued_id)
+            return
+
         try:
             self.play_model_stage_changed.emit(PlaylistPlayModelStage.prepare_media)
             media = await self._app.task_mgr.run_afn_preemptive(
@@ -761,7 +825,8 @@ class Playlist:
         self._app.show_msg(t("track-standby-unavailable", track=song))
         return song, None
 
-    def set_current_song_with_media(self, song, media, metadata=None):
+    def set_current_song_with_media(self, song, media, metadata=None,
+                                    queued_id=None):
         if song is None:
             self.set_current_song_none()
             return
@@ -769,8 +834,6 @@ class Playlist:
         with self._queue_lock:
             self.insert_after_current_song(song)
             self._current_song = song
-            # TODO: There might be a problem here.
-            # For example, how do we keep `current_song` consistent with `media`?
             self.song_changed.emit(song)
             self.song_changed_v2.emit(song, media)
         if media is None:
@@ -780,8 +843,8 @@ class Playlist:
             kwargs = {}
             if not self._app.has_gui:
                 kwargs["video"] = False
-            # TODO: set artwork field
-            self._app.player.play(media, metadata=metadata, **kwargs)
+            self._app.player.play(media, metadata=metadata, queued_id=queued_id,
+                                  **kwargs)
 
     def set_current_song_none(self):
         """A special case of `set_current_song_with_media`."""
