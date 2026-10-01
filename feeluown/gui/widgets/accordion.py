@@ -11,7 +11,7 @@ class ClickableHeader(ClickableMixin, QWidget):
     def __init__(self, header, checked=False, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        self._is_checked = False
+        self._is_checked = checked
 
         self.inner_header = header
         self.btn = TextButton(self._get_btn_text(self._is_checked))
@@ -68,3 +68,4 @@ class Accordion(QWidget):
         self._layout.addSpacing(header_spacing)
         self._layout.addWidget(content)
         self._layout.addSpacing(section_spacing)
+        return clickable_header
