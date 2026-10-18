@@ -675,11 +675,13 @@ class AlbumCardListModel(ImgCardListModel):
         album = self._items[offset]
         if role == Qt.ItemDataRole.WhatsThisRole:
             if isinstance(album, AlbumModel):
+                if not album.released:
+                    return ""
                 try:
                     year, month, day = map(int, album.released.split("-"))
-                except Exception:
-                    year, month, day = 1970, 1, 1
-                release_date = date(year, month, day)
+                    release_date = date(year, month, day)
+                except ValueError:
+                    return ""
                 return t(
                     "album-release-date",
                     releaseDate=release_date,

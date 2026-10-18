@@ -73,11 +73,12 @@ def create_artist(identifier, name):
                        description='')
 
 
-def create_album(identifier, name, cover):
+def create_album(identifier, name, cover, released=''):
     album = AlbumModel(identifier=identifier,
                        source=SOURCE,
                        name=name,
                        cover=cover or '',
+                       released=released,
                        songs=[],
                        artists=[],
                        description='')
@@ -270,12 +271,15 @@ def add_song(
     album_id_str = delimiter.join([album_name, album_artist_name])
     album_id = gen_id(album_id_str)
     cover = gen_cover_url(song)
+    released = data['date'][:10]
     if album_id not in g_albums:
-        album = create_album(album_id, album_name, cover)
+        album = create_album(album_id, album_name, cover, released)
         g_albums[album_id] = album
         g_album_contributors[album_id] = []
     else:
         album = g_albums[album_id]
+        if not album.released:
+            album.released = released
 
     # Process the album’s artist information and song information,
     # and the album artist’s album list information
@@ -285,9 +289,11 @@ def add_song(
                 break
         else:
             album.artists.append(to_brief_artist(album_artist))
+    album.model_post_init(None)
 
     if song not in album.songs:
         album.songs.append(song)
+        album.song_count = len(album.songs)
 
     # Process the song’s artist and album information,
     # as well as the artist’s song list and contributions.
@@ -309,6 +315,8 @@ def add_song(
         if artist_id not in album_artist_id_list \
                 and artist_id not in g_album_contributors[album_id]:
             g_album_contributors[album_id].append(artist_id)
+
+    song.model_post_init(None)
 
     # Process the album artist’s song information:
     # Some lyricists who appear on compilations

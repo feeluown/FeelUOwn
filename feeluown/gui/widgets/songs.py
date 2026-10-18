@@ -737,7 +737,7 @@ class SongsTableView(ItemViewNoScrollMixin, QTableView):
         self.edit(index)
 
     def contextMenuEvent(self, event):
-        indexes = self.selectionModel().selectedIndexes()
+        indexes = self.selectionModel().selectedRows(Column.song)
         if len(indexes) <= 0:
             return
 
