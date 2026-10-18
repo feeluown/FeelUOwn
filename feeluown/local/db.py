@@ -202,7 +202,8 @@ def add_song(
     expand_artist_songs=False,
     artist_splitter=[',', '&'],
     artist_splitter_ignorance=None,
-    split_album_artist_name=False
+    split_album_artist_name=False,
+    g_videos=None,
 ):
     """
     parse music file metadata with Easymp3 and return a song
@@ -228,6 +229,11 @@ def add_song(
     # Adding the separator '-' can further
     # ensure hash value uniqueness with high probability
     song_id_str = delimiter.join([title, artists_name, album_name, str(int(duration))])
+    is_video = (os.path.splitext(fpath)[1].lower() in ('.m4v', '.mp4')
+                and g_videos is not None)
+    if is_video:
+        song_id_str = delimiter.join([song_id_str, 'video'])
+        g_songs = g_videos
     song_id = gen_id(song_id_str)
     if song_id not in g_songs:
         song = SongModel(
@@ -373,6 +379,7 @@ class DB:
         self._file_song = {}           # {fpath: song_id}
         self._song_file = {}           # {song_id: fpath}
         self._songs = {}               # {song_id: song}
+        self._videos = {}              # {song_id: song with video}
         self._albums = {}              # {album_id: album)
         self._artists = {}             # {artist_id: artist)
         self._album_contributors = {}  # {album_id: [artist_id]}
@@ -384,6 +391,7 @@ class DB:
                 'version': '1.0',
                 'files': list(self._fileset),
                 'songs': serialize('json', self._songs),
+                'videos': serialize('json', self._videos),
                 'artists': serialize('json', self._artists),
                 'albums': serialize('json', self._albums),
             }, f)
@@ -403,6 +411,9 @@ class DB:
     def list_songs(self):
         return list(self._songs.values())
 
+    def list_videos(self):
+        return list(self._videos.values())
+
     def list_albums(self):
         return list(self._albums.values())
 
@@ -418,7 +429,7 @@ class DB:
         return list(self._artists.values())
 
     def get_song(self, identifier):
-        return self._songs.get(identifier)
+        return self._songs.get(identifier) or self._videos.get(identifier)
 
     def get_album(self, identifier):
         return self._albums.get(identifier)
@@ -447,7 +458,8 @@ class DB:
                      is_cn_convert_enabled, config.CORE_LANGUAGE,
                      config.IDENTIFIER_DELIMITER, config.EXPAND_ARTIST_SONGS,
                      config.ARTIST_SPLITTER, config.ARTIST_SPLITTER_IGNORANCE,
-                     config.SPLIT_ALBUM_ARTIST_NAME)
+                     config.SPLIT_ALBUM_ARTIST_NAME,
+                     g_videos=self._videos)
         logger.info('Local music scan finished.')
 
     def after_scan(self):

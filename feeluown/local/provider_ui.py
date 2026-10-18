@@ -38,4 +38,5 @@ def show_provider(req):
     app.ui.left_panel.playlists_con.hide()
 
     aio.run_afn(app.ui.table_container.set_renderer,
-                LibraryRenderer(provider.songs, provider.albums, provider.artists))
+                LibraryRenderer(provider.songs, provider.albums,
+                                provider.artists, provider.videos))

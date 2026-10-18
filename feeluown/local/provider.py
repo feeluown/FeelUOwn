@@ -151,6 +151,10 @@ class LocalProvider(AbstractProvider, ProviderV2):
         return self.db.list_albums()
 
     @property
+    def videos(self):
+        return self.db.list_videos()
+
+    @property
     def artists(self):
         return self.db.list_artists()
 
