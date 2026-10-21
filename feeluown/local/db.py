@@ -431,6 +431,9 @@ class DB:
     def get_song(self, identifier):
         return self._songs.get(identifier) or self._videos.get(identifier)
 
+    def get_video(self, identifier):
+        return self._videos.get(identifier)
+
     def get_album(self, identifier):
         return self._albums.get(identifier)
 
