@@ -197,21 +197,19 @@ class LocalProvider(AbstractProvider, ProviderV2):
         limit = kwargs.get('limit', 10)
         search_type = SearchType.parse(kwargs.get('type_') or SearchType.so)
         if search_type is SearchType.so:
-            models = self.songs
-            key_for = lambda song: song.title + ' ' + song.artists_name
+            model_map = {song.title + ' ' + song.artists_name: song
+                         for song in self.songs}
         elif search_type is SearchType.al:
-            models = self.albums
-            key_for = lambda album: album.name + ' ' + album.artists_name
+            model_map = {album.name + ' ' + album.artists_name: album
+                         for album in self.albums}
         elif search_type is SearchType.ar:
-            models = self.artists
-            key_for = lambda artist: artist.name
+            model_map = {artist.name: artist for artist in self.artists}
         elif search_type is SearchType.vi:
-            models = self.videos
-            key_for = lambda video: video.title + ' ' + video.artists_name
+            model_map = {video.title + ' ' + video.artists_name: video
+                         for video in self.videos}
         else:
             return SimpleSearchResult(q=keyword, source=SOURCE)
 
-        model_map = {key_for(model): model for model in models}
         choices = model_map.keys()
         if choices:
             # TODO: maybe use a more reasonable algorithm.
@@ -224,11 +222,15 @@ class LocalProvider(AbstractProvider, ProviderV2):
             return SimpleSearchResult(q=keyword, source=SOURCE,
                                       songs=[to_brief_song(song) for song in matches])
         if search_type is SearchType.al:
-            return SimpleSearchResult(q=keyword, source=SOURCE,
-                                      albums=[to_brief_album(album) for album in matches])
+            return SimpleSearchResult(
+                q=keyword, source=SOURCE,
+                albums=[to_brief_album(album) for album in matches],
+            )
         if search_type is SearchType.ar:
-            return SimpleSearchResult(q=keyword, source=SOURCE,
-                                      artists=[to_brief_artist(artist) for artist in matches])
+            return SimpleSearchResult(
+                q=keyword, source=SOURCE,
+                artists=[to_brief_artist(artist) for artist in matches],
+            )
         return SimpleSearchResult(
             q=keyword,
             source=SOURCE,
