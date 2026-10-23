@@ -3,10 +3,12 @@ from feeluown.gui.page_containers.table import Renderer
 
 
 class LibraryRenderer(Renderer):
-    def __init__(self, songs, albums, artists):
+    def __init__(self, songs, albums, artists, videos):
         self.songs = songs
         self.albums = albums
         self.artists = artists
+        self.videos = videos
+        self.playlists = []
 
     async def render(self):
         self.meta_widget.show()
@@ -24,3 +26,7 @@ class LibraryRenderer(Renderer):
                                     show_count=True))
         self.tabbar.show_albums_needed.connect(lambda: self.show_albums(self.albums))
         self.tabbar.show_artists_needed.connect(lambda: self.show_artists(self.artists))
+        self.tabbar.show_playlists_needed.connect(
+            lambda: self.show_playlists(self.playlists))
+        self.tabbar.show_videos_needed.connect(
+            lambda: self.show_songs(reader=wrap(self.videos), show_count=True))

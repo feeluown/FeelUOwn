@@ -15,8 +15,11 @@ from functools import wraps
 from feeluown.excs import ProviderIOError
 
 from feeluown.i18n import t
-from feeluown.media import Media, Quality
-from feeluown.library import AbstractProvider, ProviderV2, ModelType, SimpleSearchResult
+from feeluown.media import Media, MediaType, Quality
+from feeluown.library import (
+    AbstractProvider, BriefVideoModel, ModelType, ProviderV2, SearchType,
+    SimpleSearchResult, VideoModel,
+)
 from feeluown.utils.reader import create_reader
 from feeluown.utils.utils import log_exectime
 from feeluown.utils.audio import read_audio_cover
@@ -90,7 +93,8 @@ class LocalProvider(AbstractProvider, ProviderV2):
         self._scan_finished.set()
 
     def use_model_v2(self, model_type):
-        return model_type in (ModelType.song, ModelType.album, ModelType.artist)
+        return model_type in (ModelType.song, ModelType.album, ModelType.artist,
+                              ModelType.video)
 
     @wait_for_scan
     def song_get(self, identifier):
@@ -107,6 +111,33 @@ class LocalProvider(AbstractProvider, ProviderV2):
         fpath = self.db.get_song_fpath(song.identifier)
         if fpath:
             return Media(fpath)
+
+    @wait_for_scan
+    def video_get(self, identifier):
+        song = self.db.get_video(identifier)
+        if song is None:
+            return None
+        from .db import gen_cover_url
+
+        album = self.db.get_album(song.album.identifier) if song.album else None
+        return VideoModel(
+            identifier=song.identifier,
+            source=SOURCE,
+            title=song.title,
+            artists=song.artists,
+            duration=song.duration,
+            cover=album.cover if album and album.cover else gen_cover_url(song),
+            released=song.date[:10],
+        )
+
+    def video_list_quality(self, _):
+        return [Quality.Video.sd]
+
+    @wait_for_scan
+    def video_get_media(self, video, _):
+        fpath = self.db.get_song_fpath(video.identifier)
+        if fpath and self.db.get_video(video.identifier) is not None:
+            return Media(fpath, MediaType.video)
 
     @wait_for_scan
     def album_get(self, identifier):
@@ -151,30 +182,62 @@ class LocalProvider(AbstractProvider, ProviderV2):
         return self.db.list_albums()
 
     @property
+    def videos(self):
+        return self.db.list_videos()
+
+    @property
     def artists(self):
         return self.db.list_artists()
 
     @log_exectime
     @wait_for_scan
     def search(self, keyword, **kwargs):
-        from .db import to_brief_song
+        from .db import to_brief_album, to_brief_artist, to_brief_song
 
         limit = kwargs.get('limit', 10)
-        repr_song_map = dict()
-        for song in self.songs:
-            key = song.title + ' ' + song.artists_name
-            repr_song_map[key] = song
-        choices = repr_song_map.keys()
+        search_type = SearchType.parse(kwargs.get('type_') or SearchType.so)
+        if search_type is SearchType.so:
+            model_map = {song.title + ' ' + song.artists_name: song
+                         for song in self.songs}
+        elif search_type is SearchType.al:
+            model_map = {album.name + ' ' + album.artists_name: album
+                         for album in self.albums}
+        elif search_type is SearchType.ar:
+            model_map = {artist.name: artist for artist in self.artists}
+        elif search_type is SearchType.vi:
+            model_map = {video.title + ' ' + video.artists_name: video
+                         for video in self.videos}
+        else:
+            return SimpleSearchResult(q=keyword, source=SOURCE)
+
+        choices = model_map.keys()
         if choices:
             # TODO: maybe use a more reasonable algorithm.
             result = difflib.get_close_matches(keyword, choices, n=limit, cutoff=0)
         else:
             result = []
-        result_songs = [repr_song_map[each] for each in result]
+        matches = [model_map[each] for each in result]
 
+        if search_type is SearchType.so:
+            return SimpleSearchResult(q=keyword, source=SOURCE,
+                                      songs=[to_brief_song(song) for song in matches])
+        if search_type is SearchType.al:
+            return SimpleSearchResult(
+                q=keyword, source=SOURCE,
+                albums=[to_brief_album(album) for album in matches],
+            )
+        if search_type is SearchType.ar:
+            return SimpleSearchResult(
+                q=keyword, source=SOURCE,
+                artists=[to_brief_artist(artist) for artist in matches],
+            )
         return SimpleSearchResult(
             q=keyword,
-            songs=[to_brief_song(song) for song in result_songs]
+            source=SOURCE,
+            videos=[BriefVideoModel(
+                identifier=video.identifier, source=SOURCE, title=video.title,
+                artists_name=video.artists_name, duration_ms=video.duration_ms,
+            ) for video in matches],
         )
 
 
