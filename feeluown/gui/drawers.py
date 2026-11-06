@@ -101,10 +101,12 @@ class SizedPixmapDrawer:
         is_valid = getattr(color, 'isValid', None)
         if callable(is_valid) and not color.isValid():
             return
+        rect = self.get_rect()
+        if rect.isEmpty() or rect.width() <= 0 or rect.height() <= 0:
+            return
         brush = QBrush(color)
         painter.setBrush(brush)
         painter.setPen(Qt.PenStyle.NoPen)
-        rect = self.get_rect()
         radius = self.get_radius()
         if radius == 0:
             painter.drawRect(rect)
