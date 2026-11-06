@@ -15,16 +15,20 @@ logger = logging.getLogger(__name__)
 
 
 def _is_test_env():
-    """Whether running under pytest/CI.
+    """Whether running under pytest.
 
     Lazy page imports defer Qt module imports to first navigation, which
     happens inside event processing on some runners and has caused
     offscreen segfaults (ubuntu py3.10). Eager-load in tests for
     deterministic behavior; keep lazy loading in production for startup.
+
+    NOTE: only check pytest markers (PYTEST_CURRENT_TEST / sys.modules),
+    NOT TEST_ENV, because integration tests run `fuo` as a subprocess
+    with TEST_ENV=travis inherited, and that subprocess must paint
+    normally.
     """
     return (
         os.getenv('PYTEST_CURRENT_TEST') is not None
-        or os.getenv('TEST_ENV') == 'travis'
         or 'pytest' in sys.modules
     )
 

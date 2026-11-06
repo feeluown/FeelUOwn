@@ -25,10 +25,9 @@ logger = logging.getLogger(__name__)
 
 
 def _is_test_env():
-    """Whether running under pytest/CI (see browser._is_test_env)."""
+    """Whether running under pytest (see browser._is_test_env)."""
     return (
         os.getenv('PYTEST_CURRENT_TEST') is not None
-        or os.getenv('TEST_ENV') == 'travis'
         or 'pytest' in sys.modules
     )
 

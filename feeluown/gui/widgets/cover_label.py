@@ -15,9 +15,9 @@ from feeluown.gui.image import open_image
 
 
 def _is_test_env():
+    # Only pytest markers, NOT TEST_ENV (see browser._is_test_env).
     return (
         os.getenv('PYTEST_CURRENT_TEST') is not None
-        or os.getenv('TEST_ENV') == 'travis'
         or 'pytest' in sys.modules
     )
 

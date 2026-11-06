@@ -26,7 +26,6 @@ def _is_test_env():
     """Skip custom painting in tests (see cover_label._is_test_env)."""
     return (
         os.getenv('PYTEST_CURRENT_TEST') is not None
-        or os.getenv('TEST_ENV') == 'travis'
         or 'pytest' in sys.modules
     )
 
