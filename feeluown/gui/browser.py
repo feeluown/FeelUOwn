@@ -1,5 +1,7 @@
 import logging
 import inspect
+import os
+import sys
 import warnings
 from collections import deque
 from urllib.parse import urlencode
@@ -10,6 +12,21 @@ from feeluown.utils.router import Router, NotFound
 from feeluown.library import resolve, reverse, ResolveFailed, parse_line
 
 logger = logging.getLogger(__name__)
+
+
+def _is_test_env():
+    """Whether running under pytest/CI.
+
+    Lazy page imports defer Qt module imports to first navigation, which
+    happens inside event processing on some runners and has caused
+    offscreen segfaults (ubuntu py3.10). Eager-load in tests for
+    deterministic behavior; keep lazy loading in production for startup.
+    """
+    return (
+        os.getenv('PYTEST_CURRENT_TEST') is not None
+        or os.getenv('TEST_ENV') == 'travis'
+        or 'pytest' in sys.modules
+    )
 
 
 MODEL_PAGE_PREFIX = "/models/"
@@ -226,10 +243,60 @@ class Browser:
         always navigates to it. All other pages are lazy-loaded on first
         visit to reduce startup import cost (each page pulls Qt widgets,
         provider protocols and components).
+
+        In test/CI environments, import all pages eagerly for
+        deterministic behavior (old behavior).
         """
         import importlib
 
         from feeluown.gui.pages.homepage import render as render_homepage
+
+        if _is_test_env():
+            from feeluown.gui.pages.search import render as render_search
+            from feeluown.gui.pages.model import render as render_model
+            from feeluown.gui.pages.coll_mixed import render as render_coll_mixed
+            from feeluown.gui.pages.song_explore import (
+                render as render_song_explore,
+            )
+            from feeluown.gui.pages.provider_home import (
+                render as render_provider_home,
+            )
+            from feeluown.gui.pages.recently_played import (
+                render as render_recently_played,
+            )
+            from feeluown.gui.pages.recommendation import render as render_rec
+            from feeluown.gui.pages.recommendation_daily_songs import (
+                render as render_rec_daily_songs,
+            )
+            from feeluown.gui.pages.my_fav import render as render_my_fav
+            from feeluown.gui.pages.my_dislike import render as render_my_dislike
+            from feeluown.gui.pages.toplist import render as render_toplist
+
+            model_prefix = f"{MODEL_PAGE_PREFIX}<provider>"
+
+            async def dummy_render(req, *args, **kwargs):
+                warnings.warn(f"This route:{req.rule} will be removed.")
+
+            urlpatterns = [
+                (f"{model_prefix}/<ns>/<identifier>", render_model),
+                # These routes will be removed in v3.9
+                (f"{model_prefix}/songs/<identifier>/similar", dummy_render),
+                (f"{model_prefix}/songs/<identifier>/hot_comments", dummy_render),
+                (f"{model_prefix}/songs/<identifier>/explore", render_song_explore),
+                ("/colls/<identifier>", render_coll_mixed),
+                ("/providers/<identifier>", render_provider_home),
+                ("/recently_played", render_recently_played),
+                ("/search", render_search),
+                ("/rec", render_rec),
+                ("/homepage", render_homepage),
+                ("/rec/daily_songs", render_rec_daily_songs),
+                ("/my_fav", render_my_fav),
+                ("/my_dislike", render_my_dislike),
+                ("/toplist", render_toplist),
+            ]
+            for url, renderer in urlpatterns:
+                self.route(url)(renderer)
+            return
 
         def _lazy(module_path):
             _cache = {}

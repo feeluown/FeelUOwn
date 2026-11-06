@@ -47,6 +47,8 @@ class CoverLabel(QLabel):
         but in our practice, the mask way has poor render effects
         """
         painter = QPainter(self)
+        if not painter.isActive():
+            return
         self.drawer.draw(painter)
 
     def contextMenuEvent(self, e):

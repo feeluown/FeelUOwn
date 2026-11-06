@@ -36,7 +36,10 @@ class SizedPixmapDrawer:
         self._rect = rect
         self._img_old_width = rect.width()
         self._radius = radius
-        self._device_pixel_ratio = QGuiApplication.instance().devicePixelRatio()
+        app = QGuiApplication.instance()
+        # Offscreen/test environments may have no app instance yet;
+        # fall back to 1.0 instead of crashing on None.
+        self._device_pixel_ratio = app.devicePixelRatio() if app is not None else 1.0
 
         if img is None:
             self._color = random_solarized_color()
@@ -78,6 +81,11 @@ class SizedPixmapDrawer:
         return self._pixmap
 
     def draw(self, painter: QPainter):
+        # Painting on an inactive painter (e.g. a pending paint event firing
+        # after the widget was torn down in tests) segfaults on some
+        # Qt builds instead of being a safe no-op. Bail out early.
+        if not painter.isActive():
+            return
         with painter_save(painter):
             if self._pixmap is None:
                 self._draw_random_color(painter)
@@ -85,7 +93,15 @@ class SizedPixmapDrawer:
                 self._draw_pixmap(painter)
 
     def _draw_random_color(self, painter: QPainter):
-        brush = QBrush(self._color)
+        if not painter.isActive():
+            return
+        color = self._color
+        if color is None:
+            return
+        is_valid = getattr(color, 'isValid', None)
+        if callable(is_valid) and not color.isValid():
+            return
+        brush = QBrush(color)
         painter.setBrush(brush)
         painter.setPen(Qt.PenStyle.NoPen)
         rect = self.get_rect()
@@ -96,7 +112,11 @@ class SizedPixmapDrawer:
             painter.drawRoundedRect(rect, radius, radius)
 
     def _draw_pixmap(self, painter: QPainter):
+        if not painter.isActive():
+            return
         assert self._pixmap is not None
+        if self._pixmap.isNull():
+            return
 
         brush = QBrush(self._pixmap)
         painter.setBrush(brush)

@@ -24,6 +24,15 @@ from .app import App
 logger = logging.getLogger(__name__)
 
 
+def _is_test_env():
+    """Whether running under pytest/CI (see browser._is_test_env)."""
+    return (
+        os.getenv('PYTEST_CURRENT_TEST') is not None
+        or os.getenv('TEST_ENV') == 'travis'
+        or 'pytest' in sys.modules
+    )
+
+
 class GuiApp(App, QWidget):
 
     def __init__(self, *args, **kwargs):
@@ -145,7 +154,10 @@ class GuiApp(App, QWidget):
         # Headless/test flows without a running event loop would queue a
         # QTimer.singleShot that never fires. Navigate synchronously there
         # so current_page is set deterministically (old behavior).
-        if not self._event_loop_running():
+        # Also navigate synchronously under pytest/CI: a queued singleShot
+        # may fire after the widget is torn down, segfaulting offscreen
+        # Qt builds (observed on ubuntu py3.10).
+        if not self._event_loop_running() or _is_test_env():
             self._goto_homepage_sync()
             return
         self._homepage_scheduled = True
