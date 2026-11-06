@@ -7,6 +7,8 @@ cli-verbose = Output verbose logs
 cli-log-to-file = Log to file
 
 cli-mpv-audio-device = (Advanced option) Specify playback device
+cli-no-plugins = Do not load plugins (faster startup, for debugging)
+cli-no-webengine = Do not import QtWebEngineWidgets (faster startup, web pages may not work)
 
 command-show-resource-info = Show detailed resource information
 

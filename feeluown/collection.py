@@ -6,8 +6,6 @@ from datetime import datetime
 from pathlib import Path
 from typing import Dict, Iterable, List
 
-import tomlkit
-
 from feeluown.consts import COLLECTIONS_DIR
 from feeluown.utils.dispatch import Signal
 from feeluown.library import resolve, reverse, ResolverNotFound, \
@@ -86,6 +84,8 @@ class Collection:
                         break
                     lines.append(line)
                 if is_valid is True:
+                    import tomlkit
+
                     toml_str = ''.join(lines)
                     metadata = tomlkit.parse(toml_str)
                     self._loads_metadata(metadata)
@@ -127,6 +127,8 @@ class Collection:
     @classmethod
     def create_empty(cls, fpath, title=''):
         """Create an empty collection."""
+        import tomlkit
+
         if os.path.exists(fpath):
             raise CollectionAlreadyExists()
 
@@ -216,6 +218,8 @@ class Collection:
     def _write_metadata_if_needed(self, f):
         # write metadata only if it had before
         if self._metadata:
+            import tomlkit
+
             self.updated_at = self._metadata['updated'] = datetime.now()
             s = tomlkit.dumps(self._metadata)
             f.write(TOML_DELIMLF)

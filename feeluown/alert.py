@@ -4,8 +4,6 @@ from urllib.parse import urlparse
 
 from feeluown.i18n import t
 
-from requests import ConnectTimeout
-
 
 if TYPE_CHECKING:
     from feeluown.app import App
@@ -28,6 +26,10 @@ class AlertManager:
         )
 
     def on_exception(self, e):
+        # Import lazily to avoid pulling `requests` on startup.
+        # Only needed when an exception is actually handled.
+        from requests.exceptions import ConnectTimeout
+
         if isinstance(e, ConnectTimeout):
             if e.request is not None:
                 url = e.request.url

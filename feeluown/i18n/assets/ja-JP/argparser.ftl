@@ -7,6 +7,8 @@ cli-verbose = 詳細なログを出力する
 cli-log-to-file = ログをファイルに出力する
 
 cli-mpv-audio-device = （高度なオプション）再生デバイスを指定する
+cli-no-plugins = プラグインを読み込まない（高速起動、デバッグ用）
+cli-no-webengine = QtWebEngineWidgets をインポートしない（高速起動、Web ページが動作しない場合があります）
 
 command-show-resource-info = リソースの詳細情報を表示する
 

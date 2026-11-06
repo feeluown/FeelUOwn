@@ -212,6 +212,18 @@ def _create_cli_parser() -> argparse.ArgumentParser:
         "--mpv-audio-device",
         help=t("cli-mpv-audio-device"),
     )
+    parser.add_argument(
+        "--no-plugins",
+        action="store_true",
+        default=False,
+        help=t("cli-no-plugins"),
+    )
+    parser.add_argument(
+        "--no-webengine",
+        action="store_true",
+        default=False,
+        help=t("cli-no-webengine"),
+    )
     return parser
 
 
