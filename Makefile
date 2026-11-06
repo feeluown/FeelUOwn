@@ -61,9 +61,14 @@ lint: flake8 pylint
 unittest: pytest
 
 pytest:
-# Disable faulthandler plugin, because it cause verbose output on windows.
-# Besides, the fault currently cause no side effects.
+# Disable faulthandler on Windows where it causes verbose output.
+# On Linux/macOS, enable faulthandler with a timeout so segfaults
+# dump a traceback instead of silently aborting CI.
+ifeq ($(OS),Windows_NT)
 	QT_QPA_PLATFORM=offscreen pytest -p no:faulthandler
+else
+	QT_QPA_PLATFORM=offscreen pytest -p faulthandler -o faulthandler_timeout=60
+endif
 
 integration_test: export QT_QPA_PLATFORM=offscreen
 integration_test:
