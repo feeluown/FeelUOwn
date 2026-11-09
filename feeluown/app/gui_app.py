@@ -1,8 +1,7 @@
 import os
 import sys
-import logging
 
-from PyQt6.QtCore import Qt, QDir, QTimer
+from PyQt6.QtCore import Qt, QDir
 from PyQt6.QtGui import QIcon, QPixmap, QGuiApplication
 from PyQt6.QtWidgets import QApplication, QWidget
 
@@ -19,17 +18,6 @@ from feeluown.gui.uimodels.playlist import PlaylistUiManager
 from feeluown.gui.uimodels.my_music import MyMusicUiManager
 
 from .app import App
-
-
-logger = logging.getLogger(__name__)
-
-
-def _is_test_env():
-    """Whether running under pytest (see browser._is_test_env)."""
-    return (
-        os.getenv('PYTEST_CURRENT_TEST') is not None
-        or 'pytest' in sys.modules
-    )
 
 
 class GuiApp(App, QWidget):
@@ -107,14 +95,6 @@ class GuiApp(App, QWidget):
         if self.config.ENABLE_TRAY:
             self.tray = Tray(self)
         self.show_msg = self.ui._message_line.show_msg
-        # Set in apply_state(); run() navigates to homepage if pending.
-        # _pending_homepage means navigation is needed; _homepage_scheduled
-        # means a QTimer callback is already queued. _pending_homepage is
-        # cleared only when navigation actually runs; _homepage_scheduled is
-        # cleared when the queued callback fires (or when run() resets a
-        # stale marker to retry a dropped schedule).
-        self._pending_homepage = False
-        self._homepage_scheduled = False
 
     def initialize(self):
         super().initialize()
@@ -131,95 +111,16 @@ class GuiApp(App, QWidget):
     def run(self):
         self.show()
         super().run()
-        # Homepage navigation (and its data fetch) is deferred until after
-        # the window is shown so first paint is not blocked. apply_state()
-        # sets _pending_homepage.
-        if self._pending_homepage:
-            # A previously queued singleShot may have been dropped (event
-            # loop never pumped since scheduling). Reset the stale marker so
-            # this run() retries instead of early-returning forever. In the
-            # worst case both the dropped and the new timer fire, and the
-            # duplicate goto is harmless (history guard skips same-page push).
-            self._homepage_scheduled = False
-            self._goto_homepage_async()
-
-    def _goto_homepage_async(self):
-        # Dedupe: a queued navigation stays queued; callers check
-        # _homepage_scheduled via run()/apply_state().
-        if self._homepage_scheduled:
-            return
-        if not self._pending_homepage:
-            return
-        # Headless/test flows without a running event loop would queue a
-        # QTimer.singleShot that never fires. Navigate synchronously there
-        # so current_page is set deterministically (old behavior).
-        # Also navigate synchronously under pytest/CI: a queued singleShot
-        # may fire after the widget is torn down, segfaulting offscreen
-        # Qt builds (observed on ubuntu py3.10).
-        if not self._event_loop_running() or _is_test_env():
-            self._goto_homepage_sync()
-            return
-        self._homepage_scheduled = True
-
-        def _goto():
-            self._homepage_scheduled = False
-            self._goto_homepage_sync()
-        # NOTE: QTimer.singleShot() does not raise when no loop is running;
-        # it silently never fires. The _event_loop_running() check above is
-        # the real headless fallback, not this try/except (kept for safety).
-        try:
-            QTimer.singleShot(0, _goto)
-        except Exception:  # noqa
-            self._homepage_scheduled = False
-            self._goto_homepage_sync()
-
-    def _goto_homepage_sync(self):
-        self._pending_homepage = False
-        try:
-            self.browser.goto(page='/homepage')
-        except Exception as e:  # noqa
-            # NOTE: this only catches synchronous navigation errors (bad
-            # route, lazy page import failure). Homepage data-fetch failures
-            # happen later inside the async render coroutine scheduled by
-            # Browser._goto and surface as task exceptions, not here.
-            logger.exception('Deferred goto homepage failed')
-            try:
-                self.show_msg(f'Load homepage failed: {e}')
-            except Exception:  # noqa
-                pass
-
-    @staticmethod
-    def _event_loop_running():
-        import asyncio
-
-        try:
-            asyncio.get_running_loop()
-        except RuntimeError:
-            return False
-        return True
 
     def apply_state(self, state):
         super().apply_state(state)
-        # Browser state that does not need network is restored here.
+        self.browser.goto(page='/homepage')
+
         gui = state.get('gui', {})
         lyric = gui.get('lyric', {})
         local_storage = gui.get('browser', {}).get('local_storage', {})
         self.browser.local_storage = local_storage
         self.ui.lyric_window.apply_state(lyric)
-        # Defer homepage navigation to run() so window shows faster. Note the
-        # state-restore order change vs. old code (which navigated first):
-        # local_storage/lyric are restored here before the deferred
-        # navigation runs, so homepage now sees restored local_storage.
-        # If the window is already visible (e.g. apply_state called after
-        # run in tests or future state-restore flows), schedule navigation
-        # now instead of leaving a stale pending flag. Double apply_state()
-        # collapses via the _homepage_scheduled guard in _goto_homepage_async.
-        if self.isVisible():
-            if not self._pending_homepage:
-                self._pending_homepage = True
-            self._goto_homepage_async()
-        else:
-            self._pending_homepage = True
 
     def dump_state(self):
         state = super().dump_state()

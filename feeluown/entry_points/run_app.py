@@ -115,6 +115,12 @@ def before_start_app(args):
             in ('1', 'true', 'yes')
         if no_webengine:
             logger.info('Skip QtWebEngineWidgets import (--no-webengine).')
+            # Propagate CLI flag to env so GUI code (e.g. login dialog,
+            # imported later) can reliably detect the disabled state via
+            # FEELUOWN_NO_WEBENGINE instead of only checking import success.
+            # Overwriting here is intentional: an explicit --no-webengine
+            # means web views must stay disabled for this run.
+            os.environ['FEELUOWN_NO_WEBENGINE'] = '1'
         else:
             try:
                 # HELP: QtWebEngineWidgets must be imported before a
