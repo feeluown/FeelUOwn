@@ -3,7 +3,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from PyQt6.QtCore import QEvent, QPoint, QPointF, QRect, QSize, Qt, QTimer
+from PyQt6.QtCore import QEvent, QPoint, QPointF, QSize, Qt, QTimer
 from PyQt6.QtGui import QColor, QGuiApplication, QMouseEvent, QPalette
 from PyQt6.QtWidgets import QListWidget, QWidget
 
@@ -41,7 +41,6 @@ from feeluown.gui.components.dynamic_island import (
     EXPANDED_WIDTH,
     VOLUME_STEP,
 )
-from feeluown.gui.uimain.mini_mode import MiniModeManager, MiniModeWindow
 from feeluown.gui.uimain.lyric import LyricWindow
 from feeluown.gui.uimain.playlist_overlay import PlaylistOverlay
 from feeluown.gui.widgets.ai_chat import (
@@ -852,9 +851,17 @@ class _FakeContextMenuEvent:
         return self._global_pos
 
 
-def test_mini_mode_window_is_frameless_and_uses_island(qtbot, app_mock):
+def _prepare_lyric_window_app(app_mock):
     _prepare_dynamic_island_app(app_mock)
-    window = MiniModeWindow(app_mock)
+    app_mock.live_lyric.lyrics_changed = Signal()
+    app_mock.player.current_metadata = {"title": "Song", "artists": ["Mary"]}
+    return app_mock
+
+
+def test_lyric_mini_is_frameless_and_uses_island(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
     qtbot.addWidget(window)
     margins = window.layout().contentsMargins()
 
@@ -868,9 +875,10 @@ def test_mini_mode_window_is_frameless_and_uses_island(qtbot, app_mock):
     assert margins.bottom() == 0
 
 
-def test_mini_mode_window_drags_from_island_body(qtbot, app_mock, monkeypatch):
-    _prepare_dynamic_island_app(app_mock)
-    window = MiniModeWindow(app_mock)
+def test_lyric_mini_drags_from_island_body(qtbot, app_mock, monkeypatch):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
     qtbot.addWidget(window)
     window.move(100, 120)
     monkeypatch.setattr(window, "_start_system_move", lambda: False)
@@ -889,12 +897,13 @@ def test_mini_mode_window_drags_from_island_body(qtbot, app_mock, monkeypatch):
     )
 
     assert window.pos() == QPoint(115, 138)
-    assert window._drag_global_pos is None
+    assert window._old_pos is None
 
 
-def test_mini_mode_window_prefers_system_move(qtbot, app_mock, monkeypatch):
-    _prepare_dynamic_island_app(app_mock)
-    window = MiniModeWindow(app_mock)
+def test_lyric_mini_prefers_system_move(qtbot, app_mock, monkeypatch):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
     qtbot.addWidget(window)
     window.move(100, 120)
     monkeypatch.setattr(window, "_start_system_move", lambda: True)
@@ -916,33 +925,50 @@ def test_mini_mode_window_prefers_system_move(qtbot, app_mock, monkeypatch):
     assert moved
     assert released
     assert window.pos() == QPoint(100, 120)
-    assert window._drag_global_pos is None
+    assert window._old_pos is None
     assert not window._using_system_move
 
 
-def test_mini_mode_window_does_not_drag_from_controls(qtbot, app_mock):
-    _prepare_dynamic_island_app(app_mock)
-    window = MiniModeWindow(app_mock)
+@pytest.mark.parametrize("control_name", ["_volume_btn", "_pp_btn"])
+def test_lyric_mini_does_not_drag_from_controls(
+    qtbot, app_mock, monkeypatch, control_name
+):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
     qtbot.addWidget(window)
     window.move(100, 120)
+    window.show()
+    window.island._start_expand()
+    while window.island._animating:
+        window.island._tick_animation()
+    control = getattr(window.island, control_name)
+    move_attempts = []
 
-    window._handle_drag_event(
-        window.island._pp_btn,
-        _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10)),
-    )
-    window._handle_drag_event(
-        window.island._pp_btn,
-        _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28)),
-    )
+    def start_system_move():
+        move_attempts.append(True)
+        return False
+
+    monkeypatch.setattr(window, "_start_system_move", start_system_move)
+    qtbot.mousePress(control, Qt.MouseButton.LeftButton, pos=control.rect().center())
+
+    assert window._old_pos is None
+    assert not window._using_system_move
+    qtbot.mouseMove(control, control.rect().center() + QPoint(2, 2))
+    qtbot.mouseRelease(control, Qt.MouseButton.LeftButton, pos=control.rect().center())
 
     assert window.pos() == QPoint(100, 120)
+    assert move_attempts == []
+    if control_name == "_pp_btn":
+        app_mock.player.toggle.assert_called_once()
 
 
-def test_mini_mode_window_intercepts_child_context_menu(
+def test_lyric_mini_intercepts_child_context_menu(
     qtbot, app_mock, monkeypatch
 ):
-    _prepare_dynamic_island_app(app_mock)
-    window = MiniModeWindow(app_mock)
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
     qtbot.addWidget(window)
     positions = []
     monkeypatch.setattr(window, "_show_context_menu", positions.append)
@@ -956,36 +982,221 @@ def test_mini_mode_window_intercepts_child_context_menu(
     assert positions == [QPoint(20, 30)]
 
 
-def test_mini_mode_manager_hides_and_restores_main_window(qtbot, app_mock):
-    _prepare_dynamic_island_app(app_mock)
-    app_mock.isVisible.return_value = True
-    app_mock.geometry.return_value = QRect(100, 120, 640, 480)
-    manager = MiniModeManager(app_mock)
-    qtbot.addWidget(manager.window)
-    changes = []
-    manager.mode_changed.connect(changes.append)
+def test_lyric_window_defaults_to_classic(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.show()
 
-    manager.enter()
-
-    assert manager.is_active
-    assert manager.window.isVisible()
-    app_mock.hide.assert_called_once()
-    assert changes == [True]
-
-    manager.exit()
-
-    assert not manager.is_active
-    assert not manager.window.isVisible()
-    app_mock.show.assert_called_once()
-    app_mock.activateWindow.assert_called_once()
-    assert changes == [True, False]
+    assert window.display_mode == "classic"
+    assert window._inner.isVisible()
+    assert window.island is None
 
 
-def _prepare_lyric_window_app(app_mock):
-    app_mock.live_lyric.line_changed = Signal()
-    app_mock.live_lyric.lyrics_changed = Signal()
-    app_mock.live_lyric.current_line = Line("", "", False)
-    return app_mock
+def test_lyric_window_switches_modes_without_changing_main_window(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.show()
+
+    window.set_display_mode("mini")
+    island = window.island
+    assert window.isVisible()
+    assert island.isVisible()
+    assert not window._inner.isVisible()
+
+    window.set_display_mode("classic")
+    assert window.isVisible()
+    assert window._inner.isVisible()
+    assert not island.isVisible()
+
+    window.set_display_mode("mini")
+    assert window.island is island
+    assert island.isVisible()
+    app_mock.hide.assert_not_called()
+    app_mock.show.assert_not_called()
+    app_mock.activateWindow.assert_not_called()
+
+
+def test_lyric_mini_initializes_song_label_from_current_metadata(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.show()
+    app_mock.player.current_metadata = {
+        "title": "Already playing",
+        "artists": ["Mary", "John"],
+    }
+
+    window.set_display_mode("mini")
+    window.island._switch_to_expanded()
+
+    assert window.island._song_label.isVisible()
+    assert window.island._song_label._raw_text == "Already playing • Mary,John"
+
+
+def test_lyric_window_inactive_mini_stays_hidden_on_playback_updates(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.show()
+    window.set_display_mode("mini")
+    window.set_display_mode("classic")
+
+    window.island._on_metadata_changed({"title": "Next song", "artists": ["Mary"]})
+    window.island._on_player_state_changed(State.paused)
+    window.island._on_player_state_changed(State.playing)
+
+    assert window.display_mode == "classic"
+    assert window._inner.isVisible()
+    assert not window.island.isVisible()
+
+
+def test_lyric_window_switch_while_hidden_does_not_open_window(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode("mini")
+
+    assert not window.isVisible()
+    window.island._on_player_state_changed(State.playing)
+    assert not window.isVisible()
+    window.set_display_mode("classic")
+    assert not window.isVisible()
+
+
+def test_lyric_mini_window_follows_island_animation_size(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode("mini")
+    window.show()
+
+    window.island._start_expand()
+    while window.island._animating:
+        window.island._tick_animation()
+
+    assert window.size() == QSize(EXPANDED_WIDTH, ISLAND_HEIGHT)
+    window.island._start_compact()
+    while window.island._animating:
+        window.island._tick_animation()
+    window.island._on_lyric_line_changed(Line("Short", "", False))
+    assert window.size() == window.island.size()
+    assert window.height() == ISLAND_HEIGHT
+
+
+def test_lyric_mini_stays_accessible_without_playing_song(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    app_mock.player.state = State.stopped
+    app_mock.player.current_metadata = {}
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode("mini")
+    window.show()
+
+    assert window.island.isVisible()
+    window.island._on_metadata_changed({})
+    window.island._on_player_state_changed(State.stopped)
+    assert window.isVisible()
+    assert window.island.isVisible()
+    window.set_display_mode("classic")
+    assert window._inner.isVisible()
+
+
+def test_lyric_window_preserves_classic_size_and_style_through_mini(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window._inner.toggle_auto_resize()
+    window.show()
+    window.resize(520, 95)
+    window.move(100, 120)
+    original_state = window.dump_state()
+
+    window.set_display_mode("mini")
+    window.move(160, 180)
+    state = window.dump_state()
+    assert state["display_mode"] == "mini"
+    assert tuple(state["geometry"]) == (160, 180, 520, 95)
+    for key in ("font", "bg", "fg"):
+        assert state[key] == original_state[key]
+
+    window.set_display_mode("classic")
+    assert window.size() == QSize(520, 95)
+    assert window.pos() == QPoint(160, 180)
+
+
+def test_lyric_window_restores_selected_mode_and_legacy_state(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    original = LyricWindow(app_mock)
+    qtbot.addWidget(original)
+    original.resize(520, 95)
+    original.move(160, 180)
+    original.set_display_mode("mini")
+    state = original.dump_state()
+
+    restored = LyricWindow(app_mock)
+    qtbot.addWidget(restored)
+    restored.apply_state(state)
+    assert restored.display_mode == "mini"
+    assert not restored.isVisible()
+    assert restored.pos() == QPoint(160, 180)
+    for key in ("geometry", "font", "bg", "fg"):
+        assert restored.dump_state()[key] == state[key]
+
+    legacy_state = {key: value for key, value in state.items() if key != "display_mode"}
+    restored.apply_state(legacy_state)
+    assert restored.display_mode == "classic"
+    assert restored.size() == QSize(520, 95)
+
+
+def test_lyric_window_menu_switches_both_directions(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.show()
+    classic_menu = window._create_context_menu()
+    mode_menu = next(action.menu() for action in classic_menu.actions() if action.menu())
+    modes = {action.data(): action for action in mode_menu.actions()}
+    assert set(modes) == {"classic", "mini"}
+    assert modes["classic"].isChecked()
+    assert not modes["mini"].isChecked()
+    modes["mini"].trigger()
+    assert window.display_mode == "mini"
+
+    mini_menu = window._create_context_menu()
+    assert len(mini_menu.actions()) < len(classic_menu.actions())
+    mode_menu = next(action.menu() for action in mini_menu.actions() if action.menu())
+    modes = {action.data(): action for action in mode_menu.actions()}
+    assert modes["mini"].isChecked()
+    assert not modes["classic"].isChecked()
+    modes["classic"].trigger()
+    assert window.display_mode == "classic"
+
+
+@pytest.mark.parametrize("mode", ["classic", "mini"])
+@pytest.mark.parametrize("close_method", ["escape", "close"])
+def test_lyric_window_closes_without_restoring_main_window(
+    qtbot, app_mock, mode, close_method
+):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode(mode)
+    window.show()
+    window.activateWindow()
+    qtbot.waitUntil(window.isActiveWindow)
+
+    if close_method == "escape":
+        qtbot.keyClick(window, Qt.Key.Key_Escape)
+    else:
+        window.close()
+
+    assert not window.isVisible()
+    assert window.display_mode == mode
+    app_mock.hide.assert_not_called()
+    app_mock.show.assert_not_called()
+    app_mock.activateWindow.assert_not_called()
 
 
 def test_lyric_window_drag_uses_system_move(qtbot, app_mock, monkeypatch):

@@ -6,8 +6,6 @@
 # ----------------------------------------
 minimize-window = Minimize
 fullscreen-window = Full Screen
-mini-mode = Mini Mode
-mini-mode-exit = Exit Mini Player
 playlist = Playlist
 recently-played = Recently Played
 unknown = Unknown
@@ -476,6 +474,10 @@ playback-mode-random = Random
 # feeluown.gui.uimain.lyric
 # ----------------------------------------
 lyric-not-available = Lyrics not available
+lyric-display-mode = Display mode
+lyric-mode-classic = Classic lyrics
+lyric-mode-mini = Mini
+lyric-hide = Hide desktop lyrics
 lyric-background-color = Background color
 lyric-text-color = Text color
 lyric-font = Font
@@ -691,6 +693,7 @@ tray-toggle-playpause = { $action ->
 tray-skip-track-next = Next
 tray-skip-track-prev = Previous
 
+tray-desktop-lyrics = Desktop lyrics
 tray-quit-application = Quit
 
 # feeluown.player

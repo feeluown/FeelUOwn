@@ -67,9 +67,11 @@ class DynamicIslandStatusBar(QWidget):
     Uses system palette colors and reuses existing components.
     """
 
-    def __init__(self, app: "GuiApp", parent=None):
+    def __init__(self, app: "GuiApp", parent=None, *, hide_when_inactive=True):
         super().__init__(parent=parent)
         self._app = app
+        # Desktop lyrics remain accessible even without a playing song.
+        self._hide_when_inactive = hide_when_inactive
 
         # Hover and animation state
         self._hovered = False
@@ -214,7 +216,7 @@ class DynamicIslandStatusBar(QWidget):
             self._has_song = False
             self._set_compact_text("")
             self._cover.show_img(None)
-            self.hide()
+            self.setVisible(not self._hide_when_inactive)
             return
         self._has_song = True
 
@@ -239,7 +241,7 @@ class DynamicIslandStatusBar(QWidget):
     def _on_player_state_changed(self, state):
         """Control visibility and expansion based on player state."""
         if state == State.stopped:
-            self.hide()
+            self.setVisible(not self._hide_when_inactive)
         elif state == State.paused:
             if self._has_song:
                 self.show()
@@ -395,7 +397,11 @@ class DynamicIslandStatusBar(QWidget):
         )
 
     def _sync_current_state(self):
-        self._on_metadata_changed(getattr(self._app.player, "current_metadata", None))
+        metadata = getattr(self._app.player, "current_metadata", None)
+        self._on_metadata_changed(metadata)
+        # A lazily created desktop lyric view may miss the original signal.
+        if isinstance(metadata, Mapping):
+            self._song_label.on_metadata_changed(metadata)
         self._on_player_state_for_pp_btn(self._app.player.state)
         self._volume_btn.on_volume_changed(_number_or_zero(self._app.player.volume))
         self._on_position_changed(self._app.player.position)

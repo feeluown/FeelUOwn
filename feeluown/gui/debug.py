@@ -15,7 +15,7 @@ from feeluown.utils.dispatch import Signal
 
 _MINI_PLAYER_DEBUG_LYRICS = [
     "Drag this mini player around",
-    "Right-click anywhere to exit",
+    "Right-click to switch lyric styles",
     "Hover to show controls",
     "Use arrow keys after focusing it",
 ]
@@ -109,6 +109,7 @@ class _MiniPlayerDebugPlaylist:
 class _MiniPlayerDebugLiveLyric:
     def __init__(self):
         self.line_changed = Signal()
+        self.lyrics_changed = Signal()
         self.current_line = Line("Debug lyric line", "", False)
 
 

@@ -6,8 +6,6 @@
 # ----------------------------------------
 minimize-window = 最小化
 fullscreen-window = 窗口全屏
-mini-mode = 迷你模式
-mini-mode-exit = 退出迷你播放器
 playlist = 播放列表
 recently-played = 最近播放
 unknown = 未知
@@ -472,6 +470,10 @@ playback-mode-random = 随机播放
 # feeluown.gui.uimain.lyric
 # ----------------------------------------
 lyric-not-available = 未找到可用歌词
+lyric-display-mode = 展示模式
+lyric-mode-classic = 经典歌词
+lyric-mode-mini = 迷你
+lyric-hide = 隐藏桌面歌词
 lyric-background-color = 背景颜色
 lyric-text-color = 文字颜色
 lyric-font = 字体
@@ -683,6 +685,7 @@ tray-toggle-playpause = { $action ->
 tray-skip-track-next = 下一首
 tray-skip-track-prev = 上一首
 
+tray-desktop-lyrics = 桌面歌词
 tray-quit-application = 退出
 
 # feeluown.player

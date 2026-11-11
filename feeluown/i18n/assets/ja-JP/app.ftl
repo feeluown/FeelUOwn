@@ -6,8 +6,6 @@
 # ----------------------------------------
 minimize-window = 最小化
 fullscreen-window = ウィンドウ全画面
-mini-mode = ミニモード
-mini-mode-exit = ミニプレーヤーを終了
 playlist = プレイリスト
 recently-played = 最近再生
 unknown = 不明
@@ -472,6 +470,10 @@ playback-mode-random = ランダム再生
 # feeluown.gui.uimain.lyric
 # ----------------------------------------
 lyric-not-available = 利用可能な歌詞が見つかりません
+lyric-display-mode = 表示モード
+lyric-mode-classic = クラシック歌詞
+lyric-mode-mini = ミニ
+lyric-hide = デスクトップ歌詞を隠す
 lyric-background-color = 背景色
 lyric-text-color = 文字色
 lyric-font = フォント
@@ -683,6 +685,7 @@ tray-toggle-playpause = { $action ->
 tray-skip-track-next = 次の曲
 tray-skip-track-prev = 前の曲
 
+tray-desktop-lyrics = デスクトップ歌詞
 tray-quit-application = 終了
 
 # feeluown.player

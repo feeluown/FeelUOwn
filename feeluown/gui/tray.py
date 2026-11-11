@@ -23,7 +23,10 @@ class Tray(QSystemTrayIcon):
         """
         super().__init__()
         self._app = app
+        self._lyric_window = app.ui.lyric_window
         self._app_old_state = None  #: app window state before minimized
+        qapp = get_qapp()
+        self._application_state = qapp.applicationState()
 
         # setup context menu
         self._menu = QMenu()
@@ -37,8 +40,9 @@ class Tray(QSystemTrayIcon):
         self._prev_action = QAction(
             QIcon.fromTheme("media-skip-backward"), t("tray-skip-track-prev")
         )
-        self._toggle_mini_mode_action = QAction(t("mini-mode"))
-        self._toggle_mini_mode_action.setCheckable(True)
+        self._toggle_lyric_action = QAction(t("tray-desktop-lyrics"))
+        self._toggle_lyric_action.setCheckable(True)
+        self._toggle_lyric_action.setChecked(self._lyric_window.isVisible())
         self._quit_action = QAction(QIcon.fromTheme("exit"), t("tray-quit-application"))
         # add toggle_app action for macOS, on other platforms, user
         # can click the tray icon to toggle_app
@@ -55,7 +59,7 @@ class Tray(QSystemTrayIcon):
         self._toggle_player_action.triggered.connect(self._app.player.toggle)
         self._prev_action.triggered.connect(self._app.playlist.previous)
         self._next_action.triggered.connect(self._app.playlist.next)
-        self._toggle_mini_mode_action.triggered.connect(self._toggle_mini_mode)
+        self._toggle_lyric_action.triggered.connect(self._lyric_window.setVisible)
         if self._toggle_app_action is not None:
             self._toggle_app_action.triggered.connect(self._toggle_app_state)
         self._app.player.state_changed.connect(
@@ -63,10 +67,10 @@ class Tray(QSystemTrayIcon):
         )
         self._app.playlist.song_changed.connect(self.on_player_song_changed)
         self._app.theme_mgr.theme_changed.connect(self.on_theme_changed)
-        self._app.ui.mini_mode.mode_changed.connect(self.on_mini_mode_changed)
-        get_qapp().applicationStateChanged.connect(self.on_app_state_changed)
+        qapp.applicationStateChanged.connect(self.on_app_state_changed)
 
         self._app.installEventFilter(self)
+        self._lyric_window.installEventFilter(self)
         self.setContextMenu(self._menu)
         self.setup_ui()
 
@@ -82,7 +86,7 @@ class Tray(QSystemTrayIcon):
         self._menu.addSeparator()
         if self._toggle_app_action is not None:
             self._menu.addAction(self._toggle_app_action)
-        self._menu.addAction(self._toggle_mini_mode_action)
+        self._menu.addAction(self._toggle_lyric_action)
         self._menu.addAction(self._quit_action)
         self._status_action.setEnabled(False)
 
@@ -109,9 +113,6 @@ class Tray(QSystemTrayIcon):
         else:
             self._app.hide()
 
-    def _toggle_mini_mode(self, checked):
-        self._app.ui.set_mini_mode_enabled(checked)
-
     def _set_icon(self):
         # respect system icon
         icon = QIcon.fromTheme(
@@ -121,11 +122,6 @@ class Tray(QSystemTrayIcon):
 
     def on_theme_changed(self, _):
         self._set_icon()
-
-    def on_mini_mode_changed(self, active):
-        self._toggle_mini_mode_action.blockSignals(True)
-        self._toggle_mini_mode_action.setChecked(active)
-        self._toggle_mini_mode_action.blockSignals(False)
 
     def on_player_song_changed(self, song):
         if song is not None:
@@ -159,17 +155,14 @@ class Tray(QSystemTrayIcon):
                 self._toggle_player_action.setEnabled(True)
 
     def on_app_state_changed(self, state):
+        previous_state = self._application_state
+        self._application_state = state
         if state == Qt.ApplicationState.ApplicationActive:
-            # On macOS, when the app is hidden, there will be an icon on the
-            # macOS dock, if user click the dock, we should activate the app window.
-            # For other platforms(Win32/Linux), the dock icon is not visible if
-            # the window is hidden/closed.
-            #
-            # When the state will be changed to QApplicationActive?
-            # * the dock icon is clicked (on macOS)
-            # * the Qt.Tool widget got focus (on macOS and Linux)
-            # * the Qt.ColorRole.Window widget got focus (on Linux)
-            if IS_MACOS and not self._app.ui.mini_mode.is_active:
+            # On macOS, clicking the floating lyrics can activate the app.
+            # Qt also emits ApplicationActive again for Dock reopen events.
+            if IS_MACOS and (
+                previous_state == state or not self._lyric_window.isVisible()
+            ):
                 self._app.show()
                 self._app.activateWindow()
         elif state == Qt.ApplicationState.ApplicationInactive:
@@ -180,7 +173,13 @@ class Tray(QSystemTrayIcon):
                 )
 
     def eventFilter(self, obj, event):
-        """event filter for app"""
+        if obj is self._lyric_window:
+            if event.type() == QEvent.Type.Show:
+                self._toggle_lyric_action.setChecked(True)
+            elif event.type() == QEvent.Type.Hide:
+                self._toggle_lyric_action.setChecked(False)
+            return False
+
         app_action = None
         if event.type() == QEvent.Type.WindowStateChange:
             # when window is maximized before minimized, the window state will
