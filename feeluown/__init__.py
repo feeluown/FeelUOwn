@@ -6,7 +6,7 @@ import logging.config
 from .consts import LOG_FILE
 
 
-__version__ = '5.1.2'
+__version__ = '5.1.3'
 
 
 dict_config = {
