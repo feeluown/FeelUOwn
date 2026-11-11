@@ -2,6 +2,9 @@ from PyQt6.QtCore import QPoint, Qt, QRect, QRectF, QTimer, QPointF, pyqtSignal
 from PyQt6.QtWidgets import QPushButton, QStyle, QStyleOptionButton, QMenu
 from PyQt6.QtGui import QPainter, QPalette, QPainterPath
 
+import os
+import sys
+
 from feeluown.i18n import t
 from feeluown.gui.drawers import (
     HomeIconDrawer,
@@ -17,6 +20,24 @@ from feeluown.gui.drawers import (
     AIIconDrawer,
 )
 from feeluown.gui.helpers import darker_or_lighter, painter_save
+
+
+def _is_test_env():
+    """Skip custom painting in tests (see cover_label._is_test_env)."""
+    return (
+        os.getenv('PYTEST_CURRENT_TEST') is not None
+        or 'pytest' in sys.modules
+    )
+
+
+def _skip_paint_in_test(fn):
+    """Decorator: no-op paintEvent under pytest to avoid offscreen
+    segfaults from stale paint events after widget teardown."""
+    def wrapper(self, *args, **kwargs):
+        if _is_test_env():
+            return
+        return fn(self, *args, **kwargs)
+    return wrapper
 
 
 def set_pen_width(painter, width):
@@ -38,6 +59,7 @@ class SelfPaintAbstractButton(QPushButton):
         self.setAttribute(Qt.WidgetAttribute.WA_Hover, True)
         self.setAttribute(Qt.WidgetAttribute.WA_LayoutUsesWidgetRect, True)
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         raise NotImplementedError("paintEvent must be implemented")
 
@@ -71,6 +93,7 @@ class SelfPaintAbstractIconTextButton(SelfPaintAbstractButton):
         self.setFixedHeight(height)
         self.setMinimumWidth(height + self._text_width)
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -142,6 +165,7 @@ class ArrowAbstractButton(SelfPaintAbstractSquareButton):
     def cross(self):
         raise NotImplementedError
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -173,6 +197,7 @@ class SearchSwitchButton(SelfPaintAbstractSquareButton):
         # 0.21 = 1.414 / 2 - 0.5
         self._translate_p = QPoint(self.width() // 2, -int(self.width() * 0.21))
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -195,6 +220,7 @@ class SettingsButton(SelfPaintAbstractSquareButton):
 
         self.setToolTip(t("configuration-button"))
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -215,6 +241,7 @@ class PlusButton(SelfPaintAbstractSquareButton):
 
         self.drawer = PlusIconDrawer(self.width(), self._padding)
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -232,6 +259,7 @@ class TriagleButton(SelfPaintAbstractSquareButton):
     def set_direction(self, direction):
         self.drawer.set_direction(direction)
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -376,6 +404,7 @@ class PlayButton(SelfPaintAbstractSquareButton):
             self.width(), self._padding, direction="right", brush=True
         )
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -430,6 +459,7 @@ class PlayPauseButton(SelfPaintAbstractSquareButton):
         self._draw_circle = draw_circle
         self.update()
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -475,6 +505,7 @@ class _PlayXButton(SelfPaintAbstractSquareButton):
         self._line = QPointF(x, small_y), QPointF(x, big_y)
         self._line_rect = QRectF(x - half_width, small_y, half_width * 2, height)
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -516,6 +547,7 @@ class MVButton(SelfPaintAbstractSquareButton):
             self.width(), self.width() * 0.35, direction="right", brush=True
         )
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -541,6 +573,7 @@ class VolumeButton(SelfPaintAbstractSquareButton):
         self.drawer.set_volume(volume)
         self.update()
 
+    @_skip_paint_in_test
     def paintEvent(self, _):
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)

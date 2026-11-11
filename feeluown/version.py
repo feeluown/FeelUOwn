@@ -1,10 +1,6 @@
 import asyncio
 import logging
 from functools import partial
-from packaging import version
-
-import requests
-from requests.exceptions import ConnectionError, Timeout
 
 from feeluown import __version__
 from feeluown.i18n import t
@@ -23,6 +19,10 @@ class VersionManager(object):
         loop.call_later(10, partial(loop.create_task, self.check_release()))
 
     async def check_release(self):
+        import requests
+        from packaging import version
+        from requests.exceptions import ConnectionError, Timeout
+
         loop = asyncio.get_event_loop()
 
         logger.info("Checking for updates...")

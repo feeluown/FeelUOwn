@@ -7,6 +7,8 @@ cli-verbose = 输出详细的日志
 cli-log-to-file = 将日志打到文件中
 
 cli-mpv-audio-device = （高级选项）指定播放设备
+cli-no-plugins = 不加载插件（启动更快，用于调试）
+cli-no-webengine = 不导入 QtWebEngineWidgets（启动更快，网页可能无法使用）
 
 command-show-resource-info = 显示资源详细信息
 

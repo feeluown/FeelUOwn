@@ -43,17 +43,38 @@ def before_start_app(args):
     """
     Prepare things that app depends on and initialize things which don't depend on app.
     """
+    import time
+
+    bench = os.getenv('FUO_BENCH', '').strip().lower() in ('1', 'true', 'yes')
+    t0 = time.perf_counter() if bench else 0
+
+    def _mark(tag):
+        if bench:
+            logger.info(f'[bench] {tag}: {(time.perf_counter() - t0) * 1000:.1f}ms')
+
     config = create_config()
+    _mark('create_config')
 
     # Light scan plugins, they may define some configurations.
-    plugins_mgr.light_scan()
+    # --no-plugins / FEELUOWN_NO_PLUGINS=1 skips the scan for faster startup.
+    # NOTE: do not mutate os.environ here; light_scan() already honors the
+    # env var, and persisting it would leak across in-process calls (tests).
+    no_plugins = getattr(args, 'no_plugins', False) or \
+        os.getenv('FEELUOWN_NO_PLUGINS', '').strip().lower() in ('1', 'true', 'yes')
+    if not no_plugins:
+        plugins_mgr.light_scan()
+    else:
+        logger.info('Skip light scan plugins (--no-plugins).')
+    _mark('light_scan')
     plugins_mgr.init_plugins_config(config)
+    _mark('init_plugins_config')
 
     # Load rcfile.
     #
     # In an ideal world, users are capable to do anything in rcfile,
     # including monkeypatch, so we should load rcfile as early as possible
     fuoexec_load_rcfile(config)
+    _mark('load_rcfile')
 
     # Initialize config.
     #
@@ -89,16 +110,29 @@ def before_start_app(args):
             # Use native event loop on macOS, so that some native service such as
             # nowplaying can work.
             os.environ.setdefault('QT_EVENT_DISPATCHER_CORE_FOUNDATION', '1')
-        try:
-            # HELP: QtWebEngineWidgets must be imported before a
-            #   QCoreApplication instance is created.
-            # TODO: add a command line option to control this import.
-            import PyQt6.QtWebEngineWidgets  # type: ignore # noqa
-        except ImportError:
-            logger.info('import QtWebEngineWidgets failed')
+        no_webengine = getattr(args, 'no_webengine', False) or \
+            os.getenv('FEELUOWN_NO_WEBENGINE', '').strip().lower() \
+            in ('1', 'true', 'yes')
+        if no_webengine:
+            logger.info('Skip QtWebEngineWidgets import (--no-webengine).')
+            # Propagate CLI flag to env so GUI code (e.g. login dialog,
+            # imported later) can reliably detect the disabled state via
+            # FEELUOWN_NO_WEBENGINE instead of only checking import success.
+            # Overwriting here is intentional: an explicit --no-webengine
+            # means web views must stay disabled for this run.
+            os.environ['FEELUOWN_NO_WEBENGINE'] = '1'
+        else:
+            try:
+                # HELP: QtWebEngineWidgets must be imported before a
+                #   QCoreApplication instance is created.
+                import PyQt6.QtWebEngineWidgets  # type: ignore # noqa
+            except ImportError:
+                logger.info('import QtWebEngineWidgets failed')
+        _mark('webengine_import')
         if sys.version_info.major == 3 and sys.version_info.minor <= 10:
             from feeluown.utils.compat import DefaultQEventLoopPolicy
             asyncio.set_event_loop_policy(DefaultQEventLoopPolicy())
+    _mark('before_start_app_done')
     return args, config
 
 

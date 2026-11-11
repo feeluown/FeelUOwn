@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import janus
 import logging
 import weakref
 
@@ -39,6 +38,20 @@ class Signal:
         This is similar to the design of Qt signals.
         """
         import asyncio
+
+        # Ensure janus loop-compat patch is applied even for direct
+        # Signal users that bypass entry_points.run().
+        try:
+            from feeluown.utils.patch import patch_janus
+            patch_janus()
+        except ImportError:  # noqa
+            pass
+
+        # Import janus lazily: it is only needed when aio support is
+        # actually set up (daemon/GUI run), not for `--help` or
+        # plain imports of Signal.
+        import janus
+
         loop = asyncio.get_running_loop()
         cls.aioqueue = janus.Queue()
         cls.worker_task = loop.create_task(Signal.worker())

@@ -1,4 +1,5 @@
 import json
+import os
 from http.cookies import SimpleCookie
 from urllib.parse import urlparse
 
@@ -13,11 +14,30 @@ from PyQt6.QtWidgets import (
 )
 
 try:
-    from feeluown.gui.widgets.weblogin import WebLoginView
+    from feeluown.gui.widgets.weblogin import WebLoginView  # noqa: F401
 except ImportError:
     has_webengine = False
 else:
     has_webengine = True
+
+
+def is_webengine_disabled_by_flag():
+    """Whether webengine was explicitly disabled via flag/env.
+
+    ``--no-webengine`` / ``FEELUOWN_NO_WEBENGINE=1`` skips the early
+    ``QtWebEngineWidgets`` import in run_app for faster startup. Web login
+    requires webengine, so the dialog must stay disabled in that case even
+    when the package is installed (late import after QApplication may not
+    initialize correctly).
+    """
+    return os.getenv('FEELUOWN_NO_WEBENGINE', '').strip().lower() in (
+        '1', 'true', 'yes')
+
+
+def is_webengine_available():
+    """Whether built-in web login can be offered."""
+    return has_webengine and not is_webengine_disabled_by_flag()
+
 
 try:
     from feeluown.utils.yt_dlp_cookies import load_cookies  # noqa
@@ -82,7 +102,7 @@ class CookiesLoginDialog(LoginDialog):
     """
 
     def __init__(self, uri=None, required_cookies_fields=None, domain=None):
-        if has_webengine and uri and required_cookies_fields:
+        if is_webengine_available() and uri and required_cookies_fields:
             use_webview = True
         else:
             use_webview = False
@@ -135,7 +155,7 @@ class CookiesLoginDialog(LoginDialog):
             self.weblogin_btn.clicked.connect(self._start_web_login)
         else:
             # disable the button if feeluown does not support
-            if uri and required_cookies_fields and not has_webengine:
+            if uri and required_cookies_fields and not is_webengine_available():
                 self.weblogin_btn.setEnabled(False)
             else:
                 # hide the button if provider does not support
@@ -153,7 +173,20 @@ class CookiesLoginDialog(LoginDialog):
         self.login_succeed.connect(self.hide)
 
     def _start_web_login(self):
-        self._web_login = WebLoginView(self._uri, self._required_cookies_fields)
+        # Import lazily: WebLoginView pulls QtWebEngineWidgets, which may be
+        # unavailable (not installed) or explicitly skipped via
+        # --no-webengine. Fail gracefully instead of crashing the slot.
+        try:
+            from feeluown.gui.widgets.weblogin import WebLoginView as _WebLoginView
+        except ImportError as e:
+            self.show_hint(t("cookies-dialog-web-login-btn") + f": {e}",
+                           color="red")
+            return
+        if is_webengine_disabled_by_flag():
+            self.show_hint(t("cookies-dialog-web-login-btn") + ": disabled "
+                           "by --no-webengine", color="orange")
+            return
+        self._web_login = _WebLoginView(self._uri, self._required_cookies_fields)
         self._web_login.succeed.connect(self._on_web_login_succeed)
         self._web_login.show()
 
