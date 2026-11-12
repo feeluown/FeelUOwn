@@ -189,34 +189,18 @@ class LyricWindow(QWidget):
     def _ensure_multiline_view(self):
         if self._multiline_view is not None:
             return
-        from feeluown.gui.components.nowplaying import NowplayingLyricView
+        from feeluown.gui.components.desktop_lyric import DesktopLyricCard
 
-        self._multiline_container = QWidget(self)
-        self._multiline_container.setAutoFillBackground(True)
-        self._multiline_header = QLabel(
-            t("lyric-mode-multiline"), self._multiline_container
-        )
-        self._multiline_header.setCursor(Qt.CursorShape.SizeAllCursor)
-        self._multiline_view = NowplayingLyricView(
-            self._app, parent=self._multiline_container
-        )
-        self._multiline_view.viewport().setAutoFillBackground(False)
-        self._multiline_grip = QSizeGrip(self._multiline_container)
-        self._multiline_grip.setAttribute(Qt.WidgetAttribute.WA_NoMousePropagation)
-
-        layout = QVBoxLayout(self._multiline_container)
-        layout.setContentsMargins(12, 8, 12, 8)
-        layout.setSpacing(4)
-        layout.addWidget(self._multiline_header)
-        layout.addWidget(self._multiline_view, 1)
-        layout.addWidget(self._multiline_grip, 0, Qt.AlignmentFlag.AlignRight)
+        self._multiline_container = DesktopLyricCard(self._app, self)
+        self._multiline_header = self._multiline_container.header
+        self._multiline_view = self._multiline_container.lyric_view
+        self._multiline_grip = self._multiline_container.size_grip
         self._layout.addWidget(self._multiline_container)
         for widget in (
             self._multiline_container, self._multiline_header,
             self._multiline_view, self._multiline_view.viewport(),
         ):
             widget.installEventFilter(self)
-        self._multiline_view.set_lyric(self._app.live_lyric.current_lyrics[0])
 
     def _ensure_mini_view(self):
         if self.island is not None:
