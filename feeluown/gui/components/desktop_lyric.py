@@ -1,6 +1,7 @@
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import (
-    QColor, QFont, QImage, QLinearGradient, QPainter, QPainterPath, QPalette,
+    QColor, QFont, QFontMetrics, QImage, QLinearGradient, QPainter, QPainterPath,
+    QPalette,
 )
 from PyQt6.QtWidgets import (
     QLabel,
@@ -18,6 +19,13 @@ from feeluown.utils.aio import run_afn
 
 
 class _FadingLyricDelegate(QStyledItemDelegate):
+    def sizeHint(self, option, index):
+        option = QStyleOptionViewItem(option)
+        self.initStyleOption(option, index)
+        size = super().sizeHint(option, index)
+        size.setHeight(round(QFontMetrics(option.font).height() * 1.25))
+        return size
+
     def paint(self, painter, option, index):
         option = QStyleOptionViewItem(option)
         self.initStyleOption(option, index)
