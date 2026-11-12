@@ -473,6 +473,7 @@ lyric-not-available = 利用可能な歌詞が見つかりません
 lyric-display-mode = 表示モード
 lyric-mode-classic = クラシック歌詞
 lyric-mode-mini = ミニ
+lyric-mode-multiline = 複数行の歌詞
 lyric-hide = デスクトップ歌詞を隠す
 lyric-background-color = 背景色
 lyric-text-color = 文字色

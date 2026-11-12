@@ -477,6 +477,7 @@ lyric-not-available = Lyrics not available
 lyric-display-mode = Display mode
 lyric-mode-classic = Classic lyrics
 lyric-mode-mini = Mini
+lyric-mode-multiline = Multiline lyrics
 lyric-hide = Hide desktop lyrics
 lyric-background-color = Background color
 lyric-text-color = Text color

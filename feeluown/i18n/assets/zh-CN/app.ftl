@@ -473,6 +473,7 @@ lyric-not-available = 未找到可用歌词
 lyric-display-mode = 展示模式
 lyric-mode-classic = 经典歌词
 lyric-mode-mini = 迷你
+lyric-mode-multiline = 多行歌词
 lyric-hide = 隐藏桌面歌词
 lyric-background-color = 背景颜色
 lyric-text-color = 文字颜色

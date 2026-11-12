@@ -4,8 +4,8 @@ from types import SimpleNamespace
 import pytest
 
 from PyQt6.QtCore import QEvent, QPoint, QPointF, QSize, Qt, QTimer
-from PyQt6.QtGui import QColor, QGuiApplication, QMouseEvent, QPalette
-from PyQt6.QtWidgets import QListWidget, QWidget
+from PyQt6.QtGui import QColor, QGuiApplication, QMouseEvent, QPalette, QWheelEvent
+from PyQt6.QtWidgets import QApplication, QListWidget, QWidget
 
 from feeluown.ai import SongSuggestion
 from feeluown.ai.copilot import CopilotArtifact
@@ -13,7 +13,7 @@ from feeluown.gui.helpers import secondary_text_color
 from feeluown.library import BriefSongModel
 from feeluown.media import Media
 from feeluown.player import PlaybackMode, PlaylistMode, State
-from feeluown.player.lyric import Line
+from feeluown.player.lyric import Line, Lyric
 from feeluown.utils.dispatch import Signal
 from feeluown.gui.components.player_playlist import (
     PlayerPlaylistView,
@@ -854,6 +854,7 @@ class _FakeContextMenuEvent:
 def _prepare_lyric_window_app(app_mock):
     _prepare_dynamic_island_app(app_mock)
     app_mock.live_lyric.lyrics_changed = Signal()
+    app_mock.live_lyric.current_lyrics = (None, None)
     app_mock.player.current_metadata = {"title": "Song", "artists": ["Mary"]}
     return app_mock
 
@@ -999,20 +1000,15 @@ def test_lyric_window_switches_modes_without_changing_main_window(qtbot, app_moc
     qtbot.addWidget(window)
     window.show()
 
-    window.set_display_mode("mini")
-    island = window.island
-    assert window.isVisible()
-    assert island.isVisible()
-    assert not window._inner.isVisible()
-
-    window.set_display_mode("classic")
-    assert window.isVisible()
-    assert window._inner.isVisible()
-    assert not island.isVisible()
-
-    window.set_display_mode("mini")
-    assert window.island is island
-    assert island.isVisible()
+    # Visit each directed transition between the three modes.
+    for mode in ("multiline", "mini", "classic", "mini", "multiline", "classic"):
+        window.set_display_mode(mode)
+        assert window.display_mode == mode
+        assert window.isVisible()
+        assert window._inner.isVisible() == (mode == "classic")
+        assert window._multiline_view.isVisible() == (mode == "multiline")
+        if window.island is not None:
+            assert window.island.isVisible() == (mode == "mini")
     app_mock.hide.assert_not_called()
     app_mock.show.assert_not_called()
     app_mock.activateWindow.assert_not_called()
@@ -1060,6 +1056,8 @@ def test_lyric_window_switch_while_hidden_does_not_open_window(qtbot, app_mock):
 
     assert not window.isVisible()
     window.island._on_player_state_changed(State.playing)
+    assert not window.isVisible()
+    window.set_display_mode("multiline")
     assert not window.isVisible()
     window.set_display_mode("classic")
     assert not window.isVisible()
@@ -1126,6 +1124,151 @@ def test_lyric_window_preserves_classic_size_and_style_through_mini(qtbot, app_m
     assert window.pos() == QPoint(160, 180)
 
 
+@pytest.mark.asyncio
+async def test_lyric_multiline_shows_current_lyrics_and_tracks_updates(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    lyric = Lyric.from_content(
+        "[00:01]First line\n[00:02]Second line\n[00:03]Third line"
+    )
+    lyric.update_position(2)
+    app_mock.live_lyric.current_lyrics = (lyric, None)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode("multiline")
+    window.show()
+    view = window._multiline_view
+
+    assert [view.item(i).text() for i in range(view.count())] == lyric.lines
+    assert view.currentRow() == 1
+    assert view.currentItem().font().pixelSize() > view.font().pixelSize()
+
+    lyric.update_position(3)
+    app_mock.live_lyric.line_changed.emit(Line(lyric.current_s, "", False))
+    assert view.currentRow() == 2
+
+    Signal.setup_aio_support()
+    try:
+        replacement = Lyric.from_content("[00:01]New song\n[00:02]New verse")
+        replacement.update_position(1)
+        app_mock.live_lyric.lyrics_changed.emit(replacement, None)
+        await Signal.aioqueue.async_q.join()
+        assert [view.item(i).text() for i in range(view.count())] == replacement.lines
+        assert view.currentRow() == 0
+
+        app_mock.live_lyric.lyrics_changed.emit(None, None)
+        await Signal.aioqueue.async_q.join()
+        assert view.count() == 0
+        assert view.currentItem() is None
+    finally:
+        Signal.teardown_aio_support()
+
+
+def test_lyric_multiline_remembers_independent_size_and_restores_state(qtbot, app_mock):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window._inner.toggle_auto_resize()
+    window.show()
+    window.resize(520, 95)
+    window.set_display_mode("multiline")
+    assert window.size() == QSize(500, 360)
+    assert window._multiline_grip.isVisible()
+    window.resize(640, 420)
+
+    window.set_display_mode("mini")
+    window.set_display_mode("multiline")
+    assert window.size() == QSize(640, 420)
+    state = window.dump_state()
+    assert state["multiline_size"] == (640, 420)
+    assert state["geometry"][2:] == (520, 95)
+    assert state["geometry"][:2] == (window.x(), window.y())
+
+    restored = LyricWindow(app_mock)
+    qtbot.addWidget(restored)
+    restored.apply_state(state)
+    assert restored.display_mode == "multiline"
+    assert restored.size() == QSize(640, 420)
+    assert not restored.isVisible()
+    restored.set_display_mode("classic")
+    assert restored.size() == QSize(520, 95)
+    restored.set_display_mode("multiline")
+    assert restored.size() == QSize(640, 420)
+
+    legacy_state = dict(state)
+    del legacy_state["multiline_size"]
+    legacy_state["display_mode"] = "classic"
+    restored.apply_state(legacy_state)
+    restored.set_display_mode("multiline")
+    assert restored.size() == QSize(500, 360)
+
+
+def test_lyric_multiline_allows_selection_and_scrolling_without_dragging(
+    qtbot, app_mock, monkeypatch
+):
+    _prepare_lyric_window_app(app_mock)
+    lyric = Lyric.from_content("\n".join(f"[00:{i:02}]Line {i}" for i in range(30)))
+    app_mock.live_lyric.current_lyrics = (lyric, None)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode("multiline")
+    window.show()
+    view = window._multiline_view
+    viewport = view.viewport()
+    move_attempts = []
+    monkeypatch.setattr(window, "_start_system_move", lambda: move_attempts.append(True))
+    position = window.pos()
+
+    qtbot.mouseClick(
+        viewport,
+        Qt.MouseButton.LeftButton,
+        pos=view.visualItemRect(view.item(1)).center(),
+    )
+    assert view.currentRow() == 1
+
+    wheel = QWheelEvent(
+        QPointF(viewport.rect().center()),
+        QPointF(viewport.mapToGlobal(viewport.rect().center())),
+        QPoint(),
+        QPoint(0, -120),
+        Qt.MouseButton.NoButton,
+        Qt.KeyboardModifier.NoModifier,
+        Qt.ScrollPhase.NoScrollPhase,
+        False,
+    )
+    QApplication.sendEvent(viewport, wheel)
+    assert view.verticalScrollBar().value() > 0
+    assert window.pos() == position
+    assert move_attempts == []
+
+
+def test_lyric_multiline_header_drags_and_viewport_opens_shared_menu(
+    qtbot, app_mock, monkeypatch
+):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.set_display_mode("multiline")
+    monkeypatch.setattr(window, "_start_system_move", lambda: False)
+    position = window.pos()
+
+    for event_type, point in (
+        (QEvent.Type.MouseButtonPress, QPointF(10, 10)),
+        (QEvent.Type.MouseMove, QPointF(25, 28)),
+        (QEvent.Type.MouseButtonRelease, QPointF(25, 28)),
+    ):
+        assert window.eventFilter(
+            window._multiline_header, _FakeMouseEvent(event_type, point)
+        )
+    assert window.pos() == position + QPoint(15, 18)
+
+    positions = []
+    monkeypatch.setattr(window, "_show_context_menu", positions.append)
+    assert window.eventFilter(
+        window._multiline_view.viewport(), _FakeContextMenuEvent(QPoint(20, 30))
+    )
+    assert positions == [QPoint(20, 30)]
+
+
 def test_lyric_window_restores_selected_mode_and_legacy_state(qtbot, app_mock):
     _prepare_lyric_window_app(app_mock)
     original = LyricWindow(app_mock)
@@ -1150,7 +1293,7 @@ def test_lyric_window_restores_selected_mode_and_legacy_state(qtbot, app_mock):
     assert restored.size() == QSize(520, 95)
 
 
-def test_lyric_window_menu_switches_both_directions(qtbot, app_mock):
+def test_lyric_window_menu_switches_all_modes(qtbot, app_mock):
     _prepare_lyric_window_app(app_mock)
     window = LyricWindow(app_mock)
     qtbot.addWidget(window)
@@ -1158,7 +1301,7 @@ def test_lyric_window_menu_switches_both_directions(qtbot, app_mock):
     classic_menu = window._create_context_menu()
     mode_menu = next(action.menu() for action in classic_menu.actions() if action.menu())
     modes = {action.data(): action for action in mode_menu.actions()}
-    assert set(modes) == {"classic", "mini"}
+    assert set(modes) == {"classic", "mini", "multiline"}
     assert modes["classic"].isChecked()
     assert not modes["mini"].isChecked()
     modes["mini"].trigger()
@@ -1170,11 +1313,21 @@ def test_lyric_window_menu_switches_both_directions(qtbot, app_mock):
     modes = {action.data(): action for action in mode_menu.actions()}
     assert modes["mini"].isChecked()
     assert not modes["classic"].isChecked()
+    modes["multiline"].trigger()
+    assert window.display_mode == "multiline"
+
+    multiline_menu = window._create_context_menu()
+    mode_menu = next(
+        action.menu() for action in multiline_menu.actions() if action.menu()
+    )
+    modes = {action.data(): action for action in mode_menu.actions()}
+    assert modes["multiline"].isChecked()
+    assert not modes["mini"].isChecked()
     modes["classic"].trigger()
     assert window.display_mode == "classic"
 
 
-@pytest.mark.parametrize("mode", ["classic", "mini"])
+@pytest.mark.parametrize("mode", ["classic", "mini", "multiline"])
 @pytest.mark.parametrize("close_method", ["escape", "close"])
 def test_lyric_window_closes_without_restoring_main_window(
     qtbot, app_mock, mode, close_method

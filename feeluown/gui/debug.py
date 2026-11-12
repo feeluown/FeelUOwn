@@ -8,7 +8,7 @@ from PyQt6.QtWidgets import QApplication, QHBoxLayout, QWidget
 
 from feeluown.debug import *  # noqa
 from feeluown.player import State
-from feeluown.player.lyric import Line
+from feeluown.player.lyric import Line, Lyric
 from feeluown.utils.compat import DefaultQEventLoopPolicy
 from feeluown.utils.dispatch import Signal
 
@@ -110,7 +110,13 @@ class _MiniPlayerDebugLiveLyric:
     def __init__(self):
         self.line_changed = Signal()
         self.lyrics_changed = Signal()
-        self.current_line = Line("Debug lyric line", "", False)
+        lyric = Lyric.from_content("\n".join(
+            f"[00:{index * 5 + 1:02d}]{line}"
+            for index, line in enumerate(_MINI_PLAYER_DEBUG_LYRICS)
+        ))
+        lyric.update_position(12)
+        self.current_lyrics = (lyric, None)
+        self.current_line = Line(lyric.current_s, "", False)
 
 
 def create_mini_player_debug_app():
@@ -127,10 +133,9 @@ def start_mini_player_debug_updates(app, parent):
         player = app.player
         player.position = (player.position + 5) % player.duration
         player.position_changed.emit(player.position)
-        lyric = _MINI_PLAYER_DEBUG_LYRICS[
-            (player.position // 5) % len(_MINI_PLAYER_DEBUG_LYRICS)
-        ]
-        app.live_lyric.current_line = Line(lyric, "", False)
+        lyric = app.live_lyric.current_lyrics[0]
+        lyric.update_position(player.position % (len(_MINI_PLAYER_DEBUG_LYRICS) * 5))
+        app.live_lyric.current_line = Line(lyric.current_s, "", False)
         app.live_lyric.line_changed.emit(app.live_lyric.current_line)
 
     timer = QTimer(parent)

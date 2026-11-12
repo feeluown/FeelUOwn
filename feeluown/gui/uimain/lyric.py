@@ -24,6 +24,7 @@ from PyQt6.QtWidgets import (
     QSpacerItem,
     QAbstractButton,
     QAbstractSlider,
+    QAbstractItemView,
 )
 
 from feeluown.i18n import t
@@ -105,8 +106,11 @@ class LyricWindow(QWidget):
         self._app = app
         self._display_mode = "classic"
         self._classic_size = QSize(500, 60)
+        self._multiline_size = QSize(500, 360)
         self.island = None
         self._mini_container = None
+        self._multiline_view = None
+        self._multiline_container = None
 
         if IS_MACOS:
             # On macOS, Qt.Tooltip widget can't accept focus and it will hide
@@ -146,7 +150,7 @@ class LyricWindow(QWidget):
         return self._display_mode
 
     def set_display_mode(self, mode):
-        if mode not in ("classic", "mini"):
+        if mode not in ("classic", "mini", "multiline"):
             raise ValueError(f"Unknown lyric display mode: {mode}")
         if mode == self._display_mode:
             return
@@ -154,22 +158,65 @@ class LyricWindow(QWidget):
         pos = self.pos()
         if self._display_mode == "classic":
             self._classic_size = self.size()
+        elif self._display_mode == "multiline":
+            self._multiline_size = self.size()
         self._old_pos = None
         self._using_system_move = False
+        self._inner.hide()
+        if self._mini_container is not None:
+            self._mini_container.hide()
+        if self._multiline_container is not None:
+            self._multiline_container.hide()
+        self.setMinimumSize(0, 0)
+        self.setMaximumSize(16777215, 16777215)
         self._display_mode = mode
         if mode == "mini":
-            self._inner.hide()
             self._ensure_mini_view()
             self._mini_container.show()
             self._resize_to_island()
             self.island.setFocus(Qt.FocusReason.OtherFocusReason)
+        elif mode == "multiline":
+            self._ensure_multiline_view()
+            self.setMinimumSize(240, 180)
+            self.resize(self._multiline_size)
+            self._multiline_container.show()
+            self._multiline_view.on_line_changed(None)
         else:
-            self._mini_container.hide()
-            self.setMinimumSize(0, 0)
-            self.setMaximumSize(16777215, 16777215)
             self.resize(self._classic_size)
             self._inner.show()
         self.move(pos)
+
+    def _ensure_multiline_view(self):
+        if self._multiline_view is not None:
+            return
+        from feeluown.gui.components.nowplaying import NowplayingLyricView
+
+        self._multiline_container = QWidget(self)
+        self._multiline_container.setAutoFillBackground(True)
+        self._multiline_header = QLabel(
+            t("lyric-mode-multiline"), self._multiline_container
+        )
+        self._multiline_header.setCursor(Qt.CursorShape.SizeAllCursor)
+        self._multiline_view = NowplayingLyricView(
+            self._app, parent=self._multiline_container
+        )
+        self._multiline_view.viewport().setAutoFillBackground(False)
+        self._multiline_grip = QSizeGrip(self._multiline_container)
+        self._multiline_grip.setAttribute(Qt.WidgetAttribute.WA_NoMousePropagation)
+
+        layout = QVBoxLayout(self._multiline_container)
+        layout.setContentsMargins(12, 8, 12, 8)
+        layout.setSpacing(4)
+        layout.addWidget(self._multiline_header)
+        layout.addWidget(self._multiline_view, 1)
+        layout.addWidget(self._multiline_grip, 0, Qt.AlignmentFlag.AlignRight)
+        self._layout.addWidget(self._multiline_container)
+        for widget in (
+            self._multiline_container, self._multiline_header,
+            self._multiline_view, self._multiline_view.viewport(),
+        ):
+            widget.installEventFilter(self)
+        self._multiline_view.set_lyric(self._app.live_lyric.current_lyrics[0])
 
     def _ensure_mini_view(self):
         if self.island is not None:
@@ -206,7 +253,7 @@ class LyricWindow(QWidget):
         modes = menu.addMenu(t("lyric-display-mode"))
         group = QActionGroup(modes)
         group.setExclusive(True)
-        for mode in ("classic", "mini"):
+        for mode in ("classic", "mini", "multiline"):
             action = modes.addAction(t(f"lyric-mode-{mode}"))
             action.setData(mode)
             action.setCheckable(True)
@@ -250,7 +297,9 @@ class LyricWindow(QWidget):
     def _handle_drag_event(self, obj, event):
         parent = obj
         while isinstance(parent, QWidget) and parent is not self:
-            if isinstance(parent, (QAbstractButton, QAbstractSlider)):
+            if isinstance(parent, (
+                QAbstractButton, QAbstractSlider, QAbstractItemView, QSizeGrip,
+            )):
                 return False
             parent = parent.parent()
         if event.type() == QEvent.Type.MouseButtonPress:
@@ -273,6 +322,8 @@ class LyricWindow(QWidget):
         if self.display_mode == "mini":
             self._resize_to_island()
             self.island.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
+        elif self.display_mode == "multiline":
+            self._multiline_view.on_line_changed(None)
         super().showEvent(event)
 
     def hideEvent(self, event):
@@ -331,9 +382,13 @@ class LyricWindow(QWidget):
         p = inner.palette()
         geo = self.geometry()
         size = self.size() if self.display_mode == "classic" else self._classic_size
+        multiline_size = (
+            self.size() if self.display_mode == "multiline" else self._multiline_size
+        )
         return {
             "display_mode": self.display_mode,
             "geometry": (geo.x(), geo.y(), size.width(), size.height()),
+            "multiline_size": (multiline_size.width(), multiline_size.height()),
             "font": inner.font().toString(),
             "bg": p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Window).name(
                 QColor.NameFormat.HexArgb
@@ -361,6 +416,7 @@ class LyricWindow(QWidget):
         set_bg_color(palette, QColor(state["bg"]))
         set_fg_color(palette, QColor(state["fg"]))
         inner.setPalette(palette)
+        self._multiline_size = QSize(*state.get("multiline_size", (500, 360)))
         self.set_display_mode(state.get("display_mode", "classic"))
 
     def sizeHint(self):
