@@ -68,7 +68,21 @@ Practical conventions:
 - Add/adjust tests for behavior changes under `feeluown/`.
 - Keep comments/docstrings in English.
 - For Qt widgets, prefer a `setup_ui` style split when code grows.
-- Handle provider/network exceptions defensively in GUI flows.
+- Handle expected provider/network failures at GUI boundaries.
+
+Error handling and compatibility preferences:
+- Trust established data and lifecycle contracts. Access required fields directly;
+  do not add existence checks or defaults that silently accept invalid state.
+- Let unexpected programming errors surface. Do not catch exceptions merely to
+  continue, log and ignore them, or substitute a default result.
+- Add compatibility fallbacks only for a concrete, supported requirement. Avoid
+  speculative fallback paths and extra state maintained solely to support them.
+- Prefer simple control flow and minimal state. Before adding a flag or branch,
+  identify the required behavior that makes it necessary.
+- Distinguish expected external failures from programming errors: handle known
+  provider/network failures at GUI boundaries, and follow explicit decisions for
+  unsupported capabilities (for example, log an error if native window dragging
+  is unavailable, without implementing manual dragging as a fallback).
 
 ## 5) GUI Architecture Rules
 
