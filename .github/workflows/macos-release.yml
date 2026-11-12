@@ -15,7 +15,7 @@ jobs:
       # Allow some jobs fail.
       fail-fast: false
       matrix:
-        os: [macos-latest, macos-14]
+        os: [macos-latest, macos-15]
 
     steps:
     - uses: actions/checkout@master
