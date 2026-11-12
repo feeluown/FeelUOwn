@@ -20,7 +20,7 @@ class _FadingLyricDelegate(QStyledItemDelegate):
         option = QStyleOptionViewItem(option)
         self.initStyleOption(option, index)
         size = super().sizeHint(option, index)
-        size.setHeight(round(QFontMetrics(option.font).height() * 1.25))
+        size.setHeight(round(QFontMetrics(option.font).height() * 1.4))
         return size
 
     def paint(self, painter, option, index):
