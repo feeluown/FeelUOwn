@@ -1,4 +1,3 @@
-import logging
 import sys
 
 from PyQt6.QtCore import QEvent, Qt, QRectF, QRect, QSize
@@ -34,7 +33,6 @@ from feeluown.player import LyricLine
 
 IS_MACOS = sys.platform == "darwin"
 IS_WINDOWS = sys.platform == "win32"
-logger = logging.getLogger(__name__)
 
 
 def set_bg_color(palette, color):
@@ -136,6 +134,11 @@ class LyricWindow(QWidget):
         self._layout.setSpacing(0)
         self._layout.addWidget(self._inner)
 
+        self._old_pos = None
+        # Native dragging also leaves _old_pos unset. Track it separately so
+        # the event filter still consumes drag events from child widgets.
+        self._using_system_move = False
+
         esc_hide_widget(self)
 
     @property
@@ -151,6 +154,8 @@ class LyricWindow(QWidget):
         pos = self.pos()
         if self._display_mode == "classic":
             self._classic_size = self.size()
+        self._old_pos = None
+        self._using_system_move = False
         self._display_mode = mode
         if mode == "mini":
             self._inner.hide()
@@ -230,22 +235,39 @@ class LyricWindow(QWidget):
         if event.type() == QEvent.Type.ContextMenu:
             self._show_context_menu(event.globalPos())
             return True
-        if (
-            event.type() == QEvent.Type.MouseButtonPress
-            and event.button() == Qt.MouseButton.LeftButton
+        if event.type() in (
+            QEvent.Type.MouseButtonPress,
+            QEvent.Type.MouseMove,
+            QEvent.Type.MouseButtonRelease,
         ):
-            parent = obj
-            while isinstance(parent, QWidget) and parent is not self:
-                if isinstance(parent, (QAbstractButton, QAbstractSlider)):
-                    return False
-                parent = parent.parent()
-            self.mousePressEvent(event)
-            return True
+            return self._handle_drag_event(obj, event)
         if obj is self.island and event.type() in (
             QEvent.Type.Resize, QEvent.Type.Show,
         ):
             self._resize_to_island()
         return super().eventFilter(obj, event)
+
+    def _handle_drag_event(self, obj, event):
+        parent = obj
+        while isinstance(parent, QWidget) and parent is not self:
+            if isinstance(parent, (QAbstractButton, QAbstractSlider)):
+                return False
+            parent = parent.parent()
+        if event.type() == QEvent.Type.MouseButtonPress:
+            if event.button() != Qt.MouseButton.LeftButton:
+                return False
+            self.mousePressEvent(event)
+            return True
+        if event.type() == QEvent.Type.MouseMove:
+            dragging = self._old_pos is not None or self._using_system_move
+            self.mouseMoveEvent(event)
+            return dragging
+        if event.type() == QEvent.Type.MouseButtonRelease:
+            if event.button() == Qt.MouseButton.LeftButton:
+                dragging = self._old_pos is not None or self._using_system_move
+                self.mouseReleaseEvent(event)
+                return dragging
+        return False
 
     def showEvent(self, event):
         if self.display_mode == "mini":
@@ -253,13 +275,41 @@ class LyricWindow(QWidget):
             self.island.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
         super().showEvent(event)
 
+    def hideEvent(self, event):
+        self._old_pos = None
+        self._using_system_move = False
+        super().hideEvent(event)
+
     def mousePressEvent(self, e):
         if e.button() != Qt.MouseButton.LeftButton:
             return
-        self._start_system_move()
+        if self._start_system_move():
+            self._using_system_move = True
+            self._old_pos = None
+        else:
+            self._old_pos = e.globalPosition()
         e.accept()
 
+    def mouseMoveEvent(self, e):
+        # NOTE: e.button() == Qt.MouseButton.LeftButton don't work on Windows
+        # on Windows, even I drag with LeftButton, the e.button() return 0,
+        # which means no button
+        if self._using_system_move:
+            e.accept()
+            return
+        if self._old_pos is not None:
+            delta = e.globalPosition() - self._old_pos
+            self.move(int(self.x() + delta.x()), int(self.y() + delta.y()))
+            self._old_pos = e.globalPosition()
+            e.accept()
+
     def mouseReleaseEvent(self, e):
+        if e.button() == Qt.MouseButton.LeftButton:
+            if self._old_pos is not None or self._using_system_move:
+                self._old_pos = None
+                self._using_system_move = False
+                e.accept()
+                return
         if not self.rect().contains(e.position().toPoint()):
             return
         if e.button() == Qt.MouseButton.BackButton:
@@ -268,8 +318,13 @@ class LyricWindow(QWidget):
             self._app.playlist.next()
 
     def _start_system_move(self):
-        if not self.windowHandle().startSystemMove():
-            logger.error("Native dragging is unavailable for desktop lyrics")
+        handle = self.windowHandle()
+        if handle is None:
+            return False
+        try:
+            return bool(handle.startSystemMove())
+        except RuntimeError:
+            return False
 
     def dump_state(self):
         inner = self._inner

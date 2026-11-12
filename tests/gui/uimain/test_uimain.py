@@ -1,5 +1,4 @@
 import asyncio
-import logging
 from types import SimpleNamespace
 
 import pytest
@@ -811,6 +810,36 @@ def test_dynamic_island_progress_updates_only_when_expanded(qtbot, app_mock, moc
     update.assert_called_once()
 
 
+class _FakeMouseEvent:
+    def __init__(
+        self,
+        event_type,
+        global_pos,
+        button=Qt.MouseButton.LeftButton,
+        local_pos=None,
+    ):
+        self._event_type = event_type
+        self._global_pos = QPointF(global_pos)
+        self._local_pos = QPointF(local_pos if local_pos is not None else global_pos)
+        self._button = button
+        self.accepted = False
+
+    def type(self):
+        return self._event_type
+
+    def button(self):
+        return self._button
+
+    def globalPosition(self):
+        return self._global_pos
+
+    def position(self):
+        return self._local_pos
+
+    def accept(self):
+        self.accepted = True
+
+
 class _FakeContextMenuEvent:
     def __init__(self, global_pos):
         self._global_pos = QPoint(global_pos)
@@ -846,6 +875,60 @@ def test_lyric_mini_is_frameless_and_uses_island(qtbot, app_mock):
     assert margins.bottom() == 0
 
 
+def test_lyric_mini_drags_from_island_body(qtbot, app_mock, monkeypatch):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: False)
+
+    window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10)),
+    )
+    window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28)),
+    )
+    window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28)),
+    )
+
+    assert window.pos() == QPoint(115, 138)
+    assert window._old_pos is None
+
+
+def test_lyric_mini_prefers_system_move(qtbot, app_mock, monkeypatch):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    window.set_display_mode("mini")
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: True)
+
+    handled = window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10)),
+    )
+    moved = window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28)),
+    )
+    released = window._handle_drag_event(
+        window.island,
+        _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28)),
+    )
+
+    assert handled
+    assert moved
+    assert released
+    assert window.pos() == QPoint(100, 120)
+    assert window._old_pos is None
+    assert not window._using_system_move
+
+
 @pytest.mark.parametrize("control_name", ["_volume_btn", "_pp_btn"])
 def test_lyric_mini_does_not_drag_from_controls(
     qtbot, app_mock, monkeypatch, control_name
@@ -869,6 +952,8 @@ def test_lyric_mini_does_not_drag_from_controls(
     monkeypatch.setattr(window, "_start_system_move", start_system_move)
     qtbot.mousePress(control, Qt.MouseButton.LeftButton, pos=control.rect().center())
 
+    assert window._old_pos is None
+    assert not window._using_system_move
     qtbot.mouseMove(control, control.rect().center() + QPoint(2, 2))
     qtbot.mouseRelease(control, Qt.MouseButton.LeftButton, pos=control.rect().center())
 
@@ -1114,79 +1199,49 @@ def test_lyric_window_closes_without_restoring_main_window(
     app_mock.activateWindow.assert_not_called()
 
 
-@pytest.mark.parametrize("mode", ["classic", "mini"])
-@pytest.mark.parametrize("native_result", ["supported", "unsupported"])
-def test_lyric_window_drag_requires_native_support(
-    qtbot, app_mock, monkeypatch, mocker, caplog, mode, native_result
+def test_lyric_window_drag_uses_system_move(qtbot, app_mock, monkeypatch):
+    _prepare_lyric_window_app(app_mock)
+    window = LyricWindow(app_mock)
+    qtbot.addWidget(window)
+    window.move(100, 120)
+    monkeypatch.setattr(window, "_start_system_move", lambda: True)
+
+    press = _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10))
+    move = _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28))
+    release = _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28))
+
+    window.mousePressEvent(press)
+    window.mouseMoveEvent(move)
+    window.mouseReleaseEvent(release)
+
+    assert press.accepted
+    assert move.accepted
+    assert release.accepted
+    assert window.pos() == QPoint(100, 120)
+    assert window._old_pos is None
+    assert not window._using_system_move
+
+
+def test_lyric_window_drag_falls_back_to_manual_move(
+    qtbot, app_mock, monkeypatch
 ):
     _prepare_lyric_window_app(app_mock)
     window = LyricWindow(app_mock)
     qtbot.addWidget(window)
-    window.set_display_mode(mode)
     window.move(100, 120)
-    window.show()
-    target = window.island if mode == "mini" else window
-    handle = mocker.Mock()
-    handle.startSystemMove.return_value = native_result == "supported"
-    monkeypatch.setattr(window, "windowHandle", lambda: handle)
-    move = mocker.spy(window, "move")
-    logger_name = "feeluown.gui.uimain.lyric"
+    monkeypatch.setattr(window, "_start_system_move", lambda: False)
 
-    with caplog.at_level(logging.ERROR, logger=logger_name):
-        qtbot.mousePress(target, Qt.MouseButton.LeftButton, pos=QPoint(4, 4))
-        qtbot.mouseMove(target, QPoint(20, 15))
-        qtbot.mouseRelease(target, Qt.MouseButton.LeftButton, pos=QPoint(20, 15))
+    press = _FakeMouseEvent(QEvent.Type.MouseButtonPress, QPointF(10, 10))
+    move = _FakeMouseEvent(QEvent.Type.MouseMove, QPointF(25, 28))
+    release = _FakeMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(25, 28))
 
-    handle.startSystemMove.assert_called_once_with()
-    move.assert_not_called()
-    assert window.pos() == QPoint(100, 120)
-    records = [record for record in caplog.records if record.name == logger_name]
-    if native_result == "supported":
-        assert records == []
-    else:
-        assert len(records) == 1
-        assert records[0].levelno == logging.ERROR
+    window.mousePressEvent(press)
+    window.mouseMoveEvent(move)
+    window.mouseReleaseEvent(release)
 
-
-def test_lyric_window_native_drag_error_propagates(qtbot, app_mock, mocker, caplog):
-    _prepare_lyric_window_app(app_mock)
-    window = LyricWindow(app_mock)
-    qtbot.addWidget(window)
-    handle = mocker.Mock()
-    handle.startSystemMove.side_effect = RuntimeError("Native drag failed")
-    mocker.patch.object(window, "windowHandle", return_value=handle)
-
-    with pytest.raises(RuntimeError, match="Native drag failed"):
-        window._start_system_move()
-
-    handle.startSystemMove.assert_called_once_with()
-    assert not [
-        record for record in caplog.records
-        if record.name == "feeluown.gui.uimain.lyric"
-    ]
-
-
-@pytest.mark.parametrize("mode", ["classic", "mini"])
-def test_lyric_window_non_left_press_does_not_drag(qtbot, app_mock, mocker, mode):
-    _prepare_lyric_window_app(app_mock)
-    window = LyricWindow(app_mock)
-    qtbot.addWidget(window)
-    window.set_display_mode(mode)
-    start_move = mocker.patch.object(window, "_start_system_move")
-
-    for button in (Qt.MouseButton.RightButton, Qt.MouseButton.MiddleButton):
-        event = QMouseEvent(
-            QEvent.Type.MouseButtonPress,
-            QPointF(4, 4),
-            button,
-            button,
-            Qt.KeyboardModifier.NoModifier,
-        )
-        if mode == "mini":
-            assert not window.eventFilter(window.island, event)
-        window.mousePressEvent(event)
-
-    start_move.assert_not_called()
+    assert window.pos() == QPoint(115, 138)
+    assert window._old_pos is None
+    assert not window._using_system_move
 
 
 def test_ai_chat_assistant_rows_keep_content_height(qtbot):
