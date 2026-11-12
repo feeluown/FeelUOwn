@@ -1,10 +1,8 @@
 from PyQt6.QtCore import Qt, QRectF
 from PyQt6.QtGui import (
     QColor, QFont, QFontMetrics, QImage, QLinearGradient, QPainter, QPainterPath,
-    QPalette,
 )
 from PyQt6.QtWidgets import (
-    QLabel,
     QSizeGrip,
     QStyledItemDelegate,
     QStyleOptionViewItem,
@@ -14,7 +12,6 @@ from PyQt6.QtWidgets import (
 
 from feeluown.gui.components.nowplaying import NowplayingLyricView
 from feeluown.gui.helpers import elided_text, to_cover_media_by_source
-from feeluown.i18n import t
 from feeluown.utils.aio import run_afn
 
 
@@ -62,15 +59,9 @@ class DesktopLyricCard(QWidget):
         self._on_metadata_changed(app.player.current_metadata)
 
     def _setup_ui(self):
-        self.header = QLabel(t("lyric-mode-multiline"), self)
-        self.header.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        self.header.setCursor(Qt.CursorShape.SizeAllCursor)
-        font = self.header.font()
-        font.setPixelSize(12)
-        self.header.setFont(font)
-        palette = self.header.palette()
-        palette.setColor(QPalette.ColorRole.WindowText, QColor(235, 238, 245, 135))
-        self.header.setPalette(palette)
+        self.drag_area = QWidget(self)
+        self.drag_area.setFixedHeight(12)
+        self.drag_area.setCursor(Qt.CursorShape.SizeAllCursor)
 
         self.lyric_view = NowplayingLyricView(self._app, parent=self)
         self.lyric_view.setItemDelegate(_FadingLyricDelegate(self.lyric_view))
@@ -83,7 +74,7 @@ class DesktopLyricCard(QWidget):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(22, 14, 22, 12)
         layout.setSpacing(6)
-        layout.addWidget(self.header)
+        layout.addWidget(self.drag_area)
         layout.addWidget(self.lyric_view, 1)
         layout.addWidget(self.size_grip, 0, Qt.AlignmentFlag.AlignRight)
 

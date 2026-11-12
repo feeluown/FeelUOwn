@@ -1241,7 +1241,7 @@ def test_lyric_multiline_allows_selection_and_scrolling_without_dragging(
     assert move_attempts == []
 
 
-def test_lyric_multiline_header_drags_and_viewport_opens_shared_menu(
+def test_lyric_multiline_drag_area_drags_and_viewport_opens_shared_menu(
     qtbot, app_mock, monkeypatch
 ):
     _prepare_lyric_window_app(app_mock)
@@ -1257,7 +1257,7 @@ def test_lyric_multiline_header_drags_and_viewport_opens_shared_menu(
         (QEvent.Type.MouseButtonRelease, QPointF(25, 28)),
     ):
         assert window.eventFilter(
-            window._multiline_header, _FakeMouseEvent(event_type, point)
+            window._multiline_drag_area, _FakeMouseEvent(event_type, point)
         )
     assert window.pos() == position + QPoint(15, 18)
 

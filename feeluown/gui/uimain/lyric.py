@@ -192,12 +192,12 @@ class LyricWindow(QWidget):
         from feeluown.gui.components.desktop_lyric import DesktopLyricCard
 
         self._multiline_container = DesktopLyricCard(self._app, self)
-        self._multiline_header = self._multiline_container.header
+        self._multiline_drag_area = self._multiline_container.drag_area
         self._multiline_view = self._multiline_container.lyric_view
         self._multiline_grip = self._multiline_container.size_grip
         self._layout.addWidget(self._multiline_container)
         for widget in (
-            self._multiline_container, self._multiline_header,
+            self._multiline_container, self._multiline_drag_area,
             self._multiline_view, self._multiline_view.viewport(),
         ):
             widget.installEventFilter(self)
