@@ -135,6 +135,8 @@ class LyricWindow(QWidget):
         self._layout.addWidget(self._inner)
 
         self._old_pos = None
+        # Native dragging also leaves _old_pos unset. Track it separately so
+        # the event filter still consumes drag events from child widgets.
         self._using_system_move = False
 
         esc_hide_widget(self)
@@ -352,19 +354,14 @@ class LyricWindow(QWidget):
         if geo:
             self.setGeometry(*geo)
             self._classic_size = self.size()
-        if "font" in state:
-            font = inner.font()
-            font.fromString(state["font"])
-            inner.setFont(font)
+        font = inner.font()
+        font.fromString(state["font"])
+        inner.setFont(font)
         palette = inner.palette()
-        if "bg" in state:
-            set_bg_color(palette, QColor(state["bg"]))
-        if "fg" in state:
-            set_fg_color(palette, QColor(state["fg"]))
+        set_bg_color(palette, QColor(state["bg"]))
+        set_fg_color(palette, QColor(state["fg"]))
         inner.setPalette(palette)
-        mode = state.get("display_mode", "classic")
-        if mode in ("classic", "mini"):
-            self.set_display_mode(mode)
+        self.set_display_mode(state.get("display_mode", "classic"))
 
     def sizeHint(self):
         return QSize(500, 60)
