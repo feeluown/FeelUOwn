@@ -32,11 +32,9 @@ class LyricView(QListWidget):
         if lyric is None:
             return
 
-        for i, line in enumerate(lyric.lines):
-            item = self._create_item(line)
-            if i == lyric.current_index:
-                self.setCurrentItem(item)
-            self.addItem(item)
+        for line in lyric.lines:
+            self.addItem(self._create_item(line))
+        self.on_line_changed(None)
 
     def _create_item(self, line):
         item = QListWidgetItem(line)

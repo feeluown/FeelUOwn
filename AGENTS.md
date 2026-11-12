@@ -68,7 +68,11 @@ Practical conventions:
 - Add/adjust tests for behavior changes under `feeluown/`.
 - Keep comments/docstrings in English.
 - For Qt widgets, prefer a `setup_ui` style split when code grows.
-- Handle provider/network exceptions defensively in GUI flows.
+- Handle expected provider/network failures at GUI boundaries.
+
+Trust established contracts and let unexpected errors surface. Avoid defensive
+checks, compatibility fallbacks, and extra state unless a concrete requirement
+calls for them.
 
 ## 5) GUI Architecture Rules
 

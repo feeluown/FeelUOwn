@@ -1,6 +1,6 @@
 import sys
 
-from PyQt6.QtCore import Qt, QRectF, QRect, QSize
+from PyQt6.QtCore import QEvent, Qt, QRectF, QRect, QSize
 from PyQt6.QtGui import (
     QPalette,
     QColor,
@@ -9,6 +9,7 @@ from PyQt6.QtGui import (
     QKeySequence,
     QFont,
     QAction,
+    QActionGroup,
     QShortcut,
 )
 from PyQt6.QtWidgets import (
@@ -21,6 +22,9 @@ from PyQt6.QtWidgets import (
     QMenu,
     QFontDialog,
     QSpacerItem,
+    QAbstractButton,
+    QAbstractSlider,
+    QAbstractItemView,
 )
 
 from feeluown.i18n import t
@@ -100,6 +104,13 @@ class LyricWindow(QWidget):
     def __init__(self, app):
         super().__init__(parent=None)
         self._app = app
+        self._display_mode = "classic"
+        self._classic_size = QSize(500, 60)
+        self._multiline_size = QSize(500, 360)
+        self.island = None
+        self._mini_container = None
+        self._multiline_view = None
+        self._multiline_container = None
 
         if IS_MACOS:
             # On macOS, Qt.Tooltip widget can't accept focus and it will hide
@@ -128,9 +139,181 @@ class LyricWindow(QWidget):
         self._layout.addWidget(self._inner)
 
         self._old_pos = None
+        # Native dragging also leaves _old_pos unset. Track it separately so
+        # the event filter still consumes drag events from child widgets.
         self._using_system_move = False
 
         esc_hide_widget(self)
+
+    @property
+    def display_mode(self):
+        return self._display_mode
+
+    def set_display_mode(self, mode):
+        if mode not in ("classic", "mini", "multiline"):
+            raise ValueError(f"Unknown lyric display mode: {mode}")
+        if mode == self._display_mode:
+            return
+
+        pos = self.pos()
+        if self._display_mode == "classic":
+            self._classic_size = self.size()
+        elif self._display_mode == "multiline":
+            self._multiline_size = self.size()
+        self._old_pos = None
+        self._using_system_move = False
+        self._inner.hide()
+        if self._mini_container is not None:
+            self._mini_container.hide()
+        if self._multiline_container is not None:
+            self._multiline_container.hide()
+        self.setMinimumSize(0, 0)
+        self.setMaximumSize(16777215, 16777215)
+        self._display_mode = mode
+        if mode == "mini":
+            self._ensure_mini_view()
+            self._mini_container.show()
+            self._resize_to_island()
+            self.island.setFocus(Qt.FocusReason.OtherFocusReason)
+        elif mode == "multiline":
+            self._ensure_multiline_view()
+            self.setMinimumSize(240, 180)
+            self.resize(self._multiline_size)
+            self._multiline_container.show()
+            self._multiline_view.on_line_changed(None)
+        else:
+            self.resize(self._classic_size)
+            self._inner.show()
+        self.move(pos)
+
+    def _ensure_multiline_view(self):
+        if self._multiline_view is not None:
+            return
+        from feeluown.gui.components.desktop_lyric import DesktopLyricCard
+
+        self._multiline_container = DesktopLyricCard(self._app, self)
+        self._multiline_drag_area = self._multiline_container.drag_area
+        self._multiline_view = self._multiline_container.lyric_view
+        self._multiline_grip = self._multiline_container.size_grip
+        self._layout.addWidget(self._multiline_container)
+        for widget in (
+            self._multiline_container, self._multiline_drag_area,
+            self._multiline_view, self._multiline_view.viewport(),
+        ):
+            widget.installEventFilter(self)
+
+    def _ensure_mini_view(self):
+        if self.island is not None:
+            return
+        from feeluown.gui.components.dynamic_island import DynamicIslandStatusBar
+
+        # The island controls its own visibility on playback updates. A separate
+        # container keeps these updates from exposing it in classic mode.
+        self._mini_container = QWidget(self)
+        self._mini_container.hide()
+        layout = QVBoxLayout(self._mini_container)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.setSpacing(0)
+        self.island = DynamicIslandStatusBar(
+            self._app, parent=self._mini_container, hide_when_inactive=False
+        )
+        layout.addWidget(self.island)
+        self._layout.addWidget(self._mini_container)
+        self.island.installEventFilter(self)
+        for child in self.island.findChildren(QWidget):
+            if isinstance(child, (QAbstractButton, QAbstractSlider)):
+                # Some controls ignore mouse presses, which would otherwise
+                # bubble to the island and start a window drag.
+                child.setAttribute(Qt.WidgetAttribute.WA_NoMousePropagation)
+            child.installEventFilter(self)
+
+    def _resize_to_island(self):
+        if self.display_mode == "mini" and self.island is not None:
+            self._mini_container.setFixedSize(self.island.size())
+            self.setFixedSize(self.island.size())
+
+    def _create_context_menu(self):
+        menu = QMenu(self)
+        modes = menu.addMenu(t("lyric-display-mode"))
+        group = QActionGroup(modes)
+        group.setExclusive(True)
+        for mode in ("classic", "mini", "multiline"):
+            action = modes.addAction(t(f"lyric-mode-{mode}"))
+            action.setData(mode)
+            action.setCheckable(True)
+            action.setChecked(mode == self.display_mode)
+            group.addAction(action)
+            action.triggered.connect(
+                lambda checked, mode=mode: self.set_display_mode(mode)
+            )
+        menu.addSeparator()
+        if self.display_mode == "classic":
+            self._inner.add_settings_actions(menu)
+            menu.addSeparator()
+        menu.addAction(t("lyric-hide"), self.hide)
+        return menu
+
+    def _show_context_menu(self, global_pos):
+        menu = self._create_context_menu()
+        menu.exec(global_pos)
+        menu.deleteLater()
+
+    def contextMenuEvent(self, event):
+        self._show_context_menu(event.globalPos())
+        event.accept()
+
+    def eventFilter(self, obj, event):
+        if event.type() == QEvent.Type.ContextMenu:
+            self._show_context_menu(event.globalPos())
+            return True
+        if event.type() in (
+            QEvent.Type.MouseButtonPress,
+            QEvent.Type.MouseMove,
+            QEvent.Type.MouseButtonRelease,
+        ):
+            return self._handle_drag_event(obj, event)
+        if obj is self.island and event.type() in (
+            QEvent.Type.Resize, QEvent.Type.Show,
+        ):
+            self._resize_to_island()
+        return super().eventFilter(obj, event)
+
+    def _handle_drag_event(self, obj, event):
+        parent = obj
+        while isinstance(parent, QWidget) and parent is not self:
+            if isinstance(parent, (
+                QAbstractButton, QAbstractSlider, QAbstractItemView, QSizeGrip,
+            )):
+                return False
+            parent = parent.parent()
+        if event.type() == QEvent.Type.MouseButtonPress:
+            if event.button() != Qt.MouseButton.LeftButton:
+                return False
+            self.mousePressEvent(event)
+            return True
+        if event.type() == QEvent.Type.MouseMove:
+            dragging = self._old_pos is not None or self._using_system_move
+            self.mouseMoveEvent(event)
+            return dragging
+        if event.type() == QEvent.Type.MouseButtonRelease:
+            if event.button() == Qt.MouseButton.LeftButton:
+                dragging = self._old_pos is not None or self._using_system_move
+                self.mouseReleaseEvent(event)
+                return dragging
+        return False
+
+    def showEvent(self, event):
+        if self.display_mode == "mini":
+            self._resize_to_island()
+            self.island.setFocus(Qt.FocusReason.ActiveWindowFocusReason)
+        elif self.display_mode == "multiline":
+            self._multiline_view.on_line_changed(None)
+        super().showEvent(event)
+
+    def hideEvent(self, event):
+        self._old_pos = None
+        self._using_system_move = False
+        super().hideEvent(event)
 
     def mousePressEvent(self, e):
         if e.button() != Qt.MouseButton.LeftButton:
@@ -182,8 +365,14 @@ class LyricWindow(QWidget):
         inner = self._inner
         p = inner.palette()
         geo = self.geometry()
+        size = self.size() if self.display_mode == "classic" else self._classic_size
+        multiline_size = (
+            self.size() if self.display_mode == "multiline" else self._multiline_size
+        )
         return {
-            "geometry": (geo.x(), geo.y(), geo.width(), geo.height()),
+            "display_mode": self.display_mode,
+            "geometry": (geo.x(), geo.y(), size.width(), size.height()),
+            "multiline_size": (multiline_size.width(), multiline_size.height()),
             "font": inner.font().toString(),
             "bg": p.color(QPalette.ColorGroup.Active, QPalette.ColorRole.Window).name(
                 QColor.NameFormat.HexArgb
@@ -199,10 +388,11 @@ class LyricWindow(QWidget):
 
         inner = self._inner
 
+        self.set_display_mode("classic")
         geo = state.get("geometry")
         if geo:
-            self.resize(geo[2], geo[3])
             self.setGeometry(*geo)
+            self._classic_size = self.size()
         font = inner.font()
         font.fromString(state["font"])
         inner.setFont(font)
@@ -210,12 +400,11 @@ class LyricWindow(QWidget):
         set_bg_color(palette, QColor(state["bg"]))
         set_fg_color(palette, QColor(state["fg"]))
         inner.setPalette(palette)
+        self._multiline_size = QSize(*state.get("multiline_size", (500, 360)))
+        self.set_display_mode(state.get("display_mode", "classic"))
 
     def sizeHint(self):
         return QSize(500, 60)
-
-    def resizeEvent(self, e):
-        return super().resizeEvent(e)
 
 
 class SentenceLabel(QLabel):
@@ -455,7 +644,9 @@ class InnerLyricWindow(QWidget):
             self._size_grip.show()
 
     def contextMenuEvent(self, e):
-        menu = QMenu()
+        self.parent().contextMenuEvent(e)
+
+    def add_settings_actions(self, menu):
         bg_color_action = QAction(t("lyric-background-color"), menu)
         fg_color_action = QAction(t("lyric-text-color"), menu)
         font_action = QAction(t("lyric-font"), menu)
@@ -479,8 +670,21 @@ class InnerLyricWindow(QWidget):
         toggle_trans_action.triggered.connect(self.line_label.toggle_show_trans)
         toggle_fiexed_size_action.triggered.connect(self.toggle_auto_resize)
 
-        menu.exec(e.globalPos())
-
     def showEvent(self, e) -> None:
         self.set_line(self._app.live_lyric.current_line)
         return super().showEvent(e)
+
+
+if __name__ == "__main__":
+    from feeluown.gui.debug import (
+        create_mini_player_debug_app,
+        simple_qapp,
+        start_mini_player_debug_updates,
+    )
+
+    with simple_qapp():
+        app = create_mini_player_debug_app()
+        window = LyricWindow(app)
+        window.show()
+        window.move(320, 160)
+        start_mini_player_debug_updates(app, window)
