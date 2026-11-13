@@ -202,8 +202,12 @@ class BaseModel(_BaseModel):
     From the benchmark result, the cost of __hash__ is almost equal to __eq__.
     """
     def __hash__(self):
-        id_hash = elfhash(f'{self.source}{self.identifier}'.encode())
-        return id_hash * 1000 + id(type(self)) % 1000
+        identity = f'{self.source}{self.identifier}'
+        cached = self.__dict__.get('_hash_cache')
+        if cached is None or cached[0] != identity:
+            cached = (identity, elfhash(identity.encode()))
+            self.__dict__['_hash_cache'] = cached
+        return cached[1] * 1000 + id(type(self)) % 1000
 
     def __eq__(self, other):
         """Implement __hash__ and __eq__ so that model can be a dict key"""
