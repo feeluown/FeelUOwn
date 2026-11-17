@@ -26,15 +26,15 @@ macOS 可以 brew 命令等。
     # macOS
     brew install mpv pipx
 
-    # Ubuntu
-    sudo apt-get install libmpv1 pipx
+    # Ubuntu（后几个包用于编译 dbus-python，见下方 linux 选项）
+    sudo apt-get install libmpv2 pipx build-essential pkg-config python3-dev libdbus-1-dev libglib2.0-dev
 
 在安装好 libmpv 和 Python 包管理工具后。你可以运行如下命令来安装 FeelUOwn 及其依赖的 Python 包：
 
 .. sourcecode:: sh
 
     # Linux 用户可以使用如下命令
-    pipx install feeluown[battery,ai,cookies,webengine,qt] -v
+    pipx install feeluown[battery,ai,cookies,webengine,qt,linux] -v
 
     # macOS 和 Windows 用户可以分别使用如下命令
     # 建议优先使用 Python 3.10/3.11 版本（部分依赖包没有适配 3.12 和 3.13 版本）
@@ -44,7 +44,7 @@ macOS 可以 brew 命令等。
 Ubuntu
 ~~~~~~
 
-下面命令在 Ubuntu 18.04 中测试通过，理论上其它 Linux 发行版
+下面命令在 Ubuntu 26.04 中测试通过，理论上其它 Linux 发行版
 安装流程类似，只是一些包的名字可能有些许差别。
 
 .. sourcecode:: sh
@@ -57,18 +57,14 @@ Ubuntu
     pipx ensurepath
     sudo pipx ensurepath --global
 
-    # 安装 libmpv1
-    sudo apt-get install libmpv1
+    # 安装 libmpv
+    sudo apt-get install libmpv2
 
-    # 安装 PyQt6
-    sudo apt-get install python3-pyqt5 python3-pyqt5.qtopengl python3-pyqt5.qtsvg
+    # 安装编译 dbus-python 所需的依赖（用于 MPRIS，让桌面/状态栏显示正在播放的歌曲）
+    sudo apt-get install build-essential pkg-config python3-dev libdbus-1-dev libglib2.0-dev
 
-    # 安装 dbus-python
-    sudo apt-get install python3-dbus python3-dbus.mainloop.pyqt5
-
-    # 安装 feeluown （是一个 Python 包）
-    # --upgrade 代表安装最新版，--user 代表不安装到系统目录
-    pipx install 'feeluown[battery,cookies,webengine,ai]'
+    # 安装 feeluown （是一个 Python 包），PyQt6 和 dbus-python 会一并安装
+    pipx install 'feeluown[battery,cookies,webengine,ai,qt,linux]'
     pipx inject feeluown pyopengl
 
     # 运行 feeluown -h 来测试安装是否成功
