@@ -514,6 +514,12 @@ wheels = [
 ]
 
 [[package]]
+name = "dbus-python"
+version = "1.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/f3/cc/23f24bc7cbfec3a0ab508b7e11bc98837d77a91445d5f666a8545353a147/dbus_python-1.5.1.tar.gz", hash = "sha256:57423cf87d09b7d084f420b55b737fe654c33339b06df77945620d97795c6ac4", size = 205464, upload-time = "2026-10-23T13:47:13.997Z" }
+
+[[package]]
 name = "dill"
 version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
@@ -621,6 +627,9 @@ i18n-match = [
 jsonrpc = [
     { name = "json-rpc" },
 ]
+linux = [
+    { name = "dbus-python", marker = "sys_platform == 'linux'" },
+]
 macos = [
     { name = "aionowplaying" },
 ]
@@ -671,6 +680,7 @@ dev = [
 requires-dist = [
     { name = "aionowplaying", marker = "extra == 'macos'", specifier = ">=0.10" },
     { name = "aionowplaying", marker = "extra == 'win32'", specifier = ">=0.10" },
+    { name = "dbus-python", marker = "sys_platform == 'linux' and extra == 'linux'" },
     { name = "feeluown-bilibili", marker = "extra == 'battery'", specifier = ">=0.5.4" },
     { name = "flake8", marker = "extra == 'dev'" },
     { name = "flake8-pyproject", marker = "extra == 'dev'" },
@@ -711,7 +721,7 @@ requires-dist = [
     { name = "yt-dlp", marker = "extra == 'cookies'" },
     { name = "yt-dlp", marker = "extra == 'ytdl'" },
 ]
-provides-extras = ["battery", "ai", "qt", "macos", "win32", "jsonrpc", "webserver", "mcpserver", "webengine", "cookies", "ytdl", "dev", "i18n-match"]
+provides-extras = ["battery", "ai", "qt", "linux", "macos", "win32", "jsonrpc", "webserver", "mcpserver", "webengine", "cookies", "ytdl", "dev", "i18n-match"]
 
 [package.metadata.requires-dev]
 dev = [

@@ -50,6 +50,7 @@ battery = [
 ]
 ai = ["langchain[openai]>=1.0"]
 qt = ["PyQt6"]
+linux = ["dbus-python; sys_platform == 'linux'"]
 macOS = ["aionowplaying>=0.10"]
 win32 = ["pyshortcuts", "aionowplaying>=0.10"]
 jsonrpc = ["json-rpc"]
