@@ -19,7 +19,7 @@ class SmartPlaylistListView(TextlistView):
         super().__init__(**kwargs)
         self._app = app
         self.setDragDropMode(QAbstractItemView.DragDropMode.NoDragDrop)
-        self.setModel(SmartPlaylistListModel(self))
+        self.setModel(SmartPlaylistListModel(self._app.smart_mgr, self))
 
         self.clicked.connect(self._on_clicked)
         self._app.smart_mgr.playlists_changed.connect(self.on_playlists_changed)
@@ -38,19 +38,19 @@ class SmartPlaylistListView(TextlistView):
 
 
 class SmartPlaylistListModel(TextlistModel):
+    def __init__(self, smart_mgr, parent=None):
+        super().__init__(parent)
+        self._smart_mgr = smart_mgr
+
     def data(self, index, role=Qt.ItemDataRole.DisplayRole):
         row = index.row()
         item = self._items[row]
         if role == Qt.ItemDataRole.DisplayRole:
             prefix = "⚡ "
-            active_id = None
-            # Access app through parent view when possible for active highlight.
-            parent = self.parent()
-            if parent is not None and hasattr(parent, '_app'):
-                try:
-                    active_id = parent._app.smart_mgr.active_id
-                except Exception:
-                    active_id = None
+            try:
+                active_id = self._smart_mgr.active_id
+            except Exception:
+                active_id = None
             marker = "● " if active_id is not None and item.id == active_id else ""
             return prefix + marker + item.name
         if role == Qt.ItemDataRole.ToolTipRole:
