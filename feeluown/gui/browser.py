@@ -275,6 +275,7 @@ class Browser:
             from feeluown.gui.pages.my_fav import render as render_my_fav
             from feeluown.gui.pages.my_dislike import render as render_my_dislike
             from feeluown.gui.pages.toplist import render as render_toplist
+            from feeluown.gui.pages.smart_playlist import render as render_smart
 
             model_prefix = f"{MODEL_PAGE_PREFIX}<provider>"
 
@@ -297,6 +298,7 @@ class Browser:
                 ("/my_fav", render_my_fav),
                 ("/my_dislike", render_my_dislike),
                 ("/toplist", render_toplist),
+                ("/smart/<identifier>", render_smart),
             ]
             for url, renderer in urlpatterns:
                 self.route(url)(renderer)
@@ -349,6 +351,7 @@ class Browser:
             ("/my_fav", _lazy('feeluown.gui.pages.my_fav')),
             ("/my_dislike", _lazy('feeluown.gui.pages.my_dislike')),
             ("/toplist", _lazy('feeluown.gui.pages.toplist')),
+            ("/smart/<identifier>", _lazy('feeluown.gui.pages.smart_playlist')),
         ]
         for url, renderer in urlpatterns:
             self.route(url)(renderer)
