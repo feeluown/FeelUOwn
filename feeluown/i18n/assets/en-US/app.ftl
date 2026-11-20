@@ -495,6 +495,12 @@ movie-mode-exit = Exit movie mode
 # ----------------------------------------
 -local-favorites = Local favorites
 local-favorites = { -local-favorites }
+-smart-playlists = Smart playlists
+smart-playlists = { -smart-playlists }
+
+smart-playlists-tooltip =
+    Rule-based auto-updating collections built from your play history.
+    Click a smart playlist to preview it; use Play All to replace the queue.
 
 collections-header-tooltip =
     You can create ‘{ -track-collection }s’ locally to save your favorite music resources

@@ -19,6 +19,7 @@ from feeluown.player import (
     Playlist,
     LiveLyric,
     FM,
+    SmartPlaylistManager,
     Player,
     RecentlyPlayed,
     PlayerPositionDelegate,
@@ -116,6 +117,7 @@ class App:
         self.live_lyric = LiveLyric(self)
         self.fm = FM(self)
         self.recently_played = RecentlyPlayed(self.playlist)
+        self.smart_mgr = SmartPlaylistManager(self)
 
         # TODO: initialization should be moved into initialize
         self.player.set_playlist(self.playlist)
@@ -124,6 +126,7 @@ class App:
 
     def initialize(self):
         self.coll_mgr.scan()
+        self.smart_mgr.load()
         self.alert_mgr.initialize(self)
         self.player_pos_per300ms.initialize()
         self.player_pos_per300ms.changed.connect(self.live_lyric.on_position_changed)
@@ -167,17 +170,25 @@ class App:
             player.volume = state["volume"]
 
             # Restore recently_played states.
-            recently_played_models = []
-            for model in state.get("recently_played", []):
+            # New format with timestamps takes precedence; fall back to the
+            # legacy plain list for backward compatibility.
+            if state.get("play_history"):
                 try:
-                    model = resolve(model)
-                except ResolverNotFound:
-                    pass
-                except ResolveFailed as e:
-                    logger.warning(f"resolve failed, {e}")
-                else:
-                    recently_played_models.append(model)
-            recently_played.init_from_models(recently_played_models)
+                    recently_played.load_state(state["play_history"])
+                except Exception:
+                    logger.exception("Load play history failed")
+            else:
+                recently_played_models = []
+                for model in state.get("recently_played", []):
+                    try:
+                        model = resolve(model)
+                    except ResolverNotFound:
+                        pass
+                    except ResolveFailed as e:
+                        logger.warning(f"resolve failed, {e}")
+                    else:
+                        recently_played_models.append(model)
+                recently_played.init_from_models(recently_played_models)
 
             # Restore playlist states.
             playlist.playback_mode = PlaybackMode(state["playback_mode"])
@@ -254,6 +265,7 @@ class App:
             "recently_played": [
                 reverse(song, as_line=True) for song in recently_played.list_songs()
             ],
+            "play_history": recently_played.get_state(),
         }
         return state
 

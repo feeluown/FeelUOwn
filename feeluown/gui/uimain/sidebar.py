@@ -18,7 +18,7 @@ from feeluown.i18n import t
 from feeluown.collection import CollectionAlreadyExists, CollectionType
 from feeluown.utils.reader import create_reader, Reader
 from feeluown.utils.aio import run_fn
-from feeluown.gui.components import CollectionListView
+from feeluown.gui.components import CollectionListView, SmartPlaylistListView
 from feeluown.gui.widgets import HomeButton, AIButton
 from feeluown.gui.widgets.separator import Separator
 from .provider_bar import ProviderBar, ListViewContainer as LVC
@@ -74,6 +74,10 @@ class _LeftPanel(QFrame):
         self.collections_header.setToolTip(t("collections-header-tooltip"))
         self.collections_view = CollectionListView(self._app)
         self.collections_con = LVC(self.collections_header, self.collections_view)
+        self.smart_header = QLabel(t("smart-playlists"), self)
+        self.smart_header.setToolTip(t("smart-playlists-tooltip"))
+        self.smart_view = SmartPlaylistListView(self._app)
+        self.smart_con = LVC(self.smart_header, self.smart_view)
         self._top_separator = Separator(self._app)
         self.provider_bar = ProviderBar(self._app)
 
@@ -89,12 +93,16 @@ class _LeftPanel(QFrame):
         self._layout.addWidget(self.home_btn)
         self._layout.addWidget(self.ai_btn)
         self._layout.addWidget(self.collections_con)
+        self._layout.addWidget(self.smart_con)
         self._layout.addWidget(self._top_separator)
         self._layout.addWidget(self.provider_bar)
         self._layout.addStretch(0)
 
         self.collections_view.show_collection.connect(
             lambda coll: self._app.browser.goto(page=f"/colls/{coll.identifier}")
+        )
+        self.smart_view.show_smart_playlist.connect(
+            lambda pl: self._app.browser.goto(page=f"/smart/{pl.id}")
         )
         self.collections_view.remove_collection.connect(self._remove_coll)
         self.collections_con.create_btn.clicked.connect(
@@ -120,6 +128,7 @@ class _LeftPanel(QFrame):
         widgets = [
             self._top_separator,
             self.collections_con,
+            self.smart_con,
             self.home_btn,
             self.ai_btn,
         ]

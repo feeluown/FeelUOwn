@@ -491,6 +491,12 @@ movie-mode-exit = ビデオモードを終了
 # ----------------------------------------
 -local-favorites = ローカルお気に入り
 local-favorites = { -local-favorites }
+-smart-playlists = スマートプレイリスト
+smart-playlists = { -smart-playlists }
+
+smart-playlists-tooltip =
+    再生履歴からルールで自動更新されるプレイリスト。
+    クリックでプレビュー、すべて再生でキューを置き換え。
 
 collections-header-tooltip =
     ローカルで { -track-collection } を作成してお気に入りを管理できます
