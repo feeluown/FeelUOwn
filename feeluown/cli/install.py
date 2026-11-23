@@ -37,12 +37,20 @@ win_linux_icon = """#!/usr/bin/env xdg-open
 Type=Application
 Name=FeelUOwn
 Comment=FeelUOwn Launcher
-Exec=python3 -m feeluown --log-to-file
+Exec={python} -m feeluown --log-to-file
 Icon={feeluown_icon}
 Categories=AudioVideo;Audio;Player;Qt;
 Terminal=false
 StartupNotify=true
 """
+
+
+def _desktop_exec_arg(arg):
+    """Quote an argument for a .desktop Exec key (freedesktop Desktop Entry spec)."""
+    escaped = ''.join('\\' + c if c in '"`$\\' else c for c in arg)
+    escaped = escaped.replace('\\', '\\\\')
+    escaped = escaped.replace('%', '%%')
+    return f'"{escaped}"'
 
 
 def write_file(path, content):
@@ -79,7 +87,10 @@ def gen_for_win_linux():
     to_icon.parent.mkdir(parents=True, exist_ok=True)
     shutil.copy(from_icon, to_icon)
 
-    icon_string = win_linux_icon.format(feeluown_icon=to_icon)
+    icon_string = win_linux_icon.format(
+        python=_desktop_exec_arg(sys.executable),
+        feeluown_icon=to_icon,
+    )
     f_path = pathlib.Path.home() / '.local/share/applications' / DESKTOP_FILE
     write_file(f_path, icon_string)
 
