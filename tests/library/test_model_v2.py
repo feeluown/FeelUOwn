@@ -2,6 +2,7 @@ import pytest
 import pydantic
 
 from feeluown.library import SongModel, BriefAlbumModel, BriefArtistModel, BriefSongModel
+from feeluown.utils.utils import elfhash
 
 
 def test_create_song_model_basic():
@@ -30,4 +31,10 @@ def test_song_model_is_hashable():
     Song model must be hashable.
     """
     song = BriefSongModel(identifier=1, source='x')
-    hash(song)
+    expected = elfhash(b'x1') * 1000 + id(type(song)) % 1000
+    assert hash(song) == expected
+    assert hash(song) == expected
+    same_song = BriefSongModel(identifier=1, source='x')
+    assert song == same_song
+    assert hash(song) == hash(same_song)
+    assert same_song in {song}
