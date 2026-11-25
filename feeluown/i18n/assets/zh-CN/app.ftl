@@ -491,6 +491,12 @@ movie-mode-exit = 退出视频模式
 # ----------------------------------------
 -local-favorites = 本地收藏集
 local-favorites = { -local-favorites }
+-smart-playlists = 智能歌单
+smart-playlists = { -smart-playlists }
+
+smart-playlists-tooltip =
+    基于播放历史、按规则自动更新的歌单。
+    点击可预览，使用“播放全部”可替换播放队列。
 
 collections-header-tooltip =
     我们可以在本地建立『{ -track-collection }』来收藏自己喜欢的音乐资源

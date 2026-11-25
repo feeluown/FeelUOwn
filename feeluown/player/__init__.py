@@ -6,6 +6,7 @@ from .mpvplayer import MpvPlayer as Player
 from .playlist import PlaylistMode, Playlist
 from .metadata_assembler import MetadataAssembler
 from .fm import FM
+from .smart_playlist import SmartPlaylistManager, SmartPlaylist, SmartRule, SmartSort
 from .radio import SongRadio, SongsRadio
 from .lyric import LiveLyric, parse_lyric_text, Line as LyricLine, Lyric
 from .recently_played import RecentlyPlayed
@@ -20,6 +21,10 @@ __all__ = (
     'State',
 
     'FM',
+    'SmartPlaylistManager',
+    'SmartPlaylist',
+    'SmartRule',
+    'SmartSort',
     'PlaylistMode',
     'SongRadio',
     'SongsRadio',

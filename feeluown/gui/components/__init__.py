@@ -11,6 +11,7 @@ from .playlist_btn import PlaylistButton  # noqa
 from .volume_slider import *  # noqa
 from .song_tag import SongSourceTag  # noqa
 from .collections import CollectionListView  # noqa
+from .smart_playlists import SmartPlaylistListView  # noqa
 from .player_progress import PlayerProgressSliderAndLabel  # noqa
 from .recommendation_panel import Panel, RecPlaylistsPanel  # noqa
 from .network_status import NetworkStatusButton  # noqa
