@@ -16,6 +16,21 @@ from feeluown.utils.aio import run_afn
 
 
 class _FadingLyricDelegate(QStyledItemDelegate):
+    def initStyleOption(self, option, index):
+        super().initStyleOption(option, index)
+        view = self.parent()
+        font = QFont(view.font())
+        current = view.currentItem()
+        if current is not None:
+            distance = abs(index.row() - view.currentRow())
+            font.setPixelSize(max(
+                font.pixelSize(), current.font().pixelSize() - distance * 2,
+            ))
+            if distance == 0:
+                font.setWeight(QFont.Weight.DemiBold)
+        option.font = font
+        option.fontMetrics = QFontMetrics(font)
+
     def sizeHint(self, option, index):
         option = QStyleOptionViewItem(option)
         self.initStyleOption(option, index)
@@ -29,7 +44,6 @@ class _FadingLyricDelegate(QStyledItemDelegate):
         view = self.parent()
         painter.save()
         if index == view.currentIndex():
-            option.font.setWeight(QFont.Weight.DemiBold)
             painter.setPen(QColor("#ffffff"))
         else:
             gradient = QLinearGradient(0, 0, 0, view.viewport().height())
@@ -65,6 +79,7 @@ class DesktopLyricCard(QWidget):
 
         self.lyric_view = NowplayingLyricView(self._app, parent=self)
         self.lyric_view.setItemDelegate(_FadingLyricDelegate(self.lyric_view))
+        self.lyric_view.currentItemChanged.connect(self.lyric_view.doItemsLayout)
         self.lyric_view.setAutoFillBackground(False)
         self.lyric_view.viewport().setAutoFillBackground(False)
         self.lyric_view.set_lyric(self._app.live_lyric.current_lyrics[0])
