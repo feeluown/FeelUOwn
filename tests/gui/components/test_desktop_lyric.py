@@ -5,10 +5,12 @@ from unittest.mock import AsyncMock, Mock
 import pytest
 import pytest_asyncio
 from PyQt6.QtCore import QBuffer, QIODevice
-from PyQt6.QtGui import QColor, QImage
+from PyQt6.QtGui import QColor, QFontMetrics, QImage
+from PyQt6.QtWidgets import QStyleOptionViewItem
 
 from feeluown.gui.components.desktop_lyric import DesktopLyricCard
 from feeluown.media import Media, MediaType
+from feeluown.player.lyric import Line, Lyric
 from feeluown.utils.dispatch import Signal
 
 
@@ -53,6 +55,94 @@ def cover_tasks(monkeypatch):
         "feeluown.gui.components.desktop_lyric.run_afn", run_cover_task
     )
     return tasks
+
+
+def _row_sizes(view):
+    sizes = []
+    for row in range(view.count()):
+        option = QStyleOptionViewItem()
+        view.itemDelegate().initStyleOption(option, view.model().index(row, 0))
+        assert option.fontMetrics.height() == QFontMetrics(option.font).height()
+        height = view.visualItemRect(view.item(row)).height()
+        assert height >= option.fontMetrics.height()
+        sizes.append((option.font.pixelSize(), height))
+    return sizes
+
+
+@pytest.mark.asyncio
+async def test_desktop_lyrics_taper_font_and_row_height_around_current_line(
+    qtbot, qapp, lyric_app
+):
+    lyric = Lyric.from_content("\n".join(
+        f"[00:{row + 1:02d}]Line {row}" for row in range(24)
+    ))
+    lyric.update_position(9)
+    lyric_app.live_lyric.current_lyrics = (lyric, None)
+    card = DesktopLyricCard(lyric_app)
+    qtbot.addWidget(card)
+    card.resize(500, 360)
+    card.show()
+    qapp.processEvents()
+    view = card.lyric_view
+    sizes = _row_sizes(view)
+    current = view.currentRow()
+
+    for distance in range(1, 5):
+        assert sizes[current - distance] == sizes[current + distance]
+        closer_font, closer_height = sizes[current + distance - 1]
+        farther_font, farther_height = sizes[current + distance]
+        assert closer_font > farther_font
+        assert closer_height > farther_height
+    assert sizes[0][0] == sizes[-1][0] == view.font().pixelSize()
+
+
+@pytest.mark.asyncio
+async def test_desktop_lyrics_update_neighbor_sizes_on_playback_seek_and_replacement(
+    qtbot, qapp, lyric_app
+):
+    lyric = Lyric.from_content("\n".join(
+        f"[00:{row + 1:02d}]Line {row}" for row in range(24)
+    ))
+    lyric.update_position(9)
+    lyric_app.live_lyric.current_lyrics = (lyric, None)
+    card = DesktopLyricCard(lyric_app)
+    qtbot.addWidget(card)
+    card.resize(500, 360)
+    card.show()
+    qapp.processEvents()
+    view = card.lyric_view
+    original = _row_sizes(view)
+    profile = original[8:13]
+
+    for row in (9, 18, 0, 23):
+        lyric.update_position(row + 1)
+        lyric_app.live_lyric.line_changed.emit(Line(lyric.current_s, "", False))
+        qapp.processEvents()
+        assert view.currentRow() == row
+        sizes = _row_sizes(view)
+        if row == 23:
+            assert sizes[-1:-6:-1] == profile
+        else:
+            assert sizes[row:row + 5] == profile
+        if row in (18, 0, 23):
+            assert sizes[7:10] == [original[0]] * 3
+
+    replacement = Lyric.from_content("[00:10]New first line\n[00:20]New second line")
+    lyric_app.live_lyric.lyrics_changed.emit(replacement, None)
+    await Signal.aioqueue.async_q.join()
+    qapp.processEvents()
+    assert view.currentItem() is None
+    assert _row_sizes(view) == [original[0]] * 2
+
+    replacement.update_position(10)
+    lyric_app.live_lyric.line_changed.emit(Line(replacement.current_s, "", False))
+    qapp.processEvents()
+    assert _row_sizes(view) == profile[:2]
+
+    lyric_app.live_lyric.lyrics_changed.emit(None, None)
+    await Signal.aioqueue.async_q.join()
+    assert view.count() == 0
+    assert view.currentItem() is None
 
 
 @pytest.mark.asyncio
